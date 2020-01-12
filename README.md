@@ -1,0 +1,3 @@
+# NetDaemon - Home Assistant application daemon for .NET core
+
+More info will follow...
