@@ -1,0 +1,6 @@
+# Compiled directories
+[Bb]in/
+[Oo]bj/
+.vs
+*.user
+TestResults
