@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text.Json;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
@@ -27,13 +28,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     }
 
 
-    public class EntityState
+    public class EntityState 
     {
+
         public string EntityId { get; set; } = "";
 
         public string State { get; set; } = "";
 
-        public Dictionary<string, object>? Attributes { get; set; } = null;
+        public dynamic Attribute { get; set; } = new ExpandoObject();
 
         public DateTime LastChanged { get; set; } = DateTime.MinValue;
 

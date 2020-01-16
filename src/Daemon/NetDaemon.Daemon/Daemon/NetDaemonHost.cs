@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
@@ -15,6 +16,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken);
 
         Task Stop();
+
     }
 
     public class NetDaemonHost : INetDaemonHost
@@ -93,6 +95,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return _hassClient.States.TryGetValue(entity, out var returnValue) ? returnValue.ToDaemonEvent() : null;
         }
 
+        //TODO: Optimize
+        public IEnumerable<EntityState> State => _hassClient.States.Values.Select(n => n.ToDaemonEvent());
+
         public IAction Action { get; }
 
 
@@ -122,6 +127,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             if (!connectResult)
                 return;
 
+            
             await Task.Delay(500, cancellationToken);
         }
 

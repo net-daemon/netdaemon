@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
@@ -38,7 +40,38 @@ namespace NetDaemon.Daemon.Tests
 
         private void SetupDefaultStates()
         {
-//            _states.a
+            FakeStates["light.correct_entity"] = new HassState()
+            {
+                EntityId = "light.correct_entity",
+                Attributes = new Dictionary<string, object>()
+                {
+                    ["entity_id"] = "light.correct_entity",
+                    ["test"] = 100
+                },
+
+            };
+
+            FakeStates["light.correct_entity2"] = new HassState()
+            {
+                EntityId = "light.correct_entity2",
+                Attributes = new Dictionary<string, object>()
+                {
+                    ["entity_id"] = "light.correct_entity2",
+                    ["test"] = 101
+                },
+
+            };
+
+            FakeStates["light.filtered_entity"] = new HassState()
+            {
+                EntityId = "light.filtered_entity",
+                Attributes = new Dictionary<string, object>()
+                {
+                    ["entity_id"] = "light.filtered_entity",
+                    ["test"] = 90
+                },
+
+            };
         }
 
         public void AssertEqual(HassState hassState, EntityState entity)
@@ -49,7 +82,7 @@ namespace NetDaemon.Daemon.Tests
             Assert.Equal(hassState.LastUpdated, entity.LastUpdated);
 
             foreach (var attribute in hassState.Attributes.Keys)
-                Assert.Equal(hassState.Attributes[attribute], entity.Attributes[attribute]);
+                Assert.Equal(hassState.Attributes[attribute], ((IDictionary<string, object>) entity.Attribute)[attribute]);
         }
     }
-}
+}   

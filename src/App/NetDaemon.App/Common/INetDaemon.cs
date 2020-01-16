@@ -37,7 +37,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         EntityState? GetState(string entity);
 
         IAction Action { get; }
-      
-    
+
+
+        IEnumerable<EntityState> State { get; }
+
+
     }
 }

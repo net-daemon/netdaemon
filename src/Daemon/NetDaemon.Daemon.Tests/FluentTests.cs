@@ -5,6 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Xunit;
+using System.Linq;
+using System.Linq.Expressions;
+using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace NetDaemon.Daemon.Tests
 {
@@ -47,6 +51,52 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             var attributes = new ExpandoObject();
             ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
+            hcMock.Verify(n => n.CallService("light", "turn_on", attributes));
+        }
+
+        //[Fact]
+        //public void DoIt() => Expr(n => n.State=="2" && n.Attribute.Test ==2  );
+        //private void Expr(Func<EntityState, bool> expr)
+        //{
+        //    var par = expr.Method.GetParameters();
+
+        //    var xx = expr.Method.GetMethodBody().LocalVariables;
+        //    dynamic x = new ExpandoObject();
+
+        //    x.State = 2;
+        //    var c = expr.Invoke(x);
+        //}
+
+        [Fact]
+        public async Task ActionWhenTurnOnWithLambdaSelectAttributesCheckCallServiceIsCalledWithCorrectId()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // Use the default states
+            // The test should only resturn the light with test attribute >= 100
+            // ACT
+            await daemonHost
+            .Action
+                .TurnOn
+                    .Entity("light.correct_entity")
+                        .UsingAttribute("brightness", 123)
+                    .Entity("light.correct_entity2")
+                        .UsingAttribute("brightness", 321)
+                    .Entity("light.filtered_entity") // Has attribute test==90
+                    .Where(n=> n.Attribute.test >= 100)
+            .ExecuteAsync();
+
+            // ASSERT we get the two calls that has test attribute >= 100
+            var attributes = new ExpandoObject();
+            ((IDictionary<string, object>)attributes)["brightness"] = 123;
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
+            hcMock.Verify(n => n.CallService("light", "turn_on", attributes));
+
+            attributes = new ExpandoObject();
+            ((IDictionary<string, object>)attributes)["brightness"] = 321;
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity2";
             hcMock.Verify(n => n.CallService("light", "turn_on", attributes));
         }
 
@@ -149,6 +199,13 @@ namespace NetDaemon.Daemon.Tests
             // ACT and ASSERT
             await Assert.ThrowsAsync<ApplicationException>(async () =>
                 await daemonHost.Action.TurnOff.Entity("light!error").ExecuteAsync());
+        }
+
+        [Fact]
+        public async Task TestLinqTask()
+        {
+            var x = new List<string>();
+      
         }
     }
 }

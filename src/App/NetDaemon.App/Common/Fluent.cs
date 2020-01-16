@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 
@@ -36,6 +38,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface IEntityFlow : IEntity
     {
         IEntityFlow UsingAttribute(string name, object value);
+        IEntity Where(Func<EntityState, bool> func);
     }
     public interface IEntity : IExecuteAsync
     {
@@ -44,6 +47,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         IAction And { get; }
 
+        //IEntityFlow Entity(Func<string, bool> entityId);
     }
 
 
@@ -79,11 +83,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
     internal class FluentEntity
     {
-        private FluentEntity(){ }
-        public FluentEntity(string entityId) => EntityId = entityId;
+        public FluentEntity()
+        {
+            EntityIds = new List<string>();
+            Attributes = new Dictionary<string, object>();
+        }
 
-        public string EntityId { get; }
-        public Dictionary<string, object> Attributes { get; } = new Dictionary<string, object>();
+        public FluentEntity(string entityId, IDictionary<string, object>? attributes=null)
+        {
+            EntityIds = new List<string> {entityId};
+            Attributes = attributes ?? new Dictionary<string, object>(); 
+        }
+
+        public FluentEntity(IEnumerable<string> entityIds, IDictionary<string, object>? attributes = null)
+        {
+            EntityIds = new List<string>();
+            EntityIds.AddRange(entityIds);
+            Attributes = attributes ?? new Dictionary<string, object>();
+        }
+        public List<string> EntityIds { get; } 
+        public IDictionary<string, object> Attributes { get; } 
 
     }
     internal class FluentActionItem
@@ -93,13 +112,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         internal FluentActionItem(ActionType type) => Type = type;
         public ActionType Type { get; }
 
-        public List<FluentEntity> Entities { get; set; } = new List<FluentEntity>();
+        public List<FluentEntity> Entity { get; set; } = new List<FluentEntity>();
+       // public Func<EntityState, bool> WhereSelection { get; set; }
     }
     public class FluentAction : IAction, ICareAboutFluent, IEntity
     {
         private readonly INetDaemon _daemon;
 
         private FluentActionItem _currentAction;
+        private FluentEntity _currentEntity;
 
         private readonly ConcurrentQueue<FluentActionItem> _actions = new ConcurrentQueue<FluentActionItem>();
 
@@ -149,24 +170,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         
         public IEntityFlow Entity(string entityId)
         {
-            _currentAction.Entities.Add(new FluentEntity(entityId));
+            _currentEntity = new FluentEntity(entityId);
+            _currentAction.Entity.Add(_currentEntity);
             return this;
         }
         public IEntityFlow Entities(params string[] entityIds)
         {
-            _currentAction.Entities.AddRange(entityIds.Select(n=>new FluentEntity(n)));
+            _currentEntity = new FluentEntity(entityIds);
+            _currentAction.Entity.Add(_currentEntity);
             return this;
         }
 
         IAction IEntity.And => this;
         public IEntityFlow UsingAttribute(string name, object value)
         {
-            // Make sure all entities belonging to the entity is using the attribute
-            foreach (var entity in _currentAction.Entities)
-            {
-                entity.Attributes[name] = value;
-            }
+            _currentEntity.Attributes[name] = value;
+            return this;
+        }
 
+        public IEntity Where(Func<EntityState, bool> func)
+        {
+            var currentStates = _daemon.State;
+
+            if (_currentEntity.EntityIds.Count > 0)
+            {
+
+                currentStates = currentStates.Where(n =>
+                    _currentEntity.EntityIds.Contains(n.EntityId)).ToList();
+            }
+            var filteredEntityIds = currentStates.Where(func).Select(n=>n.EntityId).ToList();
+            _currentEntity.EntityIds.RemoveAll(n => filteredEntityIds.Contains(n)==false);
             return this;
         }
 
@@ -180,29 +213,42 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 switch (action.Type)
                 {
                     case ActionType.TurnOff:
-                        foreach (var entity in action.Entities)
+                        foreach (var fluentEntity in action.Entity)
                         {
-                            var attributes = entity.Attributes.Select(n => (n.Key, n.Value)).ToArray();
-                            // Todo: optimize later for more parallel 
-                            await _daemon.TurnOffAsync(entity.EntityId, attributes);
+                            foreach (var entity in fluentEntity.EntityIds)
+                            {
+                                var attributes = fluentEntity.Attributes.Select(n => (n.Key, n.Value)).ToArray();
+                                // Todo: optimize later for more parallel 
+                                await _daemon.TurnOffAsync(entity, attributes);
+                            }
+                          
                         }
                         break;
 
                     case ActionType.TurnOn:
-                        foreach (var entity in action.Entities)
+                        foreach (var fluentEntity in action.Entity)
                         {
-                            var attributes = entity.Attributes.Select(n => (n.Key, n.Value)).ToArray();
-                            // Todo: optimize later for more parallel 
-                            await _daemon.TurnOnAsync(entity.EntityId, attributes);
+                            foreach (var entity in fluentEntity.EntityIds)
+                            {
+                                var attributes = fluentEntity.Attributes.Select(n => (n.Key, n.Value)).ToArray();
+                                // Todo: optimize later for more parallel 
+                                await _daemon.TurnOnAsync(entity, attributes);
+                            }
+                            
                         }
 
                         break;
                     case ActionType.Toggle:
-                        foreach (var entity in action.Entities)
+                        foreach (var fluentEntity in action.Entity)
                         {
-                            var attributes = entity.Attributes.Select(n => (n.Key, n.Value)).ToArray();
-                            // Todo: optimize later for more parallel 
-                            await _daemon.ToggleAsync(entity.EntityId, attributes);
+                            foreach (var entity in fluentEntity.EntityIds)
+                            {
+                                var attributes = fluentEntity.Attributes.Select(n => (n.Key, n.Value)).ToArray();
+                                // Todo: optimize later for more parallel 
+                                await _daemon.ToggleAsync(entity, attributes);
+                            }
+
+                            
                         }
 
                         break;
