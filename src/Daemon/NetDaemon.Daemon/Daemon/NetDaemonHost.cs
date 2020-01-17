@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
@@ -25,7 +26,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
-            "light"
+            "light",
+            "switch"
         };
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
@@ -33,7 +35,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             loggerFactory ??= DefaultLoggerFactory;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClient = hassClient;
-            Action = new FluentAction(this);
+            //Action = new FluentAction(this);
         }
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
@@ -95,10 +97,41 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return _hassClient.States.TryGetValue(entity, out var returnValue) ? returnValue.ToDaemonEvent() : null;
         }
 
+        public IEntity Entity(params string[] entityId)
+        {
+            return (IEntity) new EntityManager(entityId, this);
+        }
+
+        public IEntity Entities(Func<IEntityProperties, bool> func)
+        {
+            var x = State.Where(func);
+
+            return (IEntity)new EntityManager(x.Select(n=>n.EntityId).ToArray(), this);
+
+        }
+
+        public ILight Light(params string[] entity)
+        {
+            var entityList = new List<string>(entity.Length);
+            foreach (var e in entity)
+            {
+                // Add the domain light if missing domain in id
+                entityList.Add(!e.Contains('.') ? string.Concat("light.", e) : e);
+            }
+            return (ILight)new EntityManager(entityList.ToArray(), this);
+        }
+
+        public IEntity Lights(Func<IEntityProperties, bool> func)
+        {
+            var x = State.Where(func).Where(n=>n.EntityId.Contains("light."));
+
+            return (IEntity)new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+        }
+
         //TODO: Optimize
         public IEnumerable<EntityState> State => _hassClient.States.Values.Select(n => n.ToDaemonEvent());
 
-        public IAction Action { get; }
+        //public IAction Action { get; }
 
 
         public ILogger Logger { get; }

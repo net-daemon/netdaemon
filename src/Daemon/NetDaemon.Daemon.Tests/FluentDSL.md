@@ -9,11 +9,20 @@ Action
         .Light("kitchenlight")
     .ExecuteAsync();
 ```
+
+```c#
+Light("kitchenlight").TurnOn()
+    .ExecuteAsync();
+```
 Or use the whole entity 
 ```c#
 Action
     .TurnOn
         .Entity("light.kitchenlight")
+    .ExecuteAsync();
+```
+```c#
+Entity("light.kitchenlight").TurnOn()
     .ExecuteAsync();
 ```
 
@@ -42,7 +51,13 @@ Action
            .Where(n=>n.State=="off" and n.Property.SupportedFeatures==63)
     .ExecuteAsync();
 ```
-
+```c#
+Light("kitchenlight", 
+        n=> n.State=="on" and 
+            n.Attribute.SupportedFeatures==63)
+    .TurnOff()
+    .ExecuteAsync();
+```
 Turn on the kitchen light only if the sensor temp_kitchen has state < 20 and was last updated < Now
 
 ```c#

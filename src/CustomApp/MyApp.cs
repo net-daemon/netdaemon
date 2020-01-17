@@ -7,17 +7,17 @@ namespace app
     {
         public override async Task InitializeAsync()
         {
-            await ListenStateAsync("light.tomas_run", OnTomasRoomChanged);
-            await Action
-                    .TurnOff
-                        .Entities(
-                        "light.mylight", 
-                        "light.yourlight"
-                        )
-                            .UsingAttribute("brightness", 50).And
-                    .TurnOff
-                        .Entity("light.otherlight")
-                    .ExecuteAsync();
+            //await ListenStateAsync("light.tomas_run", OnTomasRoomChanged);
+            //await Action
+            //        .TurnOff
+            //            .Entities(
+            //            "light.mylight", 
+            //            "light.yourlight"
+            //            )
+            //                .UsingAttribute("brightness", 50).And
+            //        .TurnOff
+            //            .Entity("light.otherlight")
+            //        .ExecuteAsync();
         }
 
         private async Task OnTomasRoomChanged(StateChangedEvent ev)

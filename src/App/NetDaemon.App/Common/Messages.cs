@@ -28,7 +28,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     }
 
 
-    public class EntityState 
+    public class EntityState  : IEntityProperties
     {
 
         public string EntityId { get; set; } = "";

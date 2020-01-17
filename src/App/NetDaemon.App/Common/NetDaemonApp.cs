@@ -45,7 +45,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Logger.Log(level, exception, message);
         }
 
-        public IAction Action => _daemon.Action;
+        //public IAction Action => _daemon.Action;
 
     }
 }
