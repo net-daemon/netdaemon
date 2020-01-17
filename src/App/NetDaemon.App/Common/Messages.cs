@@ -35,7 +35,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public string State { get; set; } = "";
 
-        public dynamic Attribute { get; set; } = new ExpandoObject();
+        public dynamic Attribute { get; set; } = new FluentExpandoObject(true, true);
 
         public DateTime LastChanged { get; set; } = DateTime.MinValue;
 

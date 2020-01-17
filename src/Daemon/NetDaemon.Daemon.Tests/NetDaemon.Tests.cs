@@ -26,6 +26,17 @@ namespace NetDaemon.Daemon.Tests
             Assert.Null(entity);
         }
 
+        //[Fact]
+        //public void MyTestMethod()
+        //{
+        //    int? x = 1;
+        //    string? z = null;
+
+        //    if (x == z)
+        //    {
+
+        //    }
+        //}
         [Fact]
         public void GetStateReturnsCorrectEntityState()
         {
@@ -176,6 +187,61 @@ namespace NetDaemon.Daemon.Tests
             var attributes = new ExpandoObject();
             ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
             hcMock.Verify(n => n.CallService("light", "toggle", attributes));
+        }
+
+        [Fact]
+        public async Task SubscribeChangedStateForEntityWillMakeCorrectCallback()
+        {
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.FakeEvents.Enqueue(new HassEvent()
+            {
+                EventType = "state_changed",
+                Data = new HassStateChangedEventData()
+                {
+                    EntityId = "binary_sensor.pir",
+                    NewState = new HassState()
+                    {
+                        State = "on",
+                        Attributes = new Dictionary<string, object>()
+                        {
+                            ["device_class"] = "motion"
+                        }
+                    },
+                    OldState = new HassState()
+                    {
+                        State = "off",
+                        Attributes = new Dictionary<string, object>()
+                        {
+                            ["device_class"] = "motion"
+                        }
+                    }
+                }
+            });
+
+            CancellationTokenSource cancelSource= new CancellationTokenSource(10);
+            
+            string reportedState = "";
+
+            daemonHost.ListenState("binary_sensor.pir", changedEvent =>
+            {
+                reportedState = changedEvent.NewState.State;
+
+                return Task.CompletedTask;
+            });
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+            
+
+            Assert.Equal("on", reportedState);
         }
     }
 }

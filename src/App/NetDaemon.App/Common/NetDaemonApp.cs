@@ -23,9 +23,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return Task.CompletedTask;
         }
 
-        public async Task ListenStateAsync(string pattern, Func<StateChangedEvent, Task> action)
+        public void ListenState(string pattern, Func<StateChangedEvent, Task> action)
         {
-            await _daemon.ListenStateAsync(pattern, action);
+            _daemon.ListenState(pattern, action);
         }
 
         public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)

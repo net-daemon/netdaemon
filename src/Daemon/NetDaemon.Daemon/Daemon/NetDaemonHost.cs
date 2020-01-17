@@ -46,9 +46,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 .AddConsole();
         });
 
-        public Task ListenStateAsync(string pattern, Func<StateChangedEvent, Task> action)
+        private IList<(string pattern, Func<StateChangedEvent, Task> action)> _stateActions =
+            new List<(string pattern, Func<StateChangedEvent, Task> action)>();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        ///     Valid patterns are:
+        ///         light.thelight   - En entity id
+        ///         light           - No dot means a domain
+        ///         empty           - All events
+        /// </remarks>
+        /// <param name="pattern">Event pattern</param>
+        /// <param name="action">The action to call when event is missing</param>
+        public void ListenState(string pattern, Func<StateChangedEvent, Task> action)
         {
-            throw new NotImplementedException();
+            _stateActions.Add((pattern, action));
         }
 
         public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -136,6 +149,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
+
+        private List<Task> _eventHandlerTasks = new List<Task>();
         /// <summary>
         ///     Runs the Daemon
         /// </summary>
@@ -160,8 +175,62 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             if (!connectResult)
                 return;
 
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var changedEvent = await _hassClient.ReadEventAsync();
+                if (changedEvent != null)
+                {
+                    // Remove all completed Tasks
+                    _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
+
+                    _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
+                }
+                else
+                {
+                    // Will only happen when doing unit tests
+                    await Task.Delay(1000, cancellationToken);
+                }
+                
+            }
+        }
+
+        
+        private async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
+        {
+            if (hassEvent.EventType == "state_changed")
+            {
+                var stateData = (HassStateChangedEventData) hassEvent.Data ;
+
+                List<Task> tasks = new List<Task>();
+                foreach (var (pattern, func) in _stateActions)
+                {
+                    if (string.IsNullOrEmpty(pattern))
+                    {
+                        tasks.Add(func(new StateChangedEvent()
+                        {
+                            EntityId = stateData.EntityId,
+                            NewState = stateData.NewState.ToDaemonEvent(),
+                            OldState = stateData.OldState.ToDaemonEvent()
+                            
+                        }));
+                    }
+                    else if (stateData.EntityId.StartsWith(pattern))
+                    {
+                        tasks.Add(func(new StateChangedEvent()
+                        {
+                            EntityId = stateData.EntityId,
+                            NewState = stateData.NewState.ToDaemonEvent(),
+                            OldState = stateData.OldState.ToDaemonEvent()
+
+                        }));
+                    }
+                    // No hit
+                }
+
+                if (tasks.Count > 0)
+                    await tasks.WhenAll(token);
+            }
             
-            await Task.Delay(500, cancellationToken);
         }
 
         public async Task Stop()

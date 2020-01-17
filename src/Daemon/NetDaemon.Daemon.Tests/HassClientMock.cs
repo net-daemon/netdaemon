@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.InteropServices.ComTypes;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
@@ -13,7 +14,7 @@ namespace NetDaemon.Daemon.Tests
     public class HassClientMock : Mock<IHassClient>
     {
         internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
-
+        internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
         public HassClientMock()
         {
             // Setup common mocks
@@ -22,6 +23,12 @@ namespace NetDaemon.Daemon.Tests
             SetupGet(x => x.States).Returns(FakeStates);
 
             SetupDefaultStates();
+
+            Setup(x => x.ReadEventAsync()).ReturnsAsync(()=>
+            {
+                
+                return FakeEvents.TryDequeue(out var ev) ? ev : null;
+            });
         }
 
         public static HassClientMock DefaultMock => new HassClientMock();
@@ -77,11 +84,21 @@ namespace NetDaemon.Daemon.Tests
                 EntityId = "light.filtered_entity",
                 Attributes = new Dictionary<string, object>()
                 {
-                    ["entity_id"] = "light.filtered_entity",
                     ["test"] = 90
                 },
 
             };
+            FakeStates["binary_sensor.pir"] = new HassState()
+            {
+                EntityId = "light.filtered_entity",
+                State="off",
+                Attributes = new Dictionary<string, object>()
+                {
+                    ["device_class"] = "motion"
+                },
+
+            };
+            
         }
 
         public void VerifyCallService(string domain, string service, params (string attribute, object value)[] attributesTuples)
@@ -97,7 +114,7 @@ namespace NetDaemon.Daemon.Tests
 
         public void VerifyCallServiceTimes(string service, Times times)
         {
-            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<ExpandoObject>()), times);
+            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>()), times);
         }
 
         public void AssertEqual(HassState hassState, EntityState entity)

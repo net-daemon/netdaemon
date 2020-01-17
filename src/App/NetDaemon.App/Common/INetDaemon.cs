@@ -30,7 +30,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface INetDaemon
     {
         ILogger Logger { get; }
-        Task ListenStateAsync(string pattern, Func<StateChangedEvent, Task> action);
+        void ListenState(string pattern, Func<StateChangedEvent, Task> action);
         Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
         Task TurnOffAsync(string entityIds, params (string name, object val)[] attributes);
         Task ToggleAsync(string entityIds, params (string name, object val)[] attributes);

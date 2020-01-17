@@ -77,6 +77,8 @@ namespace NetDaemon.Daemon.Tests
         [Fact]
         public async Task TurnOffEntityLamdaAttributeSelectionCallsCorrectServiceCall()
         {
+            var x = new ExpandoObject();
+            
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
@@ -95,6 +97,28 @@ namespace NetDaemon.Daemon.Tests
             hcMock.VerifyCallService("switch", "turn_off", ("entity_id", "switch.correct_entity"));
 
         }
+
+        [Fact]
+        public async Task TurnOffEntityLamdaAttributeSelectionNoExistCallsCorrectServiceCall()
+        {
+            var x = new ExpandoObject();
+
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .Entities(n => n.Attribute.not_exists == "test")
+                    .TurnOff()
+                .ExecuteAsync();
+
+            // ASSERT
+
+            hcMock.VerifyCallServiceTimes("turn_off", Times.Never());
+
+        }
+
 
         [Fact]
         public async Task TurnOnEntityCallsCorrectServiceCall()
