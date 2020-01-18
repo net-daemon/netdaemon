@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,55 +51,35 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <summary>
         ///     Converts HassState to DaemonState
         /// </summary>
-        /// <param name="hassEvent"></param>
+        /// <param name="hassState"></param>
         /// <returns></returns>
-        public static EntityState ToDaemonEvent(this HassState hassEvent)
+        public static EntityState ToDaemonEntityState(this HassState hassState)
         {
             var entityState =  new EntityState()
             {
-                EntityId = hassEvent.EntityId,
-                State = hassEvent.State,
+                EntityId = hassState.EntityId,
+                State = hassState.State,
                
-                LastUpdated = hassEvent.LastUpdated,
-                LastChanged = hassEvent.LastChanged
+                LastUpdated = hassState.LastUpdated,
+                LastChanged = hassState.LastChanged
             };
-            foreach (var hassAttribute in hassEvent.Attributes)
+
+            if (hassState.Attributes == null) return entityState;
+
+            // Cast so we can work with the expando object
+            var dict = entityState.Attribute as IDictionary<string, object>;
+            
+            if (dict == null) throw new ArgumentNullException(nameof(dict), 
+                "Expando object should always be dictionary!");
+
+            foreach (var (key, value) in hassState.Attributes)
             {
-                ((IDictionary<String, Object>)entityState.Attribute)[hassAttribute.Key] =
-                    hassAttribute.Value;
+                dict[key] = value;
             }
 
             return entityState;
         }
-
-        public static string ToCSharpString(string str)
-        {
-            StringBuilder builder = new StringBuilder(str.Length*2);
-
-            bool nextAlphaCharShouldBeUpper = true; // First on should be upper char
-
-            for (short i=0; i < str.Length; i++)
-            {
-                char c = str[i];
-                if (char.IsLetter(c) && nextAlphaCharShouldBeUpper)
-                {
-                    builder.Append(char.ToUpper(str[i]));
-                    nextAlphaCharShouldBeUpper = false;
-                    continue;
-                }
-                    
-                if (c == '_')
-                {
-                    nextAlphaCharShouldBeUpper = true;
-                    continue;
-                }
-
-                builder.Append(c);
-            }
-
-            return builder.ToString();
-        }
-
+        
         public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
         {
             // Convert the tuple name/value pair to tuple that can be serialized dynamically

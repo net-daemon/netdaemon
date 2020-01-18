@@ -17,39 +17,21 @@ namespace runner
             var daemonHost = new NetDaemonHost(new HassClient());
             var runTask =  daemonHost.Run("192.168.1.7", 8123, false, "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiOTMzNmFhZDdkNjY0ZDhhYjE1YTdiYmZlOTNiZWE4MCIsImlhdCI6MTU3NzA0Njg1OCwiZXhwIjoxODkyNDA2ODU4fQ.bMH-Vy8dLQLtjR6ixWHcmQiWf4eoIPdKVOZfmnwH_Bc", CancellationToken.None);
 
-            //await daemonHost
-            //    .Entity("light.tomas_rum")
-            //        .TurnOn()
-            //            .UsingAttribute("transition", 0)
-            //            .UsingAttribute("brightness", 28)
-            //    .ExecuteAsync();
-            // await daemonHost.Action.TurnOn.Entity("light.tomas_rum").ExecuteAsync();
-
-            daemonHost.ListenState("binary_sensor.tomas_rum_pir", async (entityId, newState, oldState) =>
-            {
-                if (newState.State != oldState.State)
-                {
-                    
-                    if (newState.State == "on")
-                    {
-                        await daemonHost
-                            .Entity("light.tomas_rum")
-                            .TurnOn()
+            daemonHost.Entity("binary_sensor.tomas_rum_pir")
+                .StateChanged("on")
+                    .Entity("light.tomas_rum")
+                        .TurnOn()
                             .UsingAttribute("transition", 0)
-                            .UsingAttribute("brightness", 28)
-                            .ExecuteAsync();
-                    }
-                    else
-                    {
-                        await daemonHost
-                            .Entity("light.tomas_rum")
-                            .TurnOff()
-                            .ExecuteAsync();
-                    }
-                }
-            });
+                .Execute();
 
-            await Task.WhenAny(runTask, Task.Delay(60000));
+            daemonHost.Entity("binary_sensor.tomas_rum_pir")
+                .StateChanged("off")
+                    .Entity("light.tomas_rum")
+                        .TurnOff()
+                            .UsingAttribute("transition", 0)
+                .Execute();
+
+            await Task.WhenAny(runTask, Task.Delay(120000));
             await daemonHost.Stop();
 
             //CreateHostBuilder(args).Build().Run();

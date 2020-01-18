@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Dynamic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
@@ -17,18 +14,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken);
 
         Task Stop();
-
     }
 
     public class NetDaemonHost : INetDaemonHost
     {
         private readonly IHassClient _hassClient;
 
+        private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
+            new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
+
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
             "light",
             "switch"
         };
+
+
+        private readonly List<Task> _eventHandlerTasks = new List<Task>();
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
@@ -46,17 +48,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 .AddConsole();
         });
 
-        private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
-            new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
-
         /// <summary>
-        /// 
         /// </summary>
         /// <remarks>
         ///     Valid patterns are:
-        ///         light.thelight   - En entity id
-        ///         light           - No dot means a domain
-        ///         empty           - All events
+        ///     light.thelight   - En entity id
+        ///     light           - No dot means a domain
+        ///     empty           - All events
         /// </remarks>
         /// <param name="pattern">Event pattern</param>
         /// <param name="action">The action to call when event is missing</param>
@@ -68,10 +66,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
-            var domain = GetDomainFromEntity(entityId);
-
             // Use default domain "homeassistant" if supported is missing
-            domain = GetDomainFromEntity(entityId);
+            var domain = GetDomainFromEntity(entityId);
+            // Use it if it is supported else use default "homeassistant" domain
+            domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
 
             // Convert the value pairs to dynamic type
             var attributes = attributeNameValuePair.ToDynamic();
@@ -85,6 +83,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             // Get the domain if supported, else domain is homeassistant
             var domain = GetDomainFromEntity(entityId);
+            // Use it if it is supported else use default "homeassistant" domain
+            domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
 
             // Use expando object as all other methods
             var attributes = attributeNameValuePair.ToDynamic();
@@ -98,6 +98,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             // Get the domain if supported, else domain is homeassistant
             var domain = GetDomainFromEntity(entityId);
+            // Use it if it is supported else use default "homeassistant" domain
+            domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
 
             // Use expando object as all other methods
             var attributes = attributeNameValuePair.ToDynamic();
@@ -109,50 +111,38 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public EntityState? GetState(string entity)
         {
-            return _hassClient.States.TryGetValue(entity, out var returnValue) ? returnValue.ToDaemonEvent() : null;
+            return _hassClient.States.TryGetValue(entity, out var returnValue) ? returnValue.ToDaemonEntityState() : null;
         }
 
         public IEntity Entity(params string[] entityId)
         {
-            return (IEntity) new EntityManager(entityId, this);
+            return new EntityManager(entityId, this);
         }
 
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
             var x = State.Where(func);
 
-            return (IEntity)new EntityManager(x.Select(n=>n.EntityId).ToArray(), this);
-
+            return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
         public ILight Light(params string[] entity)
         {
             var entityList = new List<string>(entity.Length);
             foreach (var e in entity)
-            {
                 // Add the domain light if missing domain in id
                 entityList.Add(!e.Contains('.') ? string.Concat("light.", e) : e);
-            }
-            return (ILight)new EntityManager(entityList.ToArray(), this);
-        }
-
-        public IEntity Lights(Func<IEntityProperties, bool> func)
-        {
-            var x = State.Where(func).Where(n=>n.EntityId.Contains("light."));
-
-            return (IEntity)new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+            return new EntityManager(entityList.ToArray(), this);
         }
 
         //TODO: Optimize
-        public IEnumerable<EntityState> State => _hassClient.States.Values.Select(n => n.ToDaemonEvent());
+        public IEnumerable<EntityState> State => _hassClient.States.Values.Select(n => n.ToDaemonEntityState());
 
         //public IAction Action { get; }
 
 
         public ILogger Logger { get; }
 
-
-        private List<Task> _eventHandlerTasks = new List<Task>();
         /// <summary>
         ///     Runs the Daemon
         /// </summary>
@@ -173,12 +163,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             // We don´t need to provide cancellation to hass client it has it´s own connect timeout
             var connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
-            
+
             if (!connectResult)
                 return;
-            
-            await _hassClient.SubscribeToEvents(EventType.All);
-            
+
+            await _hassClient.SubscribeToEvents();
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 var changedEvent = await _hassClient.ReadEventAsync();
@@ -194,45 +184,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     // Will only happen when doing unit tests
                     await Task.Delay(1000, cancellationToken);
                 }
-                
             }
-        }
-
-        
-        private async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
-        {
-            if (hassEvent.EventType == "state_changed")
-            {
-                var stateData = (HassStateChangedEventData) hassEvent.Data ;
-
-                List<Task> tasks = new List<Task>();
-                foreach (var (pattern, func) in _stateActions)
-                {
-                    if (string.IsNullOrEmpty(pattern))
-                    {
-                        tasks.Add(func(stateData.EntityId, 
-                        
-                             stateData.NewState.ToDaemonEvent(),
-                             stateData.OldState.ToDaemonEvent()
-                            
-                        ));
-                    }
-                    else if (stateData.EntityId.StartsWith(pattern))
-                    {
-                        tasks.Add(func(stateData.EntityId,
-
-                            stateData.NewState.ToDaemonEvent(),
-                            stateData.OldState.ToDaemonEvent()
-
-                        ));
-                    }
-                    // No hit
-                }
-
-                if (tasks.Count > 0)
-                    await tasks.WhenAll(token);
-            }
-            
         }
 
         public async Task Stop()
@@ -243,6 +195,41 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await _hassClient.CloseAsync();
         }
 
+        public IEntity Lights(Func<IEntityProperties, bool> func)
+        {
+            var x = State.Where(func).Where(n => n.EntityId.Contains("light."));
+
+            return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+        }
+
+
+        private async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
+        {
+            if (hassEvent.EventType == "state_changed")
+            {
+                var stateData = (HassStateChangedEventData?) hassEvent.Data;
+
+                if (stateData == null)
+                    throw new NullReferenceException("StateData is null!");
+
+                var tasks = new List<Task>();
+                foreach (var (pattern, func) in _stateActions)
+                    if (string.IsNullOrEmpty(pattern))
+                        tasks.Add(func(stateData.EntityId,
+                            stateData.NewState?.ToDaemonEntityState(),
+                            stateData.OldState?.ToDaemonEntityState()
+                        ));
+                    else if (stateData.EntityId.StartsWith(pattern))
+                        tasks.Add(func(stateData.EntityId,
+                            stateData.NewState?.ToDaemonEntityState(),
+                            stateData.OldState?.ToDaemonEntityState()
+                        ));
+                // No hit
+
+                if (tasks.Count > 0)
+                    await tasks.WhenAll(token);
+            }
+        }
 
 
         private string GetDomainFromEntity(string entity)

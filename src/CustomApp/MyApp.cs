@@ -5,25 +5,27 @@ namespace app
 {
     public class MyApp : NetDaemonApp
     {
-        public override async Task InitializeAsync()
-        {
-            //await ListenStateAsync("light.tomas_run", OnTomasRoomChanged);
-            //await Action
-            //        .TurnOff
-            //            .Entities(
-            //            "light.mylight", 
-            //            "light.yourlight"
-            //            )
-            //                .UsingAttribute("brightness", 50).And
-            //        .TurnOff
-            //            .Entity("light.otherlight")
-            //        .ExecuteAsync();
-        }
+        //public override Task InitializeAsync()
+        //{
+            
+        //    await ListenState("light.tomas_rum", OnTomasRoomChanged);
 
-        private async Task OnTomasRoomChanged(StateChangedEvent ev)
+        //    //await Action
+        //    //        .TurnOff
+        //    //            .Entities(
+        //    //            "light.mylight", 
+        //    //            "light.yourlight"
+        //    //            )
+        //    //                .UsingAttribute("brightness", 50).And
+        //    //        .TurnOff
+        //    //            .Entity("light.otherlight")
+        //    //        .ExecuteAsync();
+        //}
+
+        private async Task OnTomasRoomChanged(string entityId, EntityState newState, EntityState oldState )
         {
             Log("Tomas light changed!");
-            Log($"New state = {ev.NewState.State}");
+            Log($"New state = {newState.State}");
 
             await TurnOnAsync("light.vardagsrummet", 
                 ("brightness", "100"), ("color_temp", 123));

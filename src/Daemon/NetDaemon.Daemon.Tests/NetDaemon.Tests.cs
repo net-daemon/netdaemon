@@ -196,30 +196,7 @@ namespace NetDaemon.Daemon.Tests
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            hcMock.FakeEvents.Enqueue(new HassEvent()
-            {
-                EventType = "state_changed",
-                Data = new HassStateChangedEventData()
-                {
-                    EntityId = "binary_sensor.pir",
-                    NewState = new HassState()
-                    {
-                        State = "on",
-                        Attributes = new Dictionary<string, object>()
-                        {
-                            ["device_class"] = "motion"
-                        }
-                    },
-                    OldState = new HassState()
-                    {
-                        State = "off",
-                        Attributes = new Dictionary<string, object>()
-                        {
-                            ["device_class"] = "motion"
-                        }
-                    }
-                }
-            });
+            hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
             CancellationTokenSource cancelSource= new CancellationTokenSource(10);
             

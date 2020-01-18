@@ -3,117 +3,35 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using System.Text;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-    //public  class ExpandoObjectOperators
-    //{
-    //    public static bool operator ==(ExpandoObjectOperators a, int b) => false;
-    //    public static bool operator !=(ExpandoObjectOperators a, int b) => true;
-
-    //    p
-    //}
+    /// <summary>
+    ///     A custom expando object to alow to return null values if properties does not exist
+    /// </summary>
+    /// <remarks>
+    ///     Thanks to @lukevendediger for original code and inspiration
+    ///     https://gist.github.com/lukevenediger/6327599
+    /// </remarks>
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
-        private Dictionary<string, object> _dict;
-        private bool _ignoreCase;
-        private bool _returnEmptyStringForMissingProperties;
+        private readonly Dictionary<string, object> _dict = new Dictionary<string, object>();
+        private readonly bool _ignoreCase;
+        private readonly bool _returnNullMissingProperties;
 
         /// <summary>
-        /// Creates a BetterExpando object/
+        ///     Creates a BetterExpando object/
         /// </summary>
         /// <param name="ignoreCase">Don't be strict about property name casing.</param>
-        /// <param name="returnEmptyStringForMissingProperties">If true, returns String.Empty for missing properties.</param>
+        /// <param name="returnNullMissingProperties">If true, returns String.Empty for missing properties.</param>
         /// <param name="root">An ExpandoObject to consume and expose.</param>
         public FluentExpandoObject(bool ignoreCase = false,
-          bool returnEmptyStringForMissingProperties = false,
-          ExpandoObject root = null)
+            bool returnNullMissingProperties = false,
+            ExpandoObject? root = null)
         {
-            _dict = new Dictionary<string, object>();
             _ignoreCase = ignoreCase;
-            _returnEmptyStringForMissingProperties = returnEmptyStringForMissingProperties;
-            if (root != null)
-            {
-                Augment(root);
-            }
-        }
-
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            UpdateDictionary(binder.Name, value);
-            return true;
-        }
-
-        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
-        {
-            if (indexes[0] is string)
-            {
-                var key = indexes[0] as string;
-                UpdateDictionary(NormalisePropertyName(key), value);
-                return true;
-            }
-            else
-            {
-                return base.TrySetIndex(binder, indexes, value);
-            }
-        }
-
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            
-            var key = NormalisePropertyName(binder.Name);
-            if (_dict.ContainsKey(key))
-            {
-                result = _dict[key];
-                return true;
-            }
-            if (_returnEmptyStringForMissingProperties)
-            {
-                result = null;
-                return true;
-            }
-            return base.TryGetMember(binder, out result);
-        }
-
-        /// <summary>
-        /// Combine two instances together to get a union.
-        /// </summary>
-        /// <returns>This instance but with additional properties</returns>
-        /// <remarks>Existing properties are not overwritten.</remarks>
-        public dynamic Augment(FluentExpandoObject obj)
-        {
-            obj._dict
-              .Where(pair => !_dict.ContainsKey(NormalisePropertyName(pair.Key)))
-              .ToList()
-              .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
-            return this;
-        }
-
-        public dynamic Augment(ExpandoObject obj)
-        {
-            ((IDictionary<string, object>)obj)
-              .Where(pair => !_dict.ContainsKey(NormalisePropertyName(pair.Key)))
-              .ToList()
-              .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
-            return this;
-        }
-
-        public T ValueOrDefault<T>(string propertyName, T defaultValue)
-        {
-            propertyName = NormalisePropertyName(propertyName);
-            return _dict.ContainsKey(propertyName)
-              ? (T)_dict[propertyName]
-              : defaultValue;
-        }
-
-        /// <summary>
-        /// Check if BetterExpando contains a property.
-        /// </summary>
-        /// <remarks>Respects the case sensitivity setting</remarks>
-        public bool HasProperty(string name)
-        {
-            return _dict.ContainsKey(NormalisePropertyName(name));
+            _returnNullMissingProperties = returnNullMissingProperties;
+            if (root != null) Augment(root);
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -121,35 +39,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return _dict.GetEnumerator();
         }
 
-        /// <summary>
-        /// Returns this object as comma-separated name-value pairs.
-        /// </summary>
-        public override string ToString()
-        {
-            return String.Join(", ", _dict.Select(pair => pair.Key + " = " + pair.Value ?? "(null)").ToArray());
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable) _dict).GetEnumerator();
-        }
-
-        private void UpdateDictionary(string name, object value)
-        {
-            var key = NormalisePropertyName(name);
-            if (_dict.ContainsKey(key))
-            {
-                _dict[key] = value;
-            }
-            else
-            {
-                _dict.Add(key, value);
-            }
-        }
-
-        private string NormalisePropertyName(string propertyName)
-        {
-            return _ignoreCase ? propertyName.ToLower() : propertyName;
         }
 
         public void Add(KeyValuePair<string, object> item)
@@ -174,13 +66,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public bool Remove(KeyValuePair<string, object> item)
         {
-            object val;
-            return _dict.Remove(item.Key, out val);
+            return _dict.Remove(item.Key, out _);
         }
 
         public int Count => _dict.Count;
 
-        public bool IsReadOnly =>  false;
+        public bool IsReadOnly => false;
 
         public void Add(string key, object value)
         {
@@ -199,7 +90,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public bool TryGetValue(string key, out object value)
         {
+#pragma warning disable CS8601 // Possible null reference assignment.
             return _dict.TryGetValue(key, out value);
+#pragma warning restore CS8601 // Possible null reference assignment.
         }
 
         public object this[string key]
@@ -211,5 +104,99 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public ICollection<string> Keys => ((IDictionary<string, object>) _dict).Keys;
 
         public ICollection<object> Values => ((IDictionary<string, object>) _dict).Values;
+
+        public override bool TrySetMember(SetMemberBinder binder, object value)
+        {
+            UpdateDictionary(binder.Name, value);
+            return true;
+        }
+
+        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
+        {
+            if (!(indexes[0] is string)) return base.TrySetIndex(binder, indexes, value);
+
+            if (indexes[0] is string key) UpdateDictionary(NormalizePropertyName(key), value);
+            return true;
+        }
+
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            var key = NormalizePropertyName(binder.Name);
+
+            if (_dict.ContainsKey(key))
+            {
+                result = _dict[key];
+                return true;
+            }
+
+            if (!_returnNullMissingProperties) return base.TryGetMember(binder, out result);
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            result = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+            return true;
+        }
+
+        /// <summary>
+        ///     Combine two instances together to get a union.
+        /// </summary>
+        /// <returns>This instance but with additional properties</returns>
+        /// <remarks>Existing properties are not overwritten.</remarks>
+        public dynamic Augment(FluentExpandoObject obj)
+        {
+            obj._dict
+                .Where(pair => !_dict.ContainsKey(NormalizePropertyName(pair.Key)))
+                .ToList()
+                .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
+            return this;
+        }
+
+        public dynamic Augment(ExpandoObject obj)
+        {
+            obj
+                .Where(pair => !_dict.ContainsKey(NormalizePropertyName(pair.Key)))
+                .ToList()
+                .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
+            return this;
+        }
+
+        public T ValueOrDefault<T>(string propertyName, T defaultValue)
+        {
+            propertyName = NormalizePropertyName(propertyName);
+            return _dict.ContainsKey(propertyName)
+                ? (T) _dict[propertyName]
+                : defaultValue;
+        }
+
+        /// <summary>
+        ///     Check if BetterExpando contains a property.
+        /// </summary>
+        /// <remarks>Respects the case sensitivity setting</remarks>
+        public bool HasProperty(string name)
+        {
+            return _dict.ContainsKey(NormalizePropertyName(name));
+        }
+
+        /// <summary>
+        ///     Returns this object as comma-separated name-value pairs.
+        /// </summary>
+        public override string ToString()
+        {
+            return string.Join(", ", _dict.Select(pair => pair.Key + " = " + pair.Value ?? "(null)").ToArray());
+        }
+
+        private void UpdateDictionary(string name, object value)
+        {
+            var key = NormalizePropertyName(name);
+            if (_dict.ContainsKey(key))
+                _dict[key] = value;
+            else
+                _dict.Add(key, value);
+        }
+
+        private string NormalizePropertyName(string propertyName)
+        {
+            return _ignoreCase ? propertyName.ToLower() : propertyName;
+        }
     }
 }
