@@ -7,11 +7,13 @@ using System.Text;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-    public  class ExpandoObjectOperators
-    {
-        public static bool operator ==(ExpandoObjectOperators a, int b) => false;
-        public static bool operator !=(ExpandoObjectOperators a, int b) => true;
-    }
+    //public  class ExpandoObjectOperators
+    //{
+    //    public static bool operator ==(ExpandoObjectOperators a, int b) => false;
+    //    public static bool operator !=(ExpandoObjectOperators a, int b) => true;
+
+    //    p
+    //}
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
         private Dictionary<string, object> _dict;

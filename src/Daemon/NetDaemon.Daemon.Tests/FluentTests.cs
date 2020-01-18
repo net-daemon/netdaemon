@@ -13,6 +13,13 @@ using Moq;
 
 namespace NetDaemon.Daemon.Tests
 {
+    /// <summary>
+    ///     Tests the fluent API parts of the daemon
+    /// </summary>
+    /// <remarks>
+    ///     Mainly the tests checks if correct underlying call to "CallService"
+    ///     has been made. 
+    /// </remarks>
     public class FluentTests
     {
         [Fact]

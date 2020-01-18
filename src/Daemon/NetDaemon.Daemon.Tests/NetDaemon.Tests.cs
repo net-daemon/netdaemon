@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Xunit;
 
@@ -224,9 +225,9 @@ namespace NetDaemon.Daemon.Tests
             
             string reportedState = "";
 
-            daemonHost.ListenState("binary_sensor.pir", changedEvent =>
+            daemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState)  =>
             {
-                reportedState = changedEvent.NewState.State;
+                reportedState = newState.State;
 
                 return Task.CompletedTask;
             });

@@ -1,20 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>JoySoftware.HomeAssistant.NetDaemon</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="JoySoftware.HassClient" Version="0.0.10-alpha" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.0" />
+    <PackageReference Include="JoySoftware.HassClient" Version="0.0.12-alpha"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.1"/>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\App\NetDaemon.App\NetDeamon.App.csproj" />
+    <ProjectReference Include="..\..\App\NetDaemon.App\NetDeamon.App.csproj"/>
   </ItemGroup>
-
-
 </Project>

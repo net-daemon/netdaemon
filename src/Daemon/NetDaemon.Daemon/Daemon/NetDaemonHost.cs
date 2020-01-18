@@ -46,8 +46,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 .AddConsole();
         });
 
-        private IList<(string pattern, Func<StateChangedEvent, Task> action)> _stateActions =
-            new List<(string pattern, Func<StateChangedEvent, Task> action)>();
+        private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
+            new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
+
         /// <summary>
         /// 
         /// </summary>
@@ -59,7 +60,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// </remarks>
         /// <param name="pattern">Event pattern</param>
         /// <param name="action">The action to call when event is missing</param>
-        public void ListenState(string pattern, Func<StateChangedEvent, Task> action)
+        public void ListenState(string pattern,
+            Func<string, EntityState?, EntityState?, Task> action)
         {
             _stateActions.Add((pattern, action));
         }
@@ -171,10 +173,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             // We don´t need to provide cancellation to hass client it has it´s own connect timeout
             var connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
-
+            
             if (!connectResult)
                 return;
-
+            
+            await _hassClient.SubscribeToEvents(EventType.All);
+            
             while (!cancellationToken.IsCancellationRequested)
             {
                 var changedEvent = await _hassClient.ReadEventAsync();
@@ -206,23 +210,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     if (string.IsNullOrEmpty(pattern))
                     {
-                        tasks.Add(func(new StateChangedEvent()
-                        {
-                            EntityId = stateData.EntityId,
-                            NewState = stateData.NewState.ToDaemonEvent(),
-                            OldState = stateData.OldState.ToDaemonEvent()
+                        tasks.Add(func(stateData.EntityId, 
+                        
+                             stateData.NewState.ToDaemonEvent(),
+                             stateData.OldState.ToDaemonEvent()
                             
-                        }));
+                        ));
                     }
                     else if (stateData.EntityId.StartsWith(pattern))
                     {
-                        tasks.Add(func(new StateChangedEvent()
-                        {
-                            EntityId = stateData.EntityId,
-                            NewState = stateData.NewState.ToDaemonEvent(),
-                            OldState = stateData.OldState.ToDaemonEvent()
+                        tasks.Add(func(stateData.EntityId,
 
-                        }));
+                            stateData.NewState.ToDaemonEvent(),
+                            stateData.OldState.ToDaemonEvent()
+
+                        ));
                     }
                     // No hit
                 }

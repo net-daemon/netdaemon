@@ -23,7 +23,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return Task.CompletedTask;
         }
 
-        public void ListenState(string pattern, Func<StateChangedEvent, Task> action)
+        public void ListenState(string pattern, Func<string, EntityState?, EntityState?, Task> action)
         {
             _daemon.ListenState(pattern, action);
         }
