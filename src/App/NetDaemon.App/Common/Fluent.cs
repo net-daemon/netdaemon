@@ -107,6 +107,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public dynamic? From { get; set; }
         public dynamic? To { get; set; }
         public IEntity? Entity { get; set; }
+        public Func<EntityState?, EntityState?, bool>? Lambda { get; set; }
     }
 
     public class EntityManager : EntityState, IEntity, ILight, IAction, IStateEntity, IState, IStateAction
@@ -171,7 +172,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc)
         {
-            throw new NotImplementedException();
+            _currentState = new StateChangedInfo
+            {
+                Lambda = stateFunc
+            };
+            return this;
         }
 
         public IStateEntity Entity(params string[] entityId)
@@ -202,15 +207,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
                     var entityManager = (EntityManager) _currentState.Entity!;
-                    if (_currentState.To != null)
-                        if (_currentState.To != newState?.State)
-                            return;
 
-                    if (_currentState.From != null)
-                        if (_currentState.From != oldState?.State)
+                    if (_currentState.Lambda != null)
+                    {
+                        if (!_currentState.Lambda(newState, oldState))
                             return;
+                    }
+                    else
+                    {
+                        if (_currentState.To != null)
+                            if (_currentState.To != newState?.State)
+                                return;
+
+                        if (_currentState.From != null)
+                            if (_currentState.From != oldState?.State)
+                                return;
+                    }
 
                     await entityManager.ExecuteAsync(true);
+
                 });
         }
 

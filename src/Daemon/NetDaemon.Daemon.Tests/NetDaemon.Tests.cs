@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Moq;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests
@@ -27,17 +28,7 @@ namespace NetDaemon.Daemon.Tests
             Assert.Null(entity);
         }
 
-        //[Fact]
-        //public void MyTestMethod()
-        //{
-        //    int? x = 1;
-        //    string? z = null;
 
-        //    if (x == z)
-        //    {
-
-        //    }
-        //}
         [Fact]
         public void GetStateReturnsCorrectEntityState()
         {
@@ -143,6 +134,21 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task TurnOnAsyncWithErrorEntityIdThrowsApplicationException()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            //
+            var ex = await Assert.ThrowsAsync<ApplicationException>(async ()=>await daemonHost.TurnOnAsync("light!correct_entity"));
+            
+            Assert.Equal("entity_id is mal formatted light!correct_entity", ex.Message);
+           
+        }
+
+        [Fact]
         public async Task TurnOnAsyncWithLightCallsSendMessageWithCorrectEntityId()
         {
             // ARRANGE
@@ -220,6 +226,17 @@ namespace NetDaemon.Daemon.Tests
             
 
             Assert.Equal("on", reportedState);
+        }
+
+        [Fact]
+        public async Task StopCallsCloseClient()
+        {
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            await daemonHost.Stop();
+
+            hcMock.Verify(n=>n.CloseAsync(), Times.Once);
         }
     }
 }

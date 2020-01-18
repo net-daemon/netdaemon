@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Xunit;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
 
 namespace NetDaemon.Daemon.Tests
@@ -83,10 +75,8 @@ namespace NetDaemon.Daemon.Tests
 
         }
         [Fact]
-        public async Task TurnOffEntityLamdaAttributeSelectionCallsCorrectServiceCall()
+        public async Task TurnOffEntityLambdaAttributeSelectionCallsCorrectServiceCall()
         {
-            var x = new ExpandoObject();
-            
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
@@ -107,10 +97,8 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task TurnOffEntityLamdaAttributeSelectionNoExistCallsCorrectServiceCall()
+        public async Task TurnOffEntityLambdaAttributeSelectionNoExistCallsCorrectServiceCall()
         {
-            var x = new ExpandoObject();
-
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
@@ -229,7 +217,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task TurnOffLightLamdaAttributeSelectionCallsCorrectServiceCall()
+        public async Task TurnOffLightLambdaAttributeSelectionCallsCorrectServiceCall()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
@@ -287,7 +275,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
-            CancellationTokenSource cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout(10);
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -322,7 +310,7 @@ namespace NetDaemon.Daemon.Tests
             hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
             hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
-            CancellationTokenSource cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout(10);
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -356,7 +344,7 @@ namespace NetDaemon.Daemon.Tests
             hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
             
-            CancellationTokenSource cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout(10);
  
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -386,6 +374,36 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.VerifyCallServiceTimes("turn_off", Times.Never());
         
+        }
+        [Fact]
+        public async Task EntityOnStateChangedLamdaTurnOnLightCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            var cancelSource = hcMock.GetSourceWithTimeout(10);
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                    .StateChanged((n,_) =>n.State=="on")
+                        .Entity("light.correct_entity")
+                            .TurnOn()
+                    .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            hcMock.VerifyCallServiceTimes("turn_on", Times.Once());
+            hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
         }
 
     }
