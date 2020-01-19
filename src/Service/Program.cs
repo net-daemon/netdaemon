@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
@@ -17,19 +18,29 @@ namespace runner
             var daemonHost = new NetDaemonHost(new HassClient());
             var runTask =  daemonHost.Run("192.168.1.7", 8123, false, "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiOTMzNmFhZDdkNjY0ZDhhYjE1YTdiYmZlOTNiZWE4MCIsImlhdCI6MTU3NzA0Njg1OCwiZXhwIjoxODkyNDA2ODU4fQ.bMH-Vy8dLQLtjR6ixWHcmQiWf4eoIPdKVOZfmnwH_Bc", CancellationToken.None);
 
-            daemonHost.Entity("binary_sensor.tomas_rum_pir")
-                .StateChanged("on")
-                    .Entity("light.tomas_rum")
-                        .TurnOn()
-                            .UsingAttribute("transition", 0)
-                .Execute();
+            //daemonHost.Entity("binary_sensor.tomas_rum_pir")
+            //    .StateChanged("on")
+            //        .Entity("light.tomas_rum")
+            //            .TurnOn()
+            //                .UsingAttribute("transition", 0)
+            //    .Execute();
 
-            daemonHost.Entity("binary_sensor.tomas_rum_pir")
-                .StateChanged("off")
+            //daemonHost.Entity("binary_sensor.tomas_rum_pir")
+            //    .StateChanged("off")
+            //        .Entity("light.tomas_rum")
+            //            .TurnOff()
+            //                .UsingAttribute("transition", 0)
+            //    .Execute();
+            var scheduler = new Scheduler();
+
+            var schedulerTask = scheduler.RunEvery(10000, async () =>
+            {
+                await daemonHost
                     .Entity("light.tomas_rum")
-                        .TurnOff()
+                        .Toggle()
                             .UsingAttribute("transition", 0)
-                .Execute();
+                    .ExecuteAsync();
+            });
 
             await Task.WhenAny(runTask, Task.Delay(120000));
             await daemonHost.Stop();

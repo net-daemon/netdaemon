@@ -4,7 +4,6 @@ using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Moq;
 using Xunit;

@@ -6,26 +6,59 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-    public interface IStateAction
+    internal enum FluentActionType
     {
-        IStateAction UsingAttribute(string name, object value);
-        void Execute();
+        TurnOn,
+        TurnOff,
+        WaitFor,
+
+        Toggle
     }
 
-    public interface IStateEntity : ITurnOff<IStateAction>, ITurnOn<IStateAction>, IToggle<IStateAction>
+    public interface IAction : IExecuteAsync
+    {
+        IAction UsingAttribute(string name, object value);
+    }
+
+    public interface IEntity : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, IStateChanged
+    {
+    }
+
+    public interface IEntityProperties
+    {
+        dynamic? Attribute { get; set; }
+        string EntityId { get; set; }
+
+        DateTime LastChanged { get; set; }
+        DateTime LastUpdated { get; set; }
+        dynamic? State { get; set; }
+    }
+
+    public interface IExecuteAsync
+    {
+        Task ExecuteAsync();
+    }
+
+    public interface ILight : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>
     {
     }
 
     public interface IState
     {
-        IStateEntity Entity(params string[] entityId);
-
         IStateEntity Entities(Func<IEntityProperties, bool> func);
 
+        IStateEntity Entity(params string[] entityId);
         IStateEntity Light(params string[] entity);
 
 
         IStateEntity Lights(Func<IEntityProperties, bool> func);
+    }
+
+    public interface IStateAction
+    {
+        void Execute();
+
+        IStateAction UsingAttribute(string name, object value);
     }
 
     public interface IStateChanged
@@ -34,9 +67,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc);
     }
 
-    public interface IExecuteAsync
+    public interface IStateEntity : ITurnOff<IStateAction>, ITurnOn<IStateAction>, IToggle<IStateAction>
     {
-        Task ExecuteAsync();
+    }
+    public interface IToggle<T>
+    {
+        T Toggle();
     }
 
     public interface ITurnOff<T>
@@ -49,70 +85,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         T TurnOn();
     }
 
-    public interface IToggle<T>
-    {
-        T Toggle();
-    }
-
-    public interface IAction : IExecuteAsync
-    {
-        IAction UsingAttribute(string name, object value);
-    }
-
-    public interface IEntityProperties
-    {
-        string EntityId { get; set; }
-
-        dynamic? State { get; set; }
-
-        dynamic? Attribute { get; set; }
-
-        DateTime LastChanged { get; set; }
-
-        DateTime LastUpdated { get; set; }
-    }
-
-    public interface IEntity : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, IStateChanged
-    {
-    }
-
-    public interface ILight : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>
-    {
-    }
-
-    internal enum FluentActionType
-    {
-        TurnOn,
-        TurnOff,
-        WaitFor,
-
-        Toggle
-    }
-
-    internal class FluentAction
-    {
-        public FluentAction(FluentActionType type)
-        {
-            ActionType = type;
-            Attributes = new Dictionary<string, object>();
-        }
-
-        public Dictionary<string, object> Attributes { get; }
-
-        public FluentActionType ActionType { get; }
-    }
-
-    internal class StateChangedInfo
-    {
-        public dynamic? From { get; set; }
-        public dynamic? To { get; set; }
-        public IEntity? Entity { get; set; }
-        public Func<EntityState?, EntityState?, bool>? Lambda { get; set; }
-    }
-
     public class EntityManager : EntityState, IEntity, ILight, IAction, IStateEntity, IState, IStateAction
     {
-        private readonly ConcurrentQueue<FluentAction> _actions = new ConcurrentQueue<FluentAction>();
+        private readonly ConcurrentQueue<FluentAction> _actions = 
+            new ConcurrentQueue<FluentAction>();
         private readonly INetDaemon _daemon;
         private readonly string[] _entityIds;
 
@@ -126,56 +102,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _daemon = daemon;
         }
 
-        public IAction UsingAttribute(string name, object value)
+        public IStateEntity Entities(Func<IEntityProperties, bool> func)
         {
-            if (_currentAction != null) _currentAction.Attributes[name] = value;
-            return this;
-        }
-
-        public async Task ExecuteAsync()
-        {
-            await ExecuteAsync(false);
-        }
-
-        public IAction TurnOff()
-        {
-            _currentAction = new FluentAction(FluentActionType.TurnOff);
-            _actions.Enqueue(_currentAction);
-            return this;
-        }
-
-        public IAction TurnOn()
-        {
-            _currentAction = new FluentAction(FluentActionType.TurnOn);
-            _actions.Enqueue(_currentAction);
-            return this;
-        }
-
-        public IAction Toggle()
-        {
-            _currentAction = new FluentAction(FluentActionType.Toggle);
-            _actions.Enqueue(_currentAction);
-            return this;
-        }
-
-
-        public IState StateChanged(object? toState, object? fromState = null)
-        {
-            _currentState = new StateChangedInfo
-            {
-                From = fromState,
-                To = toState
-            };
-
-            return this;
-        }
-
-        public IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc)
-        {
-            _currentState = new StateChangedInfo
-            {
-                Lambda = stateFunc
-            };
+            _currentState.Entity = _daemon.Entities(func);
             return this;
         }
 
@@ -185,28 +114,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
-        public IStateEntity Entities(Func<IEntityProperties, bool> func)
-        {
-            _currentState.Entity = _daemon.Entities(func);
-            return this;
-        }
-
-        public IStateEntity Light(params string[] entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IStateEntity Lights(Func<IEntityProperties, bool> func)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Execute()
         {
             foreach (var entityId in _entityIds)
                 _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
-                    var entityManager = (EntityManager) _currentState.Entity!;
+                    var entityManager = (EntityManager)_currentState.Entity!;
 
                     if (_currentState.Lambda != null)
                     {
@@ -229,30 +142,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 });
         }
 
-        IStateAction IStateAction.UsingAttribute(string name, object value)
+        public async Task ExecuteAsync()
         {
-            var entityManager = (EntityManager) _currentState.Entity!;
-            entityManager.UsingAttribute(name, value);
-
-            return this;
-        }
-
-        IStateAction ITurnOff<IStateAction>.TurnOff()
-        {
-            _currentState?.Entity?.TurnOff();
-            return this;
-        }
-
-        IStateAction ITurnOn<IStateAction>.TurnOn()
-        {
-            _currentState?.Entity?.TurnOn();
-            return this;
-        }
-
-        IStateAction IToggle<IStateAction>.Toggle()
-        {
-            _currentState?.Entity?.Toggle();
-            return this;
+            await ExecuteAsync(false);
         }
 
         /// <summary>
@@ -299,5 +191,107 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     }
             }
         }
+
+        public IStateEntity Light(params string[] entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IStateEntity Lights(Func<IEntityProperties, bool> func)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IState StateChanged(object? toState, object? fromState = null)
+        {
+            _currentState = new StateChangedInfo
+            {
+                From = fromState,
+                To = toState
+            };
+
+            return this;
+        }
+
+        public IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc)
+        {
+            _currentState = new StateChangedInfo
+            {
+                Lambda = stateFunc
+            };
+            return this;
+        }
+
+        public IAction Toggle()
+        {
+            _currentAction = new FluentAction(FluentActionType.Toggle);
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction IToggle<IStateAction>.Toggle()
+        {
+            _currentState?.Entity?.Toggle();
+            return this;
+        }
+
+        public IAction TurnOff()
+        {
+            _currentAction = new FluentAction(FluentActionType.TurnOff);
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction ITurnOff<IStateAction>.TurnOff()
+        {
+            _currentState?.Entity?.TurnOff();
+            return this;
+        }
+
+        public IAction TurnOn()
+        {
+            _currentAction = new FluentAction(FluentActionType.TurnOn);
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction ITurnOn<IStateAction>.TurnOn()
+        {
+            _currentState?.Entity?.TurnOn();
+            return this;
+        }
+
+        public IAction UsingAttribute(string name, object value)
+        {
+            if (_currentAction != null) _currentAction.Attributes[name] = value;
+            return this;
+        }
+        IStateAction IStateAction.UsingAttribute(string name, object value)
+        {
+            var entityManager = (EntityManager)_currentState.Entity!;
+            entityManager.UsingAttribute(name, value);
+
+            return this;
+        }
+    }
+
+    internal class FluentAction
+    {
+        public FluentAction(FluentActionType type)
+        {
+            ActionType = type;
+            Attributes = new Dictionary<string, object>();
+        }
+
+        public FluentActionType ActionType { get; }
+        public Dictionary<string, object> Attributes { get; }
+    }
+
+    internal class StateChangedInfo
+    {
+        public IEntity? Entity { get; set; }
+        public dynamic? From { get; set; }
+        public Func<EntityState?, EntityState?, bool>? Lambda { get; set; }
+        public dynamic? To { get; set; }
     }
 }
