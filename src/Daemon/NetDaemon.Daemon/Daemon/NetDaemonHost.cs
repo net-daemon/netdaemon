@@ -1,11 +1,11 @@
-﻿using System;
+﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
@@ -18,6 +18,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
     public class NetDaemonHost : INetDaemonHost
     {
+        private readonly List<Task> _eventHandlerTasks = new List<Task>();
         private readonly IHassClient _hassClient;
 
         private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
@@ -29,14 +30,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "switch"
         };
 
-
-        private readonly List<Task> _eventHandlerTasks = new List<Task>();
+        private Scheduler _scheduler;
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
             loggerFactory ??= DefaultLoggerFactory;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClient = hassClient;
+            _scheduler = new Scheduler();
             //Action = new FluentAction(this);
         }
 
@@ -44,7 +45,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             builder
                 .ClearProviders()
-//                .AddFilter("HassClient.HassClient", LogLevel.Debug)
+                //                .AddFilter("HassClient.HassClient", LogLevel.Debug)
                 .AddConsole();
         });
 
@@ -111,7 +112,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public EntityState? GetState(string entity)
         {
-            return _hassClient.States.TryGetValue(entity, out var returnValue) ? returnValue.ToDaemonEntityState() : null;
+            return _hassClient.States.TryGetValue(entity, out var returnValue)
+                ? returnValue.ToDaemonEntityState()
+                : null;
         }
 
         public IEntity Entity(params string[] entityId)
@@ -138,8 +141,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         //TODO: Optimize
         public IEnumerable<EntityState> State => _hassClient.States.Values.Select(n => n.ToDaemonEntityState());
 
-        //public IAction Action { get; }
+        public IScheduler Scheduler => _scheduler;
 
+        //public IAction Action { get; }
 
         public ILogger Logger { get; }
 
@@ -169,22 +173,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             await _hassClient.SubscribeToEvents();
 
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                var changedEvent = await _hassClient.ReadEventAsync();
-                if (changedEvent != null)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    // Remove all completed Tasks
-                    _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
+                    var changedEvent = await _hassClient.ReadEventAsync();
+                    if (changedEvent != null)
+                    {
+                        // Remove all completed Tasks
+                        _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
 
-                    _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
-                }
-                else
-                {
-                    // Will only happen when doing unit tests
-                    await Task.Delay(1000, cancellationToken);
+                        _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
+                    }
+                    else
+                    {
+                        // Will only happen when doing unit tests
+                        await Task.Delay(1000, cancellationToken);
+                    }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Normal behaviour do nothing
+            }
+            catch
+            {
+                throw;
+            }
+            await _scheduler.Stop();
+            
+            
         }
 
         public async Task Stop()
@@ -192,7 +210,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             if (_hassClient == null)
                 throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
 
+            await _scheduler.Stop();
             await _hassClient.CloseAsync();
+            
+        }
+
+        public ITime Timer()
+        {
+            return new Common.TimeManager(this);
         }
 
         public IEntity Lights(Func<IEntityProperties, bool> func)
@@ -202,12 +227,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
-
         private async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             if (hassEvent.EventType == "state_changed")
             {
-                var stateData = (HassStateChangedEventData?) hassEvent.Data;
+                var stateData = (HassStateChangedEventData?)hassEvent.Data;
 
                 if (stateData == null)
                     throw new NullReferenceException("StateData is null!");
@@ -230,7 +254,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     await tasks.WhenAll(token);
             }
         }
-
 
         private string GetDomainFromEntity(string entity)
         {

@@ -5,9 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
+   
+
     /// <summary>
     ///     Interface to be able to mock the time
     /// </summary>
@@ -18,7 +21,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task Delay(TimeSpan timeSpan, CancellationToken token);
     }
 
-    public class Scheduler
+    public class Scheduler : IScheduler
     {
         private const int DefaultSchedulerTimeout = 100;
 

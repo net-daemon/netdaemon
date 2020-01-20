@@ -129,7 +129,7 @@ namespace NetDaemon.Daemon.Tests
             foreach (var attributesTuple in attributesTuples)
                 ((IDictionary<string, object>) attributes)[attributesTuple.attribute] = attributesTuple.value;
 
-            Verify(n => n.CallService(domain, service, attributes));
+            Verify(n => n.CallService(domain, service, attributes), Times.AtLeastOnce);
         }
 
         public void VerifyCallServiceTimes(string service, Times times)

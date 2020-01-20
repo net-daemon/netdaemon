@@ -55,6 +55,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         IEnumerable<EntityState> State { get; }
 
-
+        IScheduler Scheduler { get; }
     }
 }

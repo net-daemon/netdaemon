@@ -31,16 +31,33 @@ namespace runner
             //            .TurnOff()
             //                .UsingAttribute("transition", 0)
             //    .Execute();
-            var scheduler = new Scheduler();
 
-            var schedulerTask = scheduler.RunEvery(10000, async () =>
-            {
-                await daemonHost
-                    .Entity("light.tomas_rum")
-                        .Toggle()
-                            .UsingAttribute("transition", 0)
-                    .ExecuteAsync();
-            });
+            //daemonHost
+            //    .Timer()
+            //        .Every(TimeSpan.FromSeconds(10))
+            //            .Entity("light.tomas_rum")
+            //                .Toggle()
+            //    .Execute();
+
+            daemonHost
+                .Entity("sensor.frysnere_temperature")
+                    .StateChanged((n,_)=>n.State > -10.0)
+                        .Entity("light.tomas_rum")
+                            .TurnOn()
+                                .UsingAttribute("transition", 0)
+                .Execute();
+
+
+            //var scheduler = new Scheduler();
+
+            //var schedulerTask = scheduler.RunEvery(10000, async () =>
+            //{
+            //    await daemonHost
+            //        .Entity("light.tomas_rum")
+            //            .Toggle()
+            //                .UsingAttribute("transition", 0)
+            //        .ExecuteAsync();
+            //});
 
             await Task.WhenAny(runTask, Task.Delay(120000));
             await daemonHost.Stop();

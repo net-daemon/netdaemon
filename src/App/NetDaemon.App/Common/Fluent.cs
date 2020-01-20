@@ -15,6 +15,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Toggle
     }
 
+    public interface ITime
+    {
+        ITimeItems Every(TimeSpan timeSpan);
+    }
+
+    public interface ITimeItems
+    {
+        ITimerEntity Entity(params string[] entityId);
+        ITimerEntity Entities(Func<IEntityProperties, bool> func);
+
+    }
+
+    public interface ITimerEntity : ITurnOff<ITimerAction>, ITurnOn<ITimerAction>, IToggle<ITimerAction>
+    {
+    }
+
+    public interface ITimerAction
+    {
+        void Execute();
+
+        ITimerAction UsingAttribute(string name, object value);
+    }
+
     public interface IAction : IExecuteAsync
     {
         IAction UsingAttribute(string name, object value);
@@ -85,6 +108,70 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         T TurnOn();
     }
 
+    public class TimeManager : ITime, ITimeItems, ITimerEntity, ITimerAction
+    {
+        private INetDaemon _daemon;
+        private TimeSpan _timeSpan;
+        List<string> _entityIds = new List<string>();
+        private EntityManager entityManager;
+        public TimeManager(INetDaemon daemon)
+        {
+            _daemon = daemon;
+        }
+        public ITimeItems Every(TimeSpan timeSpan)
+        {
+            _timeSpan = timeSpan;
+            return this;
+        }
+
+        public ITimerEntity Entity(params string[] entityIds)
+        {
+            _entityIds.AddRange(entityIds);
+            entityManager = new EntityManager(entityIds, _daemon);
+            return this;
+        }
+
+        public ITimerEntity Entities(Func<IEntityProperties, bool> func)
+        {
+            var x = _daemon.State.Where(func);
+            _entityIds.AddRange(x.Select(n => n.EntityId).ToArray());
+            entityManager = new EntityManager(_entityIds.ToArray(), _daemon);
+            return this;
+        }
+
+        public ITimerAction TurnOff()
+        {
+            entityManager.TurnOff();
+            return this;
+        }
+
+        public ITimerAction TurnOn()
+        {
+            entityManager.TurnOn();
+            return this;
+        }
+
+        public ITimerAction Toggle()
+        {
+            entityManager.Toggle();
+            return this;
+        }
+
+        public void Execute()
+        {
+            _daemon.Scheduler.RunEvery(this._timeSpan, async () =>
+            {
+                await entityManager.ExecuteAsync(true);
+            });
+        }
+
+        public ITimerAction UsingAttribute(string name, object value)
+        {
+            entityManager.UsingAttribute(name, value);
+            return this;
+        }
+    }
+
     public class EntityManager : EntityState, IEntity, ILight, IAction, IStateEntity, IState, IStateAction
     {
         private readonly ConcurrentQueue<FluentAction> _actions = 
@@ -123,8 +210,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
                     if (_currentState.Lambda != null)
                     {
-                        if (!_currentState.Lambda(newState, oldState))
-                            return;
+                        try
+                        {
+                            if (!_currentState.Lambda(newState, oldState))
+                                return;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
                     }
                     else
                     {
