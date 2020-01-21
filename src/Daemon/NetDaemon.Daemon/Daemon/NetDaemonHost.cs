@@ -236,6 +236,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 if (stateData == null)
                     throw new NullReferenceException("StateData is null!");
 
+                try
+                {
+                    _hassClient.States[stateData.EntityId] = stateData.NewState!;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+               
                 var tasks = new List<Task>();
                 foreach (var (pattern, func) in _stateActions)
                     if (string.IsNullOrEmpty(pattern))

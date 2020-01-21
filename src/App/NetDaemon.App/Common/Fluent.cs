@@ -75,6 +75,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
 
         IStateEntity Lights(Func<IEntityProperties, bool> func);
+        IState For(TimeSpan timeSpan);
     }
 
     public interface IStateAction
@@ -182,6 +183,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         private FluentAction? _currentAction;
 
         private StateChangedInfo _currentState = new StateChangedInfo();
+        
 
         public EntityManager(string[] entityIds, INetDaemon daemon)
         {
@@ -207,7 +209,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
                     var entityManager = (EntityManager)_currentState.Entity!;
-
+        
                     if (_currentState.Lambda != null)
                     {
                         try
@@ -233,7 +235,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 return;
                     }
 
-                    await entityManager.ExecuteAsync(true);
+                    if (_currentState.ForTimeSpan != TimeSpan.Zero)
+                    {
+                        await Task.Delay(_currentState.ForTimeSpan);
+                        var currentState = _daemon.GetState(entityIdInn);
+                        if (currentState != null && currentState.State == newState?.State)
+                        {
+                            if (DateTime.Now.Subtract(currentState.LastChanged) >= _currentState.ForTimeSpan)
+                            // The state has not changed during the time we waited
+                            await entityManager.ExecuteAsync(true);
+                        }
+                    }
+                    else
+                    {
+                        await entityManager.ExecuteAsync(true);
+                    }
 
                 });
         }
@@ -296,6 +312,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public IStateEntity Lights(Func<IEntityProperties, bool> func)
         {
             throw new NotImplementedException();
+        }
+
+        public IState For(TimeSpan timeSpan)
+        {
+            _currentState.ForTimeSpan = timeSpan;
+            return this;
         }
 
         public IState StateChanged(object? toState, object? fromState = null)
@@ -389,5 +411,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public dynamic? From { get; set; }
         public Func<EntityState?, EntityState?, bool>? Lambda { get; set; }
         public dynamic? To { get; set; }
+
+        public TimeSpan ForTimeSpan { get; set; }
+
     }
 }

@@ -25,12 +25,13 @@ namespace runner
             //                .UsingAttribute("transition", 0)
             //    .Execute();
 
-            //daemonHost.Entity("binary_sensor.tomas_rum_pir")
-            //    .StateChanged("off")
-            //        .Entity("light.tomas_rum")
-            //            .TurnOff()
-            //                .UsingAttribute("transition", 0)
-            //    .Execute();
+            daemonHost.Entity("binary_sensor.tomas_rum_pir")
+                .StateChanged("off")
+                    .For(TimeSpan.FromSeconds(5))
+                .Entity("light.tomas_rum")
+                    .TurnOff()
+                        .UsingAttribute("transition", 0)
+            .Execute();
 
             //daemonHost
             //    .Timer()
@@ -39,13 +40,13 @@ namespace runner
             //                .Toggle()
             //    .Execute();
 
-            daemonHost
-                .Entity("sensor.frysnere_temperature")
-                    .StateChanged((n,_)=>n.State > -10.0)
-                        .Entity("light.tomas_rum")
-                            .TurnOn()
-                                .UsingAttribute("transition", 0)
-                .Execute();
+            //daemonHost
+            //    .Entity("sensor.frysnere_temperature")
+            //        .StateChanged((n,_)=>n.State > -10.0)
+            //            .Entity("light.tomas_rum")
+            //                .TurnOn()
+            //                    .UsingAttribute("transition", 0)
+            //    .Execute();
 
 
             //var scheduler = new Scheduler();
