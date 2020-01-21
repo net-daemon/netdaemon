@@ -275,14 +275,19 @@ namespace NetDaemon.Daemon.Tests
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+            var lastChanged = new DateTime(2020, 1, 1, 1, 1, 1, 10);
+            var lastUpdated = new DateTime(2020, 1, 1, 1, 1, 1, 50);
+
+
+            hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on",
+               lastUpdated, lastChanged);
 
             CancellationTokenSource cancelSource = hcMock.GetSourceWithTimeout(10);
 
             daemonHost
                 .Entity("binary_sensor.pir")
                     .StateChanged(toState: "off")
-                        .For(TimeSpan.FromSeconds(30))
+                        .For(TimeSpan.FromMilliseconds(30))
                     .Entity("light.correct_entity")
                         .TurnOff()
                 .Execute();
@@ -296,8 +301,13 @@ namespace NetDaemon.Daemon.Tests
                 // Expected behaviour
             }
 
+            hcMock.VerifyCallServiceTimes("turn_on", Times.Never());
+
+            await Task.Delay(20);
+
             hcMock.VerifyCallServiceTimes("turn_on", Times.Once());
-            hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
+
+            //          hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
         }
 
         [Fact]

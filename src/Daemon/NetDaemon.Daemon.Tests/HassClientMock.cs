@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -94,6 +95,36 @@ namespace NetDaemon.Daemon.Tests
             };
         }
 
+        public void AddChangedEvent(string entityId, object fromState, object toState, DateTime lastUpdated, DateTime lastChanged)
+        {
+            // Todo: Refactor to smth smarter
+            FakeEvents.Enqueue(new HassEvent
+            {
+                EventType = "state_changed",
+                Data = new HassStateChangedEventData
+                {
+                    EntityId = entityId,
+                    NewState = new HassState
+                    {
+                        State = toState,
+                        Attributes = new Dictionary<string, object>
+                        {
+                            ["device_class"] = "motion"
+                        },
+                        LastChanged = lastChanged,
+                        LastUpdated = lastUpdated
+                    },
+                    OldState = new HassState
+                    {
+                        State = fromState,
+                        Attributes = new Dictionary<string, object>
+                        {
+                            ["device_class"] = "motion"
+                        }
+                    }
+                }
+            });
+        }
         public void AddChangedEvent(string entityId, object fromState, object toState)
         {
             FakeEvents.Enqueue(new HassEvent
