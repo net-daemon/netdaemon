@@ -268,7 +268,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task EntityOnStateChangedForTimeTurnOnLightCallsCorrectServiceCall()
+        public async Task EntityOnStateChangedForTimeTurnOffLightCallsCorrectServiceCall()
         {
             // Todo: Finish test!!!!
             // ARRANGE
@@ -279,7 +279,7 @@ namespace NetDaemon.Daemon.Tests
             var lastUpdated = new DateTime(2020, 1, 1, 1, 1, 1, 50);
 
 
-            hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on",
+            hcMock.AddChangedEvent("binary_sensor.pir", fromState: "on", toState: "off",
                lastUpdated, lastChanged);
 
             CancellationTokenSource cancelSource = hcMock.GetSourceWithTimeout(10);
@@ -301,13 +301,13 @@ namespace NetDaemon.Daemon.Tests
                 // Expected behaviour
             }
 
+            // ASSERT
+            await Task.Delay(10); // After 10ms we should not have call
             hcMock.VerifyCallServiceTimes("turn_on", Times.Never());
 
-            await Task.Delay(20);
+            await Task.Delay(30); // After 40ms we should have call
+            hcMock.VerifyCallServiceTimes("turn_off", Times.Once());
 
-            hcMock.VerifyCallServiceTimes("turn_on", Times.Once());
-
-            //          hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
         }
 
         [Fact]
