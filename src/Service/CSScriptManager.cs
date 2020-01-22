@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Extensions.Logging;
@@ -43,9 +44,9 @@ namespace Service
             foreach (var file in Directory.EnumerateFiles(_codeFolder, "*.cs", SearchOption.AllDirectories))
             {
                 _logger.LogDebug($"Found cs file {Path.GetFileName(file)}");
-                var script = CSharpScript.Create(File.OpenRead(file), _scriptOptions, globalsType: typeof(CSGlobals));
 
-      
+                var script = CSharpScript.Create(File.ReadAllText(file), _scriptOptions, globalsType: typeof(CSGlobals));
+               
                 var compilation = script.GetCompilation();
 
                 var stream = new MemoryStream();
@@ -64,10 +65,26 @@ namespace Service
                         await daempnApp.InitializeAsync();
                     }
                 }
+                else
+                {
+                    var msg = new StringBuilder();
+                    msg.AppendLine($"Compiler error in file: {file.Substring(_codeFolder.Length+1)}");
+
+                    foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+                    {
+                        if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
+                        {
+                            msg.AppendLine(emitResultDiagnostic.ToString());
+                        }
+                    }
+
+                    _logger.LogWarning(msg.ToString());
+
+                }
             }
-
             
-
+            // The scripting consumes allot of memory so lets clean up now
+            GC.Collect();
         }
 
         private ScriptOptions LoadAssembliesAndStandardImports()
@@ -78,7 +95,9 @@ namespace Service
             var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assembliesFromCurrentAppDomain)
             {
-                options = options.AddReferences(assembly);
+               // _logger.LogInformation(assembly.FullName);
+                if (assembly.FullName.StartsWith("NetDaemon"))
+                    options = options.AddReferences(assembly);
             }
 
             // Add the standard imports
