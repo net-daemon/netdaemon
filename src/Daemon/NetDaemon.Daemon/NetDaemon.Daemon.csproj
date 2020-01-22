@@ -4,6 +4,19 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>JoySoftware.HomeAssistant.NetDaemon</RootNamespace>
+    <PackageId>JoySoftware.NetDaemon.Daemon</PackageId>
+    <Version>0.0.1-alpha</Version>
+    <Authors>helto4real</Authors>
+    <Company>JoySoftware</Company>
+    <description>A .net core appdaemon for Home Assistant</description>
+    <projectUrl>https://github.com/helto4real/net-hassclient</projectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageDescription>
+      A client for manage the free open source home automations software Home Assisstant written in .net core 3.
+      Please see https://github.com/helto4real/net-hassclient/blob/master/README.md for docs.
+    </PackageDescription>
+    <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
+    <tags>Home Assistant</tags>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JoySoftware.HassClient" Version="0.0.14-alpha" />

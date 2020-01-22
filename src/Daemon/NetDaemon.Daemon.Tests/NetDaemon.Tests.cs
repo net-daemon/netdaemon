@@ -117,7 +117,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task RunWhenCanceledShouldCompleteThrowsCanceledException()
+        public async Task RunWhenCanceledShouldCompleteWithCanceledException()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
@@ -125,7 +125,7 @@ namespace NetDaemon.Daemon.Tests
             var cancelSource = new CancellationTokenSource();
 
             // Wait cancel after small amount of time
-            cancelSource.CancelAfter(10);
+            cancelSource.CancelAfter(20);
 
             // ACT and ASSERT
             await Assert.ThrowsAsync<TaskCanceledException>(async () =>

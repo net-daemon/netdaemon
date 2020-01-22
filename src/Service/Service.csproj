@@ -9,12 +9,17 @@
 
   <ItemGroup>
     <PackageReference Include="JoySoftware.HassClient" Version="0.0.14-alpha" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.4.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\App\NetDaemon.App\NetDeamon.App.csproj" />
     <ProjectReference Include="..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include=".config\" />
   </ItemGroup>
 
 </Project>

@@ -249,7 +249,7 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                    .StateChanged(toState: "on")
+                    .StateChanged(to: "on")
                         .Entity("light.correct_entity")
                             .TurnOn()
                 .Execute();
@@ -270,7 +270,6 @@ namespace NetDaemon.Daemon.Tests
         [Fact]
         public async Task EntityOnStateChangedForTimeTurnOffLightCallsCorrectServiceCall()
         {
-            // Todo: Finish test!!!!
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
@@ -286,7 +285,7 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                    .StateChanged(toState: "off")
+                    .StateChanged(to: "off")
                         .For(TimeSpan.FromMilliseconds(30))
                     .Entity("light.correct_entity")
                         .TurnOff()
@@ -323,7 +322,7 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                    .StateChanged(toState: "on")
+                    .StateChanged(to: "on")
                         .Entity("light.correct_entity")
                             .TurnOn()
                                 .UsingAttribute("transition", 0)
@@ -358,7 +357,7 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                   .StateChanged(toState: "on")
+                   .StateChanged(to: "on")
                         .Entity("light.correct_entity")
                             .TurnOn()
                 .Execute();
@@ -392,14 +391,14 @@ namespace NetDaemon.Daemon.Tests
  
             daemonHost
                 .Entity("binary_sensor.pir")
-                    .StateChanged(toState: "on")
+                    .StateChanged(to: "on")
                         .Entity("light.correct_entity")
                             .TurnOn()
                 .Execute();
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                    .StateChanged(toState: "off")
+                    .StateChanged(to: "off")
                         .Entity("light.correct_entity")
                             .TurnOff()
                 .Execute();

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -87,7 +88,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
     public interface IStateChanged
     {
-        IState StateChanged(object? toState, object? from = null);
+        IState StateChanged(object? to, object? from = null);
         IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc);
     }
 
@@ -237,17 +238,34 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
                     if (_currentState.ForTimeSpan != TimeSpan.Zero)
                     {
+                        _daemon.Logger.LogDebug($"For statement found, delaying {_currentState.ForTimeSpan}");
                         await Task.Delay(_currentState.ForTimeSpan);
                         var currentState = _daemon.GetState(entityIdInn);
                         if (currentState != null && currentState.State == newState?.State)
                         {
-                            if (DateTime.Now.Subtract(currentState.LastChanged) >= _currentState.ForTimeSpan)
-                            // The state has not changed during the time we waited
-                            await entityManager.ExecuteAsync(true);
+                             //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
+                            if (currentState.LastChanged==newState.LastChanged)
+                            {
+                                // No state has changed during the period
+                                _daemon.Logger.LogDebug($"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
+                                // The state has not changed during the time we waited
+                                await entityManager.ExecuteAsync(true);
+                            }
+                            else
+                            {
+                                _daemon.Logger.LogDebug($"State same {newState?.State} but different state changed: {currentState.LastChanged}, expected {newState.LastChanged}");
+                            }
+                            
+                        }
+                        else
+                        {
+                            _daemon.Logger.LogDebug($"State not same, do not execute for statement. {newState?.State} found, expected {currentState.State}");
                         }
                     }
                     else
                     {
+                        _daemon.Logger.LogDebug($"State {newState?.State} expected from {oldState?.State}, executing action!");
+
                         await entityManager.ExecuteAsync(true);
                     }
 
@@ -320,12 +338,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
-        public IState StateChanged(object? toState, object? fromState = null)
+        public IState StateChanged(object? to, object? from = null)
         {
             _currentState = new StateChangedInfo
             {
-                From = fromState,
-                To = toState
+                From = to,
+                To = from
             };
 
             return this;

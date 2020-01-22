@@ -31,6 +31,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         };
 
         private Scheduler _scheduler;
+        private bool _stopped = false;
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
@@ -195,6 +196,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             catch (OperationCanceledException)
             {
                 // Normal behaviour do nothing
+                await _scheduler.Stop();
+                throw;
             }
             catch
             {
@@ -210,9 +213,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             if (_hassClient == null)
                 throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
 
+            if (_stopped)
+                return;
             await _scheduler.Stop();
             await _hassClient.CloseAsync();
-            
+
+            _stopped = true;
         }
 
         public ITime Timer()
