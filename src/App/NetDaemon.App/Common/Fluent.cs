@@ -342,8 +342,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             _currentState = new StateChangedInfo
             {
-                From = to,
-                To = from
+                From = from,
+                To = to
             };
 
             return this;

@@ -146,6 +146,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         //public IAction Action { get; }
 
+        private bool _connected = false;
+        public bool Connected => _connected;
+
         public ILogger Logger { get; }
 
         /// <summary>
@@ -165,47 +168,75 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             if (_hassClient == null)
                 throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
-
-            // We don´t need to provide cancellation to hass client it has it´s own connect timeout
-            var connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
-
-            if (!connectResult)
-                return;
-
-            await _hassClient.SubscribeToEvents();
-
-            try
+            while (!cancellationToken.IsCancellationRequested)
             {
-                while (!cancellationToken.IsCancellationRequested)
+ 
+                try
                 {
-                    var changedEvent = await _hassClient.ReadEventAsync();
-                    if (changedEvent != null)
-                    {
-                        // Remove all completed Tasks
-                        _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
+                    // We don´t need to provide cancellation to hass client it has it´s own connect timeout
+                    var connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
 
-                        _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
-                    }
-                    else
+                    if (!connectResult)
                     {
-                        // Will only happen when doing unit tests
-                        await Task.Delay(1000, cancellationToken);
+                        _connected = false;
+                        Logger.LogWarning("Home assistant is unavailable, retrying in 5 seconds...");
+                        await Task.Delay(5000, cancellationToken);
+                        continue;
+                    }
+
+                    await _hassClient.SubscribeToEvents();
+
+                    _connected = true;
+                    Logger.LogInformation(
+                        $"Connected to Home Assistant on host {host}:{port}");
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        var changedEvent = await _hassClient.ReadEventAsync();
+                        if (changedEvent != null)
+                        {
+                            // Remove all completed Tasks
+                            _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
+
+                            _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
+                        }
+                        else
+                        {
+                            // Will only happen when doing unit tests
+                            await Task.Delay(1000, cancellationToken);
+                        }
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                // Normal behaviour do nothing
-                await _scheduler.Stop();
-                throw;
-            }
-            catch
-            {
-                throw;
+                catch (OperationCanceledException)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // Normal behaviour do nothing
+                        await _scheduler.Stop();
+                    }
+
+                }
+                catch(Exception e)
+                {
+                    _connected = false;
+                    Logger.LogError(e ,"Error, during operation");
+                    
+                }
+                finally
+                {
+                    try
+                    {
+                        await _hassClient.CloseAsync();
+                    }
+                    catch 
+                    {
+                    }
+                    _connected = false;
+                    if (!cancellationToken.IsCancellationRequested)
+                        await Task.Delay(5000, cancellationToken);
+                }
+                
             }
             await _scheduler.Stop();
-            
-            
         }
 
         public async Task Stop()
@@ -215,8 +246,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             if (_stopped)
                 return;
-            await _scheduler.Stop();
             await _hassClient.CloseAsync();
+            await _scheduler.Stop();
+            
 
             _stopped = true;
         }

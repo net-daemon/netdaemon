@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,16 +8,15 @@ using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
 using Service;
 
 namespace runner
 {
-    class RunnerService : BackgroundService
+    internal class RunnerService : BackgroundService
     {
+        private readonly NetDaemonHost _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private NetDaemonHost _daemonHost;
         //private readonly 
 
         public RunnerService(ILoggerFactory loggerFactory, ILoggerFactory factory)
@@ -28,61 +24,6 @@ namespace runner
             _logger = factory.CreateLogger<RunnerService>();
             _loggerFactory = factory;
             _daemonHost = new NetDaemonHost(new HassClient(factory), factory);
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                _logger.LogInformation("Starting netdaemon...");
-                
-                var config = ReadConfig();
-                if (config == null)
-                {
-                    _logger.LogError("No config specified, file or environment variables! Exiting...");
-
-                    return;
-                }
-
-                var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost, _loggerFactory);
-                
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    bool hasBeenCanceledByTheDaemon = false;
-                    try
-                    {
-                        var task = _daemonHost.Run(config.Host!, config.Port.Value!, config.Ssl.Value!, config.Token!, stoppingToken);
-                        await Task.Delay(200, stoppingToken); // Todo: Must be smarter later 
-                        await csManager.LoadSources();
-                        await task;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        if (!stoppingToken.IsCancellationRequested)
-                        {
-                            _logger.LogWarning("Home assistant disconnected, retrying in 5 seconds...");
-                            hasBeenCanceledByTheDaemon = false;
-
-                        }
-                    }
-                    if (!stoppingToken.IsCancellationRequested)
-                    {
-                        // The service is still running, we have error in connection to hass
-                        await _daemonHost.Stop();
-                        await Task.Delay(5000, stoppingToken); // Wait 5 seconds
-                        _daemonHost = new NetDaemonHost(new HassClient()); // Spin a new instance 
-                    }
-
-                }
-                
-            }
-            catch (OperationCanceledException) { } // Normal exit
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Some problem!");
-            }
-            
-            _logger.LogInformation("Ending stuff!");
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -93,6 +34,67 @@ namespace runner
                 await Task.WhenAny(_daemonHost.Stop(), Task.Delay(1000, cancellationToken));
         }
 
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                _logger.LogInformation("Starting netdaemon...");
+
+                var config = ReadConfig();
+                if (config == null)
+                {
+                    _logger.LogError("No config specified, file or environment variables! Exiting...");
+
+                    return;
+                }
+
+                var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost,
+                    _loggerFactory);
+
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    var hasBeenCanceledByTheDaemon = false;
+                    try
+                    {
+                        var task = _daemonHost.Run(config.Host!, config.Port.Value!, config.Ssl.Value!, config.Token!,
+                            stoppingToken);
+                        await Task.Delay(500, stoppingToken); // Todo: Must be smarter later 
+                        if (_daemonHost.Connected)
+                        {
+                            
+                            await csManager.LoadSources();
+                            await task;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Home assistant still unavailable, retrying in 5 seconds...");
+                            hasBeenCanceledByTheDaemon = false;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (!stoppingToken.IsCancellationRequested)
+                        {
+                            hasBeenCanceledByTheDaemon = false;
+                            _logger.LogWarning("Home assistant disconnected!, retrying in 5 seconds...");
+                        }
+                    }
+
+                    if (!stoppingToken.IsCancellationRequested)
+                        // The service is still running, we have error in connection to hass
+                        await Task.Delay(5000, stoppingToken); // Wait 5 seconds
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            } // Normal exit
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Some problem!");
+            }
+
+            _logger.LogInformation("Ending stuff!");
+        }
         private Config ReadConfig()
         {
             try
@@ -113,33 +115,31 @@ namespace runner
                 var configFilePath = Path.Combine(folderOfExecutingAssembly, "config.json");
 
                 if (File.Exists(configFilePath))
-                {
                     return JsonSerializer.Deserialize<Config>(File.ReadAllBytes(configFilePath));
-                }
-                else
-                {
-                    var exampleFilePath = Path.Combine(folderOfExecutingAssembly, "_config.json");
-                    if (!File.Exists(exampleFilePath))
-                        JsonSerializer.SerializeAsync(File.OpenWrite(exampleFilePath), new Config());
 
-                }
+                var exampleFilePath = Path.Combine(folderOfExecutingAssembly, "_config.json");
+                if (!File.Exists(exampleFilePath))
+                    JsonSerializer.SerializeAsync(File.OpenWrite(exampleFilePath), new Config());
 
-                var token = Environment.GetEnvironmentVariable("HASS-TOKEN");
+                var token = Environment.GetEnvironmentVariable("HASS_TOKEN");
                 if (token != null)
                 {
                     var config = new Config();
                     config.Token = token;
-                    config.Host = Environment.GetEnvironmentVariable("HASS-HOST") ?? config.Host;
-                    config.Port = short.TryParse(Environment.GetEnvironmentVariable("HASS-PORT"), out var port) ? port:config.Port;
-                    config.SourceFolder = Environment.GetEnvironmentVariable("HASS-DAEMONAPPFOLDER") ?? Path.Combine(folderOfExecutingAssembly, "daemonapp"); 
+                    config.Host = Environment.GetEnvironmentVariable("HASS_HOST") ?? config.Host;
+                    config.Port = short.TryParse(Environment.GetEnvironmentVariable("HASS_PORT"), out var port)
+                        ? port
+                        : config.Port;
+                    config.SourceFolder = Environment.GetEnvironmentVariable("HASS_DAEMONAPPFOLDER") ??
+                                          Path.Combine(folderOfExecutingAssembly, "daemonapp");
                     return config;
                 }
-
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to get configuration!");
             }
+
             return null;
         }
     }
