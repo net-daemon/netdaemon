@@ -178,7 +178,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     if (hassioToken != null)
                     {
                         // We are running as hassio add-on
-                        connectResult = await _hassClient.ConnectAsync(new Uri("http://hassio/homeassistant/websocket"),
+                        connectResult = await _hassClient.ConnectAsync(new Uri("ws://hassio/homeassistant/websocket"),
                             hassioToken, true);
                     }
                     else

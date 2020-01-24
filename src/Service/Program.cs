@@ -27,7 +27,7 @@ namespace runner
                     logging.AddConsole();
                     logging.AddDebug();
                     logging.AddFilter("Microsoft", LogLevel.Error);
-                    logging.SetMinimumLevel(LogLevel.Trace);
+                    logging.SetMinimumLevel(LogLevel.Information);
                 });
     }
 }
