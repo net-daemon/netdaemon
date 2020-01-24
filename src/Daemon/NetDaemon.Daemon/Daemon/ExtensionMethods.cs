@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Dynamic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
@@ -74,7 +76,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             foreach (var (key, value) in hassState.Attributes)
             {
-                dict[key] = value;
+                if (value is JsonElement elem)
+                {
+                    dict[key] = elem.ToDynamicValue();
+                }
+                
             }
 
             return entityState;
