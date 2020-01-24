@@ -173,8 +173,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
  
                 try
                 {
-                    // We don´t need to provide cancellation to hass client it has it´s own connect timeout
-                    var connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
+                    bool connectResult;
+                    var hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
+                    if (hassioToken != null)
+                    {
+                        // We are running as hassio add-on
+                        connectResult = await _hassClient.ConnectAsync(new Uri("http://hassio/homeassistant/websocket"),
+                            hassioToken, true);
+                    }
+                    else
+                    {
+                        connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
+                    }
 
                     if (!connectResult)
                     {

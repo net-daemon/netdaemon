@@ -100,12 +100,16 @@ namespace runner
             try
             {
                 // Check if we have HASSIO add-on options
-                if (File.Exists("/data/options.json"))
+                
+               // if (File.Exists("/data/options.json"))    Todo: We read configs here later
+                if (Environment.GetEnvironmentVariable("HASSIO_TOKEN")!=null)
                 {
-                    var hassioConfig = JsonSerializer.Deserialize<Config>(File.ReadAllBytes("/data/options.json"));
-                    hassioConfig.Host = "hassio";
+                    //var hassioConfig = JsonSerializer.Deserialize<Config>(File.ReadAllBytes("/data/options.json"));
+                    var hassioConfig = new Config();
+                    hassioConfig.Host = "";
                     hassioConfig.Port = 0;
                     hassioConfig.Token = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
+                    hassioConfig.SourceFolder = Environment.GetEnvironmentVariable("HASS_DAEMONAPPFOLDER");
                     return hassioConfig;
                 }
 
