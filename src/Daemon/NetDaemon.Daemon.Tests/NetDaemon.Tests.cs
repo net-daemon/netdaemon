@@ -128,8 +128,9 @@ namespace NetDaemon.Daemon.Tests
             cancelSource.CancelAfter(20);
 
             // ACT and ASSERT
-            await Assert.ThrowsAsync<TaskCanceledException>(async () =>
-                await daemonHost.Run("", 1, false, "token", cancelSource.Token));
+            await daemonHost.Run("", 1, false, "token", cancelSource.Token);
+
+            Assert.False(daemonHost.Connected);
         }
 
         [Fact]

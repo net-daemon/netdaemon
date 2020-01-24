@@ -189,7 +189,7 @@ namespace NetDaemon.Daemon.Tests
         {
             return Debugger.IsAttached
                 ? new CancellationTokenSource()
-                : new CancellationTokenSource(10);
+                : new CancellationTokenSource(milliSeconds);
         }
     }
 }

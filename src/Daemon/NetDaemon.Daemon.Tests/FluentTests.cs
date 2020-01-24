@@ -427,7 +427,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout(20);
 
             daemonHost
                 .Entity("binary_sensor.pir")

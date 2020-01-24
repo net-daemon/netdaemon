@@ -80,6 +80,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     dict[key] = elem.ToDynamicValue();
                 }
+                else
+                {
+                    dict[key] = value;
+                }
                 
             }
 
