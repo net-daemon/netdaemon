@@ -8,6 +8,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace runner
 {
@@ -24,7 +25,7 @@ namespace runner
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.AddConsole();
+                    logging.AddConsole(options => options.IncludeScopes=false);
                     logging.AddDebug();
                     logging.AddFilter("Microsoft", LogLevel.Error);
                     logging.SetMinimumLevel(LogLevel.Information);

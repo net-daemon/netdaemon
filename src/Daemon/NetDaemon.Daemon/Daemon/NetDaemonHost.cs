@@ -113,8 +113,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public EntityState? GetState(string entity)
         {
-            return _hassClient.States.TryGetValue(entity, out var returnValue)
-                ? returnValue.ToDaemonEntityState()
+            return _state.TryGetValue(entity, out var returnValue)
+                ? returnValue
                 : null;
         }
 
@@ -139,8 +139,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(entityList.ToArray(), this);
         }
 
-        //TODO: Optimize
-        public IEnumerable<EntityState> State => _hassClient.States.Values.Select(n => n.ToDaemonEntityState());
+        private IDictionary<string, EntityState> _state = new Dictionary<string, EntityState>();
+        public IEnumerable<EntityState> State => _state?.Values!; 
 
         public IScheduler Scheduler => _scheduler;
 
@@ -197,6 +197,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     await _hassClient.SubscribeToEvents();
 
                     _connected = true;
+                    _state = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
+                        .ToDictionary(n => n.EntityId);
                     Logger.LogInformation(
                         $"Connected to Home Assistant on host {host}:{port}");
                     while (!cancellationToken.IsCancellationRequested)
@@ -286,7 +288,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 try
                 {
-                    _hassClient.States[stateData.EntityId] = stateData.NewState!;
+                    _state[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
                 }
                 catch (Exception e)
                 {

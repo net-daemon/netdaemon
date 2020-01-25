@@ -156,7 +156,7 @@ namespace NetDaemon.Daemon.Tests
         public void VerifyCallService(string domain, string service,
             params (string attribute, object value)[] attributesTuples)
         {
-            var attributes = new ExpandoObject();
+            var attributes = new FluentExpandoObject();
             foreach (var attributesTuple in attributesTuples)
                 ((IDictionary<string, object>) attributes)[attributesTuple.attribute] = attributesTuple.value;
 

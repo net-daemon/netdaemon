@@ -11,9 +11,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
         TurnOn,
         TurnOff,
-        WaitFor,
-
-        Toggle
+        Toggle,
     }
 
     public interface ITime
@@ -77,12 +75,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         IStateEntity Lights(Func<IEntityProperties, bool> func);
         IState For(TimeSpan timeSpan);
+        IExecute Call(Func<string, EntityState?, EntityState?, Task> func);
     }
 
-    public interface IStateAction
+    public interface IExecute
     {
         void Execute();
-
+    }
+    public interface IStateAction : IExecute
+    {
         IStateAction UsingAttribute(string name, object value);
     }
 
@@ -207,69 +208,79 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public void Execute()
         {
             foreach (var entityId in _entityIds)
-                _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
+            {
+                if (_currentState.FuncToCall != null)
                 {
-                    var entityManager = (EntityManager)_currentState.Entity!;
-        
-                    if (_currentState.Lambda != null)
+                    _daemon.ListenState(entityId,
+                        async (entityIdInn, newState, oldState) => { await _currentState.FuncToCall(entityId, newState, oldState); });
+                }
+                else
+                {
+                    _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                     {
-                        try
-                        {
-                            if (!_currentState.Lambda(newState, oldState))
-                                return;
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e);
-                            throw;
-                        }
-                        
-                    }
-                    else
-                    {
-                        if (_currentState.To != null)
-                            if (_currentState.To != newState?.State)
-                                return;
+                        var entityManager = (EntityManager)_currentState.Entity!;
 
-                        if (_currentState.From != null)
-                            if (_currentState.From != oldState?.State)
-                                return;
-                    }
-
-                    if (_currentState.ForTimeSpan != TimeSpan.Zero)
-                    {
-                        _daemon.Logger.LogDebug($"For statement found, delaying {_currentState.ForTimeSpan}");
-                        await Task.Delay(_currentState.ForTimeSpan);
-                        var currentState = _daemon.GetState(entityIdInn);
-                        if (currentState != null && currentState.State == newState?.State)
+                        if (_currentState.Lambda != null)
                         {
-                             //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
-                            if (currentState.LastChanged==newState.LastChanged)
+                            try
                             {
-                                // No state has changed during the period
-                                _daemon.Logger.LogDebug($"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
-                                // The state has not changed during the time we waited
-                                await entityManager.ExecuteAsync(true);
+                                if (!_currentState.Lambda(newState, oldState))
+                                    return;
                             }
-                            else
+                            catch (Exception e)
                             {
-                                _daemon.Logger.LogDebug($"State same {newState?.State} but different state changed: {currentState.LastChanged}, expected {newState.LastChanged}");
+                                Console.WriteLine(e);
+                                throw;
                             }
-                            
                         }
                         else
                         {
-                            _daemon.Logger.LogDebug($"State not same, do not execute for statement. {newState?.State} found, expected {currentState.State}");
+                            if (_currentState.To != null)
+                                if (_currentState.To != newState?.State)
+                                    return;
+
+                            if (_currentState.From != null)
+                                if (_currentState.From != oldState?.State)
+                                    return;
                         }
-                    }
-                    else
-                    {
-                        _daemon.Logger.LogDebug($"State {newState?.State} expected from {oldState?.State}, executing action!");
 
-                        await entityManager.ExecuteAsync(true);
-                    }
+                        if (_currentState.ForTimeSpan != TimeSpan.Zero)
+                        {
+                            _daemon.Logger.LogDebug($"For statement found, delaying {_currentState.ForTimeSpan}");
+                            await Task.Delay(_currentState.ForTimeSpan);
+                            var currentState = _daemon.GetState(entityIdInn);
+                            if (currentState != null && currentState.State == newState?.State)
+                            {
+                                //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
+                                if (currentState.LastChanged == newState.LastChanged)
+                                {
+                                    // No state has changed during the period
+                                    _daemon.Logger.LogDebug($"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
+                                    // The state has not changed during the time we waited
+                                    await entityManager.ExecuteAsync(true);
+                                }
+                                else
+                                {
+                                    _daemon.Logger.LogDebug($"State same {newState?.State} but different state changed: {currentState.LastChanged}, expected {newState.LastChanged}");
+                                }
 
-                });
+                            }
+                            else
+                            {
+                                _daemon.Logger.LogDebug($"State not same, do not execute for statement. {newState?.State} found, expected {currentState.State}");
+                            }
+                        }
+                        else
+                        {
+                            _daemon.Logger.LogDebug($"State {newState?.State} expected from {oldState?.State}, executing action!");
+
+                            await entityManager.ExecuteAsync(true);
+                        }
+
+                    });
+                }
+            }
+            
         }
 
         public async Task ExecuteAsync()
@@ -297,29 +308,30 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 while (_actions.TryDequeue(out var fluentAction))
                     await HandleAction(fluentAction);
 
+        }
 
-            async Task HandleAction(FluentAction fluentAction)
-            {
-                var attributes = fluentAction.Attributes.Select(n => (n.Key, n.Value)).ToArray();
-                // Todo: Make it separate tasks ant then await all the same time
-                foreach (var entityId in _entityIds)
-                    switch (fluentAction.ActionType)
-                    {
-                        case FluentActionType.TurnOff:
-                            await _daemon.TurnOffAsync(entityId, attributes);
-                            break;
-                        case FluentActionType.TurnOn:
-                            await _daemon.TurnOnAsync(entityId, attributes);
-                            break;
-                        case FluentActionType.Toggle:
-                            await _daemon.ToggleAsync(entityId, attributes);
-                            break;
-                        case FluentActionType.WaitFor:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-            }
+        async Task HandleAction(FluentAction fluentAction)
+        {
+            var attributes = fluentAction.Attributes.Select(n => (n.Key, n.Value)).ToArray();
+            // Todo: Make it separate tasks ant then await all the same time
+            foreach (var entityId in _entityIds)
+                switch (fluentAction.ActionType)
+                {
+                    case FluentActionType.TurnOff:
+                        await _daemon.TurnOffAsync(entityId, attributes);
+                        break;
+                    case FluentActionType.TurnOn:
+                        await _daemon.TurnOnAsync(entityId, attributes);
+                        break;
+                    case FluentActionType.Toggle:
+                        await _daemon.ToggleAsync(entityId, attributes);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+     
+                
         }
 
         public IStateEntity Light(params string[] entity)
@@ -338,6 +350,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
+        public IExecute Call(Func<string, EntityState?, EntityState?, Task> func)
+        {
+            _currentState.FuncToCall = func;
+            return this;
+        }
         public IState StateChanged(object? to, object? from = null)
         {
             _currentState = new StateChangedInfo
@@ -431,6 +448,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public dynamic? To { get; set; }
 
         public TimeSpan ForTimeSpan { get; set; }
-
+        public Func<string, EntityState?, EntityState?, Task>? FuncToCall { get; set; }
     }
 }

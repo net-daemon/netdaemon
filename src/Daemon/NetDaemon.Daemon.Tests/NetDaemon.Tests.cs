@@ -52,6 +52,11 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.FakeStates["light.testlight"] = hassState;
 
+            CancellationTokenSource cancelSource = hcMock.GetSourceWithTimeout(100);
+
+            Task task = null;
+            task = daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            
             // ACT
             var entity = daemonHost.GetState("light.testlight");
 

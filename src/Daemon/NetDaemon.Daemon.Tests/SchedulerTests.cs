@@ -35,7 +35,7 @@ namespace NetDaemon.Daemon.Tests
             await Task.Delay(10);
             Assert.False(isTaskRun);
 
-            await Task.Delay(30);
+            await Task.Delay(35);
 
             Assert.True(isTaskRun);
             Assert.True(runTask.IsCompletedSuccessfully);
