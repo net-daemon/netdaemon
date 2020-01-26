@@ -100,6 +100,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
+        public IScript Script(params string[] entityId)
+        {
+            return new EntityManager(entityId, this);
+        }
+
         /// <summary>
         /// </summary>
         /// <remarks>

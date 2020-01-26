@@ -112,6 +112,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return null;
         }
 
+        public IScript Script(params string[] entityIds)
+        {
+            if (_daemon != null) return _daemon.Script(entityIds);
+
+            return null;
+        }
+
         public IEnumerable<EntityState> State => _daemon.State;
         public IScheduler Scheduler => _daemon?.Scheduler;
 
