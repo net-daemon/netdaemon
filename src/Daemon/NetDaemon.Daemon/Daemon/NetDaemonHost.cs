@@ -263,7 +263,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            await _hassClient.CallService(domain, "toggle", attributes);
+            await _hassClient.CallService(domain, "toggle", attributes, false);
         }
 
         public async Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -278,7 +278,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            await _hassClient.CallService(domain, "turn_off", attributes);
+            await _hassClient.CallService(domain, "turn_off", attributes, false);
         }
 
         public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -293,7 +293,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            await _hassClient.CallService(domain, "turn_on", attributes);
+            await _hassClient.CallService(domain, "turn_on", attributes, false);
         }
         private string GetDomainFromEntity(string entity)
         {
