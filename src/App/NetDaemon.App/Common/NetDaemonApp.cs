@@ -98,6 +98,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return null;
         }
 
+        public IMediaPlayer MediaPlayer(params string[] entity)
+        {
+            if (_daemon != null) return _daemon.MediaPlayer(entity);
+
+            return null;
+        }
+
+        public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
+        {
+            if (_daemon != null) return _daemon.MediaPlayers(func);
+
+            return null;
+        }
+
         public IEnumerable<EntityState> State => _daemon.State;
         public IScheduler Scheduler => _daemon?.Scheduler;
 

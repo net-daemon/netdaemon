@@ -57,6 +57,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         ILight Light(params string[] entity);
 
+        IMediaPlayer MediaPlayer(params string[] entity);
+        IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
+
         IEnumerable<EntityState> State { get; }
 
         IScheduler Scheduler { get; }

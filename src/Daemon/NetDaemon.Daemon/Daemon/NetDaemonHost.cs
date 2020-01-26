@@ -24,7 +24,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly Scheduler _scheduler;
 
         private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
-                    new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
+            new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
@@ -54,12 +54,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public IEnumerable<EntityState> State => _state?.Values!;
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
-                                        {
+                                {
             builder
                 .ClearProviders()
                 //                .AddFilter("HassClient.HassClient", LogLevel.Debug)
                 .AddConsole();
         });
+        public async Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
+        {
+            await _hassClient.CallService(domain, service, data, false);
+        }
+
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
             var x = State.Where(func);
@@ -70,12 +75,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public IEntity Entity(params string[] entityId)
         {
             return new EntityManager(entityId, this);
-        }
-
-        public async Task CallService(string domain, string service, dynamic? data=null, bool waitForResponse=false)
-        {
-
-            await _hassClient.CallService(domain, service, data, false);
         }
 
         public EntityState? GetState(string entity)
@@ -117,6 +116,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _stateActions.Add((pattern, action));
         }
 
+        public IMediaPlayer MediaPlayer(params string[] entityId)
+        {
+            return new EntityManager(entityId, this);
+        }
+
+        public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
+        {
+            var x = State.Where(func);
+
+            return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+        }
         /// <summary>
         ///     Runs the Daemon
         /// </summary>
@@ -295,7 +305,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             await _hassClient.CallService(domain, "turn_on", attributes, false);
         }
-        private string GetDomainFromEntity(string entity)
+        private static string GetDomainFromEntity(string entity)
         {
             var entityParts = entity.Split('.');
             if (entityParts.Length != 2)

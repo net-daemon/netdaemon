@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +13,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         TurnOn,
         TurnOff,
         Toggle,
-        SetState
+        SetState,
+        Play,
+        Pause,
+        PlayPause,
+        Stop
+
     }
 
     public interface ITime
@@ -42,8 +48,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IAction WithAttribute(string name, object value);
     }
 
-    public interface IEntity : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, IStateChanged, ISetState<IAction>
+    public interface IEntity : 
+        ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, 
+        IStateChanged, ISetState<IAction>
     {
+    }
+
+    public interface IMediaPlayer : IPlay<Task>, IStop<Task>, IPlayPause<Task>, IPause<Task>
+    {
+
     }
 
     public interface IEntityProperties
@@ -99,6 +112,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
     }
 
+    #region Media, Play, Stop, Pause, PlayPause
+    public interface IPlay<T>
+    {
+        T Play();
+    }
+
+    public interface IStop<T>
+    {
+        T Stop();
+    }
+
+    public interface IPlayPause<T>
+    {
+        T PlayPause();
+    }
+
+    public interface IPause<T>
+    {
+        T Pause();
+    }
+
+    #endregion
+
+
+    #region Entities, TurnOn, TurnOff, Toggle
+
     public interface IToggle<T>
     {
         T Toggle();
@@ -118,6 +157,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
         T TurnOn();
     }
+
+    #endregion
+
+
 
     public class TimeManager : ITime, ITimeItems, ITimerEntity, ITimerAction
     {
@@ -182,7 +225,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
     }
 
-    public class EntityManager : EntityState, IEntity, ILight, IAction, IStateEntity, IState, IStateAction
+    public class EntityManager : EntityState, IEntity, ILight, IAction, 
+        IStateEntity, IState, IStateAction, IMediaPlayer
     {
         private readonly ConcurrentQueue<FluentAction> _actions =
             new ConcurrentQueue<FluentAction>();
@@ -454,6 +498,49 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+        }
+
+        public async Task Play()
+        {
+            await CallServiceOnAllEntities("media_play");
+        }
+
+        public async Task Stop()
+        {
+            await CallServiceOnAllEntities("media_stop");
+        }
+
+        public async Task PlayPause()
+        {
+            await CallServiceOnAllEntities("media_play_pause");
+        }
+
+        public async Task Pause()
+        {
+            await CallServiceOnAllEntities("media_pause");
+        }
+
+        private async Task CallServiceOnAllEntities(string service)
+        {
+            List<Task> taskList = new List<Task>();
+            foreach (var entityId in _entityIds)
+            {
+                var domain = GetDomainFromEntity(entityId);
+                var task = _daemon.CallService(domain, service, new{entity_id=entityId }, false);
+                taskList.Add(task);
+            }
+            if (taskList.Count > 0)
+            {
+                await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000));
+            }
+        }
+        private static string GetDomainFromEntity(string entity)
+        {
+            var entityParts = entity.Split('.');
+            if (entityParts.Length != 2)
+                throw new ApplicationException($"entity_id is mal formatted {entity}");
+
+            return entityParts[0];
         }
     }
 
