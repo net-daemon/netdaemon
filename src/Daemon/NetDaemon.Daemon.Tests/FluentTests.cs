@@ -231,6 +231,104 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task EntityOnStateDefaultTriggerOnAnyStateChange()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var triggered = false;
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange()
+                .Call((e, n, o) =>
+                {
+                    triggered = true; 
+                    return Task.CompletedTask; })
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+            Assert.True(triggered);
+        }
+
+        [Fact]
+        public async Task EntityOnStateNotTriggerOnSameState()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "off", "off");
+
+            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var triggered = false;
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange()
+                .Call((e, n, o) =>
+                {
+                    triggered = true;
+                    return Task.CompletedTask;
+                })
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+            Assert.False(triggered);
+        }
+
+        [Fact]
+        public async Task EntityOnStateIncludeAttributesTriggerOnSameState()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "off", "off");
+
+            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var triggered = false;
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange(allChanges: true)
+                .Call((e, n, o) =>
+                {
+                    triggered = true;
+                    return Task.CompletedTask;
+                })
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+            Assert.True(triggered);
+        }
+
+        [Fact]
         public async Task TimerEveryShouldCallServiceCorrectNumberOfTimes()
         {
             // ARRANGE

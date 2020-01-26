@@ -72,6 +72,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(entityId, this);
         }
 
+        public async Task CallService(string domain, string service, dynamic? data)
+        {
+            await _hassClient.CallService(domain, service, data);
+        }
+
         public EntityState? GetState(string entity)
         {
             return _state.TryGetValue(entity, out var returnValue)
