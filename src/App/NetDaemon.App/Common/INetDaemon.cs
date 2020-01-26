@@ -45,6 +45,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
         Task TurnOffAsync(string entityIds, params (string name, object val)[] attributes);
         Task ToggleAsync(string entityIds, params (string name, object val)[] attributes);
+        Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes);
+
         EntityState? GetState(string entity);
 
         //IAction Action { get; }

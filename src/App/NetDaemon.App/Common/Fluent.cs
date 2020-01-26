@@ -12,6 +12,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         TurnOn,
         TurnOff,
         Toggle,
+        SetState
     }
 
     public interface ITime
@@ -39,10 +40,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
     public interface IAction : IExecuteAsync
     {
-        IAction UsingAttribute(string name, object value);
+        IAction WithAttribute(string name, object value);
     }
 
-    public interface IEntity : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, IStateChanged
+    public interface IEntity : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, IStateChanged, ISetState<IAction>
     {
     }
 
@@ -61,20 +62,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Task ExecuteAsync();
     }
 
-    public interface ILight : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>
+    public interface ILight : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, ISetState<IAction>
     {
     }
 
     public interface IState
     {
-        IStateEntity Entities(Func<IEntityProperties, bool> func);
+        IStateEntity UseEntities(Func<IEntityProperties, bool> func);
 
-        IStateEntity Entity(params string[] entityId);
-        IStateEntity Light(params string[] entity);
+        IStateEntity UseEntity(params string[] entityId);
+        IStateEntity UseLight(params string[] entity);
 
 
-        IStateEntity Lights(Func<IEntityProperties, bool> func);
-        IState For(TimeSpan timeSpan);
+        IStateEntity UseLights(Func<IEntityProperties, bool> func);
+        IState AndNotChangeFor(TimeSpan timeSpan);
         IExecute Call(Func<string, EntityState?, EntityState?, Task> func);
     }
 
@@ -84,21 +85,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     }
     public interface IStateAction : IExecute
     {
-        IStateAction UsingAttribute(string name, object value);
+        IStateAction WithAttribute(string name, object value);
     }
 
     public interface IStateChanged
     {
-        IState StateChanged(object? to, object? from = null);
-        IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc);
+        IState WhenStateChange(object? to, object? from = null);
+        IState WhenStateChange(Func<EntityState?, EntityState?, bool> stateFunc);
     }
 
-    public interface IStateEntity : ITurnOff<IStateAction>, ITurnOn<IStateAction>, IToggle<IStateAction>
+    public interface IStateEntity : ITurnOff<IStateAction>, ITurnOn<IStateAction>, IToggle<IStateAction>, ISetState<IStateAction>
     {
     }
     public interface IToggle<T>
     {
         T Toggle();
+    }
+
+    public interface ISetState<T>
+    {
+        T SetState(dynamic state);
     }
 
     public interface ITurnOff<T>
@@ -170,7 +176,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public ITimerAction UsingAttribute(string name, object value)
         {
-            entityManager.UsingAttribute(name, value);
+            entityManager.WithAttribute(name, value);
             return this;
         }
     }
@@ -193,13 +199,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _daemon = daemon;
         }
 
-        public IStateEntity Entities(Func<IEntityProperties, bool> func)
+        public IStateEntity UseEntities(Func<IEntityProperties, bool> func)
         {
             _currentState.Entity = _daemon.Entities(func);
             return this;
         }
 
-        public IStateEntity Entity(params string[] entityId)
+        public IStateEntity UseEntity(params string[] entityId)
         {
             _currentState.Entity = _daemon.Entity(entityId);
             return this;
@@ -246,7 +252,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
                         if (_currentState.ForTimeSpan != TimeSpan.Zero)
                         {
-                            _daemon.Logger.LogDebug($"For statement found, delaying {_currentState.ForTimeSpan}");
+                            _daemon.Logger.LogDebug($"AndNotChangeFor statement found, delaying {_currentState.ForTimeSpan}");
                             await Task.Delay(_currentState.ForTimeSpan);
                             var currentState = _daemon.GetState(entityIdInn);
                             if (currentState != null && currentState.State == newState?.State)
@@ -326,6 +332,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     case FluentActionType.Toggle:
                         await _daemon.ToggleAsync(entityId, attributes);
                         break;
+                    case FluentActionType.SetState:
+                        await _daemon.SetState(entityId, fluentAction.State, attributes);
+                        break;
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -334,17 +343,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 
         }
 
-        public IStateEntity Light(params string[] entity)
+        public IStateEntity UseLight(params string[] entity)
         {
             throw new NotImplementedException();
         }
 
-        public IStateEntity Lights(Func<IEntityProperties, bool> func)
+        public IStateEntity UseLights(Func<IEntityProperties, bool> func)
         {
             throw new NotImplementedException();
         }
 
-        public IState For(TimeSpan timeSpan)
+        public IState AndNotChangeFor(TimeSpan timeSpan)
         {
             _currentState.ForTimeSpan = timeSpan;
             return this;
@@ -355,7 +364,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _currentState.FuncToCall = func;
             return this;
         }
-        public IState StateChanged(object? to, object? from = null)
+        public IState WhenStateChange(object? to, object? from = null)
         {
             _currentState = new StateChangedInfo
             {
@@ -366,7 +375,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
-        public IState StateChanged(Func<EntityState?, EntityState?, bool> stateFunc)
+        public IState WhenStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
         {
             _currentState = new StateChangedInfo
             {
@@ -414,16 +423,30 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
-        public IAction UsingAttribute(string name, object value)
+        public IAction WithAttribute(string name, object value)
         {
             if (_currentAction != null) _currentAction.Attributes[name] = value;
             return this;
         }
-        IStateAction IStateAction.UsingAttribute(string name, object value)
+        IStateAction IStateAction.WithAttribute(string name, object value)
         {
             var entityManager = (EntityManager)_currentState.Entity!;
-            entityManager.UsingAttribute(name, value);
+            entityManager.WithAttribute(name, value);
 
+            return this;
+        }
+
+        IAction ISetState<IAction>.SetState(dynamic state)
+        {
+            _currentAction = new FluentAction(FluentActionType.SetState);
+            _currentAction.State = state;
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction ISetState<IStateAction>.SetState(dynamic state)
+        {
+            _currentState?.Entity?.SetState(state);
             return this;
         }
     }
@@ -438,6 +461,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public FluentActionType ActionType { get; }
         public Dictionary<string, object> Attributes { get; }
+        public dynamic State { get; set; }
     }
 
     internal class StateChangedInfo

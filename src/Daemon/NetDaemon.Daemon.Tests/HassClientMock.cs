@@ -168,6 +168,21 @@ namespace NetDaemon.Daemon.Tests
             Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>()), times);
         }
 
+        public void VerifySetState(string entity, string state,
+            params (string attribute, object value)[] attributesTuples)
+        {
+            var attributes = new FluentExpandoObject();
+            foreach (var attributesTuple in attributesTuples)
+                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+
+            Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);
+        }
+
+        public void VerifySetStateTimes(string entity, Times times)
+        {
+            Verify(n => n.SetState(entity, It.IsAny<string>(), It.IsAny<FluentExpandoObject>()), times);
+        }
+
         public void AssertEqual(HassState hassState, EntityState entity)
         {
             Assert.Equal(hassState.EntityId, entity.EntityId);

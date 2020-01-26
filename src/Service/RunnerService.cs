@@ -58,7 +58,7 @@ namespace runner
                     {
                         var task = _daemonHost.Run(config.Host!, config.Port.Value!, config.Ssl.Value!, config.Token!,
                             stoppingToken);
-                        await Task.Delay(500, stoppingToken); // Todo: Must be smarter later 
+                        await Task.Delay(1000, stoppingToken); // Todo: Must be smarter later 
                         if (_daemonHost.Connected)
                         {
                             
@@ -67,7 +67,7 @@ namespace runner
                         }
                         else
                         {
-                            _logger.LogWarning("Home assistant still unavailable, retrying in 5 seconds...");
+                            _logger.LogWarning("Home assistant still unavailable, retrying in 20 seconds...");
                             hasBeenCanceledByTheDaemon = false;
                         }
                     }
@@ -76,13 +76,13 @@ namespace runner
                         if (!stoppingToken.IsCancellationRequested)
                         {
                             hasBeenCanceledByTheDaemon = false;
-                            _logger.LogWarning("Home assistant disconnected!, retrying in 5 seconds...");
+                            _logger.LogWarning("Home assistant disconnected!, retrying in 20 seconds...");
                         }
                     }
 
                     if (!stoppingToken.IsCancellationRequested)
                         // The service is still running, we have error in connection to hass
-                        await Task.Delay(5000, stoppingToken); // Wait 5 seconds
+                        await Task.Delay(20000, stoppingToken); // Wait 5 seconds
                 }
             }
             catch (OperationCanceledException)

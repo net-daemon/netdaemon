@@ -12,13 +12,13 @@ namespace app
 
         //    //await Action
         //    //        .TurnOff
-        //    //            .Entities(
+        //    //            .UseEntities(
         //    //            "light.mylight", 
         //    //            "light.yourlight"
         //    //            )
-        //    //                .UsingAttribute("brightness", 50).And
+        //    //                .WithAttribute("brightness", 50).And
         //    //        .TurnOff
-        //    //            .Entity("light.otherlight")
+        //    //            .UseEntity("light.otherlight")
         //    //        .ExecuteAsync();
         //}
 

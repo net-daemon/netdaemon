@@ -61,6 +61,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             if (_daemon != null) await _daemon.ToggleAsync(entityId, attributes);
         }
 
+        public async Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes)
+        {
+            if (_daemon != null) return await _daemon.SetState(entityId, state, attributes);
+            return null;
+        }
+
         public EntityState? GetState(string entityId)
         {
             return _daemon?.GetState(entityId);

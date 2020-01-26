@@ -33,9 +33,9 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("off")
-                .For(TimeSpan.FromMilliseconds(20))
-                .Entity("light.correct_entity")
+                .WhenStateChange("off")
+                .AndNotChangeFor(TimeSpan.FromMilliseconds(20))
+                .UseEntity("light.correct_entity")
                 .TurnOff()
                 .Execute();
 
@@ -72,8 +72,8 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged((n, _) => n.State == "on")
-                .Entity("light.correct_entity")
+                .WhenStateChange((n, _) => n.State == "on")
+                .UseEntity("light.correct_entity")
                 .TurnOn()
                 .Execute();
 
@@ -104,8 +104,8 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("on")
-                .Entity("light.correct_entity")
+                .WhenStateChange("on")
+                .UseEntity("light.correct_entity")
                 .TurnOn()
                 .Execute();
 
@@ -136,8 +136,8 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("on")
-                .Entity("light.correct_entity")
+                .WhenStateChange("on")
+                .UseEntity("light.correct_entity")
                 .TurnOn()
                 .Execute();
 
@@ -169,15 +169,15 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("on")
-                .Entity("light.correct_entity")
+                .WhenStateChange("on")
+                .UseEntity("light.correct_entity")
                 .TurnOn()
                 .Execute();
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("off")
-                .Entity("light.correct_entity")
+                .WhenStateChange("off")
+                .UseEntity("light.correct_entity")
                 .TurnOff()
                 .Execute();
 
@@ -209,10 +209,10 @@ namespace NetDaemon.Daemon.Tests
 
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("on")
-                .Entity("light.correct_entity")
+                .WhenStateChange("on")
+                .UseEntity("light.correct_entity")
                 .TurnOn()
-                .UsingAttribute("transition", 0)
+                .WithAttribute("transition", 0)
                 .Execute();
 
             try
@@ -453,7 +453,7 @@ namespace NetDaemon.Daemon.Tests
             await daemonHost
                 .Entity("light.correct_entity")
                 .TurnOn()
-                .UsingAttribute("brightness", 100)
+                .WithAttribute("brightness", 100)
                 .ExecuteAsync();
 
             // ASSERT
@@ -475,8 +475,8 @@ namespace NetDaemon.Daemon.Tests
             await daemonHost
                 .Entity("light.correct_entity")
                 .TurnOn()
-                .UsingAttribute("brightness", 100)
-                .UsingAttribute("color_temp", 230)
+                .WithAttribute("brightness", 100)
+                .WithAttribute("color_temp", 230)
                 .ExecuteAsync();
 
             // ASSERT
@@ -485,6 +485,43 @@ namespace NetDaemon.Daemon.Tests
                 ("brightness", 100),
                 ("color_temp", 230),
                 ("entity_id", "light.correct_entity"));
+        }
+
+        [Fact]
+        public async Task SetStateEntityCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .Entity("light.correct_entity")
+                .SetState(50)
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifySetStateTimes("light.correct_entity", Times.Once());
+            hcMock.VerifySetState("light.correct_entity", "50");
+        }
+
+        [Fact]
+        public async Task SetStateWithAttributesEntityCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .Entity("light.correct_entity")
+                .SetState(50)
+                .WithAttribute("attr1", "str_value")
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifySetStateTimes("light.correct_entity", Times.Once());
+            hcMock.VerifySetState("light.correct_entity", "50", ("attr1", "str_value"));
         }
 
         [Fact]
@@ -503,7 +540,7 @@ namespace NetDaemon.Daemon.Tests
             var actualEntity = "";
             daemonHost
                 .Entity("binary_sensor.pir")
-                .StateChanged("on").Call((entity, to, from) =>
+                .WhenStateChange("on").Call((entity, to, from) =>
                 {
                     actualToState = to.State;
                     actualFromState = from.State;
