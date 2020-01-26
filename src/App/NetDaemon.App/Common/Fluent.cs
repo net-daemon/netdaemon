@@ -154,7 +154,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public void Execute()
         {
-            _daemon.Scheduler.RunEvery(_timeSpan, async () => { await entityManager.ExecuteAsync(true); });
+            _daemon.Scheduler.RunEveryAsync(_timeSpan, async () => { await entityManager.ExecuteAsync(true); });
         }
 
         public ITimerAction UsingAttribute(string name, object value)

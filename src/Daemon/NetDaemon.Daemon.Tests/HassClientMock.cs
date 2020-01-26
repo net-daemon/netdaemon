@@ -160,12 +160,12 @@ namespace NetDaemon.Daemon.Tests
             foreach (var attributesTuple in attributesTuples)
                 ((IDictionary<string, object>) attributes)[attributesTuple.attribute] = attributesTuple.value;
 
-            Verify(n => n.CallService(domain, service, attributes), Times.AtLeastOnce);
+            Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
         }
 
         public void VerifyCallServiceTimes(string service, Times times)
         {
-            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>()), times);
+            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
         }
 
         public void VerifySetState(string entity, string state,

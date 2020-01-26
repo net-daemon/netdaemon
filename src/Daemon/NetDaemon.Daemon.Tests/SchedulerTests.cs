@@ -23,7 +23,7 @@ namespace NetDaemon.Daemon.Tests
             var isTaskRun = false;
 
             // ACT
-            var runTask = scheduler.RunIn(20, async () =>
+            var runTask = scheduler.RunInAsync(20, async () =>
             {
                 isTaskRun = true;
                 await Task.Delay(1);
@@ -55,7 +55,7 @@ namespace NetDaemon.Daemon.Tests
             var nrOfRuns = 0;
 
            // ACT
-           var runTask = scheduler.RunEvery(10, async () =>
+           var runTask = scheduler.RunEveryAsync(10, async () =>
            {
                nrOfRuns++;
                await Task.Delay(1);
@@ -80,7 +80,7 @@ namespace NetDaemon.Daemon.Tests
             var scheduler = new Scheduler(mockTimeManager.Object);
 
             // ACT
-            var runTask = scheduler.RunEvery(20, async () =>
+            var runTask = scheduler.RunEveryAsync(20, async () =>
             {
                 await Task.Delay(25);
             });
@@ -104,7 +104,7 @@ namespace NetDaemon.Daemon.Tests
             var scheduler = new Scheduler(mockTimeManager.Object);
 
             // ACT
-            var runTask = scheduler.RunEvery(20, async () =>
+            var runTask = scheduler.RunEveryAsync(20, async () =>
             {
                 await Task.Delay(1);
             });

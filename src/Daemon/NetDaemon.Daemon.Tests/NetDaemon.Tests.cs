@@ -166,7 +166,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             var attributes = new ExpandoObject();
             ((IDictionary<string, object>) attributes)["entity_id"] = "light.correct_entity";
-            hcMock.Verify(n => n.CallService("light", "turn_on", attributes));
+            hcMock.Verify(n => n.CallService("light", "turn_on", attributes, It.IsAny<bool>()));
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             var attributes = new ExpandoObject();
             ((IDictionary<string, object>) attributes)["entity_id"] = "light.correct_entity";
-            hcMock.Verify(n => n.CallService("light", "turn_off", attributes));
+            hcMock.Verify(n => n.CallService("light", "turn_off", attributes, It.IsAny<bool>()));
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             var attributes = new ExpandoObject();
             ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
-            hcMock.Verify(n => n.CallService("light", "toggle", attributes));
+            hcMock.Verify(n => n.CallService("light", "toggle", attributes, It.IsAny<bool>()));
         }
 
         [Fact]

@@ -51,12 +51,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// </summary>
         public DateTime StartTime { get; } = DateTime.MinValue;
 
-        public Task RunEvery(int millisecondsDelay, Func<Task> func)
+
+        /// <summary>
+        ///     Runs the function every milliseconds 
+        /// </summary>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        public void RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
+
+        public Task RunEveryAsync(int millisecondsDelay, Func<Task> func)
         {
-            return RunEvery(TimeSpan.FromMilliseconds(millisecondsDelay), func);
+            return RunEveryAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
-        public Task RunEvery(TimeSpan timeSpan, Func<Task> func)
+        /// <summary>
+        ///     Runs the function every TimeSpan 
+        /// </summary>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        public void RunEvery(TimeSpan timeSpan, Func<Task> func) => RunEveryAsync(timeSpan, func);
+
+        public Task RunEveryAsync(TimeSpan timeSpan, Func<Task> func)
         {
             var stopWatch = new Stopwatch();
 
@@ -87,12 +104,28 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return task;
         }
 
-        public Task RunIn(int millisecondsDelay, Func<Task> func)
+        /// <summary>
+        ///     Runs the function in time set
+        /// </summary>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        public void RunIn(int millisecondsDelay, Func<Task> func) => RunInAsync(millisecondsDelay, func);
+
+        public Task RunInAsync(int millisecondsDelay, Func<Task> func)
         {
-            return RunIn(TimeSpan.FromMilliseconds(millisecondsDelay), func);
+            return RunInAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
-        public Task RunIn(TimeSpan timeSpan, Func<Task> func)
+        /// <summary>
+        ///     Runs the function in timespan
+        /// </summary>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        public void RunIn(TimeSpan timeSpan, Func<Task> func) => RunInAsync(timeSpan, func);
+
+        public Task RunInAsync(TimeSpan timeSpan, Func<Task> func)
         {
             var task = Task.Run(async () =>
             {
