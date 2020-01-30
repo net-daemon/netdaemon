@@ -25,7 +25,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
         public short? Port { get; set; } = 8123;
         [JsonPropertyName("ssl")]
         public bool? Ssl { get; set; } = false;
-        [JsonPropertyName("ssl")]
+        [JsonPropertyName("SourceFolder")]
         public string? SourceFolder { get; set; } = "";
 
 

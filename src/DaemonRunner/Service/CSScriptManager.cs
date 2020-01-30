@@ -40,7 +40,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
         public async Task LoadSources()
         {
             //var script = CSharpScript.Create("// Dummy code", _scriptOptions, globalsType: typeof(CSGlobals));
+            if (string.IsNullOrEmpty(_codeFolder))
+            {
+                var apps = Assembly.GetExecutingAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+                foreach (var app in apps)
+                {
+                    _logger.LogInformation($"Loading App ({app.Name}) local devmachine");
+                    var daempnApp = (NetDaemonApp)Activator.CreateInstance(app);
+                    await daempnApp.StartUpAsync(_daemon);
+                    await daempnApp.InitializeAsync();
+                }
 
+                return;
+            }
             foreach (var file in Directory.EnumerateFiles(_codeFolder, "*.cs", SearchOption.AllDirectories))
             {
                 _logger.LogDebug($"Found cs file {Path.GetFileName(file)}");
