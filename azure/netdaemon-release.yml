@@ -25,14 +25,22 @@ steps:
     displayName: 'dotnet build $(buildConfiguration)'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Make NUGET packages'
+    displayName: 'Make NUGET Runner'
     inputs:
       command: pack
       versioningScheme: byEnvVar
-      packagesToPack: ['**/NetDeamon.App', '**/DaemonRunner.csproj']
+      packagesToPack: '**/DaemonRunner.csproj'
       outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
       versionEnvVar: package-version
 
+  - task: DotNetCoreCLI@2
+    displayName: 'Make NUGET App'
+    inputs:
+      command: pack
+      versioningScheme: byEnvVar
+      packagesToPack: '**/NetDeamon.App'
+      outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
+      versionEnvVar: package-version
   # - task: CopyFiles@2
   #   displayName: 'Copy RELEASENOTES'
   #   inputs:
