@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NetDeamon.App</name>
+    </assembly>
+    <members>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager.ExecuteAsync(System.Boolean)">
+            <summary>
+                Executes the sequence of actions
+            </summary>
+            <param name="keepItems">
+                True if  you want to keep items
+            </param>
+            <remarks>
+                You want to keep the items when using this as part of an automation
+                that are kept over time. Not keeping when just doing a command
+            </remarks>
+            <returns></returns>
+        </member>
+        <member name="T:JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject">
+            <summary>
+                A custom expando object to alow to return null values if properties does not exist
+            </summary>
+            <remarks>
+                Thanks to @lukevendediger for original code and inspiration
+                https://gist.github.com/lukevenediger/6327599
+            </remarks>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject.#ctor(System.Boolean,System.Boolean,System.Dynamic.ExpandoObject)">
+            <summary>
+                Creates a BetterExpando object/
+            </summary>
+            <param name="ignoreCase">Don't be strict about property name casing.</param>
+            <param name="returnNullMissingProperties">If true, returns String.Empty for missing properties.</param>
+            <param name="root">An ExpandoObject to consume and expose.</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject.Augment(JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject)">
+            <summary>
+                Combine two instances together to get a union.
+            </summary>
+            <returns>This instance but with additional properties</returns>
+            <remarks>Existing properties are not overwritten.</remarks>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject.HasProperty(System.String)">
+            <summary>
+                Check if BetterExpando contains a property.
+            </summary>
+            <remarks>Respects the case sensitivity setting</remarks>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject.ToString">
+            <summary>
+                Returns this object as comma-separated name-value pairs.
+            </summary>
+        </member>
+        <member name="T:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp">
+            <summary>
+            Interface that all NetDaemon apps needs to implement
+            </summary>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp.StartUpAsync(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)">
+            <summary>
+            Start the application, normally implemented by the base class
+            </summary>
+            <param name="daemon"></param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp.InitializeAsync">
+            <summary>
+            Init the application, is called by the NetDaemon after startup
+            </summary>
+            <param name="daemon"></param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ListenState(System.String,System.Func{System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task})">
+            <summary>
+                Listen to statechange
+            </summary>
+            <param name="pattern">Match pattern, entity_id or domain</param>
+            <param name="action">The func to call when matching</param>
+            <remarks>
+                The callback function is
+                    - EntityId
+                    - newEvent
+                    - oldEvent
+            </remarks>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp.ListenState(System.String,System.Func{System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task})">
+            <summary>
+                Listen for state changes and call a function when state changes
+            </summary>
+            <remarks>
+                Make function like
+                <code>
+                ListenState("binary_sensor.pir", async (string entityId, EntityState newState, EntityState oldState) =>
+                {
+                    await Task.Delay(1000);// Insert some code
+                });
+                </code>
+                Valid patterns are:
+                    light.thelight      - En entity id
+                    light               - No dot means the whole domain
+                    empty               - All events
+            </remarks>
+            <param name="pattern">Ientity id or domain</param>
+            <param name="action">The action to call when state is changed, see remarks</param>
+        </member>
+    </members>
+</doc>

@@ -8,22 +8,22 @@ using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Service;
 
-namespace runner
+
+namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 {
-    internal class RunnerService : BackgroundService
+    public class RunnerService : BackgroundService
     {
         private readonly NetDaemonHost _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        //private readonly 
+        //private readonly
 
-        public RunnerService(ILoggerFactory loggerFactory, ILoggerFactory factory)
+        public RunnerService(ILoggerFactory loggerFactory)
         {
-            _logger = factory.CreateLogger<RunnerService>();
-            _loggerFactory = factory;
-            _daemonHost = new NetDaemonHost(new HassClient(factory), factory);
+            _logger = loggerFactory.CreateLogger<RunnerService>();
+            _loggerFactory = loggerFactory;
+            _daemonHost = new NetDaemonHost(new HassClient(loggerFactory), loggerFactory);
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -48,8 +48,8 @@ namespace runner
                     return;
                 }
 
-                var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost,
-                    _loggerFactory);
+                //var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost,
+                //    _loggerFactory);
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
@@ -58,11 +58,11 @@ namespace runner
                     {
                         var task = _daemonHost.Run(config.Host!, config.Port.Value!, config.Ssl.Value!, config.Token!,
                             stoppingToken);
-                        await Task.Delay(1000, stoppingToken); // Todo: Must be smarter later 
+                        await Task.Delay(1000, stoppingToken); // Todo: Must be smarter later
                         if (_daemonHost.Connected)
                         {
-                            
-                            await csManager.LoadSources();
+
+                            //await csManager.LoadSources();
                             await task;
                         }
                         else
@@ -100,9 +100,9 @@ namespace runner
             try
             {
                 // Check if we have HASSIO add-on options
-                
-               // if (File.Exists("/data/options.json"))    Todo: We read configs here later
-                if (Environment.GetEnvironmentVariable("HASSIO_TOKEN")!=null)
+
+                // if (File.Exists("/data/options.json"))    Todo: We read configs here later
+                if (Environment.GetEnvironmentVariable("HASSIO_TOKEN") != null)
                 {
                     //var hassioConfig = JsonSerializer.Deserialize<Config>(File.ReadAllBytes("/data/options.json"));
                     var hassioConfig = new Config();
@@ -113,7 +113,7 @@ namespace runner
                     return hassioConfig;
                 }
 
-                // Check if config is in a file same folder as exefile 
+                // Check if config is in a file same folder as exefile
                 var filenameForExecutingAssembly = Assembly.GetExecutingAssembly().Location;
                 var folderOfExecutingAssembly = Path.GetDirectoryName(filenameForExecutingAssembly);
                 var configFilePath = Path.Combine(folderOfExecutingAssembly, "config.json");

@@ -229,13 +229,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         public async Task<EntityState?> SetState(string entityId, dynamic state,
-            params (string name, object val)[] attributeNameValuePair)
+            params (string name, object val)[] attributes)
         {
             // Use expando object as all other methods
-            var attributes = attributeNameValuePair.ToDynamic();
+            var dynAttributes = attributes.ToDynamic();
 
 
-            HassState result = await _hassClient.SetState(entityId, state.ToString(), attributes);
+            HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes);
 
             if (result != null)
             {
