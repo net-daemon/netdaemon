@@ -35,12 +35,12 @@ steps:
   #     testRunner: VSTest
   #     testResultsFiles: '**/*.trx'
 
-  # # - task: DotNetCoreCLI@2
-  # #   displayName: Install ReportGenerator Global Tool
-  # #   inputs:
-  # #     command: custom
-  # #     custom: tool
-  # #     arguments: install dotnet-reportgenerator-globaltool -g
+  - task: DotNetCoreCLI@2
+    displayName: Install ReportGenerator Global Tool
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install dotnet-reportgenerator-globaltool -g
 
   - script: reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/coverlet/reports -reporttypes:"Cobertura;Badges"
     displayName: Create reports
