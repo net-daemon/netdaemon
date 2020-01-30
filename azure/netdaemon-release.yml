@@ -38,7 +38,7 @@ steps:
     inputs:
       command: pack
       versioningScheme: byEnvVar
-      packagesToPack: '**/NetDeamon.App'
+      packagesToPack: '**/NetDeamon.App.csproj'
       outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
       versionEnvVar: package-version
   # - task: CopyFiles@2
