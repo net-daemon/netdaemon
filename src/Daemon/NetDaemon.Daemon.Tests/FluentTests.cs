@@ -68,7 +68,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var cancelSource = hcMock.GetSourceWithTimeout();
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -100,7 +100,7 @@ namespace NetDaemon.Daemon.Tests
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -132,7 +132,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -165,7 +165,7 @@ namespace NetDaemon.Daemon.Tests
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -205,7 +205,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
 
             daemonHost
                 .Entity("binary_sensor.pir")
@@ -239,7 +239,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var cancelSource = hcMock.GetSourceWithTimeout();
             var triggered = false;
 
             daemonHost
@@ -271,7 +271,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "off");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var cancelSource = hcMock.GetSourceWithTimeout();
             var triggered = false;
 
             daemonHost
@@ -304,7 +304,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "off");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var cancelSource = hcMock.GetSourceWithTimeout();
             var triggered = false;
 
             daemonHost
@@ -402,7 +402,7 @@ namespace NetDaemon.Daemon.Tests
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
             await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
 
 
@@ -445,7 +445,7 @@ namespace NetDaemon.Daemon.Tests
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
             await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
 
             // ACT
@@ -468,7 +468,7 @@ namespace NetDaemon.Daemon.Tests
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            var cancelSource = hcMock.GetSourceWithTimeout(10);
+            var cancelSource = hcMock.GetSourceWithTimeout();
             await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
 
             // ACT
@@ -631,7 +631,7 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            var cancelSource = hcMock.GetSourceWithTimeout(20);
+            var cancelSource = hcMock.GetSourceWithTimeout();
   
             var actualToState = "";
             var actualFromState = "";

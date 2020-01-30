@@ -200,7 +200,7 @@ namespace NetDaemon.Daemon.Tests
         /// </summary>
         /// <param name="milliSeconds"></param>
         /// <returns></returns>
-        public CancellationTokenSource GetSourceWithTimeout(int milliSeconds)
+        public CancellationTokenSource GetSourceWithTimeout(int milliSeconds=50)
         {
             return Debugger.IsAttached
                 ? new CancellationTokenSource()

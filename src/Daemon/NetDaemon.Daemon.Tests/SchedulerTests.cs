@@ -85,7 +85,7 @@ namespace NetDaemon.Daemon.Tests
                 await Task.Delay(25);
             });
 
-            await Task.WhenAny(runTask, Task.Delay(100));
+            await Task.WhenAny(runTask, Task.Delay(500));
             await scheduler.Stop();
 
             // ASSERT
