@@ -1,34 +1,46 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
 
-trigger:
-- master
+# Do not trigger this script on any change or pr
+trigger: none
+pr: none
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  - group: package-information
+  - name: buildConfiguration
+    value: 'Release'
 
 steps:
-- task: NuGetToolInstaller@1
+  - task: UseDotNet@2
+    displayName: 'Use .net core 3.1'
+    inputs:
+      version: '3.1.x'
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+  - script: dotnet build ./src --configuration $(buildConfiguration)
+    displayName: 'dotnet build $(buildConfiguration)'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+  - task: DotNetCoreCLI@2
+    displayName: 'Make NUGET packages'
+    inputs:
+      command: pack
+      versioningScheme: byEnvVar
+      packagesToPack: '**/NetDeamon.App', '**/DaemonRunner.csproj'
+      outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
+      versionEnvVar: package-version
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+  # - task: CopyFiles@2
+  #   displayName: 'Copy RELEASENOTES'
+  #   inputs:
+  #     sourceFolder: '$(Build.SourcesDirectory)'
+  #     contents: '**/RELEASENOTES.md'
+  #     targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts'
+    inputs:
+      PathtoPublish: '$(build.artifactstagingdirectory)'
