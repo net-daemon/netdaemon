@@ -47,8 +47,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 
                     return;
                 }
+                var sourceFolder = config.SourceFolder;
 
-                var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost,
+                if (!string.IsNullOrEmpty(sourceFolder))
+                    sourceFolder = Path.Combine(config.SourceFolder!, "apps");
+
+                var csManager = new CSScriptManager(sourceFolder, _daemonHost,
                     _loggerFactory);
 
                 while (!stoppingToken.IsCancellationRequested)
