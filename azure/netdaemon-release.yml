@@ -29,7 +29,7 @@ steps:
     inputs:
       command: pack
       versioningScheme: byEnvVar
-      packagesToPack: '**/NetDeamon.App', '**/DaemonRunner.csproj'
+      packagesToPack: ['**/NetDeamon.App', '**/DaemonRunner.csproj']
       outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
       versionEnvVar: package-version
 
