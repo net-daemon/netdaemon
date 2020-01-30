@@ -48,8 +48,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                     return;
                 }
 
-                //var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost,
-                //    _loggerFactory);
+                var csManager = new CSScriptManager(Path.Combine(config.SourceFolder!, "apps"), _daemonHost,
+                    _loggerFactory);
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
@@ -62,7 +62,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                         if (_daemonHost.Connected)
                         {
 
-                            //await csManager.LoadSources();
+                            await csManager.LoadSources();
                             await task;
                         }
                         else

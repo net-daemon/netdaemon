@@ -42,7 +42,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
             //var script = CSharpScript.Create("// Dummy code", _scriptOptions, globalsType: typeof(CSGlobals));
             if (string.IsNullOrEmpty(_codeFolder))
             {
-                var apps = Assembly.GetExecutingAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+                var apps = Assembly.GetEntryAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
                 foreach (var app in apps)
                 {
                     _logger.LogInformation($"Loading App ({app.Name}) local devmachine");
