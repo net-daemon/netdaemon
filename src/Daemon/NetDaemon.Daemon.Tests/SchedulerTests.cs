@@ -66,7 +66,14 @@ namespace NetDaemon.Daemon.Tests
 
             Assert.True(nrOfRuns>=4 && nrOfRuns <= 5);
             await scheduler.Stop();
-            await runTask;
+            try
+            {
+                await runTask;
+            }
+            catch
+            {
+            }
+            
             Assert.True(runTask.IsCompletedSuccessfully);
         }
 
