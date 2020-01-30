@@ -41,6 +41,15 @@ steps:
       packagesToPack: '**/NetDeamon.App.csproj'
       outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
       versionEnvVar: package-version
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Make NUGET Daemon'
+    inputs:
+      command: pack
+      versioningScheme: byEnvVar
+      packagesToPack: '**/NetDaemon.Daemon.csproj'
+      outputDir: '$(Build.ArtifactStagingDirectory)/NUGET'
+      versionEnvVar: package-version
   # - task: CopyFiles@2
   #   displayName: 'Copy RELEASENOTES'
   #   inputs:
