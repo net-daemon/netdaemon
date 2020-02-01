@@ -659,5 +659,34 @@ namespace NetDaemon.Daemon.Tests
             Assert.Equal("off", actualFromState);
             Assert.Equal("binary_sensor.pir", actualEntity);
         }
+
+        [Fact]
+        public async Task EntityOnStateTriggerScript()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "on", "off");
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+
+            // ACT
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange(to: "off")
+                .RunScript("thescript")
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+            hcMock.Verify(n => n.CallService("script", "thescript", null, false));
+        }
     }
 }

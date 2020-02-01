@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
@@ -18,6 +19,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
         public INetDaemon GlobalDaemon;
 
     }
+    class CollectibleAssemblyLoadContext : AssemblyLoadContext
+    {
+        public CollectibleAssemblyLoadContext() : base(isCollectible: true)
+        {
+        }
+
+        protected override Assembly Load(AssemblyName name)
+        {
+            return null;
+        }
+    }
+
     public class CSScriptManager
     {
         private ScriptOptions _scriptOptions;
@@ -25,7 +38,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
         private readonly ILogger _logger;
         private readonly INetDaemon _daemon;
         private CSGlobals _globals;
+        private CollectibleAssemblyLoadContext alc = new CollectibleAssemblyLoadContext();
         private CSScriptManager() { }
+
 
         public CSScriptManager(string codeFolder, INetDaemon daemon, ILoggerFactory loggerFactory)
         {
@@ -53,21 +68,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 
                 return;
             }
+
+            
+
             foreach (var file in Directory.EnumerateFiles(_codeFolder, "*.cs", SearchOption.AllDirectories))
             {
+                
                 _logger.LogDebug($"Found cs file {Path.GetFileName(file)}");
 
                 var script = CSharpScript.Create(File.ReadAllText(file), _scriptOptions, globalsType: typeof(CSGlobals));
 
                 var compilation = script.GetCompilation();
-
+               
                 var stream = new MemoryStream();
                 var emitResult = compilation.Emit(stream);
-
+                stream.Seek(0, SeekOrigin.Begin);
                 if (emitResult.Success)
                 {
-                    var asm = Assembly.Load(stream.ToArray());
-
+                    var alc = new CollectibleAssemblyLoadContext();
+                    var asm = alc.LoadFromStream(stream);
+                   // var asm = Assembly.Load(stream.ToArray());
                     var apps = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
                     foreach (var app in apps)
                     {
@@ -76,6 +96,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                         await daempnApp.StartUpAsync(_daemon);
                         await daempnApp.InitializeAsync();
                     }
+                    //alc.Unload();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
                 }
                 else
                 {
@@ -94,7 +118,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 
                 }
             }
-
+            
             // The scripting consumes allot of memory so lets clean up now
             GC.Collect();
             GC.WaitForPendingFinalizers();

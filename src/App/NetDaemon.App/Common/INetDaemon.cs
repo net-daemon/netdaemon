@@ -60,7 +60,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IMediaPlayer MediaPlayer(params string[] entity);
         IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
 
-        IScript Script(params string[] entityIds);
+        IScript RunScript(params string[] entityIds);
 
         IEnumerable<EntityState> State { get; }
 

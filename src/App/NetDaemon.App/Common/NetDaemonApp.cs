@@ -112,9 +112,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return null;
         }
 
-        public IScript Script(params string[] entityIds)
+        public IScript RunScript(params string[] entityIds)
         {
-            if (_daemon != null) return _daemon.Script(entityIds);
+            if (_daemon != null) return _daemon.RunScript(entityIds);
 
             return null;
         }

@@ -1,18 +1,17 @@
+using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using Moq;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests
 {
     public class NetDaemonTests
     {
-
         [Fact]
         public void GetStateMissingEntityReturnsNull()
         {
@@ -26,7 +25,6 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             Assert.Null(entity);
         }
-
 
         [Fact]
         public void GetStateReturnsCorrectEntityState()
@@ -56,7 +54,7 @@ namespace NetDaemon.Daemon.Tests
 
             Task task = null;
             task = daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
-            
+
             // ACT
             var entity = daemonHost.GetState("light.testlight");
 
@@ -77,7 +75,7 @@ namespace NetDaemon.Daemon.Tests
 
             await Task.Delay(10);
 
-            // ASSERT 
+            // ASSERT
             Assert.False(runTask.IsCompleted || runTask.IsCanceled);
 
             try
@@ -96,7 +94,7 @@ namespace NetDaemon.Daemon.Tests
         public async Task RunNotConnectedCompletesTask()
         {
             // ARRANGE
-            // Get mock that will not connect 
+            // Get mock that will not connect
             var hcMock = HassClientMock.MockConnectFalse;
             var daemonHost = new NetDaemonHost(hcMock.Object);
             var cancelSource = new CancellationTokenSource();
@@ -147,10 +145,9 @@ namespace NetDaemon.Daemon.Tests
 
             // ACT
             //
-            var ex = await Assert.ThrowsAsync<ApplicationException>(async ()=>await daemonHost.TurnOnAsync("light!correct_entity"));
-            
+            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => await daemonHost.TurnOnAsync("light!correct_entity"));
+
             Assert.Equal("entity_id is mal formatted light!correct_entity", ex.Message);
-           
         }
 
         [Fact]
@@ -165,7 +162,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             var attributes = new ExpandoObject();
-            ((IDictionary<string, object>) attributes)["entity_id"] = "light.correct_entity";
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
             hcMock.Verify(n => n.CallService("light", "turn_on", attributes, It.IsAny<bool>()));
         }
 
@@ -181,7 +178,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             var attributes = new ExpandoObject();
-            ((IDictionary<string, object>) attributes)["entity_id"] = "light.correct_entity";
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
             hcMock.Verify(n => n.CallService("light", "turn_off", attributes, It.IsAny<bool>()));
         }
 
@@ -209,11 +206,11 @@ namespace NetDaemon.Daemon.Tests
 
             hcMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
-            CancellationTokenSource cancelSource= new CancellationTokenSource(10);
-            
+            CancellationTokenSource cancelSource = new CancellationTokenSource(10);
+
             string reportedState = "";
 
-            daemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState)  =>
+            daemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
             {
                 reportedState = newState.State;
 
@@ -228,7 +225,6 @@ namespace NetDaemon.Daemon.Tests
             {
                 // Expected behaviour
             }
-            
 
             Assert.Equal("on", reportedState);
         }
@@ -241,7 +237,15 @@ namespace NetDaemon.Daemon.Tests
 
             await daemonHost.Stop();
 
-            hcMock.Verify(n=>n.CloseAsync(), Times.Once);
+            hcMock.Verify(n => n.CloseAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task HandleNewEventEmtpyDataShouldThrow()
+        {
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+            //daemonHost.Ha
         }
     }
 }

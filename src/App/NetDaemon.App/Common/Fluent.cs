@@ -81,6 +81,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
 
         IStateEntity UseLights(Func<IEntityProperties, bool> func);
+
+        IExecute RunScript(params string[] entityIds);
     }
 
     public interface IStateAction : IExecute
@@ -201,6 +203,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _currentState.FuncToCall = func;
             return this;
         }
+        public IExecute RunScript(params string[] entityIds)
+        {
+            _currentState.ScriptToCall = entityIds;
+            return this;
+        }
 
         public void Execute()
         {
@@ -275,10 +282,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                         _daemon.Logger.LogDebug(
                             $"State {newState?.State} expected from {oldState?.State}, executing action!");
 
-                        if (_currentState.FuncToCall == null)
-                            await entityManager.ExecuteAsync(true);
-                        else
+                        if (_currentState.FuncToCall != null)
                             await _currentState.FuncToCall(entityIdInn, newState, oldState);
+                        else if (_currentState.ScriptToCall != null)
+                            await _daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync();
+                        else
+                            await entityManager.ExecuteAsync(true);
                     }
                 });
             //}
@@ -523,7 +532,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     case FluentActionType.SetState:
                         await _daemon.SetState(entityId, fluentAction.State, attributes);
                         break;
-
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -613,5 +621,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public Func<string, EntityState?, EntityState?, Task>? FuncToCall { get; set; }
         public Func<EntityState?, EntityState?, bool>? Lambda { get; set; }
         public dynamic? To { get; set; }
+        public string[] ScriptToCall { get; internal set; }
     }
 }

@@ -100,7 +100,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
-        public IScript Script(params string[] entityId)
+        public IScript RunScript(params string[] entityId)
         {
             return new EntityManager(entityId, this);
         }
@@ -319,7 +319,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return entityParts[0];
         }
 
-        private async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
+      
+        protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             if (hassEvent.EventType == "state_changed")
             {
