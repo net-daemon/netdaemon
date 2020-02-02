@@ -42,6 +42,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </remarks>
         void ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action);
+
+        void ListenEvent(string ev,
+            Func<string, dynamic?, Task> action);
+        void ListenEvent(Func<FluentEventProperty, bool> funcSelector, 
+            Func<string, dynamic, Task> func);
+        
         Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
         Task TurnOffAsync(string entityIds, params (string name, object val)[] attributes);
         Task ToggleAsync(string entityIds, params (string name, object val)[] attributes);
@@ -54,6 +60,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         //IAction Action { get; }
         IEntity Entity(params string[] entityId);
         IEntity Entities(Func<IEntityProperties, bool> func);
+
+        IFluentEvent Event(params string[] eventParams);
+        IFluentEvent Events(Func<FluentEventProperty, bool> func);
 
         ILight Light(params string[] entity);
 

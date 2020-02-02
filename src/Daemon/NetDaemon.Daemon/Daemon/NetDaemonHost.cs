@@ -32,9 +32,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "switch"
         };
 
+        private IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
+                    new List<(string pattern, Func<string, dynamic, Task> action)>();
+
         //public IAction Action { get; }
         private IDictionary<string, EntityState> _state = new Dictionary<string, EntityState>();
         private bool _stopped;
+        private List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
+            new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
@@ -72,10 +77,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
-        public IEntity Entity(params string[] entityId)
-        {
-            return new EntityManager(entityId, this);
-        }
+        public IEntity Entity(params string[] entityId) => new EntityManager(entityId, this);
+
+        public IFluentEvent Event(params string[] eventParams) => new FluentEventManager(eventParams, this);
+
+        public IFluentEvent Events(Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
 
         public EntityState? GetState(string entity)
         {
@@ -100,9 +106,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
-        public IScript RunScript(params string[] entityId)
+        public void ListenEvent(string ev, Func<string, dynamic, Task> action)
         {
-            return new EntityManager(entityId, this);
+            _eventActions.Add((ev, action));
+        }
+
+        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func)
+        {
+            _eventFunctionList.Add((funcSelector, func));
         }
 
         /// <summary>
@@ -132,6 +143,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
+
         /// <summary>
         ///     Runs the Daemon
         /// </summary>
@@ -228,6 +240,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await _scheduler.Stop();
         }
 
+        public IScript RunScript(params string[] entityId)
+        {
+            return new EntityManager(entityId, this);
+        }
         public async Task<EntityState?> SetState(string entityId, dynamic state,
             params (string name, object val)[] attributes)
         {
@@ -310,21 +326,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             await _hassClient.CallService(domain, "turn_on", attributes, false);
         }
-        private static string GetDomainFromEntity(string entity)
-        {
-            var entityParts = entity.Split('.');
-            if (entityParts.Length != 2)
-                throw new ApplicationException($"entity_id is mal formatted {entity}");
-
-            return entityParts[0];
-        }
-
-      
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             if (hassEvent.EventType == "state_changed")
             {
-                var stateData = (HassStateChangedEventData?) hassEvent.Data;
+                var stateData = (HassStateChangedEventData?)hassEvent.Data;
 
                 if (stateData == null)
                     throw new NullReferenceException("StateData is null!");
@@ -352,10 +358,37 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             stateData.OldState?.ToDaemonEntityState()
                         ));
                 // No hit
-
+                // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                 if (tasks.Count > 0)
                     await tasks.WhenAll(token);
             }
+            else
+            {
+                var tasks = new List<Task>();
+                foreach (var (ev, func) in _eventActions)
+                {
+                    if (ev == hassEvent.EventType)
+                        tasks.Add(func(ev, hassEvent.Data));
+                }
+                foreach (var (selectFunc, func) in _eventFunctionList)
+                {
+                    if (selectFunc(new FluentEventProperty { EventId=hassEvent.EventType, Data=hassEvent.Data}))
+                    {
+                        tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                    }
+                }
+                if (tasks.Count > 0)
+                    await tasks.WhenAll(token);
+            }
+        }
+
+        private static string GetDomainFromEntity(string entity)
+        {
+            var entityParts = entity.Split('.');
+            if (entityParts.Length != 2)
+                throw new ApplicationException($"entity_id is mal formatted {entity}");
+
+            return entityParts[0];
         }
     }
 }

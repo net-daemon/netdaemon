@@ -153,6 +153,15 @@ namespace NetDaemon.Daemon.Tests
             });
         }
 
+        public void AddCustomEvent(string eventType, dynamic? data)
+        {
+            FakeEvents.Enqueue(new HassEvent
+            {
+                EventType = eventType,
+                Data = data
+            });
+        }
+
         public void VerifyCallService(string domain, string service,
             params (string attribute, object value)[] attributesTuples)
         {
