@@ -112,6 +112,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return null;
         }
 
+        public async Task<bool> SendEvent(string eventId, dynamic? data = null)
+        {
+            if (_daemon != null) return await _daemon.SendEvent(eventId, data);
+            return false;
+        }
+
         public async Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes)
         {
             if (_daemon != null) return await _daemon.SetState(entityId, state, attributes);

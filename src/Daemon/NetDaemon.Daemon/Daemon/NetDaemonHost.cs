@@ -35,12 +35,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
                     new List<(string pattern, Func<string, dynamic, Task> action)>();
 
+        private List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
+                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
+
         //public IAction Action { get; }
         private IDictionary<string, EntityState> _state = new Dictionary<string, EntityState>();
         private bool _stopped;
-        private List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
-            new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
-
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
             loggerFactory ??= DefaultLoggerFactory;
@@ -62,7 +62,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                 {
             builder
                 .ClearProviders()
-                //                .AddFilter("HassClient.HassClient", LogLevel.Debug)
                 .AddConsole();
         });
         public async Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
@@ -72,9 +71,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
-            var x = State.Where(func);
+            try
+            {
+                var x = State.Where(func);
 
-            return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+                return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to select entities using func");
+                throw;
+            }
+
         }
 
         public IEntity Entity(params string[] entityId) => new EntityManager(entityId, this);
@@ -139,9 +147,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {
-            var x = State.Where(func);
+            try
+            {
+                var x = State.Where(func);
 
-            return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+                return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to select mediaplayers func");
+                throw;
+            }
+            
         }
 
         /// <summary>
@@ -244,23 +261,37 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             return new EntityManager(entityId, this);
         }
-        public async Task<EntityState?> SetState(string entityId, dynamic state,
-            params (string name, object val)[] attributes)
+        public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
-            // Use expando object as all other methods
-            var dynAttributes = attributes.ToDynamic();
+            return await _hassClient.SendEvent(eventId, data);
+        }
 
-
-            HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes);
-
-            if (result != null)
+        public async Task<EntityState?> SetState(string entityId, dynamic state,
+                    params (string name, object val)[] attributes)
+        {
+            try
             {
-                var entityState = result.ToDaemonEntityState();
-                _state[entityState.EntityId] = entityState;
-                return entityState;
-            }
+                // Use expando object as all other methods
+                var dynAttributes = attributes.ToDynamic();
 
-            return null;
+
+                HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes);
+
+                if (result != null)
+                {
+                    var entityState = result.ToDaemonEntityState();
+                    _state[entityState.EntityId] = entityState;
+                    return entityState;
+                }
+
+                return null;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to set state");
+                throw;
+            }
+            
         }
 
         public async Task Stop()
@@ -330,55 +361,65 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             if (hassEvent.EventType == "state_changed")
             {
-                var stateData = (HassStateChangedEventData?)hassEvent.Data;
-
-                if (stateData == null)
-                    throw new NullReferenceException("StateData is null!");
-
                 try
                 {
+                    var stateData = (HassStateChangedEventData?)hassEvent.Data;
+
+                    if (stateData == null)
+                        throw new NullReferenceException("StateData is null!");
+
                     _state[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
+       
+                    var tasks = new List<Task>();
+                    foreach (var (pattern, func) in _stateActions)
+                        if (string.IsNullOrEmpty(pattern))
+                            tasks.Add(func(stateData.EntityId,
+                                stateData.NewState?.ToDaemonEntityState(),
+                                stateData.OldState?.ToDaemonEntityState()
+                            ));
+                        else if (stateData.EntityId.StartsWith(pattern))
+                            tasks.Add(func(stateData.EntityId,
+                                stateData.NewState?.ToDaemonEntityState(),
+                                stateData.OldState?.ToDaemonEntityState()
+                            ));
+                    // No hit
+                    // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
+                    if (tasks.Count > 0)
+                        await tasks.WhenAll(token);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Logger.LogError(e, "Failed to handle new event (state_changed)");
                     throw;
                 }
-
-                var tasks = new List<Task>();
-                foreach (var (pattern, func) in _stateActions)
-                    if (string.IsNullOrEmpty(pattern))
-                        tasks.Add(func(stateData.EntityId,
-                            stateData.NewState?.ToDaemonEntityState(),
-                            stateData.OldState?.ToDaemonEntityState()
-                        ));
-                    else if (stateData.EntityId.StartsWith(pattern))
-                        tasks.Add(func(stateData.EntityId,
-                            stateData.NewState?.ToDaemonEntityState(),
-                            stateData.OldState?.ToDaemonEntityState()
-                        ));
-                // No hit
-                // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
-                if (tasks.Count > 0)
-                    await tasks.WhenAll(token);
+                
             }
             else
             {
-                var tasks = new List<Task>();
-                foreach (var (ev, func) in _eventActions)
+                try
                 {
-                    if (ev == hassEvent.EventType)
-                        tasks.Add(func(ev, hassEvent.Data));
-                }
-                foreach (var (selectFunc, func) in _eventFunctionList)
-                {
-                    if (selectFunc(new FluentEventProperty { EventId=hassEvent.EventType, Data=hassEvent.Data}))
+                    var tasks = new List<Task>();
+                    foreach (var (ev, func) in _eventActions)
                     {
-                        tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                        if (ev == hassEvent.EventType)
+                            tasks.Add(func(ev, hassEvent.Data));
                     }
+                    foreach (var (selectFunc, func) in _eventFunctionList)
+                    {
+                        if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
+                        {
+                            tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                        }
+                    }
+                    if (tasks.Count > 0)
+                        await tasks.WhenAll(token);
                 }
-                if (tasks.Count > 0)
-                    await tasks.WhenAll(token);
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Failed to handle new event (custom_event)");
+                    throw;
+                }
+
             }
         }
 

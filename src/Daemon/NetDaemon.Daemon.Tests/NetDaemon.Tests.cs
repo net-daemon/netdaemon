@@ -313,5 +313,39 @@ namespace NetDaemon.Daemon.Tests
 
             Assert.False(isCalled);
         }
+
+        [Fact]
+        public async Task SendEventShouldCallCorrectMethod()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            var expObject = new ExpandoObject();
+            dynamic eventData = expObject;
+            eventData.Test = "Hello World!";
+
+            await daemonHost.SendEvent("test_event", eventData);
+
+            hcMock.Verify(n => n.SendEvent("test_event", expObject));
+
+        }
+
+        [Fact]
+        public async Task SendEventWithNullDataShouldCallCorrectMethod()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            var expObject = new ExpandoObject();
+            dynamic eventData = expObject;
+            eventData.Test = "Hello World!";
+
+            await daemonHost.SendEvent("test_event");
+
+            hcMock.Verify(n => n.SendEvent("test_event", null));
+
+        }
     }
 }

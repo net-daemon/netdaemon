@@ -54,7 +54,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes);
 
         Task CallService(string domain, string service, dynamic? data=null, bool waitForResponse=false);
-    
+
+        Task<bool> SendEvent(string eventId, dynamic? data=null);
+
         EntityState? GetState(string entity);
 
         //IAction Action { get; }

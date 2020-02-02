@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>JoySoftware.HomeAssistant.NetDaemon</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.Daemon</PackageId>
-    <Version>0.1.11-alpha</Version>
+    <Version>0.1.13-alpha</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
     <description>A .net core appdaemon for Home Assistant</description>
@@ -20,7 +20,7 @@
 
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JoySoftware.HassClient" Version="0.0.17-alpha" />
+    <PackageReference Include="JoySoftware.HassClient" Version="0.0.18-alpha" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.1" />
   </ItemGroup>
   <ItemGroup>
