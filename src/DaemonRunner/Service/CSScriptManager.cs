@@ -49,7 +49,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 
         public async Task LoadSources()
         {
-            //var script = CSharpScript.Create("// Dummy code", _scriptOptions, globalsType: typeof(CSGlobals));
             if (string.IsNullOrEmpty(_codeFolder))
             {
                 var apps = Assembly.GetEntryAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
@@ -82,8 +81,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                 {
                     var alc = new CollectibleAssemblyLoadContext();
                     var asm = alc.LoadFromStream(stream);
-                   // var asm = Assembly.Load(stream.ToArray());
                     var apps = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+      
                     foreach (var app in apps)
                     {
                         _logger.LogInformation($"Loading App ({app.Name})");
