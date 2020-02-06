@@ -77,4 +77,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         IScheduler Scheduler { get; }
     }
+    /// <summary>
+    ///     Used for global share the Daemon (no worries its thread safe) :)
+    /// </summary>
+    public class CSGlobals
+    {
+        public INetDaemon GlobalDaemon;
+
+    }
 }

@@ -51,7 +51,7 @@ namespace NetDaemon.Daemon.Tests
             }
 
             // ASSERT
-            await Task.Delay(15); // After 10ms we should not have call
+            await Task.Delay(10); // After 10ms we should not have call
             hcMock.VerifyCallServiceTimes("turn_off", Times.Never());
             await Task.Delay(30); // After 10ms we should not have call
 

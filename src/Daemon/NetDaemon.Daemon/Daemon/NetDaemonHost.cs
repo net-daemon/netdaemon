@@ -197,6 +197,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         Connected = false;
                         Logger.LogWarning("Home assistant is unavailable, retrying in 15 seconds...");
                         await Task.Delay(15000, cancellationToken);
+                        await _hassClient.CloseAsync();
                         continue;
                     }
 
@@ -367,6 +368,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     if (stateData == null)
                         throw new NullReferenceException("StateData is null!");
+
+                    if (stateData.NewState == null)
+                        throw new NullReferenceException($"Expected NewState not null for {stateData.EntityId}");
 
                     _state[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
        

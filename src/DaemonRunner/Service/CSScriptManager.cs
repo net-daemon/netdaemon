@@ -14,11 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 {
-    public class CSGlobals
-    {
-        public INetDaemon GlobalDaemon;
-
-    }
     class CollectibleAssemblyLoadContext : AssemblyLoadContext
     {
         public CollectibleAssemblyLoadContext() : base(isCollectible: true)
@@ -76,7 +71,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                 
                 _logger.LogDebug($"Found cs file {Path.GetFileName(file)}");
 
-                var script = CSharpScript.Create(File.ReadAllText(file), _scriptOptions, globalsType: typeof(CSGlobals));
+                var script = CSharpScript.Create(File.ReadAllText(file), _scriptOptions);
 
                 var compilation = script.GetCompilation();
                
@@ -96,7 +91,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                         await daempnApp.StartUpAsync(_daemon);
                         await daempnApp.InitializeAsync();
                     }
-                    //alc.Unload();
+                    alc.Unload();
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
 

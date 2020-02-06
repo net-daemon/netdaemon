@@ -52,8 +52,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                 if (!string.IsNullOrEmpty(sourceFolder))
                     sourceFolder = Path.Combine(config.SourceFolder!, "apps");
 
-                var csManager = new CSScriptManager(sourceFolder, _daemonHost,
-                    _loggerFactory);
+                //var csManager = new CSScriptManager(sourceFolder, _daemonHost,
+                //    _loggerFactory);
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
@@ -66,7 +66,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                         if (_daemonHost.Connected)
                         {
 
-                            await csManager.LoadSources();
+                         //   await csManager.LoadSources();
                             await task;
                         }
                         else
@@ -87,6 +87,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                     if (!stoppingToken.IsCancellationRequested)
                         // The service is still running, we have error in connection to hass
                         await Task.Delay(20000, stoppingToken); // Wait 5 seconds
+                    
                 }
             }
             catch (OperationCanceledException)

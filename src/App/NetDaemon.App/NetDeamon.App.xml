@@ -82,6 +82,11 @@
                     - oldEvent
             </remarks>
         </member>
+        <member name="T:JoySoftware.HomeAssistant.NetDaemon.Common.CSGlobals">
+            <summary>
+                Used for global share the Daemon (no worries its thread safe) :)
+            </summary>
+        </member>
         <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp.ListenState(System.String,System.Func{System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task})">
             <summary>
                 Listen for state changes and call a function when state changes
