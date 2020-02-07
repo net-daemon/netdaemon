@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Extensions.Logging;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
+namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
     class CollectibleAssemblyLoadContext : AssemblyLoadContext
     {
@@ -47,7 +47,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
             _scriptOptions = LoadAssembliesAndStandardImports();
         }
 
-        public async Task LoadSources()
+        public async Task LoadSources(IDaemonAppConfig _daemonAppConfig)
         {
             if (string.IsNullOrEmpty(_codeFolder))
             {
@@ -55,6 +55,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                 foreach (var app in apps)
                 {
                     _logger.LogInformation($"Loading App ({app.Name}) local devmachine");
+
                     var daempnApp = (NetDaemonApp)Activator.CreateInstance(app);
                     await daempnApp.StartUpAsync(_daemon);
                     await daempnApp.InitializeAsync();
@@ -62,8 +63,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 
                 return;
             }
-
-            
 
             foreach (var file in Directory.EnumerateFiles(_codeFolder, "*.cs", SearchOption.AllDirectories))
             {
@@ -83,13 +82,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                     var asm = alc.LoadFromStream(stream);
                     var apps = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
       
-                    foreach (var app in apps)
-                    {
-                        _logger.LogInformation($"Loading App ({app.Name})");
-                        var daempnApp = (NetDaemonApp)Activator.CreateInstance(app);
-                        await daempnApp.StartUpAsync(_daemon);
-                        await daempnApp.InitializeAsync();
-                    }
+                    await _daemonAppConfig.InstanceFromDaemonAppConfig(apps, file);
+
                     alc.Unload();
                     GC.Collect();
                     GC.WaitForPendingFinalizers();

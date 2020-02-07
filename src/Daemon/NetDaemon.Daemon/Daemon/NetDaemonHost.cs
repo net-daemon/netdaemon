@@ -27,7 +27,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             Channel.CreateBounded<(string, string)>(20);
 
         // Used for testing
-        internal int InternalDelayTimeForTts = 2000;
+        internal int InternalDelayTimeForTts = 2500;
 
         // internal so we can use for unittest
         internal IDictionary<string, EntityState> InternalState = new Dictionary<string, EntityState>();
@@ -204,8 +204,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     {
                         Connected = false;
                         Logger.LogWarning("Home assistant is unavailable, retrying in 15 seconds...");
-                        await Task.Delay(15000, cancellationToken);
                         await _hassClient.CloseAsync();
+                        await Task.Delay(15000, cancellationToken);
+
                         continue;
                     }
 

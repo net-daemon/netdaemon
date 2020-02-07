@@ -10,20 +10,26 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
+namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
     public class RunnerService : BackgroundService
     {
         private readonly NetDaemonHost _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IDaemonAppConfig _daemonAppConfig;
+
         //private readonly
 
-        public RunnerService(ILoggerFactory loggerFactory)
+        public RunnerService(ILoggerFactory loggerFactory, IDaemonAppConfig? daemonAppConfig = null)
         {
+            
+
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
             _daemonHost = new NetDaemonHost(new HassClient(loggerFactory), loggerFactory);
+            daemonAppConfig ??= new DaemonAppConfig(_daemonHost, _logger);
+            _daemonAppConfig = daemonAppConfig;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -66,7 +72,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                         if (_daemonHost.Connected)
                         {
 
-                            await csManager.LoadSources();
+                            await csManager.LoadSources(_daemonAppConfig);
                             await task;
                         }
                         else
@@ -99,7 +105,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
 
             _logger.LogInformation("Ending stuff!");
         }
-        private Config ReadConfig()
+        private HostConfig ReadConfig()
         {
             try
             {
@@ -109,7 +115,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                 if (Environment.GetEnvironmentVariable("HASSIO_TOKEN") != null)
                 {
                     //var hassioConfig = JsonSerializer.Deserialize<Config>(File.ReadAllBytes("/data/options.json"));
-                    var hassioConfig = new Config();
+                    var hassioConfig = new HostConfig();
                     hassioConfig.Host = "";
                     hassioConfig.Port = 0;
                     hassioConfig.Token = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
@@ -123,16 +129,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner
                 var configFilePath = Path.Combine(folderOfExecutingAssembly, "config.json");
 
                 if (File.Exists(configFilePath))
-                    return JsonSerializer.Deserialize<Config>(File.ReadAllBytes(configFilePath));
+                    return JsonSerializer.Deserialize<HostConfig>(File.ReadAllBytes(configFilePath));
 
                 var exampleFilePath = Path.Combine(folderOfExecutingAssembly, "_config.json");
                 if (!File.Exists(exampleFilePath))
-                    JsonSerializer.SerializeAsync(File.OpenWrite(exampleFilePath), new Config());
+                    JsonSerializer.SerializeAsync(File.OpenWrite(exampleFilePath), new HostConfig());
 
                 var token = Environment.GetEnvironmentVariable("HASS_TOKEN");
                 if (token != null)
                 {
-                    var config = new Config();
+                    var config = new HostConfig();
                     config.Token = token;
                     config.Host = Environment.GetEnvironmentVariable("HASS_HOST") ?? config.Host;
                     config.Port = short.TryParse(Environment.GetEnvironmentVariable("HASS_PORT"), out var port)
