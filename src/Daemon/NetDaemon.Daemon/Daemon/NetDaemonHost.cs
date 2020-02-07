@@ -1,11 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
+﻿using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
+
+[assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
@@ -18,6 +23,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
     public class NetDaemonHost : INetDaemonHost
     {
+        internal readonly Channel<(string, string)> _ttsMessageQueue =
+            Channel.CreateBounded<(string, string)>(20);
+
+        // Used for testing
+        internal int InternalDelayTimeForTts = 2000;
+
+        // internal so we can use for unittest
+        internal IDictionary<string, EntityState> InternalState = new Dictionary<string, EntityState>();
+
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
         private readonly IHassClient _hassClient;
 
@@ -32,15 +46,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "switch"
         };
 
-        private IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
+        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
                     new List<(string pattern, Func<string, dynamic, Task> action)>();
 
-        private List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
+        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
                     new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
-        //public IAction Action { get; }
-        private IDictionary<string, EntityState> _state = new Dictionary<string, EntityState>();
         private bool _stopped;
+
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
             loggerFactory ??= DefaultLoggerFactory;
@@ -56,24 +69,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public IScheduler Scheduler => _scheduler;
 
-        public IEnumerable<EntityState> State => _state?.Values!;
+        public IEnumerable<EntityState> State => InternalState?.Values!;
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
                                 {
-            builder
-                .ClearProviders()
-                .AddConsole();
-        });
-        public async Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
-        {
-            await _hassClient.CallService(domain, service, data, false);
-        }
+                                    builder
+                                        .ClearProviders()
+                                        .AddConsole();
+                                });
+
+        public async Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => await _hassClient.CallService(domain, service, data, false);
 
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
             try
             {
-                var x = State.Where(func);
+                IEnumerable<IEntityProperties> x = State.Where(func);
 
                 return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
             }
@@ -82,7 +93,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogError(e, "Failed to select entities using func");
                 throw;
             }
-
         }
 
         public IEntity Entity(params string[] entityId) => new EntityManager(entityId, this);
@@ -93,7 +103,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public EntityState? GetState(string entity)
         {
-            return _state.TryGetValue(entity, out var returnValue)
+            return InternalState.TryGetValue(entity, out EntityState? returnValue)
                 ? returnValue
                 : null;
         }
@@ -101,28 +111,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public ILight Light(params string[] entity)
         {
             var entityList = new List<string>(entity.Length);
-            foreach (var e in entity)
+            foreach (string e in entity)
+            {
                 // Add the domain light if missing domain in id
                 entityList.Add(!e.Contains('.') ? string.Concat("light.", e) : e);
+            }
+
             return new EntityManager(entityList.ToArray(), this);
         }
 
         public IEntity Lights(Func<IEntityProperties, bool> func)
         {
-            var x = State.Where(func).Where(n => n.EntityId.Contains("light."));
+            IEnumerable<IEntityProperties> x = State.Where(func).Where(n => n.EntityId.Contains("light."));
 
             return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
         }
 
-        public void ListenEvent(string ev, Func<string, dynamic, Task> action)
-        {
-            _eventActions.Add((ev, action));
-        }
+        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
 
-        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func)
-        {
-            _eventFunctionList.Add((funcSelector, func));
-        }
+        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
 
         /// <summary>
         /// </summary>
@@ -135,21 +142,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="pattern">Event pattern</param>
         /// <param name="action">The action to call when event is missing</param>
         public void ListenState(string pattern,
-            Func<string, EntityState?, EntityState?, Task> action)
-        {
-            _stateActions.Add((pattern, action));
-        }
+            Func<string, EntityState?, EntityState?, Task> action) => _stateActions.Add((pattern, action));
 
-        public IMediaPlayer MediaPlayer(params string[] entityId)
-        {
-            return new EntityManager(entityId, this);
-        }
+        public IMediaPlayer MediaPlayer(params string[] entityId) => new EntityManager(entityId, this);
 
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {
             try
             {
-                var x = State.Where(func);
+                IEnumerable<IEntityProperties> x = State.Where(func);
 
                 return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
             }
@@ -158,7 +159,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogError(e, "Failed to select mediaplayers func");
                 throw;
             }
-            
         }
 
         /// <summary>
@@ -176,21 +176,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <returns></returns>
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
-            var hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
+            string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
 
             if (_hassClient == null)
+            {
                 throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
+            }
+
             while (!cancellationToken.IsCancellationRequested)
+            {
                 try
                 {
                     bool connectResult;
 
                     if (hassioToken != null)
+                    {
                         // We are running as hassio add-on
                         connectResult = await _hassClient.ConnectAsync(new Uri("ws://hassio/homeassistant/websocket"),
                             hassioToken, true);
+                    }
                     else
+                    {
                         connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
+                    }
 
                     if (!connectResult)
                     {
@@ -201,10 +209,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         continue;
                     }
 
+                    // Setup TTS
+                    Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
+
                     await _hassClient.SubscribeToEvents();
 
                     Connected = true;
-                    _state = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
+                    InternalState = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
                         .ToDictionary(n => n.EntityId);
 
                     Logger.LogInformation(
@@ -214,7 +225,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var changedEvent = await _hassClient.ReadEventAsync();
+                        HassEvent changedEvent = await _hassClient.ReadEventAsync();
                         if (changedEvent != null)
                         {
                             // Remove all completed Tasks
@@ -232,8 +243,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (OperationCanceledException)
                 {
                     if (cancellationToken.IsCancellationRequested)
+                    {
                         // Normal behaviour do nothing
                         await _scheduler.Stop();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -252,20 +265,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     Connected = false;
                     if (!cancellationToken.IsCancellationRequested)
+                    {
                         await Task.Delay(15000, cancellationToken);
+                    }
                 }
+            }
 
             await _scheduler.Stop();
         }
 
-        public IScript RunScript(params string[] entityId)
-        {
-            return new EntityManager(entityId, this);
-        }
-        public async Task<bool> SendEvent(string eventId, dynamic? data = null)
-        {
-            return await _hassClient.SendEvent(eventId, data);
-        }
+        public IScript RunScript(params string[] entityId) => new EntityManager(entityId, this);
+
+        public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data);
 
         public async Task<EntityState?> SetState(string entityId, dynamic state,
                     params (string name, object val)[] attributes)
@@ -273,15 +284,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             try
             {
                 // Use expando object as all other methods
-                var dynAttributes = attributes.ToDynamic();
-
+                dynamic dynAttributes = attributes.ToDynamic();
 
                 HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes);
 
                 if (result != null)
                 {
-                    var entityState = result.ToDaemonEntityState();
-                    _state[entityState.EntityId] = entityState;
+                    EntityState entityState = result.ToDaemonEntityState();
+                    InternalState[entityState.EntityId] = entityState;
                     return entityState;
                 }
 
@@ -292,37 +302,39 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogError(e, "Failed to set state");
                 throw;
             }
-            
         }
+
+        public async Task Speak(string entityId, string message) => _ttsMessageQueue.Writer.TryWrite((entityId, message));
 
         public async Task Stop()
         {
             if (_hassClient == null)
+            {
                 throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
+            }
 
             if (_stopped)
+            {
                 return;
+            }
+
             await _hassClient.CloseAsync();
             await _scheduler.Stop();
-
 
             _stopped = true;
         }
 
-        public ITime Timer()
-        {
-            return new Common.TimeManager(this);
-        }
+        public ITime Timer() => new Common.TimeManager(this);
 
         public async Task ToggleAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
             // Get the domain if supported, else domain is homeassistant
-            var domain = GetDomainFromEntity(entityId);
+            string domain = GetDomainFromEntity(entityId);
             // Use it if it is supported else use default "homeassistant" domain
             domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
 
             // Use expando object as all other methods
-            var attributes = attributeNameValuePair.ToDynamic();
+            dynamic attributes = attributeNameValuePair.ToDynamic();
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
@@ -332,12 +344,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public async Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
             // Get the domain if supported, else domain is homeassistant
-            var domain = GetDomainFromEntity(entityId);
+            string domain = GetDomainFromEntity(entityId);
             // Use it if it is supported else use default "homeassistant" domain
             domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
 
             // Use expando object as all other methods
-            var attributes = attributeNameValuePair.ToDynamic();
+            dynamic attributes = attributeNameValuePair.ToDynamic();
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
@@ -347,17 +359,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
             // Use default domain "homeassistant" if supported is missing
-            var domain = GetDomainFromEntity(entityId);
+            string domain = GetDomainFromEntity(entityId);
             // Use it if it is supported else use default "homeassistant" domain
             domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
 
             // Convert the value pairs to dynamic type
-            var attributes = attributeNameValuePair.ToDynamic();
+            dynamic attributes = attributeNameValuePair.ToDynamic();
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
             await _hassClient.CallService(domain, "turn_on", attributes, false);
         }
+
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             if (hassEvent.EventType == "state_changed")
@@ -367,48 +380,61 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var stateData = (HassStateChangedEventData?)hassEvent.Data;
 
                     if (stateData == null)
+                    {
                         throw new NullReferenceException("StateData is null!");
+                    }
 
                     if (stateData.NewState == null)
+                    {
                         throw new NullReferenceException($"Expected NewState not null for {stateData.EntityId}");
+                    }
 
-                    _state[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
-       
+                    InternalState[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
+
                     var tasks = new List<Task>();
-                    foreach (var (pattern, func) in _stateActions)
+                    foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in _stateActions)
+                    {
                         if (string.IsNullOrEmpty(pattern))
+                        {
                             tasks.Add(func(stateData.EntityId,
                                 stateData.NewState?.ToDaemonEntityState(),
                                 stateData.OldState?.ToDaemonEntityState()
                             ));
+                        }
                         else if (stateData.EntityId.StartsWith(pattern))
+                        {
                             tasks.Add(func(stateData.EntityId,
                                 stateData.NewState?.ToDaemonEntityState(),
                                 stateData.OldState?.ToDaemonEntityState()
                             ));
+                        }
+                    }
                     // No hit
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
+                    {
                         await tasks.WhenAll(token);
+                    }
                 }
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (state_changed)");
                     throw;
                 }
-                
             }
             else
             {
                 try
                 {
                     var tasks = new List<Task>();
-                    foreach (var (ev, func) in _eventActions)
+                    foreach ((string ev, Func<string, dynamic, Task> func) in _eventActions)
                     {
                         if (ev == hassEvent.EventType)
+                        {
                             tasks.Add(func(ev, hassEvent.Data));
+                        }
                     }
-                    foreach (var (selectFunc, func) in _eventFunctionList)
+                    foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in _eventFunctionList)
                     {
                         if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
                         {
@@ -416,24 +442,62 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         }
                     }
                     if (tasks.Count > 0)
+                    {
                         await tasks.WhenAll(token);
+                    }
                 }
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (custom_event)");
                     throw;
                 }
-
             }
         }
 
         private static string GetDomainFromEntity(string entity)
         {
-            var entityParts = entity.Split('.');
+            string[] entityParts = entity.Split('.');
             if (entityParts.Length != 2)
+            {
                 throw new ApplicationException($"entity_id is mal formatted {entity}");
+            }
 
             return entityParts[0];
+        }
+
+        private async Task HandleTextToSpeechMessages(CancellationToken cancellationToken)
+        {
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    (string entityId, string message) = await _ttsMessageQueue.Reader.ReadAsync(cancellationToken);
+
+                    dynamic attributes = new ExpandoObject();
+                    attributes.entity_id = entityId;
+                    attributes.message = message;
+                    await _hassClient.CallService("tts", "google_cloud_say", attributes, true);
+                    await Task.Delay(InternalDelayTimeForTts); // Wait 2 seconds to wait for status to complete
+                    EntityState? currentPlayState = GetState(entityId);
+                    if (currentPlayState != null && currentPlayState.Attribute?.media_duration != null)
+                    {
+                        int delayInMilliSeconds = (int)Math.Round(currentPlayState?.Attribute?.media_duration * 1000) - InternalDelayTimeForTts;
+
+                        if (delayInMilliSeconds > 0)
+                        {
+                            await Task.Delay(delayInMilliSeconds); // Wait remainder of text message
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Do nothing it should be normal
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error reading TTS channel");
+            }
         }
     }
 }

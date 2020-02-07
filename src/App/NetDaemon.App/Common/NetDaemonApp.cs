@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -34,6 +34,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         public IFluentEvent Event(params string[] eventParams) => _daemon.Event(eventParams);
+
         public IFluentEvent Events(Func<FluentEventProperty, bool> func) => _daemon.Events(func);
 
         public EntityState? GetState(string entityId)
@@ -55,6 +56,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _daemon?.ListenEvent(ev, action);
+
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) =>
                 _daemon?.ListenEvent(funcSelector, func);
 
@@ -124,6 +126,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return null;
         }
 
+        public async Task Speak(string entityId, string message)
+        {
+            if (_daemon != null) await _daemon.Speak(entityId, message);
+        }
+
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
             _daemon = daemon;
@@ -131,6 +138,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
             return Task.CompletedTask;
         }
+
         public async Task ToggleAsync(string entityId, params (string name, object val)[] attributes)
         {
             if (_daemon != null) await _daemon.ToggleAsync(entityId, attributes);
@@ -145,7 +153,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             if (_daemon != null) await _daemon.TurnOnAsync(entityId, attributeNameValuePair);
         }
-        //public IAction Action => _daemon.Action;
-
     }
 }

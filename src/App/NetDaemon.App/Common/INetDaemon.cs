@@ -76,6 +76,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IEnumerable<EntityState> State { get; }
 
         IScheduler Scheduler { get; }
+
+        Task Speak(string entityId, string message);
     }
     /// <summary>
     ///     Used for global share the Daemon (no worries its thread safe) :)

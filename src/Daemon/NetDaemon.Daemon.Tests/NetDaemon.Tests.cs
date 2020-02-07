@@ -1,4 +1,5 @@
 using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Moq;
 using System;
@@ -12,6 +13,40 @@ namespace NetDaemon.Daemon.Tests
 {
     public class NetDaemonTests
     {
+        [Fact]
+        public async Task EventShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            dynamic dynObject = new ExpandoObject();
+            dynObject.Test = "Hello World!";
+
+            hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+            var isCalled = false;
+            var message = "";
+            daemonHost.ListenEvent("CUSTOM_EVENT", async (ev, data) =>
+            {
+                isCalled = true;
+                message = data.Test;
+            });
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            Assert.True(isCalled);
+            Assert.Equal("Hello World!", message);
+        }
+
         [Fact]
         public void GetStateMissingEntityReturnsNull()
         {
@@ -60,6 +95,45 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             hcMock.AssertEqual(hassState, entity);
+        }
+
+        //[Fact]
+        //public async Task HandleNewEventEmtpyDataShouldThrow()
+        //{
+        //    var hcMock = HassClientMock.DefaultMock;
+        //    var daemonHost = new NetDaemonHost(hcMock.Object);
+        //    //daemonHost.Ha
+        //}
+        [Fact]
+        public async Task OtherEventShouldNotCallCorrectFunction()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            dynamic dynObject = new ExpandoObject();
+            dynObject.Test = "Hello World!";
+
+            hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+            var isCalled = false;
+
+            daemonHost.ListenEvent("OTHER_EVENT", async (ev, data) =>
+            {
+                isCalled = true;
+            });
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            Assert.False(isCalled);
         }
 
         [Fact]
@@ -137,65 +211,139 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task TurnOnAsyncWithErrorEntityIdThrowsApplicationException()
+        public async Task SendEventShouldCallCorrectMethod()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            // ACT
-            //
-            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => await daemonHost.TurnOnAsync("light!correct_entity"));
+            var expObject = new ExpandoObject();
+            dynamic eventData = expObject;
+            eventData.Test = "Hello World!";
 
-            Assert.Equal("entity_id is mal formatted light!correct_entity", ex.Message);
+            await daemonHost.SendEvent("test_event", eventData);
+
+            hcMock.Verify(n => n.SendEvent("test_event", expObject));
         }
 
         [Fact]
-        public async Task TurnOnAsyncWithLightCallsSendMessageWithCorrectEntityId()
+        public async Task SendEventWithNullDataShouldCallCorrectMethod()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            // ACT
-            await daemonHost.TurnOnAsync("light.correct_entity");
+            var expObject = new ExpandoObject();
+            dynamic eventData = expObject;
+            eventData.Test = "Hello World!";
 
-            // ASSERT
-            var attributes = new ExpandoObject();
-            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
-            hcMock.Verify(n => n.CallService("light", "turn_on", attributes, It.IsAny<bool>()));
+            await daemonHost.SendEvent("test_event");
+
+            hcMock.Verify(n => n.SendEvent("test_event", null));
         }
 
         [Fact]
-        public async Task TurnOffAsyncWithLightCallsSendMessageWithCorrectEntityId()
+        public async Task SpeakShouldCallCorrectService()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
+            hcMock.FakeStates["media_player.fakeplayer"] = new HassState
+            {
+                EntityId = "media_player.fakeplayer",
+            };
+
+            daemonHost.InternalDelayTimeForTts = 0; // For testing
+
             // ACT
-            await daemonHost.TurnOffAsync("light.correct_entity");
+
+            daemonHost.Speak("media_player.fakeplayer", "Hello test!");
+
+            var expObject = new ExpandoObject();
+            dynamic expectedAttruibutes = expObject;
+            expectedAttruibutes.entity_id = "media_player.fakeplayer";
+            expectedAttruibutes.message = "Hello test!";
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+
+            var daemonTask = daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+
+            await Task.Delay(20);
 
             // ASSERT
-            var attributes = new ExpandoObject();
-            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
-            hcMock.Verify(n => n.CallService("light", "turn_off", attributes, It.IsAny<bool>()));
+            hcMock.Verify(n => n.CallService("tts", "google_cloud_say", expObject, true));
+            try
+            {
+                await daemonTask;
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
         }
 
         [Fact]
-        public async Task ToggleAsyncWithLightCallsSendMessageWithCorrectEntityId()
+        public async Task SpeakShouldWaitUntilMediaPlays()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
+            daemonHost.InternalDelayTimeForTts = 0;
+
+            var expObject = new ExpandoObject();
+            dynamic expectedAttruibutes = expObject;
+            expectedAttruibutes.entity_id = "media_player.fakeplayer";
+            expectedAttruibutes.message = "Hello test!";
+
+            var cancelSource = hcMock.GetSourceWithTimeout(500);
+
+            var daemonTask = daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+
+            await Task.Delay(20);
+
+            dynamic currentStateAttributes = new ExpandoObject();
+            currentStateAttributes.media_duration = 0.05;
+
+            daemonHost.InternalState["media_player.fakeplayer"] = new EntityState
+            {
+                EntityId = "media_player.fakeplayer",
+                Attribute = currentStateAttributes
+            };
+
             // ACT
-            await daemonHost.ToggleAsync("light.correct_entity");
+            daemonHost.Speak("media_player.fakeplayer", "Hello test!");
+            daemonHost.Speak("media_player.fakeplayer", "Hello test!");
+
+            await Task.Delay(20);
 
             // ASSERT
-            var attributes = new ExpandoObject();
-            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
-            hcMock.Verify(n => n.CallService("light", "toggle", attributes, It.IsAny<bool>()));
+            hcMock.Verify(n => n.CallService("tts", "google_cloud_say", expObject, true), Times.Once);
+
+            await Task.Delay(70);
+
+            hcMock.Verify(n => n.CallService("tts", "google_cloud_say", expObject, true), Times.Exactly(2));
+
+            try
+            {
+                await daemonTask;
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+        }
+
+        [Fact]
+        public async Task StopCallsCloseClient()
+        {
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            await daemonHost.Stop();
+
+            hcMock.Verify(n => n.CloseAsync(), Times.Once);
         }
 
         [Fact]
@@ -230,122 +378,65 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task StopCallsCloseClient()
-        {
-            var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
-
-            await daemonHost.Stop();
-
-            hcMock.Verify(n => n.CloseAsync(), Times.Once);
-        }
-
-        //[Fact]
-        //public async Task HandleNewEventEmtpyDataShouldThrow()
-        //{
-        //    var hcMock = HassClientMock.DefaultMock;
-        //    var daemonHost = new NetDaemonHost(hcMock.Object);
-        //    //daemonHost.Ha
-        //}
-
-        [Fact]
-        public async Task EventShouldCallCorrectFunction()
+        public async Task ToggleAsyncWithLightCallsSendMessageWithCorrectEntityId()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            dynamic dynObject = new ExpandoObject();
-            dynObject.Test = "Hello World!";
+            // ACT
+            await daemonHost.ToggleAsync("light.correct_entity");
 
-            hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
- 
-            var cancelSource = hcMock.GetSourceWithTimeout();
-            var isCalled = false;
-            var message = "";
-            daemonHost.ListenEvent("CUSTOM_EVENT", async (ev, data) =>
-            {
-                isCalled = true;
-                message = data.Test;
-            });
-
-            try
-            {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected behaviour
-            }
-
-            Assert.True(isCalled);
-            Assert.Equal("Hello World!", message);
+            // ASSERT
+            var attributes = new ExpandoObject();
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
+            hcMock.Verify(n => n.CallService("light", "toggle", attributes, It.IsAny<bool>()));
         }
 
         [Fact]
-        public async Task OtherEventShouldNotCallCorrectFunction()
+        public async Task TurnOffAsyncWithLightCallsSendMessageWithCorrectEntityId()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            dynamic dynObject = new ExpandoObject();
-            dynObject.Test = "Hello World!";
+            // ACT
+            await daemonHost.TurnOffAsync("light.correct_entity");
 
-            hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
-
-            var cancelSource = hcMock.GetSourceWithTimeout();
-            var isCalled = false;
-
-            daemonHost.ListenEvent("OTHER_EVENT", async (ev, data) =>
-            {
-                isCalled = true;
-            });
-
-            try
-            {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected behaviour
-            }
-
-            Assert.False(isCalled);
+            // ASSERT
+            var attributes = new ExpandoObject();
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
+            hcMock.Verify(n => n.CallService("light", "turn_off", attributes, It.IsAny<bool>()));
         }
 
         [Fact]
-        public async Task SendEventShouldCallCorrectMethod()
+        public async Task TurnOnAsyncWithErrorEntityIdThrowsApplicationException()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            var expObject = new ExpandoObject();
-            dynamic eventData = expObject;
-            eventData.Test = "Hello World!";
+            // ACT
+            //
+            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => await daemonHost.TurnOnAsync("light!correct_entity"));
 
-            await daemonHost.SendEvent("test_event", eventData);
-
-            hcMock.Verify(n => n.SendEvent("test_event", expObject));
-
+            Assert.Equal("entity_id is mal formatted light!correct_entity", ex.Message);
         }
 
         [Fact]
-        public async Task SendEventWithNullDataShouldCallCorrectMethod()
+        public async Task TurnOnAsyncWithLightCallsSendMessageWithCorrectEntityId()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
-            var expObject = new ExpandoObject();
-            dynamic eventData = expObject;
-            eventData.Test = "Hello World!";
+            // ACT
+            await daemonHost.TurnOnAsync("light.correct_entity");
 
-            await daemonHost.SendEvent("test_event");
-
-            hcMock.Verify(n => n.SendEvent("test_event", null));
-
+            // ASSERT
+            var attributes = new ExpandoObject();
+            ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
+            hcMock.Verify(n => n.CallService("light", "turn_on", attributes, It.IsAny<bool>()));
         }
     }
 }
