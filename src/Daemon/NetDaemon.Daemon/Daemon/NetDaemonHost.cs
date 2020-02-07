@@ -386,7 +386,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     if (stateData.NewState == null)
                     {
-                        throw new NullReferenceException($"Expected NewState not null for {stateData.EntityId}");
+                        // This is an entity that is removed and have no new state soi just return;
+                        return;
                     }
 
                     InternalState[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
