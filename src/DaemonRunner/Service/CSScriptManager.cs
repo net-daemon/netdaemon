@@ -51,62 +51,71 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         {
             if (string.IsNullOrEmpty(_codeFolder))
             {
-                var apps = Assembly.GetEntryAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
-                foreach (var app in apps)
-                {
-                    _logger.LogInformation($"Loading App ({app.Name}) local devmachine");
-
-                    var daempnApp = (NetDaemonApp)Activator.CreateInstance(app);
-                    await daempnApp.StartUpAsync(_daemon);
-                    await daempnApp.InitializeAsync();
-                }
-
+                _logger.LogError("Code folder config can not be NULL!");
                 return;
             }
+           
+            var appTypes = new List<Type>(10);
 
-            foreach (var file in Directory.EnumerateFiles(_codeFolder, "*.cs", SearchOption.AllDirectories))
+            // First see if there are local apps (when developing and debugging)
+            var apps = Assembly.GetEntryAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+            foreach (var localAppType in apps)
             {
-                
-                _logger.LogDebug($"Found cs file {Path.GetFileName(file)}");
-
-                var script = CSharpScript.Create(File.ReadAllText(file), _scriptOptions);
-
-                var compilation = script.GetCompilation();
-               
-                var stream = new MemoryStream();
-                var emitResult = compilation.Emit(stream);
-                stream.Seek(0, SeekOrigin.Begin);
-                if (emitResult.Success)
-                {
-                    var alc = new CollectibleAssemblyLoadContext();
-                    var asm = alc.LoadFromStream(stream);
-                    var apps = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
-      
-                    await _daemonAppConfig.InstanceFromDaemonAppConfig(apps, file);
-
-                    alc.Unload();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
-                }
-                else
-                {
-                    var msg = new StringBuilder();
-                    msg.AppendLine($"Compiler error in file: {file.Substring(_codeFolder.Length + 1)}");
-
-                    foreach (var emitResultDiagnostic in emitResult.Diagnostics)
-                    {
-                        if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
-                        {
-                            msg.AppendLine(emitResultDiagnostic.ToString());
-                        }
-                    }
-
-                    _logger.LogWarning(msg.ToString());
-
-                }
+                appTypes.Add(localAppType);
             }
-            
+
+            if (appTypes.Count == 0)
+            {
+                // Code folder is configured and we are not debugging with local apps 
+                foreach (var file in Directory.EnumerateFiles(_codeFolder, "*.cs", SearchOption.AllDirectories))
+                {
+
+                    _logger.LogDebug($"Found cs file {Path.GetFileName(file)}");
+
+                    var script = CSharpScript.Create(File.ReadAllText(file), _scriptOptions);
+
+                    var compilation = script.GetCompilation();
+
+                    var stream = new MemoryStream();
+                    var emitResult = compilation.Emit(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    if (emitResult.Success)
+                    {
+                        var alc = new CollectibleAssemblyLoadContext();
+                        var asm = alc.LoadFromStream(stream);
+                        var asseblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+                        foreach (var app in asseblyAppTypes)
+                        {
+                            appTypes.Add(app);
+                        }
+                        alc.Unload();
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+
+                    }
+                    else
+                    {
+                        var msg = new StringBuilder();
+                        msg.AppendLine($"Compiler error in file: {file.Substring(_codeFolder.Length + 1)}");
+
+                        foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+                        {
+                            if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
+                            {
+                                msg.AppendLine(emitResultDiagnostic.ToString());
+                            }
+                        }
+
+                        _logger.LogWarning(msg.ToString());
+
+                    }
+                }
+
+
+            }
+
+            await _daemonAppConfig.InstanceFromDaemonAppConfigs(appTypes, _codeFolder);
+
             // The scripting consumes allot of memory so lets clean up now
             GC.Collect();
             GC.WaitForPendingFinalizers();
