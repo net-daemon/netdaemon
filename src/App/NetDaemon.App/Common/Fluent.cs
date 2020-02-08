@@ -16,7 +16,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Play,
         Pause,
         PlayPause,
-        Stop
+        Stop,
+        Speak
     }
 
     public interface IAction : IExecuteAsync
@@ -54,7 +55,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
     }
 
-    public interface IMediaPlayer : IPlay<IMediaPlayerExecuteAsync>, IStop<IMediaPlayerExecuteAsync>, IPlayPause<IMediaPlayerExecuteAsync>, IPause<IMediaPlayerExecuteAsync>
+    public interface IMediaPlayer : IPlay<IMediaPlayerExecuteAsync>, 
+        IStop<IMediaPlayerExecuteAsync>, IPlayPause<IMediaPlayerExecuteAsync>, 
+        IPause<IMediaPlayerExecuteAsync>, ISpeak<IMediaPlayerExecuteAsync>
     {
     }
 
@@ -124,7 +127,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
     }
 
-    #region Media, Play, Stop, Pause, PlayPause
+    #region Media, Play, Stop, Pause, PlayPause, Speak
+
+    public interface ISpeak<T>
+    {
+        T Speak(string message);
+    }
 
     public interface IPause<T>
     {
@@ -313,6 +321,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     break;
                 case FluentActionType.Stop:
                     await CallServiceOnAllEntities("media_stop");
+                    break;
+                case FluentActionType.Speak:
+                    foreach (var entityId in _entityIds)
+                        await _daemon.Speak(entityId, _currentAction.MessageToSpeak);
                     break;
 
             }
@@ -536,6 +548,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                         throw new ArgumentOutOfRangeException();
                 }
         }
+
+        public IMediaPlayerExecuteAsync Speak(string message)
+        {
+            _currentAction = new FluentAction(FluentActionType.Speak);
+            _currentAction.MessageToSpeak = message;
+            return this;
+        }
     }
 
     public class TimeManager : ITime, ITimeItems, ITimerEntity, ITimerAction
@@ -610,6 +629,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public FluentActionType ActionType { get; }
         public Dictionary<string, object> Attributes { get; }
         public dynamic State { get; set; }
+        public string MessageToSpeak { get; internal set; }
     }
 
     internal class StateChangedInfo

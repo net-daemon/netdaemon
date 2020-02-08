@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
@@ -16,6 +17,45 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         Task InstanceFromDaemonAppConfigs(IEnumerable<Type> netDaemonApps, string codeFolder);
     }
 
+    public static class ConfigStringExtensions
+    {
+        public static string ToPythonStyle(this string str)
+        {
+            var build = new StringBuilder(str.Length);
+            bool isStart = true;
+            foreach (char c in str)
+            {
+                if (char.IsUpper(c) && !isStart)
+                    build.Append("_");
+                else
+                    isStart = false;
+                build.Append(char.ToLower(c));
+            }
+            return build.ToString();
+        }
+
+        public static string ToCamelCase(this string str)
+        {
+            var build = new StringBuilder();
+            bool nextIsUpper = false;
+            bool isFirstCharacter = true;
+            foreach (char c in str)
+            {
+                if (c == '_')
+                {
+                    nextIsUpper = true;
+                    continue;
+                }
+                   
+                build.Append(nextIsUpper || isFirstCharacter ? char.ToUpper(c) : c);
+                nextIsUpper = false;
+                isFirstCharacter = false;
+            }
+            var returnString = build.ToString();
+           
+            return build.ToString();
+        }
+    }
     public static class PropertyInfoExtensions
     {
         public static IList? CreateListOfPropertyType(this Type listType)
@@ -205,8 +245,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                 if (prop == null)
                 {
-                    _logger.LogWarning($"No property on class {netDaemonAppType.Name} matches {key}");
-                    continue;
+                    // Lets try convert from python style to CamelCase
+                    prop = netDaemonAppType.GetProperty(key.ToCamelCase());
+                    if (prop == null)
+                    {
+                        _logger.LogWarning($"No property on class {netDaemonAppType.Name} matches {key}");
+                        continue;
+                    }
+                    
                 }
 
                 switch (valueType)

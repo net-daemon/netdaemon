@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DaemonRunner\DaemonRunner.csproj" />
+    <ProjectReference Include="..\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
   </ItemGroup>
 
   <ItemGroup>

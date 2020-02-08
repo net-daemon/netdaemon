@@ -1,8 +1,9 @@
-﻿using System;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Moq;
+using System;
+using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using Moq;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests
@@ -38,7 +39,6 @@ namespace NetDaemon.Daemon.Tests
                 .UseEntity("light.correct_entity")
                 .TurnOff()
                 .Execute();
-
 
             Task task = null;
             try
@@ -154,7 +154,6 @@ namespace NetDaemon.Daemon.Tests
             hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
         }
 
-
         [Fact]
         public async Task EntityOnStateChangedTurnOnLightCallsCorrectServiceCallButNoTurnOff()
         {
@@ -163,7 +162,6 @@ namespace NetDaemon.Daemon.Tests
             var daemonHost = new NetDaemonHost(hcMock.Object);
 
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
-
 
             var cancelSource = hcMock.GetSourceWithTimeout();
 
@@ -247,8 +245,9 @@ namespace NetDaemon.Daemon.Tests
                 .WhenStateChange()
                 .Call((e, n, o) =>
                 {
-                    triggered = true; 
-                    return Task.CompletedTask; })
+                    triggered = true;
+                    return Task.CompletedTask;
+                })
                 .Execute();
 
             try
@@ -405,7 +404,6 @@ namespace NetDaemon.Daemon.Tests
             var cancelSource = hcMock.GetSourceWithTimeout();
             await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
 
-
             // ACT
             await daemonHost
                 .Entities(n => n.Attribute.test >= 100)
@@ -521,7 +519,6 @@ namespace NetDaemon.Daemon.Tests
             hcMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity2"));
         }
 
-
         [Fact]
         public async Task TurnOnEntityCallsCorrectServiceCall()
         {
@@ -560,7 +557,6 @@ namespace NetDaemon.Daemon.Tests
                 ("brightness", 100),
                 ("entity_id", "light.correct_entity"));
         }
-
 
         [Fact]
         public async Task TurnOnEntityWithMultipleAttributeCallsCorrectServiceCall()
@@ -632,7 +628,7 @@ namespace NetDaemon.Daemon.Tests
             hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var cancelSource = hcMock.GetSourceWithTimeout();
-  
+
             var actualToState = "";
             var actualFromState = "";
             var actualEntity = "";
@@ -687,6 +683,44 @@ namespace NetDaemon.Daemon.Tests
                 // Expected behaviour
             }
             hcMock.Verify(n => n.CallService("script", "thescript", null, false));
+        }
+
+        [Fact]
+        public async Task SpeakCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            daemonHost.InternalDelayTimeForTts = 0; // For testing
+
+            // ACT
+            await daemonHost
+                .MediaPlayer("media_player.correct_player")
+                .Speak("a message")
+                .ExecuteAsync();
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+
+            var daemonTask = daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+
+            await Task.Delay(20);
+
+            var expObject = new ExpandoObject();
+            dynamic expectedAttruibutes = expObject;
+            expectedAttruibutes.entity_id = "media_player.correct_player";
+            expectedAttruibutes.message = "a message";
+
+            // ASSERT
+            hcMock.Verify(n => n.CallService("tts", "google_cloud_say", expObject, true));
+            try
+            {
+                await daemonTask;
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
         }
     }
 }

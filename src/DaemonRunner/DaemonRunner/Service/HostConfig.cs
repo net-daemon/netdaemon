@@ -14,7 +14,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         {
         }
 
-
         [JsonPropertyName("log_level")]
         public LogLevel? LoggingLevel { get; set; } = LogLevel.Information;
         [JsonPropertyName("token")]
