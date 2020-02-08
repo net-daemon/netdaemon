@@ -26,16 +26,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return null;
         }
 
+        public IEntity Entities(IEnumerable<string> entityIds)
+        {
+            if (_daemon != null) return _daemon.Entities(entityIds);
+
+            return null;
+        }
+
         public IEntity Entity(params string[] entityId)
         {
             if (_daemon != null) return _daemon.Entity(entityId);
 
             return null;
         }
-
         public IFluentEvent Event(params string[] eventParams) => _daemon.Event(eventParams);
 
         public IFluentEvent Events(Func<FluentEventProperty, bool> func) => _daemon.Events(func);
+
+        public IFluentEvent Events(IEnumerable<string> eventParams) => _daemon.Events(eventParams);
 
         public EntityState? GetState(string entityId)
         {
@@ -93,9 +101,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Logger.Log(level, exception, message);
         }
 
-        public IMediaPlayer MediaPlayer(params string[] entity)
+        public IMediaPlayer MediaPlayer(params string[] entityIds)
         {
-            if (_daemon != null) return _daemon.MediaPlayer(entity);
+            if (_daemon != null) return _daemon.MediaPlayer(entityIds);
+
+            return null;
+        }
+
+        public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds)
+        {
+            if (_daemon != null) return _daemon.MediaPlayers(entityIds);
 
             return null;
         }

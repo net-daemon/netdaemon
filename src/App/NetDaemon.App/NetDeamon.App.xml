@@ -69,6 +69,11 @@
             </summary>
             <param name="daemon"></param>
         </member>
+        <member name="P:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Logger">
+            <summary>
+                Logger to use 
+            </summary>
+        </member>
         <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ListenState(System.String,System.Func{System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task})">
             <summary>
                 Listen to statechange

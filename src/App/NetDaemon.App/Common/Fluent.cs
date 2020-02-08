@@ -77,15 +77,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         IExecute Call(Func<string, EntityState?, EntityState?, Task> func);
 
+        IExecute RunScript(params string[] entityIds);
+
         IStateEntity UseEntities(Func<IEntityProperties, bool> func);
+        IStateEntity UseEntities(IEnumerable<string> entities);
 
         IStateEntity UseEntity(params string[] entityId);
-        IStateEntity UseLight(params string[] entity);
+        //IStateEntity UseLight(params string[] entity);
 
 
-        IStateEntity UseLights(Func<IEntityProperties, bool> func);
-
-        IExecute RunScript(params string[] entityIds);
+        //IStateEntity UseLights(Func<IEntityProperties, bool> func);
     }
 
     public interface IStateAction : IExecute
@@ -112,6 +113,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface ITimeItems
     {
         ITimerEntity Entities(Func<IEntityProperties, bool> func);
+        ITimerEntity Entities(IEnumerable<string> entities);
 
         ITimerEntity Entity(params string[] entityId);
     }
@@ -129,11 +131,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
     #region Media, Play, Stop, Pause, PlayPause, Speak
 
-    public interface ISpeak<T>
-    {
-        T Speak(string message);
-    }
-
     public interface IPause<T>
     {
         T Pause();
@@ -149,6 +146,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         T PlayPause();
     }
 
+    public interface ISpeak<T>
+    {
+        T Speak(string message);
+    }
     public interface IStop<T>
     {
         T Stop();
@@ -187,14 +188,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             new ConcurrentQueue<FluentAction>();
 
         private readonly INetDaemon _daemon;
-        private readonly string[] _entityIds;
+        private readonly IEnumerable<string> _entityIds;
 
         private FluentAction? _currentAction;
 
         private StateChangedInfo _currentState = new StateChangedInfo();
 
 
-        public EntityManager(string[] entityIds, INetDaemon daemon)
+        public EntityManager(IEnumerable<string> entityIds, INetDaemon daemon)
         {
             _entityIds = entityIds;
             _daemon = daemon;
@@ -211,12 +212,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _currentState.FuncToCall = func;
             return this;
         }
-        public IExecute RunScript(params string[] entityIds)
-        {
-            _currentState.ScriptToCall = entityIds;
-            return this;
-        }
-
         public void Execute()
         {
             foreach (var entityId in _entityIds)
@@ -301,9 +296,154 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             //}
         }
 
-        private async Task ExecuteAsync()
+        IAction ISetState<IAction>.SetState(dynamic state)
         {
-            await ExecuteAsync(false);
+            _currentAction = new FluentAction(FluentActionType.SetState);
+            _currentAction.State = state;
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction ISetState<IStateAction>.SetState(dynamic state)
+        {
+            _currentState?.Entity?.SetState(state);
+            return this;
+        }
+
+        public IMediaPlayerExecuteAsync Speak(string message)
+        {
+            _currentAction = new FluentAction(FluentActionType.Speak);
+            _currentAction.MessageToSpeak = message;
+            return this;
+        }
+
+        public IMediaPlayerExecuteAsync Stop()
+        {
+            _currentAction = new FluentAction(FluentActionType.Stop);
+            return this;
+        }
+
+        public IAction Toggle()
+        {
+            _currentAction = new FluentAction(FluentActionType.Toggle);
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction IToggle<IStateAction>.Toggle()
+        {
+            _currentState?.Entity?.Toggle();
+            return this;
+        }
+
+        public IAction TurnOff()
+        {
+            _currentAction = new FluentAction(FluentActionType.TurnOff);
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction ITurnOff<IStateAction>.TurnOff()
+        {
+            _currentState?.Entity?.TurnOff();
+            return this;
+        }
+
+        public IAction TurnOn()
+        {
+            _currentAction = new FluentAction(FluentActionType.TurnOn);
+            _actions.Enqueue(_currentAction);
+            return this;
+        }
+
+        IStateAction ITurnOn<IStateAction>.TurnOn()
+        {
+            _currentState?.Entity?.TurnOn();
+            return this;
+        }
+
+        public IStateEntity UseEntities(Func<IEntityProperties, bool> func)
+        {
+            _currentState.Entity = _daemon.Entities(func);
+            return this;
+        }
+
+        public IStateEntity UseEntities(IEnumerable<string> entities)
+        {
+            _currentState.Entity = _daemon.Entities(entities);
+            return this;
+        }
+        public IStateEntity UseEntity(params string[] entityId)
+        {
+            _currentState.Entity = _daemon.Entity(entityId);
+            return this;
+        }
+
+        //public IStateEntity UseLight(params string[] entity)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public IStateEntity UseLights(Func<IEntityProperties, bool> func)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        public IState WhenStateChange(object? to = null, object? from = null, bool allChanges = false)
+        {
+            _currentState = new StateChangedInfo
+            {
+                From = from,
+                To = to,
+                AllChanges = allChanges
+            };
+
+            return this;
+        }
+
+        public IState WhenStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
+        {
+            _currentState = new StateChangedInfo
+            {
+                Lambda = stateFunc
+            };
+            return this;
+        }
+
+        public IAction WithAttribute(string name, object value)
+        {
+            if (_currentAction != null) _currentAction.Attributes[name] = value;
+            return this;
+        }
+
+        IStateAction IStateAction.WithAttribute(string name, object value)
+        {
+            var entityManager = (EntityManager)_currentState.Entity!;
+            entityManager.WithAttribute(name, value);
+
+            return this;
+        }
+
+        private static string GetDomainFromEntity(string entity)
+        {
+            var entityParts = entity.Split('.');
+            if (entityParts.Length != 2)
+                throw new ApplicationException($"entity_id is mal formatted {entity}");
+
+            return entityParts[0];
+        }
+
+        private async Task CallServiceOnAllEntities(string service)
+        {
+            var taskList = new List<Task>();
+            foreach (var entityId in _entityIds)
+            {
+                var domain = GetDomainFromEntity(entityId);
+                var task = _daemon.CallService(domain, service, new { entity_id = entityId });
+                taskList.Add(task);
+            }
+
+            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000));
         }
 
         async Task IMediaPlayerExecuteAsync.ExecuteAsync()
@@ -328,7 +468,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     break;
 
             }
-        
+
         }
 
         async Task IExecuteAsync.ExecuteAsync()
@@ -338,7 +478,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         async Task IScript.ExecuteAsync()
         {
- 
+
             var taskList = new List<Task>();
             foreach (var scriptName in _entityIds)
             {
@@ -387,144 +527,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _currentAction = new FluentAction(FluentActionType.PlayPause);
             return this;
         }
-        public IMediaPlayerExecuteAsync Stop()
+
+        public IExecute RunScript(params string[] entityIds)
         {
-            _currentAction = new FluentAction(FluentActionType.Stop);
+            _currentState.ScriptToCall = entityIds;
             return this;
         }
-
-        IAction ISetState<IAction>.SetState(dynamic state)
+        private async Task ExecuteAsync()
         {
-            _currentAction = new FluentAction(FluentActionType.SetState);
-            _currentAction.State = state;
-            _actions.Enqueue(_currentAction);
-            return this;
+            await ExecuteAsync(false);
         }
-
-        IStateAction ISetState<IStateAction>.SetState(dynamic state)
-        {
-            _currentState?.Entity?.SetState(state);
-            return this;
-        }
-
-
-
-        public IAction Toggle()
-        {
-            _currentAction = new FluentAction(FluentActionType.Toggle);
-            _actions.Enqueue(_currentAction);
-            return this;
-        }
-
-        IStateAction IToggle<IStateAction>.Toggle()
-        {
-            _currentState?.Entity?.Toggle();
-            return this;
-        }
-
-        public IAction TurnOff()
-        {
-            _currentAction = new FluentAction(FluentActionType.TurnOff);
-            _actions.Enqueue(_currentAction);
-            return this;
-        }
-
-        IStateAction ITurnOff<IStateAction>.TurnOff()
-        {
-            _currentState?.Entity?.TurnOff();
-            return this;
-        }
-
-        public IAction TurnOn()
-        {
-            _currentAction = new FluentAction(FluentActionType.TurnOn);
-            _actions.Enqueue(_currentAction);
-            return this;
-        }
-
-        IStateAction ITurnOn<IStateAction>.TurnOn()
-        {
-            _currentState?.Entity?.TurnOn();
-            return this;
-        }
-
-        public IStateEntity UseEntities(Func<IEntityProperties, bool> func)
-        {
-            _currentState.Entity = _daemon.Entities(func);
-            return this;
-        }
-
-        public IStateEntity UseEntity(params string[] entityId)
-        {
-            _currentState.Entity = _daemon.Entity(entityId);
-            return this;
-        }
-
-        public IStateEntity UseLight(params string[] entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IStateEntity UseLights(Func<IEntityProperties, bool> func)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IState WhenStateChange(object? to = null, object? from = null, bool allChanges = false)
-        {
-            _currentState = new StateChangedInfo
-            {
-                From = from,
-                To = to,
-                AllChanges = allChanges
-            };
-
-            return this;
-        }
-
-        public IState WhenStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
-        {
-            _currentState = new StateChangedInfo
-            {
-                Lambda = stateFunc
-            };
-            return this;
-        }
-
-        public IAction WithAttribute(string name, object value)
-        {
-            if (_currentAction != null) _currentAction.Attributes[name] = value;
-            return this;
-        }
-        IStateAction IStateAction.WithAttribute(string name, object value)
-        {
-            var entityManager = (EntityManager)_currentState.Entity!;
-            entityManager.WithAttribute(name, value);
-
-            return this;
-        }
-        private static string GetDomainFromEntity(string entity)
-        {
-            var entityParts = entity.Split('.');
-            if (entityParts.Length != 2)
-                throw new ApplicationException($"entity_id is mal formatted {entity}");
-
-            return entityParts[0];
-        }
-
-        private async Task CallServiceOnAllEntities(string service)
-        {
-            var taskList = new List<Task>();
-            foreach (var entityId in _entityIds)
-            {
-                var domain = GetDomainFromEntity(entityId);
-                var task = _daemon.CallService(domain, service, new { entity_id = entityId });
-                taskList.Add(task);
-            }
-
-            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000));
-        }
-
         private async Task HandleAction(FluentAction fluentAction)
         {
             var attributes = fluentAction.Attributes.Select(n => (n.Key, n.Value)).ToArray();
@@ -548,13 +560,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                         throw new ArgumentOutOfRangeException();
                 }
         }
-
-        public IMediaPlayerExecuteAsync Speak(string message)
-        {
-            _currentAction = new FluentAction(FluentActionType.Speak);
-            _currentAction.MessageToSpeak = message;
-            return this;
-        }
     }
 
     public class TimeManager : ITime, ITimeItems, ITimerEntity, ITimerAction
@@ -574,6 +579,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             var x = _daemon.State.Where(func);
             _entityIds.AddRange(x.Select(n => n.EntityId).ToArray());
             entityManager = new EntityManager(_entityIds.ToArray(), _daemon);
+            return this;
+        }
+
+        public ITimerEntity Entities(IEnumerable<string> entities)
+        {
+            _entityIds.AddRange(entities);
+            entityManager = new EntityManager(_entityIds, _daemon);
             return this;
         }
 
@@ -628,8 +640,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public FluentActionType ActionType { get; }
         public Dictionary<string, object> Attributes { get; }
-        public dynamic State { get; set; }
         public string MessageToSpeak { get; internal set; }
+        public dynamic State { get; set; }
     }
 
     internal class StateChangedInfo
@@ -640,7 +652,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public dynamic? From { get; set; }
         public Func<string, EntityState?, EntityState?, Task>? FuncToCall { get; set; }
         public Func<EntityState?, EntityState?, bool>? Lambda { get; set; }
-        public dynamic? To { get; set; }
         public string[] ScriptToCall { get; internal set; }
+        public dynamic? To { get; set; }
     }
 }

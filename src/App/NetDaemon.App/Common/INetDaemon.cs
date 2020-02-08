@@ -28,7 +28,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
    
     public interface INetDaemon
     {
+        /// <summary>
+        ///     Logger to use 
+        /// </summary>
         ILogger Logger { get; }
+        
         /// <summary>
         ///     Listen to statechange
         /// </summary>
@@ -49,26 +53,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Func<string, dynamic, Task> func);
         
         Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
-        Task TurnOffAsync(string entityIds, params (string name, object val)[] attributes);
-        Task ToggleAsync(string entityIds, params (string name, object val)[] attributes);
+        Task TurnOffAsync(string entityId, params (string name, object val)[] attributes);
+        Task ToggleAsync(string entityId, params (string name, object val)[] attributes);
         Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes);
 
         Task CallService(string domain, string service, dynamic? data=null, bool waitForResponse=false);
 
         Task<bool> SendEvent(string eventId, dynamic? data=null);
 
-        EntityState? GetState(string entity);
+        EntityState? GetState(string entityId);
 
         //IAction Action { get; }
         IEntity Entity(params string[] entityId);
+        IEntity Entities(IEnumerable<string> entityId);
         IEntity Entities(Func<IEntityProperties, bool> func);
 
         IFluentEvent Event(params string[] eventParams);
+        IFluentEvent Events(IEnumerable<string> eventParams);
         IFluentEvent Events(Func<FluentEventProperty, bool> func);
 
         ILight Light(params string[] entity);
 
-        IMediaPlayer MediaPlayer(params string[] entity);
+        IMediaPlayer MediaPlayer(params string[] entityIds);
+        IMediaPlayer MediaPlayers(IEnumerable<string> entityIds);
         IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
 
         IScript RunScript(params string[] entityIds);

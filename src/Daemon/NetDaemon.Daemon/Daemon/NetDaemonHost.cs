@@ -32,6 +32,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         // internal so we can use for unittest
         internal IDictionary<string, EntityState> InternalState = new Dictionary<string, EntityState>();
 
+        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
+                    new List<(string pattern, Func<string, dynamic, Task> action)>();
+
+        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
+                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
+
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
         private readonly IHassClient _hassClient;
 
@@ -45,13 +51,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "light",
             "switch"
         };
-
-        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
-                    new List<(string pattern, Func<string, dynamic, Task> action)>();
-
-        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
-                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
-
         private bool _stopped;
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
@@ -95,11 +94,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public IEntity Entity(params string[] entityId) => new EntityManager(entityId, this);
+        public IEntity Entities(IEnumerable<string> entityIds) => new EntityManager(entityIds, this);
 
+        public IEntity Entity(params string[] entityIds) => new EntityManager(entityIds, this);
         public IFluentEvent Event(params string[] eventParams) => new FluentEventManager(eventParams, this);
 
         public IFluentEvent Events(Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
+
+        public IFluentEvent Events(IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
         public EntityState? GetState(string entity)
         {
@@ -144,7 +146,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public void ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action) => _stateActions.Add((pattern, action));
 
-        public IMediaPlayer MediaPlayer(params string[] entityId) => new EntityManager(entityId, this);
+        public IMediaPlayer MediaPlayer(params string[] entityIds) => new EntityManager(entityIds, this);
+
+        public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds) => new EntityManager(entityIds, this);
 
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {

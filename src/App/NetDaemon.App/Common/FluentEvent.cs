@@ -12,12 +12,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
     public class FluentEventManager : IFluentEvent, IExecute
     {
-        private string[] _events;
+        private IEnumerable<string> _events;
         private INetDaemon _daemon;
         private Func<string, dynamic, Task> _functionToCall;
         private Func<FluentEventProperty, bool> _funcSelector;
       
-        public FluentEventManager(string[] events, INetDaemon daemon)
+        public FluentEventManager(IEnumerable<string> events, INetDaemon daemon)
         {
             _events = events;
             _daemon = daemon;
