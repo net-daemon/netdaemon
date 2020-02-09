@@ -28,22 +28,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
     public class CSScriptManager
     {
+
+        #region -- private fields
+
         private ScriptOptions _scriptOptions;
         private readonly string _codeFolder;
         private readonly ILogger _logger;
         private readonly INetDaemon _daemon;
-        private CSGlobals _globals;
-        private CollectibleAssemblyLoadContext alc = new CollectibleAssemblyLoadContext();
-        private CSScriptManager() { }
 
+        #endregion
+
+        private CSScriptManager() { }
 
         public CSScriptManager(string codeFolder, INetDaemon daemon, ILoggerFactory loggerFactory)
         {
             _codeFolder = codeFolder;
             _logger = loggerFactory.CreateLogger<CSScriptManager>();
             _daemon = daemon;
-            _globals = new CSGlobals { GlobalDaemon = daemon };
-
             _scriptOptions = LoadAssembliesAndStandardImports();
         }
 
@@ -58,11 +59,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             var appTypes = new List<Type>(10);
 
             // First see if there are local apps (when developing and debugging)
-            var apps = Assembly.GetEntryAssembly().GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
-            foreach (var localAppType in apps)
-            {
-                appTypes.Add(localAppType);
-            }
+            var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+            if (apps != null)
+                foreach (var localAppType in apps)
+                {
+                    appTypes.Add(localAppType);
+                }
 
             if (appTypes.Count == 0)
             {
@@ -130,7 +132,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             foreach (var assembly in assembliesFromCurrentAppDomain)
             {
                 // _logger.LogInformation(assembly.FullName);
-                if (assembly.FullName.StartsWith("NetDaemon"))
+                if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
                     options = options.AddReferences(assembly);
             }
 

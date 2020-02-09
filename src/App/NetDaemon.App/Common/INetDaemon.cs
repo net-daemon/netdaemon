@@ -19,20 +19,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         /// Init the application, is called by the NetDaemon after startup
         /// </summary>
-        /// <param name="daemon"></param>
         Task InitializeAsync();
 
-        
+
     }
 
-   
+    /// <summary>
+    ///     The interface that interacts with the daemon main logic
+    /// </summary>
     public interface INetDaemon
     {
         /// <summary>
-        ///     Logger to use 
+        ///     Logger to use
         /// </summary>
         ILogger Logger { get; }
-        
+
         /// <summary>
         ///     Listen to statechange
         /// </summary>
@@ -47,51 +48,171 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         void ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action);
 
+        /// <summary>
+        ///     Listen to state change
+        /// </summary>
+        /// <param name="ev">The event to listen to</param>
+        /// <param name="action">The action to call when event fires</param>
         void ListenEvent(string ev,
             Func<string, dynamic?, Task> action);
-        void ListenEvent(Func<FluentEventProperty, bool> funcSelector, 
-            Func<string, dynamic, Task> func);
-        
+
+        /// <summary>
+        ///     Listen to event state
+        /// </summary>
+        /// <param name="funcSelector">Using lambda expression to select event</param>
+        /// <param name="action">The action to call when event fires</param>
+        void ListenEvent(Func<FluentEventProperty, bool> funcSelector,
+                         Func<string, dynamic, Task> action);
+
+        /// <summary>
+        ///     Listen to service calls
+        /// </summary>
+        /// <param name="domain">The domain of the service call</param>
+        /// <param name="service">The service being called</param>
+        /// <param name="app">The application instance</param>
+        /// <param name="action">The action to perform when service is called</param>
+        void ListenServiceCall(string domain, string service, 
+            Func<dynamic?, Task> action);
+
+        /// <summary>
+        ///     Turn on entity who support the service call
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        /// <param name="attributes">Name/Value pair of the attribute</param>
+
         Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
+        /// <summary>
+        ///     Turn off entity who support the service call
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        /// <param name="attributes">Name/Value pair of the attribute</param>
+
         Task TurnOffAsync(string entityId, params (string name, object val)[] attributes);
+        /// <summary>
+        ///     Toggle entity who support the service call
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        /// <param name="attributes">Name/Value pair of the attribute</param>
         Task ToggleAsync(string entityId, params (string name, object val)[] attributes);
+
+        /// <summary>
+        ///     Set entity state
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        /// <param name="state">The state being set</param>
+        /// <param name="attributes">Name/Value pair of the attribute</param>
         Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes);
 
-        Task CallService(string domain, string service, dynamic? data=null, bool waitForResponse=false);
+        /// <summary>
+        ///     Calls a service
+        /// </summary>
+        /// <param name="domain">The domain of the service</param>
+        /// <param name="service">The service being called</param>
+        /// <param name="data">Any data that the service requires</param>
+        /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
+        Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
-        Task<bool> SendEvent(string eventId, dynamic? data=null);
+        /// <summary>
+        ///     Sends a custom event
+        /// </summary>
+        /// <param name="eventId">Any identity of the event</param>
+        /// <param name="data">Any data sent with the event</param>
+        Task<bool> SendEvent(string eventId, dynamic? data = null);
 
+        /// <summary>
+        ///     Gets current state for the entity
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        /// <returns></returns>
         EntityState? GetState(string entityId);
 
-        //IAction Action { get; }
+        /// <summary>
+        ///     Selects one or more entities to do action on
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
         IEntity Entity(params string[] entityId);
+
+        /// <summary>
+        ///     Selects one or more entities to do action on
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
         IEntity Entities(IEnumerable<string> entityId);
+
+        /// <summary>
+        ///     Selects one or more entities to do action on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression for selecting entities</param>
         IEntity Entities(Func<IEntityProperties, bool> func);
 
+        /// <summary>
+        ///     Selects one or more events to do action on
+        /// </summary>
+        /// <param name="eventParams">Events</param>
         IFluentEvent Event(params string[] eventParams);
+        /// <summary>
+        ///     Selects one or more events to do action on
+        /// </summary>
+        /// <param name="eventParams">Events</param>
         IFluentEvent Events(IEnumerable<string> eventParams);
+
+        /// <summary>
+        ///     Selects the events to do actions on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting event</param>
         IFluentEvent Events(Func<FluentEventProperty, bool> func);
 
-        ILight Light(params string[] entity);
+        /// <summary>
+        ///     Selects one or more light entities to do action on
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        ILight Light(params string[] entityId);
 
+        /// <summary>
+        ///     Selects one or more media player entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
         IMediaPlayer MediaPlayer(params string[] entityIds);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
         IMediaPlayer MediaPlayers(IEnumerable<string> entityIds);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting mediaplayers</param>
         IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
 
+        /// <summary>
+        ///     Runs one or more scripts
+        /// </summary>
+        /// <param name="entityIds">The unique id:s of the script</param>
         IScript RunScript(params string[] entityIds);
 
+        /// <summary>
+        ///     All current states for all known entities
+        /// </summary>
+        /// <remarks>
+        ///     All states are read and cached at startup. Every state change updates the
+        ///     states. There can be a small risk that the state is not updated
+        ///     exactly when it happens but it should be fine. The SetState function
+        ///     updates the state before sending.
+        /// </remarks>
         IEnumerable<EntityState> State { get; }
 
+        /// <summary>
+        ///     Schedule actions to fire in different time
+        /// </summary>
         IScheduler Scheduler { get; }
 
+        /// <summary>
+        ///     Use text-to-speech to speak a message
+        /// </summary>
+        /// <param name="entityId">Unique id of the media player the speech should play</param>
+        /// <param name="message">The message that will be spoken</param>
         Task Speak(string entityId, string message);
     }
-    /// <summary>
-    ///     Used for global share the Daemon (no worries its thread safe) :)
-    /// </summary>
-    public class CSGlobals
-    {
-        public INetDaemon GlobalDaemon;
 
-    }
 }

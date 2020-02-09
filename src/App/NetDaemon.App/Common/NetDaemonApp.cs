@@ -67,6 +67,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) =>
                 _daemon?.ListenEvent(funcSelector, func);
+        public void ListenServiceCall(string domain, string service, Func<dynamic, Task> action) =>
+                _daemon?.ListenServiceCall(domain, service, action);
 
         /// <summary>
         ///     Listen for state changes and call a function when state changes

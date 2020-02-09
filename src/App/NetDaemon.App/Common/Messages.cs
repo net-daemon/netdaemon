@@ -5,11 +5,7 @@ using System.Text.Json;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-    public class Event
-    {
-    }
-
-    public class ServiceEvent : Event
+    public class ServiceEvent
     {
         public string Domain { get; set; } = "";
 
@@ -18,7 +14,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public JsonElement? ServiceData { get; set; } = null;
     }
 
-    public class StateChangedEvent : Event
+    public class StateChangedEvent
     {
         public string EntityId { get; set; } = "";
 
@@ -28,7 +24,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     }
 
 
-    public class EntityState  : IEntityProperties
+    public class EntityState : IEntityProperties
     {
 
         public string EntityId { get; set; } = "";

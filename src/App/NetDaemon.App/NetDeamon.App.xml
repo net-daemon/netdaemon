@@ -67,11 +67,15 @@
             <summary>
             Init the application, is called by the NetDaemon after startup
             </summary>
-            <param name="daemon"></param>
+        </member>
+        <member name="T:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon">
+            <summary>
+                The interface that interacts with the daemon main logic
+            </summary>
         </member>
         <member name="P:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Logger">
             <summary>
-                Logger to use 
+                Logger to use
             </summary>
         </member>
         <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ListenState(System.String,System.Func{System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task})">
@@ -87,10 +91,169 @@
                     - oldEvent
             </remarks>
         </member>
-        <member name="T:JoySoftware.HomeAssistant.NetDaemon.Common.CSGlobals">
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ListenEvent(System.String,System.Func{System.String,System.Object,System.Threading.Tasks.Task})">
             <summary>
-                Used for global share the Daemon (no worries its thread safe) :)
+                Listen to state change
             </summary>
+            <param name="ev">The event to listen to</param>
+            <param name="action">The action to call when event fires</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ListenEvent(System.Func{JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean},System.Func{System.String,System.Object,System.Threading.Tasks.Task})">
+            <summary>
+                Listen to event state
+            </summary>
+            <param name="funcSelector">Using lambda expression to select event</param>
+            <param name="action">The action to call when event fires</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ListenServiceCall(System.String,System.String,System.Func{System.Object,System.Threading.Tasks.Task})">
+            <summary>
+                Listen to service calls
+            </summary>
+            <param name="domain">The domain of the service call</param>
+            <param name="service">The service being called</param>
+            <param name="app">The application instance</param>
+            <param name="action">The action to perform when service is called</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.TurnOnAsync(System.String,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+                Turn on entity who support the service call
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+            <param name="attributes">Name/Value pair of the attribute</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.TurnOffAsync(System.String,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+                Turn off entity who support the service call
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+            <param name="attributes">Name/Value pair of the attribute</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.ToggleAsync(System.String,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+                Toggle entity who support the service call
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+            <param name="attributes">Name/Value pair of the attribute</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.SetState(System.String,System.Object,System.ValueTuple{System.String,System.Object}[])">
+            <summary>
+                Set entity state
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+            <param name="state">The state being set</param>
+            <param name="attributes">Name/Value pair of the attribute</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.CallService(System.String,System.String,System.Object,System.Boolean)">
+            <summary>
+                Calls a service
+            </summary>
+            <param name="domain">The domain of the service</param>
+            <param name="service">The service being called</param>
+            <param name="data">Any data that the service requires</param>
+            <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.SendEvent(System.String,System.Object)">
+            <summary>
+                Sends a custom event
+            </summary>
+            <param name="eventId">Any identity of the event</param>
+            <param name="data">Any data sent with the event</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.GetState(System.String)">
+            <summary>
+                Gets current state for the entity
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+            <returns></returns>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Entity(System.String[])">
+            <summary>
+                Selects one or more entities to do action on
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Entities(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+                Selects one or more entities to do action on
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Entities(System.Func{JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean})">
+            <summary>
+                Selects one or more entities to do action on using lambda
+            </summary>
+            <param name="func">The lambda expression for selecting entities</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Event(System.String[])">
+            <summary>
+                Selects one or more events to do action on
+            </summary>
+            <param name="eventParams">Events</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Events(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+                Selects one or more events to do action on
+            </summary>
+            <param name="eventParams">Events</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Events(System.Func{JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean})">
+            <summary>
+                Selects the events to do actions on using lambda
+            </summary>
+            <param name="func">The lambda expression selecting event</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Light(System.String[])">
+            <summary>
+                Selects one or more light entities to do action on
+            </summary>
+            <param name="entityId">The unique id of the entity</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.MediaPlayer(System.String[])">
+            <summary>
+                Selects one or more media player entities to do action on
+            </summary>
+            <param name="entityIds">Entity unique id:s</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.MediaPlayers(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+                Selects one or more media player entities to do action on
+            </summary>
+            <param name="entityIds">Entity unique id:s</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.MediaPlayers(System.Func{JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean})">
+            <summary>
+                Selects one or more media player entities to do action on using lambda
+            </summary>
+            <param name="func">The lambda expression selecting mediaplayers</param>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.RunScript(System.String[])">
+            <summary>
+                Runs one or more scripts
+            </summary>
+            <param name="entityIds">The unique id:s of the script</param>
+        </member>
+        <member name="P:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.State">
+            <summary>
+                All current states for all known entities
+            </summary>
+            <remarks>
+                All states are read and cached at startup. Every state change updates the
+                states. There can be a small risk that the state is not updated
+                exactly when it happens but it should be fine. The SetState function
+                updates the state before sending.
+            </remarks>
+        </member>
+        <member name="P:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Scheduler">
+            <summary>
+                Schedule actions to fire in different time
+            </summary>
+        </member>
+        <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon.Speak(System.String,System.String)">
+            <summary>
+                Use text-to-speech to speak a message
+            </summary>
+            <param name="entityId">Unique id of the media player the speech should play</param>
+            <param name="message">The message that will be spoken</param>
         </member>
         <member name="M:JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp.ListenState(System.String,System.Func{System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task})">
             <summary>

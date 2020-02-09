@@ -55,8 +55,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
     }
 
-    public interface IMediaPlayer : IPlay<IMediaPlayerExecuteAsync>, 
-        IStop<IMediaPlayerExecuteAsync>, IPlayPause<IMediaPlayerExecuteAsync>, 
+    public interface IMediaPlayer : IPlay<IMediaPlayerExecuteAsync>,
+        IStop<IMediaPlayerExecuteAsync>, IPlayPause<IMediaPlayerExecuteAsync>,
         IPause<IMediaPlayerExecuteAsync>, ISpeak<IMediaPlayerExecuteAsync>
     {
     }
@@ -244,7 +244,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
                         // If we don´t accept all changes in the state change
                         // and we do not have a state change so return
-                        if (newState?.State == oldState.State && !_currentState.AllChanges)
+                        if (newState?.State == oldState?.State && !_currentState.AllChanges)
                             return;
                     }
 
@@ -257,7 +257,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                         if (currentState != null && currentState.State == newState?.State)
                         {
                             //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
-                            if (currentState.LastChanged == newState.LastChanged)
+                            if (currentState?.LastChanged == newState?.LastChanged)
                             {
                                 // No state has changed during the period
                                 _daemon.Logger.LogDebug(
@@ -271,13 +271,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                             else
                             {
                                 _daemon.Logger.LogDebug(
-                                    $"State same {newState?.State} but different state changed: {currentState.LastChanged}, expected {newState.LastChanged}");
+                                    $"State same {newState?.State} but different state changed: {currentState?.LastChanged}, expected {newState?.LastChanged}");
                             }
                         }
                         else
                         {
                             _daemon.Logger.LogDebug(
-                                $"State not same, do not execute for statement. {newState?.State} found, expected {currentState.State}");
+                                $"State not same, do not execute for statement. {newState?.State} found, expected {currentState?.State}");
                         }
                     }
                     else

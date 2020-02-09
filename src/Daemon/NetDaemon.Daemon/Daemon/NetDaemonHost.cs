@@ -52,6 +52,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "switch"
         };
         private bool _stopped;
+        
+        private readonly List<(string, string, Func< dynamic?, Task>)> _serviceCallFunctionList 
+            = new List<(string, string, Func<dynamic?, Task>)>();
 
         public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
         {
@@ -97,6 +100,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public IEntity Entities(IEnumerable<string> entityIds) => new EntityManager(entityIds, this);
 
         public IEntity Entity(params string[] entityIds) => new EntityManager(entityIds, this);
+
         public IFluentEvent Event(params string[] eventParams) => new FluentEventManager(eventParams, this);
 
         public IFluentEvent Events(Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
@@ -132,6 +136,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
 
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
+
+        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action) 
+            => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+
 
         /// <summary>
         /// </summary>
@@ -177,7 +185,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="ssl"></param>
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
             string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
@@ -425,6 +432,37 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (state_changed)");
+                    throw;
+                }
+            }
+            else if (hassEvent.EventType == "call_service")
+            {
+                try
+                {
+
+                    var serviceCallData = (HassServiceEventData?)hassEvent.Data;
+
+                    if (serviceCallData == null)
+                    {
+                        throw new NullReferenceException("ServiceData is null! not expected");
+                    }
+                    var tasks = new List<Task>();
+                    foreach(var (domain, service, func) in _serviceCallFunctionList)
+                    {
+                        if (domain == serviceCallData.Domain &&
+                            service == serviceCallData.Service)
+                        {
+                            tasks.Add(func(serviceCallData.Data));
+                        }
+                    }
+                    if (tasks.Count > 0)
+                    {
+                        await tasks.WhenAll(token);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Failed to handle new event (service_call)");
                     throw;
                 }
             }

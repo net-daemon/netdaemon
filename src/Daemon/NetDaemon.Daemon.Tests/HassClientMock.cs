@@ -94,6 +94,20 @@ namespace NetDaemon.Daemon.Tests
                 }
             };
         }
+        public void AddCallServiceEvent(string domain, string service, dynamic data)
+        {
+            // Todo: Refactor to smth smarter
+            FakeEvents.Enqueue(new HassEvent
+            {
+                EventType = "call_service",
+                Data = new HassServiceEventData
+                {
+                    Domain = domain,
+                    Service = service,
+                    Data = data
+                }
+            });
+        }
 
         public void AddChangedEvent(string entityId, object fromState, object toState, DateTime lastUpdated, DateTime lastChanged)
         {

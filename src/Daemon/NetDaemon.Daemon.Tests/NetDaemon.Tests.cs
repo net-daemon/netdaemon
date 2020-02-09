@@ -438,5 +438,75 @@ namespace NetDaemon.Daemon.Tests
             ((IDictionary<string, object>)attributes)["entity_id"] = "light.correct_entity";
             hcMock.Verify(n => n.CallService("light", "turn_on", attributes, It.IsAny<bool>()));
         }
+
+        [Fact]
+        public async Task CallServiceEventShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            dynamic dynObject = new ExpandoObject();
+            dynObject.Test = "Hello World!";
+
+            hcMock.AddCallServiceEvent("custom_domain", "any_service", dynObject);
+            var cancelSource = hcMock.GetSourceWithTimeout();
+            var isCalled = false;
+            string message = "";
+
+            daemonHost.ListenServiceCall("custom_domain", "any_service", data =>
+            {
+                isCalled = true;
+                message = data.Test;
+                return Task.CompletedTask;
+            });
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            Assert.True(isCalled);
+            Assert.Equal("Hello World!", message);
+        }
+
+        [Fact]
+        public async Task CallServiceEventOtherShouldNotCallFunction()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            dynamic dynObject = new ExpandoObject();
+            dynObject.Test = "Hello World!";
+
+            hcMock.AddCallServiceEvent("custom_domain", "other_service", dynObject);
+            var cancelSource = hcMock.GetSourceWithTimeout();
+            var isCalled = false;
+            string message = "";
+
+            daemonHost.ListenServiceCall("custom_domain", "any_service", data =>
+            {
+                isCalled = true;
+                message = data.Test;
+                return Task.CompletedTask;
+            });
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            Assert.False(isCalled);
+            Assert.Equal("", message);
+        }
     }
 }

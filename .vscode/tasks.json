@@ -7,9 +7,9 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/runner/runner.csproj",
+                "${workspaceFolder}/src/NetDaemon.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                // "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         },

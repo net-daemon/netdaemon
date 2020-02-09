@@ -3,9 +3,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
@@ -16,7 +19,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
     {
         Task InstanceFromDaemonAppConfigs(IEnumerable<Type> netDaemonApps, string codeFolder);
     }
-
+    public static class TaskExtensions
+    {
+        public static async Task InvokeAsync(this MethodInfo mi, object obj, params object[] parameters)
+        {
+            dynamic awaitable = mi.Invoke(obj, parameters);
+            await awaitable;
+            //return awaitable.GetAwaiter().GetResult();
+        }
+    }
     public static class ConfigStringExtensions
     {
         public static string ToPythonStyle(this string str)
@@ -46,13 +57,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     nextIsUpper = true;
                     continue;
                 }
-                   
+
                 build.Append(nextIsUpper || isFirstCharacter ? char.ToUpper(c) : c);
                 nextIsUpper = false;
                 isFirstCharacter = false;
             }
             var returnString = build.ToString();
-           
+
             return build.ToString();
         }
     }
@@ -252,7 +263,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         _logger.LogWarning($"No property on class {netDaemonAppType.Name} matches {key}");
                         continue;
                     }
-                    
+
                 }
 
                 switch (valueType)
@@ -313,8 +324,74 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             {
                 try
                 {
-                    _logger.LogInformation($"Loading App ({netDaemonAppType.Name})");
                     await netDaemonApp.StartUpAsync(_daemon);
+                    
+                    _logger.LogInformation($"Loading App ({netDaemonAppType.Name})");
+                    foreach (var method in netDaemonAppType.GetMethods())
+                    {
+                        foreach(var attr in method.GetCustomAttributes(false))
+                        {
+                            switch(attr)
+                            {
+                                case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
+                                    if (!CheckIfServiceCallSignatureIsOk(method))
+                                        continue;
+                                    dynamic serviceData = new FluentExpandoObject();
+                                    serviceData.method = method.Name;
+                                    serviceData.@class = netDaemonAppType.Name;
+                                    _daemon.CallService("netdaemon", "register_service", serviceData);
+
+                                    _daemon.ListenServiceCall("netdaemon", $"{serviceData.@class}_{serviceData.method}",
+                                        async (data) =>
+                                        {
+                                            try
+                                            {
+                                                var expObject = data as ExpandoObject;
+                                                await method.InvokeAsync(netDaemonApp, expObject);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                _logger.LogError(e, "Failed to invoke the ServiceCall funcition");
+                                            }
+                                        });
+
+                                    break;
+                                case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
+
+                                    if (!CheckIfStateChangedSignatureIsOk(method))
+                                        continue;
+
+                                    _daemon.ListenState(hassStateChangedAttribute.EntityId,
+                                    async (entityId, to, from) =>
+                                    {
+                                        try
+                                        {
+                                            if (hassStateChangedAttribute.To != null)
+                                                if ((dynamic)hassStateChangedAttribute.To != to?.State)
+                                                    return;
+
+                                            if (hassStateChangedAttribute.From != null)
+                                                if ((dynamic)hassStateChangedAttribute.From != from?.State)
+                                                    return;
+
+                                            // If we don´t accept all changes in the state change
+                                            // and we do not have a state change so return
+                                            if (to?.State == from?.State && !hassStateChangedAttribute.AllChanges)
+                                                return;
+
+                                            await method.InvokeAsync(netDaemonApp, entityId, to, from);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _logger.LogError(e, "Failed to invoke the ServiceCall funcition");
+                                        }
+
+                                    });
+
+                                    break;
+                            }
+                        }
+                    }
                     await netDaemonApp.InitializeAsync();
                 }
                 catch (Exception e)
@@ -322,6 +399,63 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     _logger.LogError(e, $"Failed to initialize app {netDaemonAppType.Name}");
                 }
             }
+        }
+
+        private bool CheckIfServiceCallSignatureIsOk(MethodInfo method)
+        {
+            if (method.ReturnType != typeof(Task))
+            {
+                _logger.LogWarning($"{method.Name} has not correct return type, expected Task");
+                return false;
+            }
+
+            var parameters = method.GetParameters();
+
+            if (parameters == null || (parameters != null && parameters.Length != 1))
+            {
+                _logger.LogWarning($"{method.Name} has not correct number of parameters");
+                return false;
+            }
+            
+            var dynParam = parameters![0];
+            if (dynParam.CustomAttributes.Count() == 1 && dynParam.CustomAttributes.First().AttributeType == typeof(DynamicAttribute))
+                return true;
+
+            return false;
+        }
+
+        private bool CheckIfStateChangedSignatureIsOk(MethodInfo method)
+        {
+            if (method.ReturnType != typeof(Task))
+            {
+                _logger.LogWarning($"{method.Name} has not correct return type, expected Task");
+                return false;
+            }
+
+            var parameters = method.GetParameters();
+
+            if (parameters == null || (parameters != null && parameters.Length != 3))
+            {
+                _logger.LogWarning($"{method.Name} has not correct number of parameters");
+                return false;
+            }
+
+            if (parameters![0].ParameterType != typeof(string))
+            {
+                _logger.LogWarning($"{method.Name} first parameter exepected to be string for entityId");
+                return false;
+            }
+            if (parameters![1].ParameterType != typeof(EntityState))
+            {
+                _logger.LogWarning($"{method.Name} second parameter exepected to be EntityState for toState");
+                return false;
+            }
+            if (parameters![2].ParameterType != typeof(EntityState))
+            {
+                _logger.LogWarning($"{method.Name} first parameter exepected to be EntityState for fromState");
+                return false;
+            }
+            return true;
         }
     }
 }

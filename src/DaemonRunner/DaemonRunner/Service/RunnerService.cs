@@ -23,7 +23,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
         public RunnerService(ILoggerFactory loggerFactory, IDaemonAppConfig? daemonAppConfig = null)
         {
-            
+
 
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
@@ -71,7 +71,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         await Task.Delay(1000, stoppingToken); // Todo: Must be smarter later
                         if (_daemonHost.Connected)
                         {
-
                             await csManager.LoadSources(_daemonAppConfig);
                             await task;
                         }
