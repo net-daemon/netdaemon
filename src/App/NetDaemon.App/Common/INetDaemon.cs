@@ -71,7 +71,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="service">The service being called</param>
         /// <param name="app">The application instance</param>
         /// <param name="action">The action to perform when service is called</param>
-        void ListenServiceCall(string domain, string service, 
+        void ListenServiceCall(string domain, string service,
             Func<dynamic?, Task> action);
 
         /// <summary>
@@ -81,13 +81,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="attributes">Name/Value pair of the attribute</param>
 
         Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
+
         /// <summary>
         ///     Turn off entity who support the service call
         /// </summary>
         /// <param name="entityId">The unique id of the entity</param>
         /// <param name="attributes">Name/Value pair of the attribute</param>
-
         Task TurnOffAsync(string entityId, params (string name, object val)[] attributes);
+
         /// <summary>
         ///     Toggle entity who support the service call
         /// </summary>

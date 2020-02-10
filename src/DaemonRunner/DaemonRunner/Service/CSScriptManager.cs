@@ -85,8 +85,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     {
                         var alc = new CollectibleAssemblyLoadContext();
                         var asm = alc.LoadFromStream(stream);
-                        var asseblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
-                        foreach (var app in asseblyAppTypes)
+                        var assemblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+                        foreach (var app in assemblyAppTypes)
                         {
                             appTypes.Add(app);
                         }

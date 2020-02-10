@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime;
-using System.Text;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
+﻿using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
