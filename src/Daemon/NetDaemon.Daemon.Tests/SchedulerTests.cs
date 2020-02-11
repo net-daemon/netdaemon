@@ -79,7 +79,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             Assert.True(nrOfRuns > watch.ElapsedMilliseconds / 10);
-
+            // Test again
             await scheduler.Stop();
             try
             {
