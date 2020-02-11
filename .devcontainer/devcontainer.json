@@ -24,6 +24,7 @@
 	"extensions": [
 		"ms-vscode.csharp",
 		"formulahendry.dotnet-test-explorer",
-		"k--kato.docomment"
+		"k--kato.docomment",
+		"ryanluker.vscode-coverage-gutters"
 	]
 }
