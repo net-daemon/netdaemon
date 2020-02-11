@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
-   
+
 
     /// <summary>
     ///     Interface to be able to mock the time
@@ -53,7 +54,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
 
         /// <summary>
-        ///     Runs the function every milliseconds 
+        ///     Runs the function every milliseconds
         /// </summary>
         /// <remarks>
         ///     It is safe to supress the task since it is handled internally in the scheduler
@@ -66,7 +67,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <summary>
-        ///     Runs the function every TimeSpan 
+        ///     Runs the function every TimeSpan
         /// </summary>
         /// <remarks>
         ///     It is safe to supress the task since it is handled internally in the scheduler
@@ -95,9 +96,58 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     {
                         Console.WriteLine();
                     }
-                    stopWatch.Reset(); 
+                    stopWatch.Reset();
                 }
             }, _cancelSource.Token);
+
+            ScheduleTask(task);
+
+            return task;
+        }
+
+        internal TimeSpan CalculateDailyTimeBetweenNowAndTargetTime(DateTime targetTime)
+        {
+            var now = _timeManager!.Current;
+
+            var timeToTrigger = new DateTime(now.Year, now.Month, now.Day, targetTime.Hour, targetTime.Minute, targetTime.Second);
+
+            if (now > timeToTrigger)
+            {
+                timeToTrigger = timeToTrigger.AddDays(1);
+            }
+            return timeToTrigger.Subtract(now);
+        }
+
+        public Task RunDailyAsync(string time, Func<Task> func)
+        {
+            DateTime timeOfDayToTrigger;
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
+            {
+                throw new FormatException($"{time} is not a valid time for the current locale");
+            }
+
+
+            var task = Task.Run(async () =>
+           {
+               while (!_cancelSource.IsCancellationRequested)
+               {
+
+                   var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
+                   await _timeManager!.Delay(diff, _cancelSource.Token);
+                   await func.Invoke();
+
+                   // If less time spent in func that duration delay the remainder
+                   //    if (timeSpan > stopWatch.Elapsed)
+                   //    {
+                   //        var diff = timeSpan.Subtract(stopWatch.Elapsed);
+                   //        await _timeManager!.Delay(diff, _cancelSource.Token);
+                   //    }
+                   //    else
+                   //    {
+                   //        Console.WriteLine();
+                   //    }
+               }
+           }, _cancelSource.Token);
 
             ScheduleTask(task);
 
@@ -147,7 +197,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _scheduledTasks[_schedulerTask.Id] = _schedulerTask;
 
             var taskResult = await Task.WhenAny(
-                Task.WhenAll(_scheduledTasks.Values.ToArray()),  Task.Delay(1000));
+                Task.WhenAll(_scheduledTasks.Values.ToArray()), Task.Delay(1000));
 
             if (_scheduledTasks.Values.Count(n => n.IsCompleted == false) > 0)
                 // Todo: Some kind of logging have to be done here to tell user which task caused timeout

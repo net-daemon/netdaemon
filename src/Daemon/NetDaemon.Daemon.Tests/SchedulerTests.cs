@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Moq;
 using Xunit;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace NetDaemon.Daemon.Tests
 {
@@ -17,7 +18,7 @@ namespace NetDaemon.Daemon.Tests
             var startTime =
                 new DateTime(2001, 2, 3, 4, 5, 6);
 
-            var mockTimeManager = new TimeManagerMock { CurrentTime = startTime };
+            var mockTimeManager = new TimeManagerMock(startTime);
 
             var scheduler = new Scheduler();
 
@@ -36,7 +37,7 @@ namespace NetDaemon.Daemon.Tests
             await Task.Delay(100);
             Assert.False(isTaskRun);
 
-            await Task.Delay(100);
+            await Task.Delay(150);
 
             await scheduler.Stop();
             try
@@ -58,7 +59,7 @@ namespace NetDaemon.Daemon.Tests
             var startTime =
                 new DateTime(2001, 2, 3, 4, 5, 6);
 
-            var mockTimeManager = new TimeManagerMock { CurrentTime = startTime };
+            var mockTimeManager = new TimeManagerMock(startTime);
 
             var scheduler = new Scheduler();
 
@@ -89,6 +90,66 @@ namespace NetDaemon.Daemon.Tests
             {
             }
         }
+
+        [Theory]
+        [InlineData("00:00:00", "00:00:01", 1)]
+        [InlineData("00:00:00", "00:01:00", 60)]
+        [InlineData("00:00:00", "00:00:00", 0)]
+        [InlineData("23:59:59", "00:00:00", 1)]
+        [InlineData("00:00:01", "00:00:00", (24 * 60 * 60) - 1)]
+        public void DailyTimeBetweenNowAndTargetTime(string nowTime, string targetTime, int nrOfSecondsRemaining)
+        {
+            // ARRANGE
+            DateTime timePart = DateTime.ParseExact(nowTime, "HH:mm:ss", CultureInfo.InvariantCulture);
+            DateTime fakeTimeNow = new DateTime(2001, 01, 01, timePart.Hour, timePart.Minute, timePart.Second);
+            DateTime timeTarget = DateTime.ParseExact(targetTime, "HH:mm:ss", CultureInfo.InvariantCulture);
+
+            var mockTimeManager = new TimeManagerMock(fakeTimeNow);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+
+            var timeToWait = scheduler.CalculateDailyTimeBetweenNowAndTargetTime(timeTarget);
+
+            Assert.Equal(nrOfSecondsRemaining, timeToWait.TotalSeconds);
+
+        }
+
+        [Fact]
+        public async void TestRunDailyUsingStartTimeCallsFuncCorrectly()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 0, 0);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+
+            var nrOfRuns = 0;
+
+            // ACT
+            var runTask = scheduler.RunDailyAsync("10:00:01", async () =>
+           {
+               nrOfRuns++;
+               await Task.Delay(1);
+           });
+            await Task.Delay(600);
+
+            // ASSERT
+            Assert.True(nrOfRuns == 0);
+            await Task.Delay(500);
+            Assert.True(nrOfRuns > 0);
+
+            await scheduler.Stop();
+            try
+            {
+                await runTask;
+            }
+            catch
+            {
+            }
+        }
+
 
         [Fact]
         public async Task ScheduleLongTaskWillCompensateTimeToZero()
