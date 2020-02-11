@@ -181,7 +181,7 @@ namespace NetDaemon.Daemon.Tests
         {
             var attributes = new FluentExpandoObject();
             foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>) attributes)[attributesTuple.attribute] = attributesTuple.value;
+                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
 
             Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
         }
@@ -215,7 +215,7 @@ namespace NetDaemon.Daemon.Tests
 
             foreach (var attribute in hassState.Attributes.Keys)
                 Assert.Equal(hassState.Attributes[attribute],
-                    ((IDictionary<string, object>) entity.Attribute)[attribute]);
+                    ((IDictionary<string, object>)entity.Attribute)[attribute]);
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace NetDaemon.Daemon.Tests
         /// </summary>
         /// <param name="milliSeconds"></param>
         /// <returns></returns>
-        public CancellationTokenSource GetSourceWithTimeout(int milliSeconds=50)
+        public CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
         {
             return Debugger.IsAttached
                 ? new CancellationTokenSource()
