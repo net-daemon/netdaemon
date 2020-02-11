@@ -79,7 +79,6 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             Assert.True(nrOfRuns > watch.ElapsedMilliseconds / 10);
-            Assert.True(nrOfRuns >= 5 && nrOfRuns <= 6);
 
             await scheduler.Stop();
             try
