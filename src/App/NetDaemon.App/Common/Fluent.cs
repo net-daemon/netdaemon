@@ -439,7 +439,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             foreach (var entityId in _entityIds)
             {
                 var domain = GetDomainFromEntity(entityId);
-                var task = _daemon.CallService(domain, service, new { entity_id = entityId });
+                dynamic serviceData = new FluentExpandoObject();
+                serviceData.entity_id = entityId;
+                var task = _daemon.CallService(domain, service, serviceData);
                 taskList.Add(task);
             }
 

@@ -1,4 +1,5 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Moq;
 using System;
 using System.Dynamic;
@@ -91,6 +92,37 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task EntityOnStateChangedLamdaToggleLightCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange((n, _) => n.State == "on")
+                .UseEntity("light.correct_entity")
+                .Toggle()
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            hcMock.VerifyCallServiceTimes("toggle", Times.Once());
+            hcMock.VerifyCallService("light", "toggle", ("entity_id", "light.correct_entity"));
+        }
+
+        [Fact]
         public async Task EntityOnStateChangedMultipleTimesCallsCorrectServiceCall()
         {
             // ARRANGE
@@ -138,6 +170,75 @@ namespace NetDaemon.Daemon.Tests
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntity("light.correct_entity")
+                .TurnOn()
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            hcMock.VerifyCallServiceTimes("turn_on", Times.Once());
+            hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
+        }
+
+        [Fact]
+        public async Task EntityOnStateChangedEntitiesTurnOnLightCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange("on")
+                .UseEntities(new string[] { "light.correct_entity" })
+                .TurnOn()
+                .Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            hcMock.VerifyCallServiceTimes("turn_on", Times.Once());
+            hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
+        }
+
+
+        [Fact]
+        public async Task EntityOnStateChangedEntitiesLambdaTurnOnLightCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            hcMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = hcMock.GetSourceWithTimeout(); //new CancellationTokenSource(1000);
+
+            // Fake the
+            daemonHost.InternalState.Add("light.correct_entity", new EntityState
+            {
+                EntityId = "light.correct_entity"
+            });
+
+            daemonHost
+                .Entity("binary_sensor.pir")
+                .WhenStateChange("on")
+                .UseEntities(n => n.EntityId == "light.correct_entity")
                 .TurnOn()
                 .Execute();
 
@@ -359,6 +460,167 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task TimerEntitiesEveryShouldCallServiceCorrectNumberOfTimes()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            daemonHost
+                .Timer()
+                .Every(TimeSpan.FromMilliseconds(20))
+                .Entities(new string[] { "light.correct_light" })
+                .TurnOn()
+                .Execute();
+
+            var cancelSource = new CancellationTokenSource(100); //hcMock.GetSourceWithTimeout(100);
+
+            // ACTION
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
+            hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_light"));
+        }
+
+        [Fact]
+        public async Task TimerEntitiesLambdaEveryShouldCallServiceCorrectNumberOfTimes()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            daemonHost.InternalState.Add("light.correct_light", new EntityState
+            {
+                EntityId = "light.correct_light"
+            });
+
+            daemonHost
+                .Timer()
+                .Every(TimeSpan.FromMilliseconds(20))
+                .Entities(n => n.EntityId == "light.correct_light")
+                .TurnOn()
+                .Execute();
+
+            var cancelSource = new CancellationTokenSource(100); //hcMock.GetSourceWithTimeout(100);
+
+            // ACTION
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
+            hcMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_light"));
+        }
+
+        [Fact]
+        public async Task TimerEveryWithAttributeShouldCallServiceCorrectNumberOfTimes()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            daemonHost
+                .Timer()
+                .Every(TimeSpan.FromMilliseconds(20))
+                .Entity("light.correct_light")
+                .TurnOn()
+                    .UsingAttribute("attr", "on")
+                .Execute();
+
+            var cancelSource = new CancellationTokenSource(100); //hcMock.GetSourceWithTimeout(100);
+
+            // ACTION
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
+            hcMock.VerifyCallService("light", "turn_on", ("attr", "on"), ("entity_id", "light.correct_light"));
+        }
+
+        [Fact]
+        public async Task TimerToggleShouldCallCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            daemonHost
+                .Timer()
+                .Every(TimeSpan.FromMilliseconds(20))
+                .Entity("light.correct_light")
+                .Toggle()
+                .Execute();
+
+            var cancelSource = new CancellationTokenSource(100); //hcMock.GetSourceWithTimeout(100);
+
+            // ACTION
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("toggle", Times.AtLeast(4));
+            hcMock.VerifyCallService("light", "toggle", ("entity_id", "light.correct_light"));
+        }
+
+        [Fact]
+        public async Task TimerTurnOffShouldCallCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            daemonHost
+                .Timer()
+                .Every(TimeSpan.FromMilliseconds(20))
+                .Entity("light.correct_light")
+                .TurnOff()
+                .Execute();
+
+            var cancelSource = new CancellationTokenSource(100); //hcMock.GetSourceWithTimeout(100);
+
+            // ACTION
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("turn_off", Times.AtLeast(4));
+            hcMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_light"));
+        }
+
+        [Fact]
         public async Task ToggleEntityCallsCorrectServiceCall()
         {
             // ARRANGE
@@ -393,6 +655,7 @@ namespace NetDaemon.Daemon.Tests
             hcMock.VerifyCallServiceTimes("turn_off", Times.Once());
             hcMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity"));
         }
+
 
         [Fact]
         public async Task TurnOffEntityLambdaAttributeSelectionCallsCorrectServiceCall()
@@ -721,6 +984,78 @@ namespace NetDaemon.Daemon.Tests
             {
                 // Expected behaviour
             }
+        }
+
+        [Fact]
+        public async Task MediaPlayerPlayCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .MediaPlayer("media_player.player")
+                .Play()
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("media_play", Times.Once());
+            hcMock.VerifyCallService("media_player", "media_play", ("entity_id", "media_player.player"));
+        }
+
+        [Fact]
+        public async Task MediaPlayerPauseCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .MediaPlayer("media_player.player")
+                .Pause()
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("media_pause", Times.Once());
+            hcMock.VerifyCallService("media_player", "media_pause", ("entity_id", "media_player.player"));
+        }
+
+        [Fact]
+        public async Task MediaPlayerPlayPauseCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .MediaPlayer("media_player.player")
+                .PlayPause()
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("media_play_pause", Times.Once());
+            hcMock.VerifyCallService("media_player", "media_play_pause", ("entity_id", "media_player.player"));
+        }
+
+        [Fact]
+        public async Task MediaPlayerStopCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .MediaPlayer("media_player.player")
+                .Stop()
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("media_stop", Times.Once());
+            hcMock.VerifyCallService("media_player", "media_stop", ("entity_id", "media_player.player"));
         }
     }
 }

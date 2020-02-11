@@ -7,7 +7,11 @@
 	// You can edit these settings after create using File > Preferences > Settings > Remote.
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
-		"dotnet-test-explorer.testProjectPath": "tests/HassClient.Integration.Tests"
+		"dotnet-test-explorer.testProjectPath": "src/**/*.Tests.csproj",
+		"dotnet-test-explorer.autoExpandTree": true,
+		"dotnet-test-explorer.testArguments": "/p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=../../../codecover/lcov.info",
+		"coverage-gutters.showGutterCoverage": false,
+		"coverage-gutters.showLineCoverage": true,
 	},
 	"postCreateCommand": "dotnet restore src/HassClient && dotnet restore tests/HassClient.Tests",
 	// Uncomment the next line if you want to publish any ports.
