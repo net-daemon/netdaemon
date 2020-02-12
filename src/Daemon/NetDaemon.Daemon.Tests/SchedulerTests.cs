@@ -113,6 +113,9 @@ namespace NetDaemon.Daemon.Tests
 
         }
 
+        public void EveryMinuteTimeCorrectTargetDelay(int nowSeconds)
+        CalculateEveryMinuteTimeBetweenNowAndTargetTime
+
         [Fact]
         public async void TestRunDailyUsingStartTimeCallsFuncCorrectly()
         {
@@ -137,7 +140,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             Assert.True(nrOfRuns == 0);
             await Task.Delay(500);
-            Assert.True(nrOfRuns > 0);
+            Assert.True(nrOfRuns == 1);
 
             await scheduler.Stop();
             try
@@ -149,6 +152,77 @@ namespace NetDaemon.Daemon.Tests
             }
         }
 
+        [Fact]
+        public async void TestRunEveryMinuteStartTimeCallsFuncCorrectly()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 00, 59);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+
+            var nrOfRuns = 0;
+
+            // ACT
+            var runTask = scheduler.RunEveryMinuteAsync(0, async () =>
+           {
+               nrOfRuns++;
+               await Task.Delay(1);
+           });
+            await Task.Delay(600);
+
+            // ASSERT
+            Assert.True(nrOfRuns == 0);
+            await Task.Delay(500);
+            Assert.True(nrOfRuns == 1);
+
+            await scheduler.Stop();
+            try
+            {
+                await runTask;
+            }
+            catch
+            {
+            }
+        }
+
+        [Fact]
+        public async void TestRunEveryMinuteStartTimeNotZeroCallsFuncCorrectly()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 00, 19);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+
+            var nrOfRuns = 0;
+
+            // ACT
+            var runTask = scheduler.RunEveryMinuteAsync(20, async () =>
+           {
+               nrOfRuns++;
+               await Task.Delay(1);
+           });
+            await Task.Delay(600);
+
+            // ASSERT
+            Assert.True(nrOfRuns == 0);
+            await Task.Delay(500);
+            Assert.True(nrOfRuns == 1);
+
+            await scheduler.Stop();
+            try
+            {
+                await runTask;
+            }
+            catch
+            {
+            }
+        }
 
         [Fact]
         public async Task ScheduleLongTaskWillCompensateTimeToZero()

@@ -118,6 +118,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return timeToTrigger.Subtract(now);
         }
 
+        internal TimeSpan CalculateEveryMinuteTimeBetweenNowAndTargetTime(int second)
+        {
+            var now = _timeManager!.Current;
+            if (now.Second > second)
+            {
+                return TimeSpan.FromSeconds(60 + now.Second - second);
+            }
+            return TimeSpan.FromSeconds(second - now.Second);
+        }
+
         public Task RunDailyAsync(string time, Func<Task> func)
         {
             DateTime timeOfDayToTrigger;
@@ -153,6 +163,27 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             return task;
         }
+
+        internal Task RunEveryMinuteAsync(int second, Func<Task> func)
+        {
+            var task = Task.Run(async () =>
+          {
+              while (!_cancelSource.IsCancellationRequested)
+              {
+                  var now = _timeManager.Current;
+                  var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(10);
+                  await _timeManager!.Delay(diff, _cancelSource.Token);
+                  await func.Invoke();
+
+              }
+          }, _cancelSource.Token);
+
+            ScheduleTask(task);
+
+            return task;
+        }
+
+
 
         /// <summary>
         ///     Runs the function in time set
