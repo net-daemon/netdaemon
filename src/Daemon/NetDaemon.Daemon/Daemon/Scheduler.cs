@@ -118,16 +118,33 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return timeToTrigger.Subtract(now);
         }
 
-        internal TimeSpan CalculateEveryMinuteTimeBetweenNowAndTargetTime(int second)
-        {
+        internal TimeSpan CalculateEveryMinuteTimeBetweenNowAndTargetTime(short second)
+        {   
             var now = _timeManager!.Current;
             if (now.Second > second)
             {
-                return TimeSpan.FromSeconds(60 + now.Second - second);
+                return TimeSpan.FromSeconds(60 - now.Second + second);
             }
             return TimeSpan.FromSeconds(second - now.Second);
         }
 
+        /// <summary>
+        ///     Run daily tasks
+        /// </summary>
+        /// <param name="time">The time in the format HH:mm:ss</param>
+        /// <param name="func">The action to run</param>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        public void RunDaily(string time, Func<Task> func) => RunDailyAsync(time, func);
+
+
+        /// <summary>
+        ///     Run daily tasks
+        /// </summary>
+        /// <param name="time">The time in the format HH:mm:ss</param>
+        /// <param name="func">The action to run</param>
+        /// <returns></returns>
         public Task RunDailyAsync(string time, Func<Task> func)
         {
             DateTime timeOfDayToTrigger;
@@ -145,17 +162,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                    var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
                    await _timeManager!.Delay(diff, _cancelSource.Token);
                    await func.Invoke();
-
-                   // If less time spent in func that duration delay the remainder
-                   //    if (timeSpan > stopWatch.Elapsed)
-                   //    {
-                   //        var diff = timeSpan.Subtract(stopWatch.Elapsed);
-                   //        await _timeManager!.Delay(diff, _cancelSource.Token);
-                   //    }
-                   //    else
-                   //    {
-                   //        Console.WriteLine();
-                   //    }
                }
            }, _cancelSource.Token);
 
@@ -164,14 +170,31 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return task;
         }
 
-        internal Task RunEveryMinuteAsync(int second, Func<Task> func)
+        /// <summary>
+        ///      Run task every minute at given second
+        /// </summary>
+        /// <param name="second">The second in a minute to start (0-59)</param>
+        /// <param name="func">The task to run</param>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+
+        public void RunEveryMinute(short second, Func<Task> func) => RunEveryMinuteAsync(second, func);
+
+        /// <summary>
+        ///     Run task every minute at given second
+        /// </summary>
+        /// <param name="second">The second in a minute to start (0-59)</param>
+        /// <param name="func">The task to run</param>
+        /// <returns></returns>
+        public Task RunEveryMinuteAsync(short second, Func<Task> func)
         {
             var task = Task.Run(async () =>
           {
               while (!_cancelSource.IsCancellationRequested)
               {
                   var now = _timeManager.Current;
-                  var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(10);
+                  var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                   await _timeManager!.Delay(diff, _cancelSource.Token);
                   await func.Invoke();
 

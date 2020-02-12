@@ -113,8 +113,26 @@ namespace NetDaemon.Daemon.Tests
 
         }
 
-        public void EveryMinuteTimeCorrectTargetDelay(int nowSeconds)
-        CalculateEveryMinuteTimeBetweenNowAndTargetTime
+        [Theory]
+        [InlineData(0, 1, 1)]
+        [InlineData(59, 0, 1)]
+        [InlineData(0, 59, 59)]
+        [InlineData(31, 30, 59)]
+        public void EveryMinuteCalcTimeCorrectTargetDelay(short nowSeconds, short targetSeconds, short expectedDelaySeconds)
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 0, nowSeconds);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+            
+            var calculatedDelay =  scheduler.CalculateEveryMinuteTimeBetweenNowAndTargetTime(targetSeconds);
+
+            Assert.Equal(expectedDelaySeconds, calculatedDelay.TotalSeconds);
+        }
+        
 
         [Fact]
         public async void TestRunDailyUsingStartTimeCallsFuncCorrectly()
