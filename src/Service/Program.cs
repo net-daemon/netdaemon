@@ -29,7 +29,7 @@ namespace Service
                     {
                         Program.LogLevel = hassAddOnSettings["log_level"] switch
                         {
-                            "information" => LogLevel.Information,
+                            "info" => LogLevel.Information,
                             "debug" => LogLevel.Debug,
                             "error" => LogLevel.Error,
                             "warning" => LogLevel.Warning,
