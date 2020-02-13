@@ -19,6 +19,7 @@
     <tags>Home Assistant</tags>
 
     <RootNamespace>JoySoftware.HomeAssistant.NetDaemon</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
