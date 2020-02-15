@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29521.150
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomApp", "CustomApp\CustomApp.csproj", "{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomApp", "src\CustomApp\CustomApp.csproj", "{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.csproj", "{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "src\Service\Service.csproj", "{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDeamon.App", "App\NetDaemon.App\NetDeamon.App.csproj", "{A3651DE3-09DE-48E7-8DB4-18D95F60DAC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDeamon.App", "src\App\NetDaemon.App\NetDeamon.App.csproj", "{A3651DE3-09DE-48E7-8DB4-18D95F60DAC7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Daemon", "Daemon", "{42718370-2C75-4708-8C40-DD59D633C96E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Daemon", "Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj", "{1DF9E750-9308-4E12-8A48-CAABE68FF30A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Daemon", "src\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj", "{1DF9E750-9308-4E12-8A48-CAABE68FF30A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Daemon.Tests", "Daemon\NetDaemon.Daemon.Tests\NetDaemon.Daemon.Tests.csproj", "{E73BF13E-A17F-4B0B-8504-C2A299B83DEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Daemon.Tests", "tests\NetDaemon.Daemon.Tests\NetDaemon.Daemon.Tests.csproj", "{E73BF13E-A17F-4B0B-8504-C2A299B83DEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{53E4E82B-565F-4D91-8C87-52B3C3B74884}"
 EndProject
@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{3BC5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomApp", "CustomApp", "{52C5E9CD-0837-4788-81D1-4953D1C2A304}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DaemonRunner", "DaemonRunner\DaemonRunner\DaemonRunner.csproj", "{E79D336A-0BA1-4662-A840-CAB24B3145B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DaemonRunner", "src\DaemonRunner\DaemonRunner\DaemonRunner.csproj", "{E79D336A-0BA1-4662-A840-CAB24B3145B9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1DF9E750-9308-4E12-8A48-CAABE68FF30A} = {1DF9E750-9308-4E12-8A48-CAABE68FF30A}
 	EndProjectSection

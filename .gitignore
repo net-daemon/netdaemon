@@ -5,3 +5,4 @@
 *.user
 TestResults
 lcov.info
+codecover

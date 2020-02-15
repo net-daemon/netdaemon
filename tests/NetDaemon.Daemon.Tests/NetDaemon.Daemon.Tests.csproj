@@ -25,9 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\App\NetDaemon.App\NetDeamon.App.csproj" />
-    <ProjectReference Include="..\..\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
-    <ProjectReference Include="..\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
+    <ProjectReference Include="..\..\src\App\NetDaemon.App\NetDeamon.App.csproj" />
+    <ProjectReference Include="..\..\src\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
+    <ProjectReference Include="..\..\src\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
   </ItemGroup>
 
 </Project>

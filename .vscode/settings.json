@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "**/*.csproj.user": true,
+        "**/bin": true,
+        "**/codecover": true,
+        "**/documentation/site": true,
+        "**/obj": true,
+        "**/Properties": true,
+        "**/TestResults": true
+    }
+}

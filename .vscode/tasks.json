@@ -7,9 +7,8 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/NetDaemon.sln",
+        "${workspaceFolder}/NetDaemon.sln",
         "/property:GenerateFullPaths=true"
-        // "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -23,35 +22,10 @@
       },
       "args": [
         "test",
-        "${workspaceFolder}/src/NetDaemon.sln",
+        "${workspaceFolder}/NetDaemon.sln",
         "/p:CollectCoverage=true",
         "/p:CoverletOutputFormat=lcov",
-        "/p:CoverletOutput=../../../codecover/lcov.info"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "publish",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "publish",
-        "${workspaceFolder}/runner/runner.csproj",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "watch",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "watch",
-        "run",
-        "${workspaceFolder}/runner/runner.csproj",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
+        "/p:CoverletOutput=../codecover/lcov.info"
       ],
       "problemMatcher": "$msCompile"
     }
