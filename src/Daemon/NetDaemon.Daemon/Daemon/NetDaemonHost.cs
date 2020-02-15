@@ -52,17 +52,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "switch"
         };
         private bool _stopped;
-        
-        private readonly List<(string, string, Func< dynamic?, Task>)> _serviceCallFunctionList 
+
+        private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
             = new List<(string, string, Func<dynamic?, Task>)>();
 
-        public NetDaemonHost(IHassClient hassClient, ILoggerFactory? loggerFactory = null)
+        public NetDaemonHost(IHassClient? hassClient, ILoggerFactory? loggerFactory = null)
         {
             loggerFactory ??= DefaultLoggerFactory;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
-            _hassClient = hassClient;
+            _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler();
-            //Action = new FluentAction(this);
         }
 
         public bool Connected { get; private set; }
@@ -137,7 +136,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
 
-        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action) 
+        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
 
@@ -398,7 +397,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     if (stateData.NewState == null)
                     {
-                        // This is an entity that is removed and have no new state soi just return;
+                        // This is an entity that is removed and have no new state so just return;
                         return;
                     }
 
@@ -447,7 +446,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         throw new NullReferenceException("ServiceData is null! not expected");
                     }
                     var tasks = new List<Task>();
-                    foreach(var (domain, service, func) in _serviceCallFunctionList)
+                    foreach (var (domain, service, func) in _serviceCallFunctionList)
                     {
                         if (domain == serviceCallData.Domain &&
                             service == serviceCallData.Service)

@@ -1,0 +1,439 @@
+using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Microsoft.Extensions.Logging;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace NetDaemon.Daemon.Tests
+{
+    public class NetDaemonTests : DaemonHostTestaBase
+    {
+        public NetDaemonTests() : base()
+        {
+        }
+
+        [Fact]
+        public async Task EventShouldCallCorrectFunction()
+        {
+            // ARRANGE
+
+            dynamic helloWorldDataObject = GetDynamicDataObject(HelloWorldData);
+
+            DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", helloWorldDataObject);
+
+            var isCalled = false;
+            var message = "";
+
+            // ACT
+            DefaultDaemonHost.ListenEvent("CUSTOM_EVENT", async (ev, data) =>
+            {
+                isCalled = true;
+                message = data.Test;
+            });
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.True(isCalled);
+            Assert.Equal(HelloWorldData, message);
+        }
+
+        [Fact]
+        public void GetStateMissingEntityReturnsNull()
+        {
+            // ARRANGE
+
+            // ACT
+            var entity = DefaultDaemonHost.GetState("light.missing_entity");
+
+            // ASSERT
+            Assert.Null(entity);
+        }
+
+        [Fact]
+        public async Task GetStateReturnsCorrectEntityState()
+        {
+            // ARRANGE
+
+            // Fake what is coming from hass client
+            var hassState = new HassState
+            {
+                EntityId = "light.testlight",
+                State = "on",
+                LastChanged = new DateTime(2020, 1, 2, 1, 2, 3),
+                LastUpdated = new DateTime(2020, 1, 2, 3, 2, 1),
+                Attributes = new Dictionary<string, object>
+                {
+                    ["color_temp"] = 390,
+                    ["brightness"] = 100,
+                    ["friendly_name"] = "The test light"
+                }
+            };
+
+            DefaultHassClientMock.FakeStates["light.testlight"] = hassState;
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ACT
+            var entity = DefaultDaemonHost.GetState("light.testlight");
+
+            // ASSERT
+            DefaultHassClientMock.AssertEqual(hassState, entity);
+        }
+
+        [Fact]
+        public async Task OtherEventShouldNotCallCorrectFunction()
+        {
+            // ARRANGE
+            dynamic dataObject = GetDynamicDataObject();
+
+            DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", dataObject);
+
+            var isCalled = false;
+
+            // ACT
+            DefaultDaemonHost.ListenEvent("OTHER_EVENT", async (ev, data) =>
+            {
+                isCalled = true;
+            });
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.False(isCalled);
+        }
+
+        [Fact]
+        public async Task RunConnectedReturnsARunningTask()
+        {
+            // ARRANGE
+
+            // ACT
+            var (runTask, _) = ReturnRunningDefauldDaemonHostTask();
+            await Task.Delay(10);
+
+            // ASSERT
+            Assert.False(runTask.IsCompleted || runTask.IsCanceled);
+            await runTask;
+
+        }
+
+        [Fact]
+        public async Task RunNotConnectedCompletesTask()
+        {
+            // ARRANGE
+
+            // ACTION
+            var (runTask, _) = ReturnRunningNotConnectedDaemonHostTask();
+            await runTask;
+
+            // ASSERT
+            Assert.True(runTask.IsCompleted);
+        }
+
+        [Fact]
+        public void RunNullReferenceToHassClientShouldThrowException()
+        {
+            // ARRANGE
+
+
+            // ACT and ASSERT
+            Assert.Throws<ArgumentNullException>(() =>
+                { var DefaultDaemonHost = new NetDaemonHost(null); });
+        }
+
+        [Fact]
+        public async Task RunWhenCanceledShouldCompleteWithCanceledException()
+        {
+            // ARRANGE
+
+            // ACT and ASSERT
+            await RunDefauldDaemonUntilCanceled(20);
+
+            Assert.False(DefaultDaemonHost.Connected);
+        }
+
+        [Fact]
+        public async Task SendEventShouldCallCorrectMethod()
+        {
+            // ARRANGE
+            var eventData = GetDynamicDataObject();
+
+            // ACT
+            await DefaultDaemonHost.SendEvent("test_event", eventData);
+
+            // ASSERT
+            var expandoObject = (ExpandoObject)eventData;
+            DefaultHassClientMock.Verify(n => n.SendEvent("test_event", expandoObject));
+        }
+
+        [Fact]
+        public async Task SendEventWithNullDataShouldCallCorrectMethod()
+        {
+            // ACT
+            await DefaultDaemonHost.SendEvent("test_event");
+
+            // ASSERT
+            DefaultHassClientMock.Verify(n => n.SendEvent("test_event", null));
+        }
+
+        [Fact]
+        public async Task SpeakShouldCallCorrectService()
+        {
+            // ARRANGE
+            DefaultHassClientMock.FakeStates["media_player.fakeplayer"] = new HassState
+            {
+                EntityId = "media_player.fakeplayer",
+            };
+
+            DefaultDaemonHost.InternalDelayTimeForTts = 0; // For testing
+
+            // ACT
+            var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask();
+
+            _ = DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
+
+            var (_, expObject) = GetDynamicObject(
+                ("entity_id", "media_player.fakeplayer"),
+                ("message", "Hello test!")
+            );
+
+            await Task.Delay(50);
+
+            // ASSERT
+            DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expObject, true));
+
+            await WaitUntilCanceled(daemonTask);
+        }
+
+        [Fact]
+        public async Task SpeakShouldWaitUntilMediaPlays()
+        {
+            // ARRANGE
+
+            // Get a running default Daemon
+            var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask(500);
+
+            DefaultDaemonHost.InternalDelayTimeForTts = 0; // Allow now extra waittime
+
+            // Expected data call service
+            var (expectedAttruibutes, expectedAttributesExpObject) = GetDynamicObject(
+                ("entity_id", "media_player.fakeplayer"),
+                ("message", "Hello test!")
+            );
+
+            // Add the player that we want to fake having with the fake playing 0.1 second media duration
+            dynamic currentStateAttributes = new ExpandoObject();
+            currentStateAttributes.media_duration = 0.1;
+
+            DefaultDaemonHost.InternalState["media_player.fakeplayer"] = new EntityState
+            {
+                EntityId = "media_player.fakeplayer",
+                Attribute = currentStateAttributes
+            };
+
+            await Task.Delay(20);
+
+            // ACT
+            await DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
+            await Task.Delay(100);
+            await DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
+
+            // ASSERT
+
+            // Called once after 150 ms
+            DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Once);
+
+            await Task.Delay(100);
+
+            // Called twice after 250ms
+            DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Exactly(2));
+
+            await WaitUntilCanceled(daemonTask);
+        }
+
+        [Fact]
+        public async Task StopCallsCloseClient()
+        {
+            await DefaultDaemonHost.Stop();
+
+            DefaultHassClientMock.Verify(n => n.CloseAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task SubscribeChangedStateForEntityWillMakeCorrectCallback()
+        {
+            // ARRANGE
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            string reportedState = "";
+
+            // ACT
+            DefaultDaemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
+            {
+                reportedState = newState.State;
+
+                return Task.CompletedTask;
+            });
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.Equal("on", reportedState);
+        }
+
+        [Fact]
+        public async Task SubscribeChangedStateForAllChangesWillMakeCorrectCallbacks()
+        {
+            // ARRANGE
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+            DefaultHassClientMock.AddChangedEvent("light.mylight", fromState: "on", toState: "off");
+
+            int nrOfTimesCalled = 0;
+
+            // ACT
+            DefaultDaemonHost.ListenState("", (entityId, newState, oldState) =>
+            {
+                nrOfTimesCalled++;
+
+                return Task.CompletedTask;
+            });
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.Equal(2, nrOfTimesCalled);
+        }
+
+        [Fact]
+        public async Task ChangedEventHaveNullDataShouldThrowException()
+        {
+            // ARRANGE
+            DefaultHassClientMock.FakeEvents.Enqueue(new HassEvent
+            {
+                EventType = "state_changed",
+                Data = null
+            });
+
+            // ACT
+            await RunDefauldDaemonUntilCanceled();
+
+            //ASSERT
+            LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
+        }
+
+        [Fact]
+        public async Task ToggleAsyncWithLightCallsSendMessageWithCorrectEntityId()
+        {
+            // ARRANGE
+            var excpectedAttributes = new ExpandoObject();
+            ((IDictionary<string, object>)excpectedAttributes)["entity_id"] = "light.correct_entity";
+
+            // ACT
+            await DefaultDaemonHost.ToggleAsync("light.correct_entity");
+
+            // ASSERT
+
+            DefaultHassClientMock.Verify(n => n.CallService("light", "toggle", excpectedAttributes, It.IsAny<bool>()));
+        }
+
+        [Fact]
+        public async Task TurnOffAsyncWithLightCallsSendMessageWithCorrectEntityId()
+        {
+            // ARRANGE
+            var (_, expectedAttributes) = GetDynamicObject(
+              ("entity_id", "light.correct_entity")
+            );
+
+            // ACT
+            await DefaultDaemonHost.TurnOffAsync("light.correct_entity");
+
+            // ASSERT
+
+            DefaultHassClientMock.Verify(n => n.CallService("light", "turn_off", expectedAttributes, It.IsAny<bool>()));
+        }
+
+        [Fact]
+        public async Task TurnOnAsyncWithErrorEntityIdThrowsApplicationException()
+        {
+            // ARRANGE
+
+            // ACT
+            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => await DefaultDaemonHost.TurnOnAsync("light!correct_entity"));
+
+            Assert.Equal("entity_id is mal formatted light!correct_entity", ex.Message);
+        }
+
+        [Fact]
+        public async Task TurnOnAsyncWithLightCallsSendMessageWithCorrectEntityId()
+        {
+            // ARRANGE
+            var (_, expectedAttributes) = GetDynamicObject(
+              ("entity_id", "light.correct_entity")
+            );
+
+            // ACT
+            await DefaultDaemonHost.TurnOnAsync("light.correct_entity");
+
+            // ASSERT
+
+            DefaultHassClientMock.Verify(n => n.CallService("light", "turn_on", expectedAttributes, It.IsAny<bool>()));
+        }
+
+        [Fact]
+        public async Task CallServiceEventShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            var dynObject = GetDynamicDataObject(HelloWorldData);
+
+            DefaultHassClientMock.AddCallServiceEvent("custom_domain", "any_service", dynObject);
+
+            var isCalled = false;
+            string message = "";
+
+            // ACT
+            DefaultDaemonHost.ListenServiceCall("custom_domain", "any_service", data =>
+            {
+                isCalled = true;
+                message = data.Test;
+                return Task.CompletedTask;
+            });
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.True(isCalled);
+            Assert.Equal(HelloWorldData, message);
+        }
+
+        [Fact]
+        public async Task CallServiceEventOtherShouldNotCallFunction()
+        {
+            // ARRANGE
+            var dynObject = GetDynamicDataObject(HelloWorldData);
+
+            DefaultHassClientMock.AddCallServiceEvent("custom_domain", "other_service", dynObject);
+
+            var isCalled = false;
+            string message = "";
+
+            DefaultDaemonHost.ListenServiceCall("custom_domain", "any_service", data =>
+            {
+                isCalled = true;
+                message = data.Test;
+                return Task.CompletedTask;
+            });
+
+            await RunDefauldDaemonUntilCanceled();
+
+            Assert.False(isCalled);
+            Assert.True(string.IsNullOrEmpty(message));
+        }
+    }
+}

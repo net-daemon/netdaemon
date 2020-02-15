@@ -1,4 +1,5 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Moq;
 using System;
@@ -16,8 +17,12 @@ namespace NetDaemon.Daemon.Tests
     ///     Mainly the tests checks if correct underlying call to "CallService"
     ///     has been made.
     /// </remarks>
-    public class FluentTests
+    public class FluentTests : DaemonHostTestaBase
     {
+        public FluentTests() : base()
+        {
+        }
+
         [Fact]
         public async Task EntityOnStateChangedForTimeTurnOffLightCallsCorrectServiceCall()
         {
@@ -996,6 +1001,45 @@ namespace NetDaemon.Daemon.Tests
             // ACT
             await daemonHost
                 .MediaPlayer("media_player.player")
+                .Play()
+                .ExecuteAsync();
+
+            // ASSERT
+            hcMock.VerifyCallServiceTimes("media_play", Times.Once());
+            hcMock.VerifyCallService("media_player", "media_play", ("entity_id", "media_player.player"));
+        }
+
+        [Fact]
+        public async Task MediaPlayersFuncPlayCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            DefaultDaemonHost.InternalState["media_player.player"] = new EntityState
+            {
+                EntityId = "media_player.player",
+                State = "off"
+            };
+
+            // ACT
+            await DefaultDaemonHost
+                    .MediaPlayers(n => n.EntityId == "media_player.player")
+                    .Play()
+                    .ExecuteAsync();
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("media_play", Times.Once());
+            DefaultHassClientMock.VerifyCallService("media_player", "media_play", ("entity_id", "media_player.player"));
+        }
+
+        [Fact]
+        public async Task MediaPlayersPlayCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object);
+
+            // ACT
+            await daemonHost
+                .MediaPlayers(new string[] { "media_player.player" })
                 .Play()
                 .ExecuteAsync();
 

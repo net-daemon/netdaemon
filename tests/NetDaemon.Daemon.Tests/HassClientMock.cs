@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Threading;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
@@ -91,6 +90,16 @@ namespace NetDaemon.Daemon.Tests
                 Attributes = new Dictionary<string, object>
                 {
                     ["device_class"] = "motion"
+                }
+            };
+
+            FakeStates["media_player.player"] = new HassState
+            {
+                EntityId = "media_player.player",
+                State = "off",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["anyattribute"] = "some attribute"
                 }
             };
         }
