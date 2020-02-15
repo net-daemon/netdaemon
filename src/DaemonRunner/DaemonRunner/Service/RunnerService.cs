@@ -66,19 +66,30 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     var hasBeenCanceledByTheDaemon = false;
                     try
                     {
-                        var task = _daemonHost.Run(config.Host!, config.Port.Value!, config.Ssl.Value!, config.Token!,
+                        var daemonHostTask = _daemonHost.Run(config.Host!, config.Port.Value!, config.Ssl.Value!, config.Token!,
                             stoppingToken);
-                        await Task.Delay(1000, stoppingToken); // Todo: Must be smarter later
-                        if (_daemonHost.Connected)
+
+                        var nrOfTimesCheckForConnectedState = 0;
+                        while (!_daemonHost.Connected && !stoppingToken.IsCancellationRequested)
                         {
-                            await csManager.LoadSources(_daemonAppConfig);
-                            await task;
+                            await Task.Delay(1000, stoppingToken);
+                            if (nrOfTimesCheckForConnectedState++ > 3)
+                                break;
                         }
-                        else
+                        if (!stoppingToken.IsCancellationRequested)
                         {
-                            _logger.LogWarning("Home assistant still unavailable, retrying in 20 seconds...");
-                            hasBeenCanceledByTheDaemon = false;
+                            if (_daemonHost.Connected)
+                            {
+                                await csManager.LoadSources(_daemonAppConfig);
+                                await daemonHostTask;
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Home assistant still unavailable, retrying in 20 seconds...");
+                                hasBeenCanceledByTheDaemon = false;
+                            }
                         }
+
                     }
                     catch (OperationCanceledException)
                     {

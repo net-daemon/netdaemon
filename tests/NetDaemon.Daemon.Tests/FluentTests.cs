@@ -1,6 +1,7 @@
 ﻿using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Dynamic;
@@ -661,6 +662,24 @@ namespace NetDaemon.Daemon.Tests
             hcMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity"));
         }
 
+        [Fact]
+        public async Task EntityFuncExceptionLogsError()
+        {
+            // ARRANGE
+            DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
+
+            // ACT
+            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonHost
+               .Entities(n => throw new Exception("Some error"))
+               .TurnOff()
+               .ExecuteAsync());
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Never());
+            LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
+            Assert.Equal("Some error", x.Message);
+        }
+
 
         [Fact]
         public async Task TurnOffEntityLambdaAttributeSelectionCallsCorrectServiceCall()
@@ -1029,6 +1048,25 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallServiceTimes("media_play", Times.Once());
             DefaultHassClientMock.VerifyCallService("media_player", "media_play", ("entity_id", "media_player.player"));
         }
+
+        [Fact]
+        public async Task MediaPlayersFuncExceptionLogsError()
+        {
+            // ARRANGE
+            DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
+
+            // ACT
+            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonHost
+               .MediaPlayers(n => throw new Exception("Some error"))
+               .Play()
+               .ExecuteAsync());
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Never());
+            LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
+            Assert.Equal("Some error", x.Message);
+        }
+
 
         [Fact]
         public async Task MediaPlayersPlayCallsCorrectServiceCall()

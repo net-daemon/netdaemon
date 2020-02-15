@@ -435,5 +435,29 @@ namespace NetDaemon.Daemon.Tests
             Assert.False(isCalled);
             Assert.True(string.IsNullOrEmpty(message));
         }
+
+        [Fact]
+        public async Task SetStateShouldCallCorrectFunction()
+        {
+            await DefaultDaemonHost.SetState("sensor.any_sensor", "on", ("attr", "value"));
+
+            var (dynObj, expObj) = GetDynamicObject(
+                ("attr", "value")
+            );
+            DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
+
+        }
+
+        [Fact]
+        public async Task SetStateShouldReturnCorrectData()
+        {
+            await DefaultDaemonHost.SetState("sensor.any_sensor", "on", ("attr", "value"));
+
+            var (dynObj, expObj) = GetDynamicObject(
+                ("attr", "value")
+            );
+            DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
+
+        }
     }
 }

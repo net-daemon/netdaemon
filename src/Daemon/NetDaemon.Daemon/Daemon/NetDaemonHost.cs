@@ -23,6 +23,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
     public class NetDaemonHost : INetDaemonHost
     {
+        /// <summary>
+        /// The intervall used when disconnected
+        /// </summary>
+        private const int _reconnectIntervall = 30000;
+
         internal readonly Channel<(string, string)> _ttsMessageQueue =
             Channel.CreateBounded<(string, string)>(20);
 
@@ -213,9 +218,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     if (!connectResult)
                     {
                         Connected = false;
-                        Logger.LogWarning("Home assistant is unavailable, retrying in 15 seconds...");
+                        Logger.LogWarning("Home assistant is unavailable, retrying in 30 seconds...");
                         await _hassClient.CloseAsync();
-                        await Task.Delay(15000, cancellationToken);
+                        await Task.Delay(_reconnectIntervall, cancellationToken);
 
                         continue;
                     }
@@ -277,7 +282,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     Connected = false;
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        await Task.Delay(15000, cancellationToken);
+                        await Task.Delay(_reconnectIntervall, cancellationToken);
                     }
                 }
             }

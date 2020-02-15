@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
@@ -27,6 +28,23 @@ namespace NetDaemon.Daemon.Tests
 
             Setup(x => x.ReadEventAsync())
                 .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
+
+            Setup(x => x.SetState(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object?>())).Returns<string, string, object>(
+                (entityId, state, attributes) =>
+                {
+                    var fluentAttr = (FluentExpandoObject)attributes;
+                    var attrib = new Dictionary<string, object>();
+                    foreach (var attr in (IDictionary<string, object>)fluentAttr)
+                        attrib[attr.Key] = attr.Value;
+
+                    return Task.FromResult(new HassState
+                    {
+                        EntityId = entityId,
+                        State = state,
+                        Attributes = attrib
+                    });
+                }
+            );
         }
 
         public static HassClientMock DefaultMock => new HassClientMock();
