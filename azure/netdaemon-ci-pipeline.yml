@@ -19,7 +19,7 @@ steps:
     inputs:
       version: '3.1.x'
 
-  - script: dotnet build ./src --configuration $(buildConfiguration)
+  - script: dotnet build --configuration $(buildConfiguration)
     displayName: 'dotnet build $(buildConfiguration)'
 
   - task: DotNetCoreCLI@2
