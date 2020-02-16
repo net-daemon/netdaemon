@@ -1,4 +1,5 @@
 ﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
 
+[assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
     public interface IDaemonAppConfig
@@ -78,71 +80,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         }
     }
 
-    public static class YamlExtensions
-    {
-        public static object? ToObject(this YamlScalarNode node, Type valueType)
-        {
-            Type? underlyingNullableType = Nullable.GetUnderlyingType(valueType);
-            if (underlyingNullableType != null)
-            {
-                // It is nullable type
-                valueType = underlyingNullableType;
-            }
-            switch (valueType.Name)
-            {
-                case "String":
-                    return node.Value;
-
-                case "Int32":
-                    if (int.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out int i32Value))
-                    {
-                        return i32Value;
-                    }
-                    break;
-
-                case "Int64":
-                    if (long.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out long i64Value))
-                    {
-                        return i64Value;
-                    }
-                    break;
-
-                case "Decimal":
-                    if (decimal.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out decimal decimalValue))
-                    {
-                        return decimalValue;
-                    }
-                    break;
-
-                case "Float":
-                    if (decimal.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out decimal floatValue))
-                    {
-                        return floatValue;
-                    }
-                    break;
-
-                case "Double":
-                    if (double.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out double doubleValue))
-                    {
-                        return doubleValue;
-                    }
-                    break;
-
-                case "Boolean":
-                    if (bool.TryParse(node.Value, out bool boolValue))
-                    {
-                        return boolValue;
-                    }
-                    break;
-            }
-            return null;
-        }
-    }
 
     public class AppInfo
     {
@@ -168,6 +105,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         public async Task InstanceFromDaemonAppConfigs(IEnumerable<Type> netDaemonApps, string codeFolder)
         {
             var yamlConfigs = new Dictionary<string, List<YamlMappingNode>>(10);
+            // First check if we have any secrets.yaml files
+
+            // await LoadSecretsSettings(codeFolder);
+
             foreach (string file in Directory.EnumerateFiles(codeFolder, "*.yaml", SearchOption.AllDirectories))
             {
                 try
@@ -325,13 +266,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 try
                 {
                     await netDaemonApp.StartUpAsync(_daemon);
-                    
+
                     _logger.LogInformation($"Loading App ({netDaemonAppType.Name})");
                     foreach (var method in netDaemonAppType.GetMethods())
                     {
-                        foreach(var attr in method.GetCustomAttributes(false))
+                        foreach (var attr in method.GetCustomAttributes(false))
                         {
-                            switch(attr)
+                            switch (attr)
                             {
                                 case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
                                     if (!CheckIfServiceCallSignatureIsOk(method))
@@ -416,7 +357,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 _logger.LogWarning($"{method.Name} has not correct number of parameters");
                 return false;
             }
-            
+
             var dynParam = parameters![0];
             if (dynParam.CustomAttributes.Count() == 1 && dynParam.CustomAttributes.First().AttributeType == typeof(DynamicAttribute))
                 return true;

@@ -27,7 +27,7 @@
     <PackageReference Include="YamlDotNet" Version="8.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\App\NetDaemon.App\NetDeamon.App.csproj" />
+    <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
     <ProjectReference Include="..\..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
   </ItemGroup>
 </Project>
