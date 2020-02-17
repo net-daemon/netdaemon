@@ -7,13 +7,16 @@
 	// You can edit these settings after create using File > Preferences > Settings > Remote.
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
+		"terminal.integrated.fontSize": 12,
+		"editor.fontFamily": "Cascadia Code, Fira Code, Consolas, 'Courier New', monospace",
+		"editor.fontLigatures": true,
 		"dotnet-test-explorer.testProjectPath": "tests/**/*.Tests.csproj",
 		"dotnet-test-explorer.autoExpandTree": true,
 		"dotnet-test-explorer.testArguments": "/p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=../codecover/lcov.info",
 		"coverage-gutters.showGutterCoverage": false,
 		"coverage-gutters.showLineCoverage": true,
 	},
-	"postCreateCommand": "dotnet restore src/HassClient && dotnet restore tests/HassClient.Tests",
+	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
 	// Uncomment the next line if you want to publish any ports.
 	"appPort": [
 		5001
