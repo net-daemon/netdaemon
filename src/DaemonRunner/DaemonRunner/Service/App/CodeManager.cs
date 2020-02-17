@@ -5,21 +5,36 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 using System.Text;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+// using Microsoft.CodeAnalysis;
+// using Microsoft.CodeAnalysis.CSharp.Scripting;
+// using Microsoft.CodeAnalysis.Emit;
+// using Microsoft.CodeAnalysis.Scripting;
+// using Microsoft.CodeAnalysis.CSharp;
+// using Microsoft.CodeAnalysis.Text;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 {
+    class CollectibleAssemblyLoadContext : AssemblyLoadContext
+    {
+        public CollectibleAssemblyLoadContext() : base(isCollectible: true)
+        {
+        }
+
+        protected override Assembly Load(AssemblyName name)
+        {
+            return null;
+        }
+    }
     public class CodeManager
     {
-        private readonly ScriptOptions _scriptOptions;
+        // private readonly ScriptOptions _scriptOptions;
         private readonly string _codeFolder;
 
         private readonly IList<Type> _loadedDaemonApps;
@@ -27,11 +42,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             _codeFolder = codeFolder;
             _loadedDaemonApps = new List<Type>(100);
-            _scriptOptions = LoadAssembliesAndStandardImports();
+            // _scriptOptions = LoadAssembliesAndStandardImports();
 
             if (!string.IsNullOrEmpty(_codeFolder))
                 LoadAllCodeToLoadContext();
         }
+
+        public IEnumerable<Type> DaemonApps => _loadedDaemonApps;
 
         private void LoadAllCodeToLoadContext()
         {
@@ -65,7 +82,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
                 }
 
-                var compilation = CSharpCompilation.Create("Hello.dll",
+                var compilation = CSharpCompilation.Create("netdaemondynamic.dll",
                     syntaxTrees.ToArray(),
                     references: metaDataReference.ToArray(),
                     options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
@@ -106,76 +123,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             }
 
         }
-        private void LoadAllCodeToLoadContext2()
-        {
-            var stream = new MemoryStream();
-            var alc = new CollectibleAssemblyLoadContext();
-
-            // EmitResult emitResult;
-            // Script<object>? script = null;
-            foreach (var csFile in GetCsFiles(_codeFolder))
-            {
-                var script = CSharpScript.Create(File.ReadAllText(csFile), _scriptOptions);
-                var compilation = script.GetCompilation();
-                var emitResult = compilation.Emit(stream);
-
-                stream.Seek(0, SeekOrigin.Begin);
-                if (emitResult.Success) //
-                {
-
-                    var asm = alc.LoadFromStream(stream);
-                    var assemblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
-                    foreach (var app in assemblyAppTypes)
-                    {
-                        _loadedDaemonApps.Add(app);
-                    }
-
-
-                }
-                else
-                {
-                    var msg = new StringBuilder();
-                    msg.AppendLine($"Compiler error!");
-
-                    foreach (var emitResultDiagnostic in emitResult.Diagnostics)
-                    {
-                        if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
-                        {
-                            msg.AppendLine(emitResultDiagnostic.ToString());
-                        }
-                    }
-                    var err = msg.ToString();
-                    System.Console.WriteLine(err);
-
-                }
-            }
-            alc.Unload();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-
-
-
-        }
-
-        private ScriptOptions LoadAssembliesAndStandardImports()
-        {
-            // Load all assemblies from the current running daemon
-            var options = ScriptOptions.Default;
-
-            var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assembliesFromCurrentAppDomain)
-            {
-                // _logger.LogInformation(assembly.FullName);
-                if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
-                    options = options.AddReferences(assembly);
-            }
-
-            // Add the standard imports
-            options = options.AddImports("System");
-            options = options.AddImports("JoySoftware.HomeAssistant.NetDaemon.Common");
-            return options;
-        }
 
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps;
 
@@ -183,5 +130,79 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             return Directory.EnumerateFiles(configFixturePath, "*.cs", SearchOption.AllDirectories);
         }
+
     }
 }
+
+
+
+// private void LoadAllCodeToLoadContext2()
+// {
+//     var stream = new MemoryStream();
+//     var alc = new CollectibleAssemblyLoadContext();
+
+//     // EmitResult emitResult;
+//     // Script<object>? script = null;
+//     foreach (var csFile in GetCsFiles(_codeFolder))
+//     {
+//         var script = CSharpScript.Create(File.ReadAllText(csFile), _scriptOptions);
+//         var compilation = script.GetCompilation();
+//         var emitResult = compilation.Emit(stream);
+
+//         stream.Seek(0, SeekOrigin.Begin);
+//         if (emitResult.Success) //
+//         {
+
+//             var asm = alc.LoadFromStream(stream);
+//             var assemblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+//             foreach (var app in assemblyAppTypes)
+//             {
+//                 _loadedDaemonApps.Add(app);
+//             }
+
+
+//         }
+//         else
+//         {
+//             var msg = new StringBuilder();
+//             msg.AppendLine($"Compiler error!");
+
+//             foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+//             {
+//                 if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
+//                 {
+//                     msg.AppendLine(emitResultDiagnostic.ToString());
+//                 }
+//             }
+//             var err = msg.ToString();
+//             System.Console.WriteLine(err);
+
+//         }
+//     }
+//     alc.Unload();
+//     GC.Collect();
+//     GC.WaitForPendingFinalizers();
+
+
+
+
+// }
+
+// private ScriptOptions LoadAssembliesAndStandardImports()
+// {
+//     // Load all assemblies from the current running daemon
+//     var options = ScriptOptions.Default;
+
+//     var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
+//     foreach (var assembly in assembliesFromCurrentAppDomain)
+//     {
+//         // _logger.LogInformation(assembly.FullName);
+//         if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
+//             options = options.AddReferences(assembly);
+//     }
+
+//     // Add the standard imports
+//     options = options.AddImports("System");
+//     options = options.AddImports("JoySoftware.HomeAssistant.NetDaemon.Common");
+//     return options;
+// }

@@ -69,16 +69,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             return build.ToString();
         }
     }
-    public static class PropertyInfoExtensions
-    {
-        public static IList? CreateListOfPropertyType(this Type listType)
-        {
-            Type gen = typeof(List<>).MakeGenericType(listType!);
-            object? list = Activator.CreateInstance(gen);
-
-            return list as IList;
-        }
-    }
 
 
     public class AppInfo

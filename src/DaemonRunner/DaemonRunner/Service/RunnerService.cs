@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -59,10 +60,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 if (!string.IsNullOrEmpty(sourceFolder))
                     sourceFolder = Path.Combine(config.SourceFolder!, "apps");
 
-                var csManager = new CSScriptManager("/workspaces/netdaemon/tests/NetDaemon.Daemon.Tests/DaemonRunner/Fixtures", _daemonHost,
-                    _loggerFactory); //sourceFolder
+                // var csManager = new CSScriptManager("/workspaces/netdaemon/tests/NetDaemon.Daemon.Tests/DaemonRunner/Fixtures", _daemonHost,
+                // _loggerFactory); //sourceFolder
 
-
+                // var yamlAppConfig = new YamlAppConfig()
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     var hasBeenCanceledByTheDaemon = false;
@@ -83,7 +84,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             if (_daemonHost.Connected)
                             {
 
-                                await csManager.LoadSources(_daemonAppConfig);
+                                // await csManager.LoadSources(_daemonAppConfig);
                                 await daemonHostTask;
                             }
                             else

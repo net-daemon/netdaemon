@@ -9,6 +9,9 @@ public class AssmeblyDaemonApp : NetDaemonApp
 {
 
     #region -- Config properties --
+    public string? StringConfig { get; set; } = null;
+    public int? IntConfig { get; set; } = null;
+    public IEnumerable<string>? EnumerableConfig { get; set; } = null;
 
     #endregion
 

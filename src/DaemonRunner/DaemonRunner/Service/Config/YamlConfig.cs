@@ -1,12 +1,114 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 {
+    public class YamlAppConfig
+    {
+        private readonly IEnumerable<Type> _types;
+        private readonly YamlStream _yamlStream;
+
+        public YamlAppConfig(IEnumerable<Type> types, TextReader reader)
+        {
+            _types = types;
+            _yamlStream = new YamlStream();
+            _yamlStream.Load(reader);
+        }
+
+        public INetDaemonApp? Instance
+        {
+            get
+            {
+
+                // For each app instance defined in the yaml config
+                foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
+                {
+                    if (app.Key.NodeType != YamlNodeType.Scalar ||
+                        app.Value.NodeType != YamlNodeType.Mapping)
+                    {
+                        continue;
+                    }
+
+                    string? appId = ((YamlScalarNode)app.Key).Value;
+                    // Get the class
+
+                    string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
+                    Type appType = _types.Where(n => n.Name.ToLowerInvariant() == appClass)
+                                                   .FirstOrDefault();
+
+                    if (appType != null)
+                    {
+                        return InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value));
+                    }
+                }
+
+                return null;
+            }
+        }
+        public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode)
+        {
+            var netDaemonApp = (INetDaemonApp?)Activator.CreateInstance(netDaemonAppType);
+
+            if (netDaemonApp == null)
+                return null;
+
+            foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
+            {
+                string? scalarPropertyName = ((YamlScalarNode)entry.Key).Value;
+                // Just continue to next configuration if null or class declaration
+                if (scalarPropertyName == null) continue;
+                if (scalarPropertyName == "class") continue;
+
+                var prop = netDaemonAppType.GetYamlProperty(scalarPropertyName) ??
+                    throw new MissingMemberException($"{scalarPropertyName} is missing from the type {netDaemonAppType}");
+
+                var valueType = entry.Value.NodeType;
+
+
+                switch (valueType)
+                {
+                    case YamlNodeType.Sequence:
+                        netDaemonApp.SetPropertyFromYaml(prop, (YamlSequenceNode)entry.Value);
+                        break;
+
+                    case YamlNodeType.Scalar:
+                        netDaemonApp.SetPropertyFromYaml(prop, (YamlScalarNode)entry.Value);
+                        break;
+
+                    case YamlNodeType.Mapping:
+                        var map = (YamlMappingNode)entry.Value;
+                        break;
+                }
+
+            }
+
+            return netDaemonApp;
+        }
+
+        private string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
+        {
+            KeyValuePair<YamlNode, YamlNode> classChild = appNode.Children.Where(n =>
+                                   ((YamlScalarNode)n.Key)?.Value?.ToLowerInvariant() == "class").FirstOrDefault();
+
+            if (classChild.Key == null || classChild.Value == null)
+            {
+                return null;
+            }
+
+            if (classChild.Value.NodeType != YamlNodeType.Scalar)
+            {
+                return null;
+            }
+            return ((YamlScalarNode)classChild.Value)?.Value?.ToLowerInvariant();
+        }
+    }
     public class YamlConfig
     {
         private readonly string _configFixturePath;
@@ -88,6 +190,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             }
             return result;
         }
+
+        // internal static IList<INetDaemonApp> InstanceAppFromConfig(IDictionary<Type> )
 
 
     }
