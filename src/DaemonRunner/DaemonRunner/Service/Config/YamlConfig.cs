@@ -191,8 +191,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             return result;
         }
 
-        // internal static IList<INetDaemonApp> InstanceAppFromConfig(IDictionary<Type> )
-
+        
 
     }
 

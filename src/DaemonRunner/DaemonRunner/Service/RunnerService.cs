@@ -63,7 +63,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 // var csManager = new CSScriptManager("/workspaces/netdaemon/tests/NetDaemon.Daemon.Tests/DaemonRunner/Fixtures", _daemonHost,
                 // _loggerFactory); //sourceFolder
 
-                // var yamlAppConfig = new YamlAppConfig()
+                
+                
+                
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     var hasBeenCanceledByTheDaemon = false;
@@ -83,7 +85,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             if (_daemonHost.Connected)
                             {
-
+                                var codeManager = new CodeManager(sourceFolder);
+                                codeManager.InstanceAndInitApplications();
+                                // Get all instances of apps
+                                
+                               
                                 // await csManager.LoadSources(_daemonAppConfig);
                                 await daemonHostTask;
                             }

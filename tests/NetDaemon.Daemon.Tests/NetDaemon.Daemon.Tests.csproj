@@ -28,7 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\App\NetDaemon.App\NetDaemon.App.csproj" />
     <ProjectReference Include="..\..\src\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
-    <ProjectReference Include="..\..\src\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
+    <ProjectReference Include="..\..\src\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
 
   </ItemGroup>
 
@@ -37,6 +37,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="DaemonRunner/Fixtures/**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner/App/*.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

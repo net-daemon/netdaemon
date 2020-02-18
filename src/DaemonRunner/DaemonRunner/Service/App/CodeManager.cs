@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -48,7 +49,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 LoadAllCodeToLoadContext();
         }
 
-        public IEnumerable<Type> DaemonApps => _loadedDaemonApps;
+        public IEnumerable<INetDaemonApp> InstanceAndInitApplications(INetDaemonHost host)
+        {
+            var result = new List<INetDaemonApp>();
+            foreach (string file in Directory.EnumerateFiles(_codeFolder, "*.yaml", SearchOption.AllDirectories))
+            {
+                var appInstance = DaemonAppTypes.InstanceFromYamlConfig(File.OpenText(file));
+                if (appInstance != null)
+                    result.Add(appInstance);
+            }            
+            return result;
+        }
+
 
         private void LoadAllCodeToLoadContext()
         {

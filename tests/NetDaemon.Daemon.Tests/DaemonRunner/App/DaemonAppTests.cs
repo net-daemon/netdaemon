@@ -122,5 +122,20 @@ app:
             Assert.Equal(2, instance?.EnumerableConfig.Count());
         }
 
+
+
+        [Fact]
+        public void InstanceAppFromConfigFilesInFolderShouldReturnCorrectInstances()
+        {
+            // ARRANGE
+            var path = Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "App");
+            IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
+            // ACT
+            var instance = YamlConfig.GetInstancesFromYaml(path, types);
+            // ASSERT
+            Assert.Equal(1, instance.Count());
+        }
     }
+
+    
 }
