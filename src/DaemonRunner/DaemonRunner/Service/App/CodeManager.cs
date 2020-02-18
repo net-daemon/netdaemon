@@ -220,6 +220,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
                 };
