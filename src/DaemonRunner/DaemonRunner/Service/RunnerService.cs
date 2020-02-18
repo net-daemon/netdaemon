@@ -90,6 +90,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 {
                                     var codeManager = new CodeManager(sourceFolder);
                                     codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost);
+                                    GC.Collect();
+                                    GC.WaitForPendingFinalizers();
                                 }
                                 catch (Exception e)
                                 {

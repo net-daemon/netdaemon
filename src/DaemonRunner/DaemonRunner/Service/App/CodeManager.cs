@@ -230,7 +230,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 foreach (var assembly in assembliesFromCurrentAppDomain)
                 {
                     // _logger.LogInformation(assembly.FullName);
-                    if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
+                    // if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
+                    if (assembly.FullName != null && !assembly.FullName.Contains("Dynamic"))
                         metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
                 }
 
@@ -270,6 +271,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     System.Console.WriteLine(err);
                 }
             }
+
         }
 
         public static IEnumerable<string> GetCsFiles(string configFixturePath)
