@@ -231,7 +231,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 {
                     // _logger.LogInformation(assembly.FullName);
                     // if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
-                    if (assembly.FullName != null && !assembly.FullName.Contains("Dynamic"))
+                    if (assembly.FullName != null
+                        && !assembly.FullName.Contains("Dynamic")
+                        && !string.IsNullOrEmpty(assembly.Location))
                         metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
                 }
 
