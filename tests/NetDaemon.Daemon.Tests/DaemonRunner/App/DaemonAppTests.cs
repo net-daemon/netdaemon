@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
@@ -128,14 +132,27 @@ app:
         public void InstanceAppFromConfigFilesInFolderShouldReturnCorrectInstances()
         {
             // ARRANGE
-            var path = Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "App");
-            IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
+            var path = Path.Combine(ConfigFixturePath, "level2");
+            var moqDaemon = new Mock<INetDaemon>();
+            var moqLogger = new LoggerMock();
+
+            moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
             // ACT
-            var instance = YamlConfig.GetInstancesFromYaml(path, types);
+            var codeManager = new CodeManager(path);
             // ASSERT
-            Assert.Equal(1, instance.Count());
+            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Count());
+        }
+
+        [Fact]
+        public void InstanceAndInitApplicationWithNullShouldThrowArgumentNullException()
+        {
+            // ARRANGE
+            var codeManager = new CodeManager("");
+            // ACT/ASSERT
+            Assert.Throws<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
+
         }
     }
 
-    
+
 }

@@ -1,0 +1,7 @@
+the_app:
+    class: TheApp
+    string_config: a string
+    IntConfig: 10
+    EnumerableConfig:
+        - Test
+        - Test again

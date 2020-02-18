@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
@@ -30,7 +31,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
             _daemonHost = new NetDaemonHost(new HassClient(loggerFactory), loggerFactory);
-            daemonAppConfig ??= new DaemonAppConfig(_daemonHost, _logger);
+            // daemonAppConfig ??= new DaemonAppConfig(_daemonHost, _logger);
             _daemonAppConfig = daemonAppConfig;
         }
 
@@ -63,9 +64,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 // var csManager = new CSScriptManager("/workspaces/netdaemon/tests/NetDaemon.Daemon.Tests/DaemonRunner/Fixtures", _daemonHost,
                 // _loggerFactory); //sourceFolder
 
-                
-                
-                
+
+
+
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     var hasBeenCanceledByTheDaemon = false;
@@ -85,11 +86,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             if (_daemonHost.Connected)
                             {
-                                var codeManager = new CodeManager(sourceFolder);
-                                codeManager.InstanceAndInitApplications();
+                                try
+                                {
+                                    var codeManager = new CodeManager(sourceFolder);
+                                    codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost);
+                                }
+                                catch (Exception e)
+                                {
+                                    _logger.LogError(e, "Failed to load applications");
+                                }
+
                                 // Get all instances of apps
-                                
-                               
+
+
                                 // await csManager.LoadSources(_daemonAppConfig);
                                 await daemonHostTask;
                             }
