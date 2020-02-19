@@ -65,10 +65,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
         }
 
-        public static INetDaemonApp? InstanceFromYamlConfig(this IEnumerable<Type> types, TextReader reader)
+        public static IEnumerable<INetDaemonApp> InstancesFromYamlConfig(this IEnumerable<Type> types, TextReader reader)
         {
             var yamlAppConfig = new YamlAppConfig(types, reader);
-            return yamlAppConfig.Instance;
+            return yamlAppConfig.Instances;
         }
 
         public static PropertyInfo? GetYamlProperty(this Type type, string propertyName)

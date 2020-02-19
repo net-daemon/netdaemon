@@ -65,9 +65,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n\tclass: AssmeblyDaemonApp";
             // ACT
-            var instance = types.InstanceFromYamlConfig(new StringReader(yamlConfig)) as INetDaemonApp;
+            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
             // ASSERT
-            Assert.NotNull(instance);
+            Assert.Equal(1, instances.Count());
+            Assert.NotNull(instances.FirstOrDefault() as INetDaemonApp);
         }
 
         [Fact]
@@ -77,9 +78,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n\tclass: NotFoundApp";
             // ACT
-            var instance = types.InstanceFromYamlConfig(new StringReader(yamlConfig)) as INetDaemonApp;
+            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
             // ASSERT
-            Assert.Null(instance);
+            Assert.Equal(0, instances.Count());
         }
 
         [Fact]
@@ -97,7 +98,8 @@ app:
         - string 2
 ";
             // ACT
-            var instance = types.InstanceFromYamlConfig(new StringReader(yamlConfig)) as AssmeblyDaemonApp;
+            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
+            var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
             Assert.Equal(10, instance?.IntConfig);
@@ -119,7 +121,8 @@ app:
         - string 2
 ";
             // ACT
-            var instance = types.InstanceFromYamlConfig(new StringReader(yamlConfig)) as AssmeblyDaemonApp;
+            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
+            var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
             Assert.Equal(10, instance?.IntConfig);

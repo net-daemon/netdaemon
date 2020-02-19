@@ -15,14 +15,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         private readonly IEnumerable<Type> _types;
         private readonly YamlStream _yamlStream;
 
+        private readonly List<INetDaemonApp> _instances;
         public YamlAppConfig(IEnumerable<Type> types, TextReader reader)
         {
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
+            _instances = new List<INetDaemonApp>();
         }
 
-        public INetDaemonApp? Instance
+        public IEnumerable<INetDaemonApp> Instances
         {
             get
             {
@@ -45,11 +47,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
                     if (appType != null)
                     {
-                        return InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value));
+                        var instance = InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value));
+                        if (instance != null)
+                            _instances.Add(instance);
                     }
                 }
 
-                return null;
+                return _instances;
             }
         }
         public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode)
@@ -191,7 +195,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             return result;
         }
 
-        
+
 
     }
 

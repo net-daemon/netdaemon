@@ -185,9 +185,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             var result = new List<INetDaemonApp>();
             foreach (string file in Directory.EnumerateFiles(_codeFolder, "*.yaml", SearchOption.AllDirectories))
             {
-                var appInstance = DaemonAppTypes.InstanceFromYamlConfig(File.OpenText(file));
+                var appInstances = DaemonAppTypes.InstancesFromYamlConfig(File.OpenText(file));
 
-                if (appInstance != null)
+                foreach (var appInstance in appInstances)
                 {
                     result.Add(appInstance);
                     appInstance.StartUpAsync(host);
