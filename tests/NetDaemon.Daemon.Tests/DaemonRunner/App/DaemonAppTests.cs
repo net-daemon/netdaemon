@@ -245,7 +245,7 @@ app:
             // ACT
             instance!.Storage.Data = data;
 
-            await Task.Delay(50); // Delay to let the task save state
+            await Task.Delay(100); // Delay to let the task save state
 
             // ASSERT
             var expected = new FluentExpandoObject();
