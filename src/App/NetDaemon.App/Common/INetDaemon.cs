@@ -69,7 +69,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="domain">The domain of the service call</param>
         /// <param name="service">The service being called</param>
-        /// <param name="app">The application instance</param>
         /// <param name="action">The action to perform when service is called</param>
         void ListenServiceCall(string domain, string service,
             Func<dynamic?, Task> action);

@@ -196,6 +196,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 }
 
             }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             return result;
         }
 
@@ -270,6 +273,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     System.Console.WriteLine(err);
                 }
             }
+            alc.Unload();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
         }
 

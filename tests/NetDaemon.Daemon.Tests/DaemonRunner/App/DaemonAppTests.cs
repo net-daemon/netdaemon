@@ -54,7 +54,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var codeManager = new CodeManager(ConfigFixturePath);
             // ACT
             // ASSERT
-            Assert.Equal(3, codeManager.DaemonAppTypes.Select(n => n.Name.StartsWith("Lev")).Count());
+            Assert.Equal(5, codeManager.DaemonAppTypes.Select(n => n.Name.StartsWith("Lev")).Count());
 
         }
 
@@ -136,6 +136,22 @@ app:
         {
             // ARRANGE
             var path = Path.Combine(ConfigFixturePath, "level2");
+            var moqDaemon = new Mock<INetDaemon>();
+            var moqLogger = new LoggerMock();
+
+            moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
+            // ACT
+            var codeManager = new CodeManager(path);
+            // ASSERT
+            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Count());
+        }
+
+
+        [Fact]
+        public void InstanceAppMultipleInstancesInConfigShouldReturnCorrectInstances()
+        {
+            // ARRANGE
+            var path = Path.Combine(ConfigFixturePath, "mulitinstance");
             var moqDaemon = new Mock<INetDaemon>();
             var moqLogger = new LoggerMock();
 

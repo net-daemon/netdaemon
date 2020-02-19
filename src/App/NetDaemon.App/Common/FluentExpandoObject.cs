@@ -34,60 +34,73 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             if (root != null) Augment(root);
         }
 
+        /// <inheritdoc/>
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             return _dict.GetEnumerator();
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable) _dict).GetEnumerator();
+            return ((IEnumerable)_dict).GetEnumerator();
         }
 
+        /// <inheritdoc/>
         public void Add(KeyValuePair<string, object> item)
         {
             _dict.Add(item.Key, item.Value);
         }
 
+        /// <inheritdoc/>
         public void Clear()
         {
             _dict.Clear();
         }
 
+        /// <inheritdoc/>
         public bool Contains(KeyValuePair<string, object> item)
         {
             return _dict.Contains(item);
         }
 
+        /// <inheritdoc/>
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public bool Remove(KeyValuePair<string, object> item)
         {
             return _dict.Remove(item.Key, out _);
         }
 
+        /// <inheritdoc/>
         public int Count => _dict.Count;
 
+        /// <inheritdoc/>
         public bool IsReadOnly => false;
 
+        /// <inheritdoc/>
         public void Add(string key, object value)
         {
             _dict.Add(key, value);
         }
 
+        /// <inheritdoc/>
         public bool ContainsKey(string key)
         {
             return _dict.ContainsKey(key);
         }
 
+        /// <inheritdoc/>
         public bool Remove(string key)
         {
             return _dict.Remove(key);
         }
 
+        /// <inheritdoc/>
         public bool TryGetValue(string key, out object value)
         {
 #pragma warning disable CS8601 // Possible null reference assignment.
@@ -95,22 +108,27 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 #pragma warning restore CS8601 // Possible null reference assignment.
         }
 
+        /// <inheritdoc/>
         public object this[string key]
         {
             get => _dict[key];
             set => _dict[key] = value;
         }
 
-        public ICollection<string> Keys => ((IDictionary<string, object>) _dict).Keys;
+        /// <inheritdoc/>
+        public ICollection<string> Keys => ((IDictionary<string, object>)_dict).Keys;
 
-        public ICollection<object> Values => ((IDictionary<string, object>) _dict).Values;
+        /// <inheritdoc/>
+        public ICollection<object> Values => ((IDictionary<string, object>)_dict).Values;
 
+        /// <inheritdoc/>
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             UpdateDictionary(binder.Name, value);
             return true;
         }
 
+        /// <inheritdoc/>
         public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
         {
             if (!(indexes[0] is string)) return base.TrySetIndex(binder, indexes, value);
@@ -119,6 +137,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return true;
         }
 
+        /// <inheritdoc/>
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             var key = NormalizePropertyName(binder.Name);
@@ -151,6 +170,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
+        /// <summary>
+        ///     Combine two instances together to get a union.
+        /// </summary>
+        /// <param name="obj">the object to combine</param>
+        /// <returns></returns>
         public dynamic Augment(ExpandoObject obj)
         {
             obj
@@ -160,11 +184,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
 
+        /// <inheritdoc/>
         public T ValueOrDefault<T>(string propertyName, T defaultValue)
         {
             propertyName = NormalizePropertyName(propertyName);
             return _dict.ContainsKey(propertyName)
-                ? (T) _dict[propertyName]
+                ? (T)_dict[propertyName]
                 : defaultValue;
         }
 

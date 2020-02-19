@@ -10,17 +10,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         }
 
         [JsonPropertyName("log_level")]
-        public LogLevel? LoggingLevel { get; set; } = LogLevel.Information;
+        public LogLevel LoggingLevel { get; set; } = LogLevel.Information;
+
         [JsonPropertyName("token")]
-        public string? Token { get; set; } = "enter hass token here";
+        public string Token { get; set; } = "enter hass token here";
         [JsonPropertyName("host")]
-        public string? Host { get; set; } = "localhost";
+        public string Host { get; set; } = "localhost";
         [JsonPropertyName("port")]
-        public short? Port { get; set; } = 8123;
+        public short Port { get; set; } = 8123;
         [JsonPropertyName("ssl")]
-        public bool? Ssl { get; set; } = false;
+        public bool Ssl { get; set; } = false;
         [JsonPropertyName("source_folder")]
-        public string? SourceFolder { get; set; } = "";
+        public string? SourceFolder { get; set; } = null;
 
 
     }
