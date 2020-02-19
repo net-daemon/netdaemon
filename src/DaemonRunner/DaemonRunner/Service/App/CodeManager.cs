@@ -40,12 +40,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     {
                         case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
                             HandleServiceCallAttribute(_daemon, netDaemonApp, method);
-
                             break;
                         case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
-
-
-
+                            HandleStateChangedAttribute(_daemon, hassStateChangedAttribute, netDaemonApp, method);
                             break;
                     }
                 }
