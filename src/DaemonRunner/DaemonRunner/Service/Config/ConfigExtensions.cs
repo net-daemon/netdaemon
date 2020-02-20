@@ -17,10 +17,10 @@ using YamlDotNet.RepresentationModel;
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 {
-    public interface IDaemonAppConfig
-    {
-        Task InstanceFromDaemonAppConfigs(IEnumerable<Type> netDaemonApps, string codeFolder);
-    }
+    // public interface IDaemonAppConfig
+    // {
+    //     Task InstanceFromDaemonAppConfigs(IEnumerable<Type> netDaemonApps, string codeFolder);
+    // }
     public static class TaskExtensions
     {
         public static async Task InvokeAsync(this MethodInfo mi, object? obj, params object?[]? parameters)

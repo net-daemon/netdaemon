@@ -73,8 +73,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 if (value is JsonElement elem)
                 {
-                    dict[key] = elem.ToDynamicValue() ??
-                        throw new NullReferenceException($"{nameof(elem)} cant be null!");
+                    var dynValue = elem.ToDynamicValue();
+
+                    if (dynValue != null)
+                        dict[key] = dynValue;
                 }
                 else
                 {

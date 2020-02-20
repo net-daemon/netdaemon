@@ -20,18 +20,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         private readonly NetDaemonHost _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IDaemonAppConfig _daemonAppConfig;
+        // private readonly IDaemonAppConfig _daemonAppConfig;
 
-        //private readonly
+        //private readonly IDaemonAppConfig? daemonAppConfig = null
 
-        public RunnerService(ILoggerFactory loggerFactory, IDaemonAppConfig? daemonAppConfig = null)
+        public RunnerService(ILoggerFactory loggerFactory)
         {
 
 
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
             _daemonHost = new NetDaemonHost(new HassClient(loggerFactory), loggerFactory);
-            _daemonAppConfig = daemonAppConfig ?? throw new ArgumentNullException("Daemon appconfig can not be null!");
+            // _daemonAppConfig = daemonAppConfig ?? throw new ArgumentNullException("Daemon appconfig can not be null!");
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
