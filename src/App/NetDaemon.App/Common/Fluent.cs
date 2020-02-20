@@ -702,15 +702,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             await executeTask;
 
             // Use local function to get the nice switch statement above:)
-            async Task Speak()
+            Task Speak()
             {
                 foreach (var entityId in _entityIds)
                 {
                     var message = _currentAction?.MessageToSpeak ??
                         throw new NullReferenceException("Message to speak is null or empty!");
 
-                    await _daemon.Speak(entityId, message);
+                    _daemon.Speak(entityId, message);
                 }
+                return Task.CompletedTask;
             }
         }
 

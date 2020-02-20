@@ -185,7 +185,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
           {
               while (!_cancelSource.IsCancellationRequested)
               {
-                  var now = _timeManager.Current;
+                  var now = _timeManager?.Current;
                   var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                   await _timeManager!.Delay(diff, _cancelSource.Token);
                   await func.Invoke();

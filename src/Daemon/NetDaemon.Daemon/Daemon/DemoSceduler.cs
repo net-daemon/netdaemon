@@ -18,8 +18,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly Func<CancellationToken, Task> _scheduledAction;
         private readonly TimeSpan _dueTime;
         private readonly TimeSpan _period;
-        private CancellationTokenSource _cancellationSource;
-        private Task _scheduledTask;
+        private CancellationTokenSource _cancellationSource = new CancellationTokenSource();
+        private Task? _scheduledTask = null;
         private readonly SemaphoreSlim _semaphore;
         private bool _disposed;
         private readonly bool _canStartNextActionBeforePreviousIsCompleted;
@@ -27,21 +27,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <summary>
         /// Occurs when an error is raised in the scheduled action
         /// </summary>
-        public event EventHandler<Exception> OnError;
+        public event EventHandler<Exception>? OnError = null;
 
         /// <summary>
-        /// Gets the running status of the TimerAsync instance. 
+        /// Gets the running status of the TimerAsync instance.
         /// </summary>
         public bool IsRunning { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the TimerAsync. 
+        /// Initializes a new instance of the TimerAsync.
         /// </summary>
         /// <param name="scheduledAction">A delegate representing a method to be executed.</param>
         /// <param name="dueTime">The amount of time to delay befoe scheduledAction is invoked for the first time.</param>
         /// <param name="period">The time interval between invocations of the scheduledAction.</param>
         /// <param name="canStartNextActionBeforePreviousIsCompleted">
-        ///   Whether or not the interval starts at the end of the previous scheduled action or at precise points in time. 
+        ///   Whether or not the interval starts at the end of the previous scheduled action or at precise points in time.
         /// </param>
         public TimerAsync(Func<CancellationToken, Task> scheduledAction, TimeSpan dueTime, TimeSpan period, bool canStartNextActionBeforePreviousIsCompleted = false)
         {
@@ -91,6 +91,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <returns>A task that completes when the timer is stopped.</returns>
         public async Task Stop()
         {
+            _ = _scheduledTask ?? throw new NullReferenceException($"{nameof(_scheduledTask)} can not be null!");
+
             if (_disposed)
                 throw new ObjectDisposedException(GetType().FullName);
 
@@ -102,7 +104,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     return;
 
                 _cancellationSource.Cancel();
-
                 await _scheduledTask.ConfigureAwait(false);
             }
             catch (OperationCanceledException) { }

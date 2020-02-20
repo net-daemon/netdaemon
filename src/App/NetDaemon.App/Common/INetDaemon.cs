@@ -32,7 +32,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     Logger to use
         /// </summary>
-        ILogger Logger { get; }
+        ILogger? Logger { get; }
 
         /// <summary>
         ///     Listen to statechange
@@ -212,7 +212,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="entityId">Unique id of the media player the speech should play</param>
         /// <param name="message">The message that will be spoken</param>
-        Task Speak(string entityId, string message);
+        void Speak(string entityId, string message);
     }
 
 }

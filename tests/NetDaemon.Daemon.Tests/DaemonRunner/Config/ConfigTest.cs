@@ -81,15 +81,15 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             // ASSERT
             Assert.Equal(secretValue, confValue);
         }
-        public static IEnumerable<object[]> SecretData =>
-            new List<Object[]>
+        public static IEnumerable<object?[]> SecretData =>
+            new List<Object?[]>
             {
-                new object[] {"secret_int", ConfigFixturePath, "10"},
-                new object[] {"secret_int", Path.Combine(ConfigFixturePath, "level2"), "20"},
-                new object[] {"secret_int", Path.Combine(ConfigFixturePath, "level2", "level3"), "40"},
-                new object[] {"string_setting", Path.Combine(ConfigFixturePath, "level2", "level3"), "level2"},
-                new object[] {"secret_only_exists_here", Path.Combine(ConfigFixturePath, "level2", "level3"), "test"},
-                new object[] {"notexists", Path.Combine(ConfigFixturePath, "level2", "level3"), null},
+                new object?[] {"secret_int", ConfigFixturePath, "10"},
+                new object?[] {"secret_int", Path.Combine(ConfigFixturePath, "level2"), "20"},
+                new object?[] {"secret_int", Path.Combine(ConfigFixturePath, "level2", "level3"), "40"},
+                new object?[] {"string_setting", Path.Combine(ConfigFixturePath, "level2", "level3"), "level2"},
+                new object?[] {"secret_only_exists_here", Path.Combine(ConfigFixturePath, "level2", "level3"), "test"},
+                new object?[] {"notexists", Path.Combine(ConfigFixturePath, "level2", "level3"), null},
             };
 
 

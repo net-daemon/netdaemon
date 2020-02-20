@@ -67,7 +67,7 @@ namespace NetDaemon.Daemon.Tests
 
             DefaultDaemonHost
                 .Entity("binary_sensor.pir")
-                .WhenStateChange((n, _) => n.State == "on")
+                .WhenStateChange((n, _) => n?.State == "on")
                 .UseEntity("light.correct_entity")
                 .TurnOn()
                 .Execute();
@@ -88,7 +88,7 @@ namespace NetDaemon.Daemon.Tests
 
             DefaultDaemonHost
                 .Entity("binary_sensor.pir")
-                .WhenStateChange((n, _) => n.State == "on")
+                .WhenStateChange((n, _) => n?.State == "on")
                 .UseEntity("light.correct_entity")
                 .Toggle()
                 .Execute();
@@ -501,7 +501,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ACT
             await DefaultDaemonHost
-                .Entities(n => n.Attribute.test >= 100)
+                .Entities(n => n?.Attribute?.test >= 100)
                 .TurnOff()
                 .ExecuteAsync();
 
@@ -519,7 +519,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             // ACT
             await DefaultDaemonHost
-                .Entities(n => n.Attribute.not_exists == "test")
+                .Entities(n => n?.Attribute?.not_exists == "test")
                 .TurnOff()
                 .ExecuteAsync();
 
@@ -556,7 +556,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ACT
             await DefaultDaemonHost
-                .Lights(n => n.Attribute.test >= 100)
+                .Lights(n => n?.Attribute?.test >= 100)
                 .TurnOff()
                 .ExecuteAsync();
 
@@ -691,15 +691,15 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            var actualToState = "";
-            var actualFromState = "";
+            string? actualToState = "";
+            string? actualFromState = "";
             var actualEntity = "";
             DefaultDaemonHost
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on").Call((entity, to, from) =>
                 {
-                    actualToState = to.State;
-                    actualFromState = from.State;
+                    actualToState = to?.State;
+                    actualFromState = from?.State;
                     actualEntity = entity;
                     return Task.CompletedTask;
                 }).Execute();
@@ -728,7 +728,7 @@ namespace NetDaemon.Daemon.Tests
 
             await RunDefauldDaemonUntilCanceled();
 
-            DefaultHassClientMock.Verify(n => n.CallService("script", "thescript", null, false));
+            DefaultHassClientMock.Verify(n => n.CallService("script", "thescript", It.IsAny<object>(), false));
         }
 
         [Fact]

@@ -14,7 +14,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     The fuction to execute
         /// </summary>
         /// <param name="func"></param>
-        IExecute Call(Func<string, dynamic?, Task> func);
+        IExecute Call(Func<string, dynamic?, Task>? func);
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public IExecute Call(Func<string, dynamic, Task> func)
+        public IExecute Call(Func<string, dynamic, Task>? func)
         {
             if (func == null)
                 throw new NullReferenceException("Call function is null listening to event");

@@ -43,8 +43,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var codeManager = new CodeManager(Path.Combine(ConfigFixturePath, "level2", "level3"));
             // ACT
             // ASSERT
-            Assert.Equal(1, codeManager.DaemonAppTypes.Select(n => n.Name == "LevOneApp").Count());
-
+            Assert.Single(codeManager.DaemonAppTypes.Select(n => n.Name == "LevOneApp"));
         }
 
         [Fact]
@@ -81,7 +80,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ACT
             var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
             // ASSERT
-            Assert.Equal(0, instances.Count());
+            Assert.Empty(instances);
         }
 
         [Fact]

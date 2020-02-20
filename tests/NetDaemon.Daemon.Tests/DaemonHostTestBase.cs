@@ -16,8 +16,6 @@ namespace NetDaemon.Daemon.Tests
         private readonly NetDaemonHost _defaultDaemonHost;
         private readonly NetDaemonHost _notConnectedDaemonHost;
 
-
-        private CancellationTokenSource _cancelSource;
         internal DaemonHostTestaBase()
         {
             _loggerMock = new LoggerMock();
@@ -58,12 +56,12 @@ namespace NetDaemon.Daemon.Tests
 
         public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
-            var _cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
             try
             {
-                await _defaultDaemonHost.Run("host", 8123, false, "token", _cancelSource.Token);
+                await _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
             }
             catch (TaskCanceledException)
             {
@@ -73,17 +71,17 @@ namespace NetDaemon.Daemon.Tests
 
         public (Task, CancellationTokenSource) ReturnRunningDefauldDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
-            _cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
-            return (_defaultDaemonHost.Run("host", 8123, false, "token", _cancelSource.Token), _cancelSource);
+            return (_defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
         public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
-            _cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
-            return (_notConnectedDaemonHost.Run("host", 8123, false, "token", _cancelSource.Token), _cancelSource);
+            return (_notConnectedDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
 
         public async Task WaitUntilCanceled(Task task)

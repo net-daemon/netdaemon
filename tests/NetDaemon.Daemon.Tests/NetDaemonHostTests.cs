@@ -31,10 +31,11 @@ namespace NetDaemon.Daemon.Tests
             var message = "";
 
             // ACT
-            DefaultDaemonHost.ListenEvent("CUSTOM_EVENT", async (ev, data) =>
+            DefaultDaemonHost.ListenEvent("CUSTOM_EVENT", (ev, data) =>
             {
                 isCalled = true;
                 message = data.Test;
+                return Task.CompletedTask;
             });
 
             await RunDefauldDaemonUntilCanceled();
@@ -84,7 +85,8 @@ namespace NetDaemon.Daemon.Tests
             var entity = DefaultDaemonHost.GetState("light.testlight");
 
             // ASSERT
-            DefaultHassClientMock.AssertEqual(hassState, entity);
+            Assert.NotNull(entity);
+            DefaultHassClientMock.AssertEqual(hassState, entity!);
         }
 
         [Fact]
@@ -98,9 +100,10 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
 
             // ACT
-            DefaultDaemonHost.ListenEvent("OTHER_EVENT", async (ev, data) =>
+            DefaultDaemonHost.ListenEvent("OTHER_EVENT", (ev, data) =>
             {
                 isCalled = true;
+                return Task.CompletedTask;
             });
 
             await RunDefauldDaemonUntilCanceled();
@@ -197,7 +200,7 @@ namespace NetDaemon.Daemon.Tests
             // ACT
             var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask();
 
-            _ = DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
+            DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             var (_, expObject) = GetDynamicObject(
                 ("entity_id", "media_player.fakeplayer"),
@@ -238,12 +241,12 @@ namespace NetDaemon.Daemon.Tests
                 Attribute = currentStateAttributes
             };
 
-            await Task.Delay(20);
+            await Task.Delay(100);
 
             // ACT
-            await DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
-            await Task.Delay(150);
-            await DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
+            DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
+            await Task.Delay(100);
+            DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             // ASSERT
 
@@ -272,12 +275,12 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
-            string reportedState = "";
+            string? reportedState = "";
 
             // ACT
             DefaultDaemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
             {
-                reportedState = newState.State;
+                reportedState = newState?.State;
 
                 return Task.CompletedTask;
             });
@@ -395,13 +398,13 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.AddCallServiceEvent("custom_domain", "any_service", dynObject);
 
             var isCalled = false;
-            string message = "";
+            string? message = "";
 
             // ACT
             DefaultDaemonHost.ListenServiceCall("custom_domain", "any_service", data =>
             {
                 isCalled = true;
-                message = data.Test;
+                message = data?.Test;
                 return Task.CompletedTask;
             });
 
@@ -421,12 +424,12 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.AddCallServiceEvent("custom_domain", "other_service", dynObject);
 
             var isCalled = false;
-            string message = "";
+            string? message = "";
 
             DefaultDaemonHost.ListenServiceCall("custom_domain", "any_service", data =>
             {
                 isCalled = true;
-                message = data.Test;
+                message = data?.Test;
                 return Task.CompletedTask;
             });
 

@@ -23,11 +23,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
     }
     public static class TaskExtensions
     {
-        public static async Task InvokeAsync(this MethodInfo mi, object obj, params object[] parameters)
+        public static async Task InvokeAsync(this MethodInfo mi, object? obj, params object?[]? parameters)
         {
-            dynamic awaitable = mi.Invoke(obj, parameters);
+            dynamic? awaitable = mi.Invoke(obj, parameters);
             await awaitable;
-            //return awaitable.GetAwaiter().GetResult();
         }
     }
     public static class ConfigStringExtensions
