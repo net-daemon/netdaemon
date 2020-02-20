@@ -172,7 +172,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             _codeFolder = codeFolder;
             _loadedDaemonApps = new List<Type>(100);
 
-            if (!string.IsNullOrEmpty(_codeFolder))
+            LoadLocalAssemblyApplicationsForDevelopment();
+
+            // If provided code folder and we dont have local loaded daemon apps
+            if (!string.IsNullOrEmpty(_codeFolder) && _loadedDaemonApps.Count() == 0)
                 LoadAllCodeToLoadContext();
         }
 
@@ -202,6 +205,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             return result;
         }
 
+        private void LoadLocalAssemblyApplicationsForDevelopment()
+        {
+            // Get daemon apps in entry assembly (mainly for development)
+            var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+            if (apps != null)
+                foreach (var localAppType in apps)
+                {
+                    _loadedDaemonApps.Add(localAppType);
+                }
+        }
+
         private void LoadAllCodeToLoadContext()
         {
             var syntaxTrees = new List<SyntaxTree>();
@@ -229,8 +243,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
                 foreach (var assembly in assembliesFromCurrentAppDomain)
                 {
-                    // _logger.LogInformation(assembly.FullName);
-                    // if (assembly.FullName != null && assembly.FullName.StartsWith("NetDaemon"))
                     if (assembly.FullName != null
                         && !assembly.FullName.Contains("Dynamic")
                         && !string.IsNullOrEmpty(assembly.Location))
