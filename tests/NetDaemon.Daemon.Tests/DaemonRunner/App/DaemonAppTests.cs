@@ -67,7 +67,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ACT
             var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
             // ASSERT
-            Assert.Equal(1, instances.Count());
+            Assert.Single(instances);
+            // Assert.Equal(1, instances.Count());
             Assert.NotNull(instances.FirstOrDefault() as INetDaemonApp);
         }
 

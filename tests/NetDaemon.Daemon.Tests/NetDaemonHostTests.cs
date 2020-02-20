@@ -242,7 +242,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ACT
             await DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
-            await Task.Delay(100);
+            await Task.Delay(150);
             await DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             // ASSERT
