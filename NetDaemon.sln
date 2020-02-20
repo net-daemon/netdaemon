@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomApp", "src\CustomApp\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "src\Service\Service.csproj", "{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDeamon.App", "src\App\NetDaemon.App\NetDeamon.App.csproj", "{A3651DE3-09DE-48E7-8DB4-18D95F60DAC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.App", "src\App\NetDaemon.App\NetDaemon.App.csproj", "{A3651DE3-09DE-48E7-8DB4-18D95F60DAC7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Daemon", "Daemon", "{42718370-2C75-4708-8C40-DD59D633C96E}"
 EndProject

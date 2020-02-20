@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\App\NetDaemon.App\NetDeamon.App.csproj" />
+    <ProjectReference Include="..\App\NetDaemon.App\NetDaemon.App.csproj" />
   </ItemGroup>
 
 </Project>

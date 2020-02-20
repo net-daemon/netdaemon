@@ -23,15 +23,17 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = hcMock.GetSourceWithTimeout();
             var isCalled = false;
-            var message = "";
-            
+            string? message = "";
+
             daemonHost
                 .Event("CUSTOM_EVENT")
-                    .Call(async (ev, data) => {
+                    .Call((ev, data) =>
+                    {
                         isCalled = true;
-                        message = data.Test;
+                        message = data?.Test;
+                        return Task.CompletedTask;
                     }).Execute();
-       
+
             try
             {
                 await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
@@ -46,7 +48,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task ACustomEventNullValueCallThrowsNullReferenceException()
+        public void ACustomEventNullValueCallThrowsNullReferenceException()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
@@ -73,13 +75,15 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = hcMock.GetSourceWithTimeout();
             var isCalled = false;
-            var message = "";
+            string? message = "";
 
             daemonHost
-                .Events(n=>n.EventId=="CUSTOM_EVENT")
-                    .Call(async (ev, data) => {
+                .Events(n => n.EventId == "CUSTOM_EVENT")
+                    .Call((ev, data) =>
+                    {
                         isCalled = true;
-                        message = data.Test;
+                        message = data?.Test;
+                        return Task.CompletedTask;
                     }).Execute();
 
             try
@@ -108,13 +112,15 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = hcMock.GetSourceWithTimeout();
             var isCalled = false;
-            var message = "";
+            string? message = "";
 
             daemonHost
-                .Events(n => n.EventId == "CUSTOM_EVENT" && n.Data.Test == "Hello World!")
-                    .Call(async (ev, data) => {
+                .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello World!")
+                    .Call((ev, data) =>
+                    {
                         isCalled = true;
-                        message = data.Test;
+                        message = data?.Test;
+                        return Task.CompletedTask;
                     }).Execute();
 
             try
@@ -143,13 +149,15 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = hcMock.GetSourceWithTimeout();
             var isCalled = false;
-            var message = "";
+            string? message = "";
 
             daemonHost
-                .Events(n => n.EventId == "CUSTOM_EVENT" && n.Data.Test == "Hello Test!")
-                    .Call(async (ev, data) => {
+                .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello Test!")
+                    .Call((ev, data) =>
+                    {
                         isCalled = true;
-                        message = data.Test;
+                        message = data?.Test;
+                        return Task.CompletedTask;
                     }).Execute();
 
             try
@@ -177,13 +185,15 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = hcMock.GetSourceWithTimeout();
             var isCalled = false;
-            var message = "";
+            string? message = "";
 
             daemonHost
-                .Events(n => n.EventId == "CUSTOM_EVENT" && n.Data.NotExist == "Hello Test!")
-                    .Call(async (ev, data) => {
+                .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.NotExist == "Hello Test!")
+                    .Call((ev, data) =>
+                    {
                         isCalled = true;
-                        message = data.Test;
+                        message = data?.Test;
+                        return Task.CompletedTask;
                     }).Execute();
 
             try

@@ -16,8 +16,12 @@ namespace NetDaemon.Daemon.Tests
         internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
         internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
 
+
         public HassClientMock()
         {
+            // diable warnings for this method
+#pragma warning disable 8619, 8620
+
             // Setup common mocks
             Setup(x => x.ConnectAsync(It.IsAny<string>(), It.IsAny<short>(), It.IsAny<bool>(),
                     It.IsAny<string>(), It.IsAny<bool>()))
@@ -240,9 +244,18 @@ namespace NetDaemon.Daemon.Tests
             Assert.Equal(hassState.LastChanged, entity.LastChanged);
             Assert.Equal(hassState.LastUpdated, entity.LastUpdated);
 
-            foreach (var attribute in hassState.Attributes.Keys)
+            if (hassState.Attributes?.Keys == null || entity.Attribute == null)
+                return;
+
+            foreach (var attribute in hassState.Attributes!.Keys)
+            {
+                var attr = entity.Attribute as IDictionary<string, object> ??
+                    throw new NullReferenceException($"{nameof(entity.Attribute)} catn be null");
+
+                Assert.True(attr.ContainsKey(attribute));
                 Assert.Equal(hassState.Attributes[attribute],
-                    ((IDictionary<string, object>)entity.Attribute)[attribute]);
+                    attr![attribute]);
+            }
         }
 
         /// <summary>

@@ -24,6 +24,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\App\NetDaemon.App\NetDeamon.App.csproj" />
+    <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
   </ItemGroup>
 </Project>

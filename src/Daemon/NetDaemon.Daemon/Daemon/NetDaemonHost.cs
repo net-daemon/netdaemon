@@ -320,7 +320,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public async Task Speak(string entityId, string message) => _ttsMessageQueue.Writer.TryWrite((entityId, message));
+        public void Speak(string entityId, string message) => _ttsMessageQueue.Writer.TryWrite((entityId, message));
 
         public async Task Stop()
         {

@@ -52,11 +52,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <returns></returns>
         public static EntityState ToDaemonEntityState(this HassState hassState)
         {
-            var entityState =  new EntityState()
+            var entityState = new EntityState()
             {
                 EntityId = hassState.EntityId,
                 State = hassState.State,
-               
+
                 LastUpdated = hassState.LastUpdated,
                 LastChanged = hassState.LastChanged
             };
@@ -65,26 +65,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             // Cast so we can work with the expando object
             var dict = entityState.Attribute as IDictionary<string, object>;
-            
-            if (dict == null) throw new ArgumentNullException(nameof(dict), 
+
+            if (dict == null) throw new ArgumentNullException(nameof(dict),
                 "Expando object should always be dictionary!");
 
             foreach (var (key, value) in hassState.Attributes)
             {
                 if (value is JsonElement elem)
                 {
-                    dict[key] = elem.ToDynamicValue();
+                    var dynValue = elem.ToDynamicValue();
+
+                    if (dynValue != null)
+                        dict[key] = dynValue;
                 }
                 else
                 {
                     dict[key] = value;
                 }
-                
+
             }
 
             return entityState;
         }
-        
+
         public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
         {
             // Convert the tuple name/value pair to tuple that can be serialized dynamically

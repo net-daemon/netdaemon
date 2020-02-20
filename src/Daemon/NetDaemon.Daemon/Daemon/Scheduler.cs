@@ -53,27 +53,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public DateTime StartTime { get; } = DateTime.MinValue;
 
 
-        /// <summary>
-        ///     Runs the function every milliseconds
-        /// </summary>
-        /// <remarks>
-        ///     It is safe to supress the task since it is handled internally in the scheduler
-        /// </remarks>
+        /// <inheritdoc/>
         public void RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
 
+        /// <inheritdoc/>
         public Task RunEveryAsync(int millisecondsDelay, Func<Task> func)
         {
             return RunEveryAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
-        /// <summary>
-        ///     Runs the function every TimeSpan
-        /// </summary>
-        /// <remarks>
-        ///     It is safe to supress the task since it is handled internally in the scheduler
-        /// </remarks>
+        /// <inheritdoc/>
         public void RunEvery(TimeSpan timeSpan, Func<Task> func) => RunEveryAsync(timeSpan, func);
 
+        /// <inheritdoc/>
         public Task RunEveryAsync(TimeSpan timeSpan, Func<Task> func)
         {
             var stopWatch = new Stopwatch();
@@ -119,7 +111,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         internal TimeSpan CalculateEveryMinuteTimeBetweenNowAndTargetTime(short second)
-        {   
+        {
             var now = _timeManager!.Current;
             if (now.Second > second)
             {
@@ -193,7 +185,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
           {
               while (!_cancelSource.IsCancellationRequested)
               {
-                  var now = _timeManager.Current;
+                  var now = _timeManager?.Current;
                   var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                   await _timeManager!.Delay(diff, _cancelSource.Token);
                   await func.Invoke();
@@ -208,27 +200,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
 
 
-        /// <summary>
-        ///     Runs the function in time set
-        /// </summary>
-        /// <remarks>
-        ///     It is safe to supress the task since it is handled internally in the scheduler
-        /// </remarks>
+        /// <inheritdoc/>
         public void RunIn(int millisecondsDelay, Func<Task> func) => RunInAsync(millisecondsDelay, func);
 
+        /// <inheritdoc/>
         public Task RunInAsync(int millisecondsDelay, Func<Task> func)
         {
             return RunInAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
-        /// <summary>
-        ///     Runs the function in timespan
-        /// </summary>
-        /// <remarks>
-        ///     It is safe to supress the task since it is handled internally in the scheduler
-        /// </remarks>
+        /// <inheritdoc/>
         public void RunIn(TimeSpan timeSpan, Func<Task> func) => RunInAsync(timeSpan, func);
 
+        /// <inheritdoc/>
         public Task RunInAsync(TimeSpan timeSpan, Func<Task> func)
         {
             var task = Task.Run(async () =>
@@ -242,7 +226,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return task;
         }
 
-
+        /// <summary>
+        ///     Stops the scheduler
+        /// </summary>
         public async Task Stop()
         {
             _cancelSource.Cancel();
@@ -281,7 +267,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     }
             }
             catch (OperationCanceledException)
-            {
+            {// Normal, just ignore
             }
 
         }
@@ -292,10 +278,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
     }
 
+    /// <summary>
+    ///     Abstract time functions to be able to mock
+    /// </summary>
     public class TimeManager : IManageTime
     {
+        /// <summary>
+        ///     Returns current local time
+        /// </summary>
+        /// <value></value>
         public DateTime Current { get; }
 
+        /// <summary>
+        ///     Delays a given timespan time
+        /// </summary>
+        /// <param name="timeSpan">Timespan to delay</param>
+        /// <param name="token">Cancelation token to cancel delay</param>
         public async Task Delay(TimeSpan timeSpan, CancellationToken token)
         {
             await Task.Delay(timeSpan, token);
