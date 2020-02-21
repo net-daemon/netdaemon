@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using YamlDotNet.RepresentationModel;
@@ -16,12 +17,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         private readonly YamlStream _yamlStream;
 
         private readonly List<INetDaemonApp> _instances;
-        public YamlAppConfig(IEnumerable<Type> types, TextReader reader)
+        private readonly YamlConfig _yamlConfig;
+        private readonly string _yamlFilePath;
+
+        public YamlAppConfig(IEnumerable<Type> types, TextReader reader, YamlConfig yamlConfig, string yamlFilePath)
         {
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
             _instances = new List<INetDaemonApp>();
+            _yamlConfig = yamlConfig;
+            _yamlFilePath = yamlFilePath;
         }
 
         public IEnumerable<INetDaemonApp> Instances
@@ -79,11 +85,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                 switch (valueType)
                 {
                     case YamlNodeType.Sequence:
-                        netDaemonApp.SetPropertyFromYaml(prop, (YamlSequenceNode)entry.Value);
+                        SetPropertyFromYaml(netDaemonApp, prop, (YamlSequenceNode)entry.Value);
                         break;
 
                     case YamlNodeType.Scalar:
-                        netDaemonApp.SetPropertyFromYaml(prop, (YamlScalarNode)entry.Value);
+                        SetPropertyFromYaml(netDaemonApp, prop, (YamlScalarNode)entry.Value);
                         break;
 
                     case YamlNodeType.Mapping:
@@ -94,6 +100,56 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             }
 
             return netDaemonApp;
+        }
+
+        public void SetPropertyFromYaml(INetDaemonApp app, PropertyInfo prop, YamlSequenceNode seq)
+        {
+            if (prop.PropertyType.IsGenericType && prop.PropertyType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                Type listType = prop.PropertyType?.GetGenericArguments()[0] ??
+                    throw new NullReferenceException($"The property {prop.Name} of Class {app.GetType().Name} is not compatible with configuration");
+
+                IList list = listType.CreateListOfPropertyType() ??
+                    throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
+
+                foreach (YamlNode item in seq.Children)
+                {
+                    if (item.NodeType != YamlNodeType.Scalar)
+                    {
+                        throw new NotSupportedException($"The property {prop.Name} of Class {app.GetType().Name} is not compatible with configuration");
+                    }
+                    var scalarNode = (YamlScalarNode)item;
+                    ReplaceSecretIfExists(scalarNode);
+                    var value = ((YamlScalarNode)item).ToObject(listType) ??
+                        throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} has wrong type in items");
+
+                    list.Add(value);
+
+                }
+                // Bind the list to the property
+                prop.SetValue(app, list);
+            }
+        }
+
+        private void ReplaceSecretIfExists(YamlScalarNode scalarNode)
+        {
+            if (scalarNode.Tag != "!secret" && scalarNode.Value != null)
+                return;
+
+            var secretReplacement = _yamlConfig.GetSecretFromPath(scalarNode.Value!, Path.GetDirectoryName(_yamlFilePath)!);
+
+            scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
+        }
+
+        public void SetPropertyFromYaml(INetDaemonApp app, PropertyInfo prop, YamlScalarNode sc)
+        {
+            ReplaceSecretIfExists(sc);
+            var scalarValue = sc.ToObject(prop.PropertyType) ??
+                throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} unexpected value {sc.Value} is wrong type");
+
+            // Bind the list to the property
+            prop.SetValue(app, scalarValue);
+
         }
 
         private string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
@@ -115,16 +171,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
     }
     public class YamlConfig
     {
-        private readonly string _configFixturePath;
+        private readonly string _configFolder;
         private readonly Dictionary<string, Dictionary<string, string>> _secrets;
 
-        public YamlConfig(string configFixturePath)
+        public YamlConfig(string codeFolder)
         {
-            _configFixturePath = configFixturePath;
-            _secrets = GetAllSecretsFromPath(_configFixturePath);
+            _configFolder = codeFolder;
+            _secrets = GetAllSecretsFromPath(_configFolder);
 
         }
 
+        internal IEnumerable<string> GetAllConfigFilePaths()
+        {
+            return Directory.EnumerateFiles(_configFolder, "*.yaml", SearchOption.AllDirectories);
+        }
         public string? GetSecretFromPath(string secret, string configPath)
         {
 
@@ -135,7 +195,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                     return _secrets[configPath][secret];
                 }
             }
-            if (configPath != _configFixturePath)
+            if (configPath != _configFolder)
             {
                 return GetSecretFromPath(secret, Directory.GetParent(configPath).FullName);
             }
@@ -194,7 +254,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             }
             return result;
         }
-
 
 
     }

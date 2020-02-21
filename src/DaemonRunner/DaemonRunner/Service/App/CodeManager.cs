@@ -167,10 +167,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         private readonly string _codeFolder;
 
         private readonly IList<Type> _loadedDaemonApps;
+        private readonly YamlConfig _yamlConfig;
+
         public CodeManager(string codeFolder)
         {
             _codeFolder = codeFolder;
             _loadedDaemonApps = new List<Type>(100);
+
+            _yamlConfig = new YamlConfig(codeFolder);
 
             LoadLocalAssemblyApplicationsForDevelopment();
 
@@ -186,11 +190,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             _ = (host as INetDaemon) ?? throw new ArgumentNullException(nameof(host));
 
             var result = new List<INetDaemonApp>();
-            foreach (string file in Directory.EnumerateFiles(_codeFolder, "*.yaml", SearchOption.AllDirectories))
+            foreach (string file in _yamlConfig.GetAllConfigFilePaths())
             {
-                var appInstances = DaemonAppTypes.InstancesFromYamlConfig(File.OpenText(file));
+                var yamlAppConfig = new YamlAppConfig(DaemonAppTypes, File.OpenText(file), _yamlConfig, file);
 
-                foreach (var appInstance in appInstances)
+                foreach (var appInstance in yamlAppConfig.Instances)
                 {
                     result.Add(appInstance);
                     appInstance.StartUpAsync(host!);

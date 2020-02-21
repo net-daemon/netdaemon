@@ -26,50 +26,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
     public static class YamlExtensions
     {
-        public static void SetPropertyFromYaml(this INetDaemonApp app, PropertyInfo prop, YamlSequenceNode seq)
-        {
-            if (prop.PropertyType.IsGenericType && prop.PropertyType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            {
-                Type listType = prop.PropertyType?.GetGenericArguments()[0] ??
-                    throw new NullReferenceException($"The property {prop.Name} of Class {app.GetType().Name} is not compatible with configuration");
 
-                IList list = listType.CreateListOfPropertyType() ??
-                    throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
-
-                foreach (YamlNode item in seq.Children)
-                {
-                    if (item.NodeType != YamlNodeType.Scalar)
-                    {
-                        throw new NotSupportedException($"The property {prop.Name} of Class {app.GetType().Name} is not compatible with configuration");
-                    }
-
-                    var value = ((YamlScalarNode)item).ToObject(listType) ??
-                        throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} has wrong type in items");
-
-                    list.Add(value);
-
-                }
-                // Bind the list to the property
-                prop.SetValue(app, list);
-            }
-        }
-
-        public static void SetPropertyFromYaml(this INetDaemonApp app, PropertyInfo prop, YamlScalarNode sc)
-        {
-
-            var scalarValue = sc.ToObject(prop.PropertyType) ??
-                throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} unexpected value {sc.Value} is wrong type");
-
-            // Bind the list to the property
-            prop.SetValue(app, scalarValue);
-
-        }
-
-        public static IEnumerable<INetDaemonApp> InstancesFromYamlConfig(this IEnumerable<Type> types, TextReader reader)
-        {
-            var yamlAppConfig = new YamlAppConfig(types, reader);
-            return yamlAppConfig.Instances;
-        }
+        // public static IEnumerable<INetDaemonApp> InstancesFromYamlConfig(this IEnumerable<Type> types, TextReader reader, YamlConfig yamlConfig)
+        // {
+        //     var yamlAppConfig = new YamlAppConfig(types, reader, yamlConfig);
+        //     return yamlAppConfig.Instances;
+        // }
 
         public static PropertyInfo? GetYamlProperty(this Type type, string propertyName)
         {
