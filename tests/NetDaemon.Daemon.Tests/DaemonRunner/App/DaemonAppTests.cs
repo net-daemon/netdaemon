@@ -61,10 +61,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigShouldReturnCorrectType()
         {
             // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n\tclass: AssmeblyDaemonApp";
             // ACT
-            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             // ASSERT
             Assert.Single(instances);
             // Assert.Equal(1, instances.Count());
@@ -75,10 +76,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigNotFoundShouldReturnNull()
         {
             // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n\tclass: NotFoundApp";
             // ACT
-            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             // ASSERT
             Assert.Empty(instances);
         }
@@ -87,6 +89,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigShouldHaveCorrectProperties()
         {
             // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
 app:
@@ -98,7 +101,7 @@ app:
         - string 2
 ";
             // ACT
-            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
@@ -107,9 +110,34 @@ app:
         }
 
         [Fact]
+        public void InstanceAppFromConfigWithSecretsShouldHaveCorrectProperties()
+        {
+            // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
+            var yamlConfig = @"
+app:
+    class: AssmeblyDaemonApp
+    test_secret_string: !secret a_secret_string
+    test_secret_int: !secret a_secret_int
+    test_normal_string: not a secret string
+    test_normal_int: 0
+";
+            // ACT
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object,
+                Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs")).Instances;
+            var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
+            // ASSERT
+            Assert.Equal("this is a secret string", instance?.TestSecretString);
+            Assert.Equal(99, instance?.TestSecretInt);
+            Assert.Equal(0, instance?.TestNormalInt);
+        }
+
+        [Fact]
         public void InstanceAppFromConfigShouldHaveCorrectPropertiesCamelCaseConvert()
         {
             // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
 app:
@@ -121,7 +149,7 @@ app:
         - string 2
 ";
             // ACT
-            var instances = types.InstancesFromYamlConfig(new StringReader(yamlConfig));
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
@@ -166,7 +194,7 @@ app:
         public void InstanceAndInitApplicationWithNullShouldThrowArgumentNullException()
         {
             // ARRANGE
-            var codeManager = new CodeManager("");
+            var codeManager = new CodeManager(ConfigFixturePath);
             // ACT/ASSERT
             Assert.Throws<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
 
