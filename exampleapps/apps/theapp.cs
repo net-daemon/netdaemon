@@ -22,4 +22,9 @@ public class TheApp : NetDaemonApp
         return Task.CompletedTask;
     }
 
+    [HomeAssistantServiceCall]
+    public async Task CallMeFromHass(dynamic data)
+    {
+        Log("A call from hass!");
+    }
 }

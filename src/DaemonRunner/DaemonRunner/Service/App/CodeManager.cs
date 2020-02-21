@@ -199,6 +199,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     result.Add(appInstance);
                     appInstance.StartUpAsync(host!);
                     appInstance.InitializeAsync();
+                    appInstance.HandleAttributeInitialization(host!);
                     host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
                 }
 
