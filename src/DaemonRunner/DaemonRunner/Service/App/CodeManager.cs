@@ -231,7 +231,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 foreach (var csFile in GetCsFiles(_codeFolder))
                 {
                     var sourceText = SourceText.From(File.ReadAllText(csFile));
-                    var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText);
+                    var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
                     syntaxTrees.Add(syntaxTree);
                 }
 

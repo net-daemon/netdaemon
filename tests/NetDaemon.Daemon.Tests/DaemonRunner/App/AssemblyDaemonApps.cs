@@ -26,11 +26,21 @@ public class AssmeblyDaemonApp : NetDaemonApp
 
     #endregion
 
+    // For testing
+    public bool HandleServiceCallIsCalled { get; set; } = false;
     public override Task InitializeAsync()
     {
         // Do nothing
 
         return Task.CompletedTask;
     }
+
+    [HomeAssistantServiceCall]
+    public Task HandleServiceCall(dynamic data)
+    {
+        HandleServiceCallIsCalled = true;
+        return Task.CompletedTask;
+    }
+
 
 }

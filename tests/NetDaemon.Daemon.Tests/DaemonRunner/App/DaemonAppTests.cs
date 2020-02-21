@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
@@ -198,6 +200,26 @@ app:
             // ACT/ASSERT
             Assert.Throws<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
 
+        }
+
+        [Fact]
+        public void AttributeServiceCallShouldFindCorrectFunction()
+        {
+            // ARRANGE
+            var app = new AssmeblyDaemonApp();
+            var netDaemonMock = new Mock<INetDaemon>();
+
+            // ACT
+            app.HandleAttributeInitialization(netDaemonMock.Object);
+
+            // ASSERT
+            var expObject = new ExpandoObject();
+            dynamic data = expObject;
+            data.method = "HandleServiceCall";
+            data.@class = "AssmeblyDaemonApp";
+
+            netDaemonMock.Verify(n => n.CallService("netdaemon", "register_service", expObject, false), Times.Once);
+            netDaemonMock.Verify(n => n.ListenServiceCall("netdaemon", "AssmeblyDaemonApp_HandleServiceCall", It.IsAny<Func<dynamic?, Task>>()), Times.Once);
         }
     }
 
