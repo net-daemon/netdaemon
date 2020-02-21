@@ -127,12 +127,12 @@ namespace NetDaemon.Daemon.Tests
             var mockTimeManager = new TimeManagerMock(startTime);
 
             var scheduler = new Scheduler(mockTimeManager.Object);
-            
-            var calculatedDelay =  scheduler.CalculateEveryMinuteTimeBetweenNowAndTargetTime(targetSeconds);
+
+            var calculatedDelay = scheduler.CalculateEveryMinuteTimeBetweenNowAndTargetTime(targetSeconds);
 
             Assert.Equal(expectedDelaySeconds, calculatedDelay.TotalSeconds);
         }
-        
+
 
         [Fact]
         public async void TestRunDailyUsingStartTimeCallsFuncCorrectly()
@@ -189,12 +189,12 @@ namespace NetDaemon.Daemon.Tests
                nrOfRuns++;
                await Task.Delay(1);
            });
-            await Task.Delay(600);
+            await Task.Delay(300);
 
             // ASSERT
-            Assert.True(nrOfRuns == 0);
-            await Task.Delay(500);
-            Assert.True(nrOfRuns == 1);
+            Assert.Equal(0, nrOfRuns);
+            await Task.Delay(1500);
+            Assert.True(nrOfRuns >= 1);
 
             await scheduler.Stop();
             try

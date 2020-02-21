@@ -434,10 +434,10 @@ namespace NetDaemon.Daemon.Tests
                 .TurnOff()
                 .Execute();
 
-            await RunDefauldDaemonUntilCanceled();
+            await RunDefauldDaemonUntilCanceled(200);
 
             // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.AtLeast(4));
+            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.AtLeast(2));
             DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_light"));
         }
 
