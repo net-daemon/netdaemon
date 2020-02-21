@@ -38,7 +38,7 @@ After you have developed and tested you app you want to copy the whole app to th
 
 Now you can start the plugin, check the logs for any errors.
 
-> **IMPORTANT - YOU NEED TO RESTART THE ADD-ON EVERYTIME YOU MAKE CHANGES TO A FILE. THIS WILL CHANGE IN FUTURE RELEASES!**
+> **IMPORTANT - YOU NEED TO RESTART THE ADD-ON EVERYTIME YOU MAKE CHANGES TO A FILE SINCE C# COMPILES**
 
 ## Check out the examples in docs
 

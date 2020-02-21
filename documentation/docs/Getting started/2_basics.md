@@ -52,7 +52,7 @@ I provide some code snippets to create a new app. Check it out.. In vscode, in t
 NetDaemon is built on .NET and c# async model. It is important that you read up on async programming model. But here is some basics!
 
 ### Use the await keyword
-Whenever you see a function return a `Task` and mostly these functions has the prefix `Async`. Use the keyword `await` before calling. Example using the fluent API below:
+Whenever you see a function return a `Task` and mostly these functions has the postfix `Async`. Use the keyword `await` before calling. Example using the fluent API below:
 
 ```c#
 private async Task MyAsyncFunctionDoingStuff()

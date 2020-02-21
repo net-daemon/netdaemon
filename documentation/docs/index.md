@@ -20,7 +20,7 @@ The daemon is currently only distributed through Hassio add-on but a docker cont
 
 Please see [the getting started](/netdaemon/Getting%20started/getting%20started/) documentation for setup.
 
-> **IMPORTANT - YOU NEED TO RESTART THE ADD-ON EVERYTIME YOU MAKE CHANGES TO A FILE. THIS WILL CHANGE IN FUTURE RELEASES!**
+> **IMPORTANT - YOU NEED TO RESTART THE ADD-ON EVERYTIME YOU MAKE CHANGES TO A FILE**
 
 ## Async model
 
