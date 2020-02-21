@@ -18,7 +18,7 @@ Only amd64 (non arm) is currently supported but ARM devices as Raspberry PI will
 
 The daemon is currently only distributed through Hassio add-on but a docker container and instruction to run locally will be provided in time.
 
-Please see [the getting started](/netdaemon/Getting%20started/getting%20started/) documentation for setup.
+Please see [the getting started](/netdaemon/Getting%20started/1_getting%20started/) documentation for setup.
 
 > **IMPORTANT - YOU NEED TO RESTART THE ADD-ON EVERYTIME YOU MAKE CHANGES TO A FILE**
 
