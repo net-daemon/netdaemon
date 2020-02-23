@@ -20,7 +20,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
             _dataStoragePath = dataStoragePath;
 
             _jsonOptions = new JsonSerializerOptions();
-            _jsonOptions.Converters.Add(new ExpandoObjectConverter());
+            _jsonOptions.Converters.Add(new ExpandoDictionaryConverter());
 
         }
 
@@ -35,8 +35,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
 
                 return await JsonSerializer.DeserializeAsync<T>(jsonStream, _jsonOptions);
             }
-            catch // Ignore all errors for now
-            { }
+            catch  // Ignore all errors for now
+            {
+            }
 #pragma warning disable CS8603, CS8653
             return default(T);
 #pragma warning restore CS8603, CS8653
@@ -64,15 +65,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
 
     }
 
-    public class ExpandoObjectConverter : JsonConverter<ExpandoObject>
+    public class ExpandoDictionaryConverter : JsonConverter<Dictionary<string, object>>
     {
-        public override ExpandoObject Read(
+        public override Dictionary<string, object> Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
             JsonSerializerOptions options)
         {
-            var dict = JsonSerializer.Deserialize<IDictionary<string, object>>(ref reader, options);
-            var returnObject = new ExpandoObject();
+            var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(ref reader);
+            var returnObject = new Dictionary<string, object>();
             var returnDict = (IDictionary<string, object>)returnObject;
             foreach (var x in dict.Keys)
             {
@@ -86,9 +87,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
 
         public override void Write(
             Utf8JsonWriter writer,
-            ExpandoObject value,
-            JsonSerializerOptions options) =>
-            throw new InvalidOperationException("Serialization not supported for the class EventMessage.");
+            Dictionary<string, object> value,
+            JsonSerializerOptions options)
+        {
+            JsonSerializer.Serialize<Dictionary<string, object>>(writer, value, options);
+        }
     }
 
     public static class ExpandoExtensions

@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
 using Xunit;
@@ -67,17 +69,21 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             var dataRepository = new DataRepository(DataReposityryPath);
-            dynamic dataBeingSaved = new ExpandoObject();
+            dynamic dataBeingSaved = new FluentExpandoObject(false, true);
             var utcNow = DateTime.UtcNow;
             dataBeingSaved.SomeString = "this data should be saved!";
             dataBeingSaved.SomeInt = 123456;
             dataBeingSaved.SomeFloat = 1.23456;
             dataBeingSaved.SomeDateTime = utcNow;
-            // ACT
-            await dataRepository.Save<ExpandoObject>("RepositoryLoadSavedData_id", dataBeingSaved);
 
-            var dataReturned = await dataRepository.Get<ExpandoObject>("RepositoryLoadSavedData_id");
-            dynamic dynamicDataReturned = dataReturned;
+            // ACT
+            await dataRepository.Save<IDictionary<string, object>>("RepositoryLoadSavedData_id", dataBeingSaved);
+
+            var dataReturned = await dataRepository.Get<IDictionary<string, object>>("RepositoryLoadSavedData_id");
+            var returnedFluentExpandoObject = new FluentExpandoObject();
+            returnedFluentExpandoObject.CopyFrom(dataReturned);
+
+            dynamic dynamicDataReturned = returnedFluentExpandoObject;
             // ASSERT
             Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned!.SomeString);
             Assert.Equal(dataBeingSaved.SomeInt, dynamicDataReturned!.SomeInt);

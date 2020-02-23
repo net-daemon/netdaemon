@@ -83,7 +83,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 {
                                     // Instance all apps
                                     var codeManager = new CodeManager(sourceFolder);
-                                    codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost);
+                                    await codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost);
                                 }
                                 catch (Exception e)
                                 {

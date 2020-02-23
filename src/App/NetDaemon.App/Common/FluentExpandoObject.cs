@@ -182,14 +182,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Copy all items from  FluentExpandoObject
         /// </summary>
         /// <param name="obj">The object to copy from</param>
-        public dynamic CopyFrom(FluentExpandoObject obj)
+        public dynamic CopyFrom(IDictionary<string, object> obj)
         {
             // Clear any items before copy
             Clear();
 
-            obj._dict
-                .ToList()
-                .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
+            foreach (var keyValuePair in obj)
+            {
+                UpdateDictionary(keyValuePair.Key, keyValuePair.Value);
+            }
+
             return this;
         }
 

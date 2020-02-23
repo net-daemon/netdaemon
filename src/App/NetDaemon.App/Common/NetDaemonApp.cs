@@ -206,7 +206,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     // Dont care about the result, just that it is time to store state
                     _ = await _lazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token);
 
-                    await _daemon!.SaveDataAsync<FluentExpandoObject>(GetUniqueIdForStorage(), (FluentExpandoObject)Storage);
+                    await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage);
                 }
                 catch { }   // Ignore errors in thread
             }
@@ -226,7 +226,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
-            var obj = await _daemon!.GetDataAsync<FluentExpandoObject>(GetUniqueIdForStorage());
+            var obj = await _daemon!.GetDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage());
 
             if (obj != null)
             {

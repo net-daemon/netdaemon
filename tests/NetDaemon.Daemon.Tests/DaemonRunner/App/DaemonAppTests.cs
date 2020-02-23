@@ -251,7 +251,7 @@ app:
             var expected = new FluentExpandoObject();
             expected["Data"] = data;
             Assert.Equal(data, instance.Storage.Data);
-            daemonMock.Verify(n => n.SaveDataAsync<FluentExpandoObject>("assmeblydaemonapp_somefake_id", expected), Times.Once);
+            daemonMock.Verify(n => n.SaveDataAsync<IDictionary<string, object>>("assmeblydaemonapp_somefake_id", expected), Times.Once);
         }
 
         [Fact]
@@ -271,7 +271,8 @@ app:
             var storageItem = new FluentExpandoObject();
             storageItem["Data"] = "SomeData";
 
-            daemonMock.Setup(n => n.GetDataAsync<FluentExpandoObject>(It.IsAny<string>())).ReturnsAsync(storageItem);
+            daemonMock.Setup(n => n.GetDataAsync<IDictionary<string, object>>(It.IsAny<string>()))
+                .ReturnsAsync((IDictionary<string, object>)storageItem);
 
             await instance!.StartUpAsync(daemonMock.Object);
 

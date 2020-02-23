@@ -19,6 +19,8 @@ public class TheApp : NetDaemonApp
     {
         // Do nothing
 
+        Storage.Test = 1 + this.Storage.Test ?? 0;
+        Log($"Storage : {Storage.Test}");
         return Task.CompletedTask;
     }
 
