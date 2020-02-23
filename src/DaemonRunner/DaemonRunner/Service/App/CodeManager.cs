@@ -185,7 +185,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps;
 
-        public IEnumerable<INetDaemonApp> InstanceAndInitApplications(INetDaemon? host)
+        public async Task<IEnumerable<INetDaemonApp>> InstanceAndInitApplications(INetDaemon? host)
         {
             _ = (host as INetDaemon) ?? throw new ArgumentNullException(nameof(host));
 
@@ -197,8 +197,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 foreach (var appInstance in yamlAppConfig.Instances)
                 {
                     result.Add(appInstance);
-                    appInstance.StartUpAsync(host!);
-                    appInstance.InitializeAsync();
+                    await appInstance.StartUpAsync(host!);
+                    await appInstance.RestoreAppStateAsync();
+                    await appInstance.InitializeAsync();
                     appInstance.HandleAttributeInitialization(host!);
                     host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
                 }

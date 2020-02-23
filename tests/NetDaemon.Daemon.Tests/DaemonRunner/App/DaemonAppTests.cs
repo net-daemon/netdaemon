@@ -173,7 +173,7 @@ app:
             // ACT
             var codeManager = new CodeManager(path);
             // ASSERT
-            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Count());
+            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
         }
 
 
@@ -189,16 +189,16 @@ app:
             // ACT
             var codeManager = new CodeManager(path);
             // ASSERT
-            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Count());
+            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
         }
 
         [Fact]
-        public void InstanceAndInitApplicationWithNullShouldThrowArgumentNullException()
+        public async Task InstanceAndInitApplicationWithNullShouldThrowArgumentNullException()
         {
             // ARRANGE
             var codeManager = new CodeManager(ConfigFixturePath);
             // ACT/ASSERT
-            Assert.Throws<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
 
         }
 
