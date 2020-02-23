@@ -245,7 +245,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACT
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
-            await Task.Delay(100);
+            await Task.Delay(80);
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             // ASSERT
@@ -253,7 +253,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // Called once after 150 ms
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Once);
 
-            await Task.Delay(100);
+            await Task.Delay(200);
 
             // Called twice after 250ms
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Exactly(2));
