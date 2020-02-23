@@ -113,7 +113,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         internal TimeSpan CalculateEveryMinuteTimeBetweenNowAndTargetTime(short second)
         {
             var now = _timeManager!.Current;
-            if (now.Second > second)
+            if (now.Second >= second)
             {
                 return TimeSpan.FromSeconds(60 - now.Second + second);
             }
@@ -263,7 +263,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         ///     Returns current local time
         /// </summary>
         /// <value></value>
-        public DateTime Current { get; }
+        public DateTime Current => DateTime.Now;
 
         /// <summary>
         ///     Delays a given timespan time

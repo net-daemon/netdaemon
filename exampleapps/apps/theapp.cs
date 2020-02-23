@@ -18,15 +18,14 @@ public class TheApp : NetDaemonApp
     public override Task InitializeAsync()
     {
         // Do nothing
-
-        Storage.Test = 1 + this.Storage.Test ?? 0;
-        Log($"Storage : {Storage.Test}");
+        Scheduler.RunDaily("11:41:10", async () => Log($"Time! {DateTime.Now}"));
+        Scheduler.RunEveryMinute(30, async () => Log($"{DateTime.Now}"));
         return Task.CompletedTask;
     }
 
-    [HomeAssistantServiceCall]
-    public async Task CallMeFromHass(dynamic data)
-    {
-        Log("A call from hass!");
-    }
+    // [HomeAssistantServiceCall]
+    // public async Task CallMeFromHass(dynamic data)
+    // {
+    //     Log("A call from hass!");
+    // }
 }
