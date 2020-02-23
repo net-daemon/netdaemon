@@ -84,6 +84,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Task RunDailyAsync(string time, Func<Task> func);
 
         /// <summary>
+        ///     Run daily tasks
+        /// </summary>
+        /// <param name="time">The time in the format HH:mm:ss</param>
+        /// <param name="func">The action to run</param>
+        /// <param name="runOnDays">A list of days the scheduler will run on</param>
+        /// <returns></returns>
+        void RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func);
+
+        /// <summary>
+        ///     Run daily tasks
+        /// </summary>
+        /// <param name="time">The time in the format HH:mm:ss</param>
+        /// <param name="func">The action to run</param>
+        /// <param name="runOnDays">A list of days the scheduler will run on</param>
+        /// <returns></returns>
+        Task RunDailyAsync(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func);
+
+        /// <summary>
         ///      Run task every minute at given second
         /// </summary>
         /// <param name="second">The second in a minute to start (0-59)</param>

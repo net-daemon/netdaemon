@@ -100,7 +100,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         internal TimeSpan CalculateDailyTimeBetweenNowAndTargetTime(DateTime targetTime)
         {
             var now = _timeManager!.Current;
-
             var timeToTrigger = new DateTime(now.Year, now.Month, now.Day, targetTime.Hour, targetTime.Minute, targetTime.Second);
 
             if (now > timeToTrigger)
@@ -123,9 +122,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <inheritdoc/>
         public void RunDaily(string time, Func<Task> func) => RunDailyAsync(time, func);
 
+        /// <inheritdoc/>
+        public void RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func) =>
+            RunDailyAsync(time, runOnDays, func);
 
         /// <inheritdoc/>
-        public Task RunDailyAsync(string time, Func<Task> func)
+        public Task RunDailyAsync(string time, Func<Task> func) => RunDailyAsync(time, null, func);
+
+        /// <inheritdoc/>
+        public Task RunDailyAsync(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
         {
             DateTime timeOfDayToTrigger;
             if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
@@ -135,15 +140,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
 
             var task = Task.Run(async () =>
-           {
-               while (!_cancelSource.IsCancellationRequested)
-               {
+            {
+                while (!_cancelSource.IsCancellationRequested)
+                {
+                    var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
+                    await _timeManager!.Delay(diff, _cancelSource.Token);
 
-                   var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
-                   await _timeManager!.Delay(diff, _cancelSource.Token);
-                   await func.Invoke();
-               }
-           }, _cancelSource.Token);
+                    if (runOnDays != null)
+                    {
+                        if (runOnDays.Contains(_timeManager!.Current.DayOfWeek))
+                            await func.Invoke();
+                    }
+                    else
+                    {
+                        // No constraints on day of week
+                        await func.Invoke();
+                    }
+                }
+            }, _cancelSource.Token);
 
             ScheduleTask(task);
 
@@ -151,7 +165,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-
         public void RunEveryMinute(short second, Func<Task> func) => RunEveryMinuteAsync(second, func);
 
         /// <inheritdoc/>

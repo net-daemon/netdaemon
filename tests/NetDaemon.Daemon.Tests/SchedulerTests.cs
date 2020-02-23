@@ -170,6 +170,89 @@ namespace NetDaemon.Daemon.Tests
             }
         }
 
+        [Theory]
+        [InlineData("2001-02-03 10:00:00", DayOfWeek.Saturday)]
+        [InlineData("2001-02-04 10:00:00", DayOfWeek.Sunday)]
+        [InlineData("2001-02-05 10:00:00", DayOfWeek.Monday)]
+        [InlineData("2001-02-06 10:00:00", DayOfWeek.Tuesday)]
+        [InlineData("2001-02-07 10:00:00", DayOfWeek.Wednesday)]
+        [InlineData("2001-02-08 10:00:00", DayOfWeek.Thursday)]
+        [InlineData("2001-02-09 10:00:00", DayOfWeek.Friday)]
+        public async void TestRunDailyUsingStartTimeOnWeekdayCallsFuncCorrectly(string time, DayOfWeek dayOfWeek)
+        {
+            // ARRANGE
+            var startTime = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+
+            var nrOfRuns = 0;
+
+            // ACT
+            var runTask = scheduler.RunDailyAsync("10:00:01", new DayOfWeek[] { dayOfWeek }, async () =>
+              {
+                  nrOfRuns++;
+                  await Task.Delay(1);
+              });
+            await Task.Delay(600);
+
+            // ASSERT
+            Assert.True(nrOfRuns == 0);
+            await Task.Delay(500);
+            Assert.True(nrOfRuns == 1);
+
+            await scheduler.Stop();
+            try
+            {
+                await runTask;
+            }
+            catch
+            {
+            }
+        }
+
+        [Theory]
+        [InlineData("2001-02-03 10:00:00")]
+        [InlineData("2001-02-04 10:00:00")]
+        [InlineData("2001-02-06 10:00:00")]
+        [InlineData("2001-02-07 10:00:00")]
+        [InlineData("2001-02-08 10:00:00")]
+        [InlineData("2001-02-09 10:00:00")]
+        public async void TestRunDailyUsingStartTimeOnWeekdayNotCalled(string time)
+        {
+            // ARRANGE
+            var startTime = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+
+            var scheduler = new Scheduler(mockTimeManager.Object);
+
+            var nrOfRuns = 0;
+
+            // ACT
+            var runTask = scheduler.RunDailyAsync("10:00:01", new DayOfWeek[] { DayOfWeek.Monday }, async () =>
+              {
+                  nrOfRuns++;
+                  await Task.Delay(1);
+              });
+            await Task.Delay(600);
+
+            // ASSERT
+            Assert.True(nrOfRuns == 0);
+            await Task.Delay(500);
+            Assert.False(nrOfRuns == 1);
+
+            await scheduler.Stop();
+            try
+            {
+                await runTask;
+            }
+            catch
+            {
+            }
+        }
+
         [Fact]
         public async void TestRunEveryMinuteStartTimeCallsFuncCorrectly()
         {

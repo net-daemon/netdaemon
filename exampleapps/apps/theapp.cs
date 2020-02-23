@@ -17,9 +17,23 @@ public class TheApp : NetDaemonApp
 
     public override Task InitializeAsync()
     {
-        // Do nothing
-        Scheduler.RunDaily("11:41:10", async () => Log($"Time! {DateTime.Now}"));
-        Scheduler.RunEveryMinute(30, async () => Log($"{DateTime.Now}"));
+        // var time = "14:06:10";
+        // // Do nothing
+        // Scheduler.RunDaily(time, new DayOfWeek[]
+        // {
+        //     DayOfWeek.Monday,
+        //     DayOfWeek.Tuesday,
+        //     DayOfWeek.Wednesday,
+        //     DayOfWeek.Thursday,
+        //     DayOfWeek.Friday,
+        //     DayOfWeek.Saturday
+        // }, async () => Log($"Time! {DateTime.Now}"));
+
+        // Scheduler.RunDaily(time, new DayOfWeek[]
+        // {
+        //     DayOfWeek.Sunday,
+        // }, async () => Log($"This is correct time! {DateTime.Now}"));
+        // Scheduler.RunEveryMinute(30, async () => Log($"{DateTime.Now}"));
         return Task.CompletedTask;
     }
 
