@@ -67,5 +67,41 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="func">The function to run</param>
         void RunIn(TimeSpan timeSpan, Func<Task> func);
 
+        /// <summary>
+        ///     Run daily tasks
+        /// </summary>
+        /// <param name="time">The time in the format HH:mm:ss</param>
+        /// <param name="func">The action to run</param>
+        /// <returns></returns>
+        void RunDaily(string time, Func<Task> func);
+
+        /// <summary>
+        ///     Run daily tasks
+        /// </summary>
+        /// <param name="time">The time in the format HH:mm:ss</param>
+        /// <param name="func">The action to run</param>
+        /// <returns></returns>
+        Task RunDailyAsync(string time, Func<Task> func);
+
+        /// <summary>
+        ///      Run task every minute at given second
+        /// </summary>
+        /// <param name="second">The second in a minute to start (0-59)</param>
+        /// <param name="func">The task to run</param>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        void RunEveryMinute(short second, Func<Task> func) => RunEveryMinuteAsync(second, func);
+
+        /// <summary>
+        ///      Run task every minute at given second
+        /// </summary>
+        /// <param name="second">The second in a minute to start (0-59)</param>
+        /// <param name="func">The task to run</param>
+        /// <remarks>
+        ///     It is safe to supress the task since it is handled internally in the scheduler
+        /// </remarks>
+        Task RunEveryMinuteAsync(short second, Func<Task> func);
+
     }
 }
