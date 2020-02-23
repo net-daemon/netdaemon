@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Daemon
 {
     public class NetDaemonTests : DaemonHostTestaBase
     {
@@ -148,7 +148,7 @@ namespace NetDaemon.Daemon.Tests
 
             // ACT and ASSERT
             Assert.Throws<ArgumentNullException>(() =>
-                { var DefaultDaemonHost = new NetDaemonHost(null); });
+                { var DefaultDaemonHost = new NetDaemonHost(null, null); });
         }
 
         [Fact]

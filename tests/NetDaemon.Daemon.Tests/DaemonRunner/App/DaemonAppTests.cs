@@ -221,6 +221,67 @@ app:
             netDaemonMock.Verify(n => n.CallService("netdaemon", "register_service", expObject, false), Times.Once);
             netDaemonMock.Verify(n => n.ListenServiceCall("netdaemon", "AssmeblyDaemonApp_HandleServiceCall", It.IsAny<Func<dynamic?, Task>>()), Times.Once);
         }
+
+        [Theory]
+        [InlineData("Some string")] //string
+        [InlineData(10)]            //integer
+        [InlineData(100.5)]         //float
+        public async Task StorageShouldReturnSameValueAsSet(object data)
+        {
+            // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
+            var yamlConfig = @"
+        app:
+            class: AssmeblyDaemonApp
+        ";
+
+            var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
+            var daemonMock = new Mock<INetDaemon>();
+            await instance!.StartUpAsync(daemonMock.Object);
+            instance!.Id = "somefake_id";
+            await Task.Delay(50); // Delay to get the task up and running
+
+            // ACT
+            instance!.Storage.Data = data;
+
+            await Task.Delay(50); // Delay to let the task save state
+
+            // ASSERT
+            var expected = new FluentExpandoObject();
+            expected["Data"] = data;
+            Assert.Equal(data, instance.Storage.Data);
+            daemonMock.Verify(n => n.SaveDataAsync<FluentExpandoObject>("assmeblydaemonapp_somefake_id", expected), Times.Once);
+        }
+
+        [Fact]
+        public async Task StorageShouldRestoreWithCorrectValues()
+        {
+            // ARRANGE
+            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
+            var yamlConfig = @"
+        app:
+            class: AssmeblyDaemonApp
+        ";
+
+            var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
+            var daemonMock = new Mock<INetDaemon>();
+
+            var storageItem = new FluentExpandoObject();
+            storageItem["Data"] = "SomeData";
+
+            daemonMock.Setup(n => n.GetDataAsync<FluentExpandoObject>(It.IsAny<string>())).ReturnsAsync(storageItem);
+
+            await instance!.StartUpAsync(daemonMock.Object);
+
+            // ACT
+            await instance.RestoreAppStateAsync();
+
+            // ASSERT
+            Assert.Equal("SomeData", instance.Storage.Data);
+        }
+
     }
 
 

@@ -3,6 +3,7 @@ using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -52,7 +53,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
             var cancelSource = hcMock.GetSourceWithTimeout();
 
@@ -67,7 +68,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -104,7 +105,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -141,7 +142,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -177,7 +178,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object);
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 

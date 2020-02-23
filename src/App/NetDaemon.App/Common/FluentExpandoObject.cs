@@ -16,6 +16,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
         private readonly Dictionary<string, object> _dict = new Dictionary<string, object>();
+        private readonly INetDaemonApp? _daemonApp;
         private readonly bool _ignoreCase;
         private readonly bool _returnNullMissingProperties;
 
@@ -25,10 +26,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="ignoreCase">Don't be strict about property name casing.</param>
         /// <param name="returnNullMissingProperties">If true, returns String.Empty for missing properties.</param>
         /// <param name="root">An ExpandoObject to consume and expose.</param>
+        /// <param name="daemon">A NetDaemon object used for persistanse</param>
         public FluentExpandoObject(bool ignoreCase = false,
             bool returnNullMissingProperties = false,
-            ExpandoObject? root = null)
+            ExpandoObject? root = null, INetDaemonApp? daemon = null)
         {
+            _daemonApp = daemon;
             _ignoreCase = ignoreCase;
             _returnNullMissingProperties = returnNullMissingProperties;
             if (root != null) Augment(root);
@@ -125,6 +128,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             UpdateDictionary(binder.Name, value);
+            if (_daemonApp != null)
+            {
+                // It is supposed to persist, this is the only reason _daemon is present
+                _daemonApp.SaveAppState();
+            }
             return true;
         }
 
@@ -165,6 +173,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             obj._dict
                 .Where(pair => !_dict.ContainsKey(NormalizePropertyName(pair.Key)))
+                .ToList()
+                .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
+            return this;
+        }
+
+        /// <summary>
+        ///     Copy all items from  FluentExpandoObject
+        /// </summary>
+        /// <param name="obj">The object to copy from</param>
+        public dynamic CopyFrom(FluentExpandoObject obj)
+        {
+            // Clear any items before copy
+            Clear();
+
+            obj._dict
                 .ToList()
                 .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
             return this;

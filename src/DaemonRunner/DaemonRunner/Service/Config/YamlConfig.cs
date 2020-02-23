@@ -53,16 +53,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
                     if (appType != null)
                     {
-                        var instance = InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value));
+                        var instance = InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value), appId);
                         if (instance != null)
+                        {
+                            instance.Id = appId;
                             _instances.Add(instance);
+                        }
+
                     }
                 }
 
                 return _instances;
             }
         }
-        public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode)
+        public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
         {
             var netDaemonApp = (INetDaemonApp?)Activator.CreateInstance(netDaemonAppType);
 

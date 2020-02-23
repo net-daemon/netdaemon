@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.Extensions.Hosting;
@@ -17,25 +18,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
     public class RunnerService : BackgroundService
     {
-        private readonly NetDaemonHost _daemonHost;
+        private NetDaemonHost? _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        // private readonly IDaemonAppConfig _daemonAppConfig;
-
-        //private readonly IDaemonAppConfig? daemonAppConfig = null
 
         public RunnerService(ILoggerFactory loggerFactory)
         {
-
-
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
-            _daemonHost = new NetDaemonHost(new HassClient(loggerFactory), loggerFactory);
-            // _daemonAppConfig = daemonAppConfig ?? throw new ArgumentNullException("Daemon appconfig can not be null!");
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
+            if (_daemonHost == null)
+                return;
+
             _logger.LogInformation("Stopping netdaemon...");
             await _daemonHost.Stop();
 
@@ -57,7 +54,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 }
 
                 var sourceFolder = config.SourceFolder;
+                var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
+                _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory);
+
                 sourceFolder ??= Path.Combine(config.SourceFolder!, "apps");
+
+
 
                 while (!stoppingToken.IsCancellationRequested)
                 {

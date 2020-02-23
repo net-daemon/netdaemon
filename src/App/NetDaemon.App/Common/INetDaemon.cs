@@ -21,6 +21,41 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         Task InitializeAsync();
 
+        /// <summary>
+        ///     Access stateful data
+        /// </summary>
+        /// <remarks>
+        ///     The dynamic setter will automatically persist the whole storage object
+        /// </remarks>
+        dynamic Storage { get; }
+
+        /// <summary>
+        ///     Unique id of the application
+        /// </summary>
+        public string? Id { get; set; }
+
+        /// <summary>
+        ///     Saves the app state
+        /// </summary>
+        /// <remarks>
+        ///     Saves the state of the storage object.!--
+        ///     Todo: in the future also the state of tagged properties
+        ///
+        ///     It is implemented async so state will be lazy saved
+        /// </remarks>
+        void SaveAppState();
+
+        /// <summary>
+        ///     Restores the app state
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        ///     Restores the state of the storage object.!--
+        ///     Todo: in the future also the state of tagged properties
+        ///
+        ///     It is implemented async so state will be lazy saved
+        /// </remarks>
+        Task RestoreAppStateAsync();
 
     }
 
@@ -213,6 +248,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityId">Unique id of the media player the speech should play</param>
         /// <param name="message">The message that will be spoken</param>
         void Speak(string entityId, string message);
+
+        /// <summary>
+        ///     Saves any data with unique id, data have to be json serializable
+        /// </summary>
+        /// <param name="id">Unique id for all apps</param>
+        /// <param name="data">Dynamic data being saved</param>
+        Task SaveDataAsync<T>(string id, T data);
+
+        /// <summary>
+        ///     Loads persistent data from unique id
+        /// </summary>
+        /// <param name="id">Unique Id of the data</param>
+        /// <returns>The data persistent or null if not exists</returns>
+        ValueTask<T> GetDataAsync<T>(string id);
     }
 
 }

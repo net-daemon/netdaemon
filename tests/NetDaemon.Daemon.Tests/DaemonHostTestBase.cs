@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
 
 namespace NetDaemon.Daemon.Tests
@@ -13,6 +14,7 @@ namespace NetDaemon.Daemon.Tests
     {
         private readonly LoggerMock _loggerMock;
         private readonly HassClientMock _defaultHassClientMock;
+        private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
         private readonly NetDaemonHost _defaultDaemonHost;
         private readonly NetDaemonHost _notConnectedDaemonHost;
 
@@ -20,11 +22,12 @@ namespace NetDaemon.Daemon.Tests
         {
             _loggerMock = new LoggerMock();
             _defaultHassClientMock = HassClientMock.DefaultMock;
-            _defaultDaemonHost = new NetDaemonHost(_defaultHassClientMock.Object, _loggerMock.LoggerFactory);
-            _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _loggerMock.LoggerFactory);
+            _defaultDataRepositoryMock = new Mock<IDataRepository>();
+            _defaultDaemonHost = new NetDaemonHost(_defaultHassClientMock.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
+            _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
 
         }
-
+        public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
         public NetDaemonHost NotConnectedDaemonHost => _notConnectedDaemonHost;
 

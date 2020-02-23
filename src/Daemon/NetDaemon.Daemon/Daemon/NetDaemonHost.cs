@@ -1,5 +1,6 @@
 ﻿using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly IHassClient _hassClient;
 
         private readonly Scheduler _scheduler;
-
+        private readonly IDataRepository? _repository;
         private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
             new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
@@ -61,12 +62,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
             = new List<(string, string, Func<dynamic?, Task>)>();
 
-        public NetDaemonHost(IHassClient? hassClient, ILoggerFactory? loggerFactory = null)
+        public NetDaemonHost(IHassClient? hassClient, IDataRepository? repository, ILoggerFactory? loggerFactory = null)
         {
             loggerFactory ??= DefaultLoggerFactory;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler();
+            _repository = repository;
         }
 
         public bool Connected { get; private set; }
@@ -546,6 +548,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 Logger.LogError(e, "Error reading TTS channel");
             }
+        }
+
+        IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+        public async Task SaveDataAsync<T>(string id, T data)
+        {
+            _ = _repository as IDataRepository ??
+                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _dataCache[id] = data;
+            await _repository!.Save(id, data);
+        }
+
+        public async ValueTask<T> GetDataAsync<T>(string id)
+        {
+            _ = _repository as IDataRepository ??
+              throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+
+            if (_dataCache.ContainsKey(id))
+            {
+                return (T)_dataCache[id];
+            }
+            var data = await _repository!.Get<T>(id);
+
+            if (data != null)
+                _dataCache[id] = data;
+
+            return data;
         }
     }
 }
