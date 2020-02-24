@@ -244,8 +244,6 @@ app:
             instance.InternalStorageObject = new FluentExpandoObject(false, true, daemon: instance);
             // await instance!.StartUpAsync(daemonMock.Object);
 
-            await Task.Delay(200); // Delay to get the task up and running
-
             // ACT
             instance!.Storage.Data = data;
 
