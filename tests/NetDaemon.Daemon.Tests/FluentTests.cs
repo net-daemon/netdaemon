@@ -335,7 +335,7 @@ namespace NetDaemon.Daemon.Tests
                 .TurnOn()
                 .Execute();
 
-            await RunDefauldDaemonUntilCanceled(200);
+            await RunDefauldDaemonUntilCanceled(300);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
