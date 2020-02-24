@@ -199,8 +199,8 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             Assert.True(nrOfRuns == 0);
-            await Task.Delay(500);
-            Assert.True(nrOfRuns == 1);
+            await Task.Delay(800);
+            Assert.True(nrOfRuns >= 1);
 
             await scheduler.Stop();
             try
