@@ -240,18 +240,16 @@ app:
             var daemonMock = new Mock<INetDaemon>();
             await instance!.StartUpAsync(daemonMock.Object);
             instance!.Id = "somefake_id";
-            await Task.Delay(100); // Delay to get the task up and running
+            await Task.Delay(200); // Delay to get the task up and running
 
             // ACT
             instance!.Storage.Data = data;
 
-            await Task.Delay(150); // Delay to let the task save state
+            await Task.Delay(250); // Delay to let the task save state
 
             // ASSERT
-            var expected = new FluentExpandoObject();
-            expected["Data"] = data;
             Assert.Equal(data, instance.Storage.Data);
-            daemonMock.Verify(n => n.SaveDataAsync<IDictionary<string, object>>("assmeblydaemonapp_somefake_id", expected), Times.Once);
+            daemonMock.Verify(n => n.SaveDataAsync<IDictionary<string, object>>("assmeblydaemonapp_somefake_id", It.IsAny<FluentExpandoObject>()), Times.Once);
         }
 
         [Fact]
