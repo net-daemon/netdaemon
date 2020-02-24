@@ -245,7 +245,7 @@ app:
             // ACT
             instance!.Storage.Data = data;
 
-            await Task.Delay(250); // Delay to let the task save state
+            await Task.Delay(500); // Delay to let the task save state
 
             // ASSERT
             Assert.Equal(data, instance.Storage.Data);
