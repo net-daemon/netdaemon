@@ -348,7 +348,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="token">Cancelation token to cancel delay</param>
         public async Task Delay(TimeSpan timeSpan, CancellationToken token)
         {
-            await Task.Delay(timeSpan, token).ConfigureAwait(false);
+            var expectedDelay = timeSpan;
+            // Use in while loop incase delay a time less than expected
+            while (!token.IsCancellationRequested)
+            {
+                var timeBefore = Current;
+                await Task.Delay(expectedDelay, token).ConfigureAwait(false);
+                var elapsedTime = Current.Subtract(timeBefore);
+
+                if (elapsedTime >= expectedDelay)
+                    return; // Expected
+
+                // Compensate for the time left plus add on millisecond
+                expectedDelay = expectedDelay - elapsedTime + TimeSpan.FromMilliseconds(1);
+            }
+
+
         }
     }
 }

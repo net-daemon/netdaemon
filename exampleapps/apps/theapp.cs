@@ -18,10 +18,35 @@ public class TheApp : NetDaemonApp
     public override Task InitializeAsync()
     {
 
-        var time = "07:24:23";
+        // var time = "07:24:23";
         // // Do nothing
+        Schedule("14:41:01");
+        Schedule("14:41:02");
+        Schedule("14:41:03");
+        Schedule("14:41:04");
+        Schedule("14:41:05");
+        Schedule("14:41:06");
+        Schedule("14:41:07");
+        Schedule("14:41:08");
+        Schedule("14:41:09");
+        Schedule("14:41:10");
+        Schedule("14:41:11");
+        Schedule("14:41:12");
+        Schedule("14:41:13");
+        Schedule("14:41:14");
+        // Scheduler.RunDaily(time, new DayOfWeek[]
+        // {
+        //     DayOfWeek.Sunday,
+        // }, async () => Log($"This is correct time! {DateTime.Now}"));
+        // Scheduler.RunEveryMinute(30, async () => Log($"{DateTime.Now}"));
+        return Task.CompletedTask;
+    }
+
+    private void Schedule(string time)
+    {
+
         Scheduler.RunDaily(time, new DayOfWeek[]
-        {
+      {
             DayOfWeek.Monday,
             DayOfWeek.Tuesday,
             DayOfWeek.Wednesday,
@@ -29,14 +54,8 @@ public class TheApp : NetDaemonApp
             DayOfWeek.Friday,
             DayOfWeek.Saturday,
             DayOfWeek.Sunday,
-        }, async () => Log($"Time! {DateTime.Now}"));
+      }, async () => Log($"Time! {time}, {DateTime.Now}"));
 
-        // Scheduler.RunDaily(time, new DayOfWeek[]
-        // {
-        //     DayOfWeek.Sunday,
-        // }, async () => Log($"This is correct time! {DateTime.Now}"));
-        // Scheduler.RunEveryMinute(30, async () => Log($"{DateTime.Now}"));
-        return Task.CompletedTask;
     }
 
     // [HomeAssistantServiceCall]
