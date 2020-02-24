@@ -236,10 +236,12 @@ app:
             class: AssmeblyDaemonApp
         ";
 
-            var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
+            using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
-            await instance!.StartUpAsync(daemonMock.Object);
             instance!.Id = "somefake_id";
+
+            await instance!.StartUpAsync(daemonMock.Object);
+
             await Task.Delay(200); // Delay to get the task up and running
 
             // ACT
@@ -263,7 +265,7 @@ app:
             class: AssmeblyDaemonApp
         ";
 
-            var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
+            using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
 
             var storageItem = new FluentExpandoObject();
