@@ -22,6 +22,7 @@ ARG INSTALL_AZURE_CLI="false"
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Stockholm
 
 # Configure apt and install packages
 RUN apt-get update \

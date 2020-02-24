@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
@@ -34,13 +35,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly ConcurrentDictionary<int, Task> _scheduledTasks
                     = new ConcurrentDictionary<int, Task>();
         private readonly IManageTime? _timeManager;
+        private readonly ILogger<Scheduler> _logger;
         private Task _schedulerTask;
-        public Scheduler(IManageTime? timerManager = null)
+        public Scheduler(IManageTime? timerManager = null, ILoggerFactory? loggerFactory = null)
         {
             _timeManager = timerManager ?? new TimeManager();
-
+            loggerFactory = loggerFactory ?? DefaultLoggerFactory;
+            _logger = loggerFactory.CreateLogger<Scheduler>();
             _schedulerTask = Task.Run(SchedulerLoop, _cancelSource.Token);
         }
+
+
+        private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
+                                {
+                                    builder
+                                        .ClearProviders()
+                                        .AddConsole();
+                                });
 
         /// <summary>
         ///     Time when task was completed, these probably wont be used more than in tests
@@ -68,33 +79,58 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <inheritdoc/>
         public Task RunEveryAsync(TimeSpan timeSpan, Func<Task> func)
         {
-            var stopWatch = new Stopwatch();
+            var task = RunEveryInternalAsync(timeSpan, func);
+            // var stopWatch = new Stopwatch();
 
-            var task = Task.Run(async () =>
-            {
-                while (!_cancelSource.IsCancellationRequested)
-                {
-                    stopWatch.Start();
-                    await func.Invoke();
-                    stopWatch.Stop();
+            // var task = Task.Run(async () =>
+            // {
+            //     while (!_cancelSource.IsCancellationRequested)
+            //     {
+            //         stopWatch.Start();
+            //         await func.Invoke();
+            //         stopWatch.Stop();
 
-                    // If less time spent in func that duration delay the remainder
-                    if (timeSpan > stopWatch.Elapsed)
-                    {
-                        var diff = timeSpan.Subtract(stopWatch.Elapsed);
-                        await _timeManager!.Delay(diff, _cancelSource.Token);
-                    }
-                    else
-                    {
-                        Console.WriteLine();
-                    }
-                    stopWatch.Reset();
-                }
-            }, _cancelSource.Token);
+            //         // If less time spent in func that duration delay the remainder
+            //         if (timeSpan > stopWatch.Elapsed)
+            //         {
+            //             var diff = timeSpan.Subtract(stopWatch.Elapsed);
+            //             await _timeManager!.Delay(diff, _cancelSource.Token);
+            //         }
+            //         else
+            //         {
+            //             Console.WriteLine();
+            //         }
+            //         stopWatch.Reset();
+            //     }
+            // }, _cancelSource.Token);
 
             ScheduleTask(task);
 
             return task;
+        }
+
+        private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func)
+        {
+            var stopWatch = new Stopwatch();
+            while (!_cancelSource.IsCancellationRequested)
+            {
+                stopWatch.Start();
+                await func.Invoke();
+                stopWatch.Stop();
+
+                // If less time spent in func that duration delay the remainder
+                if (timeSpan > stopWatch.Elapsed)
+                {
+                    var diff = timeSpan.Subtract(stopWatch.Elapsed);
+                    _logger.LogTrace($"RunEvery, Time: {_timeManager!.Current}, Span: {timeSpan},  Delay {diff}");
+                    await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+                }
+                else
+                {
+                    Console.WriteLine();
+                }
+                stopWatch.Reset();
+            }
         }
 
         internal TimeSpan CalculateDailyTimeBetweenNowAndTargetTime(DateTime targetTime)
@@ -138,30 +174,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
 
-
-            var task = Task.Run(async () =>
-            {
-                while (!_cancelSource.IsCancellationRequested)
-                {
-                    var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
-                    await _timeManager!.Delay(diff, _cancelSource.Token);
-
-                    if (runOnDays != null)
-                    {
-                        if (runOnDays.Contains(_timeManager!.Current.DayOfWeek))
-                            await func.Invoke();
-                    }
-                    else
-                    {
-                        // No constraints on day of week
-                        await func.Invoke();
-                    }
-                }
-            }, _cancelSource.Token);
-
+            var task = RunDailyInternalAsync(timeOfDayToTrigger, runOnDays, func);
             ScheduleTask(task);
 
             return task;
+        }
+        private async Task RunDailyInternalAsync(DateTime timeOfDayToTrigger, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
+        {
+            while (!_cancelSource.IsCancellationRequested)
+            {
+                var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
+                _logger.LogTrace($"RunDaily, Time: {_timeManager!.Current}, parsed time: {timeOfDayToTrigger},  Delay {diff}");
+                await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+
+                if (runOnDays != null)
+                {
+                    if (runOnDays.Contains(_timeManager!.Current.DayOfWeek))
+                    {
+                        _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
+                        await func.Invoke().ConfigureAwait(false);
+                    }
+                    else
+                        _logger.LogTrace($"RunDaily, Time: {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}, Not run, due to dayofweek");
+                }
+                else
+                {
+                    _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
+                    // No constraints on day of week
+                    await func.Invoke().ConfigureAwait(false);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -170,24 +212,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <inheritdoc/>
         public Task RunEveryMinuteAsync(short second, Func<Task> func)
         {
-            var task = Task.Run(async () =>
-          {
-              while (!_cancelSource.IsCancellationRequested)
-              {
-                  var now = _timeManager?.Current;
-                  var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
-                  await _timeManager!.Delay(diff, _cancelSource.Token);
-                  await func.Invoke();
+            //     var task = Task.Run(async () =>
+            //   {
+            //       while (!_cancelSource.IsCancellationRequested)
+            //       {
+            //           var now = _timeManager?.Current;
+            //           var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
+            //           _logger.LogTrace($"RunEveryMinute, Delay {diff}");
+            //           await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+            //           await func.Invoke().ConfigureAwait(false);
 
-              }
-          }, _cancelSource.Token);
+            //       }
+            //   }, _cancelSource.Token);
+            var task = RunEveryMinuteInternalAsync(second, func);
 
             ScheduleTask(task);
 
             return task;
         }
 
-
+        private async Task RunEveryMinuteInternalAsync(short second, Func<Task> func)
+        {
+            while (!_cancelSource.IsCancellationRequested)
+            {
+                var now = _timeManager?.Current;
+                var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
+                _logger.LogTrace($"RunEveryMinute, Delay {diff}");
+                await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+                await func.Invoke().ConfigureAwait(false);
+            }
+        }
 
         /// <inheritdoc/>
         public void RunIn(int millisecondsDelay, Func<Task> func) => RunInAsync(millisecondsDelay, func);
@@ -204,15 +258,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <inheritdoc/>
         public Task RunInAsync(TimeSpan timeSpan, Func<Task> func)
         {
-            var task = Task.Run(async () =>
-            {
-                await _timeManager!.Delay(timeSpan, _cancelSource.Token);
-                await func.Invoke();
-            }, _cancelSource.Token);
+            // var task = Task.Run(async () =>
+            // {
+            //     _logger.LogTrace($"RunIn, Delay {timeSpan}");
+            //     await _timeManager!.Delay(timeSpan, _cancelSource.Token).ConfigureAwait(false);
+            //     await func.Invoke().ConfigureAwait(false);
+            // }, _cancelSource.Token);
 
+            var task = InternalRunInAsync(timeSpan, func);
             ScheduleTask(task);
 
             return task;
+        }
+
+        private async Task InternalRunInAsync(TimeSpan timeSpan, Func<Task> func)
+        {
+            _logger.LogTrace($"RunIn, Delay {timeSpan}");
+            await _timeManager!.Delay(timeSpan, _cancelSource.Token).ConfigureAwait(false);
+            await func.Invoke().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -252,7 +315,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     }
                     else
                     {
-                        await Task.Delay(DefaultSchedulerTimeout, _cancelSource.Token);
+                        await Task.Delay(DefaultSchedulerTimeout, _cancelSource.Token).ConfigureAwait(false);
                     }
             }
             catch (OperationCanceledException)
@@ -285,7 +348,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="token">Cancelation token to cancel delay</param>
         public async Task Delay(TimeSpan timeSpan, CancellationToken token)
         {
-            await Task.Delay(timeSpan, token);
+            await Task.Delay(timeSpan, token).ConfigureAwait(false);
         }
     }
 }

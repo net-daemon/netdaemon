@@ -67,7 +67,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             loggerFactory ??= DefaultLoggerFactory;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
-            _scheduler = new Scheduler();
+            _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
         }
 

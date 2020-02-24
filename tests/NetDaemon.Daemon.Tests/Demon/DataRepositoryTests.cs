@@ -70,11 +70,11 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var dataRepository = new DataRepository(DataReposityryPath);
             dynamic dataBeingSaved = new FluentExpandoObject(false, true);
-            var utcNow = DateTime.UtcNow;
+            var now = DateTime.Now;
             dataBeingSaved.SomeString = "this data should be saved!";
             dataBeingSaved.SomeInt = 123456;
             dataBeingSaved.SomeFloat = 1.23456;
-            dataBeingSaved.SomeDateTime = utcNow;
+            dataBeingSaved.SomeDateTime = now;
 
             // ACT
             await dataRepository.Save<IDictionary<string, object>>("RepositoryLoadSavedData_id", dataBeingSaved);

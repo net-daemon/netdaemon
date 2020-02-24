@@ -13,7 +13,7 @@ namespace Service
     class Program
     {
         private const string _hassioConfigPath = "data/options.json";
-        private static LogLevel LogLevel = LogLevel.Information;
+        private static LogLevel LogLevel = LogLevel.Trace;
         public static async Task Main(string[] args)
         {
 
