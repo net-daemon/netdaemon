@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+[assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
     /// <summary>
@@ -16,13 +18,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         private Task? _lazyStoreStateTask;
 
-        // To handle state saves max once at a time
+        // To handle state saves max once at a time, internal due to tests
         private readonly Channel<bool> _lazyStoreStateQueue =
                Channel.CreateBounded<bool>(1);
+
+        internal Channel<bool> InternalLazyStoreStateQueue => _lazyStoreStateQueue;
 
         private CancellationTokenSource _cancelSource = new CancellationTokenSource();
 
         private FluentExpandoObject? _storageObject;
+        internal FluentExpandoObject? InternalStorageObject { get { return _storageObject; } set { _storageObject = value; } }
 
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }

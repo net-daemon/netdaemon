@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.Extensions.Logging;
@@ -238,20 +239,22 @@ app:
 
             using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
-            instance!.Id = "somefake_id";
 
-            await instance!.StartUpAsync(daemonMock.Object);
+            instance!.Id = "somefake_id";
+            instance.InternalStorageObject = new FluentExpandoObject(false, true, daemon: instance);
+            // await instance!.StartUpAsync(daemonMock.Object);
 
             await Task.Delay(200); // Delay to get the task up and running
 
             // ACT
             instance!.Storage.Data = data;
 
-            await Task.Delay(500); // Delay to let the task save state
 
             // ASSERT
             Assert.Equal(data, instance.Storage.Data);
-            daemonMock.Verify(n => n.SaveDataAsync<IDictionary<string, object>>("assmeblydaemonapp_somefake_id", It.IsAny<FluentExpandoObject>()), Times.Once);
+            var stateQueueResult = await instance.InternalLazyStoreStateQueue.Reader.WaitToReadAsync();
+            Assert.True(stateQueueResult);
+
         }
 
         [Fact]
