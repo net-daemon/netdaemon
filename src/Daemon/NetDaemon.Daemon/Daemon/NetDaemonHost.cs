@@ -579,5 +579,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             return data;
         }
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelect(params string[] inputSelectParams) =>
+            new InputSelectManager(inputSelectParams, this);
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams) =>
+            new InputSelectManager(inputSelectParams, this);
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func)
+        {
+            IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
+            return new InputSelectManager(x, this);
+        }
     }
 }

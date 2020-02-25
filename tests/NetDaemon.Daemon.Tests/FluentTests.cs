@@ -872,5 +872,57 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallServiceTimes("media_stop", Times.Once());
             DefaultHassClientMock.VerifyCallService("media_player", "media_stop", ("entity_id", "media_player.player"));
         }
+
+        [Fact]
+        public async Task InputSelectSetOptionShouldCallCorrectCallService()
+        {
+            // ARRANGE
+            // ACT
+            await DefaultDaemonHost
+                .InputSelect("input_select.myselect")
+                .SetOption("option1")
+                .ExecuteAsync();
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("select_option", Times.Once());
+            DefaultHassClientMock.VerifyCallService("input_select", "select_option",
+                ("entity_id", "input_select.myselect"),
+                ("option", "option1"));
+        }
+
+        [Fact]
+        public async Task InputSelectSetOptionIEnumerableShouldCallCorrectCallService()
+        {
+            // ARRANGE
+            // ACT
+            await DefaultDaemonHost
+                .InputSelects(new string[] { "input_select.myselect" })
+                .SetOption("option1")
+                .ExecuteAsync();
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("select_option", Times.Once());
+            DefaultHassClientMock.VerifyCallService("input_select", "select_option",
+                ("entity_id", "input_select.myselect"),
+                ("option", "option1"));
+        }
+
+        [Fact]
+        public async Task InputSelectSetOptionFuncShouldCallCorrectCallService()
+        {
+            // ARRANGE
+            DefaultDaemonHost.InternalState["input_select.myselect"] = new EntityState { EntityId = "input_select.myselect" };
+            // ACT
+            await DefaultDaemonHost
+                .InputSelects(n => n.EntityId == "input_select.myselect")
+                .SetOption("option1")
+                .ExecuteAsync();
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("select_option", Times.Once());
+            DefaultHassClientMock.VerifyCallService("input_select", "select_option",
+                ("entity_id", "input_select.myselect"),
+                ("option", "option1"));
+        }
     }
 }
