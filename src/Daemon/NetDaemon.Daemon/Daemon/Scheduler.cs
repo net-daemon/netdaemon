@@ -328,6 +328,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             _scheduledTasks[addedTask.Id] = addedTask;
         }
+
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                if (!_cancelSource.IsCancellationRequested)
+                    await Stop();
+            }
+            catch // Ignore errors in cleanup
+            {
+            }
+        }
+
     }
 
     /// <summary>

@@ -9,7 +9,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Interface for scheduler actions
     /// </summary>
-    public interface IScheduler
+    public interface IScheduler : IAsyncDisposable
     {
         /// <summary>
         ///     Run function every milliseconds
