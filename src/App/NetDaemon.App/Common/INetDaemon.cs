@@ -184,6 +184,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="eventParams">Events</param>
         IFluentEvent Event(params string[] eventParams);
+
         /// <summary>
         ///     Selects one or more events to do action on
         /// </summary>
@@ -195,6 +196,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="func">The lambda expression selecting event</param>
         IFluentEvent Events(Func<FluentEventProperty, bool> func);
+
+        /// <summary>
+        ///     Selects one or more input select to do action on
+        /// </summary>
+        /// <param name="inputSelectParams">Events</param>
+        IFluentInputSelect InputSelect(params string[] inputSelectParams);
+
+        /// <summary>
+        ///     Selects one or more input selects to do action on
+        /// </summary>
+        /// <param name="inputSelectParams">Events</param>
+        IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams);
+
+        /// <summary>
+        ///     Selects the input selects to do actions on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting input select</param>
+        IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func);
 
         /// <summary>
         ///     Selects one or more light entities to do action on

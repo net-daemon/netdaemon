@@ -288,6 +288,27 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Dispose(true);
         }
 
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelect(params string[] inputSelectParams)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.InputSelect(inputSelectParams);
+        }
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.InputSelects(inputSelectParams);
+        }
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.InputSelects(func);
+        }
+
         #endregion
     }
 }
