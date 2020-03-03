@@ -6,7 +6,6 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -124,7 +123,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ASSERT
             Assert.False(runTask.IsCompleted || runTask.IsCanceled);
             await runTask;
-
         }
 
         [Fact]
@@ -144,7 +142,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void RunNullReferenceToHassClientShouldThrowException()
         {
             // ARRANGE
-
 
             // ACT and ASSERT
             Assert.Throws<ArgumentNullException>(() =>
@@ -448,7 +445,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
-
         }
 
         [Fact]
@@ -460,7 +456,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
-
         }
     }
 }

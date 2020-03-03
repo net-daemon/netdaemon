@@ -1,13 +1,12 @@
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Xunit;
 using YamlDotNet.Core;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 {
-
     public class YamlTests
     {
         public static readonly string ConfigFixturePath =
@@ -32,7 +31,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             Assert.True(secrets.ContainsKey("secret_string_noquotes"));
             Assert.Equal("hello no quotes", secrets["secret_string_noquotes"]);
-
         }
 
         [Fact]
@@ -43,7 +41,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             "yaml: correctLine\n" +
             "yaml_missing: \"missing" +
             "yaml_correct: 10";
-
 
             // ACT & ASSERT
             Assert.Throws<SyntaxErrorException>(() => YamlConfig.GetSecretsFromSecretsYaml(new StringReader(faultyYaml)));
@@ -66,7 +63,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal("40", secrets[Path.Combine(ConfigFixturePath, "level2", "level3")]["secret_int"]);
         }
 
-
         [Theory]
         [MemberData(nameof(SecretData))]
         public void SecretShouldBeRelevantDependingOnFolderLevel(string secret, string configPath, string secretValue)
@@ -81,6 +77,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             // ASSERT
             Assert.Equal(secretValue, confValue);
         }
+
         public static IEnumerable<object?[]> SecretData =>
             new List<Object?[]>
             {
@@ -91,10 +88,5 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new object?[] {"secret_only_exists_here", Path.Combine(ConfigFixturePath, "level2", "level3"), "test"},
                 new object?[] {"notexists", Path.Combine(ConfigFixturePath, "level2", "level3"), null},
             };
-
-
-
     }
-
-
 }

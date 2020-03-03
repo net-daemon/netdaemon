@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -25,7 +25,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// </summary>
     public interface IAction : IExecuteAsync
     {
-
         /// <summary>
         ///     Use attribute when perform action
         /// </summary>
@@ -188,7 +187,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IStateAction WithAttribute(string name, object value);
     }
 
-
     /// <summary>
     ///     When state change
     /// </summary>
@@ -339,8 +337,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         T Stop();
     }
-    #endregion
 
+    #endregion Media, Play, Stop, Pause, PlayPause, Speak
 
     #region Entities, TurnOn, TurnOff, Toggle
 
@@ -393,8 +391,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         T TurnOn();
     }
 
-    #endregion
-
+    #endregion Entities, TurnOn, TurnOff, Toggle
 
     /// <summary>
     ///     Implements interface for managing entities in the fluent API
@@ -411,7 +408,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         private FluentAction? _currentAction;
 
         private StateChangedInfo _currentState = new StateChangedInfo();
-
 
         /// <summary>
         ///     Constructor

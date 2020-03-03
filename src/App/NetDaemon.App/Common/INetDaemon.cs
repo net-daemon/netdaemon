@@ -56,7 +56,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     It is implemented async so state will be lazy saved
         /// </remarks>
         Task RestoreAppStateAsync();
-
     }
 
     /// <summary>
@@ -282,5 +281,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <returns>The data persistent or null if not exists</returns>
         ValueTask<T> GetDataAsync<T>(string id);
     }
-
 }

@@ -1,12 +1,11 @@
-using System;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
+using Moq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using Moq;
 
 namespace NetDaemon.Daemon.Tests
 {
@@ -25,8 +24,8 @@ namespace NetDaemon.Daemon.Tests
             _defaultDataRepositoryMock = new Mock<IDataRepository>();
             _defaultDaemonHost = new NetDaemonHost(_defaultHassClientMock.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
             _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
-
         }
+
         public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
         public NetDaemonHost NotConnectedDaemonHost => _notConnectedDaemonHost;
@@ -36,6 +35,7 @@ namespace NetDaemon.Daemon.Tests
         public LoggerMock LoggerMock => _loggerMock;
 
         public string HelloWorldData => "Hello world!";
+
         public dynamic GetDynamicDataObject(string testData = "testdata")
         {
             var expandoObject = new ExpandoObject();
@@ -55,7 +55,6 @@ namespace NetDaemon.Daemon.Tests
             }
             return (expandoObject, expandoObject);
         }
-
 
         public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
@@ -79,6 +78,7 @@ namespace NetDaemon.Daemon.Tests
                 : new CancellationTokenSource(milliSeconds);
             return (_defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
+
         public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
             var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
@@ -98,7 +98,5 @@ namespace NetDaemon.Daemon.Tests
                 // Expected behaviour
             }
         }
-
-
     }
 }

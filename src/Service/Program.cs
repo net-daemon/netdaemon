@@ -1,28 +1,26 @@
-﻿using System;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service;
+﻿using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Service
 {
-
-    class Program
+    internal class Program
     {
         private const string _hassioConfigPath = "data/options.json";
         private static LogLevel LogLevel = LogLevel.Trace;
+
         public static async Task Main(string[] args)
         {
-
             try
             {
                 ///
                 if (File.Exists(_hassioConfigPath))
                 {
-
                     var hassAddOnSettings = await JsonSerializer.DeserializeAsync<System.Collections.Generic.Dictionary<string, string>>(
                                                         File.OpenRead(_hassioConfigPath));
                     if (hassAddOnSettings.ContainsKey("log_level"))

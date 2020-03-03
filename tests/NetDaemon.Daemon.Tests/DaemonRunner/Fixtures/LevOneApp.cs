@@ -7,16 +7,10 @@ using JoySoftware.HomeAssistant.NetDaemon.Common;
 /// </summary>
 public class LevOneApp : NetDaemonApp
 {
-
-    #region -- Config properties --
-
-    #endregion
-
     public override Task InitializeAsync()
     {
         // Do nothing
 
         return Task.CompletedTask;
     }
-
 }

@@ -7,6 +7,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
+
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
     /// <summary>
@@ -198,6 +199,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         private string GetUniqueIdForStorage() => $"{this.GetType().Name}_{Id}".ToLowerInvariant();
+
         private async Task HandleLazyStorage()
         {
             _ = _storageObject as FluentExpandoObject ??
@@ -240,8 +242,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             }
         }
 
-
-
         /// <inheritdoc/>
         public async Task ToggleAsync(string entityId, params (string name, object val)[] attributes)
         {
@@ -264,6 +264,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         /// <inheritdoc/>
@@ -309,6 +310,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return _daemon!.InputSelects(func);
         }
 
-        #endregion
+        #endregion IDisposable Support
     }
 }

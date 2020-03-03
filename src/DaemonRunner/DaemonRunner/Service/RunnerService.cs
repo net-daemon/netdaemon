@@ -1,18 +1,16 @@
-﻿using System;
+﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
@@ -59,8 +57,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                 sourceFolder ??= Path.Combine(config.SourceFolder!, "apps");
 
-
-
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     try
@@ -98,7 +94,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 _logger.LogWarning("Home assistant still unavailable, retrying in 30 seconds...");
                             }
                         }
-
                     }
                     catch (OperationCanceledException)
                     {
@@ -123,6 +118,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
             _logger.LogInformation("End netdaemon..");
         }
+
         private HostConfig? ReadConfig()
         {
             try

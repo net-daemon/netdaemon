@@ -1,12 +1,11 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Moq;
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
 using Xunit;
-using System.Diagnostics;
-using System.Globalization;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace NetDaemon.Daemon.Tests
 {
@@ -72,7 +71,6 @@ namespace NetDaemon.Daemon.Tests
             var timeToWait = scheduler.CalculateDailyTimeBetweenNowAndTargetTime(timeTarget);
 
             Assert.Equal(nrOfSecondsRemaining, timeToWait.TotalSeconds);
-
         }
 
         [Theory]
@@ -95,7 +93,6 @@ namespace NetDaemon.Daemon.Tests
             Assert.Equal(expectedDelaySeconds, calculatedDelay.TotalSeconds);
         }
 
-
         [Fact]
         public async void TestRunDailyUsingStartTimeCallsFuncCorrectly()
         {
@@ -108,9 +105,6 @@ namespace NetDaemon.Daemon.Tests
             Task runTask;
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
-
-
-
                 // ACT
                 runTask = scheduler.RunDailyAsync("10:00:01", async () =>
                {
@@ -123,7 +117,6 @@ namespace NetDaemon.Daemon.Tests
                 Assert.True(nrOfRuns == 0);
                 await Task.Delay(500);
                 Assert.True(nrOfRuns == 1);
-
             }
             try
             {
@@ -165,7 +158,6 @@ namespace NetDaemon.Daemon.Tests
                 Assert.True(nrOfRuns == 0);
                 await Task.Delay(800);
                 Assert.True(nrOfRuns >= 1);
-
             }
 
             try
@@ -301,7 +293,6 @@ namespace NetDaemon.Daemon.Tests
 
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
-
                 // ACT
                 var runTask = scheduler.RunEveryAsync(20, async () =>
                 {
@@ -334,7 +325,6 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             mockTimeManager.Verify(n => n.Delay(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.AtLeast(4));
-
         }
     }
 }

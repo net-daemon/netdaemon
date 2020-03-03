@@ -1,10 +1,9 @@
-using System;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
 
 namespace NetDaemon.Daemon.Tests
 {
-
     public class LoggerMock
     {
         public LoggerMock()

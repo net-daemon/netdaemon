@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Text.Json;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
@@ -48,13 +47,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public EntityState? NewState { get; set; } = null;
     }
 
-
     /// <summary>
     ///     Detailed state information
     /// </summary>
     public class EntityState : IEntityProperties
     {
-
         /// <summary>
         ///     Unique id of the entity
         /// </summary>
@@ -97,7 +94,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         public float? Longitude { get; set; } = null;
 
-
         /// <summary>
         ///     Elevation of Home Assistant instance
         /// </summary>
@@ -128,7 +124,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         public string? ConfigDir { get; set; } = null;
 
-
         /// <summary>
         ///     Whitelisted external directories
         /// </summary>
@@ -149,7 +144,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Lenght unit
         /// </summary>
         public string? Length { get; set; } = null;
-
 
         /// <summary>
         ///     Mass unit

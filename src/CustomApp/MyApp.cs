@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+using System.Threading.Tasks;
 
 namespace app
 {
@@ -7,13 +7,12 @@ namespace app
     {
         //public override Task InitializeAsync()
         //{
-            
         //    await ListenState("light.tomas_rum", OnTomasRoomChanged);
 
         //    //await Action
         //    //        .TurnOff
         //    //            .UseEntities(
-        //    //            "light.mylight", 
+        //    //            "light.mylight",
         //    //            "light.yourlight"
         //    //            )
         //    //                .WithAttribute("brightness", 50).And
@@ -22,27 +21,24 @@ namespace app
         //    //        .ExecuteAsync();
         //}
 
-        private async Task OnTomasRoomChanged(string entityId, EntityState newState, EntityState oldState )
+        private async Task OnTomasRoomChanged(string entityId, EntityState newState, EntityState oldState)
         {
             Log("Tomas light changed!");
             Log($"New state = {newState.State}");
 
-            await TurnOnAsync("light.vardagsrummet", 
+            await TurnOnAsync("light.vardagsrummet",
                 ("brightness", "100"), ("color_temp", 123));
 
             //await And("light.vardagsrummet")
             //    .TurnOn(
-            //        ("brightness", 50), 
+            //        ("brightness", 50),
             //        ("color_temp", 123)
             //    );
-
 
             //await And("light.vardagsrummet")
             //    .TurnOn()
             //        .Attribute.brightness = 50
             //        .Attribute.color_temp = 123;
-
-
 
             await Task.Delay(10);
         }

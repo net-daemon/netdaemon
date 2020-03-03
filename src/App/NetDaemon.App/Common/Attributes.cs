@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-
     /// <summary>
     ///     Attribute to mark function as callback for service calls
     /// </summary>
@@ -18,7 +14,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
         // See the attribute guidelines at
         //  http://go.microsoft.com/fwlink/?LinkId=85236
-        string _entityId;
+        private string _entityId;
+
         private readonly object? _to;
         private readonly object? _from;
         private readonly bool _allChanges;
@@ -57,8 +54,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     To state filter
         /// </summary>
         public object? To => _to;
-
     }
-
-
 }

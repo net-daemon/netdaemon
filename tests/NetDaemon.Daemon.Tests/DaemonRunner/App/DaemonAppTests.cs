@@ -1,17 +1,13 @@
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
@@ -24,7 +20,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(AppTests.ConfigFixturePath, filename));
 
         public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
-
 
         [Fact]
         public void NrOfCsFilesShouldBeCorrect()
@@ -57,7 +52,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ACT
             // ASSERT
             Assert.Equal(5, codeManager.DaemonAppTypes.Select(n => n.Name.StartsWith("Lev")).Count());
-
         }
 
         [Fact]
@@ -160,8 +154,6 @@ app:
             Assert.Equal(2, instance?.EnumerableConfig.Count());
         }
 
-
-
         [Fact]
         public void InstanceAppFromConfigFilesInFolderShouldReturnCorrectInstances()
         {
@@ -176,7 +168,6 @@ app:
             // ASSERT
             Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
         }
-
 
         [Fact]
         public void InstanceAppMultipleInstancesInConfigShouldReturnCorrectInstances()
@@ -200,7 +191,6 @@ app:
             var codeManager = new CodeManager(ConfigFixturePath);
             // ACT/ASSERT
             await Assert.ThrowsAsync<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
-
         }
 
         [Fact]
@@ -247,12 +237,10 @@ app:
             // ACT
             instance!.Storage.Data = data;
 
-
             // ASSERT
             Assert.Equal(data, instance.Storage.Data);
             var stateQueueResult = await instance.InternalLazyStoreStateQueue.Reader.WaitToReadAsync();
             Assert.True(stateQueueResult);
-
         }
 
         [Fact]
@@ -283,8 +271,5 @@ app:
             // ASSERT
             Assert.Equal("SomeData", instance.Storage.Data);
         }
-
     }
-
-
 }

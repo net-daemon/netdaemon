@@ -1,10 +1,10 @@
-﻿using System;
+﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
@@ -82,7 +82,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     dict[key] = value;
                 }
-
             }
 
             return entityState;

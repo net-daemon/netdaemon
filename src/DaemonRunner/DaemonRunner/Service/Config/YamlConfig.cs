@@ -1,3 +1,4 @@
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,10 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
+
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 {
     public class YamlAppConfig
@@ -34,7 +35,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         {
             get
             {
-
                 // For each app instance defined in the yaml config
                 foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
                 {
@@ -59,13 +59,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                             instance.Id = appId;
                             _instances.Add(instance);
                         }
-
                     }
                 }
 
                 return _instances;
             }
         }
+
         public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
         {
             var netDaemonApp = (INetDaemonApp?)Activator.CreateInstance(netDaemonAppType);
@@ -85,7 +85,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
                 var valueType = entry.Value.NodeType;
 
-
                 switch (valueType)
                 {
                     case YamlNodeType.Sequence:
@@ -100,7 +99,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                         var map = (YamlMappingNode)entry.Value;
                         break;
                 }
-
             }
 
             return netDaemonApp;
@@ -128,7 +126,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                         throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} has wrong type in items");
 
                     list.Add(value);
-
                 }
                 // Bind the list to the property
                 prop.SetValue(app, list);
@@ -153,7 +150,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
             // Bind the list to the property
             prop.SetValue(app, scalarValue);
-
         }
 
         private string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
@@ -173,6 +169,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             return ((YamlScalarNode)classChild.Value)?.Value?.ToLowerInvariant();
         }
     }
+
     public class YamlConfig
     {
         private readonly string _configFolder;
@@ -182,16 +179,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         {
             _configFolder = codeFolder;
             _secrets = GetAllSecretsFromPath(_configFolder);
-
         }
 
         internal IEnumerable<string> GetAllConfigFilePaths()
         {
             return Directory.EnumerateFiles(_configFolder, "*.yaml", SearchOption.AllDirectories);
         }
+
         public string? GetSecretFromPath(string secret, string configPath)
         {
-
             if (_secrets.ContainsKey(configPath))
             {
                 if (_secrets[configPath].ContainsKey(secret))
@@ -208,9 +204,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
         internal static Dictionary<string, string> GetSecretsFromSecretsYaml(string file)
         {
-
             return GetSecretsFromSecretsYaml(File.OpenText(file));
-
         }
 
         internal static Dictionary<string, string> GetSecretsFromSecretsYaml(TextReader reader)
@@ -254,12 +248,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                     var secretsFromFile = GetSecretsFromSecretsYaml(file);
                     result[fileDirectory] = secretsFromFile;
                 }
-
             }
             return result;
         }
-
-
     }
-
 }

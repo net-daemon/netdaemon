@@ -49,6 +49,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private readonly Scheduler _scheduler;
         private readonly IDataRepository? _repository;
+
         private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
             new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
@@ -57,6 +58,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "light",
             "switch"
         };
+
         private bool _stopped;
 
         private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
@@ -145,7 +147,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
-
 
         /// <summary>
         /// </summary>
@@ -445,7 +446,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 try
                 {
-
                     var serviceCallData = (HassServiceEventData?)hassEvent.Data;
 
                     if (serviceCallData == null)
@@ -550,7 +550,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+        private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+
         public async Task SaveDataAsync<T>(string id, T data)
         {
             _ = _repository as IDataRepository ??

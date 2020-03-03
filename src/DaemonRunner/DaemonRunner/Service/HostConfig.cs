@@ -14,15 +14,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
         [JsonPropertyName("token")]
         public string Token { get; set; } = "enter hass token here";
+
         [JsonPropertyName("host")]
         public string Host { get; set; } = "localhost";
+
         [JsonPropertyName("port")]
         public short Port { get; set; } = 8123;
+
         [JsonPropertyName("ssl")]
         public bool Ssl { get; set; } = false;
+
         [JsonPropertyName("source_folder")]
         public string? SourceFolder { get; set; } = null;
-
-
     }
 }
