@@ -1,3 +1,9 @@
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -8,17 +14,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
+
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 {
-    class CollectibleAssemblyLoadContext : AssemblyLoadContext
+    internal class CollectibleAssemblyLoadContext : AssemblyLoadContext
     {
         public CollectibleAssemblyLoadContext() : base(isCollectible: true)
         {
@@ -41,6 +42,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
                             HandleServiceCallAttribute(_daemon, netDaemonApp, method);
                             break;
+
                         case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
                             HandleStateChangedAttribute(_daemon, hassStateChangedAttribute, netDaemonApp, method);
                             break;
@@ -88,7 +90,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 {
                     _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall funcition");
                 }
-
             });
         }
 
@@ -120,6 +121,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     }
                 });
         }
+
         private static (bool, string) CheckIfServiceCallSignatureIsOk(MethodInfo method)
         {
             if (method.ReturnType != typeof(Task))
@@ -203,7 +205,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     appInstance.HandleAttributeInitialization(host!);
                     host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
                 }
-
             }
 
             GC.Collect();
@@ -262,7 +263,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         optimizationLevel: OptimizationLevel.Release,
                         assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
 
-
                 var emitResult = compilation.Emit(peStream);
                 if (emitResult.Success)
                 {
@@ -295,13 +295,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
-
         }
 
         public static IEnumerable<string> GetCsFiles(string configFixturePath)
         {
             return Directory.EnumerateFiles(configFixturePath, "*.cs", SearchOption.AllDirectories);
         }
-
     }
 }

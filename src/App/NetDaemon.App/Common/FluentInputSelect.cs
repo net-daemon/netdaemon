@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -8,7 +8,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// </summary>
     public interface IFluentInputSelect : IFluentSetOption<IFluentExecuteAsync>
     {
-
     }
 
     /// <summary>
@@ -80,5 +79,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return this;
         }
     }
-
 }

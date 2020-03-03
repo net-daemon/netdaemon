@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -21,7 +19,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
 
             _jsonOptions = new JsonSerializerOptions();
             _jsonOptions.Converters.Add(new ExpandoDictionaryConverter());
-
         }
 
         /// <inheritdoc/>
@@ -59,10 +56,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
             using var jsonStream = File.Open(storageJsonFile, FileMode.Create, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<T>(jsonStream, data);
-
         }
-
-
     }
 
     public class ExpandoDictionaryConverter : JsonConverter<Dictionary<string, object>>
@@ -104,22 +98,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
             // Just a normal string
             return strToParse;
         }
+
         public static object? ToObjectValue(this JsonElement elem)
         {
-            switch (elem.ValueKind)
+            return elem.ValueKind switch
             {
-                case JsonValueKind.String:
-                    return ParseString(elem.GetString());
-                case JsonValueKind.False:
-                    return false;
-                case JsonValueKind.True:
-                    return true;
-                case JsonValueKind.Number:
-                    return elem.TryGetInt64(out Int64 intValue) ? intValue : elem.GetDouble();
-            }
-
-            return null;
+                JsonValueKind.String => ParseString(elem.GetString()),
+                JsonValueKind.False => false,
+                JsonValueKind.True => true,
+                JsonValueKind.Number => elem.TryGetInt64(out Int64 intValue) ? intValue : elem.GetDouble(),
+                _ => null
+            };
         }
     }
 }
-

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Moq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Moq;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests
@@ -15,7 +15,6 @@ namespace NetDaemon.Daemon.Tests
     {
         internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
         internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
-
 
         public HassClientMock()
         {
@@ -125,6 +124,7 @@ namespace NetDaemon.Daemon.Tests
                 }
             };
         }
+
         public void AddCallServiceEvent(string domain, string service, dynamic data)
         {
             // Todo: Refactor to smth smarter
@@ -170,6 +170,7 @@ namespace NetDaemon.Daemon.Tests
                 }
             });
         }
+
         public void AddChangedEvent(string entityId, object fromState, object toState)
         {
             FakeEvents.Enqueue(new HassEvent

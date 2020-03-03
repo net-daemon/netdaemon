@@ -1,20 +1,10 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
+
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 {
     // public interface IDaemonAppConfig
@@ -29,6 +19,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             await awaitable;
         }
     }
+
     public static class ConfigStringExtensions
     {
         public static string ToPythonStyle(this string str)
@@ -68,5 +59,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             return build.ToString();
         }
     }
-
 }

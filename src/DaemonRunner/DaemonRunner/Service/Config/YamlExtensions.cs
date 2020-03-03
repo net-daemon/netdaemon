@@ -2,17 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
+
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 {
-
-
     public static class PropertyInfoExtensions
     {
         public static IList? CreateListOfPropertyType(this Type listType)
@@ -26,13 +23,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
 
     public static class YamlExtensions
     {
-
-        // public static IEnumerable<INetDaemonApp> InstancesFromYamlConfig(this IEnumerable<Type> types, TextReader reader, YamlConfig yamlConfig)
-        // {
-        //     var yamlAppConfig = new YamlAppConfig(types, reader, yamlConfig);
-        //     return yamlAppConfig.Instances;
-        // }
-
         public static PropertyInfo? GetYamlProperty(this Type type, string propertyName)
         {
             var prop = type.GetProperty(propertyName);
@@ -44,9 +34,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             }
             return prop;
         }
+
         public static object? ToObject(this YamlScalarNode node, Type valueType)
         {
-
             Type? underlyingNullableType = Nullable.GetUnderlyingType(valueType);
             if (underlyingNullableType != null)
             {

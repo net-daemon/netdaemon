@@ -1,6 +1,4 @@
-﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -163,7 +161,6 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Once());
             DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
         }
-
 
         [Fact]
         public async Task EntityOnStateChangedEntitiesLambdaTurnOnLightCallsCorrectServiceCall()
@@ -491,7 +488,6 @@ namespace NetDaemon.Daemon.Tests
             Assert.Equal("Some error", x.Message);
         }
 
-
         [Fact]
         public async Task TurnOffEntityLambdaAttributeSelectionCallsCorrectServiceCall()
         {
@@ -811,7 +807,6 @@ namespace NetDaemon.Daemon.Tests
             LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
             Assert.Equal("Some error", x.Message);
         }
-
 
         [Fact]
         public async Task MediaPlayersPlayCallsCorrectServiceCall()

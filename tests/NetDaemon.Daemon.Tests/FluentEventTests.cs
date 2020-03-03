@@ -1,10 +1,9 @@
-﻿using System;
-using System.Dynamic;
-using System.Threading;
-using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
+using System;
+using System.Dynamic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests
@@ -60,7 +59,6 @@ namespace NetDaemon.Daemon.Tests
             Assert.Throws<NullReferenceException>(() => daemonHost
                 .Event("CUSTOM_EVENT")
                     .Call(null).Execute());
-
         }
 
         [Fact]

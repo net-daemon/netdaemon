@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-
     /// <summary>
     ///     Interface for scheduler actions
     /// </summary>
@@ -120,6 +118,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     It is safe to supress the task since it is handled internally in the scheduler
         /// </remarks>
         Task RunEveryMinuteAsync(short second, Func<Task> func);
-
     }
 }

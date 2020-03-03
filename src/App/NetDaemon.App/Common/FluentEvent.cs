@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
@@ -62,7 +61,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public void Execute()
         {
-
             if (_events == null && _funcSelector == null)
                 throw new NullReferenceException($"Both {nameof(_events)} or {nameof(_events)} cant be null");
 
@@ -83,6 +81,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Unique id of event
         /// </summary>
         public string EventId { get; set; } = "";
+
         /// <summary>
         ///
         /// </summary>

@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
     public class NetDaemonApptests
     {
-        Mock<INetDaemon> _netDaemonMock;
-        JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
+        private Mock<INetDaemon> _netDaemonMock;
+        private JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
 
         public NetDaemonApptests()
         {

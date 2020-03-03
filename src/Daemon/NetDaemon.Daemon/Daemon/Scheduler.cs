@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,13 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Microsoft.Extensions.Logging;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
-
-
     /// <summary>
     ///     Interface to be able to mock the time
     /// </summary>
@@ -34,9 +32,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private readonly ConcurrentDictionary<int, Task> _scheduledTasks
                     = new ConcurrentDictionary<int, Task>();
+
         private readonly IManageTime? _timeManager;
         private readonly ILogger<Scheduler> _logger;
         private Task _schedulerTask;
+
         public Scheduler(IManageTime? timerManager = null, ILoggerFactory? loggerFactory = null)
         {
             _timeManager = timerManager ?? new TimeManager();
@@ -44,7 +44,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _logger = loggerFactory.CreateLogger<Scheduler>();
             _schedulerTask = Task.Run(SchedulerLoop, _cancelSource.Token);
         }
-
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
                                 {
@@ -62,7 +61,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         ///     Calculated start time, these probably wont be used more than in tests
         /// </summary>
         public DateTime StartTime { get; } = DateTime.MinValue;
-
 
         /// <inheritdoc/>
         public void RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
@@ -179,6 +177,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             return task;
         }
+
         private async Task RunDailyInternalAsync(DateTime timeOfDayToTrigger, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
         {
             while (!_cancelSource.IsCancellationRequested)
@@ -321,7 +320,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             catch (OperationCanceledException)
             {// Normal, just ignore
             }
-
         }
 
         private void ScheduleTask(Task addedTask)
@@ -340,7 +338,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
             }
         }
-
     }
 
     /// <summary>
@@ -375,8 +372,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 // Compensate for the time left plus add on millisecond
                 expectedDelay = expectedDelay - elapsedTime + TimeSpan.FromMilliseconds(1);
             }
-
-
         }
     }
 }
