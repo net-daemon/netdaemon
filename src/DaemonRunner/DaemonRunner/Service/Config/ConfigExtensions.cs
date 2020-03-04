@@ -16,7 +16,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         public static async Task InvokeAsync(this MethodInfo mi, object? obj, params object?[]? parameters)
         {
             dynamic? awaitable = mi.Invoke(obj, parameters);
-            await awaitable;
+            if (awaitable != null)
+                await awaitable.ConfigureAwait(false);
         }
     }
 

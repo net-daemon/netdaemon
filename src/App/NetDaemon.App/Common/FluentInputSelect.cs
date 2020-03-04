@@ -57,7 +57,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task ExecuteAsync()
+        public Task ExecuteAsync()
         {
             List<Task> tasks = new List<Task>();
             foreach (var entityId in _entityIds)
@@ -69,7 +69,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 tasks.Add(_daemon.CallService("input_select", "select_option", data));
             }
 
-            await Task.WhenAll(tasks);
+            return Task.WhenAll(tasks);
         }
 
         /// <inheritdoc/>

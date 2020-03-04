@@ -48,10 +48,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public string? Id { get; set; }
 
         /// <inheritdoc/>
-        public async Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
+        public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            await _daemon!.CallService(domain, service, data, waitForResponse);
+            return _daemon!.CallService(domain, service, data, waitForResponse);
         }
 
         /// <inheritdoc/>
@@ -126,10 +126,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task SaveDataAsync<T>(string id, T data)
+        public Task SaveDataAsync<T>(string id, T data)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            await _daemon!.SaveDataAsync<T>(id, data);
+            return _daemon!.SaveDataAsync<T>(id, data);
         }
 
         /// <inheritdoc/>
@@ -213,7 +213,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     // Dont care about the result, just that it is time to store state
                     _ = await _lazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token);
 
-                    await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage);
+                    await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
+                            .ConfigureAwait(false);
                 }
                 catch { }   // Ignore errors in thread
             }
@@ -243,24 +244,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task ToggleAsync(string entityId, params (string name, object val)[] attributes)
+        public Task ToggleAsync(string entityId, params (string name, object val)[] attributes)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            await _daemon!.ToggleAsync(entityId, attributes);
+            return _daemon!.ToggleAsync(entityId, attributes);
         }
 
         /// <inheritdoc/>
-        public async Task TurnOffAsync(string entityId, params (string name, object val)[] attributes)
+        public Task TurnOffAsync(string entityId, params (string name, object val)[] attributes)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            await _daemon!.TurnOffAsync(entityId, attributes);
+            return _daemon!.TurnOffAsync(entityId, attributes);
         }
 
         /// <inheritdoc/>
-        public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributes)
+        public Task TurnOnAsync(string entityId, params (string name, object val)[] attributes)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            await _daemon!.TurnOnAsync(entityId, attributes);
+            return _daemon!.TurnOnAsync(entityId, attributes);
         }
 
         #region IDisposable Support

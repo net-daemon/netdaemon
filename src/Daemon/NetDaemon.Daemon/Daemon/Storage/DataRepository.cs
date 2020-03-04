@@ -30,7 +30,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
 
                 using var jsonStream = File.OpenRead(storageJsonFile);
 
-                return await JsonSerializer.DeserializeAsync<T>(jsonStream, _jsonOptions);
+                return await JsonSerializer.DeserializeAsync<T>(jsonStream, _jsonOptions).ConfigureAwait(false);
             }
             catch  // Ignore all errors for now
             {

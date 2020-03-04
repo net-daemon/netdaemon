@@ -36,7 +36,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
@@ -87,7 +87,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
@@ -124,7 +124,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
@@ -161,7 +161,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
@@ -197,7 +197,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {

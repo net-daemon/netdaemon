@@ -63,7 +63,7 @@ namespace NetDaemon.Daemon.Tests
                 : new CancellationTokenSource(milliSeconds);
             try
             {
-                await _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+                await _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
@@ -91,7 +91,7 @@ namespace NetDaemon.Daemon.Tests
         {
             try
             {
-                await task;
+                await task.ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {

@@ -88,7 +88,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                         .AddConsole();
                                 });
 
-        public async Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => await _hassClient.CallService(domain, service, data, false);
+        public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
 
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
@@ -211,19 +211,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     {
                         // We are running as hassio add-on
                         connectResult = await _hassClient.ConnectAsync(new Uri("ws://hassio/homeassistant/websocket"),
-                            hassioToken, true);
+                            hassioToken, true).ConfigureAwait(false);
                     }
                     else
                     {
-                        connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true);
+                        connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true).ConfigureAwait(false);
                     }
 
                     if (!connectResult)
                     {
                         Connected = false;
                         Logger.LogWarning("Home assistant is unavailable, retrying in 30 seconds...");
-                        await _hassClient.CloseAsync();
-                        await Task.Delay(_reconnectIntervall, cancellationToken);
+                        await _hassClient.CloseAsync().ConfigureAwait(false);
+                        await Task.Delay(_reconnectIntervall, cancellationToken).ConfigureAwait(false);
 
                         continue;
                     }
@@ -231,7 +231,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     // Setup TTS
                     Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
 
-                    await _hassClient.SubscribeToEvents();
+                    await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
                     Connected = true;
                     InternalState = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
@@ -244,7 +244,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        HassEvent changedEvent = await _hassClient.ReadEventAsync();
+                        HassEvent changedEvent = await _hassClient.ReadEventAsync().ConfigureAwait(false);
                         if (changedEvent != null)
                         {
                             // Remove all completed Tasks
@@ -255,7 +255,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         else
                         {
                             // Will only happen when doing unit tests
-                            await Task.Delay(1000, cancellationToken);
+                            await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -264,7 +264,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     if (cancellationToken.IsCancellationRequested)
                     {
                         // Normal behaviour do nothing
-                        await _scheduler.Stop();
+                        await _scheduler.Stop().ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -276,7 +276,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     try
                     {
-                        await _hassClient.CloseAsync();
+                        await _hassClient.CloseAsync().ConfigureAwait(false);
                     }
                     catch
                     {
@@ -285,17 +285,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     Connected = false;
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        await Task.Delay(_reconnectIntervall, cancellationToken);
+                        await Task.Delay(_reconnectIntervall, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
 
-            await _scheduler.Stop();
+            await _scheduler.Stop().ConfigureAwait(false);
         }
 
         public IScript RunScript(params string[] entityId) => new EntityManager(entityId, this);
 
-        public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data);
+        public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
 
         public async Task<EntityState?> SetState(string entityId, dynamic state,
                     params (string name, object val)[] attributes)
@@ -305,7 +305,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 // Use expando object as all other methods
                 dynamic dynAttributes = attributes.ToDynamic();
 
-                HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes);
+                HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes).ConfigureAwait(false);
 
                 if (result != null)
                 {
@@ -337,15 +337,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 return;
             }
 
-            await _hassClient.CloseAsync();
-            await _scheduler.Stop();
+            await _hassClient.CloseAsync().ConfigureAwait(false);
+            await _scheduler.Stop().ConfigureAwait(false);
 
             _stopped = true;
         }
 
         public ITime Timer() => new Common.TimeManager(this);
 
-        public async Task ToggleAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
+        public Task ToggleAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
             // Get the domain if supported, else domain is homeassistant
             string domain = GetDomainFromEntity(entityId);
@@ -357,10 +357,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            await _hassClient.CallService(domain, "toggle", attributes, false);
+            return _hassClient.CallService(domain, "toggle", attributes, false);
         }
 
-        public async Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
+        public Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
             // Get the domain if supported, else domain is homeassistant
             string domain = GetDomainFromEntity(entityId);
@@ -372,10 +372,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            await _hassClient.CallService(domain, "turn_off", attributes, false);
+            return _hassClient.CallService(domain, "turn_off", attributes, false);
         }
 
-        public async Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
+        public Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
         {
             // Use default domain "homeassistant" if supported is missing
             string domain = GetDomainFromEntity(entityId);
@@ -387,7 +387,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            await _hassClient.CallService(domain, "turn_on", attributes, false);
+            return _hassClient.CallService(domain, "turn_on", attributes, false);
         }
 
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
@@ -433,7 +433,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
                     {
-                        await tasks.WhenAll(token);
+                        await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -463,7 +463,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     }
                     if (tasks.Count > 0)
                     {
-                        await tasks.WhenAll(token);
+                        await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -493,7 +493,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     }
                     if (tasks.Count > 0)
                     {
-                        await tasks.WhenAll(token);
+                        await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -521,13 +521,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    (string entityId, string message) = await _ttsMessageQueue.Reader.ReadAsync(cancellationToken);
+                    (string entityId, string message) = await _ttsMessageQueue.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
                     dynamic attributes = new ExpandoObject();
                     attributes.entity_id = entityId;
                     attributes.message = message;
-                    await _hassClient.CallService("tts", "google_cloud_say", attributes, true);
-                    await Task.Delay(InternalDelayTimeForTts); // Wait 2 seconds to wait for status to complete
+                    await _hassClient.CallService("tts", "google_cloud_say", attributes, true).ConfigureAwait(false);
+                    await Task.Delay(InternalDelayTimeForTts).ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
                     EntityState? currentPlayState = GetState(entityId);
                     if (currentPlayState != null && currentPlayState.Attribute?.media_duration != null)
                     {
@@ -535,7 +535,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                         if (delayInMilliSeconds > 0)
                         {
-                            await Task.Delay(delayInMilliSeconds); // Wait remainder of text message
+                            await Task.Delay(delayInMilliSeconds).ConfigureAwait(false); // Wait remainder of text message
                         }
                     }
                 }
@@ -552,7 +552,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
 
-        public async Task SaveDataAsync<T>(string id, T data)
+        public Task SaveDataAsync<T>(string id, T data)
         {
             _ = _repository as IDataRepository ??
                 throw new NullReferenceException($"{nameof(_repository)} can not be null!");
@@ -561,7 +561,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 throw new ArgumentNullException(nameof(data));
 
             _dataCache[id] = data;
-            await _repository!.Save(id, data);
+            return _repository!.Save(id, data);
         }
 
         public async ValueTask<T> GetDataAsync<T>(string id)
@@ -573,7 +573,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 return (T)_dataCache[id];
             }
-            var data = await _repository!.Get<T>(id);
+            var data = await _repository!.Get<T>(id).ConfigureAwait(false);
 
             if (data != null)
                 _dataCache[id] = data;
