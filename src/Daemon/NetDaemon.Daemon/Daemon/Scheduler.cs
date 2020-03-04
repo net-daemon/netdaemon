@@ -63,54 +63,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public DateTime StartTime { get; } = DateTime.MinValue;
 
         /// <inheritdoc/>
-        public void RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
+        public ISchedulerResult RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
 
         /// <inheritdoc/>
-        public Task RunEveryAsync(int millisecondsDelay, Func<Task> func)
+        public ISchedulerResult RunEveryAsync(int millisecondsDelay, Func<Task> func)
         {
             return RunEveryAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
         /// <inheritdoc/>
-        public void RunEvery(TimeSpan timeSpan, Func<Task> func) => RunEveryAsync(timeSpan, func);
+        public ISchedulerResult RunEvery(TimeSpan timeSpan, Func<Task> func) => RunEveryAsync(timeSpan, func);
 
         /// <inheritdoc/>
-        public Task RunEveryAsync(TimeSpan timeSpan, Func<Task> func)
+        public ISchedulerResult RunEveryAsync(TimeSpan timeSpan, Func<Task> func)
         {
-            var task = RunEveryInternalAsync(timeSpan, func);
-            // var stopWatch = new Stopwatch();
-
-            // var task = Task.Run(async () =>
-            // {
-            //     while (!_cancelSource.IsCancellationRequested)
-            //     {
-            //         stopWatch.Start();
-            //         await func.Invoke();
-            //         stopWatch.Stop();
-
-            //         // If less time spent in func that duration delay the remainder
-            //         if (timeSpan > stopWatch.Elapsed)
-            //         {
-            //             var diff = timeSpan.Subtract(stopWatch.Elapsed);
-            //             await _timeManager!.Delay(diff, _cancelSource.Token);
-            //         }
-            //         else
-            //         {
-            //             Console.WriteLine();
-            //         }
-            //         stopWatch.Reset();
-            //     }
-            // }, _cancelSource.Token);
+            var cancelSource = new CancellationTokenSource();
+            var task = RunEveryInternalAsync(timeSpan, func, cancelSource.Token);
 
             ScheduleTask(task);
 
-            return task;
+            return new SchedulerResult(task, cancelSource);
+
         }
 
-        private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func)
+        private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
+            using CancellationTokenSource linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
+
             var stopWatch = new Stopwatch();
-            while (!_cancelSource.IsCancellationRequested)
+            while (!linkedCts.IsCancellationRequested)
             {
                 stopWatch.Start();
                 await func.Invoke().ConfigureAwait(false);
@@ -121,7 +103,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     var diff = timeSpan.Subtract(stopWatch.Elapsed);
                     _logger.LogTrace($"RunEvery, Time: {_timeManager!.Current}, Span: {timeSpan},  Delay {diff}");
-                    await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+                    await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
                 }
                 else
                 {
@@ -154,37 +136,42 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public void RunDaily(string time, Func<Task> func) => RunDailyAsync(time, func);
+        public ISchedulerResult RunDaily(string time, Func<Task> func) => RunDailyAsync(time, func);
 
         /// <inheritdoc/>
-        public void RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func) =>
+        public ISchedulerResult RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func) =>
             RunDailyAsync(time, runOnDays, func);
 
         /// <inheritdoc/>
-        public Task RunDailyAsync(string time, Func<Task> func) => RunDailyAsync(time, null, func);
+        public ISchedulerResult RunDailyAsync(string time, Func<Task> func) => RunDailyAsync(time, null, func);
 
         /// <inheritdoc/>
-        public Task RunDailyAsync(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
+        public ISchedulerResult RunDailyAsync(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
         {
+            var cancelSource = new CancellationTokenSource();
             DateTime timeOfDayToTrigger;
+
             if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
 
-            var task = RunDailyInternalAsync(timeOfDayToTrigger, runOnDays, func);
+            var task = RunDailyInternalAsync(timeOfDayToTrigger, runOnDays, func, cancelSource.Token);
             ScheduleTask(task);
 
-            return task;
+            return new SchedulerResult(task, cancelSource);
         }
 
-        private async Task RunDailyInternalAsync(DateTime timeOfDayToTrigger, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
+        private async Task RunDailyInternalAsync(DateTime timeOfDayToTrigger, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func, CancellationToken token)
         {
-            while (!_cancelSource.IsCancellationRequested)
+            using CancellationTokenSource linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
+
+            while (!linkedCts.IsCancellationRequested)
             {
                 var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
                 _logger.LogTrace($"RunDaily, Time: {_timeManager!.Current}, parsed time: {timeOfDayToTrigger},  Delay {diff}");
-                await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+                await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
 
                 if (runOnDays != null)
                 {
@@ -206,74 +193,63 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public void RunEveryMinute(short second, Func<Task> func) => RunEveryMinuteAsync(second, func);
+        public ISchedulerResult RunEveryMinute(short second, Func<Task> func) => RunEveryMinuteAsync(second, func);
 
         /// <inheritdoc/>
-        public Task RunEveryMinuteAsync(short second, Func<Task> func)
+        public ISchedulerResult RunEveryMinuteAsync(short second, Func<Task> func)
         {
-            //     var task = Task.Run(async () =>
-            //   {
-            //       while (!_cancelSource.IsCancellationRequested)
-            //       {
-            //           var now = _timeManager?.Current;
-            //           var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
-            //           _logger.LogTrace($"RunEveryMinute, Delay {diff}");
-            //           await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
-            //           await func.Invoke().ConfigureAwait(false);
-
-            //       }
-            //   }, _cancelSource.Token);
-            var task = RunEveryMinuteInternalAsync(second, func);
+            var cancelSource = new CancellationTokenSource();
+            var task = RunEveryMinuteInternalAsync(second, func, cancelSource.Token);
 
             ScheduleTask(task);
 
-            return task;
+            return new SchedulerResult(task, cancelSource);
         }
 
-        private async Task RunEveryMinuteInternalAsync(short second, Func<Task> func)
+        private async Task RunEveryMinuteInternalAsync(short second, Func<Task> func, CancellationToken token)
         {
-            while (!_cancelSource.IsCancellationRequested)
+            using CancellationTokenSource linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
+
+            while (!linkedCts.IsCancellationRequested)
             {
                 var now = _timeManager?.Current;
                 var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                 _logger.LogTrace($"RunEveryMinute, Delay {diff}");
-                await _timeManager!.Delay(diff, _cancelSource.Token).ConfigureAwait(false);
+                await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
                 await func.Invoke().ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc/>
-        public void RunIn(int millisecondsDelay, Func<Task> func) => RunInAsync(millisecondsDelay, func);
+        public ISchedulerResult RunIn(int millisecondsDelay, Func<Task> func) => RunInAsync(millisecondsDelay, func);
 
         /// <inheritdoc/>
-        public Task RunInAsync(int millisecondsDelay, Func<Task> func)
+        public ISchedulerResult RunInAsync(int millisecondsDelay, Func<Task> func)
         {
             return RunInAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
         /// <inheritdoc/>
-        public void RunIn(TimeSpan timeSpan, Func<Task> func) => RunInAsync(timeSpan, func);
+        public ISchedulerResult RunIn(TimeSpan timeSpan, Func<Task> func) => RunInAsync(timeSpan, func);
 
         /// <inheritdoc/>
-        public Task RunInAsync(TimeSpan timeSpan, Func<Task> func)
+        public ISchedulerResult RunInAsync(TimeSpan timeSpan, Func<Task> func)
         {
-            // var task = Task.Run(async () =>
-            // {
-            //     _logger.LogTrace($"RunIn, Delay {timeSpan}");
-            //     await _timeManager!.Delay(timeSpan, _cancelSource.Token).ConfigureAwait(false);
-            //     await func.Invoke().ConfigureAwait(false);
-            // }, _cancelSource.Token);
-
-            var task = InternalRunInAsync(timeSpan, func);
+            var cancelSource = new CancellationTokenSource();
+            var task = InternalRunInAsync(timeSpan, func, cancelSource.Token);
             ScheduleTask(task);
 
-            return task;
+            return new SchedulerResult(task, cancelSource);
         }
 
-        private async Task InternalRunInAsync(TimeSpan timeSpan, Func<Task> func)
+        private async Task InternalRunInAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
+            using CancellationTokenSource linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
+
             _logger.LogTrace($"RunIn, Delay {timeSpan}");
-            await _timeManager!.Delay(timeSpan, _cancelSource.Token).ConfigureAwait(false);
+            await _timeManager!.Delay(timeSpan, linkedCts.Token).ConfigureAwait(false);
             await func.Invoke().ConfigureAwait(false);
         }
 
@@ -373,5 +349,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 expectedDelay = expectedDelay - elapsedTime + TimeSpan.FromMilliseconds(1);
             }
         }
+    }
+
+    public class SchedulerResult : ISchedulerResult
+    {
+        private readonly Task _scheduledTask;
+        private readonly CancellationTokenSource _cancelSource;
+
+        public SchedulerResult(Task scheduledTask, CancellationTokenSource cancelSource)
+        {
+            _scheduledTask = scheduledTask;
+            _cancelSource = cancelSource;
+        }
+        public Task Task => _scheduledTask;
+        public CancellationTokenSource CancelSource => _cancelSource;
     }
 }

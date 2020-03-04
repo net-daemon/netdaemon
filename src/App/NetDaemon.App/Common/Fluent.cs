@@ -259,7 +259,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     Excecute commands
         /// </summary>
-        void Execute();
+        ISchedulerResult Execute();
 
         /// <summary>
         ///     Use attribute on entity action in time actions
@@ -861,11 +861,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public void Execute()
+        public ISchedulerResult Execute()
         {
             _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            _daemon.Scheduler.RunEveryAsync(_timeSpan, async () => { await _entityManager.ExecuteAsync(true).ConfigureAwait(false); });
+            return _daemon.Scheduler.RunEvery(_timeSpan, async () => { await _entityManager.ExecuteAsync(true).ConfigureAwait(false); });
         }
 
         /// <inheritdoc/>

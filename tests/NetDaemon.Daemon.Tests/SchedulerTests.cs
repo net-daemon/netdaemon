@@ -20,11 +20,11 @@ namespace NetDaemon.Daemon.Tests
 
             var mockTimeManager = new TimeManagerMock(startTime);
             var isTaskRun = false;
-            Task runTask;
+            ISchedulerResult scheduledResult;
             await using (IScheduler scheduler = new Scheduler())
             {
                 // ACT
-                runTask = scheduler.RunInAsync(200, async () =>
+                scheduledResult = scheduler.RunIn(200, async () =>
                 {
                     isTaskRun = true;
                     await Task.Delay(1);
@@ -41,14 +41,54 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await runTask;
+                await scheduledResult.Task;
             }
             catch
             {
             }
 
             Assert.True(isTaskRun);
-            Assert.True(runTask.IsCompletedSuccessfully);
+            Assert.True(scheduledResult.Task.IsCompletedSuccessfully);
+        }
+
+        [Fact]
+        public async void TestRunInShouldStartAndAncCancelCorrectly()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 4, 5, 6);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            var isTaskRun = false;
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler())
+            {
+                // ACT
+                scheduledResult = scheduler.RunIn(200, async () =>
+                {
+                    isTaskRun = true;
+                    await Task.Delay(1);
+                });
+
+                // ASSERT
+                // Assert not run before time
+
+                await Task.Delay(100);
+                Assert.False(isTaskRun);
+                scheduledResult.CancelSource.Cancel();
+                await Task.Delay(150);
+            }
+
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+
+            Assert.False(isTaskRun);
+            Assert.True(scheduledResult.Task.IsCanceled);
         }
 
         [Theory]
@@ -102,11 +142,11 @@ namespace NetDaemon.Daemon.Tests
 
             var mockTimeManager = new TimeManagerMock(startTime);
             var nrOfRuns = 0;
-            Task runTask;
+            ISchedulerResult scheduledResult;
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 // ACT
-                runTask = scheduler.RunDailyAsync("10:00:01", async () =>
+                scheduledResult = scheduler.RunDaily("10:00:01", async () =>
                {
                    nrOfRuns++;
                    await Task.Delay(1);
@@ -120,11 +160,47 @@ namespace NetDaemon.Daemon.Tests
             }
             try
             {
-                await runTask;
+                await scheduledResult.Task;
             }
             catch
             {
             }
+        }
+
+        [Fact]
+        public async void TestRunDailyUsingStartTimeCancelsCorrectly()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 0, 0);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            var nrOfRuns = 0;
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
+            {
+                // ACT
+                scheduledResult = scheduler.RunDaily("10:00:01", async () =>
+               {
+                   nrOfRuns++;
+                   await Task.Delay(1);
+               });
+                await Task.Delay(600);
+
+                // ASSERT
+                Assert.True(nrOfRuns == 0);
+                scheduledResult.CancelSource.Cancel();
+                await Task.Delay(500);
+                Assert.True(nrOfRuns == 0);
+            }
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+            Assert.True(scheduledResult.Task.IsCanceled);
         }
 
         [Theory]
@@ -141,13 +217,13 @@ namespace NetDaemon.Daemon.Tests
             var startTime = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
             var mockTimeManager = new TimeManagerMock(startTime);
-            Task runTask;
+            ISchedulerResult scheduledResult;
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 var nrOfRuns = 0;
 
                 // ACT
-                runTask = scheduler.RunDailyAsync("10:00:01", new DayOfWeek[] { dayOfWeek }, async () =>
+                scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { dayOfWeek }, async () =>
                    {
                        nrOfRuns++;
                        await Task.Delay(1);
@@ -162,7 +238,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await runTask;
+                await scheduledResult.Task;
             }
             catch
             {
@@ -182,14 +258,14 @@ namespace NetDaemon.Daemon.Tests
             var startTime = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
             var mockTimeManager = new TimeManagerMock(startTime);
-            Task runTask;
+            ISchedulerResult scheduledResult;
 
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 var nrOfRuns = 0;
 
                 // ACT
-                runTask = scheduler.RunDailyAsync("10:00:01", new DayOfWeek[] { DayOfWeek.Monday }, async () =>
+                scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { DayOfWeek.Monday }, async () =>
                   {
                       nrOfRuns++;
                       await Task.Delay(1);
@@ -204,7 +280,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await runTask;
+                await scheduledResult.Task;
             }
             catch
             {
@@ -219,13 +295,13 @@ namespace NetDaemon.Daemon.Tests
                 new DateTime(2001, 2, 3, 10, 00, 59);
 
             var mockTimeManager = new TimeManagerMock(startTime);
-            Task runTask;
+            ISchedulerResult scheduledResult;
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 var nrOfRuns = 0;
 
                 // ACT
-                runTask = scheduler.RunEveryMinuteAsync(0, async () =>
+                scheduledResult = scheduler.RunEveryMinute(0, async () =>
                 {
                     nrOfRuns++;
                     await Task.Delay(1);
@@ -240,11 +316,49 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await runTask;
+                await scheduledResult.Task;
             }
             catch
             {
             }
+        }
+
+        [Fact]
+        public async void TestRunEveryMinuteStartTimeCanceledCorrectly()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 00, 59);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
+            {
+                var nrOfRuns = 0;
+
+                // ACT
+                scheduledResult = scheduler.RunEveryMinute(0, async () =>
+                {
+                    nrOfRuns++;
+                    await Task.Delay(1);
+                });
+                await Task.Delay(300);
+
+                // ASSERT
+                Assert.Equal(0, nrOfRuns);
+                scheduledResult.CancelSource.Cancel();
+                await Task.Delay(1500);
+                Assert.Equal(0, nrOfRuns);
+            }
+
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+            Assert.True(scheduledResult.Task.IsCanceled);
         }
 
         [Fact]
@@ -255,14 +369,14 @@ namespace NetDaemon.Daemon.Tests
                 new DateTime(2001, 2, 3, 10, 00, 19);
 
             var mockTimeManager = new TimeManagerMock(startTime);
-            Task runTask;
+            ISchedulerResult scheduledResult;
 
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 var nrOfRuns = 0;
 
                 // ACT
-                runTask = scheduler.RunEveryMinuteAsync(20, async () =>
+                scheduledResult = scheduler.RunEveryMinute(20, async () =>
                 {
                     nrOfRuns++;
                     await Task.Delay(1);
@@ -277,7 +391,7 @@ namespace NetDaemon.Daemon.Tests
 
             try
             {
-                await runTask;
+                await scheduledResult.Task;
             }
             catch
             {
@@ -294,12 +408,12 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 // ACT
-                var runTask = scheduler.RunEveryAsync(20, async () =>
+                var runTask = scheduler.RunEvery(20, async () =>
                 {
                     await Task.Delay(25);
                 });
 
-                await Task.WhenAny(runTask, Task.Delay(500));
+                await Task.WhenAny(runTask.Task, Task.Delay(500));
             }
             // ASSERT
             mockTimeManager.Verify(n => n.Delay(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -315,12 +429,12 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 // ACT
-                var runTask = scheduler.RunEveryAsync(20, async () =>
+                var runTask = scheduler.RunEvery(20, async () =>
                 {
                     await Task.Delay(1);
                 });
 
-                await Task.WhenAny(runTask, Task.Delay(100));
+                await Task.WhenAny(runTask.Task, Task.Delay(100));
             }
 
             // ASSERT
