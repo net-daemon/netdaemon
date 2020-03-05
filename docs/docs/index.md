@@ -15,7 +15,7 @@ Why a new application daemon for Home Assistant? There already exists one!? The 
 !!! warning
     This is in pre-alpha experimental phase and expect API:s to change over time. Please use and contribute ideas for improvement or better yet PR:s.
 
-Only amd64 (non arm) is currently supported but ARM devices as Raspberry PI will be supported in the near future.
+Only tested on amd64 based architectures like PC or NUC and Raspberry PI 3. Probably works on other architectures too. Will update the docs when I get confirmations from other platforms.
 
 The daemon is currently only distributed through Hassio add-on but a docker container and instruction to run locally will be provided in time.
 
