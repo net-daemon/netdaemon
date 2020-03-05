@@ -26,7 +26,7 @@ Development of apps is currently recommended doing locally. A vscode development
 
 1. Make sure you installed Remote Development extension in vscode
 2. Open the `netdaemon` folder and select open as container. Wait for the container to be created.
-3. Configure the config.json properly
+3. Configure the daemon_config.json properly
 4. Open the vscode terminal and run `dotnet restore`, this needs to be done to get intellisense to work properly. Sometimes you need to restart vscode once for it to work.
 5. Hack away! Run and debug your stuff! There are a few code snippets (ctrl+space) you can use. There will be more later.
 

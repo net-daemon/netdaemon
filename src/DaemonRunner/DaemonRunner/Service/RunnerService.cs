@@ -140,12 +140,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 // Check if config is in a file same folder as exefile
                 var filenameForExecutingAssembly = Assembly.GetExecutingAssembly().Location;
                 var folderOfExecutingAssembly = Path.GetDirectoryName(filenameForExecutingAssembly);
-                var configFilePath = Path.Combine(folderOfExecutingAssembly!, "config.json");
+                var configFilePath = Path.Combine(folderOfExecutingAssembly!, "daemon_config.json");
 
                 if (File.Exists(configFilePath))
                     return JsonSerializer.Deserialize<HostConfig>(File.ReadAllBytes(configFilePath));
 
-                var exampleFilePath = Path.Combine(folderOfExecutingAssembly!, "_config.json");
+                var exampleFilePath = Path.Combine(folderOfExecutingAssembly!, "_daemon_config.json");
                 if (!File.Exists(exampleFilePath))
                     JsonSerializer.SerializeAsync(File.OpenWrite(exampleFilePath), new HostConfig());
 
