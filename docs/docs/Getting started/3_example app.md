@@ -83,7 +83,7 @@ This async function is called by the daemon and it´s purpose is to do all the i
 
 Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
 
-| User                                                                                                    | Repo                                                  |
+| User                                                                                                    | Description                                           |
 | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | [@helto4real](https://github.com/helto4real/hassio/tree/master/netdaemon/apps])                         | My own netdaemon apps running in production           |
 | [@isabellaalstrom](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) | Isabella's netdaemon apps, check them out, nice stuff |
