@@ -5,13 +5,15 @@ title: Example app
 
 This application shows basic capabilities of the fluent API of NetDaemon. It has two files, `ExampleApp.yaml` that contains basic configuration of the instance and `ExampleApp.cs` that contains the app logic.
 
-**ExampleApp.yaml**
+## ExampleApp.yaml
+
 ```yaml
 example_app:
     class: ExampleApp
 ```
 
-**ExampleApp.cs**
+## ExampleApp.cs
+
 ```c#
 using System;
 using System.Threading.Tasks;
@@ -68,7 +70,6 @@ This async function is called by the daemon and it´s purpose is to do all the i
         .Execute();
 ```
 
-
 | Function        | Description                                                                               |
 | --------------- | ----------------------------------------------------------------------------------------- |
 | Entity          | Selects one or more entities where actions are applied                                    |
@@ -77,3 +78,11 @@ This async function is called by the daemon and it´s purpose is to do all the i
 | UseEntity       | The action on previously selected entity/ies                                              |
 | TurnOff         | The action on previously selected entity/ies                                              |
 | Execute         | Ends the api call. You cannot skip this function or the automation will not be activated! |
+
+## Real-world example apps
+
+Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
+| Repo             | Description                                                                                                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| @helto4real      | [https://github.com/helto4real/hassio/tree/master/netdaemon/apps](https://github.com/helto4real/hassio/tree/master/netdaemon/apps)                                         |
+| @isabellaalstrom | [https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) |

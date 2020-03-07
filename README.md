@@ -8,6 +8,14 @@ Please see [https://helto4real.github.io/netdaemon/](https://helto4real.github.i
 
 >**The NetDaemon is currently in alpha release so expect things to change.**
 
+## Example apps
+
+Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
+| Repo             | Description                                                                                                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| @helto4real      | [https://github.com/helto4real/hassio/tree/master/netdaemon/apps](https://github.com/helto4real/hassio/tree/master/netdaemon/apps)                                         |
+| @isabellaalstrom | [https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) |
+
 ## VSCode customization
 
 Please advice that some customizations to VSCode has been made through settings. Check out the settings.json in the .vscode folder.
