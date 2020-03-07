@@ -84,7 +84,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     if (to?.State == from?.State && !hassStateChangedAttribute.AllChanges)
                         return;
 
-                    await method.InvokeAsync(netDaemonApp, entityId, to!, from!);
+                    await method.InvokeAsync(netDaemonApp, entityId, to!, from!).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -113,7 +113,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     try
                     {
                         var expObject = data as ExpandoObject;
-                        await method.InvokeAsync(netDaemonApp, expObject!);
+                        await method.InvokeAsync(netDaemonApp, expObject!).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
@@ -199,9 +199,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 foreach (var appInstance in yamlAppConfig.Instances)
                 {
                     result.Add(appInstance);
-                    await appInstance.StartUpAsync(host!);
-                    await appInstance.RestoreAppStateAsync();
-                    await appInstance.InitializeAsync();
+                    await appInstance.StartUpAsync(host!).ConfigureAwait(false);
+                    await appInstance.RestoreAppStateAsync().ConfigureAwait(false);
+                    await appInstance.InitializeAsync().ConfigureAwait(false);
                     appInstance.HandleAttributeInitialization(host!);
                     host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
                 }

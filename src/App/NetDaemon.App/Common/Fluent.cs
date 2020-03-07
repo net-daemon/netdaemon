@@ -475,7 +475,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     {
                         _daemon.Logger.LogDebug(
                             $"AndNotChangeFor statement found, delaying {_currentState.ForTimeSpan}");
-                        await Task.Delay(_currentState.ForTimeSpan);
+                        await Task.Delay(_currentState.ForTimeSpan).ConfigureAwait(false);
                         var currentState = _daemon.GetState(entityIdInn);
                         if (currentState != null && currentState.State == newState?.State)
                         {
@@ -487,9 +487,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                     $"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
                                 // The state has not changed during the time we waited
                                 if (_currentState.FuncToCall == null)
-                                    await entityManager.ExecuteAsync(true);
+                                    await entityManager.ExecuteAsync(true).ConfigureAwait(false);
                                 else
-                                    await _currentState.FuncToCall(entityIdInn, newState, oldState);
+                                    await _currentState.FuncToCall(entityIdInn, newState, oldState).ConfigureAwait(false);
                             }
                             else
                             {
@@ -509,11 +509,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                             $"State {newState?.State} expected from {oldState?.State}, executing action!");
 
                         if (_currentState.FuncToCall != null)
-                            await _currentState.FuncToCall(entityIdInn, newState, oldState);
+                            await _currentState.FuncToCall(entityIdInn, newState, oldState).ConfigureAwait(false);
                         else if (_currentState.ScriptToCall != null)
-                            await _daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync();
+                            await _daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
                         else
-                            await entityManager.ExecuteAsync(true);
+                            await entityManager.ExecuteAsync(true).ConfigureAwait(false);
                     }
                 });
             //}
@@ -677,7 +677,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 taskList.Add(task);
             }
 
-            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000));
+            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -695,7 +695,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 _ => throw new NotSupportedException($"Action type not supported {_currentAction.ActionType}")
             };
 
-            await executeTask;
+            await executeTask.ConfigureAwait(false);
 
             // Use local function to get the nice switch statement above:)
             Task Speak()
@@ -712,9 +712,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        async Task IExecuteAsync.ExecuteAsync()
+        Task IExecuteAsync.ExecuteAsync()
         {
-            await ExecuteAsync();
+            return ExecuteAsync();
         }
 
         /// <inheritdoc/>
@@ -728,7 +728,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             }
 
             // Wait for all tasks to complete or max 5 seconds
-            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000));
+            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -746,10 +746,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             if (keepItems)
                 foreach (var action in _actions)
-                    await HandleAction(action);
+                    await HandleAction(action).ConfigureAwait(false);
             else
                 while (_actions.TryDequeue(out var fluentAction))
-                    await HandleAction(fluentAction);
+                    await HandleAction(fluentAction).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -781,9 +781,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        private async Task ExecuteAsync()
+        private Task ExecuteAsync()
         {
-            await ExecuteAsync(false);
+            return ExecuteAsync(false);
         }
 
         /// <inheritdoc/>
@@ -805,7 +805,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 taskList.Add(task);
             }
             // Wait for all tasks to complete or max 5 seconds
-            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000));
+            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000)).ConfigureAwait(false);
         }
     }
 
@@ -865,7 +865,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            _daemon.Scheduler.RunEveryAsync(_timeSpan, async () => { await _entityManager.ExecuteAsync(true); });
+            _daemon.Scheduler.RunEveryAsync(_timeSpan, async () => { await _entityManager.ExecuteAsync(true).ConfigureAwait(false); });
         }
 
         /// <inheritdoc/>

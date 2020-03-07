@@ -22,7 +22,7 @@ namespace Service
                 if (File.Exists(_hassioConfigPath))
                 {
                     var hassAddOnSettings = await JsonSerializer.DeserializeAsync<System.Collections.Generic.Dictionary<string, string>>(
-                                                        File.OpenRead(_hassioConfigPath));
+                                                        File.OpenRead(_hassioConfigPath)).ConfigureAwait(false);
                     if (hassAddOnSettings.ContainsKey("log_level"))
                     {
                         Program.LogLevel = hassAddOnSettings["log_level"] switch

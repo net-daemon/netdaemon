@@ -32,9 +32,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 return;
 
             _logger.LogInformation("Stopping netdaemon...");
-            await _daemonHost.Stop();
+            await _daemonHost.Stop().ConfigureAwait(false);
 
-            await Task.WhenAny(_daemonHost.Stop(), Task.Delay(1000, cancellationToken));
+            await Task.WhenAny(_daemonHost.Stop(), Task.Delay(1000, cancellationToken)).ConfigureAwait(false);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,7 +67,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         var nrOfTimesCheckForConnectedState = 0;
                         while (!_daemonHost.Connected && !stoppingToken.IsCancellationRequested)
                         {
-                            await Task.Delay(1000, stoppingToken);
+                            await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
                             if (nrOfTimesCheckForConnectedState++ > 3)
                                 break;
                         }
@@ -79,7 +79,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 {
                                     // Instance all apps
                                     var codeManager = new CodeManager(sourceFolder);
-                                    await codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost);
+                                    await codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost).ConfigureAwait(false);
                                 }
                                 catch (Exception e)
                                 {
@@ -87,7 +87,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 }
 
                                 // Wait until daemon stops
-                                await daemonHostTask;
+                                await daemonHostTask.ConfigureAwait(false);
                             }
                             else
                             {
@@ -105,7 +105,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                     if (!stoppingToken.IsCancellationRequested)
                         // The service is still running, we have error in connection to hass
-                        await Task.Delay(30000, stoppingToken); // Wait 5 seconds
+                        await Task.Delay(30000, stoppingToken).ConfigureAwait(false); // Wait 5 seconds
                 }
             }
             catch (OperationCanceledException)

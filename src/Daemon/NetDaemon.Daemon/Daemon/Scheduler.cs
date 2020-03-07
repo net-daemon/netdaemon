@@ -113,7 +113,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             while (!_cancelSource.IsCancellationRequested)
             {
                 stopWatch.Start();
-                await func.Invoke();
+                await func.Invoke().ConfigureAwait(false);
                 stopWatch.Stop();
 
                 // If less time spent in func that duration delay the remainder
@@ -288,7 +288,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _scheduledTasks[_schedulerTask.Id] = _schedulerTask;
 
             var taskResult = await Task.WhenAny(
-                Task.WhenAll(_scheduledTasks.Values.ToArray()), Task.Delay(1000));
+                Task.WhenAll(_scheduledTasks.Values.ToArray()), Task.Delay(1000)).ConfigureAwait(false);
 
             if (_scheduledTasks.Values.Count(n => n.IsCompleted == false) > 0)
                 // Todo: Some kind of logging have to be done here to tell user which task caused timeout
@@ -332,7 +332,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             try
             {
                 if (!_cancelSource.IsCancellationRequested)
-                    await Stop();
+                    await Stop().ConfigureAwait(false);
             }
             catch // Ignore errors in cleanup
             {
