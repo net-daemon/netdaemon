@@ -17,7 +17,7 @@ title: Installation
 
 ## Download the development environment
 
-Development of apps is currently recommended doing locally. A vscode development devcontainer has been prepared for you at [https://github.com/helto4real/hassio-add-ons/tree/master/netdaemon](https://github.com/helto4real/hassio-add-ons/tree/master/netdaemon). Clone the folder netdaemon to your local maching. The folder should be containing the following files:
+Development of apps is currently recommended doing locally. A vscode development devcontainer has been prepared for you at [https://github.com/helto4real/netdaemon-app-template](https://github.com/helto4real/netdaemon-app-template). Use the GitHub template for your own project. The folder should be containing the following files:
 
 ![](img/netdaemonfolder.png)
 
