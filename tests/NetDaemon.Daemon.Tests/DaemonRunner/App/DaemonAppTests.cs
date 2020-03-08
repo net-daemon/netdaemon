@@ -45,13 +45,25 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         }
 
         [Fact]
+        public void ApplicationShouldBePresentInCsFileWithFullNameNameSpace()
+        {
+            // ARRANGE
+            var codeManager = new CodeManager(Path.Combine(ConfigFixturePath, "fullname"));
+            // ACT
+            // ASSERT
+            Assert.Single(codeManager.DaemonAppTypes.Where(n => n.FullName == "TheAppNameSpace.FullNameApp"));
+            Assert.Single(codeManager.DaemonAppTypes.Where(n => n.FullName == "TheAppNameSpace2.FullNameApp"));
+            Assert.Equal(2, codeManager.DaemonAppTypes.Count());
+        }
+
+        [Fact]
         public void ApplicationAllShouldBePresentInCsFile()
         {
             // ARRANGE
             var codeManager = new CodeManager(ConfigFixturePath);
             // ACT
             // ASSERT
-            Assert.Equal(5, codeManager.DaemonAppTypes.Select(n => n.Name.StartsWith("Lev")).Count());
+            Assert.Equal(7, codeManager.DaemonAppTypes.Count());
         }
 
         [Fact]

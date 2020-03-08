@@ -88,6 +88,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             DefaultHassClientMock.AssertEqual(hassState, entity!);
         }
 
+        // Todo: Add tests to test objects and arrays from the dynamic conversion
+
         [Fact]
         public async Task OtherEventShouldNotCallCorrectFunction()
         {

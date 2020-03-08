@@ -2,6 +2,7 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,6 +86,49 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
 
             return entityState;
+        }
+
+        public static object? ToDynamicValue(this JsonElement elem)
+        {
+            switch (elem.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return ParseDataType(elem.GetString());
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.Number:
+                    return elem.TryGetInt64(out Int64 intValue) ? intValue : elem.GetDouble();
+                case JsonValueKind.Array:
+                    var list = new List<object?>();
+                    foreach (var val in elem.EnumerateArray())
+                    {
+                        list.Add(val.ToDynamicValue());
+                    }
+                    return (IEnumerable<object?>)list;
+                case JsonValueKind.Object:
+                    var obj = new Dictionary<string, object?>();
+
+                    foreach (var prop in elem.EnumerateObject())
+                    {
+                        obj[prop.Name] = prop.Value.ToDynamicValue();
+                    }
+                    return (IDictionary<string, object?>)obj;
+            }
+
+            return null;
+        }
+
+        public static object ParseDataType(string state)
+        {
+            if (Int64.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Int64 intValue))
+                return intValue;
+
+            if (Double.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Double doubleValue))
+                return doubleValue;
+
+            return state;
         }
 
         public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
