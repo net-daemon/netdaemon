@@ -48,7 +48,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                     // Get the class
 
                     string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
-                    Type appType = _types.Where(n => n.Name.ToLowerInvariant() == appClass)
+                    Type appType = _types.Where(n => n.FullName?.ToLowerInvariant() == appClass)
                                                    .FirstOrDefault();
 
                     if (appType != null)
