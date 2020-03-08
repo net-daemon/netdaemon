@@ -29,16 +29,26 @@ public class TheApp : NetDaemonApp
         }
         return builder.ToString();
     }
-    public override Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
-        ListenServiceCall("scene", "turn_on", async (data) =>
-        {
-            Log("Service call!");
-            var prettyData = PrettyPrintDictData(data as IDictionary<string, object>);
-            Log(prettyData);
+        await CallService("light", "toggle", new { entity_id = "light.tomas_rum" }, false);
 
 
-        });
+        // await Task.Delay(100);
+        // Scheduler.RunEvery(TimeSpan.FromSeconds(10), async () =>
+        // {
+        //     // dynamic x = new ExpandoObject();
+
+        // });
+
+        // ListenServiceCall("scene", "turn_on", async (data) =>
+        // {
+        //     Log("Service call!");
+        //     var prettyData = PrettyPrintDictData(data as IDictionary<string, object>);
+        //     Log(prettyData);
+
+
+        // });
 
         // var time = "07:24:23";
         // // Do nothing
@@ -61,7 +71,7 @@ public class TheApp : NetDaemonApp
         //     DayOfWeek.Sunday,
         // }, async () => Log($"This is correct time! {DateTime.Now}"));
         // Scheduler.RunEveryMinute(30, async () => Log($"{DateTime.Now}"));
-        return Task.CompletedTask;
+        // return Task.CompletedTask;
     }
 
     private void Schedule(string time)

@@ -9,6 +9,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
+      "justMyCode": false,
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/src/Service/bin/Debug/netcoreapp3.1/Service.dll",
       "args": [],
