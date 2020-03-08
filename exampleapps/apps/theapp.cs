@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Text;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 /// <summary>
-///     Greets (or insults) people when coming home :)
+///     This is mainly used to debug real hass use-cases
 /// </summary>
 public class TheApp : NetDaemonApp
 {
@@ -31,7 +31,15 @@ public class TheApp : NetDaemonApp
     }
     public override async Task InitializeAsync()
     {
-        await CallService("light", "toggle", new { entity_id = "light.tomas_rum" }, false);
+        // await CallService("light", "toggle", new { entity_id = "light.tomas_rum" }, false);
+
+        // var state = GetState("sensor.hacs");
+        // state.Attribute.repositoriess = new List<object?>();
+        // foreach (IDictionary<string, object?> item in state?.Attribute?.repositoriess as IEnumerable<object?>)
+        // {
+
+        //     Log(item["name"] as string);
+        // }
 
 
         // await Task.Delay(100);
