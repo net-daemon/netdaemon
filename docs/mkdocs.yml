@@ -3,7 +3,7 @@ theme: 'material' #m
 # google_analytics:
 #   - UA-133997912-1
 #   - auto
-repo_url: https://github.com/helto4real/netdaemon/
+repo_url: https://github.com/net-daemon/netdaemon/
 site_dir: site
 site_author: 'Tomas Hellström, @helto4real'
 dev_addr: 127.0.0.1:8001
