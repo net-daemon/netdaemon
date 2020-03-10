@@ -22,3 +22,7 @@ Please check out the apps being developed for netdaemon. Since documentation is 
 ## VSCode customization
 
 Please advice that some customizations to VSCode has been made through settings. Check out the settings.json in the .vscode folder.
+
+## Attribution
+
+ICON: Attribution: [chris]([chris](https://commons.wikimedia.org/wiki/User:Chrkl)) 論
