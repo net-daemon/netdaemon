@@ -23,7 +23,6 @@ Development of apps is currently recommended doing locally. A vscode development
 
 ## Open the content in vscode
 
-
 1. Make sure you installed Remote Development extension in vscode
 2. Open the `netdaemon` folder and select open as container. Wait for the container to be created.
 3. Configure the daemon_config.json properly
@@ -44,4 +43,4 @@ Now you can start the plugin, check the logs for any errors.
 
 Todo: make link to examples here..
 
-My own automations can be found at : [https://github.com/helto4real/hassio/tree/master/netdaemon/apps](https://github.com/helto4real/hassio/tree/master/netdaemon/apps).
+My own automation can be found at : [https://github.com/helto4real/hassio/tree/master/netdaemon/apps](https://github.com/helto4real/hassio/tree/master/netdaemon/apps).
