@@ -25,4 +25,4 @@ Please advice that some customizations to VSCode has been made through settings.
 
 ## Attribution
 
-ICON: Attribution: [chris]([chris](https://commons.wikimedia.org/wiki/User:Chrkl)) 論
+ICON: Attribution: [chris](https://commons.wikimedia.org/wiki/User:Chrkl) 論
