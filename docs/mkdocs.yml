@@ -1,5 +1,5 @@
 site_name: NetDaemon - Application daemon written in .NET core.
-theme: 'material' #readthedocs
+theme: 'material' #m
 # google_analytics:
 #   - UA-133997912-1
 #   - auto
