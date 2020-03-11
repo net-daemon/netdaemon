@@ -8,7 +8,6 @@ The netdaemon API is used to access Home Assistant features. There are a classic
 
 It is up to the writer to decide what API suits bests their needs.
 
-
 ## Fluent API
 
 Example turn on light using the fluent API.
@@ -37,4 +36,3 @@ await await CallService("light", "turn_on",
 
 await TurnOnAsync("light.tomas_rum_fonster", ("brightness", 50));
 ```
-

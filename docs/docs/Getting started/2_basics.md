@@ -15,7 +15,7 @@ Before coding, run the `dotnet restore` to get intellisense.
 
 ## Create new app
 
-Automations in NetDaemon is created in apps. All apps inherit from the base class `NetDaemonApp`.
+Automation in NetDaemon is created in apps. All apps inherit from the base class `NetDaemonApp`.
 
 All apps have to implement and override the function:
 
@@ -52,6 +52,7 @@ I provide some code snippets to create a new app. Check it out.. In vscode, in t
 NetDaemon is built on .NET and c# async model. It is important that you read up on async programming model. But here is some basics!
 
 ### Use the await keyword
+
 Whenever you see a function return a `Task` and mostly these functions has the postfix `Async`. Use the keyword `await` before calling. Example using the fluent API below:
 
 ```c#
@@ -68,4 +69,3 @@ Remember that the function needs to be async containing this call as the example
 
 !!! danger
     Never use `Thread.Sleep();`! It is very important that you never block async operations. Use the `await Task.Delay();` instead if you need to pause execution.
-

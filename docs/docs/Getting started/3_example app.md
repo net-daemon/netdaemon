@@ -85,5 +85,5 @@ Please check out the apps being developed for netdaemon. Since documentation is 
 
 | User                                                                                                    | Description                                           |
 | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [@helto4real](https://github.com/helto4real/hassio/tree/master/netdaemon/apps])                         | My own netdaemon apps running in production           |
+| [@helto4real](https://github.com/helto4real/hassio/tree/master/netdaemon/apps)                         | My own netdaemon apps running in production           |
 | [@isabellaalstrom](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) | Isabella's netdaemon apps, check them out, nice stuff |
