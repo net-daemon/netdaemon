@@ -1,5 +1,5 @@
 ---
-title: Basics
+title: HACS support
 ---
 # HACS support
 
