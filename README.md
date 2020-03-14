@@ -6,7 +6,7 @@
 
 Welcome to the NetDaemon project. This is the application daemon for Home Assistant for people that love to write code in the .NET ecosystem and want to do their automation for Home Assistant in .NET and C#.
 
-Please see [https://net-daemon.github.io/netdaemon/](https://net-daemon.github.io/netdaemon/) for detailed instructions how to get started using NetDaemon.
+Please see https://netdaemon.xyz](https://netdaemon.xyz) for detailed instructions how to get started using NetDaemon.
 
 >**The NetDaemon is currently in alpha release so expect things to change.**
 
