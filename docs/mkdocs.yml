@@ -17,6 +17,7 @@ nav:
         - Getting started/1_getting started.md
         - Getting started/2_basics.md
         - Getting started/3_example app.md
+        - Getting started/4_get_apps_with_hacs.md
 
     - API:
         API Start: API/api.md
