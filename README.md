@@ -10,6 +10,14 @@ Please see [https://net-daemon.github.io/netdaemon/](https://net-daemon.github.i
 
 >**The NetDaemon is currently in alpha release so expect things to change.**
 
+## Issues
+
+If you have issues or suggestions of improvements, please [add an issue](https://github.com/net-daemon/netdaemon/issues)
+
+## Discuss the NetDaemon
+
+Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or if you want to ask questions.
+
 ## Example apps
 
 Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
