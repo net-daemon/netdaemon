@@ -1,4 +1,4 @@
-# NetDaemon - Home Assistant application daemon for .NET core.
+# NetDaemon - Application daemon in .NET core for Home Assistant
 
 [![Build Status](https://dev.azure.com/helto4real0721/NetDaemon/_apis/build/status/NetDaemon%20CI%20pipeline?branchName=master)](https://dev.azure.com/helto4real0721/NetDaemon/_build/latest?definitionId=3&branchName=master)
 
