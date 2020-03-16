@@ -1,4 +1,4 @@
-﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
@@ -43,13 +43,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             {
                 _logger.LogInformation("Starting netdaemon...");
 
-                var config = ReadConfig();
+                var config = await ReadConfigAsync();
 
                 if (config == null)
                 {
                     _logger.LogError("No config specified, file or environment variables! Exiting...");
                     return;
                 }
+
+                EnsureApplicationDirectoryExists(config);
 
                 var sourceFolder = config.SourceFolder;
                 var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
@@ -119,7 +121,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             _logger.LogInformation("End netdaemon..");
         }
 
-        private HostConfig? ReadConfig()
+        private async Task<HostConfig?> ReadConfigAsync()
         {
             try
             {
@@ -145,10 +147,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 if (File.Exists(configFilePath))
                     return JsonSerializer.Deserialize<HostConfig>(File.ReadAllBytes(configFilePath));
 
-                var exampleFilePath = Path.Combine(folderOfExecutingAssembly!, "_daemon_config.json");
-                if (!File.Exists(exampleFilePath))
-                    JsonSerializer.SerializeAsync(File.OpenWrite(exampleFilePath), new HostConfig());
-
                 var token = Environment.GetEnvironmentVariable("HASS_TOKEN");
                 if (token != null)
                 {
@@ -162,6 +160,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                           Path.Combine(folderOfExecutingAssembly!, "daemonapp");
                     return config;
                 }
+
+                var exampleFilePath = Path.Combine(folderOfExecutingAssembly!, "daemon_config_example.json");
+                if (!File.Exists(exampleFilePath))
+                {
+                    var json = JsonSerializer.Serialize(new HostConfig());
+                    
+                    using (var fileStream = new FileStream(exampleFilePath, FileMode.CreateNew))
+                    {
+                        var options = new JsonSerializerOptions { WriteIndented = true, IgnoreNullValues = true };
+                        await JsonSerializer.SerializeAsync(fileStream, new HostConfig(), options);
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -169,6 +179,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             }
 
             return null;
+        }
+
+        private void EnsureApplicationDirectoryExists(HostConfig config)
+        {
+            config.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
+            var appDirectory = Path.Combine(config.SourceFolder, "apps");
+
+            Directory.CreateDirectory(appDirectory);
         }
     }
 }
