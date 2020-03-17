@@ -1,3 +1,5 @@
+ARG RUNTIME_IMAGE_TAG=3.1
+
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 WORKDIR /sources
 
@@ -6,7 +8,7 @@ COPY . ./
 RUN dotnet publish src/Service/Service.csproj -c Release -o dist
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:3.1
+FROM mcr.microsoft.com/dotnet/core/runtime:$RUNTIME_IMAGE_TAG
 WORKDIR /app
 COPY --from=build-env /sources/dist .
 
