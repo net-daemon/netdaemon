@@ -197,7 +197,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         public async Task EnableApplicationDiscoveryServiceAsync(INetDaemonHost host, bool discoverServicesOnStartup)
         {
-            host.ListenCompanionServiceCall("reload_daemons", async (_) => await ReloadApplicationsAsync(host));
+            host.ListenCompanionServiceCall("reload_apps", async (_) => await ReloadApplicationsAsync(host));
 
             if (discoverServicesOnStartup)
             {
