@@ -31,6 +31,20 @@ Example giving:
 docker run -v -e HASS_HOST=192.168.1.1 -e HASS_TOKEN=ey123... ~/netdaemon_config:/data --name netdaemon netdaemon
 ```
 
+## Companion App (Home Assistant)
+For the full user experiance please download and copy the netdaemon companion component to the `custom_components` folder of your Home Assistant configuration. The companion app registers basic services that are required for the service attributes as well as the dynamic app reload / discovery feature. 
+
+Do not forget to add the component to your Home Assistant configuration file afterwards.
+
+```
+homeassistant:
+  customize: !include customize.yaml
+...
+netdaemon:
+```
+
+Please have a look at 
+
 ## Example apps
 
 Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
