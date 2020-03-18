@@ -616,8 +616,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await SetState(
                 "netdaemon.status",
                 "Connected", // State will alawys be connected, otherwise state could not be set.
-                ("number_of_loaded_daemons", numberOfLoadedApps),
-                ("number_of_running_daemons", numberOfRunningApps),
+                ("number_of_loaded_apps", numberOfLoadedApps),
+                ("number_of_running_apps", numberOfRunningApps),
                 ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A"));
         }
     }

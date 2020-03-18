@@ -232,9 +232,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 foreach (var appInstance in yamlAppConfig.Instances)
                 {
-                    result.Add(appInstance);
                     await appInstance.StartUpAsync(host!).ConfigureAwait(false);
                     await appInstance.RestoreAppStateAsync().ConfigureAwait(false);
+
+                    if (!appInstance.IsEnabled)
+                    {
+                        appInstance.Dispose();
+                        host!.Logger.LogInformation($"Skipped disabled app {appInstance.GetType().Name}");
+                        continue;
+                    }
+
+                    result.Add(appInstance);
                     await appInstance.InitializeAsync().ConfigureAwait(false);
                     appInstance.HandleAttributeInitialization(host!);
                     host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
