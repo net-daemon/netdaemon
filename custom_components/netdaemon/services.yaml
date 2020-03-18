@@ -1,0 +1,10 @@
+register_service:
+  description: Register a new service for netdaemon, used by the daemon and not to be used by users
+  fields:
+    class:
+      description: The class that implements the service call
+    method:
+      description: The method to call
+reload_daemons:
+  description: Forces the netdamon to reload the apps from the code folder. Only enabled apps are instanciated.
+  
