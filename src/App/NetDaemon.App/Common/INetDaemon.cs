@@ -8,7 +8,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     /// Interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemonApp
+    public interface INetDaemonApp : IDisposable
     {
         /// <summary>
         /// Start the application, normally implemented by the base class

@@ -1,4 +1,5 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -163,33 +164,66 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         }
     }
 
-    public class CodeManager
+    public sealed class CodeManager : IDisposable
     {
-        // private readonly ScriptOptions _scriptOptions;
         private readonly string _codeFolder;
 
-        private readonly IList<Type> _loadedDaemonApps;
+        private readonly List<Type> _loadedDaemonApps;
+
         private readonly YamlConfig _yamlConfig;
+
+        private readonly List<INetDaemonApp> _instanciatedDaemonApps;
 
         public CodeManager(string codeFolder)
         {
             _codeFolder = codeFolder;
             _loadedDaemonApps = new List<Type>(100);
+            _instanciatedDaemonApps = new List<INetDaemonApp>(100);
 
             _yamlConfig = new YamlConfig(codeFolder);
 
             LoadLocalAssemblyApplicationsForDevelopment();
+        }
 
-            // If provided code folder and we dont have local loaded daemon apps
-            if (!string.IsNullOrEmpty(_codeFolder) && _loadedDaemonApps.Count() == 0)
-                LoadAllCodeToLoadContext();
+        public void Dispose()
+        {
+            foreach (var app in _instanciatedDaemonApps)
+            {
+                app.Dispose();
+            }
         }
 
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps;
 
-        public async Task<IEnumerable<INetDaemonApp>> InstanceAndInitApplications(INetDaemon? host)
+        public async Task EnableApplicationDiscoveryServiceAsync(INetDaemonHost host, bool discoverServicesOnStartup)
         {
-            _ = (host as INetDaemon) ?? throw new ArgumentNullException(nameof(host));
+            host.ListenCompanionServiceCall("reload_daemons", async (_) => await ReloadApplicationsAsync(host));
+
+            if (discoverServicesOnStartup)
+            {
+                CompileScriptsInCodeFolder();
+                await InstanceAndInitApplications(host);
+            }
+        }
+
+        private async Task ReloadApplicationsAsync(INetDaemonHost host)
+        {
+            await host.StopDaemonActivitiesAsync();
+
+            foreach(var app in _instanciatedDaemonApps)
+            {
+                app.Dispose();
+            }
+            _instanciatedDaemonApps.Clear();
+            _loadedDaemonApps.Clear();
+
+            CompileScriptsInCodeFolder();
+            await InstanceAndInitApplications(host);
+        }
+
+        public async Task<IEnumerable<INetDaemonApp>> InstanceAndInitApplications(INetDaemonHost? host)
+        {
+            _ = (host as INetDaemonHost) ?? throw new ArgumentNullException(nameof(host));
 
             var result = new List<INetDaemonApp>();
             foreach (string file in _yamlConfig.GetAllConfigFilePaths())
@@ -207,8 +241,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 }
             }
 
+            _instanciatedDaemonApps.AddRange(result);
+            await host!.SetDaemonStateAsync(_loadedDaemonApps.Count, _instanciatedDaemonApps.Count);
+
             GC.Collect();
             GC.WaitForPendingFinalizers();
+
             return result;
         }
 
@@ -221,6 +259,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 {
                     _loadedDaemonApps.Add(localAppType);
                 }
+        }
+
+        private void CompileScriptsInCodeFolder()
+        {
+            // If provided code folder and we dont have local loaded daemon apps
+            if (!string.IsNullOrEmpty(_codeFolder) && _loadedDaemonApps.Count() == 0)
+                LoadAllCodeToLoadContext();
         }
 
         private void LoadAllCodeToLoadContext()
