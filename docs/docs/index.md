@@ -24,6 +24,14 @@ Please see [the getting started](/netdaemon/Getting%20started/1_getting%20starte
 !!! info
     You need to restart the add-on every time you change a file. C# needs to compile the changes.
 
+## Issues
+
+If you have issues or suggestions of improvements, please [add an issue](https://github.com/net-daemon/netdaemon/issues)
+
+## Discuss the NetDaemon
+
+Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or if you want to contribute and help others.
+
 ## Async model
 
 The application daemon are built entirely on the async model of .NET. This requires some knowledge of async/await/Tasks to use it properly. The docs will give you tips with do and don´ts around this but I strongly suggest you read the official docs.  [Here is a good start to read about async model.](https://docs.microsoft.com/en-us/dotnet/csharp/async)
