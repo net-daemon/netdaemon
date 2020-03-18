@@ -183,6 +183,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             _yamlConfig = new YamlConfig(codeFolder);
 
             LoadLocalAssemblyApplicationsForDevelopment();
+            CompileScriptsInCodeFolder();
         }
 
         public void Dispose()
@@ -201,7 +202,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             if (discoverServicesOnStartup)
             {
-                CompileScriptsInCodeFolder();
                 await InstanceAndInitApplications(host);
             }
         }
@@ -224,6 +224,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         public async Task<IEnumerable<INetDaemonApp>> InstanceAndInitApplications(INetDaemonHost? host)
         {
             _ = (host as INetDaemonHost) ?? throw new ArgumentNullException(nameof(host));
+
+            CompileScriptsInCodeFolder();
 
             var result = new List<INetDaemonApp>();
             foreach (string file in _yamlConfig.GetAllConfigFilePaths())
