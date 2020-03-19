@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,7 +14,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
-    public class NetDaemonApp : INetDaemonApp, INetDaemon, IDisposable
+    public class NetDaemonApp : INetDaemonApp, INetDaemon
     {
         private INetDaemon? _daemon;
 
@@ -46,6 +47,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public string? Id { get; set; }
+
+        /// <inheritdoc/>
+        public bool IsEnabled { get; set; }
 
         /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
@@ -241,6 +245,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 var expStore = (FluentExpandoObject)Storage;
                 expStore.CopyFrom(obj);
             }
+
+            var appInfo = _daemon!.State
+                                  .Where(s => s.EntityId == $"netdaemon.{Id?.ToLowerInvariant()}")
+                                  .FirstOrDefault();
+
+            var appState = appInfo?.State as string;
+            if (appState == null || (appState != "on" && appState != "off"))
+            {
+                IsEnabled = true;
+                await _daemon.SetState($"netdaemon.{Id?.ToLowerInvariant()}", "on");
+
+                return;
+            }
+            IsEnabled = appState == "on";
         }
 
         /// <inheritdoc/>

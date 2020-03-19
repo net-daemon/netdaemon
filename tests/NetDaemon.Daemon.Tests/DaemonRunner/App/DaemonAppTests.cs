@@ -1,4 +1,5 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Moq;
@@ -171,7 +172,7 @@ app:
         {
             // ARRANGE
             var path = Path.Combine(ConfigFixturePath, "level2");
-            var moqDaemon = new Mock<INetDaemon>();
+            var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
 
             moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
@@ -186,7 +187,7 @@ app:
         {
             // ARRANGE
             var path = Path.Combine(ConfigFixturePath, "mulitinstance");
-            var moqDaemon = new Mock<INetDaemon>();
+            var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
 
             moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);

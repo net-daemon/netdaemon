@@ -15,13 +15,6 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
-    internal interface INetDaemonHost : INetDaemon
-    {
-        Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken);
-
-        Task Stop();
-    }
-
     public class NetDaemonHost : INetDaemonHost
     {
         /// <summary>
@@ -45,9 +38,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
+
         private readonly IHassClient _hassClient;
 
         private readonly Scheduler _scheduler;
+
         private readonly IDataRepository? _repository;
 
         private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
@@ -62,6 +57,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private bool _stopped;
 
         private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
+            = new List<(string, string, Func<dynamic?, Task>)>();
+
+        private readonly List<(string, string, Func<dynamic?, Task>)> _companionServiceCallFunctionList
             = new List<(string, string, Func<dynamic?, Task>)>();
 
         public NetDaemonHost(IHassClient? hassClient, IDataRepository? repository, ILoggerFactory? loggerFactory = null)
@@ -249,7 +247,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         {
                             // Remove all completed Tasks
                             _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
-
                             _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
                         }
                         else
@@ -453,7 +450,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         throw new NullReferenceException("ServiceData is null! not expected");
                     }
                     var tasks = new List<Task>();
-                    foreach (var (domain, service, func) in _serviceCallFunctionList)
+                    var serviceCallFunctionList = _companionServiceCallFunctionList.Union(_serviceCallFunctionList);
+
+                    foreach (var (domain, service, func) in serviceCallFunctionList)
                     {
                         if (domain == serviceCallData.Domain &&
                             service == serviceCallData.Service)
@@ -594,6 +593,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
             return new InputSelectManager(x, this);
+        }
+
+        /// <inheritdoc/>
+        public async Task StopDaemonActivitiesAsync()
+        {
+            _eventActions.Clear();
+            _eventFunctionList.Clear();
+            _stateActions.Clear();
+            _serviceCallFunctionList.Clear();
+
+            await _scheduler.Stop();
+        }
+
+        /// <inheritdoc/>
+        public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
+            => _companionServiceCallFunctionList.Add(("netdaemon", service.ToLowerInvariant(), action));
+
+        /// <inheritdoc/>
+        public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
+        {
+            await SetState(
+                "netdaemon.status",
+                "Connected", // State will alawys be connected, otherwise state could not be set.
+                ("number_of_loaded_apps", numberOfLoadedApps),
+                ("number_of_running_apps", numberOfRunningApps),
+                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A"));
         }
     }
 }

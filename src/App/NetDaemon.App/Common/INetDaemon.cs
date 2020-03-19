@@ -8,7 +8,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     /// Interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemonApp
+    public interface INetDaemonApp : IDisposable
     {
         /// <summary>
         /// Start the application, normally implemented by the base class
@@ -33,6 +33,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Unique id of the application
         /// </summary>
         public string? Id { get; set; }
+
+        /// <summary>
+        ///     Gets or sets a flag indicating whether this app is enabled.
+        ///     This property property can be controlled from Home Assistant.
+        /// </summary>
+        /// <remarks>
+        ///     A disabled app will not be initialized during the discovery.
+        /// </remarks>
+        public bool IsEnabled { get; set; }
 
         /// <summary>
         ///     Saves the app state

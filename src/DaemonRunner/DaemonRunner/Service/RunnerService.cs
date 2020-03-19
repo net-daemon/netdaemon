@@ -6,7 +6,9 @@ using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -77,19 +79,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             if (_daemonHost.Connected)
                             {
-                                try
+                                using (var codeManager = new CodeManager(sourceFolder))
                                 {
-                                    // Instance all apps
-                                    var codeManager = new CodeManager(sourceFolder);
-                                    await codeManager.InstanceAndInitApplications((INetDaemon)_daemonHost).ConfigureAwait(false);
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.LogError(e, "Failed to load applications");
-                                }
+                                    try
+                                    {
+                                        await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _logger.LogError(e, "Failed to load applications");
+                                    }
 
-                                // Wait until daemon stops
-                                await daemonHostTask.ConfigureAwait(false);
+                                    // Wait until daemon stops
+                                    await daemonHostTask.ConfigureAwait(false);
+                                }
                             }
                             else
                             {
