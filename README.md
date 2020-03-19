@@ -34,7 +34,7 @@ The following environment variables are available to identify your Home Assistan
 * `HASS_PORT`, default to *8123*
 * `HASS_TOKEN` needs to be set to a valid access token.
 
-Example giving: 
+Example giving:
 ```
 docker run -v -e HASS_HOST=192.168.1.1 -e HASS_TOKEN=ey123... ~/netdaemon_config:/data --name netdaemon netdaemon
 ```
@@ -55,13 +55,13 @@ The following environment variables are available to identify your Home Assistan
 * `HASS_PORT`, default to *8123*
 * `HASS_TOKEN` needs to be set to a valid access token.
 
-Example giving: 
+Example giving:
 ```
 docker run -v -e HASS_HOST=192.168.1.1 -e HASS_TOKEN=ey123... ~/netdaemon_config:/data --name netdaemon netdaemon
 ```
 
 ## Companion App (Home Assistant)
-For the full user experiance please download and copy the netdaemon companion component to the `custom_components` folder of your Home Assistant configuration. The companion app registers basic services that are required for the service attributes as well as the dynamic app reload / discovery feature. 
+For the full user experiance please download and copy the netdaemon companion component to the `custom_components` folder of your Home Assistant configuration. The companion app registers basic services that are required for the service attributes as well as the dynamic app reload / discovery feature.
 
 Do not forget to add the component to your Home Assistant configuration file afterwards.
 
@@ -72,16 +72,17 @@ homeassistant:
 netdaemon:
 ```
 
-Please have a look at 
+Please have a look at
 
 ## Example apps
 
 Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
 
-| User                                                                                                    | Description                                           |
-| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [@helto4real](https://github.com/helto4real/hassio/tree/master/netdaemon/apps)                          | My own netdaemon apps running in production           |
-| [@isabellaalstrom](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) | Isabella's netdaemon apps, check them out, nice stuff |
+| User                                                                                                    | Description                                                 |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [@helto4real](https://github.com/helto4real/hassio/tree/master/netdaemon/apps)                          | My own netdaemon apps running in production                 |
+| [@isabellaalstrom](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) | Isabella's netdaemon apps, check them out, nice stuff       |
+| [@Horizon0156](https://github.com/Horizon0156/netdaemon-apps)                                           | Stefan W's netdaemon apps, good example extending netdaemon |
 
 ## VSCode customization
 
