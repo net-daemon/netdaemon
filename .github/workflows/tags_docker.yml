@@ -34,7 +34,7 @@ jobs:
         if: success()
         uses: actions-hub/docker@master
         with:
-          args: push netdaemon/netdaemon:base-${IMAGE_TAG}
+          args: push netdaemon/netdaemon:latest
 
       - name: Push image to docker registry [tag]
         if: success()

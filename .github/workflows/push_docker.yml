@@ -1,5 +1,5 @@
 #### Publish tags to docker hub
-name: Deploy to Docker Hub for tags
+name: Deploy to Docker Hub for master
 on:
    push:
      branches:
@@ -26,7 +26,6 @@ jobs:
             --compress \
             --no-cache \
             -t netdaemon/netdaemon:latest \
-            -t netdaemon/netdaemon:${IMAGE_TAG} \
             -f Dockerfile .
 
       # Deploy
@@ -34,10 +33,4 @@ jobs:
         if: success()
         uses: actions-hub/docker@master
         with:
-          args: push netdaemon/netdaemon:base-${IMAGE_TAG}
-
-      - name: Push image to docker registry [tag]
-        if: success()
-        uses: actions-hub/docker@master
-        with:
-          args: push netdaemon/netdaemon:${IMAGE_TAG}
+          args: push netdaemon/netdaemon:latest
