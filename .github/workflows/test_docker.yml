@@ -1,0 +1,21 @@
+#### Publish tags to docker hub
+name: Test docker builds
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Build image
+        if: success()
+        run: |
+          docker build \
+            --compress \
+            --no-cache \
+            -f Dockerfile .
