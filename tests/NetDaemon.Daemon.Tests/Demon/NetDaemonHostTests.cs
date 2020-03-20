@@ -331,6 +331,31 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
+        public async Task CancelChangedStateForSubscriptionWillNotMakeCallback()
+        {
+            // ARRANGE
+            bool isCalled = false;
+
+            // ACT
+            var id = DefaultDaemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
+            {
+                isCalled = true;
+
+                return Task.CompletedTask;
+            });
+
+            DefaultDaemonHost.CancelListenState(id!);
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.False(isCalled);
+            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+        }
+
+        [Fact]
         public async Task ToggleAsyncWithLightCallsSendMessageWithCorrectEntityId()
         {
             // ARRANGE
@@ -458,6 +483,108 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
+        }
+
+        [Fact]
+        public async Task DelayStateChangeShouldReturnTrue()
+        {
+            // ARRANGE
+
+            // ACT
+            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.True(delayResult.Task.Result);
+            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+        }
+
+        [Fact]
+        public async Task DelayStateChangeWithToAndFromShouldReturnTrue()
+        {
+            // ARRANGE
+
+            // ACT
+            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "off");
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.True(delayResult.Task.Result);
+            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+        }
+
+        [Fact]
+        public async Task DelayStateChangeWithToAndFromWrongShouldNotComplete()
+        {
+            // ARRANGE
+
+            // ACT
+            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "unknown");
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.False(delayResult.Task.IsCompleted);
+            Assert.Single(DefaultDaemonHost.InternalStateActions);
+        }
+
+        [Fact]
+        public async Task DelayStateLambdaChangeShouldReturnTrue()
+        {
+            // ARRANGE
+
+            // ACT
+            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.True(delayResult.Task.Result);
+            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+        }
+
+        [Fact]
+        public async Task DelayStateLambdaChangeShouldNotComplete()
+        {
+            // ARRANGE
+
+            // ACT
+            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "on", toState: "off");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.False(delayResult.Task.IsCompleted);
+            Assert.Single(DefaultDaemonHost.InternalStateActions);
+        }
+
+        [Fact]
+        public async Task DelayStateChangeCancelShouldReturnFalse()
+        {
+            // ARRANGE
+
+            // ACT
+            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
+
+            delayResult.Cancel();
+
+            await RunDefauldDaemonUntilCanceled();
+
+            // ASSERT
+            Assert.False(delayResult.Task.Result);
+            Assert.Empty(DefaultDaemonHost.InternalStateActions);
         }
     }
 }

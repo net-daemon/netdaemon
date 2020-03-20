@@ -120,7 +120,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 _daemon?.ListenServiceCall(domain, service, action);
 
         /// <inheritdoc/>
-        public void ListenState(string pattern, Func<string, EntityState?, EntityState?, Task> action) => _daemon?.ListenState(pattern, action);
+        public string? ListenState(string pattern, Func<string, EntityState?, EntityState?, Task> action) => _daemon?.ListenState(pattern, action);
+
+        /// <inheritdoc/>
+        public void CancelListenState(string id) => _daemon?.CancelListenState(id);
+
 
         /// <inheritdoc/>
         public async ValueTask<T> GetDataAsync<T>(string id)
@@ -308,6 +312,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Dispose(true);
         }
 
+        #endregion IDisposable Support
+
         /// <inheritdoc/>
         public IFluentInputSelect InputSelect(params string[] inputSelectParams)
         {
@@ -329,6 +335,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return _daemon!.InputSelects(func);
         }
 
-        #endregion IDisposable Support
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.DelayUntilStateChange(entityIds, to, from, allChanges);
+        }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.DelayUntilStateChange(entityId, to, from, allChanges);
+        }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.DelayUntilStateChange(entityIds, stateFunc);
+        }
     }
 }
