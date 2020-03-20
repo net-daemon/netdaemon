@@ -17,7 +17,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         Pause,
         PlayPause,
         Stop,
-        Speak
+        Speak,
+        DelayUntilStateChange
     }
 
     /// <summary>
@@ -38,7 +39,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// </summary>
     public interface IEntity :
         ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>,
-        IStateChanged, ISetState<IAction>
+        IStateChanged, ISetState<IAction>, IDelayStateChange
     { }
 
     /// <summary>
@@ -205,6 +206,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="stateFunc">The lambda expression used to track changes</param>
         IState WhenStateChange(Func<EntityState?, EntityState?, bool> stateFunc);
+    }
+
+    /// <summary>
+    ///     When state change
+    /// </summary>
+    public interface IDelayStateChange
+    {
+        /// <summary>
+        ///     When state change from or to a state
+        /// </summary>
+        /// <param name="to">The state change to, or null if any state</param>
+        /// <param name="from">The state changed from or null if any state</param>
+        /// <param name="allChanges">Get all changed, even only attribute changes</param>
+        IDelayResult DelayUntilStateChange(object? to = null, object? from = null, bool allChanges = false);
+
+        /// <summary>
+        ///     When state change, using a lambda expression
+        /// </summary>
+        /// <param name="stateFunc">The lambda expression used to track changes</param>
+        IDelayResult DelayUntilStateChange(Func<EntityState?, EntityState?, bool> stateFunc);
     }
 
     /// <summary>
@@ -397,7 +418,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     ///     Implements interface for managing entities in the fluent API
     /// </summary>
     public class EntityManager : EntityState, IEntity, ILight, IAction,
-        IStateEntity, IState, IStateAction, IMediaPlayer, IScript, IMediaPlayerExecuteAsync
+        IStateEntity, IState, IStateAction, IMediaPlayer, IScript, IMediaPlayerExecuteAsync, IDelayStateChange
     {
         private readonly ConcurrentQueue<FluentAction> _actions =
             new ConcurrentQueue<FluentAction>();
@@ -586,6 +607,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _currentAction = new FluentAction(FluentActionType.TurnOn);
             _actions.Enqueue(_currentAction);
             return this;
+        }
+
+        /// <inheritdoc/>
+        IDelayResult IDelayStateChange.DelayUntilStateChange(object? to, object? from, bool allChanges)
+        {
+            return this._daemon.DelayUntilStateChange(this._entityIds, to, from, allChanges);
+        }
+
+        /// <inheritdoc/>
+        IDelayResult IDelayStateChange.DelayUntilStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
+        {
+            return this._daemon.DelayUntilStateChange(this._entityIds, stateFunc);
         }
 
         IStateAction ITurnOn<IStateAction>.TurnOn()
