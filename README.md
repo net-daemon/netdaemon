@@ -32,8 +32,8 @@ The following environment variables are available to identify your Home Assistan
 Example giving:
 ```
 docker run -d \
-  --name netdaemon
-  --restart=always
+  --name netdaemon \
+  --restart=always \
   -e HASS_HOST=192.168.1.1 \
   -e HASS_TOKEN=XXXXX \
   -v ~/netdaemon_config:/data \
