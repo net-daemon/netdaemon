@@ -27,7 +27,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
 
-            var lastChanged = new DateTime(2020, 1, 1, 1, 1, 1, 10);
+            var lastChanged = new DateTime(2020, 1, 1, 1, 1, 1, 20);
             var lastUpdated = new DateTime(2020, 1, 1, 1, 1, 1, 50);
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout(100);
@@ -47,7 +47,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             await Task.Delay(10); // After 10ms we should not have call
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Never());
-            await Task.Delay(30); // After 10ms we should not have call
+            await Task.Delay(50); // After 30ms we should have call
 
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Once());
 
@@ -918,6 +918,42 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallService("input_select", "select_option",
                 ("entity_id", "input_select.myselect"),
                 ("option", "option1"));
+        }
+
+        [Fact]
+        public async Task EntityDelayUntilStateChangeShouldReturnTrue()
+        {
+            // ARRANGE
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
+
+            var delayResult = DefaultDaemonHost
+                .Entity("binary_sensor.pir")
+                .DelayUntilStateChange(to: "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            Assert.True(delayResult.Task.IsCompletedSuccessfully);
+            Assert.True(delayResult.Task.Result);
+        }
+
+        [Fact]
+        public async Task EntityDelayUntilStateChangeLamdaShouldReturnTrue()
+        {
+            // ARRANGE
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
+
+            var delayResult = DefaultDaemonHost
+                .Entity("binary_sensor.pir")
+                .DelayUntilStateChange((to, _) => to?.State == "on");
+
+            await RunDefauldDaemonUntilCanceled();
+
+            Assert.True(delayResult.Task.IsCompletedSuccessfully);
+            Assert.True(delayResult.Task.Result);
         }
     }
 }

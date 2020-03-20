@@ -3,6 +3,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -45,13 +46,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private readonly IDataRepository? _repository;
 
-        private readonly IList<(string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
-            new List<(string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
+        // Used for testing
+        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
+        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
+            new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
             "light",
-            "switch"
+            "switch",
+            "input_boolean"
         };
 
         private bool _stopped;
@@ -146,18 +150,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
-        /// <summary>
-        /// </summary>
-        /// <remarks>
-        ///     Valid patterns are:
-        ///     light.thelight   - En entity id
-        ///     light           - No dot means a domain
-        ///     empty           - All events
-        /// </remarks>
-        /// <param name="pattern">Event pattern</param>
-        /// <param name="action">The action to call when event is missing</param>
-        public void ListenState(string pattern,
-            Func<string, EntityState?, EntityState?, Task> action) => _stateActions.Add((pattern, action));
+
+        /// <inheritdoc/>
+        public string? ListenState(string pattern,
+            Func<string, EntityState?, EntityState?, Task> action)
+        {
+            // Use guid as uniqe id but will externally use string so
+            // The design can change incase guild wont cut it
+            var uniqueId = Guid.NewGuid().ToString();
+            _stateActions[uniqueId] = (pattern, action);
+            return uniqueId.ToString();
+        }
+        public void CancelListenState(string id)
+        {
+            // Remove and ignore if not exist
+            _stateActions.Remove(id, out _);
+        }
 
         public IMediaPlayer MediaPlayer(params string[] entityIds) => new EntityManager(entityIds, this);
 
@@ -409,7 +417,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     InternalState[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
 
                     var tasks = new List<Task>();
-                    foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in _stateActions)
+                    foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in _stateActions.Values)
                     {
                         if (string.IsNullOrEmpty(pattern))
                         {
@@ -620,5 +628,141 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 ("number_of_running_apps", numberOfRunningApps),
                 ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A"));
         }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false) =>
+            DelayUntilStateChange(new string[] { entityId }, to, from, allChanges);
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
+        {
+            // Use TaskCompletionSource to simulate a task that we can control
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var result = new DelayResult(taskCompletionSource, this);
+
+            foreach (var entityId in entityIds)
+            {
+                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                {
+                    if (to != null)
+                        if (to != newState?.State)
+                            return Task.CompletedTask;
+
+                    if (from != null)
+                        if (from != oldState?.State)
+                            return Task.CompletedTask;
+
+                    // If we don´t accept all changes in the state change
+                    // and we do not have a state change so return
+                    if (newState?.State == oldState?.State && !allChanges)
+                        return Task.CompletedTask;
+
+                    // If we reached this far we should complete task!
+                    taskCompletionSource.SetResult(true);
+                    // Also cancel all other ongoing state change subscriptions
+                    result.Cancel();
+
+                    return Task.CompletedTask;
+                })!);
+            }
+
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
+        {
+            // Use TaskCompletionSource to simulate a task that we can control
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var result = new DelayResult(taskCompletionSource, this);
+
+            foreach (var entityId in entityIds)
+            {
+                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                {
+                    try
+                    {
+                        if (!stateFunc(newState, oldState))
+                            return Task.CompletedTask;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogWarning(e, "Failed to evaluate function");
+                        return Task.CompletedTask;
+                    }
+
+                    // If we reached this far we should complete task!
+                    taskCompletionSource.SetResult(true);
+                    // Also cancel all other ongoing state change subscriptions
+                    result.Cancel();
+
+                    return Task.CompletedTask;
+                })!);
+            }
+
+            return result;
+        }
+    }
+    public class DelayResult : IDelayResult
+    {
+        private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
+        private readonly INetDaemon _daemon;
+
+        private bool _isCanceled = false;
+
+        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
+        public DelayResult(TaskCompletionSource<bool> delayTaskCompletionSource, INetDaemon daemon)
+        {
+            _delayTaskCompletionSource = delayTaskCompletionSource;
+            _daemon = daemon;
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> Task => _delayTaskCompletionSource.Task;
+
+        /// <inheritdoc/>
+        public void Cancel()
+        {
+            if (_isCanceled)
+                return;
+
+            _isCanceled = true;
+            foreach (var stateSubscription in StateSubscriptions)
+            {
+                _daemon.CancelListenState(stateSubscription);
+            }
+            StateSubscriptions.Clear();
+
+            // Also cancel all await if this is disposed
+            _delayTaskCompletionSource.TrySetResult(false);
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // Make sure any subscriptions are canceled
+                    Cancel();
+                }
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+
+
+
+        #endregion
     }
 }

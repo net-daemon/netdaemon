@@ -1,10 +1,27 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
+    /// <summary>
+    ///     Scheduler result lets you manage scheduled tasks like check completion, cancel the tasks etc.
+    /// </summary>
+    public interface IDelayResult : IDisposable
+    {
+        /// <summary>
+        ///     Current running task to await, returns true if not canceled
+        /// </summary>
+        Task<bool> Task { get; }
+
+        /// <summary>
+        ///     Cancels the delay tasks and task will return false
+        /// </summary>
+        void Cancel();
+    }
+
     /// <summary>
     /// Interface that all NetDaemon apps needs to implement
     /// </summary>
@@ -82,14 +99,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="pattern">Match pattern, entity_id or domain</param>
         /// <param name="action">The func to call when matching</param>
+        /// <returns>Returns a guid that can be used to cancel the event listening with CancelListenState</returns>
         /// <remarks>
         ///     The callback function is
         ///         - EntityId
         ///         - newEvent
         ///         - oldEvent
         /// </remarks>
-        void ListenState(string pattern,
+        string? ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action);
+
+        /// <summary>
+        ///     Cancels the current listen state operation
+        /// </summary>
+        /// <param name="id">The unique id provided in ListenState</param>
+        void CancelListenState(string id);
 
         /// <summary>
         ///     Listen to state change
@@ -106,6 +130,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="action">The action to call when event fires</param>
         void ListenEvent(Func<FluentEventProperty, bool> funcSelector,
                          Func<string, dynamic, Task> action);
+
+
+        /// <summary>
+        ///     Delays until state changes
+        /// </summary>
+        /// <param name="entityIds">The entities to wait for state changes</param>
+        /// <param name="to">The state change to, or null if any state</param>
+        /// <param name="from">The state changed from or null if any state</param>
+        /// <param name="allChanges">Get all changed, even only attribute changes</param>
+        IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false);
+
+        /// <summary>
+        ///     Delays until state changes
+        /// </summary>
+        /// <param name="entityId">The unique id of the enitty to wait for state changes</param>
+        /// <param name="to">The state change to, or null if any state</param>
+        /// <param name="from">The state changed from or null if any state</param>
+        /// <param name="allChanges">Get all changed, even only attribute changes</param>
+        IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false);
+
+        /// <summary>
+        ///     Delays until state changes using lambda expression to check states
+        /// </summary>
+        /// <param name="entityIds">The entities to wait for state changes</param>
+        /// <param name="stateFunc">Lambda expression to select state changes</param>
+        IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc);
 
         /// <summary>
         ///     Listen to service calls
