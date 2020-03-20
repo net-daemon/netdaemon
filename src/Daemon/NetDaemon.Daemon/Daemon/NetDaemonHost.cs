@@ -645,11 +645,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
                 {
                     if (to != null)
-                        if (to != newState?.State)
+                        if ((dynamic)to != newState?.State)
                             return Task.CompletedTask;
 
                     if (from != null)
-                        if (from != oldState?.State)
+                        if ((dynamic)from != oldState?.State)
                             return Task.CompletedTask;
 
                     // If we don´t accept all changes in the state change
