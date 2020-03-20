@@ -19,15 +19,10 @@ If you have issues or suggestions of improvements, please [add an issue](https:/
 Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or if you want to contribute and help others.
 
 ## Docker Support
+
 For those who have Homeassistant running on Docker, not supervised by HASS, the NetDaemon can be shipped as a container and ran in parallel.
 
-To build the image simply execute the build command in the root of the solution
-
-```
-docker build . --tag netdaemon:latest
-```
-
-After the image has been built, you can deploy the container using the following command. It is advised to map the `/data` folder of the container to a local folder as the daemon's apps are linked to this folder.
+You can deploy the container using the following command. It is advised to map the `/data` folder of the container to a local folder as the daemon's apps are linked to this folder.
 
 The following environment variables are available to identify your Home Assistant instance
 * `HASS_HOST`, defaults to *localhost*
@@ -36,31 +31,17 @@ The following environment variables are available to identify your Home Assistan
 
 Example giving:
 ```
-docker run -v -e HASS_HOST=192.168.1.1 -e HASS_TOKEN=ey123... ~/netdaemon_config:/data --name netdaemon netdaemon
-```
-
-## Docker Support
-For those who have Homeassistant running on Docker, not supervised by HASS, the NetDaemon can be shipped as a container and ran in parallel.
-
-To build the image simply execute the build command in the root of the solution
-
-```
-docker build . --tag netdaemon:latest
-```
-
-After the image has been built, you can deploy the container using the following command. It is advised to map the `/data` folder of the container to a local folder as the daemon's apps are linked to this folder.
-
-The following environment variables are available to identify your Home Assistant instance
-* `HASS_HOST`, defaults to *localhost*
-* `HASS_PORT`, default to *8123*
-* `HASS_TOKEN` needs to be set to a valid access token.
-
-Example giving:
-```
-docker run -v -e HASS_HOST=192.168.1.1 -e HASS_TOKEN=ey123... ~/netdaemon_config:/data --name netdaemon netdaemon
+docker run -d \
+  --name netdaemon
+  --restart=always
+  -e HASS_HOST=192.168.1.1 \
+  -e HASS_TOKEN=XXXXX \
+  -v ~/netdaemon_config:/data \
+  netdaemon/netdaemon
 ```
 
 ## Companion App (Home Assistant)
+
 For the full user experiance please download and copy the netdaemon companion component to the `custom_components` folder of your Home Assistant configuration. The companion app registers basic services that are required for the service attributes as well as the dynamic app reload / discovery feature.
 
 Do not forget to add the component to your Home Assistant configuration file afterwards.
