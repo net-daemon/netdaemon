@@ -1,6 +1,7 @@
-ARG DOTNET_VERSION=3.1.200
+ARG SDK_VERSION=3.1.200
+ARG RUNTIME_VERSION=3.1.2
 
-FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} AS build-env
+FROM mcr.microsoft.com/dotnet/core/sdk:${SDK_VERSION} AS build-env
 WORKDIR /sources
 
 # Copy solution, restore and build
@@ -8,7 +9,7 @@ COPY . ./
 RUN dotnet publish src/Service/Service.csproj -c Release -o dist
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
+FROM mcr.microsoft.com/dotnet/core/runtime:${RUNTIME_VERSION}
 WORKDIR /app
 COPY --from=build-env /sources/dist .
 
