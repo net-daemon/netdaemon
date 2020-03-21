@@ -26,7 +26,7 @@ RUN \
     && echo $(uname -m) \
     && wget -q -nv -O /tmp/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     \
-    && sed -i 's|echo "linux-musl"|echo "linux"|' /tmp/dotnet-install.sh \
+    && sed -i 's|-$osname-|-linux-|' /tmp/dotnet-install.sh \
     \
     && bash /tmp/dotnet-install.sh --version ${NETVERSION} --install-dir "/root/.dotnet" \
     \
