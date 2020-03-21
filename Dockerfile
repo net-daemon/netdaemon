@@ -24,7 +24,7 @@ RUN \
         libstdc++ \
         zlib \
     \
-    && ehco $(uname -a) \
+    && echo $(uname -a) \
     && wget -q -nv -O /tmp/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     \
     && bash /tmp/dotnet-install.sh --version ${NETVERSION} --install-dir "/root/.dotnet" || \
