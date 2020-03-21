@@ -1,17 +1,4 @@
-ARG SDK_VERSION=3.1.200
-ARG RUNTIME_VERSION=3.1.2
-
-FROM mcr.microsoft.com/dotnet/core/sdk:${SDK_VERSION} AS build-env
-WORKDIR /sources
-
-# Copy solution, restore and build
-COPY . ./
-RUN dotnet publish src/Service/Service.csproj -c Release -o dist
-
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:${RUNTIME_VERSION}
-WORKDIR /app
-COPY --from=build-env /sources/dist .
+FROM ludeeus/devcontainer:dotnet
 
 ENV \
     HASS_HOST=localhost \
@@ -19,6 +6,18 @@ ENV \
     HASS_TOKEN=NOT_SET \
     HASS_DAEMONAPPFOLDER=/data
 
-RUN mkdir -p ${HASS_DAEMONAPPFOLDER}
 
-ENTRYPOINT ["dotnet", "help"]
+RUN mkdir -p ${HASS_DAEMONAPPFOLDER} ./temp
+COPY . ./temp/
+
+RUN \
+    dotnet \
+    publish \
+    ./temp/src/Service/Service.csproj \
+    -c Release \
+    -o ./temp/dist \
+    \
+    && mv ./temp/dist /app \
+    && rm -R ./temp
+
+ENTRYPOINT ["dotnet", "/app/Service.dll"]
