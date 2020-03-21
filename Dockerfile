@@ -1,7 +1,6 @@
-ARG RUNTIME_IMAGE_TAG=3.1
-ARG SDK_IMAGE_TAG=3.1
+ARG DOTNET_VERSION=3.1.200
 
-FROM mcr.microsoft.com/dotnet/core/sdk:${SDK_IMAGE_TAG} AS build-env
+FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION} AS build-env
 WORKDIR /sources
 
 # Copy solution, restore and build
@@ -9,15 +8,16 @@ COPY . ./
 RUN dotnet publish src/Service/Service.csproj -c Release -o dist
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:${RUNTIME_IMAGE_TAG}
+FROM mcr.microsoft.com/dotnet/core/runtime:${DOTNET_VERSION}
 WORKDIR /app
 COPY --from=build-env /sources/dist .
 
-ENV HASS_HOST localhost
-ENV HASS_PORT 8123
-ENV HASS_TOKEN NOT_SET
-ENV HASS_DAEMONAPPFOLDER /data
+ENV \
+    HASS_HOST=localhost \
+    HASS_PORT=8123 \
+    HASS_TOKEN=NOT_SET \
+    HASS_DAEMONAPPFOLDER=/data
 
-RUN mkdir ${HASS_DAEMONAPPFOLDER}
+RUN mkdir -p ${HASS_DAEMONAPPFOLDER}
 
-ENTRYPOINT ["dotnet", "Service.dll"]
+ENTRYPOINT ["dotnet", "help"]
