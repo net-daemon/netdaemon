@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - master
-      - dev
 
 jobs:
   deploy:
@@ -24,4 +23,4 @@ jobs:
             --output "type=image,push=false" \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon:latest
+            --tag netdaemon/netdaemon:dev
