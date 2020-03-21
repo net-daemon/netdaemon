@@ -12,9 +12,13 @@ ENV \
 COPY . ./temp/
 
 RUN \
-    if [ "${uname -m}" == "x86_64" ];then ARCH="amd64";fi \
-    if [ "${uname -m}" == "armv7l" ];then ARCH="arm";fi \
-    if [ "${uname -m}" == "aarch64 " ];then ARCH="arm64";fi \
+    if [ "$(uname -m)" = "x86_64" ]; then \
+        export ARCH="amd64"; \
+    elif [ "$(uname -m)" = "armv7" ]; then \
+        export ARCH="arm"; \
+    elif [ "$(uname -m)" = "aarch64" ]; then \
+        export ARCH="arm64"; \
+    fi \
     \
     && apk add --no-cache \
         bash \
