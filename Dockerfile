@@ -12,7 +12,11 @@ ENV \
 COPY . ./temp/
 
 RUN \
-    apk add --no-cache \
+    if [ "${uname -m}" == "x86_64" ];then ARCH="amd64";fi \
+    if [ "${uname -m}" == "armv7l" ];then ARCH="arm";fi \
+    if [ "${uname -m}" == "aarch64 " ];then ARCH="arm64";fi \
+    \
+    && apk add --no-cache \
         bash \
         ca-certificates \
         krb5-libs \
@@ -26,9 +30,6 @@ RUN \
     && echo $(uname -m) \
     && wget -q -nv -O /tmp/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     \
-    if [ "${uname -m}" == "x86_64" ]; then ARCH="amd64"; fi \
-    if [ "${uname -m}" == "armv7l" ]; then ARCH="arm"; fi \
-    if [ "${uname -m}" == "aarch64 " ]; then ARCH="arm64"; fi \
     && bash /tmp/dotnet-install.sh --version ${NETVERSION} --install-dir "/root/.dotnet" --architecture ${ARCH} \
     \
     && rm /tmp/dotnet-install.sh \
