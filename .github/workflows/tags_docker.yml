@@ -12,32 +12,18 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Login to docker hub
-        if: success()
-        uses: actions-hub/docker/login@master
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
-
-      # Build
-      - name: Build image
-        if: success()
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      - name: Run Buildx
         run: |
-          docker build \
+          docker buildx build \
+            --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x \
+            --output "type=image,push=true" \
+            --file ./Dockerfile . \
             --compress \
-            --no-cache \
-            -t netdaemon/netdaemon:latest \
-            -t netdaemon/netdaemon:${IMAGE_TAG} \
-            -f Dockerfile .
-
-      # Deploy
-      - name: Push image to docker registry [latest]
-        if: success()
-        uses: actions-hub/docker@master
-        with:
-          args: push netdaemon/netdaemon:latest
-
-      - name: Push image to docker registry [tag]
-        if: success()
-        uses: actions-hub/docker@master
-        with:
-          args: push netdaemon/netdaemon:${IMAGE_TAG}
+            --tag netdaemon/netdaemon:latest \
+            --tag netdaemon/netdaemon:${IMAGE_TAG}
