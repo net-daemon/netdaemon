@@ -25,5 +25,4 @@ jobs:
             --output "type=image,push=true" \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon:dev \
-            --tag netdaemon/netdaemon:${IMAGE_TAG}
+            --tag netdaemon/netdaemon:dev
