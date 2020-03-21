@@ -1,6 +1,6 @@
 FROM alpine:3.11
 
-ARG NETVERSION="3.1.200"
+ARG NETVERSION="3.1.2"
 
 ENV \
     HASS_HOST=localhost \
