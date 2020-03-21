@@ -14,7 +14,7 @@ COPY . ./temp/
 RUN \
     if [ "$(uname -m)" = "x86_64" ]; then \
         export ARCH="amd64"; \
-    elif [ "$(uname -m)" = "armv7" ]; then \
+    elif [ "$(uname -m)" = "armv7l" ]; then \
         export ARCH="arm"; \
     elif [ "$(uname -m)" = "aarch64" ]; then \
         export ARCH="arm64"; \
