@@ -1,6 +1,7 @@
 FROM alpine:3.11
 
-ARG NETVERSION="3.1.2"
+ARG NETVERSION="3.1.200"
+ARG NETVERSION_BACKUP="3.1.2"
 
 ENV \
     HASS_HOST=localhost \
@@ -25,7 +26,8 @@ RUN \
     \
     && wget -q -nv -O /tmp/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     \
-    && bash /tmp/dotnet-install.sh --version ${NETVERSION} --install-dir "/root/.dotnet" \
+    && bash /tmp/dotnet-install.sh --version ${NETVERSION} --install-dir "/root/.dotnet" || \
+    bash /tmp/dotnet-install.sh --version ${NETVERSION_BACKUP} --install-dir "/root/.dotnet" \
     \
     && rm /tmp/dotnet-install.sh \
     \
