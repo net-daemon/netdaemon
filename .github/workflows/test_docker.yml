@@ -22,6 +22,7 @@ jobs:
           docker buildx build \
             --platform linux/arm,linux/arm64,linux/amd64 \
             --output "type=image,push=false" \
+            --no-cache \
             --file ./Dockerfile . \
             --compress \
             --tag netdaemon/netdaemon:dev

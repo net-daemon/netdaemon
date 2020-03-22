@@ -18,6 +18,8 @@ RUN mkdir -p ${HASS_DAEMONAPPFOLDER} \
     -o ./temp/dist \
     \
     && mv ./temp/dist /app \
-    && rm -R ./temp
+    && rm -R ./temp \
+    && echo $(uname -a) \ 
+    && dotnet help
 
 ENTRYPOINT ["dotnet", "/app/Service.dll"]
