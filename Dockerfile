@@ -1,23 +1,23 @@
-ARG RUNTIME_IMAGE_TAG=3.1
-ARG SDK_IMAGE_TAG=3.1
+FROM ludeeus/container:dotnet-base
 
-FROM mcr.microsoft.com/dotnet/core/sdk:${SDK_IMAGE_TAG} AS build-env
-WORKDIR /sources
+ENV \
+    HASS_HOST=localhost \
+    HASS_PORT=8123 \
+    HASS_TOKEN=NOT_SET \
+    HASS_DAEMONAPPFOLDER=/data
 
-# Copy solution, restore and build
-COPY . ./
-RUN dotnet publish src/Service/Service.csproj -c Release -o dist
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:${RUNTIME_IMAGE_TAG}
-WORKDIR /app
-COPY --from=build-env /sources/dist .
+COPY . ./temp/
 
-ENV HASS_HOST localhost
-ENV HASS_PORT 8123
-ENV HASS_TOKEN NOT_SET
-ENV HASS_DAEMONAPPFOLDER /data
+RUN mkdir -p ${HASS_DAEMONAPPFOLDER} \
+    \
+    && dotnet \
+    publish \
+    ./temp/src/Service/Service.csproj \
+    -c Release \
+    -o ./temp/dist \
+    \
+    && mv ./temp/dist /app \
+    && rm -R ./temp
 
-RUN mkdir ${HASS_DAEMONAPPFOLDER}
-
-ENTRYPOINT ["dotnet", "Service.dll"]
+ENTRYPOINT ["dotnet", "/app/Service.dll"]
