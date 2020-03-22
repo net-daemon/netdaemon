@@ -13,10 +13,10 @@ RUN mkdir -p ${HASS_DAEMONAPPFOLDER} \
     \
     && dotnet \
     publish \
-    ./temp/src/Service/Service.csproj \
-    -c Release \
-    -o ./temp/dist \
-    \
+        ./temp/src/Service/Service.csproj \
+        -c Release \
+        -o ./temp/dist \
+        \
     && mv ./temp/dist /app \
     && rm -R ./temp \
     && echo $(uname -a) \ 
