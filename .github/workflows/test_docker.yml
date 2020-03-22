@@ -3,7 +3,8 @@ name: Test docker builds
 on:
   pull_request:
     branches:
-      - *
+      - master
+      - dev
 
 jobs:
   deploy:
