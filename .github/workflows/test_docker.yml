@@ -3,7 +3,7 @@ name: Test docker builds
 on:
   pull_request:
     branches:
-      - master
+      - *
 
 jobs:
   deploy:
@@ -19,7 +19,7 @@ jobs:
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64 \
+            --platform linux/arm,linux/arm64,linux/amd64 \
             --output "type=image,push=false" \
             --file ./Dockerfile . \
             --compress \
