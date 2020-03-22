@@ -1,15 +1,9 @@
-FROM ludeeus/container:dotnet-base
-
-ENV \
-    HASS_HOST=localhost \
-    HASS_PORT=8123 \
-    HASS_TOKEN=NOT_SET \
-    HASS_DAEMONAPPFOLDER=/data
-
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as build
 
 COPY . ./temp/
 
-RUN mkdir -p ${HASS_DAEMONAPPFOLDER} \
+RUN \
+    mkdir -p /data \
     \
     && dotnet \
         publish \
@@ -19,7 +13,15 @@ RUN mkdir -p ${HASS_DAEMONAPPFOLDER} \
         \
     && mv ./temp/dist /app \
     && rm -R ./temp \
-    && echo $(uname -a) \ 
     && dotnet help
+
+
+FROM ludeeus/container:dotnet-base
+COPY --from=build /app /app
+
+ENV \
+    HASS_HOST=localhost \
+    HASS_PORT=8123 \
+    HASS_TOKEN=NOT_SET
 
 ENTRYPOINT ["dotnet", "/app/Service.dll"]
