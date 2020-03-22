@@ -12,7 +12,7 @@ COPY . ./temp/
 RUN mkdir -p ${HASS_DAEMONAPPFOLDER} \
     \
     && dotnet \
-    publish \
+        publish \
         ./temp/src/Service/Service.csproj \
         -c Release \
         -o ./temp/dist \
