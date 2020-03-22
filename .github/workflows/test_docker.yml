@@ -21,7 +21,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/arm,linux/arm64,linux/amd64 \
-            --output "type=image,push=true" \
+            --output "type=image,push=false" \
             --file ./Dockerfile . \
             --compress \
             --tag netdaemon/netdaemon:dev
