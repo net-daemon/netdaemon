@@ -12,8 +12,7 @@ RUN \
         -o ./temp/dist \
         \
     && mv ./temp/dist /app \
-    && rm -R ./temp \
-    && dotnet help
+    && rm -R ./temp
 
 
 FROM ludeeus/container:dotnet-base
