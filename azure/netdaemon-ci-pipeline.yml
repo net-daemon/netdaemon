@@ -3,14 +3,14 @@
 # Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-trigger:
-- master
-- dev
+#trigger:
+#- master
+#- dev
 
-pr:
-  branches:
-    include:
-    - '*'  # must quote since "*" is a YAML reserved character; we want a string
+#pr:
+#  branches:
+#    include:
+#    - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
 pool:
   vmImage: 'ubuntu-latest'
