@@ -18,7 +18,7 @@ jobs:
         uses: rohith/publish-nuget@v2
         with:
           PROJECT_FILE_PATH: src/DaemonRunner/DaemonRunner/DaemonRunner.csproj # Relative to repository root
-          VERSION_STATIC: $GIT_TAG_NAME-alpha
+          VERSION_STATIC: ${{ steps.tagName.outputs.tag }}-alpha
           NUGET_KEY: ${{secrets.NUGET_API_KEY}} # nuget.org API key
           TAG_COMMIT: false # Flag to enable / disalge git tagging
               # VERSION_FILE_PATH: Directory.Build.props # Filepath with version info, relative to repository root. Defaults to project file
