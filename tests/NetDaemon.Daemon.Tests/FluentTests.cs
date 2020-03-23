@@ -38,7 +38,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultDaemonHost
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("off")
-                .AndNotChangeFor(TimeSpan.FromMilliseconds(20))
+                .AndNotChangeFor(TimeSpan.FromMilliseconds(100))
                 .UseEntity("light.correct_entity")
                 .TurnOff()
                 .Execute();
@@ -47,7 +47,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             await Task.Delay(10); // After 10ms we should not have call
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Never());
-            await Task.Delay(50); // After 30ms we should have call
+            await Task.Delay(500); // After 30ms we should have call
 
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Once());
 

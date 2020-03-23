@@ -1,6 +1,6 @@
 # NetDaemon - Application daemon in .NET core for Home Assistant
 
-[![Build Status](https://dev.azure.com/helto4real0721/NetDaemon/_apis/build/status/NetDaemon%20CI%20pipeline?branchName=master)](https://dev.azure.com/helto4real0721/NetDaemon/_build/latest?definitionId=3&branchName=master)
+![CI build](https://github.com/net-daemon/netdaemon/workflows/CI%20build/badge.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/net-daemon/netdaemon/badge.svg?branch=fix_test_build)](https://coveralls.io/github/net-daemon/netdaemon?branch=fix_test_build)
 
 <a href="https://www.buymeacoffee.com/ij1qXRM6E" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
