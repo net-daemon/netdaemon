@@ -1,0 +1,14 @@
+#### Build and tests all pushes, also code coverage
+name: CI build
+on: [push, pull_request]
+jobs:
+    build:
+        name: Build sources
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@master
+            - uses: actions/setup-dotnet@v1
+            - name: Build code
+              run: dotnet build
+            - name: Test code
+              run: dotnet test
