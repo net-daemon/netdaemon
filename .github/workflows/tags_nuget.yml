@@ -20,6 +20,9 @@ jobs:
         run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
       - name: pack Daemon
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
+      - name: push to nuget
+        run: dotnet nughet push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+
         # uses: rohith/publish-nuget@v2
         # with:
         #   PROJECT_FILE_PATH: src/DaemonRunner/DaemonRunner/DaemonRunner.csproj # Relative to repository root
