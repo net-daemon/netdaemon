@@ -14,9 +14,11 @@ jobs:
       - uses: actions/setup-dotnet@v1
       - uses: olegtarasov/get-tag@v2
         name: Set tag envronment variable
-      - name: pack
+      - name: pack DaemonRunner
         run: dotnet pack src/DaemonRunner/DaemonRunner/DaemonRunner.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
+        - name: pack App
         run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
+        - name: pack Daemon
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
         # uses: rohith/publish-nuget@v2
         # with:
