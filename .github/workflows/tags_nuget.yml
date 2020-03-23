@@ -4,8 +4,7 @@ on:
   push:
     tags:
       - '*'
-    branches:
-      - nuget_push
+
 jobs:
   deploy_nuget:
     name: publish nuget packages
@@ -17,7 +16,7 @@ jobs:
         uses: rohith/publish-nuget@v2
         with:
           PROJECT_FILE_PATH: src/DaemonRunner/DaemonRunner/DaemonRunner.csproj # Relative to repository root
-          VERSION_STATIC: ${GIT_TAG_NAME}-alpha
+          VERSION_STATIC: ${{GIT_TAG_NAME}}-alpha
           NUGET_KEY: ${{secrets.NUGET_API_KEY}} # nuget.org API key
               # VERSION_FILE_PATH: Directory.Build.props # Filepath with version info, relative to repository root. Defaults to project file
               # VERSION_REGEX: <Version>(.*)<\/Version> # Regex pattern to extract version info in a capturing group
