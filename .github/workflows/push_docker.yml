@@ -1,9 +1,10 @@
 #### Publish tags to docker hub
-name: Deploy to Docker Hub for master
+name: Deploy dev builds to Docker Hub
 on:
    push:
      branches:
       - master
+      - order
 
 jobs:
   deploy:
@@ -21,24 +22,9 @@ jobs:
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform linux/arm,linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
+            --no-cache \
             --file ./Dockerfile . \
             --compress \
             --tag netdaemon/netdaemon:dev
-      - name: Run Buildx
-        run: |
-          docker buildx build \
-            --platform linux/arm/v6 \
-            --output "type=image,push=true" \
-            --file ./Dockerfile . \
-            --compress \
-            --tag netdaemon/netdaemon:dev-v6
-      - name: Run Buildx
-        run: |
-          docker buildx build \
-            --platform linux/arm/v7 \
-            --output "type=image,push=true" \
-            --file ./Dockerfile . \
-            --compress \
-            --tag netdaemon/netdaemon:dev-v7
