@@ -1,0 +1,3999 @@
+SF:/root/src/src/App/NetDaemon.App/Common/Attributes.cs
+FN:40,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_EntityId()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_EntityId()
+DA:41,0
+FN:45,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_AllChanges()
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_AllChanges()
+DA:46,0
+FN:50,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_From()
+FNDA:0,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_From()
+DA:51,0
+FN:55,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_To()
+FNDA:0,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::get_To()
+DA:56,0
+FN:29,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::.ctor(System.String,System.Object,System.Object,System.Boolean)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute::.ctor(System.String,System.Object,System.Object,System.Boolean)
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+DA:35,0
+DA:36,0
+LF:11
+LH:0
+BRF:0
+BRH:0
+FNF:5
+FNH:0
+end_of_record
+SF:/root/src/src/App/NetDaemon.App/Common/Fluent.cs
+FN:445,JoySoftware.HomeAssistant.NetDaemon.Common.IState JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::AndNotChangeFor(System.TimeSpan)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IState JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::AndNotChangeFor(System.TimeSpan)
+DA:446,1
+DA:447,1
+DA:448,1
+DA:449,1
+FN:452,JoySoftware.HomeAssistant.NetDaemon.Common.IExecute JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Call(System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>)
+FNDA:4,JoySoftware.HomeAssistant.NetDaemon.Common.IExecute JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Call(System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>)
+DA:453,4
+DA:454,4
+DA:455,4
+DA:456,4
+FN:459,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Execute()
+FNDA:15,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Execute()
+DA:460,15
+DA:461,75
+DA:462,15
+DA:463,31
+DA:464,31
+DA:465,15
+DA:466,31
+DA:467,17
+DA:468,15
+DA:469,17
+DA:470,17
+DA:471,0
+DA:472,17
+DA:473,0
+DA:474,0
+DA:475,0
+DA:476,0
+DA:477,15
+DA:478,17
+DA:479,15
+DA:480,29
+DA:481,29
+DA:482,26
+DA:483,16
+DA:484,15
+DA:485,28
+DA:486,0
+DA:487,0
+DA:488,15
+DA:489,15
+DA:490,15
+DA:491,28
+DA:492,16
+DA:493,27
+DA:494,15
+DA:495,29
+DA:496,16
+DA:497,16
+DA:498,16
+DA:499,16
+DA:500,16
+DA:501,16
+DA:502,16
+DA:503,15
+DA:504,16
+DA:505,16
+DA:506,15
+DA:507,16
+DA:508,16
+DA:509,15
+DA:510,16
+DA:511,16
+DA:512,15
+DA:513,0
+DA:514,16
+DA:515,15
+DA:516,0
+DA:517,0
+DA:518,0
+DA:519,0
+DA:520,16
+DA:521,15
+DA:522,0
+DA:523,0
+DA:524,0
+DA:525,0
+DA:526,16
+DA:527,15
+DA:528,28
+DA:529,28
+DA:530,28
+DA:531,15
+DA:532,28
+DA:533,18
+DA:534,25
+DA:535,16
+DA:536,15
+DA:537,24
+DA:538,28
+DA:539,31
+DA:541,15
+BRDA:461,54,1,15
+BRDA:461,54,0,15
+BRDA:466,118,0,2
+BRDA:470,160,0,0
+BRDA:470,160,1,2
+BRDA:466,118,1,14
+BRDA:481,234,1,1
+BRDA:481,234,0,14
+BRDA:481,302,1,1
+BRDA:481,302,0,14
+BRDA:481,406,0,11
+BRDA:482,416,1,1
+BRDA:482,416,0,11
+BRDA:482,484,1,1
+BRDA:482,484,0,11
+BRDA:482,583,0,0
+BRDA:482,583,1,11
+BRDA:482,609,0,1
+BRDA:481,406,1,13
+BRDA:482,609,1,13
+BRDA:485,621,1,1
+BRDA:485,621,0,13
+BRDA:485,689,1,1
+BRDA:485,689,0,13
+BRDA:485,793,0,0
+BRDA:486,803,1,0
+BRDA:486,803,0,0
+BRDA:486,871,1,0
+BRDA:486,871,0,0
+BRDA:486,970,0,0
+BRDA:486,970,1,0
+BRDA:486,996,0,0
+BRDA:485,793,1,13
+BRDA:486,996,1,13
+BRDA:491,1008,1,1
+BRDA:491,1008,0,13
+BRDA:491,1076,1,1
+BRDA:491,1076,0,13
+BRDA:491,1159,0,0
+BRDA:491,1159,1,13
+BRDA:491,1181,0,0
+BRDA:491,1181,1,13
+BRDA:491,1205,1,1
+BRDA:491,1205,0,13
+BRDA:491,1275,0,2
+BRDA:491,1282,1,1
+BRDA:491,1282,0,2
+BRDA:491,1275,1,11
+BRDA:491,1393,0,1
+BRDA:491,1393,1,12
+BRDA:495,1431,0,1
+BRDA:501,1653,1,1
+BRDA:501,1653,0,1
+BRDA:501,1729,0,1
+BRDA:501,1739,1,1
+BRDA:501,1739,0,1
+BRDA:501,1818,1,1
+BRDA:501,1818,0,1
+BRDA:501,1912,0,0
+BRDA:501,1912,1,1
+BRDA:501,1729,1,0
+BRDA:501,1952,0,1
+BRDA:504,1965,0,0
+BRDA:504,1965,1,1
+BRDA:504,1999,0,0
+BRDA:504,1999,1,1
+BRDA:504,2040,0,0
+BRDA:504,2040,1,1
+BRDA:504,2052,0,0
+BRDA:504,2052,1,1
+BRDA:504,2080,0,1
+BRDA:507,2117,0,0
+BRDA:507,2117,1,1
+BRDA:510,2189,0,1
+BRDA:510,2189,1,0
+BRDA:504,2080,1,0
+BRDA:517,2493,0,0
+BRDA:517,2493,1,0
+BRDA:517,2512,0,0
+BRDA:517,2512,1,0
+BRDA:517,2549,0,0
+BRDA:517,2549,1,0
+BRDA:501,1952,1,0
+BRDA:523,2631,0,0
+BRDA:523,2631,1,0
+BRDA:523,2653,0,0
+BRDA:523,2653,1,0
+BRDA:495,1431,1,13
+BRDA:529,2727,0,0
+BRDA:529,2727,1,13
+BRDA:529,2749,0,0
+BRDA:529,2749,1,13
+BRDA:532,2800,0,3
+BRDA:532,2800,1,10
+BRDA:534,2976,0,1
+BRDA:534,2976,1,9
+FN:544,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ISetState<JoySoftware.HomeAssistant.NetDaemon.Common.IAction>.SetState(System.Object)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ISetState<JoySoftware.HomeAssistant.NetDaemon.Common.IAction>.SetState(System.Object)
+DA:545,2
+DA:546,2
+DA:547,2
+DA:548,2
+DA:549,2
+DA:550,2
+FN:553,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ISetState<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.SetState(System.Object)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ISetState<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.SetState(System.Object)
+DA:554,0
+DA:555,0
+DA:556,0
+DA:557,0
+BRDA:555,9,1,0
+BRDA:555,21,1,0
+BRDA:555,30,1,0
+BRDA:555,30,0,0
+BRDA:555,9,0,0
+BRDA:555,21,0,0
+FN:560,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Speak(System.String)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Speak(System.String)
+DA:561,1
+DA:562,1
+DA:563,1
+DA:564,1
+DA:565,1
+FN:568,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Stop()
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Stop()
+DA:569,1
+DA:570,1
+DA:571,1
+DA:572,1
+FN:575,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Toggle()
+FNDA:3,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Toggle()
+DA:576,3
+DA:577,3
+DA:578,3
+DA:579,3
+DA:580,3
+FN:583,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IToggle<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.Toggle()
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IToggle<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.Toggle()
+DA:584,1
+DA:585,1
+DA:586,1
+DA:587,1
+BRDA:585,8,0,0
+BRDA:585,8,1,1
+BRDA:585,19,0,0
+BRDA:585,19,1,1
+FN:590,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::TurnOff()
+FNDA:10,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::TurnOff()
+DA:591,10
+DA:592,10
+DA:593,10
+DA:594,10
+DA:595,10
+FN:598,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ITurnOff<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.TurnOff()
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ITurnOff<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.TurnOff()
+DA:599,2
+DA:600,2
+DA:601,2
+DA:602,2
+BRDA:600,8,0,0
+BRDA:600,8,1,2
+BRDA:600,19,0,0
+BRDA:600,19,1,2
+FN:605,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::TurnOn()
+FNDA:14,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::TurnOn()
+DA:606,14
+DA:607,14
+DA:608,14
+DA:609,14
+DA:610,14
+FN:613,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IDelayStateChange.DelayUntilStateChange(System.Object,System.Object,System.Boolean)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IDelayStateChange.DelayUntilStateChange(System.Object,System.Object,System.Boolean)
+DA:614,1
+DA:615,1
+DA:616,1
+FN:619,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IDelayStateChange.DelayUntilStateChange(System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IDelayStateChange.DelayUntilStateChange(System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+DA:620,1
+DA:621,1
+DA:622,1
+FN:624,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ITurnOn<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.TurnOn()
+FNDA:7,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.ITurnOn<JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction>.TurnOn()
+DA:625,7
+DA:626,7
+DA:627,7
+DA:628,7
+BRDA:626,8,0,0
+BRDA:626,8,1,7
+BRDA:626,19,0,0
+BRDA:626,19,1,7
+FN:631,JoySoftware.HomeAssistant.NetDaemon.Common.IStateEntity JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::UseEntities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IStateEntity JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::UseEntities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:632,1
+DA:633,1
+DA:634,1
+DA:635,1
+FN:638,JoySoftware.HomeAssistant.NetDaemon.Common.IStateEntity JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::UseEntities(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IStateEntity JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::UseEntities(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:639,1
+DA:640,1
+DA:641,1
+DA:642,1
+FN:645,JoySoftware.HomeAssistant.NetDaemon.Common.IStateEntity JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::UseEntity(System.String[])
+FNDA:8,JoySoftware.HomeAssistant.NetDaemon.Common.IStateEntity JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::UseEntity(System.String[])
+DA:646,8
+DA:647,8
+DA:648,8
+DA:649,8
+FN:652,JoySoftware.HomeAssistant.NetDaemon.Common.IState JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::WhenStateChange(System.Object,System.Object,System.Boolean)
+FNDA:13,JoySoftware.HomeAssistant.NetDaemon.Common.IState JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::WhenStateChange(System.Object,System.Object,System.Boolean)
+DA:653,13
+DA:654,13
+DA:655,13
+DA:656,13
+DA:657,13
+DA:658,13
+DA:659,13
+DA:661,13
+DA:662,13
+FN:665,JoySoftware.HomeAssistant.NetDaemon.Common.IState JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::WhenStateChange(System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.IState JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::WhenStateChange(System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+DA:666,2
+DA:667,2
+DA:668,2
+DA:669,2
+DA:670,2
+DA:671,2
+DA:672,2
+FN:675,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::WithAttribute(System.String,System.Object)
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.IAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::WithAttribute(System.String,System.Object)
+DA:676,6
+DA:677,12
+DA:678,6
+DA:679,6
+BRDA:677,12,0,6
+BRDA:677,12,1,6
+FN:682,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction.WithAttribute(System.String,System.Object)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IStateAction.WithAttribute(System.String,System.Object)
+DA:683,1
+DA:684,1
+DA:685,1
+DA:687,1
+DA:688,1
+FN:691,System.String JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::GetDomainFromEntity(System.String)
+FNDA:6,System.String JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::GetDomainFromEntity(System.String)
+DA:692,6
+DA:693,6
+DA:694,6
+DA:695,0
+DA:697,6
+DA:698,6
+BRDA:694,22,0,0
+BRDA:694,22,1,6
+FN:748,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IExecuteAsync.ExecuteAsync()
+FNDA:13,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::JoySoftware.HomeAssistant.NetDaemon.Common.IExecuteAsync.ExecuteAsync()
+DA:749,13
+DA:750,13
+DA:751,13
+FN:789,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Pause()
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Pause()
+DA:790,1
+DA:791,1
+DA:792,1
+DA:793,1
+FN:796,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Play()
+FNDA:3,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::Play()
+DA:797,3
+DA:798,3
+DA:799,3
+DA:800,3
+FN:803,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::PlayPause()
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::PlayPause()
+DA:804,1
+DA:805,1
+DA:806,1
+DA:807,1
+FN:810,JoySoftware.HomeAssistant.NetDaemon.Common.IExecute JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::RunScript(System.String[])
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IExecute JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::RunScript(System.String[])
+DA:811,1
+DA:812,1
+DA:813,1
+DA:814,1
+FN:817,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::ExecuteAsync()
+FNDA:13,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::ExecuteAsync()
+DA:818,13
+DA:819,13
+DA:820,13
+FN:734,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::<JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync.ExecuteAsync>g__Speak|30_0()
+FNDA:1,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::<JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayerExecuteAsync.ExecuteAsync>g__Speak|30_0()
+DA:735,1
+DA:736,5
+DA:737,1
+DA:738,1
+DA:739,1
+DA:741,1
+DA:742,1
+DA:743,1
+DA:744,1
+BRDA:736,79,1,1
+BRDA:738,31,0,0
+BRDA:738,31,1,1
+BRDA:738,43,0,0
+BRDA:738,43,1,1
+BRDA:736,79,0,1
+FN:422,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::.ctor(System.Collections.Generic.IEnumerable`1<System.String>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:54,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager::.ctor(System.Collections.Generic.IEnumerable`1<System.String>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:423,54
+DA:424,54
+DA:431,54
+DA:438,54
+DA:439,54
+DA:440,54
+DA:441,54
+DA:442,54
+FN:701,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<CallServiceOnAllEntities>d__29::MoveNext()
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<CallServiceOnAllEntities>d__29::MoveNext()
+DA:702,6
+DA:703,6
+DA:704,30
+DA:705,6
+DA:706,6
+DA:707,6
+DA:708,6
+DA:709,6
+DA:710,6
+DA:711,6
+DA:713,12
+DA:714,6
+BRDA:704,492,1,6
+BRDA:708,112,1,1
+BRDA:708,112,0,6
+BRDA:709,212,1,1
+BRDA:709,212,0,6
+BRDA:710,353,1,1
+BRDA:710,353,0,6
+BRDA:704,492,0,6
+BRDA:713,547,0,6
+BRDA:713,547,1,6
+FN:717,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<JoySoftware-HomeAssistant-NetDaemon-Common-IMediaPlayerExecuteAsync-ExecuteAsync>d__30::MoveNext()
+FNDA:7,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<JoySoftware-HomeAssistant-NetDaemon-Common-IMediaPlayerExecuteAsync-ExecuteAsync>d__30::MoveNext()
+DA:718,7
+DA:719,7
+DA:721,7
+DA:722,7
+DA:723,7
+DA:724,7
+DA:725,7
+DA:726,7
+DA:727,7
+DA:728,7
+DA:729,7
+DA:731,7
+DA:745,7
+BRDA:719,29,0,0
+BRDA:719,29,1,7
+BRDA:721,62,1,3
+BRDA:721,62,2,1
+BRDA:721,62,3,1
+BRDA:721,62,4,1
+BRDA:721,62,5,1
+BRDA:721,62,0,0
+FN:754,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<JoySoftware-HomeAssistant-NetDaemon-Common-IScript-ExecuteAsync>d__32::MoveNext()
+FNDA:1,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<JoySoftware-HomeAssistant-NetDaemon-Common-IScript-ExecuteAsync>d__32::MoveNext()
+DA:755,1
+DA:756,1
+DA:757,5
+DA:758,1
+DA:759,1
+DA:760,1
+DA:761,1
+DA:764,2
+DA:765,1
+BRDA:757,151,1,1
+BRDA:757,151,0,1
+BRDA:764,203,0,1
+BRDA:764,203,1,1
+FN:778,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<ExecuteAsync>d__33::MoveNext()
+FNDA:61,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<ExecuteAsync>d__33::MoveNext()
+DA:779,61
+DA:780,61
+DA:781,240
+DA:782,48
+DA:784,26
+DA:785,13
+DA:786,61
+BRDA:779,14,0,61
+BRDA:780,34,0,48
+BRDA:781,227,1,48
+BRDA:781,64,1,0
+BRDA:781,64,0,96
+BRDA:781,227,0,48
+BRDA:780,34,1,26
+BRDA:784,297,0,13
+BRDA:779,14,1,0
+BRDA:784,297,1,61
+FN:824,System.ValueTuple`2<System.String,System.Object> JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<>c::<HandleAction>b__39_0(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+FNDA:71,System.ValueTuple`2<System.String,System.Object> JoySoftware.HomeAssistant.NetDaemon.Common.EntityManager/<>c::<HandleAction>b__39_0(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+DA:825,71
+BRDA:825,36,0,1
+BRDA:825,36,1,61
+FN:865,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerEntity JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Entities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerEntity JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Entities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:866,1
+DA:867,1
+DA:868,2
+DA:869,1
+DA:870,1
+DA:871,1
+BRDA:868,32,0,1
+BRDA:868,32,1,1
+FN:874,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerEntity JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Entities(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerEntity JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Entities(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:875,1
+DA:876,1
+DA:877,1
+DA:878,1
+DA:879,1
+FN:882,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerEntity JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Entity(System.String[])
+FNDA:4,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerEntity JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Entity(System.String[])
+DA:883,4
+DA:884,4
+DA:885,4
+DA:886,4
+DA:887,4
+FN:890,JoySoftware.HomeAssistant.NetDaemon.Common.ITimeItems JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Every(System.TimeSpan)
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.ITimeItems JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Every(System.TimeSpan)
+DA:891,6
+DA:892,6
+DA:893,6
+DA:894,6
+FN:897,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Execute()
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Execute()
+DA:898,6
+DA:899,6
+DA:901,120
+DA:902,6
+BRDA:899,7,0,0
+BRDA:899,7,1,6
+FN:905,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Toggle()
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::Toggle()
+DA:906,1
+DA:907,1
+DA:909,1
+DA:910,1
+DA:911,1
+BRDA:907,7,0,0
+BRDA:907,7,1,1
+FN:914,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::TurnOff()
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::TurnOff()
+DA:915,1
+DA:916,1
+DA:918,1
+DA:919,1
+DA:920,1
+BRDA:916,7,0,0
+BRDA:916,7,1,1
+FN:923,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::TurnOn()
+FNDA:4,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::TurnOn()
+DA:924,4
+DA:925,4
+DA:927,4
+DA:928,4
+DA:929,4
+BRDA:925,7,0,0
+BRDA:925,7,1,4
+FN:932,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::UsingAttribute(System.String,System.Object)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.ITimerAction JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::UsingAttribute(System.String,System.Object)
+DA:933,1
+DA:934,1
+DA:936,1
+DA:937,1
+DA:938,1
+BRDA:934,7,0,0
+BRDA:934,7,1,1
+FN:850,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::.ctor(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.TimeManager::.ctor(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:851,6
+DA:859,6
+DA:860,6
+DA:861,6
+DA:862,6
+FN:960,JoySoftware.HomeAssistant.NetDaemon.Common.FluentActionType JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_ActionType()
+FNDA:72,JoySoftware.HomeAssistant.NetDaemon.Common.FluentActionType JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_ActionType()
+DA:961,72
+FN:965,System.Collections.Generic.Dictionary`2<System.String,System.Object> JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_Attributes()
+FNDA:67,System.Collections.Generic.Dictionary`2<System.String,System.Object> JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_Attributes()
+DA:966,67
+FN:970,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_MessageToSpeak()
+FNDA:2,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_MessageToSpeak()
+DA:971,2
+FN:975,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_State()
+FNDA:4,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::get_State()
+DA:976,4
+FN:951,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::.ctor(JoySoftware.HomeAssistant.NetDaemon.Common.FluentActionType)
+FNDA:36,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentAction::.ctor(JoySoftware.HomeAssistant.NetDaemon.Common.FluentActionType)
+DA:952,36
+DA:953,36
+DA:954,36
+DA:955,36
+DA:956,36
+FN:986,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_AllChanges()
+FNDA:15,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_AllChanges()
+DA:987,15
+FN:991,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_Entity()
+FNDA:37,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_Entity()
+DA:992,37
+FN:996,System.TimeSpan JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_ForTimeSpan()
+FNDA:18,System.TimeSpan JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_ForTimeSpan()
+DA:997,18
+FN:1001,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_From()
+FNDA:26,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_From()
+DA:1002,26
+FN:1006,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_To()
+FNDA:38,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_To()
+DA:1007,38
+FN:1011,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task> JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_FuncToCall()
+FNDA:21,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task> JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_FuncToCall()
+DA:1012,21
+FN:1016,System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean> JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_Lambda()
+FNDA:20,System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean> JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_Lambda()
+DA:1017,20
+FN:1021,System.String[] JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_ScriptToCall()
+FNDA:12,System.String[] JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedInfo::get_ScriptToCall()
+DA:1022,12
+LF:331
+LH:310
+BRF:170
+BRH:112
+FNF:59
+FNH:58
+end_of_record
+SF:/root/src/src/App/NetDaemon.App/Common/FluentEvent.cs
+FN:52,JoySoftware.HomeAssistant.NetDaemon.Common.IExecute JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::Call(System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.IExecute JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::Call(System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+DA:53,6
+DA:54,6
+DA:55,1
+DA:57,5
+DA:58,5
+DA:59,5
+BRDA:54,7,0,1
+BRDA:54,7,1,5
+FN:62,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::Execute()
+FNDA:5,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::Execute()
+DA:63,5
+DA:64,5
+DA:65,0
+DA:67,5
+DA:68,5
+DA:69,1
+DA:71,4
+DA:72,5
+BRDA:64,7,0,4
+BRDA:64,7,1,1
+BRDA:64,23,0,0
+BRDA:64,23,1,5
+BRDA:67,47,0,1
+BRDA:68,96,1,1
+BRDA:68,96,0,1
+BRDA:67,47,1,4
+FN:33,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::.ctor(System.Collections.Generic.IEnumerable`1<System.String>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::.ctor(System.Collections.Generic.IEnumerable`1<System.String>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:34,2
+DA:35,2
+DA:36,2
+DA:37,2
+DA:38,2
+FN:44,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::.ctor(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:4,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventManager::.ctor(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:45,4
+DA:46,4
+DA:47,4
+DA:48,4
+DA:49,4
+FN:82,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty::get_EventId()
+FNDA:12,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty::get_EventId()
+DA:83,12
+FN:88,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty::get_Data()
+FNDA:11,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty::get_Data()
+DA:89,11
+LF:26
+LH:25
+BRF:10
+BRH:9
+FNF:6
+FNH:6
+end_of_record
+SF:/root/src/src/App/NetDaemon.App/Common/FluentExpandoObject.cs
+FN:41,System.Collections.Generic.IEnumerator`1<System.Collections.Generic.KeyValuePair`2<System.String,System.Object>> JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::GetEnumerator()
+FNDA:5,System.Collections.Generic.IEnumerator`1<System.Collections.Generic.KeyValuePair`2<System.String,System.Object>> JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::GetEnumerator()
+DA:42,5
+DA:43,5
+DA:44,5
+FN:47,System.Collections.IEnumerator JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::System.Collections.IEnumerable.GetEnumerator()
+FNDA:169,System.Collections.IEnumerator JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::System.Collections.IEnumerable.GetEnumerator()
+DA:48,169
+DA:49,169
+DA:50,169
+FN:53,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Add(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Add(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+DA:54,0
+DA:55,0
+DA:56,0
+FN:59,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Clear()
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Clear()
+DA:60,2
+DA:61,2
+DA:62,2
+FN:65,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Contains(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Contains(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+DA:66,0
+DA:67,0
+DA:68,0
+FN:71,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::CopyTo(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>[],System.Int32)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::CopyTo(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>[],System.Int32)
+DA:72,0
+DA:73,0
+FN:77,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Remove(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Remove(System.Collections.Generic.KeyValuePair`2<System.String,System.Object>)
+DA:78,0
+DA:79,0
+DA:80,0
+FN:82,System.Int32 JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Count()
+FNDA:0,System.Int32 JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Count()
+DA:83,0
+FN:85,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_IsReadOnly()
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_IsReadOnly()
+DA:86,0
+FN:89,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Add(System.String,System.Object)
+FNDA:12,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Add(System.String,System.Object)
+DA:90,12
+DA:91,12
+DA:92,12
+FN:95,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::ContainsKey(System.String)
+FNDA:3,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::ContainsKey(System.String)
+DA:96,3
+DA:97,3
+DA:98,3
+FN:101,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Remove(System.String)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Remove(System.String)
+DA:102,0
+DA:103,0
+DA:104,0
+FN:107,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TryGetValue(System.String,System.Object&)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TryGetValue(System.String,System.Object&)
+DA:108,0
+DA:110,0
+DA:112,0
+FN:116,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Item(System.String)
+FNDA:3,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Item(System.String)
+DA:117,3
+FN:117,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::set_Item(System.String,System.Object)
+FNDA:432,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::set_Item(System.String,System.Object)
+DA:118,432
+FN:121,System.Collections.Generic.ICollection`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Keys()
+FNDA:0,System.Collections.Generic.ICollection`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Keys()
+DA:122,0
+FN:124,System.Collections.Generic.ICollection`1<System.Object> JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Values()
+FNDA:0,System.Collections.Generic.ICollection`1<System.Object> JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::get_Values()
+DA:125,0
+FN:128,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TrySetMember(System.Dynamic.SetMemberBinder,System.Object)
+FNDA:88,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TrySetMember(System.Dynamic.SetMemberBinder,System.Object)
+DA:129,88
+DA:130,88
+DA:131,88
+DA:132,3
+DA:134,3
+DA:135,3
+DA:136,88
+DA:137,88
+BRDA:131,26,0,3
+BRDA:131,26,1,88
+FN:140,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TrySetIndex(System.Dynamic.SetIndexBinder,System.Object[],System.Object)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TrySetIndex(System.Dynamic.SetIndexBinder,System.Object[],System.Object)
+DA:141,0
+DA:142,0
+DA:144,0
+DA:145,0
+DA:146,0
+BRDA:142,17,0,0
+BRDA:142,17,1,0
+BRDA:144,46,0,0
+BRDA:144,46,1,0
+FN:149,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TryGetMember(System.Dynamic.GetMemberBinder,System.Object&)
+FNDA:27,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::TryGetMember(System.Dynamic.GetMemberBinder,System.Object&)
+DA:150,27
+DA:151,27
+DA:153,27
+DA:154,22
+DA:155,22
+DA:156,22
+DA:159,0
+DA:162,5
+DA:164,5
+DA:165,27
+BRDA:153,28,0,22
+BRDA:153,28,1,5
+BRDA:159,60,0,0
+BRDA:159,60,1,5
+FN:172,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Augment(JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject)
+FNDA:0,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Augment(JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject)
+DA:173,0
+DA:174,0
+DA:175,0
+DA:176,0
+DA:177,0
+DA:178,0
+DA:179,0
+FN:185,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::CopyFrom(System.Collections.Generic.IDictionary`2<System.String,System.Object>)
+FNDA:2,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::CopyFrom(System.Collections.Generic.IDictionary`2<System.String,System.Object>)
+DA:186,2
+DA:188,2
+DA:190,16
+DA:191,5
+DA:192,5
+DA:193,5
+DA:195,2
+DA:196,2
+BRDA:190,54,1,5
+BRDA:190,54,0,2
+FN:203,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Augment(System.Dynamic.ExpandoObject)
+FNDA:0,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::Augment(System.Dynamic.ExpandoObject)
+DA:204,0
+DA:205,0
+DA:206,0
+DA:207,0
+DA:208,0
+DA:209,0
+DA:210,0
+FN:213,T JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::ValueOrDefault(System.String,T)
+FNDA:0,T JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::ValueOrDefault(System.String,T)
+DA:214,0
+DA:215,0
+DA:216,0
+DA:217,0
+DA:218,0
+DA:219,0
+BRDA:216,22,0,0
+BRDA:216,22,1,0
+FN:225,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::HasProperty(System.String)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::HasProperty(System.String)
+DA:226,0
+DA:227,0
+DA:228,0
+FN:233,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::ToString()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::ToString()
+DA:234,0
+DA:235,0
+DA:236,0
+BRDA:235,18,0,0
+BRDA:235,18,1,0
+FN:238,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::UpdateDictionary(System.String,System.Object)
+FNDA:93,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::UpdateDictionary(System.String,System.Object)
+DA:239,93
+DA:240,93
+DA:241,93
+DA:242,0
+DA:244,93
+DA:245,93
+BRDA:241,23,0,0
+BRDA:241,23,1,93
+FN:247,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::NormalizePropertyName(System.String)
+FNDA:120,System.String JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::NormalizePropertyName(System.String)
+DA:248,120
+DA:249,120
+DA:250,120
+BRDA:249,7,0,41
+BRDA:249,7,1,79
+FN:17,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::.ctor(System.Boolean,System.Boolean,System.Dynamic.ExpandoObject,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp)
+FNDA:585,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject::.ctor(System.Boolean,System.Boolean,System.Dynamic.ExpandoObject,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp)
+DA:18,585
+DA:30,585
+DA:31,585
+DA:32,585
+DA:33,585
+DA:34,585
+DA:35,585
+DA:36,585
+DA:37,0
+DA:38,585
+BRDA:37,47,0,0
+BRDA:37,47,1,585
+LF:114
+LH:59
+BRF:22
+BRH:11
+FNF:29
+FNH:13
+end_of_record
+SF:/root/src/src/App/NetDaemon.App/Common/FluentInputSelect.cs
+FN:60,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.InputSelectManager::ExecuteAsync()
+FNDA:3,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.InputSelectManager::ExecuteAsync()
+DA:61,3
+DA:62,3
+DA:63,15
+DA:64,3
+DA:65,3
+DA:66,3
+DA:67,3
+DA:69,3
+DA:70,3
+DA:72,3
+DA:73,3
+BRDA:63,450,1,3
+BRDA:66,48,1,1
+BRDA:66,48,0,3
+BRDA:67,137,1,1
+BRDA:67,137,0,3
+BRDA:69,231,1,1
+BRDA:69,231,0,3
+BRDA:69,318,1,1
+BRDA:69,318,0,3
+BRDA:63,450,0,3
+FN:76,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.InputSelectManager::SetOption(System.String)
+FNDA:3,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentExecuteAsync JoySoftware.HomeAssistant.NetDaemon.Common.InputSelectManager::SetOption(System.String)
+DA:77,3
+DA:78,3
+DA:79,3
+DA:80,3
+FN:52,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.InputSelectManager::.ctor(System.Collections.Generic.IEnumerable`1<System.String>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:3,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.InputSelectManager::.ctor(System.Collections.Generic.IEnumerable`1<System.String>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:53,3
+DA:54,3
+DA:55,3
+DA:56,3
+DA:57,3
+LF:20
+LH:20
+BRF:10
+BRH:10
+FNF:3
+FNH:3
+end_of_record
+SF:/root/src/src/App/NetDaemon.App/Common/Messages.cs
+FN:14,System.String JoySoftware.HomeAssistant.NetDaemon.Common.ServiceEvent::get_Domain()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.ServiceEvent::get_Domain()
+DA:15,0
+FN:19,System.String JoySoftware.HomeAssistant.NetDaemon.Common.ServiceEvent::get_Service()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.ServiceEvent::get_Service()
+DA:20,0
+FN:25,System.Nullable`1<System.Text.Json.JsonElement> JoySoftware.HomeAssistant.NetDaemon.Common.ServiceEvent::get_ServiceData()
+FNDA:0,System.Nullable`1<System.Text.Json.JsonElement> JoySoftware.HomeAssistant.NetDaemon.Common.ServiceEvent::get_ServiceData()
+DA:26,0
+FN:36,System.String JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedEvent::get_EntityId()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedEvent::get_EntityId()
+DA:37,0
+FN:41,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedEvent::get_OldState()
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedEvent::get_OldState()
+DA:42,0
+FN:46,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedEvent::get_NewState()
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Common.StateChangedEvent::get_NewState()
+DA:47,0
+FN:57,System.String JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_EntityId()
+FNDA:1167,System.String JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_EntityId()
+DA:58,1167
+FN:63,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_State()
+FNDA:917,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_State()
+DA:64,917
+FN:68,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_Attribute()
+FNDA:850,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_Attribute()
+DA:69,850
+FN:73,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_LastChanged()
+FNDA:832,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_LastChanged()
+DA:74,832
+FN:78,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_LastUpdated()
+FNDA:830,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Common.EntityState::get_LastUpdated()
+DA:79,830
+FN:89,System.Nullable`1<System.Single> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Latitude()
+FNDA:0,System.Nullable`1<System.Single> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Latitude()
+DA:90,0
+FN:94,System.Nullable`1<System.Single> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Longitude()
+FNDA:0,System.Nullable`1<System.Single> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Longitude()
+DA:95,0
+FN:99,System.Nullable`1<System.Int32> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Elevation()
+FNDA:0,System.Nullable`1<System.Int32> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Elevation()
+DA:100,0
+FN:104,JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_UnitSystem()
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_UnitSystem()
+DA:105,0
+FN:109,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_LocationName()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_LocationName()
+DA:110,0
+FN:114,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_TimeZone()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_TimeZone()
+DA:115,0
+FN:119,System.Collections.Generic.List`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Components()
+FNDA:0,System.Collections.Generic.List`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Components()
+DA:120,0
+FN:124,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_ConfigDir()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_ConfigDir()
+DA:125,0
+FN:129,System.Collections.Generic.List`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_WhitelistExternalDirs()
+FNDA:0,System.Collections.Generic.List`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_WhitelistExternalDirs()
+DA:130,0
+FN:134,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Version()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.Config::get_Version()
+DA:135,0
+FN:145,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Length()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Length()
+DA:146,0
+FN:150,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Mass()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Mass()
+DA:151,0
+FN:155,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Temperature()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Temperature()
+DA:156,0
+FN:160,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Volume()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.HassUnitSystem::get_Volume()
+DA:161,0
+LF:25
+LH:5
+BRF:0
+BRH:0
+FNF:25
+FNH:5
+end_of_record
+SF:/root/src/src/App/NetDaemon.App/Common/NetDaemonApp.cs
+FN:26,System.Threading.Channels.Channel`1<System.Boolean> JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_InternalLazyStoreStateQueue()
+FNDA:3,System.Threading.Channels.Channel`1<System.Boolean> JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_InternalLazyStoreStateQueue()
+DA:27,3
+FN:31,JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_InternalStorageObject()
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.FluentExpandoObject JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_InternalStorageObject()
+DA:32,0
+FN:34,Microsoft.Extensions.Logging.ILogger JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Logger()
+FNDA:0,Microsoft.Extensions.Logging.ILogger JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Logger()
+DA:35,0
+FN:37,JoySoftware.HomeAssistant.NetDaemon.Common.IScheduler JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Scheduler()
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IScheduler JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Scheduler()
+DA:38,0
+DA:39,0
+BRDA:38,7,0,0
+BRDA:38,7,1,0
+BRDA:38,19,0,0
+BRDA:38,19,1,0
+FN:41,System.Collections.Generic.IEnumerable`1<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState> JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_State()
+FNDA:0,System.Collections.Generic.IEnumerable`1<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState> JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_State()
+DA:42,0
+DA:43,0
+BRDA:42,7,0,0
+BRDA:42,7,1,0
+BRDA:42,19,0,0
+BRDA:42,19,1,0
+FN:45,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Storage()
+FNDA:8,System.Object JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Storage()
+DA:46,8
+BRDA:46,7,0,0
+BRDA:46,7,1,8
+FN:48,System.String JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Id()
+FNDA:25,System.String JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_Id()
+DA:49,25
+FN:51,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_IsEnabled()
+FNDA:9,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::get_IsEnabled()
+DA:52,9
+FN:55,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::CallService(System.String,System.String,System.Object,System.Boolean)
+FNDA:1,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::CallService(System.String,System.String,System.Object,System.Boolean)
+DA:56,1
+DA:57,1
+DA:58,1
+DA:59,1
+BRDA:57,7,0,0
+BRDA:57,7,1,1
+BRDA:58,25,1,1
+BRDA:58,25,0,1
+BRDA:58,85,1,1
+BRDA:58,85,0,1
+FN:62,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Entities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Entities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:63,1
+DA:64,1
+DA:65,1
+DA:66,1
+BRDA:64,7,0,0
+BRDA:64,7,1,1
+FN:69,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Entities(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Entities(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:70,1
+DA:71,1
+DA:72,1
+DA:73,1
+BRDA:71,7,0,0
+BRDA:71,7,1,1
+FN:76,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Entity(System.String[])
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Entity(System.String[])
+DA:77,1
+DA:78,1
+DA:79,1
+DA:80,1
+BRDA:78,7,0,0
+BRDA:78,7,1,1
+FN:82,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Event(System.String[])
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Event(System.String[])
+DA:83,1
+DA:84,1
+BRDA:83,7,0,0
+BRDA:83,7,1,1
+BRDA:83,20,0,0
+BRDA:83,20,1,1
+FN:86,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Events(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Events(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>)
+DA:87,1
+DA:88,1
+BRDA:87,7,0,0
+BRDA:87,7,1,1
+BRDA:87,20,0,0
+BRDA:87,20,1,1
+FN:90,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Events(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Events(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:91,1
+DA:92,1
+BRDA:91,7,0,0
+BRDA:91,7,1,1
+BRDA:91,20,0,0
+BRDA:91,20,1,1
+FN:94,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::GetState(System.String)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::GetState(System.String)
+DA:95,1
+BRDA:95,7,0,0
+BRDA:95,7,1,1
+FN:98,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InitializeAsync()
+FNDA:0,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InitializeAsync()
+DA:99,0
+DA:101,0
+DA:102,0
+FN:105,JoySoftware.HomeAssistant.NetDaemon.Common.ILight JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Light(System.String[])
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.ILight JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Light(System.String[])
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+BRDA:107,7,0,0
+BRDA:107,7,1,0
+FN:111,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenEvent(System.String,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenEvent(System.String,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+DA:112,0
+BRDA:112,7,0,0
+BRDA:112,7,1,0
+FN:115,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenEvent(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenEvent(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+DA:116,0
+BRDA:116,7,0,0
+BRDA:116,7,1,0
+FN:119,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenServiceCall(System.String,System.String,System.Func`2<System.Object,System.Threading.Tasks.Task>)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenServiceCall(System.String,System.String,System.Func`2<System.Object,System.Threading.Tasks.Task>)
+DA:120,0
+BRDA:120,7,0,0
+BRDA:120,7,1,0
+FN:122,System.String JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenState(System.String,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>)
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ListenState(System.String,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>)
+DA:123,0
+BRDA:123,7,0,0
+BRDA:123,7,1,0
+FN:125,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::CancelListenState(System.String)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::CancelListenState(System.String)
+DA:126,0
+BRDA:126,7,0,0
+BRDA:126,7,1,0
+FN:137,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::SaveDataAsync(System.String,T)
+FNDA:0,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::SaveDataAsync(System.String,T)
+DA:138,0
+DA:139,0
+DA:140,0
+DA:141,0
+BRDA:139,7,0,0
+BRDA:139,7,1,0
+FN:143,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Log(System.String,Microsoft.Extensions.Logging.LogLevel)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Log(System.String,Microsoft.Extensions.Logging.LogLevel)
+DA:144,0
+FN:146,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Log(System.String,System.Exception,Microsoft.Extensions.Logging.LogLevel)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Log(System.String,System.Exception,Microsoft.Extensions.Logging.LogLevel)
+DA:147,0
+FN:150,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::MediaPlayer(System.String[])
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::MediaPlayer(System.String[])
+DA:151,0
+DA:152,0
+DA:153,0
+DA:154,0
+BRDA:152,7,0,0
+BRDA:152,7,1,0
+FN:157,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::MediaPlayers(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::MediaPlayers(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:158,0
+DA:159,0
+DA:160,0
+DA:161,0
+BRDA:159,7,0,0
+BRDA:159,7,1,0
+FN:164,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::MediaPlayers(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::MediaPlayers(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:165,0
+DA:166,0
+DA:167,0
+DA:168,0
+BRDA:166,7,0,0
+BRDA:166,7,1,0
+FN:171,JoySoftware.HomeAssistant.NetDaemon.Common.IScript JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::RunScript(System.String[])
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IScript JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::RunScript(System.String[])
+DA:172,0
+DA:173,0
+DA:174,0
+DA:175,0
+BRDA:173,7,0,0
+BRDA:173,7,1,0
+FN:192,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Speak(System.String,System.String)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Speak(System.String,System.String)
+DA:193,0
+DA:194,0
+DA:195,0
+DA:196,0
+BRDA:194,7,0,0
+BRDA:194,7,1,0
+FN:199,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::StartUpAsync(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:13,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::StartUpAsync(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:200,13
+DA:201,13
+DA:202,26
+DA:203,13
+DA:204,13
+DA:206,13
+DA:207,13
+FN:208,System.String JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::GetUniqueIdForStorage()
+FNDA:5,System.String JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::GetUniqueIdForStorage()
+DA:209,5
+FN:232,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::SaveAppState()
+FNDA:3,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::SaveAppState()
+DA:233,3
+DA:237,3
+DA:238,3
+FN:269,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ToggleAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+FNDA:0,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::ToggleAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+DA:270,0
+DA:271,0
+DA:272,0
+DA:273,0
+BRDA:271,7,0,0
+BRDA:271,7,1,0
+FN:276,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::TurnOffAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+FNDA:0,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::TurnOffAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+DA:277,0
+DA:278,0
+DA:279,0
+DA:280,0
+BRDA:278,7,0,0
+BRDA:278,7,1,0
+FN:283,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::TurnOnAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+FNDA:0,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::TurnOnAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+DA:284,0
+DA:285,0
+DA:286,0
+DA:287,0
+BRDA:285,7,0,0
+BRDA:285,7,1,0
+FN:294,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Dispose(System.Boolean)
+FNDA:4,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Dispose(System.Boolean)
+DA:295,4
+DA:296,4
+DA:297,4
+DA:298,4
+DA:299,4
+DA:300,4
+DA:301,4
+DA:303,4
+DA:304,4
+DA:305,4
+BRDA:296,12,0,4
+BRDA:298,18,0,4
+BRDA:298,18,1,4
+BRDA:296,12,1,4
+FN:309,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Dispose()
+FNDA:4,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::Dispose()
+DA:310,4
+DA:312,4
+DA:313,4
+FN:318,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InputSelect(System.String[])
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InputSelect(System.String[])
+DA:319,0
+DA:320,0
+DA:321,0
+DA:322,0
+BRDA:320,7,0,0
+BRDA:320,7,1,0
+FN:325,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InputSelects(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InputSelects(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:326,0
+DA:327,0
+DA:328,0
+DA:329,0
+BRDA:327,7,0,0
+BRDA:327,7,1,0
+FN:332,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InputSelects(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::InputSelects(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:333,0
+DA:334,0
+DA:335,0
+DA:336,0
+BRDA:334,7,0,0
+BRDA:334,7,1,0
+FN:339,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Object,System.Object,System.Boolean)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Object,System.Object,System.Boolean)
+DA:340,0
+DA:341,0
+DA:342,0
+DA:343,0
+BRDA:341,7,0,0
+BRDA:341,7,1,0
+FN:346,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::DelayUntilStateChange(System.String,System.Object,System.Object,System.Boolean)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::DelayUntilStateChange(System.String,System.Object,System.Object,System.Boolean)
+DA:347,0
+DA:348,0
+DA:349,0
+DA:350,0
+BRDA:348,7,0,0
+BRDA:348,7,1,0
+FN:353,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+DA:354,0
+DA:355,0
+DA:356,0
+DA:357,0
+BRDA:355,7,0,0
+BRDA:355,7,1,0
+FN:253,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::<RestoreAppStateAsync>b__58_0(JoySoftware.HomeAssistant.NetDaemon.Common.EntityState)
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::<RestoreAppStateAsync>b__58_0(JoySoftware.HomeAssistant.NetDaemon.Common.EntityState)
+DA:254,0
+BRDA:254,18,0,0
+BRDA:254,18,1,0
+FN:23,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::.ctor()
+FNDA:21,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp::.ctor()
+DA:24,21
+DA:25,21
+DA:29,21
+DA:291,21
+FN:130,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<GetDataAsync>d__43`1::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<GetDataAsync>d__43`1::MoveNext()
+DA:131,0
+DA:132,0
+DA:133,0
+DA:134,0
+BRDA:132,26,0,0
+BRDA:132,26,1,0
+BRDA:133,77,0,0
+BRDA:133,77,1,0
+FN:178,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<SendEvent>d__51::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<SendEvent>d__51::MoveNext()
+DA:179,0
+DA:180,0
+DA:181,0
+DA:182,0
+BRDA:180,29,0,0
+BRDA:180,29,1,0
+BRDA:181,47,1,0
+BRDA:181,47,0,0
+BRDA:181,119,1,0
+BRDA:181,119,0,0
+BRDA:181,191,1,0
+BRDA:181,191,0,0
+BRDA:181,317,1,0
+BRDA:181,317,0,0
+BRDA:181,378,1,0
+BRDA:181,378,0,0
+BRDA:181,455,0,0
+BRDA:181,484,0,0
+BRDA:181,484,1,0
+BRDA:181,455,1,0
+BRDA:181,567,1,0
+BRDA:181,567,0,0
+FN:185,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<SetState>d__52::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<SetState>d__52::MoveNext()
+DA:186,0
+DA:187,0
+DA:188,0
+DA:189,0
+BRDA:187,29,0,0
+BRDA:187,29,1,0
+BRDA:188,47,1,0
+BRDA:188,47,0,0
+BRDA:188,119,1,0
+BRDA:188,119,0,0
+BRDA:188,191,1,0
+BRDA:188,191,0,0
+BRDA:188,333,1,0
+BRDA:188,333,0,0
+BRDA:188,394,1,0
+BRDA:188,394,0,0
+BRDA:188,471,0,0
+BRDA:188,500,0,0
+BRDA:188,500,1,0
+BRDA:188,471,1,0
+BRDA:188,583,1,0
+BRDA:188,583,0,0
+FN:211,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<HandleLazyStorage>d__56::MoveNext()
+FNDA:13,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<HandleLazyStorage>d__56::MoveNext()
+DA:212,13
+DA:213,13
+DA:214,13
+DA:215,13
+DA:217,14
+DA:218,13
+DA:220,13
+DA:222,13
+DA:224,0
+DA:225,0
+DA:226,0
+DA:227,3
+DA:228,1
+DA:229,1
+BRDA:213,27,0,0
+BRDA:213,27,1,13
+BRDA:215,51,0,0
+BRDA:217,468,1,13
+BRDA:218,72,0,13
+BRDA:218,78,0,13
+BRDA:222,143,0,13
+BRDA:218,72,1,1
+BRDA:222,143,1,1
+BRDA:224,259,1,0
+BRDA:224,259,0,0
+BRDA:218,78,1,0
+BRDA:215,51,1,14
+BRDA:217,468,0,1
+FN:241,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<RestoreAppStateAsync>d__58::MoveNext()
+FNDA:5,System.Void JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp/<RestoreAppStateAsync>d__58::MoveNext()
+DA:242,5
+DA:243,5
+DA:245,5
+DA:247,5
+DA:248,1
+DA:249,1
+DA:250,1
+DA:251,1
+DA:253,5
+DA:255,5
+DA:257,5
+DA:258,5
+DA:259,5
+DA:260,5
+DA:261,5
+DA:263,5
+DA:265,0
+DA:266,5
+BRDA:242,14,0,5
+BRDA:243,37,0,0
+BRDA:243,37,1,5
+BRDA:245,93,0,0
+BRDA:245,93,1,5
+BRDA:247,207,0,1
+BRDA:249,216,1,1
+BRDA:249,216,0,1
+BRDA:247,207,1,5
+BRDA:257,379,0,5
+BRDA:257,379,1,0
+BRDA:258,407,0,0
+BRDA:258,425,0,0
+BRDA:258,425,1,0
+BRDA:258,407,1,5
+BRDA:258,453,0,5
+BRDA:261,500,0,0
+BRDA:261,500,1,5
+BRDA:242,14,1,0
+BRDA:258,453,1,0
+LF:180
+LH:83
+BRF:158
+BRH:40
+FNF:52
+FNH:20
+end_of_record
+SF:/root/src/src/Daemon/NetDaemon.Daemon/Daemon/ExtensionMethods.cs
+FN:19,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::AsTask(System.Threading.CancellationToken)
+FNDA:30,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::AsTask(System.Threading.CancellationToken)
+DA:20,30
+DA:21,30
+DA:22,30
+FN:28,System.Threading.Tasks.Task`1<T> JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::AsTask(System.Threading.CancellationToken)
+FNDA:30,System.Threading.Tasks.Task`1<T> JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::AsTask(System.Threading.CancellationToken)
+DA:29,30
+DA:30,30
+DA:31,60
+DA:32,30
+DA:33,30
+FN:54,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ToDaemonEntityState(JoySoftware.HomeAssistant.Client.HassState)
+FNDA:384,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ToDaemonEntityState(JoySoftware.HomeAssistant.Client.HassState)
+DA:55,384
+DA:56,384
+DA:57,384
+DA:58,384
+DA:59,384
+DA:60,384
+DA:61,384
+DA:62,384
+DA:63,384
+DA:65,385
+DA:68,383
+DA:70,0
+DA:71,0
+DA:73,1917
+DA:74,384
+DA:75,384
+DA:76,0
+DA:77,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:83,384
+DA:84,384
+DA:85,384
+DA:86,384
+DA:88,383
+DA:89,384
+BRDA:65,70,0,1
+BRDA:65,70,1,383
+BRDA:70,99,0,0
+BRDA:70,99,1,383
+BRDA:73,247,1,384
+BRDA:75,170,0,0
+BRDA:75,170,1,384
+BRDA:75,189,0,0
+BRDA:79,210,0,0
+BRDA:79,210,1,0
+BRDA:75,189,1,384
+BRDA:73,247,0,383
+FN:91,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ToDynamicValue(System.Text.Json.JsonElement)
+FNDA:0,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ToDynamicValue(System.Text.Json.JsonElement)
+DA:92,0
+DA:93,0
+DA:96,0
+DA:98,0
+DA:100,0
+DA:102,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:111,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:120,0
+DA:121,0
+BRDA:93,16,3,0
+BRDA:93,16,6,0
+BRDA:93,16,5,0
+BRDA:93,16,4,0
+BRDA:102,104,0,0
+BRDA:102,104,1,0
+BRDA:93,16,2,0
+BRDA:105,188,1,0
+BRDA:105,188,0,0
+BRDA:93,16,1,0
+BRDA:113,283,1,0
+BRDA:113,283,0,0
+BRDA:93,16,0,0
+FN:123,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ParseDataType(System.String)
+FNDA:0,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ParseDataType(System.String)
+DA:124,0
+DA:125,0
+DA:126,0
+DA:128,0
+DA:129,0
+DA:131,0
+DA:132,0
+BRDA:125,18,0,0
+BRDA:125,18,1,0
+BRDA:128,48,0,0
+BRDA:128,48,1,0
+FN:134,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ToDynamic(System.ValueTuple`2<System.String,System.Object>[])
+FNDA:70,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods::ToDynamic(System.ValueTuple`2<System.String,System.Object>[])
+DA:135,70
+DA:137,70
+DA:138,234
+DA:139,12
+DA:140,12
+DA:141,12
+DA:143,70
+DA:144,70
+DA:145,70
+BRDA:138,61,1,12
+BRDA:138,61,0,70
+FN:40,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods/<WhenAll>d__2::MoveNext()
+FNDA:30,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.ExtensionMethods/<WhenAll>d__2::MoveNext()
+DA:41,30
+DA:42,30
+DA:43,0
+DA:45,30
+DA:46,30
+DA:47,30
+BRDA:42,29,0,0
+BRDA:42,29,1,30
+LF:77
+LH:42
+BRF:33
+BRH:10
+FNF:7
+FNH:5
+end_of_record
+SF:/root/src/src/Daemon/NetDaemon.Daemon/Daemon/NetDaemonHost.cs
+FN:49,System.Collections.Concurrent.ConcurrentDictionary`2<System.String,System.ValueTuple`2<System.String,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>>> JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_InternalStateActions()
+FNDA:7,System.Collections.Concurrent.ConcurrentDictionary`2<System.String,System.ValueTuple`2<System.String,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>>> JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_InternalStateActions()
+DA:50,7
+FN:77,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_Connected()
+FNDA:103,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_Connected()
+DA:78,103
+FN:79,Microsoft.Extensions.Logging.ILogger JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_Logger()
+FNDA:70,Microsoft.Extensions.Logging.ILogger JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_Logger()
+DA:80,70
+FN:81,JoySoftware.HomeAssistant.NetDaemon.Common.IScheduler JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_Scheduler()
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.IScheduler JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_Scheduler()
+DA:82,6
+FN:83,System.Collections.Generic.IEnumerable`1<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState> JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_State()
+FNDA:10,System.Collections.Generic.IEnumerable`1<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState> JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_State()
+DA:84,10
+BRDA:84,7,0,0
+BRDA:84,7,1,10
+FN:85,Microsoft.Extensions.Logging.ILoggerFactory JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_DefaultLoggerFactory()
+FNDA:7,Microsoft.Extensions.Logging.ILoggerFactory JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::get_DefaultLoggerFactory()
+DA:86,7
+DA:87,14
+DA:88,14
+DA:89,14
+DA:90,14
+DA:91,14
+BRDA:86,6,0,1
+BRDA:86,6,1,7
+FN:92,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::CallService(System.String,System.String,System.Object,System.Boolean)
+FNDA:10,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::CallService(System.String,System.String,System.Object,System.Boolean)
+DA:93,10
+BRDA:93,5,1,1
+BRDA:93,5,0,10
+BRDA:93,65,1,1
+BRDA:93,65,0,10
+FN:95,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Entities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:5,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Entities(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:96,5
+DA:98,5
+DA:99,5
+DA:101,11
+DA:103,1
+DA:104,1
+DA:105,1
+DA:106,1
+DA:108,4
+BRDA:101,22,0,1
+BRDA:101,22,1,5
+FN:109,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Entities(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Entities(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:110,1
+FN:111,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Entity(System.String[])
+FNDA:33,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Entity(System.String[])
+DA:112,33
+FN:113,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Event(System.String[])
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Event(System.String[])
+DA:114,2
+FN:115,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Events(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>)
+FNDA:4,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Events(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>)
+DA:116,4
+FN:117,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Events(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentEvent JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Events(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:118,0
+FN:120,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::GetState(System.String)
+FNDA:7,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::GetState(System.String)
+DA:121,7
+DA:122,7
+DA:123,7
+DA:124,7
+DA:125,7
+BRDA:122,15,0,2
+BRDA:122,15,1,5
+FN:127,JoySoftware.HomeAssistant.NetDaemon.Common.ILight JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Light(System.String[])
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.ILight JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Light(System.String[])
+DA:128,1
+DA:129,1
+DA:130,5
+DA:131,1
+DA:133,1
+DA:134,1
+DA:136,1
+DA:137,1
+BRDA:130,62,1,1
+BRDA:133,31,0,0
+BRDA:133,31,1,1
+BRDA:130,62,0,1
+FN:139,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Lights(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IEntity JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Lights(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:140,1
+DA:141,4
+DA:143,3
+DA:144,1
+BRDA:141,19,0,1
+BRDA:141,19,1,1
+BRDA:143,57,0,1
+BRDA:143,57,1,1
+FN:145,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenEvent(System.String,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+FNDA:3,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenEvent(System.String,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+DA:146,3
+FN:147,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenEvent(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+FNDA:4,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenEvent(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.FluentEventProperty,System.Boolean>,System.Func`3<System.String,System.Object,System.Threading.Tasks.Task>)
+DA:148,4
+FN:150,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenServiceCall(System.String,System.String,System.Func`2<System.Object,System.Threading.Tasks.Task>)
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenServiceCall(System.String,System.String,System.Func`2<System.Object,System.Threading.Tasks.Task>)
+DA:151,2
+FN:156,System.String JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenState(System.String,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>)
+FNDA:26,System.String JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenState(System.String,System.Func`4<System.String,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Threading.Tasks.Task>)
+DA:157,26
+DA:160,26
+DA:161,26
+DA:162,26
+DA:163,26
+FN:164,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::CancelListenState(System.String)
+FNDA:9,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::CancelListenState(System.String)
+DA:165,9
+DA:167,9
+DA:168,9
+FN:169,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::MediaPlayer(System.String[])
+FNDA:5,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::MediaPlayer(System.String[])
+DA:170,5
+FN:171,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::MediaPlayers(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::MediaPlayers(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:172,1
+FN:174,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::MediaPlayers(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.IMediaPlayer JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::MediaPlayers(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:175,2
+DA:177,2
+DA:178,2
+DA:180,3
+DA:182,1
+DA:183,1
+DA:184,1
+DA:185,1
+DA:187,1
+BRDA:180,22,0,1
+BRDA:180,22,1,2
+FN:300,JoySoftware.HomeAssistant.NetDaemon.Common.IScript JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::RunScript(System.String[])
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IScript JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::RunScript(System.String[])
+DA:301,1
+FN:330,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Speak(System.String,System.String)
+FNDA:4,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Speak(System.String,System.String)
+DA:331,4
+FN:350,JoySoftware.HomeAssistant.NetDaemon.Common.ITime JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Timer()
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.ITime JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::Timer()
+DA:351,6
+FN:353,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ToggleAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+FNDA:7,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ToggleAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+DA:354,7
+DA:356,7
+DA:358,7
+DA:361,7
+DA:363,7
+DA:365,7
+DA:366,7
+BRDA:358,20,0,0
+BRDA:358,20,1,7
+BRDA:363,43,1,1
+BRDA:363,43,0,7
+BRDA:365,132,1,1
+BRDA:365,132,0,7
+BRDA:365,192,1,1
+BRDA:365,192,0,7
+FN:368,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::TurnOffAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+FNDA:21,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::TurnOffAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+DA:369,21
+DA:371,21
+DA:373,21
+DA:376,21
+DA:378,21
+DA:380,21
+DA:381,21
+BRDA:373,20,0,0
+BRDA:373,20,1,21
+BRDA:378,43,1,1
+BRDA:378,43,0,21
+BRDA:380,132,1,1
+BRDA:380,132,0,21
+BRDA:380,192,1,1
+BRDA:380,192,0,21
+FN:383,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::TurnOnAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+FNDA:39,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::TurnOnAsync(System.String,System.ValueTuple`2<System.String,System.Object>[])
+DA:384,39
+DA:386,39
+DA:388,38
+DA:391,38
+DA:393,38
+DA:395,38
+DA:396,38
+BRDA:388,20,0,0
+BRDA:388,20,1,38
+BRDA:393,43,1,1
+BRDA:393,43,0,38
+BRDA:395,132,1,1
+BRDA:395,132,0,38
+BRDA:395,192,1,1
+BRDA:395,192,0,38
+FN:514,System.String JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::GetDomainFromEntity(System.String)
+FNDA:67,System.String JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::GetDomainFromEntity(System.String)
+DA:515,67
+DA:516,67
+DA:517,67
+DA:518,1
+DA:519,1
+DA:522,66
+DA:523,66
+BRDA:517,22,0,1
+BRDA:517,22,1,66
+FN:562,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::SaveDataAsync(System.String,T)
+FNDA:2,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::SaveDataAsync(System.String,T)
+DA:563,2
+DA:564,2
+DA:565,2
+DA:567,2
+DA:568,0
+DA:570,2
+DA:571,2
+DA:572,2
+BRDA:564,7,0,0
+BRDA:564,7,1,2
+BRDA:567,31,0,0
+BRDA:567,31,1,2
+FN:592,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::InputSelect(System.String[])
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::InputSelect(System.String[])
+DA:593,1
+FN:596,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::InputSelects(System.Collections.Generic.IEnumerable`1<System.String>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::InputSelects(System.Collections.Generic.IEnumerable`1<System.String>)
+DA:597,1
+FN:600,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::InputSelects(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+FNDA:1,JoySoftware.HomeAssistant.NetDaemon.Common.IFluentInputSelect JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::InputSelects(System.Func`2<JoySoftware.HomeAssistant.NetDaemon.Common.IEntityProperties,System.Boolean>)
+DA:601,1
+DA:602,2
+DA:603,1
+DA:604,1
+BRDA:602,19,0,1
+BRDA:602,19,1,1
+FN:618,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenCompanionServiceCall(System.String,System.Func`2<System.Object,System.Threading.Tasks.Task>)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::ListenCompanionServiceCall(System.String,System.Func`2<System.Object,System.Threading.Tasks.Task>)
+DA:619,0
+FN:633,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::DelayUntilStateChange(System.String,System.Object,System.Object,System.Boolean)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::DelayUntilStateChange(System.String,System.Object,System.Object,System.Boolean)
+DA:634,0
+FN:637,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Object,System.Object,System.Boolean)
+FNDA:5,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Object,System.Object,System.Boolean)
+DA:638,5
+DA:640,5
+DA:641,5
+DA:643,25
+DA:644,5
+DA:645,5
+DA:646,9
+DA:647,9
+DA:648,9
+DA:649,0
+DA:650,5
+DA:651,9
+DA:652,7
+DA:653,6
+DA:654,5
+DA:655,5
+DA:656,5
+DA:657,8
+DA:658,0
+DA:659,5
+DA:660,5
+DA:661,8
+DA:662,5
+DA:663,8
+DA:664,5
+DA:665,8
+DA:666,9
+DA:667,5
+DA:670,5
+DA:671,5
+BRDA:643,138,1,5
+BRDA:645,96,0,5
+BRDA:645,96,1,5
+BRDA:643,138,0,5
+BRDA:647,12,0,4
+BRDA:648,22,1,1
+BRDA:648,22,0,4
+BRDA:648,90,1,1
+BRDA:648,90,0,4
+BRDA:648,172,0,0
+BRDA:648,172,1,4
+BRDA:648,195,0,0
+BRDA:647,12,1,4
+BRDA:648,195,1,4
+BRDA:651,221,0,2
+BRDA:652,231,1,1
+BRDA:652,231,0,2
+BRDA:652,299,1,1
+BRDA:652,299,0,2
+BRDA:652,381,0,0
+BRDA:652,381,1,2
+BRDA:652,406,0,1
+BRDA:651,221,1,3
+BRDA:652,406,1,3
+BRDA:657,424,1,1
+BRDA:657,424,0,3
+BRDA:657,492,1,1
+BRDA:657,492,0,3
+BRDA:657,568,0,0
+BRDA:657,568,1,3
+BRDA:657,582,0,0
+BRDA:657,582,1,3
+BRDA:657,605,1,1
+BRDA:657,605,0,3
+BRDA:657,675,0,0
+BRDA:657,682,1,0
+BRDA:657,682,0,0
+BRDA:657,675,1,3
+BRDA:657,783,0,0
+BRDA:657,783,1,3
+FN:674,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+FNDA:3,JoySoftware.HomeAssistant.NetDaemon.Common.IDelayResult JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::DelayUntilStateChange(System.Collections.Generic.IEnumerable`1<System.String>,System.Func`3<JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState,System.Boolean>)
+DA:675,3
+DA:677,3
+DA:678,3
+DA:680,15
+DA:681,3
+DA:682,3
+DA:683,6
+DA:684,3
+DA:685,6
+DA:686,6
+DA:687,4
+DA:688,5
+DA:689,0
+DA:690,0
+DA:691,0
+DA:692,0
+DA:693,3
+DA:694,3
+DA:695,3
+DA:696,5
+DA:697,3
+DA:698,5
+DA:699,3
+DA:700,5
+DA:701,6
+DA:702,3
+DA:704,3
+DA:705,3
+BRDA:680,130,1,3
+BRDA:682,88,0,3
+BRDA:682,88,1,3
+BRDA:680,130,0,3
+BRDA:686,20,0,1
+BRDA:686,20,1,2
+FN:25,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::.ctor(JoySoftware.HomeAssistant.Client.IHassClient,JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.IDataRepository,Microsoft.Extensions.Logging.ILoggerFactory)
+FNDA:173,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost::.ctor(JoySoftware.HomeAssistant.Client.IHassClient,JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.IDataRepository,Microsoft.Extensions.Logging.ILoggerFactory)
+DA:26,173
+DA:27,173
+DA:30,173
+DA:33,173
+DA:35,173
+DA:36,173
+DA:38,173
+DA:39,173
+DA:41,173
+DA:51,173
+DA:52,173
+DA:54,173
+DA:55,173
+DA:56,173
+DA:57,173
+DA:58,173
+DA:59,173
+DA:63,173
+DA:64,173
+DA:66,173
+DA:67,173
+DA:69,173
+DA:70,173
+DA:71,173
+DA:72,173
+DA:73,173
+DA:74,172
+DA:75,172
+DA:76,172
+DA:560,173
+BRDA:71,168,0,7
+BRDA:71,168,1,173
+BRDA:73,192,0,1
+BRDA:73,192,1,172
+FN:242,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<>c::<Run>b__49_0(JoySoftware.HomeAssistant.Client.HassState)
+FNDA:352,JoySoftware.HomeAssistant.NetDaemon.Common.EntityState JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<>c::<Run>b__49_0(JoySoftware.HomeAssistant.Client.HassState)
+DA:243,352
+BRDA:243,1075,0,1
+BRDA:243,1075,1,50
+BRDA:243,1111,0,1
+BRDA:243,1111,1,50
+FN:243,System.String JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<>c::<Run>b__49_1(JoySoftware.HomeAssistant.NetDaemon.Common.EntityState)
+FNDA:352,System.String JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<>c::<Run>b__49_1(JoySoftware.HomeAssistant.NetDaemon.Common.EntityState)
+DA:244,352
+FN:256,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<>c::<Run>b__49_2(System.Threading.Tasks.Task)
+FNDA:38,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<>c::<Run>b__49_2(System.Threading.Tasks.Task)
+DA:257,38
+BRDA:257,1393,0,1
+BRDA:257,1393,1,36
+FN:302,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<SendEvent>d__51::MoveNext()
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<SendEvent>d__51::MoveNext()
+DA:303,2
+BRDA:303,22,1,1
+BRDA:303,22,0,2
+BRDA:303,94,1,1
+BRDA:303,94,0,2
+BRDA:303,166,1,1
+BRDA:303,166,0,2
+BRDA:303,248,1,1
+BRDA:303,248,0,2
+BRDA:303,380,1,1
+BRDA:303,380,0,2
+BRDA:303,441,1,1
+BRDA:303,441,0,2
+BRDA:303,518,0,0
+BRDA:303,547,0,0
+BRDA:303,547,1,0
+BRDA:303,518,1,2
+BRDA:303,630,1,1
+BRDA:303,630,0,2
+FN:306,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<SetState>d__52::MoveNext()
+FNDA:4,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<SetState>d__52::MoveNext()
+DA:307,4
+DA:309,4
+DA:311,4
+DA:313,4
+DA:315,4
+DA:316,4
+DA:317,4
+DA:318,4
+DA:319,4
+DA:322,0
+DA:324,0
+DA:325,0
+DA:326,0
+DA:327,0
+DA:329,4
+BRDA:307,17,0,4
+BRDA:313,49,1,1
+BRDA:313,49,0,4
+BRDA:313,121,1,1
+BRDA:313,121,0,4
+BRDA:313,193,1,1
+BRDA:313,193,0,4
+BRDA:313,275,1,1
+BRDA:313,275,0,4
+BRDA:313,394,1,1
+BRDA:313,394,0,4
+BRDA:313,500,1,1
+BRDA:313,500,0,4
+BRDA:313,561,1,1
+BRDA:313,561,0,4
+BRDA:313,638,0,0
+BRDA:313,667,0,0
+BRDA:313,667,1,0
+BRDA:307,17,1,0
+BRDA:313,638,1,4
+BRDA:313,750,1,1
+BRDA:313,750,0,4
+BRDA:315,891,0,4
+BRDA:315,891,1,0
+FN:333,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<Stop>d__54::MoveNext()
+FNDA:1,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<Stop>d__54::MoveNext()
+DA:334,1
+DA:335,1
+DA:336,0
+DA:337,0
+DA:340,1
+DA:341,0
+DA:342,0
+DA:345,1
+DA:346,1
+DA:348,1
+DA:349,1
+BRDA:334,14,0,1
+BRDA:335,45,0,0
+BRDA:335,45,1,1
+BRDA:340,72,0,0
+BRDA:340,72,1,1
+BRDA:334,14,1,1
+FN:398,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<HandleNewEvent>d__59::MoveNext()
+FNDA:36,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<HandleNewEvent>d__59::MoveNext()
+DA:399,36
+DA:400,36
+DA:401,27
+DA:403,27
+DA:404,27
+DA:406,27
+DA:407,1
+DA:408,1
+DA:411,26
+DA:412,0
+DA:414,0
+DA:417,26
+DA:419,26
+DA:420,130
+DA:421,26
+DA:422,26
+DA:423,2
+DA:424,2
+DA:425,2
+DA:426,2
+DA:427,2
+DA:428,2
+DA:429,24
+DA:430,24
+DA:431,24
+DA:432,24
+DA:433,24
+DA:434,24
+DA:435,24
+DA:436,26
+DA:439,26
+DA:440,25
+DA:441,25
+DA:442,25
+DA:443,26
+DA:444,1
+DA:445,1
+DA:446,1
+DA:447,1
+DA:449,26
+DA:450,9
+DA:451,2
+DA:453,2
+DA:454,2
+DA:456,2
+DA:457,0
+DA:458,0
+DA:460,2
+DA:461,2
+DA:463,10
+DA:464,2
+DA:465,2
+DA:466,2
+DA:467,1
+DA:468,1
+DA:469,1
+DA:470,2
+DA:471,2
+DA:472,1
+DA:473,1
+DA:474,1
+DA:475,2
+DA:476,0
+DA:477,0
+DA:478,0
+DA:479,0
+DA:481,2
+DA:483,7
+DA:485,7
+DA:486,7
+DA:487,27
+DA:488,3
+DA:489,3
+DA:490,2
+DA:491,2
+DA:492,2
+DA:493,3
+DA:494,28
+DA:495,4
+DA:496,4
+DA:497,2
+DA:498,2
+DA:499,2
+DA:500,3
+DA:501,6
+DA:502,4
+DA:503,4
+DA:504,4
+DA:505,6
+DA:506,1
+DA:507,1
+DA:508,1
+DA:509,1
+DA:511,6
+DA:512,34
+BRDA:400,63,0,27
+BRDA:401,71,0,27
+BRDA:404,87,1,2
+BRDA:404,87,0,27
+BRDA:406,175,0,1
+BRDA:406,175,1,26
+BRDA:411,205,0,0
+BRDA:411,205,1,26
+BRDA:420,578,1,26
+BRDA:422,356,0,2
+BRDA:424,394,0,0
+BRDA:424,394,1,2
+BRDA:424,417,0,0
+BRDA:424,417,1,2
+BRDA:422,356,1,24
+BRDA:429,468,0,24
+BRDA:431,506,0,0
+BRDA:431,506,1,24
+BRDA:431,529,0,0
+BRDA:431,529,1,24
+BRDA:429,468,1,26
+BRDA:420,578,0,26
+BRDA:439,635,0,25
+BRDA:401,71,1,1
+BRDA:439,635,1,26
+BRDA:400,63,1,9
+BRDA:450,854,0,2
+BRDA:451,863,0,2
+BRDA:454,879,1,1
+BRDA:454,879,0,2
+BRDA:456,969,0,0
+BRDA:456,969,1,2
+BRDA:463,1392,1,2
+BRDA:465,1125,0,2
+BRDA:465,1125,1,0
+BRDA:465,1156,0,1
+BRDA:468,1167,1,1
+BRDA:468,1167,0,1
+BRDA:468,1259,1,1
+BRDA:468,1259,0,1
+BRDA:465,1156,1,2
+BRDA:463,1392,0,2
+BRDA:471,1449,0,1
+BRDA:451,863,1,0
+BRDA:471,1449,1,2
+BRDA:450,854,1,7
+BRDA:483,1654,0,7
+BRDA:487,2014,1,3
+BRDA:489,1769,0,2
+BRDA:491,1780,1,1
+BRDA:491,1780,0,2
+BRDA:491,1872,1,1
+BRDA:491,1872,0,2
+BRDA:489,1769,1,3
+BRDA:487,2014,0,7
+BRDA:494,2427,1,4
+BRDA:496,2177,0,2
+BRDA:498,2188,1,1
+BRDA:498,2188,0,2
+BRDA:498,2280,1,1
+BRDA:498,2280,0,2
+BRDA:496,2177,1,3
+BRDA:494,2427,0,6
+BRDA:501,2487,0,4
+BRDA:483,1654,1,0
+BRDA:501,2487,1,6
+FN:525,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<HandleTextToSpeechMessages>d__61::MoveNext()
+FNDA:50,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<HandleTextToSpeechMessages>d__61::MoveNext()
+DA:526,50
+DA:528,50
+DA:529,54
+DA:530,54
+DA:531,54
+DA:533,4
+DA:534,4
+DA:535,4
+DA:536,4
+DA:537,4
+DA:538,4
+DA:539,4
+DA:540,2
+DA:541,2
+DA:543,2
+DA:544,2
+DA:545,2
+DA:546,2
+DA:547,2
+DA:548,4
+DA:549,0
+DA:550,50
+DA:551,50
+DA:553,50
+DA:554,0
+DA:555,0
+DA:556,0
+DA:557,0
+DA:558,50
+BRDA:526,18,0,50
+BRDA:529,2210,1,54
+BRDA:531,117,0,52
+BRDA:526,18,1,52
+BRDA:531,117,1,54
+BRDA:534,286,1,1
+BRDA:534,286,0,4
+BRDA:535,385,1,1
+BRDA:535,385,0,4
+BRDA:536,484,1,1
+BRDA:536,484,0,4
+BRDA:536,556,1,1
+BRDA:536,556,0,4
+BRDA:536,638,1,1
+BRDA:536,638,0,4
+BRDA:536,796,1,1
+BRDA:536,796,0,4
+BRDA:536,857,1,1
+BRDA:536,857,0,4
+BRDA:536,935,0,0
+BRDA:536,968,0,0
+BRDA:536,968,1,0
+BRDA:526,18,2,0
+BRDA:536,935,1,4
+BRDA:536,1053,1,1
+BRDA:536,1053,0,4
+BRDA:526,18,3,0
+BRDA:539,1280,1,1
+BRDA:539,1280,0,4
+BRDA:539,1356,0,3
+BRDA:539,1366,1,1
+BRDA:539,1366,0,3
+BRDA:539,1445,1,1
+BRDA:539,1445,0,3
+BRDA:539,1533,0,0
+BRDA:539,1533,1,3
+BRDA:539,1543,1,1
+BRDA:539,1543,0,3
+BRDA:539,1356,1,1
+BRDA:539,1645,0,2
+BRDA:541,1657,1,1
+BRDA:541,1657,0,2
+BRDA:541,1718,1,1
+BRDA:541,1718,0,2
+BRDA:541,1811,1,1
+BRDA:541,1811,0,2
+BRDA:541,1894,0,0
+BRDA:541,1894,1,2
+BRDA:541,1910,0,0
+BRDA:541,1910,1,2
+BRDA:541,1920,1,1
+BRDA:541,1920,0,2
+BRDA:543,2043,0,2
+BRDA:526,18,4,2
+BRDA:543,2043,1,2
+BRDA:539,1645,1,4
+BRDA:529,2210,0,0
+FN:574,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<GetDataAsync>d__64`1::MoveNext()
+FNDA:3,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<GetDataAsync>d__64`1::MoveNext()
+DA:575,3
+DA:576,3
+DA:577,3
+DA:579,3
+DA:580,2
+DA:581,2
+DA:583,1
+DA:585,1
+DA:586,0
+DA:588,1
+DA:589,3
+BRDA:576,29,0,0
+BRDA:576,29,1,3
+BRDA:579,66,0,2
+BRDA:579,66,1,1
+BRDA:583,151,0,0
+BRDA:583,151,1,1
+BRDA:585,276,0,0
+BRDA:585,276,1,1
+FN:607,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<StopDaemonActivitiesAsync>d__68::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<StopDaemonActivitiesAsync>d__68::MoveNext()
+DA:608,0
+DA:609,0
+DA:610,0
+DA:611,0
+DA:612,0
+DA:614,0
+DA:615,0
+FN:622,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<SetDaemonStateAsync>d__70::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost/<SetDaemonStateAsync>d__70::MoveNext()
+DA:623,0
+DA:624,0
+DA:625,0
+DA:626,0
+DA:627,0
+DA:628,0
+DA:629,0
+DA:630,0
+BRDA:624,130,0,0
+BRDA:624,130,1,0
+BRDA:624,142,0,0
+BRDA:624,142,1,0
+FN:713,System.Collections.Concurrent.ConcurrentBag`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::get_StateSubscriptions()
+FNDA:0,System.Collections.Concurrent.ConcurrentBag`1<System.String> JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::get_StateSubscriptions()
+DA:714,0
+FN:721,System.Threading.Tasks.Task`1<System.Boolean> JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::get_Task()
+FNDA:10,System.Threading.Tasks.Task`1<System.Boolean> JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::get_Task()
+DA:722,10
+FN:725,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::Cancel()
+FNDA:12,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::Cancel()
+DA:726,12
+DA:727,12
+DA:728,4
+DA:730,8
+DA:731,40
+DA:732,8
+DA:733,8
+DA:734,8
+DA:735,8
+DA:738,8
+DA:739,12
+BRDA:727,9,1,8
+BRDA:731,63,1,8
+BRDA:731,63,0,8
+BRDA:727,9,0,12
+FN:744,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::Dispose(System.Boolean)
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::Dispose(System.Boolean)
+DA:745,6
+DA:746,6
+DA:747,6
+DA:748,6
+DA:749,6
+DA:751,6
+DA:752,6
+DA:753,6
+DA:754,6
+DA:755,6
+BRDA:746,12,0,6
+BRDA:748,18,0,6
+BRDA:748,18,1,6
+BRDA:746,12,1,6
+FN:758,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::Dispose()
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::Dispose()
+DA:759,6
+DA:761,6
+DA:762,6
+FN:711,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::.ctor(System.Threading.Tasks.TaskCompletionSource`1<System.Boolean>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:8,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.DelayResult::.ctor(System.Threading.Tasks.TaskCompletionSource`1<System.Boolean>,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:712,8
+DA:715,8
+DA:716,8
+DA:717,8
+DA:718,8
+DA:719,8
+DA:742,8
+LF:413
+LH:364
+BRF:301
+BRH:250
+FNF:57
+FNH:51
+end_of_record
+SF:/root/src/src/Daemon/NetDaemon.Daemon/Daemon/Scheduler.cs
+FN:47,Microsoft.Extensions.Logging.ILoggerFactory JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::get_DefaultLoggerFactory()
+FNDA:31,Microsoft.Extensions.Logging.ILoggerFactory JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::get_DefaultLoggerFactory()
+DA:48,31
+DA:49,62
+DA:50,62
+DA:51,62
+DA:52,62
+DA:53,62
+BRDA:48,6,0,1
+BRDA:48,6,1,31
+FN:57,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::get_CompletedTime()
+FNDA:0,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::get_CompletedTime()
+DA:58,0
+FN:62,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::get_StartTime()
+FNDA:0,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::get_StartTime()
+DA:63,0
+FN:65,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEvery(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEvery(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+DA:66,2
+FN:69,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryAsync(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryAsync(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+DA:70,2
+DA:71,2
+DA:72,2
+FN:74,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEvery(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:6,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEvery(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+DA:75,6
+FN:78,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryAsync(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:8,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryAsync(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+DA:79,8
+DA:80,8
+DA:81,8
+DA:83,8
+DA:85,8
+DA:87,8
+FN:116,System.TimeSpan JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::CalculateDailyTimeBetweenNowAndTargetTime(System.DateTime)
+FNDA:34,System.TimeSpan JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::CalculateDailyTimeBetweenNowAndTargetTime(System.DateTime)
+DA:117,34
+DA:118,34
+DA:119,34
+DA:121,34
+DA:122,2
+DA:123,2
+DA:124,2
+DA:125,34
+DA:126,34
+BRDA:121,71,0,2
+BRDA:121,71,1,34
+FN:128,System.TimeSpan JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::CalculateEveryMinuteTimeBetweenNowAndTargetTime(System.Int16)
+FNDA:9,System.TimeSpan JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::CalculateEveryMinuteTimeBetweenNowAndTargetTime(System.Int16)
+DA:129,9
+DA:130,9
+DA:131,9
+DA:132,5
+DA:133,5
+DA:135,4
+DA:136,9
+BRDA:131,28,0,5
+BRDA:131,28,1,4
+FN:138,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDaily(System.String,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDaily(System.String,System.Func`1<System.Threading.Tasks.Task>)
+DA:139,2
+FN:142,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDaily(System.String,System.Collections.Generic.IEnumerable`1<System.DayOfWeek>,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:13,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDaily(System.String,System.Collections.Generic.IEnumerable`1<System.DayOfWeek>,System.Func`1<System.Threading.Tasks.Task>)
+DA:143,13
+FN:145,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDailyAsync(System.String,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDailyAsync(System.String,System.Func`1<System.Threading.Tasks.Task>)
+DA:146,2
+FN:149,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDailyAsync(System.String,System.Collections.Generic.IEnumerable`1<System.DayOfWeek>,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:15,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunDailyAsync(System.String,System.Collections.Generic.IEnumerable`1<System.DayOfWeek>,System.Func`1<System.Threading.Tasks.Task>)
+DA:150,15
+DA:151,15
+DA:154,15
+DA:155,0
+DA:156,0
+DA:159,15
+DA:160,15
+DA:162,15
+DA:163,15
+BRDA:154,31,0,0
+BRDA:154,31,1,15
+FN:195,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryMinute(System.Int16,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:3,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryMinute(System.Int16,System.Func`1<System.Threading.Tasks.Task>)
+DA:196,3
+FN:199,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryMinuteAsync(System.Int16,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:3,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunEveryMinuteAsync(System.Int16,System.Func`1<System.Threading.Tasks.Task>)
+DA:200,3
+DA:201,3
+DA:202,3
+DA:204,3
+DA:206,3
+DA:207,3
+FN:224,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunIn(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunIn(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+DA:225,2
+FN:228,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunInAsync(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunInAsync(System.Int32,System.Func`1<System.Threading.Tasks.Task>)
+DA:229,2
+DA:230,2
+DA:231,2
+FN:233,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunIn(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:0,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunIn(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+DA:234,0
+FN:237,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunInAsync(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+FNDA:2,JoySoftware.HomeAssistant.NetDaemon.Common.ISchedulerResult JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::RunInAsync(System.TimeSpan,System.Func`1<System.Threading.Tasks.Task>)
+DA:238,2
+DA:239,2
+DA:240,2
+DA:241,2
+DA:243,2
+DA:244,2
+FN:301,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::ScheduleTask(System.Threading.Tasks.Task)
+FNDA:293,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::ScheduleTask(System.Threading.Tasks.Task)
+DA:302,293
+DA:303,293
+DA:304,293
+FN:30,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::.ctor(JoySoftware.HomeAssistant.NetDaemon.Daemon.IManageTime,Microsoft.Extensions.Logging.ILoggerFactory)
+FNDA:203,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler::.ctor(JoySoftware.HomeAssistant.NetDaemon.Daemon.IManageTime,Microsoft.Extensions.Logging.ILoggerFactory)
+DA:31,203
+DA:33,203
+DA:34,203
+DA:40,203
+DA:41,203
+DA:42,203
+DA:43,203
+DA:44,203
+DA:45,203
+DA:46,203
+BRDA:42,55,0,174
+BRDA:42,55,1,203
+BRDA:43,70,0,31
+BRDA:43,70,1,203
+FN:268,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<>c::<Stop>b__35_0(System.Threading.Tasks.Task)
+FNDA:284,System.Boolean JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<>c::<Stop>b__35_0(System.Threading.Tasks.Task)
+DA:269,284
+BRDA:269,277,0,1
+BRDA:269,277,1,125
+BRDA:269,314,0,0
+BRDA:269,314,1,125
+FN:89,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<RunEveryInternalAsync>d__19::MoveNext()
+FNDA:8,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<RunEveryInternalAsync>d__19::MoveNext()
+DA:90,8
+DA:91,8
+DA:92,8
+DA:94,8
+DA:95,62
+DA:96,59
+DA:97,59
+DA:98,59
+DA:99,59
+DA:102,59
+DA:103,42
+DA:104,42
+DA:105,42
+DA:106,42
+DA:107,37
+DA:109,17
+DA:110,17
+DA:111,17
+DA:112,54
+DA:113,54
+DA:114,3
+BRDA:91,51,0,48
+BRDA:91,57,0,8
+BRDA:95,543,1,59
+BRDA:91,51,1,21
+BRDA:102,245,0,42
+BRDA:91,57,1,40
+BRDA:102,245,1,17
+BRDA:95,543,0,3
+FN:165,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<RunDailyInternalAsync>d__26::MoveNext()
+FNDA:15,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<RunDailyInternalAsync>d__26::MoveNext()
+DA:166,15
+DA:167,15
+DA:168,15
+DA:170,29
+DA:171,29
+DA:172,29
+DA:173,29
+DA:174,29
+DA:176,14
+DA:177,13
+DA:178,13
+DA:179,7
+DA:180,7
+DA:181,7
+DA:182,7
+DA:184,6
+DA:185,13
+DA:187,1
+DA:188,1
+DA:190,1
+DA:191,1
+DA:192,14
+DA:193,0
+BRDA:170,846,1,29
+BRDA:167,51,1,29
+BRDA:176,334,0,13
+BRDA:178,380,0,7
+BRDA:167,51,2,7
+BRDA:178,380,1,6
+BRDA:176,334,1,1
+BRDA:167,51,3,1
+BRDA:167,51,0,29
+BRDA:170,846,0,0
+FN:209,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<RunEveryMinuteInternalAsync>d__29::MoveNext()
+FNDA:3,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<RunEveryMinuteInternalAsync>d__29::MoveNext()
+DA:210,3
+DA:211,3
+DA:212,3
+DA:214,5
+DA:215,5
+DA:216,5
+DA:217,5
+DA:218,5
+DA:219,5
+DA:220,2
+DA:221,2
+DA:222,0
+BRDA:211,51,0,5
+BRDA:214,475,1,5
+BRDA:216,90,0,0
+BRDA:216,90,1,5
+BRDA:211,51,1,5
+BRDA:211,57,1,2
+BRDA:211,57,0,5
+BRDA:214,475,0,0
+FN:246,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<InternalRunInAsync>d__34::MoveNext()
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<InternalRunInAsync>d__34::MoveNext()
+DA:247,2
+DA:248,2
+DA:249,2
+DA:251,2
+DA:252,2
+DA:253,1
+DA:254,1
+BRDA:248,51,0,3
+BRDA:248,57,0,2
+BRDA:248,51,1,2
+BRDA:248,57,1,1
+FN:274,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<SchedulerLoop>d__36::MoveNext()
+FNDA:203,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<SchedulerLoop>d__36::MoveNext()
+DA:275,203
+DA:277,203
+DA:278,30097
+DA:279,30070
+DA:280,265
+DA:282,265
+DA:283,265
+DA:285,265
+DA:286,265
+DA:289,265
+DA:290,265
+DA:292,29805
+DA:293,29805
+DA:294,29629
+DA:295,27
+DA:296,47
+DA:297,47
+DA:298,47
+DA:299,74
+BRDA:275,18,0,29879
+BRDA:275,24,0,203
+BRDA:278,460,1,30070
+BRDA:279,65,0,265
+BRDA:275,18,1,255
+BRDA:279,65,1,29805
+BRDA:275,24,1,29676
+BRDA:278,460,0,27
+FN:306,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<DisposeAsync>d__38::MoveNext()
+FNDA:22,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Scheduler/<DisposeAsync>d__38::MoveNext()
+DA:307,22
+DA:309,22
+DA:310,22
+DA:311,22
+DA:312,22
+DA:313,0
+DA:314,0
+DA:315,0
+DA:316,22
+BRDA:307,17,0,22
+BRDA:310,45,0,22
+BRDA:307,17,1,22
+BRDA:310,45,1,22
+FN:327,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Daemon.TimeManager::get_Current()
+FNDA:153,System.DateTime JoySoftware.HomeAssistant.NetDaemon.Daemon.TimeManager::get_Current()
+DA:328,153
+FN:335,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.TimeManager/<Delay>d__2::MoveNext()
+FNDA:40,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.TimeManager/<Delay>d__2::MoveNext()
+DA:336,40
+DA:337,40
+DA:339,62
+DA:340,60
+DA:341,60
+DA:342,60
+DA:343,55
+DA:345,55
+DA:346,33
+DA:349,22
+DA:350,22
+DA:351,35
+BRDA:339,296,1,60
+BRDA:345,219,0,33
+BRDA:345,219,1,22
+BRDA:339,296,0,2
+FN:363,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.SchedulerResult::get_Task()
+FNDA:26,System.Threading.Tasks.Task JoySoftware.HomeAssistant.NetDaemon.Daemon.SchedulerResult::get_Task()
+DA:364,26
+FN:364,System.Threading.CancellationTokenSource JoySoftware.HomeAssistant.NetDaemon.Daemon.SchedulerResult::get_CancelSource()
+FNDA:3,System.Threading.CancellationTokenSource JoySoftware.HomeAssistant.NetDaemon.Daemon.SchedulerResult::get_CancelSource()
+DA:365,3
+FN:358,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.SchedulerResult::.ctor(System.Threading.Tasks.Task,System.Threading.CancellationTokenSource)
+FNDA:28,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.SchedulerResult::.ctor(System.Threading.Tasks.Task,System.Threading.CancellationTokenSource)
+DA:359,28
+DA:360,28
+DA:361,28
+DA:362,28
+DA:363,28
+LF:190
+LH:180
+BRF:62
+BRH:57
+FNF:33
+FNH:30
+end_of_record
+SF:/root/src/src/Daemon/NetDaemon.Daemon/Daemon/Storage/DataRepository.cs
+FN:15,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.DataRepository::.ctor(System.String)
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.DataRepository::.ctor(System.String)
+DA:16,2
+DA:17,2
+DA:18,2
+DA:20,2
+DA:21,2
+DA:22,2
+FN:25,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.DataRepository/<Get>d__3`1::MoveNext()
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.DataRepository/<Get>d__3`1::MoveNext()
+DA:26,2
+DA:28,2
+DA:29,2
+DA:31,2
+DA:33,2
+DA:35,0
+DA:36,0
+DA:37,0
+DA:39,0
+DA:41,2
+BRDA:26,17,0,2
+BRDA:26,17,1,4
+BRDA:31,81,0,2
+BRDA:33,145,0,2
+BRDA:31,81,1,2
+BRDA:33,145,1,2
+FN:44,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.DataRepository/<Save>d__4`1::MoveNext()
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.DataRepository/<Save>d__4`1::MoveNext()
+DA:45,2
+DA:46,2
+DA:47,0
+DA:49,2
+DA:51,2
+DA:52,0
+DA:53,0
+DA:54,0
+DA:56,2
+DA:58,2
+DA:59,2
+BRDA:46,34,0,0
+BRDA:46,34,1,2
+BRDA:51,106,0,0
+BRDA:51,106,1,2
+BRDA:56,148,0,2
+BRDA:56,148,1,2
+FN:67,System.Collections.Generic.Dictionary`2<System.String,System.Object> JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoDictionaryConverter::Read(System.Text.Json.Utf8JsonReader&,System.Type,System.Text.Json.JsonSerializerOptions)
+FNDA:1,System.Collections.Generic.Dictionary`2<System.String,System.Object> JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoDictionaryConverter::Read(System.Text.Json.Utf8JsonReader&,System.Type,System.Text.Json.JsonSerializerOptions)
+DA:68,1
+DA:69,1
+DA:70,1
+DA:71,1
+DA:72,11
+DA:73,4
+DA:74,4
+DA:75,4
+DA:76,4
+DA:77,4
+DA:78,4
+DA:79,1
+DA:80,1
+BRDA:72,118,1,4
+BRDA:74,59,0,4
+BRDA:74,59,1,0
+BRDA:74,78,0,4
+BRDA:76,92,0,0
+BRDA:76,92,1,4
+BRDA:74,78,1,4
+BRDA:72,118,0,1
+FN:85,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoDictionaryConverter::Write(System.Text.Json.Utf8JsonWriter,System.Collections.Generic.Dictionary`2<System.String,System.Object>,System.Text.Json.JsonSerializerOptions)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoDictionaryConverter::Write(System.Text.Json.Utf8JsonWriter,System.Collections.Generic.Dictionary`2<System.String,System.Object>,System.Text.Json.JsonSerializerOptions)
+DA:86,0
+DA:87,0
+DA:88,0
+FN:93,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoExtensions::ParseString(System.String)
+FNDA:2,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoExtensions::ParseString(System.String)
+DA:94,2
+DA:95,2
+DA:96,1
+DA:99,1
+DA:100,2
+BRDA:95,17,0,1
+BRDA:95,17,1,1
+FN:102,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoExtensions::ToObjectValue(System.Text.Json.JsonElement)
+FNDA:4,System.Object JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage.ExpandoExtensions::ToObjectValue(System.Text.Json.JsonElement)
+DA:103,4
+DA:104,4
+DA:105,4
+DA:106,4
+DA:107,4
+DA:108,4
+DA:109,4
+DA:110,4
+DA:111,4
+DA:112,4
+BRDA:104,12,1,2
+BRDA:104,12,4,0
+BRDA:104,12,3,0
+BRDA:104,12,2,2
+BRDA:104,77,0,1
+BRDA:104,77,1,1
+BRDA:104,12,0,0
+LF:58
+LH:47
+BRF:29
+BRH:22
+FNF:7
+FNH:6
+end_of_record
+SF:/root/src/src/DaemonRunner/DaemonRunner/Service/HostConfig.cs
+FN:12,Microsoft.Extensions.Logging.LogLevel JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_LoggingLevel()
+FNDA:0,Microsoft.Extensions.Logging.LogLevel JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_LoggingLevel()
+DA:13,0
+FN:15,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Token()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Token()
+DA:16,0
+FN:18,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Host()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Host()
+DA:19,0
+FN:21,System.Int16 JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Port()
+FNDA:0,System.Int16 JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Port()
+DA:22,0
+FN:24,System.Boolean JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Ssl()
+FNDA:0,System.Boolean JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_Ssl()
+DA:25,0
+FN:27,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_SourceFolder()
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::get_SourceFolder()
+DA:28,0
+FN:7,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::.ctor()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig::.ctor()
+DA:8,0
+DA:9,0
+DA:10,0
+LF:9
+LH:0
+BRF:0
+BRH:0
+FNF:7
+FNH:0
+end_of_record
+SF:/root/src/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+FN:187,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService::EnsureApplicationDirectoryExists(JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService::EnsureApplicationDirectoryExists(JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.HostConfig)
+DA:188,0
+DA:189,0
+DA:190,0
+DA:192,0
+DA:193,0
+BRDA:189,9,0,0
+BRDA:189,9,1,0
+FN:24,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService::.ctor(Microsoft.Extensions.Logging.ILoggerFactory)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService::.ctor(Microsoft.Extensions.Logging.ILoggerFactory)
+DA:25,0
+DA:26,0
+DA:27,0
+DA:28,0
+DA:29,0
+FN:31,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService/<StopAsync>d__4::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService/<StopAsync>d__4::MoveNext()
+DA:32,0
+DA:33,0
+DA:34,0
+DA:36,0
+DA:37,0
+DA:39,0
+DA:40,0
+BRDA:32,14,0,0
+BRDA:33,45,0,0
+BRDA:33,45,1,0
+BRDA:32,14,1,0
+FN:42,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService/<ExecuteAsync>d__5::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService/<ExecuteAsync>d__5::MoveNext()
+DA:43,0
+DA:45,0
+DA:46,0
+DA:48,0
+DA:50,0
+DA:51,0
+DA:52,0
+DA:53,0
+DA:56,0
+DA:58,0
+DA:59,0
+DA:60,0
+DA:62,0
+DA:64,0
+DA:65,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:77,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:94,0
+DA:95,0
+DA:96,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:101,0
+DA:102,0
+DA:103,0
+DA:104,0
+DA:105,0
+DA:106,0
+DA:107,0
+DA:108,0
+DA:109,0
+DA:111,0
+DA:113,0
+DA:114,0
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:124,0
+DA:125,0
+BRDA:43,18,0,0
+BRDA:43,18,1,0
+BRDA:50,221,0,0
+BRDA:50,221,1,0
+BRDA:62,378,0,0
+BRDA:64,1382,1,0
+BRDA:43,18,2,0
+BRDA:43,18,3,0
+BRDA:43,18,4,0
+BRDA:65,416,0,0
+BRDA:65,424,0,0
+BRDA:72,714,1,0
+BRDA:65,416,1,0
+BRDA:75,670,1,0
+BRDA:72,691,0,0
+BRDA:72,691,1,0
+BRDA:75,670,0,0
+BRDA:72,714,0,0
+BRDA:78,737,0,0
+BRDA:80,763,0,0
+BRDA:65,424,1,0
+BRDA:82,789,0,0
+BRDA:82,795,0,0
+BRDA:82,789,1,0
+BRDA:83,810,0,0
+BRDA:83,810,1,0
+BRDA:82,795,1,0
+BRDA:80,763,1,0
+BRDA:78,737,1,0
+BRDA:105,1190,0,0
+BRDA:105,1190,1,0
+BRDA:111,1242,0,0
+BRDA:43,18,5,0
+BRDA:111,1242,1,0
+BRDA:62,378,1,0
+BRDA:64,1382,0,0
+FN:127,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService/<ReadConfigAsync>d__6::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService/<ReadConfigAsync>d__6::MoveNext()
+DA:128,0
+DA:130,0
+DA:134,0
+DA:135,0
+DA:137,0
+DA:138,0
+DA:139,0
+DA:140,0
+DA:141,0
+DA:142,0
+DA:146,0
+DA:147,0
+DA:148,0
+DA:150,0
+DA:151,0
+DA:153,0
+DA:154,0
+DA:155,0
+DA:156,0
+DA:157,0
+DA:158,0
+DA:159,0
+DA:160,0
+DA:161,0
+DA:162,0
+DA:163,0
+DA:164,0
+DA:167,0
+DA:168,0
+DA:169,0
+DA:170,0
+DA:172,0
+DA:173,0
+DA:174,0
+DA:175,0
+DA:176,0
+DA:177,0
+DA:178,0
+DA:179,0
+DA:180,0
+DA:181,0
+DA:182,0
+DA:184,0
+DA:185,0
+BRDA:128,17,0,0
+BRDA:134,42,0,0
+BRDA:140,103,0,0
+BRDA:140,103,1,0
+BRDA:134,42,1,0
+BRDA:150,219,0,0
+BRDA:150,219,1,0
+BRDA:154,278,0,0
+BRDA:158,330,0,0
+BRDA:158,330,1,0
+BRDA:159,377,0,0
+BRDA:159,377,1,0
+BRDA:162,421,0,0
+BRDA:162,421,1,0
+BRDA:154,278,1,0
+BRDA:168,498,0,0
+BRDA:128,17,1,0
+BRDA:172,541,0,0
+BRDA:172,541,1,0
+BRDA:168,498,1,0
+LF:127
+LH:0
+BRF:62
+BRH:0
+FNF:5
+FNH:0
+end_of_record
+SF:/root/src/src/DaemonRunner/DaemonRunner/Service/Config/ConfigExtensions.cs
+FN:16,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.TaskExtensions/<InvokeAsync>d__0::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.TaskExtensions/<InvokeAsync>d__0::MoveNext()
+DA:17,0
+DA:18,0
+DA:19,0
+DA:20,0
+DA:21,0
+BRDA:19,52,1,0
+BRDA:19,52,0,0
+BRDA:19,120,1,0
+BRDA:19,120,0,0
+BRDA:19,212,0,0
+BRDA:20,222,1,0
+BRDA:20,222,0,0
+BRDA:20,294,1,0
+BRDA:20,294,0,0
+BRDA:20,394,1,0
+BRDA:20,394,0,0
+BRDA:20,455,1,0
+BRDA:20,455,0,0
+BRDA:20,532,0,0
+BRDA:20,561,0,0
+BRDA:20,561,1,0
+BRDA:20,532,1,0
+BRDA:20,643,1,0
+BRDA:20,643,0,0
+BRDA:19,212,1,0
+FN:26,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.ConfigStringExtensions::ToPythonStyle(System.String)
+FNDA:0,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.ConfigStringExtensions::ToPythonStyle(System.String)
+DA:27,0
+DA:28,0
+DA:29,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:35,0
+DA:36,0
+DA:37,0
+DA:38,0
+DA:39,0
+BRDA:30,96,1,0
+BRDA:32,39,0,0
+BRDA:32,39,1,0
+BRDA:32,52,0,0
+BRDA:32,52,1,0
+BRDA:30,96,0,0
+FN:41,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.ConfigStringExtensions::ToCamelCase(System.String)
+FNDA:7,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.ConfigStringExtensions::ToCamelCase(System.String)
+DA:42,7
+DA:43,7
+DA:44,7
+DA:45,7
+DA:46,233
+DA:47,106
+DA:48,106
+DA:49,11
+DA:50,11
+DA:51,11
+DA:54,95
+DA:55,95
+DA:56,95
+DA:57,95
+DA:58,7
+DA:60,7
+DA:61,7
+BRDA:46,92,1,106
+BRDA:48,42,0,11
+BRDA:48,42,1,95
+BRDA:54,53,0,77
+BRDA:54,53,1,18
+BRDA:46,92,0,7
+LF:34
+LH:17
+BRF:32
+BRH:6
+FNF:3
+FNH:1
+end_of_record
+SF:/root/src/src/DaemonRunner/DaemonRunner/Service/Config/YamlConfig.cs
+FN:36,System.Collections.Generic.IEnumerable`1<JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::get_Instances()
+FNDA:14,System.Collections.Generic.IEnumerable`1<JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::get_Instances()
+DA:37,14
+DA:39,78
+DA:40,18
+DA:41,18
+DA:42,18
+DA:43,5
+DA:44,5
+DA:47,13
+DA:50,13
+DA:51,28
+DA:52,13
+DA:54,13
+DA:55,12
+DA:56,12
+DA:57,12
+DA:58,12
+DA:59,12
+DA:60,12
+DA:61,12
+DA:62,12
+DA:63,13
+DA:65,14
+DA:66,14
+BRDA:39,256,1,18
+BRDA:41,67,0,18
+BRDA:41,67,1,0
+BRDA:41,94,0,5
+BRDA:41,94,1,13
+BRDA:54,186,0,12
+BRDA:57,221,0,12
+BRDA:57,221,1,12
+BRDA:54,186,1,13
+BRDA:39,256,0,14
+BRDA:51,7,0,0
+BRDA:51,7,1,15
+FN:69,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::InstanceAndSetPropertyConfig(System.Type,YamlDotNet.RepresentationModel.YamlMappingNode,System.String)
+FNDA:12,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::InstanceAndSetPropertyConfig(System.Type,YamlDotNet.RepresentationModel.YamlMappingNode,System.String)
+DA:70,12
+DA:71,12
+DA:73,12
+DA:74,0
+DA:76,80
+DA:77,22
+DA:78,22
+DA:80,0
+DA:81,34
+DA:83,10
+DA:84,10
+DA:86,10
+DA:88,10
+DA:91,2
+DA:92,2
+DA:95,8
+DA:96,8
+DA:99,0
+DA:100,0
+DA:102,10
+DA:104,12
+DA:105,12
+BRDA:73,19,0,0
+BRDA:73,19,1,12
+BRDA:76,262,1,22
+BRDA:80,83,1,22
+BRDA:81,106,1,10
+BRDA:83,122,0,0
+BRDA:83,122,1,10
+BRDA:88,172,3,2
+BRDA:88,172,2,8
+BRDA:88,172,1,0
+BRDA:88,172,0,10
+BRDA:80,83,0,34
+BRDA:81,106,0,34
+BRDA:76,262,0,12
+FN:107,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::SetPropertyFromYaml(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.PropertyInfo,YamlDotNet.RepresentationModel.YamlSequenceNode)
+FNDA:2,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::SetPropertyFromYaml(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.PropertyInfo,YamlDotNet.RepresentationModel.YamlSequenceNode)
+DA:108,2
+DA:109,2
+DA:110,2
+DA:111,2
+DA:112,2
+DA:114,2
+DA:115,2
+DA:117,14
+DA:118,4
+DA:119,4
+DA:120,0
+DA:121,0
+DA:123,4
+DA:124,4
+DA:125,4
+DA:126,4
+DA:128,4
+DA:129,4
+DA:131,2
+DA:132,2
+DA:133,2
+BRDA:109,12,0,2
+BRDA:109,21,0,0
+BRDA:109,21,1,2
+BRDA:109,12,1,0
+BRDA:109,52,0,2
+BRDA:111,65,0,0
+BRDA:111,65,1,2
+BRDA:111,79,0,0
+BRDA:111,79,1,2
+BRDA:114,154,0,0
+BRDA:114,154,1,2
+BRDA:117,397,1,4
+BRDA:119,213,0,0
+BRDA:119,213,1,4
+BRDA:125,312,0,0
+BRDA:125,312,1,4
+BRDA:117,397,0,2
+BRDA:109,52,1,2
+FN:135,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::ReplaceSecretIfExists(YamlDotNet.RepresentationModel.YamlScalarNode)
+FNDA:12,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::ReplaceSecretIfExists(YamlDotNet.RepresentationModel.YamlScalarNode)
+DA:136,12
+DA:137,12
+DA:138,10
+DA:140,2
+DA:142,2
+DA:143,12
+BRDA:137,17,0,10
+BRDA:137,17,1,2
+BRDA:137,33,1,2
+BRDA:142,69,0,0
+BRDA:142,69,1,2
+BRDA:137,33,0,12
+FN:145,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::SetPropertyFromYaml(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.PropertyInfo,YamlDotNet.RepresentationModel.YamlScalarNode)
+FNDA:8,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::SetPropertyFromYaml(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.PropertyInfo,YamlDotNet.RepresentationModel.YamlScalarNode)
+DA:146,8
+DA:147,8
+DA:148,8
+DA:149,8
+DA:152,8
+DA:153,8
+BRDA:148,22,0,0
+BRDA:148,22,1,8
+FN:155,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::GetTypeNameFromClassConfig(YamlDotNet.RepresentationModel.YamlMappingNode)
+FNDA:13,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::GetTypeNameFromClassConfig(YamlDotNet.RepresentationModel.YamlMappingNode)
+DA:156,13
+DA:157,13
+DA:158,26
+DA:160,13
+DA:161,0
+DA:162,0
+DA:165,13
+DA:166,0
+DA:167,0
+DA:169,13
+DA:170,13
+BRDA:157,13,0,1
+BRDA:157,13,1,13
+BRDA:160,56,0,13
+BRDA:160,56,1,0
+BRDA:160,73,0,0
+BRDA:160,73,1,13
+BRDA:165,100,0,0
+BRDA:165,100,1,13
+BRDA:169,120,0,0
+BRDA:169,120,1,13
+BRDA:169,132,0,0
+BRDA:169,132,1,13
+BRDA:158,13,0,0
+BRDA:158,13,1,13
+BRDA:158,25,0,0
+BRDA:158,25,1,13
+FN:23,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::.ctor(System.Collections.Generic.IEnumerable`1<System.Type>,System.IO.TextReader,JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig,System.String)
+FNDA:14,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlAppConfig::.ctor(System.Collections.Generic.IEnumerable`1<System.Type>,System.IO.TextReader,JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig,System.String)
+DA:24,14
+DA:25,14
+DA:26,14
+DA:27,14
+DA:28,14
+DA:29,14
+DA:30,14
+DA:31,14
+DA:32,14
+FN:184,System.Collections.Generic.IEnumerable`1<System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetAllConfigFilePaths()
+FNDA:2,System.Collections.Generic.IEnumerable`1<System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetAllConfigFilePaths()
+DA:185,2
+DA:186,2
+DA:187,2
+FN:189,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetSecretFromPath(System.String,System.String)
+FNDA:13,System.String JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetSecretFromPath(System.String,System.String)
+DA:190,13
+DA:191,13
+DA:192,13
+DA:193,13
+DA:194,7
+DA:195,7
+DA:197,6
+DA:198,6
+DA:199,5
+DA:200,5
+DA:202,1
+DA:203,13
+BRDA:191,15,0,13
+BRDA:193,38,0,7
+BRDA:193,38,1,6
+BRDA:191,15,1,6
+BRDA:198,77,0,5
+BRDA:198,77,1,1
+FN:205,System.Collections.Generic.Dictionary`2<System.String,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetSecretsFromSecretsYaml(System.String)
+FNDA:40,System.Collections.Generic.Dictionary`2<System.String,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetSecretsFromSecretsYaml(System.String)
+DA:206,40
+DA:207,40
+DA:208,40
+FN:210,System.Collections.Generic.Dictionary`2<System.String,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetSecretsFromSecretsYaml(System.IO.TextReader)
+FNDA:41,System.Collections.Generic.Dictionary`2<System.String,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetSecretsFromSecretsYaml(System.IO.TextReader)
+DA:211,41
+DA:212,41
+DA:214,41
+DA:215,41
+DA:217,362
+DA:218,121
+DA:219,121
+DA:220,121
+DA:221,0
+DA:222,0
+DA:225,121
+DA:227,121
+DA:229,121
+DA:230,121
+DA:231,121
+DA:233,40
+DA:234,40
+BRDA:217,179,1,121
+BRDA:219,73,0,121
+BRDA:219,73,1,0
+BRDA:219,100,0,0
+BRDA:219,100,1,121
+BRDA:229,145,0,121
+BRDA:229,145,1,0
+BRDA:229,159,0,121
+BRDA:229,159,1,121
+BRDA:217,179,0,40
+FN:236,System.Collections.Generic.Dictionary`2<System.String,System.Collections.Generic.Dictionary`2<System.String,System.String>> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetAllSecretsFromPath(System.String)
+FNDA:22,System.Collections.Generic.Dictionary`2<System.String,System.Collections.Generic.Dictionary`2<System.String,System.String>> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::GetAllSecretsFromPath(System.String)
+DA:237,22
+DA:238,22
+DA:239,144
+DA:240,39
+DA:241,39
+DA:243,39
+DA:244,0
+DA:246,39
+DA:247,39
+DA:248,39
+DA:249,39
+DA:250,39
+DA:251,39
+DA:252,22
+DA:253,22
+BRDA:239,98,1,39
+BRDA:243,51,1,39
+BRDA:246,69,0,39
+BRDA:246,69,1,39
+BRDA:243,51,0,61
+BRDA:239,98,0,22
+FN:177,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::.ctor(System.String)
+FNDA:21,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlConfig::.ctor(System.String)
+DA:178,21
+DA:179,21
+DA:180,21
+DA:181,21
+DA:182,21
+LF:153
+LH:140
+BRF:90
+BRH:66
+FNF:13
+FNH:13
+end_of_record
+SF:/root/src/src/DaemonRunner/DaemonRunner/Service/Config/YamlExtensions.cs
+FN:15,System.Collections.IList JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.PropertyInfoExtensions::CreateListOfPropertyType(System.Type)
+FNDA:2,System.Collections.IList JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.PropertyInfoExtensions::CreateListOfPropertyType(System.Type)
+DA:16,2
+DA:17,2
+DA:18,2
+DA:20,2
+DA:21,2
+FN:26,System.Reflection.PropertyInfo JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlExtensions::GetYamlProperty(System.Type,System.String)
+FNDA:10,System.Reflection.PropertyInfo JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlExtensions::GetYamlProperty(System.Type,System.String)
+DA:27,10
+DA:28,10
+DA:30,10
+DA:31,7
+DA:33,7
+DA:34,7
+DA:35,10
+DA:36,10
+BRDA:30,18,0,7
+BRDA:30,18,1,10
+FN:38,System.Object JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlExtensions::ToObject(YamlDotNet.RepresentationModel.YamlScalarNode,System.Type)
+FNDA:12,System.Object JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config.YamlExtensions::ToObject(YamlDotNet.RepresentationModel.YamlScalarNode,System.Type)
+DA:39,12
+DA:40,12
+DA:41,12
+DA:42,4
+DA:44,4
+DA:45,4
+DA:46,12
+DA:49,8
+DA:52,4
+DA:53,4
+DA:54,4
+DA:55,4
+DA:57,0
+DA:60,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:65,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:71,0
+DA:73,0
+DA:76,0
+DA:77,0
+DA:78,0
+DA:79,0
+DA:81,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:89,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:96,0
+DA:98,0
+DA:99,12
+BRDA:41,17,0,4
+BRDA:41,17,1,12
+BRDA:46,38,0,12
+BRDA:46,59,0,8
+BRDA:46,68,0,8
+BRDA:46,82,0,8
+BRDA:46,59,1,4
+BRDA:46,110,0,4
+BRDA:46,119,0,4
+BRDA:46,110,1,0
+BRDA:46,147,0,0
+BRDA:46,96,1,8
+BRDA:46,133,1,4
+BRDA:46,68,1,0
+BRDA:46,147,1,0
+BRDA:46,82,1,0
+BRDA:46,119,1,0
+BRDA:46,158,1,0
+BRDA:46,180,1,8
+BRDA:46,202,1,4
+BRDA:52,359,0,4
+BRDA:46,224,1,0
+BRDA:60,404,0,0
+BRDA:46,246,1,0
+BRDA:68,449,0,0
+BRDA:46,268,1,0
+BRDA:76,489,0,0
+BRDA:46,290,1,0
+BRDA:84,529,0,0
+BRDA:46,312,1,0
+BRDA:92,562,0,0
+BRDA:46,38,1,0
+BRDA:46,96,0,0
+BRDA:46,133,0,0
+BRDA:46,158,0,0
+BRDA:46,180,0,0
+BRDA:46,202,0,0
+BRDA:46,224,0,0
+BRDA:46,246,0,0
+BRDA:46,268,0,0
+BRDA:46,290,0,0
+BRDA:46,312,0,0
+BRDA:52,359,1,0
+BRDA:60,404,1,0
+BRDA:68,449,1,0
+BRDA:76,489,1,0
+BRDA:84,529,1,0
+BRDA:92,562,1,0
+LF:52
+LH:26
+BRF:50
+BRH:16
+FNF:3
+FNH:3
+end_of_record
+SF:/root/src/src/DaemonRunner/DaemonRunner/Service/App/CodeManager.cs
+FN:28,System.Reflection.Assembly JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CollectibleAssemblyLoadContext::Load(System.Reflection.AssemblyName)
+FNDA:6,System.Reflection.Assembly JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CollectibleAssemblyLoadContext::Load(System.Reflection.AssemblyName)
+DA:29,6
+FN:24,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CollectibleAssemblyLoadContext::.ctor()
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CollectibleAssemblyLoadContext::.ctor()
+DA:25,6
+DA:26,6
+DA:27,6
+FN:34,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::HandleAttributeInitialization(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+FNDA:5,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::HandleAttributeInitialization(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon)
+DA:35,5
+DA:36,5
+DA:37,569
+DA:38,277
+DA:39,1059
+DA:40,114
+DA:41,114
+DA:44,1
+DA:45,1
+DA:48,0
+DA:49,0
+DA:51,114
+DA:52,277
+DA:53,5
+BRDA:37,136,1,277
+BRDA:39,125,1,114
+BRDA:41,67,0,113
+BRDA:41,67,1,1
+BRDA:41,80,1,0
+BRDA:41,80,0,114
+BRDA:39,125,0,277
+BRDA:37,136,0,5
+FN:60,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::HandleStateChangedAttribute(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon,JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.MethodInfo)
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::HandleStateChangedAttribute(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon,JoySoftware.HomeAssistant.NetDaemon.Common.HomeAssistantStateChangedAttribute,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.MethodInfo)
+DA:61,0
+DA:62,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:70,0
+DA:71,0
+DA:72,0
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:77,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:81,0
+DA:82,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+BRDA:64,65,0,0
+BRDA:64,65,1,0
+FN:97,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::HandleServiceCallAttribute(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.MethodInfo)
+FNDA:1,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::HandleServiceCallAttribute(JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemon,JoySoftware.HomeAssistant.NetDaemon.Common.INetDaemonApp,System.Reflection.MethodInfo)
+DA:98,1
+DA:99,1
+DA:100,1
+DA:101,0
+DA:102,0
+DA:103,0
+DA:106,1
+DA:107,1
+DA:108,1
+DA:109,1
+DA:111,1
+DA:112,1
+DA:113,0
+DA:114,1
+DA:115,0
+DA:116,0
+DA:117,0
+DA:118,0
+DA:119,0
+DA:120,0
+DA:121,0
+DA:122,0
+DA:123,0
+DA:124,1
+BRDA:100,60,0,0
+BRDA:100,60,1,1
+BRDA:107,106,1,1
+BRDA:107,106,0,1
+BRDA:108,205,1,1
+BRDA:108,205,0,1
+BRDA:109,309,1,1
+BRDA:109,309,0,1
+BRDA:111,454,1,1
+BRDA:111,454,0,1
+BRDA:111,531,1,1
+BRDA:111,531,0,1
+FN:126,System.ValueTuple`2<System.Boolean,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::CheckIfServiceCallSignatureIsOk(System.Reflection.MethodInfo)
+FNDA:1,System.ValueTuple`2<System.Boolean,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::CheckIfServiceCallSignatureIsOk(System.Reflection.MethodInfo)
+DA:127,1
+DA:128,1
+DA:129,0
+DA:131,1
+DA:133,1
+DA:134,0
+DA:136,1
+DA:137,1
+DA:138,1
+DA:139,1
+DA:141,0
+DA:142,1
+BRDA:128,24,0,0
+BRDA:128,24,1,1
+BRDA:133,62,0,1
+BRDA:133,65,0,1
+BRDA:133,65,1,0
+BRDA:133,62,1,0
+BRDA:133,86,0,0
+BRDA:133,86,1,1
+BRDA:137,129,0,1
+BRDA:137,129,1,0
+BRDA:137,169,0,1
+BRDA:137,169,1,0
+FN:144,System.ValueTuple`2<System.Boolean,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::CheckIfStateChangedSignatureIsOk(System.Reflection.MethodInfo)
+FNDA:0,System.ValueTuple`2<System.Boolean,System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.DaemonAppExtensions::CheckIfStateChangedSignatureIsOk(System.Reflection.MethodInfo)
+DA:145,0
+DA:146,0
+DA:147,0
+DA:149,0
+DA:151,0
+DA:152,0
+DA:154,0
+DA:155,0
+DA:157,0
+DA:158,0
+DA:160,0
+DA:161,0
+DA:163,0
+DA:164,0
+BRDA:146,24,0,0
+BRDA:146,24,1,0
+BRDA:151,62,0,0
+BRDA:151,65,0,0
+BRDA:151,65,1,0
+BRDA:151,62,1,0
+BRDA:151,84,0,0
+BRDA:151,84,1,0
+BRDA:154,141,0,0
+BRDA:154,141,1,0
+BRDA:157,195,0,0
+BRDA:157,195,1,0
+BRDA:160,249,0,0
+BRDA:160,249,1,0
+FN:189,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::Dispose()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::Dispose()
+DA:190,0
+DA:191,0
+DA:192,0
+DA:193,0
+DA:194,0
+DA:195,0
+BRDA:191,40,1,0
+BRDA:191,40,0,0
+FN:196,System.Collections.Generic.IEnumerable`1<System.Type> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::get_DaemonAppTypes()
+FNDA:10,System.Collections.Generic.IEnumerable`1<System.Type> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::get_DaemonAppTypes()
+DA:197,10
+FN:263,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::LoadLocalAssemblyApplicationsForDevelopment()
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::LoadLocalAssemblyApplicationsForDevelopment()
+DA:264,6
+DA:266,48
+DA:267,6
+DA:268,0
+DA:269,0
+DA:270,0
+DA:271,0
+DA:272,6
+BRDA:266,7,0,36
+BRDA:266,7,1,12
+BRDA:266,24,0,1
+BRDA:266,24,1,6
+BRDA:267,61,0,6
+BRDA:268,101,1,0
+BRDA:268,101,0,6
+BRDA:267,61,1,6
+FN:274,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::CompileScriptsInCodeFolder()
+FNDA:8,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::CompileScriptsInCodeFolder()
+DA:275,8
+DA:277,8
+DA:278,6
+DA:279,8
+BRDA:277,12,0,8
+BRDA:277,12,1,0
+BRDA:277,33,0,6
+BRDA:277,33,1,8
+FN:281,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::LoadAllCodeToLoadContext()
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::LoadAllCodeToLoadContext()
+DA:282,6
+DA:283,6
+DA:284,6
+DA:286,6
+DA:287,6
+DA:288,60
+DA:289,21
+DA:290,21
+DA:291,21
+DA:292,21
+DA:293,21
+DA:295,6
+DA:296,6
+DA:297,6
+DA:298,6
+DA:299,6
+DA:300,6
+DA:301,6
+DA:302,6
+DA:303,6
+DA:305,6
+DA:306,2772
+DA:307,1377
+DA:308,1377
+DA:309,1377
+DA:310,1377
+DA:311,1344
+DA:312,1377
+DA:314,6
+DA:315,6
+DA:316,6
+DA:317,6
+DA:318,6
+DA:319,6
+DA:321,6
+DA:322,6
+DA:323,6
+DA:324,6
+DA:326,6
+DA:327,27
+DA:328,60
+DA:329,21
+DA:330,21
+DA:331,21
+DA:332,6
+DA:334,0
+DA:335,0
+DA:336,0
+DA:338,0
+DA:339,0
+DA:340,0
+DA:341,0
+DA:342,0
+DA:343,0
+DA:344,0
+DA:345,0
+DA:346,0
+DA:347,0
+DA:348,6
+DA:349,6
+DA:351,6
+DA:352,6
+DA:353,6
+BRDA:288,107,1,21
+BRDA:288,107,0,6
+BRDA:306,525,1,1377
+BRDA:308,437,0,1377
+BRDA:308,456,0,1353
+BRDA:308,437,1,24
+BRDA:308,456,1,24
+BRDA:308,480,0,1344
+BRDA:308,480,1,1377
+BRDA:306,525,0,6
+BRDA:322,645,0,6
+BRDA:327,683,0,1
+BRDA:327,683,1,6
+BRDA:328,759,1,21
+BRDA:328,759,0,6
+BRDA:322,645,1,0
+BRDA:338,872,1,0
+BRDA:340,845,0,0
+BRDA:340,845,1,0
+BRDA:338,872,0,0
+BRDA:327,6,0,21
+BRDA:327,6,1,0
+FN:355,System.Collections.Generic.IEnumerable`1<System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::GetCsFiles(System.String)
+FNDA:7,System.Collections.Generic.IEnumerable`1<System.String> JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::GetCsFiles(System.String)
+DA:356,7
+DA:357,7
+DA:358,7
+FN:176,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::.ctor(System.String)
+FNDA:6,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager::.ctor(System.String)
+DA:177,6
+DA:178,6
+DA:179,6
+DA:180,6
+DA:181,6
+DA:183,6
+DA:185,6
+DA:186,6
+DA:187,6
+FN:200,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<>c__DisplayClass8_0/<<EnableApplicationDiscoveryServiceAsync>b__0>d::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<>c__DisplayClass8_0/<<EnableApplicationDiscoveryServiceAsync>b__0>d::MoveNext()
+DA:201,0
+BRDA:201,8,0,0
+BRDA:201,54,0,0
+BRDA:201,8,1,0
+BRDA:201,54,1,0
+FN:199,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<EnableApplicationDiscoveryServiceAsync>d__8::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<EnableApplicationDiscoveryServiceAsync>d__8::MoveNext()
+DA:200,0
+DA:203,0
+DA:204,0
+DA:205,0
+DA:206,0
+DA:207,0
+BRDA:203,110,0,0
+BRDA:203,110,1,0
+FN:209,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<ReloadApplicationsAsync>d__9::MoveNext()
+FNDA:0,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<ReloadApplicationsAsync>d__9::MoveNext()
+DA:210,0
+DA:211,0
+DA:213,0
+DA:214,0
+DA:215,0
+DA:216,0
+DA:217,0
+DA:218,0
+DA:220,0
+DA:221,0
+DA:222,0
+BRDA:210,14,0,0
+BRDA:213,201,1,0
+BRDA:213,201,0,0
+BRDA:210,14,1,0
+FN:224,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<InstanceAndInitApplications>d__10::MoveNext()
+FNDA:3,System.Void JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App.CodeManager/<InstanceAndInitApplications>d__10::MoveNext()
+DA:225,3
+DA:226,3
+DA:228,2
+DA:230,2
+DA:231,16
+DA:232,5
+DA:233,5
+DA:235,23
+DA:236,4
+DA:237,4
+DA:238,4
+DA:240,4
+DA:241,0
+DA:242,0
+DA:243,0
+DA:244,0
+DA:247,4
+DA:248,4
+DA:249,4
+DA:250,4
+DA:251,4
+DA:252,5
+DA:254,2
+DA:255,2
+DA:257,2
+DA:258,2
+DA:260,2
+DA:261,2
+BRDA:225,15,0,3
+BRDA:226,33,0,1
+BRDA:226,33,1,2
+BRDA:231,857,1,5
+BRDA:231,100,1,5
+BRDA:235,792,1,4
+BRDA:235,204,1,0
+BRDA:235,204,2,0
+BRDA:240,507,0,0
+BRDA:240,507,1,4
+BRDA:235,204,3,0
+BRDA:235,204,0,9
+BRDA:235,792,0,5
+BRDA:231,100,0,7
+BRDA:231,857,0,2
+BRDA:225,15,1,0
+LF:240
+LH:131
+BRF:158
+BRH:61
+FNF:18
+FNH:12
+end_of_record

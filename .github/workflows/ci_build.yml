@@ -11,7 +11,7 @@ jobs:
             - name: Build code
               run: dotnet build
             - name: Test code
-              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=../codecover/lcov.info
+              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./codecover/lcov.info
 
             - name: Publish coverage report to coveralls.io
               uses: coverallsapp/github-action@master
