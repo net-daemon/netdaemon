@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@master
       - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+      - uses: olegtarasov/get-tag@v2
+        run: Set tag envronment variable
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -26,4 +28,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon:dev
+            --tag netdaemon/netdaemon:latest
+            --tag netdaemon/netdaemon:${GIT_TAG_NAME}
