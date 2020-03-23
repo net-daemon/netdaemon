@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - '*'
+  push:
+    branches:
+      - nuget_push
 jobs:
   deploy_nuget:
     name: publish nuget packages
