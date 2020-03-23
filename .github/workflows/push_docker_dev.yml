@@ -3,7 +3,7 @@ name: Deploy dev builds to Docker Hub
 on:
    push:
      branches:
-      - master
+      - dev
 
 jobs:
   deploy:
@@ -26,4 +26,4 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon:latest
+            --tag netdaemon/netdaemon:dev
