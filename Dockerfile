@@ -21,6 +21,7 @@ COPY --from=build /app /app
 ENV \
     HASS_HOST=localhost \
     HASS_PORT=8123 \
-    HASS_TOKEN=NOT_SET
+    HASS_TOKEN=NOT_SET \
+    HASS_DAEMONAPPFOLDER=/data
 
 ENTRYPOINT ["dotnet", "/app/Service.dll"]
