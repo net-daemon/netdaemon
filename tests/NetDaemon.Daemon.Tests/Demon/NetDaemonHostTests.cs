@@ -252,7 +252,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // Called once after 150 ms
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Once);
 
-            await Task.Delay(600);
+            await Task.Delay(1000);
 
             // Called twice
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Exactly(2));
