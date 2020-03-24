@@ -8,6 +8,8 @@ jobs:
         steps:
             - uses: actions/checkout@master
             - uses: actions/setup-dotnet@v1
+              with:
+                dotnet-version: '3.1.200' # SDK Version
             - name: Build code
               run: dotnet build
             - name: Test code
