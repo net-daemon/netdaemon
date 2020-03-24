@@ -17,7 +17,6 @@ RUN \
 
 # Build the target container
 FROM ludeeus/container:dotnet-base
-ARG version=dev
 
 COPY --from=build /app /app
 
@@ -25,7 +24,6 @@ ENV \
     HASS_HOST=localhost \
     HASS_PORT=8123 \
     HASS_TOKEN=NOT_SET \
-    HASS_DAEMONAPPFOLDER=/data \
-    NETDAEMON_VERSION=$version
+    HASS_DAEMONAPPFOLDER=/data
 
 ENTRYPOINT ["dotnet", "/app/Service.dll"]

@@ -15,6 +15,9 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       - uses: olegtarasov/get-tag@v2
         name: Set tag envronment variable
+      - name: "Set version number"
+        run: |
+          sed -i '/        const string _version = /c\        const string _version = "${GIT_TAG_NAME}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -28,6 +31,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --build-arg version=${GIT_TAG_NAME} \
             --tag netdaemon/netdaemon:latest \
             --tag netdaemon/netdaemon:${GIT_TAG_NAME}
