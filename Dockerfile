@@ -1,3 +1,4 @@
+# Build the NetDaemon with build container
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200-alpine as build
 
 COPY . ./temp/
@@ -6,16 +7,17 @@ RUN \
     mkdir -p /data \
     \
     && dotnet \
-        publish \
-        ./temp/src/Service/Service.csproj \
-        -c Release \
-        -o ./temp/dist \
-        \
+    publish \
+    ./temp/src/Service/Service.csproj \
+    -c Release \
+    -o ./temp/dist \
+    \
     && mv ./temp/dist /app \
     && rm -R ./temp
 
-
+# Build the target container
 FROM ludeeus/container:dotnet-base
+
 COPY --from=build /app /app
 
 ENV \

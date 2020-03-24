@@ -16,8 +16,11 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
+
     public class RunnerService : BackgroundService
     {
+        const string _version = "dev";
+
         private NetDaemonHost? _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
@@ -43,7 +46,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         {
             try
             {
-                _logger.LogInformation("Starting netdaemon...");
+                _logger.LogInformation($"Starting netdaemon (version {_version})...");
 
                 var config = await ReadConfigAsync();
 
@@ -168,7 +171,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 if (!File.Exists(exampleFilePath))
                 {
                     var json = JsonSerializer.Serialize(new HostConfig());
-                    
+
                     using (var fileStream = new FileStream(exampleFilePath, FileMode.CreateNew))
                     {
                         var options = new JsonSerializerOptions { WriteIndented = true, IgnoreNullValues = true };
