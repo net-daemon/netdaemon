@@ -232,7 +232,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // Add the player that we want to fake having with the fake playing 0.1 second media duration
             dynamic currentStateAttributes = new ExpandoObject();
-            currentStateAttributes.media_duration = 0.6;
+            currentStateAttributes.media_duration = 0.1;
 
             DefaultDaemonHost.InternalState["media_player.fakeplayer"] = new EntityState
             {
@@ -244,16 +244,15 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACT
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
-            await Task.Delay(100);
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             // ASSERT
 
-            // Called once after 150 ms
+            await Task.Delay(50);
+
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Once);
 
-            await Task.Delay(1000);
-
+            await Task.Delay(100);
             // Called twice
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Exactly(2));
 
