@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Run deploy script using builder
-        run: docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v ${{github.workspace}}/addon:/data homeassistant/amd64-builder -t /data --all --docker-user $(docker_user) --docker-password $(docker_password)
+        run: docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v ${{github.workspace}}/addon:/data homeassistant/amd64-builder -t /data --all --docker-user ${{ secrets.DOCKER_USERNAME }} --docker-password ${{ secrets.DOCKER_TOKEN }}
