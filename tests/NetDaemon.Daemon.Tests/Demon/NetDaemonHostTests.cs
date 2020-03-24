@@ -240,20 +240,19 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 Attribute = currentStateAttributes
             };
 
-            await Task.Delay(100);
+            // await Task.Delay(100);
 
             // ACT
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
-            await Task.Delay(80);
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             // ASSERT
 
-            // Called once after 150 ms
+            await Task.Delay(50);
+
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Once);
 
-            await Task.Delay(300);
-
+            await Task.Delay(100);
             // Called twice
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Exactly(2));
 
