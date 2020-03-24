@@ -1,5 +1,5 @@
 #### Publish tags to docker hub
-name: Deploy dev builds to Docker Hub
+name: Deploy dev builds of addon
 on:
   push:
     branches:
