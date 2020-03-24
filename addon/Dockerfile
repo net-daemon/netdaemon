@@ -17,7 +17,7 @@ RUN \
     apk add --no-cache git \
     && git clone https://github.com/helto4real/netdaemon.git \
     && cd netdaemon \
-    && git checkout master
+    && git checkout dev
 
 # Build a self contained executable and trim the executable
 RUN \
