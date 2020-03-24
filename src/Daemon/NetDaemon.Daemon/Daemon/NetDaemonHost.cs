@@ -611,7 +611,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _stateActions.Clear();
             _serviceCallFunctionList.Clear();
 
-            await _scheduler.Stop();
+            await _scheduler.Restart();
         }
 
         /// <inheritdoc/>
