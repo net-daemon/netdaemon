@@ -4,11 +4,10 @@ on:
   push:
     branches:
       - dev
-      - add_on_build
-    paths:
-      - 'src/*'
+    # paths:
+      # - 'src/*'
 jobs:
-  deploy:
+  deploy_addon:
     name: Deploy addon (dev)
     runs-on: ubuntu-latest
     steps:
