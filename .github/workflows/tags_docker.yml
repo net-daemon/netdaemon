@@ -28,5 +28,6 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
+            --build-arg version=${GIT_TAG_NAME} \
             --tag netdaemon/netdaemon:latest \
             --tag netdaemon/netdaemon:${GIT_TAG_NAME}
