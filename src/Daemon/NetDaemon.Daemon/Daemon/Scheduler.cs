@@ -28,7 +28,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <summary>
         ///     Used to cancel all running tasks
         /// </summary>
-        private readonly CancellationTokenSource _cancelSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancelSource = new CancellationTokenSource();
 
         private readonly ConcurrentDictionary<int, Task> _scheduledTasks
                     = new ConcurrentDictionary<int, Task>();
@@ -269,6 +269,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             if (_scheduledTasks.Values.Count(n => n.IsCompleted == false) > 0)
                 // Todo: Some kind of logging have to be done here to tell user which task caused timeout
                 throw new ApplicationException("Failed to cancel all tasks");
+        }
+
+        /// <summary>
+        ///     Restarts the scheduler. 
+        ///     Existing schedules are cancelled and the scheduler remains usable.
+        /// </summary>
+        public async Task Restart()
+        {
+            await Stop();
+            _cancelSource = new CancellationTokenSource();
         }
 
         private async Task SchedulerLoop()
