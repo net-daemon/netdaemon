@@ -1,6 +1,4 @@
 # NetDaemon addon
 
-This is the code to build the NetDaemon Home Assistant addon. This is used for the build system. To add the addon to Home Assistant, please use https://... TODO:
-
-
+You are running a dev build of NetDaemon add-on. I assume you are a developer and know this is a non stable version. Please use [https://github.com/net-daemon/homeassistant-addon](https://github.com/net-daemon/homeassistant-addon) for the official releases.
 
