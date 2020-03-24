@@ -4,18 +4,13 @@ ARG BUILD_FROM=hassioaddons/base-amd64:5.0.3
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine as build
 
-# Avoid warnings by switching to noninteractive
-#ENV DEBIAN_FRONTEND=noninteractive
-
 # Build arguments
 ARG BUILD_ARCH
-# Add-on version
-ENV ADDON_VERSION 0.0.36
 
 # Configure apt and install packages
 RUN \
     apk add --no-cache git \
-    && git clone https://github.com/helto4real/netdaemon.git \
+    && git clone https://github.com/net-daemon/netdaemon.git \
     && cd netdaemon \
     && git checkout dev
 
@@ -76,13 +71,13 @@ LABEL \
     io.hass.arch="${BUILD_ARCH}" \
     io.hass.type="addon" \
     io.hass.version=${BUILD_VERSION} \
-    maintainer="Tomas Hellström <tomas.hellstrom@yahoo.se>" \
-    org.label-schema.description="Netdaemon, a community add-on written in .NET core 3.1" \
+    maintainer="Tomas Hellström <tomas@joysoftware.xyz>" \
+    org.label-schema.description="Netdaemon, an application daemon for c# and .NET core 3.1" \
     org.label-schema.build-date=${BUILD_DATE} \
     org.label-schema.name="Netdaemon" \
     org.label-schema.schema-version="1.0" \
-    org.label-schema.url="https://addons.community" \
-    org.label-schema.usage="https://helto4real.github.io/netdaemon/" \
+    org.label-schema.url="https://netdaemon.xyz" \
+    org.label-schema.usage="https://netdaemon.xyz" \
     org.label-schema.vcs-ref=${BUILD_REF} \
-    org.label-schema.vcs-url="https://helto4real.github.io/netdaemon/" \
-    org.label-schema.vendor="Community Hass.io Addons"
+    org.label-schema.vcs-url="https://github.com/net-daemon/homeassistant-addon" \
+    org.label-schema.vendor="@net-daemon"
