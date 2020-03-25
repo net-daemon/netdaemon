@@ -1,7 +1,10 @@
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using Xunit;
 using YamlDotNet.Core;
 
@@ -88,5 +91,32 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new object?[] {"secret_only_exists_here", Path.Combine(ConfigFixturePath, "level2", "level3"), "test"},
                 new object?[] {"notexists", Path.Combine(ConfigFixturePath, "level2", "level3"), null},
             };
+
+        [Fact]
+        public void JSonSerializeShouldBeCorrectForConfig()
+        {
+            // ARRANGE & ACT
+            var secrets = YamlConfig.GetAllSecretsFromPath(ConfigFixturePath);
+
+            // ASSERT
+            var x = new HostConfig
+            {
+                LoggingLevel = LogLevel.Information,
+                Token = "1234",
+                Host = "host",
+                Port = 1234,
+                Ssl = true,
+                SourceFolder = "somefolder"
+            };
+
+            var obj = JsonSerializer.Serialize<HostConfig>(x);
+
+            Assert.True(obj.Contains("log_level"));
+            Assert.True(obj.Contains("token"));
+            Assert.True(obj.Contains("host"));
+            Assert.True(obj.Contains("port"));
+            Assert.True(obj.Contains("ssl"));
+            Assert.True(obj.Contains("source_folder"));
+        }
     }
 }
