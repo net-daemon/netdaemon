@@ -72,9 +72,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                     }
                     break;
 
-                case "Float":
-                    if (decimal.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out decimal floatValue))
+                case "Single":
+                    if (float.TryParse(node.Value, NumberStyles.Number,
+                        CultureInfo.InvariantCulture, out float floatValue))
                     {
                         return floatValue;
                     }

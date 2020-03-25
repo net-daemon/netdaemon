@@ -4,9 +4,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Xunit;
 using YamlDotNet.Core;
+using YamlDotNet.RepresentationModel;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 {
@@ -117,6 +119,94 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.True(obj.Contains("port"));
             Assert.True(obj.Contains("ssl"));
             Assert.True(obj.Contains("source_folder"));
+        }
+
+
+        [Fact]
+        public void YamlScalarNodeToObjectUsingString()
+        {
+            // ARRANGE
+            var yaml = "yaml: string\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            string? map = ((YamlScalarNode)scalar.Key).Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal("string", scalarValue.ToObject(typeof(string)));
+        }
+
+        [Fact]
+        public void YamlScalarNodeToObjectUsingInt()
+        {
+            // ARRANGE
+            var yaml = "yaml: 1234\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            string? map = ((YamlScalarNode)scalar.Key).Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal(1234, scalarValue.ToObject(typeof(int)));
+        }
+
+        [Fact]
+        public void YamlScalarNodeToObjectUsingBoolean()
+        {
+            // ARRANGE
+            var yaml = "yaml: true\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            string? map = ((YamlScalarNode)scalar.Key).Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal(true, scalarValue.ToObject(typeof(bool)));
+        }
+
+        [Fact]
+        public void YamlScalarNodeToObjectUsingLong()
+        {
+            // ARRANGE
+            var yaml = "yaml: 1234\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            string? map = ((YamlScalarNode)scalar.Key).Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal((long)1234, scalarValue.ToObject(typeof(long)));
+        }
+
+        [Fact]
+        public void YamlScalarNodeToObjectUsingDeciaml()
+        {
+            // ARRANGE
+            var yaml = "yaml: 1.5\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            string? map = ((YamlScalarNode)scalar.Key).Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal((decimal)1.5, scalarValue.ToObject(typeof(decimal)));
+            Assert.Equal((float)1.5f, scalarValue.ToObject(typeof(float)));
+            Assert.Equal((double)1.5, scalarValue.ToObject(typeof(double)));
         }
     }
 }
