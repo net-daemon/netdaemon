@@ -410,7 +410,7 @@ namespace NetDaemon.Daemon.Tests
                 // ACT
                 var runTask = scheduler.RunEvery(20, async () =>
                 {
-                    await Task.Delay(25);
+                    await Task.Delay(50);
                 });
 
                 await Task.WhenAny(runTask.Task, Task.Delay(500));
