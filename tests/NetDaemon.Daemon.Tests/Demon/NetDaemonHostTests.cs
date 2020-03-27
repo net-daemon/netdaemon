@@ -585,5 +585,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.False(delayResult.Task.Result);
             Assert.Empty(DefaultDaemonHost.InternalStateActions);
         }
+
     }
 }
