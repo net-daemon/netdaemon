@@ -167,16 +167,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
     public sealed class CodeManager : IDisposable
     {
         private readonly string _codeFolder;
-
+        private readonly ILogger _logger;
         private readonly List<Type> _loadedDaemonApps;
 
         private readonly YamlConfig _yamlConfig;
 
         private readonly List<INetDaemonApp> _instanciatedDaemonApps;
 
-        public CodeManager(string codeFolder)
+        public CodeManager(string codeFolder, ILogger logger)
         {
             _codeFolder = codeFolder;
+            _logger = logger;
             _loadedDaemonApps = new List<Type>(100);
             _instanciatedDaemonApps = new List<INetDaemonApp>(100);
 
@@ -210,7 +211,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             await host.StopDaemonActivitiesAsync();
 
-            foreach(var app in _instanciatedDaemonApps)
+            foreach (var app in _instanciatedDaemonApps)
             {
                 app.Dispose();
             }
@@ -343,7 +344,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         }
                     }
                     var err = msg.ToString();
-                    System.Console.WriteLine(err);
+                    _logger.LogError(err);
                 }
             }
             alc.Unload();
