@@ -99,6 +99,43 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task ACustomEventsShouldDoCorrectCall()
+        {
+            // ARRANGE
+            var hcMock = HassClientMock.DefaultMock;
+            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            dynamic dynObject = new ExpandoObject();
+            dynObject.Test = "Hello World!";
+
+            hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
+
+            var cancelSource = hcMock.GetSourceWithTimeout();
+            var isCalled = false;
+            string? message = "";
+
+            daemonHost
+                .Events(new string[] { "CUSTOM_EVENT" })
+                    .Call((ev, data) =>
+                    {
+                        isCalled = true;
+                        message = data?.Test;
+                        return Task.CompletedTask;
+                    }).Execute();
+
+            try
+            {
+                await daemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+
+            Assert.True(isCalled);
+            Assert.Equal("Hello World!", message);
+        }
+
+        [Fact]
         public async Task ACustomEventShouldUsingSelectorUsingDataFuncDoCorrectCall()
         {
             // ARRANGE
