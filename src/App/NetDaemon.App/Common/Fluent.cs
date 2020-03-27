@@ -461,82 +461,113 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             foreach (var entityId in _entityIds)
                 _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
-                    var entityManager = (EntityManager)_currentState.Entity!;
-
-                    if (_currentState.Lambda != null)
+                    try
                     {
-                        try
-                        {
-                            if (!_currentState.Lambda(newState, oldState))
-                                return;
-                        }
-                        catch (Exception e)
-                        {
-                            _daemon.Logger.LogWarning(e, "Failed to evaluate function");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        if (_currentState.To != null)
-                            if (_currentState.To != newState?.State)
-                                return;
 
-                        if (_currentState.From != null)
-                            if (_currentState.From != oldState?.State)
-                                return;
+                        var entityManager = (EntityManager)_currentState.Entity!;
 
-                        // If we don´t accept all changes in the state change
-                        // and we do not have a state change so return
-                        if (newState?.State == oldState?.State && !_currentState.AllChanges)
-                            return;
-                    }
-
-                    if (_currentState.ForTimeSpan != TimeSpan.Zero)
-                    {
-                        _daemon.Logger.LogDebug(
-                            $"AndNotChangeFor statement found, delaying {_currentState.ForTimeSpan}");
-                        await Task.Delay(_currentState.ForTimeSpan).ConfigureAwait(false);
-                        var currentState = _daemon.GetState(entityIdInn);
-                        if (currentState != null && currentState.State == newState?.State)
+                        if (_currentState.Lambda != null)
                         {
-                            //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
-                            if (currentState?.LastChanged == newState?.LastChanged)
+                            try
                             {
-                                // No state has changed during the period
-                                _daemon.Logger.LogDebug(
-                                    $"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
-                                // The state has not changed during the time we waited
-                                if (_currentState.FuncToCall == null)
-                                    await entityManager.ExecuteAsync(true).ConfigureAwait(false);
+                                if (!_currentState.Lambda(newState, oldState))
+                                    return;
+                            }
+                            catch (Exception e)
+                            {
+                                _daemon.Logger.LogWarning(e, "Failed to evaluate function");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            if (_currentState.To != null)
+                                if (_currentState.To != newState?.State)
+                                    return;
+
+                            if (_currentState.From != null)
+                                if (_currentState.From != oldState?.State)
+                                    return;
+
+                            // If we don´t accept all changes in the state change
+                            // and we do not have a state change so return
+                            if (newState?.State == oldState?.State && !_currentState.AllChanges)
+                                return;
+                        }
+
+                        if (_currentState.ForTimeSpan != TimeSpan.Zero)
+                        {
+                            _daemon.Logger.LogDebug(
+                                $"AndNotChangeFor statement found, delaying {_currentState.ForTimeSpan}");
+                            await Task.Delay(_currentState.ForTimeSpan).ConfigureAwait(false);
+                            var currentState = _daemon.GetState(entityIdInn);
+                            if (currentState != null && currentState.State == newState?.State)
+                            {
+                                //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
+                                if (currentState?.LastChanged == newState?.LastChanged)
+                                {
+                                    // No state has changed during the period
+                                    _daemon.Logger.LogDebug(
+                                        $"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
+                                    // The state has not changed during the time we waited
+                                    if (_currentState.FuncToCall == null)
+                                        await entityManager.ExecuteAsync(true).ConfigureAwait(false);
+                                    else
+                                    {
+                                        try
+                                        {
+                                            await _currentState.FuncToCall(entityIdInn, newState, oldState).ConfigureAwait(false);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _daemon.Logger.LogWarning(e, "Call function error in timespan");
+                                        }
+                                    }
+
+                                }
                                 else
-                                    await _currentState.FuncToCall(entityIdInn, newState, oldState).ConfigureAwait(false);
+                                {
+                                    _daemon.Logger.LogDebug(
+                                        $"State same {newState?.State} but different state changed: {currentState?.LastChanged}, expected {newState?.LastChanged}");
+                                }
                             }
                             else
                             {
                                 _daemon.Logger.LogDebug(
-                                    $"State same {newState?.State} but different state changed: {currentState?.LastChanged}, expected {newState?.LastChanged}");
+                                    $"State not same, do not execute for statement. {newState?.State} found, expected {currentState?.State}");
                             }
                         }
                         else
                         {
                             _daemon.Logger.LogDebug(
-                                $"State not same, do not execute for statement. {newState?.State} found, expected {currentState?.State}");
+                                $"State {newState?.State} expected from {oldState?.State}, executing action!");
+
+                            if (_currentState.FuncToCall != null)
+                            {
+                                try
+                                {
+                                    await _currentState.FuncToCall(entityIdInn, newState, oldState).ConfigureAwait(false);
+                                }
+                                catch (Exception e)
+                                {
+                                    _daemon.Logger.LogWarning(e, "Call function error");
+                                }
+                            }
+
+                            else if (_currentState.ScriptToCall != null)
+                                await _daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
+                            else
+                                await entityManager.ExecuteAsync(true).ConfigureAwait(false);
                         }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        _daemon.Logger.LogDebug(
-                            $"State {newState?.State} expected from {oldState?.State}, executing action!");
-
-                        if (_currentState.FuncToCall != null)
-                            await _currentState.FuncToCall(entityIdInn, newState, oldState).ConfigureAwait(false);
-                        else if (_currentState.ScriptToCall != null)
-                            await _daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
-                        else
-                            await entityManager.ExecuteAsync(true).ConfigureAwait(false);
+                        _daemon.Logger.LogWarning(e, "Unhandled error in ListenState");
                     }
+
                 });
+
+
             //}
         }
 

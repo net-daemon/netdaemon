@@ -2,6 +2,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
     {
         public static readonly string ConfigFixturePath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "Fixtures");
-
+        public static readonly string FaultyAppPath =
+            Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "FaultyApp");
         public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(AppTests.ConfigFixturePath, filename));
 
         public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
@@ -36,10 +38,24 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         }
 
         [Fact]
+        public void FaultyApplicationShouldLogError()
+        {
+            // ARRANGE
+            var path = Path.Combine(FaultyAppPath, "CompileErrors");
+
+            // ACT
+            var loggerMock = new LoggerMock();
+            var cm = new CodeManager(path, loggerMock.Logger);
+
+            // ASSERT
+            loggerMock.AssertLogged(LogLevel.Error, Times.Once());
+        }
+
+        [Fact]
         public void ApplicationShouldBePresentInCsFile()
         {
             // ARRANGE
-            var codeManager = new CodeManager(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var codeManager = CM(Path.Combine(ConfigFixturePath, "level2", "level3"));
             // ACT
             // ASSERT
             Assert.Single(codeManager.DaemonAppTypes.Select(n => n.Name == "LevOneApp"));
@@ -49,7 +65,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void ApplicationShouldBePresentInCsFileWithFullNameNameSpace()
         {
             // ARRANGE
-            var codeManager = new CodeManager(Path.Combine(ConfigFixturePath, "fullname"));
+            var codeManager = CM(Path.Combine(ConfigFixturePath, "fullname"));
             // ACT
             // ASSERT
             Assert.Single(codeManager.DaemonAppTypes.Where(n => n.FullName == "TheAppNameSpace.FullNameApp"));
@@ -61,7 +77,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void ApplicationAllShouldBePresentInCsFile()
         {
             // ARRANGE
-            var codeManager = new CodeManager(ConfigFixturePath);
+            var codeManager = CM(ConfigFixturePath);
             // ACT
             // ASSERT
             Assert.Equal(7, codeManager.DaemonAppTypes.Count());
@@ -177,7 +193,7 @@ app:
 
             moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
             // ACT
-            var codeManager = new CodeManager(path);
+            var codeManager = CM(path);
             // ASSERT
             Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
         }
@@ -192,7 +208,7 @@ app:
 
             moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
             // ACT
-            var codeManager = new CodeManager(path);
+            var codeManager = CM(path);
             // ASSERT
             Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
         }
@@ -201,7 +217,7 @@ app:
         public async Task InstanceAndInitApplicationWithNullShouldThrowArgumentNullException()
         {
             // ARRANGE
-            var codeManager = new CodeManager(ConfigFixturePath);
+            var codeManager = CM(ConfigFixturePath);
             // ACT/ASSERT
             await Assert.ThrowsAsync<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
         }
@@ -284,5 +300,7 @@ app:
             // ASSERT
             Assert.Equal("SomeData", instance.Storage.Data);
         }
+
+        public static CodeManager CM(string path) => new CodeManager(path, new LoggerMock().Logger);
     }
 }

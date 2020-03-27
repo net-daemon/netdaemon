@@ -113,12 +113,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var obj = JsonSerializer.Serialize<HostConfig>(x);
 
-            Assert.True(obj.Contains("log_level"));
-            Assert.True(obj.Contains("token"));
-            Assert.True(obj.Contains("host"));
-            Assert.True(obj.Contains("port"));
-            Assert.True(obj.Contains("ssl"));
-            Assert.True(obj.Contains("source_folder"));
+            Assert.Contains("log_level", obj);
+            Assert.Contains("token", obj);
+            Assert.Contains("host", obj);
+            Assert.Contains("port", obj);
+            Assert.Contains("ssl", obj);
+            Assert.Contains("source_folder", obj);
         }
 
 

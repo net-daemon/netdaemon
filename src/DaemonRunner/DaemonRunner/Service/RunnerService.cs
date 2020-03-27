@@ -82,19 +82,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             if (_daemonHost.Connected)
                             {
-                                using (var codeManager = new CodeManager(sourceFolder))
+                                try
                                 {
-                                    try
+                                    using (var codeManager = new CodeManager(sourceFolder, _daemonHost.Logger))
                                     {
                                         await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        _logger.LogError(e, "Failed to load applications");
-                                    }
 
-                                    // Wait until daemon stops
-                                    await daemonHostTask.ConfigureAwait(false);
+                                        // Wait until daemon stops
+                                        await daemonHostTask.ConfigureAwait(false);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    _logger.LogError(e, "Failed to load applications");
                                 }
                             }
                             else

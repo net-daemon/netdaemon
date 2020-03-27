@@ -1,5 +1,6 @@
 ﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Globalization;
@@ -49,6 +50,40 @@ namespace NetDaemon.Daemon.Tests
 
             Assert.True(isTaskRun);
             Assert.True(scheduledResult.Task.IsCompletedSuccessfully);
+        }
+
+        [Fact]
+        public async void RunInShouldLogWarningForFaultyRun()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 4, 5, 6);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            var loggerMock = new LoggerMock();
+
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler(null, loggerMock.LoggerFactory))
+            {
+                // ACT
+                scheduledResult = scheduler.RunIn(20, async () =>
+                {
+                    int i = int.Parse("Not an integer makes runtime error!");
+                });
+
+                await Task.Delay(100);
+
+            }
+
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+            // ASSERT
+            loggerMock.AssertLogged(LogLevel.Warning, Times.Once());
         }
 
         [Fact]
@@ -165,6 +200,70 @@ namespace NetDaemon.Daemon.Tests
             catch
             {
             }
+        }
+
+        [Fact]
+        public async void RunDailyFaultShouldLogWarning()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 0, 0);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            var loggerMock = new LoggerMock();
+
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object, loggerMock.LoggerFactory))
+            {
+                // ACT
+                scheduledResult = scheduler.RunDaily("10:00:01", async () =>
+               {
+                   int i = int.Parse("Not an integer makes runtime error!");
+               });
+                await Task.Delay(1000);
+            }
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+
+            // ASSERT
+            loggerMock.AssertLogged(LogLevel.Warning, Times.Once());
+        }
+
+        [Fact]
+        public async void RunDailyOnDaysFaultShouldLogWarning()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 0, 0);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            var loggerMock = new LoggerMock();
+
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object, loggerMock.LoggerFactory))
+            {
+                // ACT
+                scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { DayOfWeek.Saturday }, async () =>
+                 {
+                     int i = int.Parse("Not an integer makes runtime error!");
+                 });
+                await Task.Delay(1000);
+            }
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+
+            // ASSERT
+            loggerMock.AssertLogged(LogLevel.Warning, Times.Once());
         }
 
         [Fact]
@@ -321,6 +420,39 @@ namespace NetDaemon.Daemon.Tests
             catch
             {
             }
+        }
+
+        [Fact]
+        public async void RunEveryMinuteFaultyShouldLogWarning()
+        {
+            // ARRANGE
+            var startTime =
+                new DateTime(2001, 2, 3, 10, 00, 59);
+
+            var mockTimeManager = new TimeManagerMock(startTime);
+            var loggerMock = new LoggerMock();
+
+            ISchedulerResult scheduledResult;
+            await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object, loggerMock.LoggerFactory))
+            {
+                // ACT
+                scheduledResult = scheduler.RunEveryMinute(0, async () =>
+                {
+                    int i = int.Parse("Not an integer makes runtime error!");
+                });
+                await Task.Delay(1000);
+
+            }
+
+            try
+            {
+                await scheduledResult.Task;
+            }
+            catch
+            {
+            }
+            // ASSERT
+            loggerMock.AssertLogged(LogLevel.Warning, Times.Once());
         }
 
         [Fact]

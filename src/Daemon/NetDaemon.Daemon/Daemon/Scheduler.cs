@@ -88,16 +88,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
+
             using CancellationTokenSource linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
 
             var stopWatch = new Stopwatch();
             while (!linkedCts.IsCancellationRequested)
             {
-                stopWatch.Start();
-                await func.Invoke().ConfigureAwait(false);
-                stopWatch.Stop();
-
+                try
+                {
+                    stopWatch.Start();
+                    await func.Invoke().ConfigureAwait(false);
+                    stopWatch.Stop();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
+                }
                 // If less time spent in func that duration delay the remainder
                 if (timeSpan > stopWatch.Elapsed)
                 {
@@ -111,6 +118,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 }
                 stopWatch.Reset();
             }
+
+
         }
 
         internal TimeSpan CalculateDailyTimeBetweenNowAndTargetTime(DateTime targetTime)
@@ -177,17 +186,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     if (runOnDays.Contains(_timeManager!.Current.DayOfWeek))
                     {
-                        _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
-                        await func.Invoke().ConfigureAwait(false);
+                        try
+                        {
+                            _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
+                            await func.Invoke().ConfigureAwait(false);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
+                        }
                     }
                     else
                         _logger.LogTrace($"RunDaily, Time: {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}, Not run, due to dayofweek");
                 }
                 else
                 {
-                    _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
-                    // No constraints on day of week
-                    await func.Invoke().ConfigureAwait(false);
+                    try
+                    {
+                        _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
+                        // No constraints on day of week
+                        await func.Invoke().ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
+                    }
+
                 }
             }
         }
@@ -217,7 +241,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                 _logger.LogTrace($"RunEveryMinute, Delay {diff}");
                 await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
-                await func.Invoke().ConfigureAwait(false);
+                try
+                {
+                    await func.Invoke().ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
+                }
             }
         }
 
@@ -250,7 +281,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             _logger.LogTrace($"RunIn, Delay {timeSpan}");
             await _timeManager!.Delay(timeSpan, linkedCts.Token).ConfigureAwait(false);
-            await func.Invoke().ConfigureAwait(false);
+            try
+            {
+                await func.Invoke().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
+            }
+
         }
 
         /// <summary>
@@ -272,7 +311,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <summary>
-        ///     Restarts the scheduler. 
+        ///     Restarts the scheduler.
         ///     Existing schedules are cancelled and the scheduler remains usable.
         /// </summary>
         public async Task Restart()
