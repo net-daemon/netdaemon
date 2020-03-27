@@ -99,7 +99,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 case JsonValueKind.True:
                     return true;
                 case JsonValueKind.Number:
-                    return elem.TryGetInt64(out Int64 intValue) ? intValue : elem.GetDouble();
+                    long retVal;
+                    if (elem.TryGetInt64(out retVal))
+                    {
+                        return retVal;
+                    }
+                    return elem.GetDouble();
                 case JsonValueKind.Array:
                     var list = new List<object?>();
                     foreach (var val in elem.EnumerateArray())
