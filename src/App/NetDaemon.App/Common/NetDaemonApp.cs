@@ -102,13 +102,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public ILight Light(params string[] entity)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Light(entity);
-        }
-
-        /// <inheritdoc/>
         public void ListenEvent(string ev, Func<string, dynamic?, Task> action) => _daemon?.ListenEvent(ev, action);
 
         /// <inheritdoc/>
@@ -263,27 +256,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 return;
             }
             IsEnabled = appState == "on";
-        }
-
-        /// <inheritdoc/>
-        public Task ToggleAsync(string entityId, params (string name, object val)[] attributes)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.ToggleAsync(entityId, attributes);
-        }
-
-        /// <inheritdoc/>
-        public Task TurnOffAsync(string entityId, params (string name, object val)[] attributes)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.TurnOffAsync(entityId, attributes);
-        }
-
-        /// <inheritdoc/>
-        public Task TurnOnAsync(string entityId, params (string name, object val)[] attributes)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.TurnOnAsync(entityId, attributes);
         }
 
         #region IDisposable Support

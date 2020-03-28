@@ -136,17 +136,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return state;
         }
 
-        public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
-        {
-            // Convert the tuple name/value pair to tuple that can be serialized dynamically
-            var attributes = new FluentExpandoObject(true, true);
-            foreach (var (attribute, value) in attributeNameValuePair)
-            {
-                ((IDictionary<string, object>)attributes).Add(attribute, value);
-            }
+        // public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
+        // {
+        //     // Convert the tuple name/value pair to tuple that can be serialized dynamically
+        //     var attributes = new FluentExpandoObject(true, true);
+        //     foreach (var (attribute, value) in attributeNameValuePair)
+        //     {
+        //         ((IDictionary<string, object>)attributes).Add(attribute, value);
+        //     }
 
-            dynamic result = attributes;
-            return result;
-        }
+        //     dynamic result = attributes;
+        //     return result;
+        // }
     }
 }

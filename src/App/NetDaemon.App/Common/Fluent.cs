@@ -860,9 +860,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             {
                 var task = fluentAction.ActionType switch
                 {
-                    FluentActionType.TurnOff => _daemon.TurnOffAsync(entityId, attributes),
-                    FluentActionType.TurnOn => _daemon.TurnOnAsync(entityId, attributes),
-                    FluentActionType.Toggle => _daemon.ToggleAsync(entityId, attributes),
+                    FluentActionType.TurnOff => TurnOffAsync(entityId, attributes),
+                    FluentActionType.TurnOn => TurnOnAsync(entityId, attributes),
+                    FluentActionType.Toggle => ToggleAsync(entityId, attributes),
                     FluentActionType.SetState => _daemon.SetState(entityId, fluentAction.State, attributes),
                     _ => throw new NotSupportedException($"Fluent action type not handled! {fluentAction.ActionType}")
                 };
@@ -870,6 +870,48 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             }
             // Wait for all tasks to complete or max 5 seconds
             if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000)).ConfigureAwait(false);
+        }
+
+        private Task ToggleAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
+        {
+            // Get the domain if supported, else domain is homeassistant
+            string domain = GetDomainFromEntity(entityId);
+            // Use it if it is supported else use default "homeassistant" domain
+
+            // Use expando object as all other methods
+            dynamic attributes = attributeNameValuePair.ToDynamic();
+            // and add the entity id dynamically
+            attributes.entity_id = entityId;
+
+            return _daemon.CallService(domain, "toggle", attributes, false);
+        }
+
+        private Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
+        {
+            // Get the domain if supported, else domain is homeassistant
+            string domain = GetDomainFromEntity(entityId);
+            // Use it if it is supported else use default "homeassistant" domain
+
+            // Use expando object as all other methods
+            dynamic attributes = attributeNameValuePair.ToDynamic();
+            // and add the entity id dynamically
+            attributes.entity_id = entityId;
+
+            return _daemon.CallService(domain, "turn_off", attributes, false);
+        }
+
+        private Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
+        {
+            // Use default domain "homeassistant" if supported is missing
+            string domain = GetDomainFromEntity(entityId);
+            // Use it if it is supported else use default "homeassistant" domain
+
+            // Convert the value pairs to dynamic type
+            dynamic attributes = attributeNameValuePair.ToDynamic();
+            // and add the entity id dynamically
+            attributes.entity_id = entityId;
+
+            return _daemon.CallService(domain, "turn_on", attributes, false);
         }
     }
 

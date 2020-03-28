@@ -124,32 +124,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 : null;
         }
 
-        public ILight Light(params string[] entity)
-        {
-            var entityList = new List<string>(entity.Length);
-            foreach (string e in entity)
-            {
-                // Add the domain light if missing domain in id
-                entityList.Add(!e.Contains('.') ? string.Concat("light.", e) : e);
-            }
-
-            return new EntityManager(entityList.ToArray(), this);
-        }
-
-        public IEntity Lights(Func<IEntityProperties, bool> func)
-        {
-            IEnumerable<IEntityProperties> x = State.Where(func).Where(n => n.EntityId.Contains("light."));
-
-            return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
-        }
-
         public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
 
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
 
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
-
 
         /// <inheritdoc/>
         public string? ListenState(string pattern,
@@ -350,51 +330,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public ITime Timer() => new Common.TimeManager(this);
 
-        public Task ToggleAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
-        {
-            // Get the domain if supported, else domain is homeassistant
-            string domain = GetDomainFromEntity(entityId);
-            // Use it if it is supported else use default "homeassistant" domain
-            domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
-
-            // Use expando object as all other methods
-            dynamic attributes = attributeNameValuePair.ToDynamic();
-            // and add the entity id dynamically
-            attributes.entity_id = entityId;
-
-            return _hassClient.CallService(domain, "toggle", attributes, false);
-        }
-
-        public Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
-        {
-            // Get the domain if supported, else domain is homeassistant
-            string domain = GetDomainFromEntity(entityId);
-            // Use it if it is supported else use default "homeassistant" domain
-            domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
-
-            // Use expando object as all other methods
-            dynamic attributes = attributeNameValuePair.ToDynamic();
-            // and add the entity id dynamically
-            attributes.entity_id = entityId;
-
-            return _hassClient.CallService(domain, "turn_off", attributes, false);
-        }
-
-        public Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
-        {
-            // Use default domain "homeassistant" if supported is missing
-            string domain = GetDomainFromEntity(entityId);
-            // Use it if it is supported else use default "homeassistant" domain
-            domain = _supportedDomainsForTurnOnOff.Contains(domain) ? domain : "homeassistant";
-
-            // Convert the value pairs to dynamic type
-            dynamic attributes = attributeNameValuePair.ToDynamic();
-            // and add the entity id dynamically
-            attributes.entity_id = entityId;
-
-            return _hassClient.CallService(domain, "turn_on", attributes, false);
-        }
-
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             if (hassEvent.EventType == "state_changed")
@@ -535,7 +470,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     attributes.message = message;
                     await _hassClient.CallService("tts", "google_cloud_say", attributes, true).ConfigureAwait(false);
                     await Task.Delay(InternalDelayTimeForTts).ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
+
                     EntityState? currentPlayState = GetState(entityId);
+
                     if (currentPlayState != null && currentPlayState.Attribute?.media_duration != null)
                     {
                         int delayInMilliSeconds = (int)Math.Round(currentPlayState?.Attribute?.media_duration * 1000) - InternalDelayTimeForTts;

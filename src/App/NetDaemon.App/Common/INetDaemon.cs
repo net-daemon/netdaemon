@@ -167,28 +167,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Func<dynamic?, Task> action);
 
         /// <summary>
-        ///     Turn on entity who support the service call
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        /// <param name="attributes">Name/Value pair of the attribute</param>
-
-        Task TurnOnAsync(string entityId, params (string name, object val)[] attributes);
-
-        /// <summary>
-        ///     Turn off entity who support the service call
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        /// <param name="attributes">Name/Value pair of the attribute</param>
-        Task TurnOffAsync(string entityId, params (string name, object val)[] attributes);
-
-        /// <summary>
-        ///     Toggle entity who support the service call
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        /// <param name="attributes">Name/Value pair of the attribute</param>
-        Task ToggleAsync(string entityId, params (string name, object val)[] attributes);
-
-        /// <summary>
         ///     Set entity state
         /// </summary>
         /// <param name="entityId">The unique id of the entity</param>
@@ -272,12 +250,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="func">The lambda expression selecting input select</param>
         IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func);
-
-        /// <summary>
-        ///     Selects one or more light entities to do action on
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        ILight Light(params string[] entityId);
 
         /// <summary>
         ///     Selects one or more media player entities to do action on
