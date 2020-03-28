@@ -66,9 +66,10 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(null, loggerMock.LoggerFactory))
             {
                 // ACT
-                scheduledResult = scheduler.RunIn(20, async () =>
+                scheduledResult = scheduler.RunIn(20, () =>
                 {
                     int i = int.Parse("Not an integer makes runtime error!");
+                    return Task.CompletedTask;
                 });
 
                 await Task.Delay(100);
@@ -216,9 +217,10 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object, loggerMock.LoggerFactory))
             {
                 // ACT
-                scheduledResult = scheduler.RunDaily("10:00:01", async () =>
+                scheduledResult = scheduler.RunDaily("10:00:01", () =>
                {
                    int i = int.Parse("Not an integer makes runtime error!");
+                   return Task.CompletedTask;
                });
                 await Task.Delay(1000);
             }
@@ -248,9 +250,10 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object, loggerMock.LoggerFactory))
             {
                 // ACT
-                scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { DayOfWeek.Saturday }, async () =>
+                scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { DayOfWeek.Saturday }, () =>
                  {
                      int i = int.Parse("Not an integer makes runtime error!");
+                     return Task.CompletedTask;
                  });
                 await Task.Delay(1000);
             }
@@ -436,9 +439,10 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object, loggerMock.LoggerFactory))
             {
                 // ACT
-                scheduledResult = scheduler.RunEveryMinute(0, async () =>
+                scheduledResult = scheduler.RunEveryMinute(0, () =>
                 {
                     int i = int.Parse("Not an integer makes runtime error!");
+                    return Task.CompletedTask;
                 });
                 await Task.Delay(1000);
 

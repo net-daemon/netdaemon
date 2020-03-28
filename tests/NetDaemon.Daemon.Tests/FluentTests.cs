@@ -544,40 +544,6 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task TurnOffLightLambdaAttributeSelectionCallsCorrectServiceCall()
-        {
-            // ARRANGE
-            var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
-            await DefaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
-
-            // ACT
-            await DefaultDaemonHost
-                .Lights(n => n?.Attribute?.test >= 100)
-                .TurnOff()
-                .ExecuteAsync();
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Exactly(2));
-            DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity"));
-            DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity2"));
-        }
-
-        [Fact]
-        public async Task TurnOffLightWithoutDomainCallsCorrectServiceCall()
-        {
-            // ARRANGE
-            // ACT
-            await DefaultDaemonHost
-                .Light("correct_entity")
-                .TurnOff()
-                .ExecuteAsync();
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Once());
-            DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity"));
-        }
-
-        [Fact]
         public async Task TurnOffMultipleEntityCallsCorrectServiceCall()
         {
             // ARRANGE

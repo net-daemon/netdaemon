@@ -355,64 +355,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
-        public async Task ToggleAsyncWithLightCallsSendMessageWithCorrectEntityId()
-        {
-            // ARRANGE
-            var excpectedAttributes = new ExpandoObject();
-            ((IDictionary<string, object>)excpectedAttributes)["entity_id"] = "light.correct_entity";
-
-            // ACT
-            await DefaultDaemonHost.ToggleAsync("light.correct_entity");
-
-            // ASSERT
-
-            DefaultHassClientMock.Verify(n => n.CallService("light", "toggle", excpectedAttributes, It.IsAny<bool>()));
-        }
-
-        [Fact]
-        public async Task TurnOffAsyncWithLightCallsSendMessageWithCorrectEntityId()
-        {
-            // ARRANGE
-            var (_, expectedAttributes) = GetDynamicObject(
-              ("entity_id", "light.correct_entity")
-            );
-
-            // ACT
-            await DefaultDaemonHost.TurnOffAsync("light.correct_entity");
-
-            // ASSERT
-
-            DefaultHassClientMock.Verify(n => n.CallService("light", "turn_off", expectedAttributes, It.IsAny<bool>()));
-        }
-
-        [Fact]
-        public async Task TurnOnAsyncWithErrorEntityIdThrowsApplicationException()
-        {
-            // ARRANGE
-
-            // ACT
-            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => await DefaultDaemonHost.TurnOnAsync("light!correct_entity"));
-
-            Assert.Equal("entity_id is mal formatted light!correct_entity", ex.Message);
-        }
-
-        [Fact]
-        public async Task TurnOnAsyncWithLightCallsSendMessageWithCorrectEntityId()
-        {
-            // ARRANGE
-            var (_, expectedAttributes) = GetDynamicObject(
-              ("entity_id", "light.correct_entity")
-            );
-
-            // ACT
-            await DefaultDaemonHost.TurnOnAsync("light.correct_entity");
-
-            // ASSERT
-
-            DefaultHassClientMock.Verify(n => n.CallService("light", "turn_on", expectedAttributes, It.IsAny<bool>()));
-        }
-
-        [Fact]
         public async Task CallServiceEventShouldCallCorrectFunction()
         {
             // ARRANGE
