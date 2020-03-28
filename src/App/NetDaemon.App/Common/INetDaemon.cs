@@ -167,12 +167,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             Func<dynamic?, Task> action);
 
         /// <summary>
-        ///     Turn on entity who support the service call
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        /// <param name="attributes">Name/Value pair of the attribute</param>
-
-        /// <summary>
         ///     Set entity state
         /// </summary>
         /// <param name="entityId">The unique id of the entity</param>
