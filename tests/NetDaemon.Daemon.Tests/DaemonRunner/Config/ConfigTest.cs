@@ -108,6 +108,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 Host = "host",
                 Port = 1234,
                 Ssl = true,
+                GenerateEntitiesOnStartup = false,
                 SourceFolder = "somefolder"
             };
 
@@ -119,6 +120,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Contains("port", obj);
             Assert.Contains("ssl", obj);
             Assert.Contains("source_folder", obj);
+            Assert.Contains("generate_entities", obj);
         }
 
 

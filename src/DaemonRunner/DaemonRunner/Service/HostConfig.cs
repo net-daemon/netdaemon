@@ -26,5 +26,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
         [JsonPropertyName("source_folder")]
         public string? SourceFolder { get; set; } = null;
+
+        [JsonPropertyName("generate_entities")]
+        public bool? GenerateEntitiesOnStartup { get; set; } = false;
+
     }
 }
