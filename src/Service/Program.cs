@@ -11,6 +11,7 @@ namespace Service
 {
     internal class Program
     {
+        // private const string _hassioConfigPath = "/root/src/src/Service/.config/hassio_config.json";
         private const string _hassioConfigPath = "data/options.json";
         private static LogLevel LogLevel = LogLevel.Trace;
 
@@ -21,11 +22,11 @@ namespace Service
                 ///
                 if (File.Exists(_hassioConfigPath))
                 {
-                    var hassAddOnSettings = await JsonSerializer.DeserializeAsync<System.Collections.Generic.Dictionary<string, string>>(
+                    var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(
                                                         File.OpenRead(_hassioConfigPath)).ConfigureAwait(false);
-                    if (hassAddOnSettings.ContainsKey("log_level"))
+                    if (hassAddOnSettings.LogLevel is object)
                     {
-                        Program.LogLevel = hassAddOnSettings["log_level"] switch
+                        Program.LogLevel = hassAddOnSettings.LogLevel switch
                         {
                             "info" => LogLevel.Information,
                             "debug" => LogLevel.Debug,
@@ -34,6 +35,10 @@ namespace Service
                             "trace" => LogLevel.Trace,
                             _ => LogLevel.Information
                         };
+                    }
+                    if (hassAddOnSettings.GenerateEntitiesOnStart is object)
+                    {
+                        Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
                     }
                 }
             }

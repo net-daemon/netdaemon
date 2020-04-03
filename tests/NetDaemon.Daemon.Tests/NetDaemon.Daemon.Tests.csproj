@@ -33,11 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="DaemonRunner/CodeGen/**" />
     <Compile Remove="DaemonRunner/Fixtures/**" />
     <Compile Remove="DaemonRunner/FaultyApp/**" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="DaemonRunner/Fixtures/**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner/CodeGen/**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="DaemonRunner/App/*.yaml">

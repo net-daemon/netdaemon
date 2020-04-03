@@ -55,7 +55,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             "light",
             "switch",
-            "input_boolean"
+            "input_boolean",
+            "automation",
+            "input_boolean",
+            "camera",
+            "scene",
+            "script",
         };
 
         private bool _stopped;

@@ -7,3 +7,4 @@ TestResults
 lcov.info
 codecover
 **.DS_Store
+.generated

@@ -84,6 +84,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             {
                                 try
                                 {
+                                    // Generate code if requested
+                                    var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES");
+                                    if (envGenEntities is object)
+                                    {
+                                        if (envGenEntities == "True")
+                                        {
+                                            var codeGen = new CodeGenerator();
+                                            var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
+                                                _daemonHost.State.Select(n => n.EntityId).Distinct());
+                                            var genDirectory = System.IO.Path.Combine(sourceFolder, ".generated");
+
+                                            if (!System.IO.Directory.Exists(genDirectory))
+                                                System.IO.Directory.CreateDirectory(genDirectory);
+
+                                            System.IO.File.WriteAllText(System.IO.Path.Combine(genDirectory, "EntityExtensions.cs"), source);
+                                        }
+                                    }
                                     using (var codeManager = new CodeManager(sourceFolder, _daemonHost.Logger))
                                     {
                                         await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true);
