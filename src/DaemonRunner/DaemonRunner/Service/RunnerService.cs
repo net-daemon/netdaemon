@@ -62,7 +62,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
                 _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory);
 
-                sourceFolder ??= Path.Combine(config.SourceFolder!, "apps");
+                sourceFolder = Path.Combine(config.SourceFolder!, "apps");
+
+                // Automatically create source directories
+                if (!System.IO.Directory.Exists(sourceFolder))
+                    System.IO.Directory.CreateDirectory(sourceFolder);
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
@@ -85,7 +89,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 try
                                 {
                                     // Generate code if requested
-                                    var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES");
+                                    var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? config.GenerateEntitiesOnStartup?.ToString();
                                     if (envGenEntities is object)
                                     {
                                         if (envGenEntities == "True")
@@ -93,12 +97,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                             var codeGen = new CodeGenerator();
                                             var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
                                                 _daemonHost.State.Select(n => n.EntityId).Distinct());
-                                            var genDirectory = System.IO.Path.Combine(sourceFolder, ".generated");
 
-                                            if (!System.IO.Directory.Exists(genDirectory))
-                                                System.IO.Directory.CreateDirectory(genDirectory);
-
-                                            System.IO.File.WriteAllText(System.IO.Path.Combine(genDirectory, "EntityExtensions.cs"), source);
+                                            System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder, "_EntityExtensions.cs"), source);
                                         }
                                     }
                                     using (var codeManager = new CodeManager(sourceFolder, _daemonHost.Logger))
