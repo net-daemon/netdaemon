@@ -96,33 +96,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     }
 
     /// <summary>
-    ///     Light entity
-    /// </summary>
-    public interface ILight : ITurnOff<IAction>, ITurnOn<IAction>, IToggle<IAction>, ISetState<IAction>
-    {
-    }
-
-    /// <summary>
-    ///     Represents media player actions
-    /// </summary>
-    public interface IMediaPlayer : IPlay<IMediaPlayerExecuteAsync>,
-        IStop<IMediaPlayerExecuteAsync>, IPlayPause<IMediaPlayerExecuteAsync>,
-        IPause<IMediaPlayerExecuteAsync>, ISpeak<IMediaPlayerExecuteAsync>
-    {
-    }
-
-    /// <summary>
-    ///     Excecutes media player actions async
-    /// </summary>
-    public interface IMediaPlayerExecuteAsync
-    {
-        /// <summary>
-        ///     Excecutes media player actions async
-        /// </summary>
-        Task ExecuteAsync();
-    }
-
-    /// <summary>
     ///     Represents a script entity
     /// </summary>
     public interface IScript
@@ -415,30 +388,83 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     #endregion Entities, TurnOn, TurnOff, Toggle
 
     /// <summary>
-    ///     Implements interface for managing entities in the fluent API
+    ///     Base class for entity fluent types
     /// </summary>
-    public class EntityManager : EntityState, IEntity, ILight, IAction,
-        IStateEntity, IState, IStateAction, IMediaPlayer, IScript, IMediaPlayerExecuteAsync, IDelayStateChange
+    public class EntityBase : EntityState
     {
-        private readonly ConcurrentQueue<FluentAction> _actions =
+        internal readonly ConcurrentQueue<FluentAction> _actions =
             new ConcurrentQueue<FluentAction>();
 
-        private readonly INetDaemon _daemon;
-        private readonly IEnumerable<string> _entityIds;
+        /// <summary>
+        ///     The daemon used in the API
+        /// </summary>
+        protected readonly INetDaemon Daemon;
 
-        private FluentAction? _currentAction;
+        /// <summary>
+        ///     The EntityIds used
+        /// </summary>
+        protected readonly IEnumerable<string> EntityIds;
 
-        private StateChangedInfo _currentState = new StateChangedInfo();
+        internal FluentAction? _currentAction;
+
+
+        internal StateChangedInfo _currentState = new StateChangedInfo();
 
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="entityIds">The unique ids of the entities managed</param>
         /// <param name="daemon">The Daemon that will handle API calls to Home Assistant</param>
-        public EntityManager(IEnumerable<string> entityIds, INetDaemon daemon)
+        public EntityBase(IEnumerable<string> entityIds, INetDaemon daemon)
         {
-            _entityIds = entityIds;
-            _daemon = daemon;
+            EntityIds = entityIds;
+            Daemon = daemon;
+        }
+
+        /// <inheritdoc/>
+        protected async Task CallServiceOnAllEntities(string service, dynamic? serviceData = null)
+        {
+            var taskList = new List<Task>();
+            foreach (var entityId in EntityIds)
+            {
+                var domain = GetDomainFromEntity(entityId);
+                serviceData ??= new FluentExpandoObject();
+                serviceData.entity_id = entityId;
+                var task = Daemon.CallService(domain, service, serviceData);
+                taskList.Add(task);
+            }
+
+            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000)).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        protected static string GetDomainFromEntity(string entity)
+        {
+            var entityParts = entity.Split('.');
+            if (entityParts.Length != 2)
+                throw new ApplicationException($"entity_id is mal formatted {entity}");
+
+            return entityParts[0];
+        }
+    }
+
+    /// <summary>
+    ///     Implements interface for managing entities in the fluent API
+    /// </summary>
+    public class EntityManager : EntityBase, IEntity, IAction,
+        IStateEntity, IState, IStateAction, IScript, IDelayStateChange
+    {
+
+
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="entityIds">The unique ids of the entities managed</param>
+        /// <param name="daemon">The Daemon that will handle API calls to Home Assistant</param>
+        public EntityManager(IEnumerable<string> entityIds, INetDaemon daemon) : base(entityIds, daemon)
+        {
+
         }
 
         /// <inheritdoc/>
@@ -458,8 +484,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public void Execute()
         {
-            foreach (var entityId in _entityIds)
-                _daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
+            foreach (var entityId in EntityIds)
+                Daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
                     try
                     {
@@ -475,7 +501,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                             }
                             catch (Exception e)
                             {
-                                _daemon.Logger.LogWarning(e, "Failed to evaluate function");
+                                Daemon.Logger.LogWarning(e, "Failed to evaluate function");
                                 return;
                             }
                         }
@@ -497,17 +523,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
                         if (_currentState.ForTimeSpan != TimeSpan.Zero)
                         {
-                            _daemon.Logger.LogDebug(
+                            Daemon.Logger.LogDebug(
                                 $"AndNotChangeFor statement found, delaying {_currentState.ForTimeSpan}");
                             await Task.Delay(_currentState.ForTimeSpan).ConfigureAwait(false);
-                            var currentState = _daemon.GetState(entityIdInn);
+                            var currentState = Daemon.GetState(entityIdInn);
                             if (currentState != null && currentState.State == newState?.State)
                             {
                                 //var timePassed = newState.LastChanged.Subtract(currentState.LastChanged);
                                 if (currentState?.LastChanged == newState?.LastChanged)
                                 {
                                     // No state has changed during the period
-                                    _daemon.Logger.LogDebug(
+                                    Daemon.Logger.LogDebug(
                                         $"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
                                     // The state has not changed during the time we waited
                                     if (_currentState.FuncToCall == null)
@@ -520,26 +546,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                         }
                                         catch (Exception e)
                                         {
-                                            _daemon.Logger.LogWarning(e, "Call function error in timespan");
+                                            Daemon.Logger.LogWarning(e, "Call function error in timespan");
                                         }
                                     }
 
                                 }
                                 else
                                 {
-                                    _daemon.Logger.LogDebug(
+                                    Daemon.Logger.LogDebug(
                                         $"State same {newState?.State} but different state changed: {currentState?.LastChanged}, expected {newState?.LastChanged}");
                                 }
                             }
                             else
                             {
-                                _daemon.Logger.LogDebug(
+                                Daemon.Logger.LogDebug(
                                     $"State not same, do not execute for statement. {newState?.State} found, expected {currentState?.State}");
                             }
                         }
                         else
                         {
-                            _daemon.Logger.LogDebug(
+                            Daemon.Logger.LogDebug(
                                 $"State {newState?.State} expected from {oldState?.State}, executing action!");
 
                             if (_currentState.FuncToCall != null)
@@ -550,19 +576,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 }
                                 catch (Exception e)
                                 {
-                                    _daemon.Logger.LogWarning(e, "Call function error");
+                                    Daemon.Logger.LogWarning(e, "Call function error");
                                 }
                             }
 
                             else if (_currentState.ScriptToCall != null)
-                                await _daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
+                                await Daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
                             else
                                 await entityManager.ExecuteAsync(true).ConfigureAwait(false);
                         }
                     }
                     catch (Exception e)
                     {
-                        _daemon.Logger.LogWarning(e, "Unhandled error in ListenState");
+                        Daemon.Logger.LogWarning(e, "Unhandled error in ListenState");
                     }
 
                 });
@@ -584,21 +610,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IStateAction ISetState<IStateAction>.SetState(dynamic state)
         {
             _currentState?.Entity?.SetState(state);
-            return this;
-        }
-
-        /// <inheritdoc/>
-        public IMediaPlayerExecuteAsync Speak(string message)
-        {
-            _currentAction = new FluentAction(FluentActionType.Speak);
-            _currentAction.MessageToSpeak = message;
-            return this;
-        }
-
-        /// <inheritdoc/>
-        public IMediaPlayerExecuteAsync Stop()
-        {
-            _currentAction = new FluentAction(FluentActionType.Stop);
             return this;
         }
 
@@ -643,13 +654,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         IDelayResult IDelayStateChange.DelayUntilStateChange(object? to, object? from, bool allChanges)
         {
-            return this._daemon.DelayUntilStateChange(this._entityIds, to, from, allChanges);
+            return this.Daemon.DelayUntilStateChange(this.EntityIds, to, from, allChanges);
         }
 
         /// <inheritdoc/>
         IDelayResult IDelayStateChange.DelayUntilStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
         {
-            return this._daemon.DelayUntilStateChange(this._entityIds, stateFunc);
+            return this.Daemon.DelayUntilStateChange(this.EntityIds, stateFunc);
         }
 
         IStateAction ITurnOn<IStateAction>.TurnOn()
@@ -661,21 +672,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public IStateEntity UseEntities(Func<IEntityProperties, bool> func)
         {
-            _currentState.Entity = _daemon.Entities(func);
+            _currentState.Entity = Daemon.Entities(func);
             return this;
         }
 
         /// <inheritdoc/>
         public IStateEntity UseEntities(IEnumerable<string> entities)
         {
-            _currentState.Entity = _daemon.Entities(entities);
+            _currentState.Entity = Daemon.Entities(entities);
             return this;
         }
 
         /// <inheritdoc/>
         public IStateEntity UseEntity(params string[] entityId)
         {
-            _currentState.Entity = _daemon.Entity(entityId);
+            _currentState.Entity = Daemon.Entity(entityId);
             return this;
         }
 
@@ -719,63 +730,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        private static string GetDomainFromEntity(string entity)
-        {
-            var entityParts = entity.Split('.');
-            if (entityParts.Length != 2)
-                throw new ApplicationException($"entity_id is mal formatted {entity}");
-
-            return entityParts[0];
-        }
-
-        /// <inheritdoc/>
-        private async Task CallServiceOnAllEntities(string service)
-        {
-            var taskList = new List<Task>();
-            foreach (var entityId in _entityIds)
-            {
-                var domain = GetDomainFromEntity(entityId);
-                dynamic serviceData = new FluentExpandoObject();
-                serviceData.entity_id = entityId;
-                var task = _daemon.CallService(domain, service, serviceData);
-                taskList.Add(task);
-            }
-
-            if (taskList.Count > 0) await Task.WhenAny(Task.WhenAll(taskList.ToArray()), Task.Delay(5000)).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        async Task IMediaPlayerExecuteAsync.ExecuteAsync()
-        {
-            _ = _currentAction ?? throw new NullReferenceException("Missing fluent action type!");
-
-            var executeTask = _currentAction.ActionType switch
-            {
-                FluentActionType.Play => CallServiceOnAllEntities("media_play"),
-                FluentActionType.Pause => CallServiceOnAllEntities("media_pause"),
-                FluentActionType.PlayPause => CallServiceOnAllEntities("media_play_pause"),
-                FluentActionType.Stop => CallServiceOnAllEntities("media_stop"),
-                FluentActionType.Speak => Speak(),
-                _ => throw new NotSupportedException($"Action type not supported {_currentAction.ActionType}")
-            };
-
-            await executeTask.ConfigureAwait(false);
-
-            // Use local function to get the nice switch statement above:)
-            Task Speak()
-            {
-                foreach (var entityId in _entityIds)
-                {
-                    var message = _currentAction?.MessageToSpeak ??
-                        throw new NullReferenceException("Message to speak is null or empty!");
-
-                    _daemon.Speak(entityId, message);
-                }
-                return Task.CompletedTask;
-            }
-        }
-
-        /// <inheritdoc/>
         Task IExecuteAsync.ExecuteAsync()
         {
             return ExecuteAsync();
@@ -785,9 +739,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         async Task IScript.ExecuteAsync()
         {
             var taskList = new List<Task>();
-            foreach (var scriptName in _entityIds)
+            foreach (var scriptName in EntityIds)
             {
-                var task = _daemon.CallService("script", scriptName);
+                var task = Daemon.CallService("script", scriptName);
                 taskList.Add(task);
             }
 
@@ -817,27 +771,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public IMediaPlayerExecuteAsync Pause()
-        {
-            _currentAction = new FluentAction(FluentActionType.Pause);
-            return this;
-        }
-
-        /// <inheritdoc/>
-        public IMediaPlayerExecuteAsync Play()
-        {
-            _currentAction = new FluentAction(FluentActionType.Play);
-            return this;
-        }
-
-        /// <inheritdoc/>
-        public IMediaPlayerExecuteAsync PlayPause()
-        {
-            _currentAction = new FluentAction(FluentActionType.PlayPause);
-            return this;
-        }
-
-        /// <inheritdoc/>
         public IExecute RunScript(params string[] entityIds)
         {
             _currentState.ScriptToCall = entityIds;
@@ -856,14 +789,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             var attributes = fluentAction.Attributes.Select(n => (n.Key, n.Value)).ToArray();
 
             var taskList = new List<Task>();
-            foreach (var entityId in _entityIds)
+            foreach (var entityId in EntityIds)
             {
                 var task = fluentAction.ActionType switch
                 {
                     FluentActionType.TurnOff => TurnOffAsync(entityId, attributes),
                     FluentActionType.TurnOn => TurnOnAsync(entityId, attributes),
                     FluentActionType.Toggle => ToggleAsync(entityId, attributes),
-                    FluentActionType.SetState => _daemon.SetState(entityId, fluentAction.State, attributes),
+                    FluentActionType.SetState => Daemon.SetState(entityId, fluentAction.State, attributes),
                     _ => throw new NotSupportedException($"Fluent action type not handled! {fluentAction.ActionType}")
                 };
                 taskList.Add(task);
@@ -883,7 +816,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return _daemon.CallService(domain, "toggle", attributes, false);
+            return Daemon.CallService(domain, "toggle", attributes, false);
         }
 
         private Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -897,7 +830,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return _daemon.CallService(domain, "turn_off", attributes, false);
+            return Daemon.CallService(domain, "turn_off", attributes, false);
         }
 
         private Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -911,7 +844,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return _daemon.CallService(domain, "turn_on", attributes, false);
+            return Daemon.CallService(domain, "turn_on", attributes, false);
         }
     }
 

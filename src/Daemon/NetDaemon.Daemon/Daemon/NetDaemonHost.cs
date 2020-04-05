@@ -152,21 +152,46 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _stateActions.Remove(id, out _);
         }
 
-        public IMediaPlayer MediaPlayer(params string[] entityIds) => new EntityManager(entityIds, this);
+        /// <inheritdoc/>
+        public IMediaPlayer MediaPlayer(params string[] entityIds) => new MediaPlayerManager(entityIds, this);
 
-        public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds) => new EntityManager(entityIds, this);
+        /// <inheritdoc/>
+        public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds) => new MediaPlayerManager(entityIds, this);
 
+        /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
 
-                return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+                return new MediaPlayerManager(x.Select(n => n.EntityId).ToArray(), this);
             }
             catch (Exception e)
             {
                 Logger.LogError(e, "Failed to select mediaplayers func");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public ICamera Camera(params string[] entityIds) => new CameraManager(entityIds, this);
+
+        /// <inheritdoc/>
+        public ICamera Cameras(IEnumerable<string> entityIds) => new CameraManager(entityIds, this);
+
+        /// <inheritdoc/>
+        public ICamera Cameras(Func<IEntityProperties, bool> func)
+        {
+            try
+            {
+                IEnumerable<IEntityProperties> x = State.Where(func);
+
+                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to select camera func");
                 throw;
             }
         }

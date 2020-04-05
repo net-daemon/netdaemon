@@ -270,6 +270,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
 
         /// <summary>
+        ///     Selects one or more camera entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
+        ICamera Camera(params string[] entityIds);
+
+        /// <summary>
+        ///     Selects one or more cameras entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
+        ICamera Cameras(IEnumerable<string> entityIds);
+
+        /// <summary>
+        ///     Selects one or more cameras entities to do action on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting mediaplayers</param>
+        ICamera Cameras(Func<IEntityProperties, bool> func);
+
+        /// <summary>
         ///     Runs one or more scripts
         /// </summary>
         /// <param name="entityIds">The unique id:s of the script</param>

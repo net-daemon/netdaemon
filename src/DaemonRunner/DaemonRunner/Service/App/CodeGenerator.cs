@@ -22,7 +22,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             ["script"] = ("Entity", "IEntity"),
             ["scene"] = ("Entity", "IEntity"),
             ["switch"] = ("Entity", "IEntity"),
-            ["camera"] = ("Entity", "IEntity"),
+            ["camera"] = ("Camera", "ICamera"),
             ["media_player"] = ("MediaPlayer", "IMediaPlayer"),
             ["automation"] = ("Entity", "IEntity"),
             // ["input_boolean"],
