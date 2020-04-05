@@ -45,6 +45,34 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _netDaemonMock.Verify(n => n.Entities(It.IsAny<Func<IEntityProperties, bool>>()));
         }
 
+
+        [Fact]
+        public void CameraShouldCallCorrectDaemonEntity()
+        {
+            // ARRANGE and  ACT
+            _app.Camera("camera.cam1");
+            // ASSERT
+            _netDaemonMock.Verify(n => n.Camera("camera.cam1"));
+        }
+
+        [Fact]
+        public void CamerasShouldCallCorrectDaemonEntity()
+        {
+            // ARRANGE and  ACT
+            _app.Cameras(new string[] { "camera.cam1" });
+            // ASSERT
+            _netDaemonMock.Verify(n => n.Cameras(new string[] { "camera.cam1" }));
+        }
+
+        [Fact]
+        public void CamerasFuncShouldCallCorrectDaemonEntity()
+        {
+            // ARRANGE and  ACT
+            _app.Cameras(n => n.EntityId == "camera.cam1");
+            // ASSERT
+            _netDaemonMock.Verify(n => n.Cameras(It.IsAny<Func<IEntityProperties, bool>>()));
+        }
+
         [Fact]
         public void EventShouldCallCorrectDaemonEvent()
         {

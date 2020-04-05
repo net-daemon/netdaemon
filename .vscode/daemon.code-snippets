@@ -46,4 +46,18 @@
             ],
             "description": "XUNIT fact"
         },
+        "fluentinterface": {
+            "scope": "csharp",
+            "prefix": "fluenti",
+            "body": [
+                "   /// <summary>",
+                "   ///     Generic interface for $1",
+                "   /// </summary>",
+                "   public interface I$1<T>",
+                "   {",
+                "       T $1($2);",
+                "   }",
+            ],
+            "description": "Fluent interface"
+        },
     }

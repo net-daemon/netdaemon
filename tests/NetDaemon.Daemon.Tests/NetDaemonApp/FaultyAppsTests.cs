@@ -38,7 +38,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Call((entity, from, to) =>
                 {
                     // Do conversion error
-                    int x = int.Parse(to?.State);
+
                     return Task.CompletedTask;
                 }).Execute();
 

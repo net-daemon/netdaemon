@@ -160,6 +160,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return _daemon!.MediaPlayers(func);
         }
 
+
+
+
+
+
+        /// <inheritdoc/>
+        public ICamera Camera(params string[] entityIds)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.Camera(entityIds);
+        }
+
+        /// <inheritdoc/>
+        public ICamera Cameras(IEnumerable<string> entityIds)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.Cameras(entityIds);
+        }
+
+        /// <inheritdoc/>
+        public ICamera Cameras(Func<IEntityProperties, bool> func)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.Cameras(func);
+        }
+
         /// <inheritdoc/>
         public IScript RunScript(params string[] entityIds)
         {

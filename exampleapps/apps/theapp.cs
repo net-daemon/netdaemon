@@ -31,8 +31,11 @@ public class TheApp : NetDaemonApp
     }
     public override async Task InitializeAsync()
     {
-        Log("SET TESTSENSOR");
-        await SetState("sensor.testsensor", "10");
+        // await Camera("camera.my_camera")
+        //     .Snapshot("/config/www/motion/snap.jpg")
+        //     .ExecuteAsync();
+        // Log("SET TESTSENSOR");
+        // await SetState("sensor.testsensor", "10");
 
         // await CallService("light", "toggle", new { entity_id = "light.tomas_rum" }, false);
 
