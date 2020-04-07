@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -30,6 +31,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         private FluentExpandoObject? _storageObject;
         internal FluentExpandoObject? InternalStorageObject { get { return _storageObject; } set { _storageObject = value; } }
+
+        /// <summary>
+        ///    Dependencies on other applications that will be initialized before this app
+        /// </summary>
+        public IEnumerable<string> Dependencies { get; set; } = new List<string>();
 
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }
@@ -134,6 +140,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        public NetDaemonApp? GetApp(string appInstanceId)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.GetApp(appInstanceId);
+        }
+
+        /// <inheritdoc/>
         public void Log(string message, LogLevel level = LogLevel.Information) => Logger.Log(level, message);
 
         /// <inheritdoc/>
@@ -159,11 +172,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.MediaPlayers(func);
         }
-
-
-
-
-
 
         /// <inheritdoc/>
         public ICamera Camera(params string[] entityIds)
@@ -352,6 +360,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.DelayUntilStateChange(entityIds, stateFunc);
+        }
+
+
+        /// <summary>
+        ///     Implements the IEqualit.Equals method
+        /// </summary>
+        /// <param name="other">The instance to compare</param>
+        public bool Equals([AllowNull] INetDaemonApp other)
+        {
+            if (other is object && other.Id is object && this.Id is object && this.Id == other.Id)
+                return true;
+
+            return false;
         }
     }
 }

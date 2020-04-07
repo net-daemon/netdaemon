@@ -527,5 +527,44 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.False(delayResult.Task.Result);
             Assert.Empty(DefaultDaemonHost.InternalStateActions);
         }
+
+        [Fact]
+        public void RegisterAppShouldReturnCorrectAppWhenUsingGetApp()
+        {
+            // ARRANGE
+            DefaultDaemonHost.RegisterAppInstance("appx", new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp());
+            // ACT
+            var theApp = DefaultDaemonHost.GetApp("appx");
+
+            // ASSERT
+            Assert.NotNull(theApp);
+        }
+
+        [Fact]
+        public void GetAppOnMissingAppShouldReturnNull()
+        {
+            // ARRANGE
+            // ACT
+            var theApp = DefaultDaemonHost.GetApp("noexist");
+
+            // ASSERT
+            Assert.Null(theApp);
+        }
+
+        [Fact]
+        public void ClearShouldReturnNullGetApp()
+        {
+            // ARRANGE
+            DefaultDaemonHost.RegisterAppInstance("appx", new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp());
+            var theApp = DefaultDaemonHost.GetApp("appx");
+            Assert.NotNull(theApp);
+
+            // ACT
+            DefaultDaemonHost.ClearAppInstances();
+            theApp = DefaultDaemonHost.GetApp("appx");
+
+            // ASSERT
+            Assert.Null(theApp);
+        }
     }
 }
