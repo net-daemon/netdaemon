@@ -327,32 +327,21 @@ app:
             moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
             moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_app_depend_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
         }
-
+        //FaultyAppPath
         [Fact]
-        public void InstanceAppsThatHasCircularDependenciesShouldReturnNull()
+        public async Task InstanceAppsThatHasCircularDependenciesShouldReturnNull()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
-            IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
-            var yamlConfig = @"
-app:
-    class: AssmeblyDaemonApp
-    dependencies:
-        - app2
+            var path = Path.Combine(FaultyAppPath, "CircularDependencies");
+            var moqDaemon = new Mock<INetDaemonHost>();
+            var moqLogger = new LoggerMock();
 
-app2:
-    class: AssmeblyDaemonApp
-    dependencies:
-        - app3
-
-app3:
-    class: AssmeblyDaemonApp
-    dependencies:
-        - app
-
-";
-            // ARRANGE & ACT & ASSERT
-            var ex = Assert.Throws<ApplicationException>(() => { var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances; });
+            moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
+            var codeManager = CM(path);
+            codeManager.DaemonAppTypes.Append(typeof(AssmeblyDaemonApp));
+            // ACT
+            // ASSERT
+            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => { await codeManager.InstanceAndInitApplications(moqDaemon.Object); });
             Assert.Contains("Application dependencies is wrong", ex.Message);
         }
 

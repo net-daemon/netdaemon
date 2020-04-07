@@ -1,0 +1,2 @@
+global_app:
+    class: GlobalApp

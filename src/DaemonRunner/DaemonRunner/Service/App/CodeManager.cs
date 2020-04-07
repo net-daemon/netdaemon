@@ -233,7 +233,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             _ = (host as INetDaemonHost) ?? throw new ArgumentNullException(nameof(host));
 
-            host.ClearAppInstances();
+            host!.ClearAppInstances();
             CompileScriptsInCodeFolder();
 
             var result = new List<INetDaemonApp>();
@@ -257,10 +257,35 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     // Register the instance with the host
                     host.RegisterAppInstance(appInstance.Id!, (appInstance as NetDaemonApp)!);
 
-                    await appInstance.InitializeAsync().ConfigureAwait(false);
-                    appInstance.HandleAttributeInitialization(host!);
-                    host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
                 }
+            }
+            if (result.SelectMany(n => n.Dependencies).Count() > 0)
+            {
+                // There are dependecies defined
+                var edges = new HashSet<Tuple<INetDaemonApp, INetDaemonApp>>();
+
+                foreach (var instance in result)
+                {
+                    foreach (var dependency in instance.Dependencies)
+                    {
+                        var dependentApp = result.Where(n => n.Id == dependency).FirstOrDefault();
+                        if (dependentApp == null)
+                            throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
+
+                        edges.Add(new Tuple<INetDaemonApp, INetDaemonApp>(instance, dependentApp));
+                    }
+                }
+                var sortedInstances = TopologicalSort<INetDaemonApp>(result.ToHashSet(), edges) ??
+                    throw new ApplicationException("Application dependencies is wrong, please check dependencies for circular dependencies!");
+
+                result = sortedInstances;
+            }
+
+            foreach (var app in result)
+            {
+                await app.InitializeAsync().ConfigureAwait(false);
+                app.HandleAttributeInitialization(host!);
+                host!.Logger.LogInformation($"Successfully loaded app {app.GetType().Name}");
             }
 
             _instanciatedDaemonApps.AddRange(result);
@@ -270,6 +295,64 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             GC.WaitForPendingFinalizers();
 
             return result;
+        }
+
+        /// <summary>
+        /// Topological Sorting (Kahn's algorithm)
+        /// </summary>
+        /// <remarks>https://en.wikipedia.org/wiki/Topological_sorting</remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="nodes">All nodes of directed acyclic graph.</param>
+        /// <param name="edges">All edges of directed acyclic graph.</param>
+        /// <returns>Sorted node in topological order.</returns>
+        static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
+        {
+            // Empty list that will contain the sorted elements
+            var L = new List<T>();
+
+            // Set of all nodes with no incoming edges
+            var S = new HashSet<T>(nodes.Where(n => edges.All(e => e.Item2.Equals(n) == false)));
+
+            // while S is non-empty do
+            while (S.Any())
+            {
+
+                //  remove a node n from S
+                var n = S.First();
+                S.Remove(n);
+
+                // add n to tail of L
+                L.Add(n);
+
+                // for each node m with an edge e from n to m do
+                foreach (var e in edges.Where(e => e.Item1.Equals(n)).ToList())
+                {
+                    var m = e.Item2;
+
+                    // remove edge e from the graph
+                    edges.Remove(e);
+
+                    // if m has no other incoming edges then
+                    if (edges.All(me => me.Item2.Equals(m) == false))
+                    {
+                        // insert m into S
+                        S.Add(m);
+                    }
+                }
+            }
+
+            // if graph has edges then
+            if (edges.Any())
+            {
+                // return error (graph has at least one cycle)
+                return null;
+            }
+            else
+            {
+                L.Reverse();
+                // return L (a topologically sorted order)
+                return L;
+            }
         }
 
         private void LoadLocalAssemblyApplicationsForDevelopment()
