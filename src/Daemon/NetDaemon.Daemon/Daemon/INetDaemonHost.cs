@@ -25,7 +25,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Stops the netdaemon host asynchronous. 
+        ///     Stops the netdaemon host asynchronous.
         /// </summary>
         /// <returns> The operational task. </returns>
         Task Stop();
@@ -37,7 +37,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task StopDaemonActivitiesAsync();
 
         /// <summary>
-        ///     Listens to the given service in the netdaemon domain. Those subscritions 
+        ///     Listens to the given service in the netdaemon domain. Those subscritions
         ///     are used internally and are not postponed during reloading service daemons.
         /// </summary>
         /// <param name="service"> The name of the service. </param>
@@ -51,5 +51,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="numberOfRunningApps"> The number of running apps. </param>
         /// <returns></returns>
         Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps);
+
+        /// <summary>
+        ///     Register appinstance with daemon
+        /// </summary>
+        /// <param name="appInstanceId">the id of the app instance</param>
+        /// <param name="app">The app instance</param>
+        void RegisterAppInstance(string appInstanceId, NetDaemonApp app);
+
+        /// <summary>
+        ///     Clears all app instances registered
+        /// </summary>
+        void ClearAppInstances();
     }
 }

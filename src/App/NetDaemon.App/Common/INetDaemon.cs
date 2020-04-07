@@ -25,7 +25,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     /// Interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemonApp : IDisposable
+    public interface INetDaemonApp : IDisposable, IEquatable<INetDaemonApp>
     {
         /// <summary>
         /// Start the application, normally implemented by the base class
@@ -82,6 +82,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     It is implemented async so state will be lazy saved
         /// </remarks>
         Task RestoreAppStateAsync();
+
+        /// <summary>
+        ///     The dependencies that needs to be initialized before this app
+        /// </summary>
+        IEnumerable<string> Dependencies { get; set; }
     }
 
     /// <summary>
@@ -196,6 +201,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityId">The unique id of the entity</param>
         /// <returns></returns>
         EntityState? GetState(string entityId);
+
+        /// <summary>
+        ///     Get application instance by application instance id
+        /// </summary>
+        /// <param name="appInstanceId">The identity of the app instance</param>
+        NetDaemonApp? GetApp(string appInstanceId);
 
         /// <summary>
         ///     Selects one or more entities to do action on

@@ -51,6 +51,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
             new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
+        private readonly ConcurrentDictionary<string, NetDaemonApp> _daemonAppInstances =
+            new ConcurrentDictionary<string, NetDaemonApp>();
+
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
             "light",
@@ -669,6 +672,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public NetDaemonApp? GetApp(string appInstanceId)
+        {
+            return _daemonAppInstances.ContainsKey(appInstanceId) ?
+                _daemonAppInstances[appInstanceId] : null;
+        }
+
+        /// <inheritdoc/>
+        public void RegisterAppInstance(string appInstance, NetDaemonApp app)
+        {
+            _daemonAppInstances[appInstance] = app;
+        }
+
+        /// <inheritdoc/>
+        public void ClearAppInstances()
+        {
+            _daemonAppInstances.Clear();
         }
     }
     public class DelayResult : IDelayResult

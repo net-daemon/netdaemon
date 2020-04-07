@@ -209,23 +209,31 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         private async Task ReloadApplicationsAsync(INetDaemonHost host)
         {
-            await host.StopDaemonActivitiesAsync();
-
-            foreach (var app in _instanciatedDaemonApps)
+            try
             {
-                app.Dispose();
-            }
-            _instanciatedDaemonApps.Clear();
-            _loadedDaemonApps.Clear();
+                await host.StopDaemonActivitiesAsync();
 
-            CompileScriptsInCodeFolder();
-            await InstanceAndInitApplications(host);
+                foreach (var app in _instanciatedDaemonApps)
+                {
+                    app.Dispose();
+                }
+                _instanciatedDaemonApps.Clear();
+                _loadedDaemonApps.Clear();
+
+                CompileScriptsInCodeFolder();
+                await InstanceAndInitApplications(host);
+            }
+            catch (System.Exception e)
+            {
+                host.Logger.LogError("Failed to reload applications", e);
+            }
         }
 
         public async Task<IEnumerable<INetDaemonApp>> InstanceAndInitApplications(INetDaemonHost? host)
         {
             _ = (host as INetDaemonHost) ?? throw new ArgumentNullException(nameof(host));
 
+            host.ClearAppInstances();
             CompileScriptsInCodeFolder();
 
             var result = new List<INetDaemonApp>();
@@ -246,6 +254,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     }
 
                     result.Add(appInstance);
+                    // Register the instance with the host
+                    host.RegisterAppInstance(appInstance.Id!, (appInstance as NetDaemonApp)!);
+
                     await appInstance.InitializeAsync().ConfigureAwait(false);
                     appInstance.HandleAttributeInitialization(host!);
                     host!.Logger.LogInformation($"Successfully loaded app {appInstance.GetType().Name}");
