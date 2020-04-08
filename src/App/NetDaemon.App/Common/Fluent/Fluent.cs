@@ -741,7 +741,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             var taskList = new List<Task>();
             foreach (var scriptName in EntityIds)
             {
-                var task = Daemon.CallService("script", scriptName);
+                var name = scriptName;
+                if (scriptName.Contains('.'))
+                    name = scriptName[(scriptName.IndexOf('.') + 1)..];
+                var task = Daemon.CallService("script", name);
                 taskList.Add(task);
             }
 
