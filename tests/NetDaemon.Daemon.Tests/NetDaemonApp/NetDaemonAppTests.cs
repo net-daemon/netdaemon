@@ -24,7 +24,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE and  ACT
             _app.Entity("light.somelight");
             // ASSERT
-            _netDaemonMock.Verify(n => n.Entity("light.somelight"));
+            _netDaemonMock.Verify(n => n.Entity(_app, "light.somelight"));
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE and  ACT
             _app.Entities(new string[] { "light.somelight" });
             // ASSERT
-            _netDaemonMock.Verify(n => n.Entities(new string[] { "light.somelight" }));
+            _netDaemonMock.Verify(n => n.Entities(_app, new string[] { "light.somelight" }));
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE and  ACT
             _app.Entities(n => n.EntityId == "light.somelight");
             // ASSERT
-            _netDaemonMock.Verify(n => n.Entities(It.IsAny<Func<IEntityProperties, bool>>()));
+            _netDaemonMock.Verify(n => n.Entities(_app, It.IsAny<Func<IEntityProperties, bool>>()));
         }
 
 
@@ -52,7 +52,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE and  ACT
             _app.Camera("camera.cam1");
             // ASSERT
-            _netDaemonMock.Verify(n => n.Camera("camera.cam1"));
+            _netDaemonMock.Verify(n => n.Camera(_app, "camera.cam1"));
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE and  ACT
             _app.Cameras(new string[] { "camera.cam1" });
             // ASSERT
-            _netDaemonMock.Verify(n => n.Cameras(new string[] { "camera.cam1" }));
+            _netDaemonMock.Verify(n => n.Cameras(_app, new string[] { "camera.cam1" }));
         }
 
         [Fact]
@@ -70,41 +70,41 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE and  ACT
             _app.Cameras(n => n.EntityId == "camera.cam1");
             // ASSERT
-            _netDaemonMock.Verify(n => n.Cameras(It.IsAny<Func<IEntityProperties, bool>>()));
+            _netDaemonMock.Verify(n => n.Cameras(_app, It.IsAny<Func<IEntityProperties, bool>>()));
         }
 
         [Fact]
         public void EventShouldCallCorrectDaemonEvent()
         {
             // ARRANGE
-            _netDaemonMock.Setup(n => n.Event(It.IsAny<string[]>())).Returns(new Mock<IFluentEvent>().Object);
+            _netDaemonMock.Setup(n => n.Event(_app, It.IsAny<string[]>())).Returns(new Mock<IFluentEvent>().Object);
 
             // ACT
             _app.Event("event");
             // ASSERT
-            _netDaemonMock.Verify(n => n.Event("event"));
+            _netDaemonMock.Verify(n => n.Event(_app, "event"));
         }
 
         [Fact]
         public void EventsShouldCallCorrectDaemonEvent()
         {
             // ARRANGE
-            _netDaemonMock.Setup(n => n.Events(It.IsAny<IEnumerable<string>>())).Returns(new Mock<IFluentEvent>().Object);
+            _netDaemonMock.Setup(n => n.Events(_app, It.IsAny<IEnumerable<string>>())).Returns(new Mock<IFluentEvent>().Object);
             //ACT
             _app.Events(new string[] { "event" });
             // ASSERT
-            _netDaemonMock.Verify(n => n.Events(new string[] { "event" }));
+            _netDaemonMock.Verify(n => n.Events(_app, new string[] { "event" }));
         }
 
         [Fact]
         public void EventesFuncShouldCallCorrectDaemonEvent()
         {
             // ARRANGE
-            _netDaemonMock.Setup(n => n.Events(It.IsAny<Func<FluentEventProperty, bool>>())).Returns(new Mock<IFluentEvent>().Object);
+            _netDaemonMock.Setup(n => n.Events(_app, It.IsAny<Func<FluentEventProperty, bool>>())).Returns(new Mock<IFluentEvent>().Object);
             // ACT
             _app.Events(n => n.EventId == "event");
             // ASSERT
-            _netDaemonMock.Verify(n => n.Events(It.IsAny<Func<FluentEventProperty, bool>>()));
+            _netDaemonMock.Verify(n => n.Events(_app, It.IsAny<Func<FluentEventProperty, bool>>()));
         }
 
         [Fact]

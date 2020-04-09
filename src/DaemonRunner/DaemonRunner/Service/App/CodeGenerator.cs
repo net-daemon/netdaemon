@@ -81,8 +81,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     foreach (var entity in entities.Where(n => n.StartsWith(domain)))
                     {
                         var (fluent, fluentInterface) = _FluentApiMapper[domain];
+                        var name = entity[(entity.IndexOf(".") + 1)..];
+                        // Make sure the name is valid
+                        if (long.TryParse(name, out _))
+                            name = "e_" + name;
 
-                        var propertyCode = $@"public {fluentInterface} {entity[(entity.IndexOf(".") + 1)..].ToCamelCase()} => _app.{fluent}(""{entity}"");";
+                        var propertyCode = $@"public {fluentInterface} {name.ToCamelCase()} => _app.{fluent}(""{entity}"");";
                         var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
                         entityClass = entityClass.AddMembers(propDeclaration);
 

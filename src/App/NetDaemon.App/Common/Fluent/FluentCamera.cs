@@ -87,7 +87,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="entityIds">The unique ids of the entities managed</param>
         /// <param name="daemon">The Daemon that will handle API calls to Home Assistant</param>
-        public CameraManager(IEnumerable<string> entityIds, INetDaemon daemon) : base(entityIds, daemon)
+        /// <param name="app">The Daemon App calling fluent API</param>
+        public CameraManager(IEnumerable<string> entityIds, INetDaemon daemon, INetDaemonApp app) : base(entityIds, daemon, app)
         {
         }
 

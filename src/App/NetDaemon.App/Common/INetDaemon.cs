@@ -23,7 +23,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     }
 
     /// <summary>
-    /// Interface that all NetDaemon apps needs to implement
+    ///     Base interface that all NetDaemon apps needs to implement
     /// </summary>
     public interface INetDaemonApp : IDisposable, IEquatable<INetDaemonApp>
     {
@@ -87,12 +87,110 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     The dependencies that needs to be initialized before this app
         /// </summary>
         IEnumerable<string> Dependencies { get; set; }
+
+        // FLUENT API
+
+        /// <summary>
+        ///     Selects one or more entities to do action on
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        IEntity Entity(params string[] entityId);
+
+        /// <summary>
+        ///     Selects one or more entities to do action on
+        /// </summary>
+        /// <param name="entityId">The unique id of the entity</param>
+        IEntity Entities(IEnumerable<string> entityId);
+
+        /// <summary>
+        ///     Selects one or more entities to do action on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression for selecting entities</param>
+        IEntity Entities(Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Selects one or more events to do action on
+        /// </summary>
+        /// <param name="eventParams">Events</param>
+        IFluentEvent Event(params string[] eventParams);
+
+        /// <summary>
+        ///     Selects one or more events to do action on
+        /// </summary>
+        /// <param name="eventParams">Events</param>
+        IFluentEvent Events(IEnumerable<string> eventParams);
+
+        /// <summary>
+        ///     Selects the events to do actions on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting event</param>
+        IFluentEvent Events(Func<FluentEventProperty, bool> func);
+
+        /// <summary>
+        ///     Selects one or more input select to do action on
+        /// </summary>
+        /// <param name="inputSelectParams">Events</param>
+        IFluentInputSelect InputSelect(params string[] inputSelectParams);
+
+        /// <summary>
+        ///     Selects one or more input selects to do action on
+        /// </summary>
+        /// <param name="inputSelectParams">Events</param>
+        IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams);
+
+        /// <summary>
+        ///     Selects the input selects to do actions on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting input select</param>
+        IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
+        IMediaPlayer MediaPlayer(params string[] entityIds);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
+        IMediaPlayer MediaPlayers(IEnumerable<string> entityIds);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting mediaplayers</param>
+        IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Selects one or more camera entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
+        ICamera Camera(params string[] entityIds);
+
+        /// <summary>
+        ///     Selects one or more cameras entities to do action on
+        /// </summary>
+        /// <param name="entityIds">Entity unique id:s</param>
+        ICamera Cameras(IEnumerable<string> entityIds);
+
+        /// <summary>
+        ///     Selects one or more cameras entities to do action on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting mediaplayers</param>
+        ICamera Cameras(Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Runs one or more scripts
+        /// </summary>
+        /// <param name="entityIds">The unique id:s of the script</param>
+        IScript RunScript(params string[] entityIds);
     }
 
     /// <summary>
     ///     The interface that interacts with the daemon main logic
     /// </summary>
-    public interface INetDaemon
+    public interface INetDaemonBase
     {
         /// <summary>
         ///     Logger to use
@@ -209,102 +307,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         NetDaemonApp? GetApp(string appInstanceId);
 
         /// <summary>
-        ///     Selects one or more entities to do action on
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        IEntity Entity(params string[] entityId);
-
-        /// <summary>
-        ///     Selects one or more entities to do action on
-        /// </summary>
-        /// <param name="entityId">The unique id of the entity</param>
-        IEntity Entities(IEnumerable<string> entityId);
-
-        /// <summary>
-        ///     Selects one or more entities to do action on using lambda
-        /// </summary>
-        /// <param name="func">The lambda expression for selecting entities</param>
-        IEntity Entities(Func<IEntityProperties, bool> func);
-
-        /// <summary>
-        ///     Selects one or more events to do action on
-        /// </summary>
-        /// <param name="eventParams">Events</param>
-        IFluentEvent Event(params string[] eventParams);
-
-        /// <summary>
-        ///     Selects one or more events to do action on
-        /// </summary>
-        /// <param name="eventParams">Events</param>
-        IFluentEvent Events(IEnumerable<string> eventParams);
-
-        /// <summary>
-        ///     Selects the events to do actions on using lambda
-        /// </summary>
-        /// <param name="func">The lambda expression selecting event</param>
-        IFluentEvent Events(Func<FluentEventProperty, bool> func);
-
-        /// <summary>
-        ///     Selects one or more input select to do action on
-        /// </summary>
-        /// <param name="inputSelectParams">Events</param>
-        IFluentInputSelect InputSelect(params string[] inputSelectParams);
-
-        /// <summary>
-        ///     Selects one or more input selects to do action on
-        /// </summary>
-        /// <param name="inputSelectParams">Events</param>
-        IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams);
-
-        /// <summary>
-        ///     Selects the input selects to do actions on using lambda
-        /// </summary>
-        /// <param name="func">The lambda expression selecting input select</param>
-        IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func);
-
-        /// <summary>
-        ///     Selects one or more media player entities to do action on
-        /// </summary>
-        /// <param name="entityIds">Entity unique id:s</param>
-        IMediaPlayer MediaPlayer(params string[] entityIds);
-
-        /// <summary>
-        ///     Selects one or more media player entities to do action on
-        /// </summary>
-        /// <param name="entityIds">Entity unique id:s</param>
-        IMediaPlayer MediaPlayers(IEnumerable<string> entityIds);
-
-        /// <summary>
-        ///     Selects one or more media player entities to do action on using lambda
-        /// </summary>
-        /// <param name="func">The lambda expression selecting mediaplayers</param>
-        IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
-
-        /// <summary>
-        ///     Selects one or more camera entities to do action on
-        /// </summary>
-        /// <param name="entityIds">Entity unique id:s</param>
-        ICamera Camera(params string[] entityIds);
-
-        /// <summary>
-        ///     Selects one or more cameras entities to do action on
-        /// </summary>
-        /// <param name="entityIds">Entity unique id:s</param>
-        ICamera Cameras(IEnumerable<string> entityIds);
-
-        /// <summary>
-        ///     Selects one or more cameras entities to do action on using lambda
-        /// </summary>
-        /// <param name="func">The lambda expression selecting mediaplayers</param>
-        ICamera Cameras(Func<IEntityProperties, bool> func);
-
-        /// <summary>
-        ///     Runs one or more scripts
-        /// </summary>
-        /// <param name="entityIds">The unique id:s of the script</param>
-        IScript RunScript(params string[] entityIds);
-
-        /// <summary>
         ///     All current states for all known entities
         /// </summary>
         /// <remarks>
@@ -340,5 +342,126 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="id">Unique Id of the data</param>
         /// <returns>The data persistent or null if not exists</returns>
         ValueTask<T> GetDataAsync<T>(string id);
+    }
+
+
+    /// <summary>
+    ///     Interface that all NetDaemon apps needs to implement
+    /// </summary>
+    public interface INetDaemon : INetDaemonBase
+    {
+
+        // FLUENT API
+
+        /// <summary>
+        ///     Selects one or more entities to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityId">The unique id of the entity</param>
+        IEntity Entity(INetDaemonApp app, params string[] entityId);
+
+        /// <summary>
+        ///     Selects one or more entities to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityId">The unique id of the entity</param>
+        IEntity Entities(INetDaemonApp app, IEnumerable<string> entityId);
+
+        /// <summary>
+        ///     Selects one or more entities to do action on using lambda
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="func">The lambda expression for selecting entities</param>
+        IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Selects one or more events to do action on
+        /// </summary>
+        /// <param name="eventParams">Events</param>
+        IFluentEvent Event(INetDaemonApp app, params string[] eventParams);
+
+        /// <summary>
+        ///     Selects one or more events to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="eventParams">Events</param>
+        IFluentEvent Events(INetDaemonApp app, IEnumerable<string> eventParams);
+
+        /// <summary>
+        ///     Selects the events to do actions on using lambda
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="func">The lambda expression selecting event</param>
+        IFluentEvent Events(INetDaemonApp app, Func<FluentEventProperty, bool> func);
+
+        /// <summary>
+        ///     Selects one or more input select to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="inputSelectParams">Events</param>
+        IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams);
+
+        /// <summary>
+        ///     Selects one or more input selects to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="inputSelectParams">Events</param>
+        IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams);
+
+        /// <summary>
+        ///     Selects the input selects to do actions on using lambda
+        /// </summary>
+        /// <param name="func">The lambda expression selecting input select</param>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityIds">Entity unique id:s</param>
+        IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityIds">Entity unique id:s</param>
+        IMediaPlayer MediaPlayers(INetDaemonApp app, IEnumerable<string> entityIds);
+
+        /// <summary>
+        ///     Selects one or more media player entities to do action on using lambda
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="func">The lambda expression selecting mediaplayers</param>
+        IMediaPlayer MediaPlayers(INetDaemonApp app, Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Selects one or more camera entities to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityIds">Entity unique id:s</param>
+        ICamera Camera(INetDaemonApp app, params string[] entityIds);
+
+        /// <summary>
+        ///     Selects one or more cameras entities to do action on
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityIds">Entity unique id:s</param>
+        ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds);
+
+        /// <summary>
+        ///     Selects one or more cameras entities to do action on using lambda
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="func">The lambda expression selecting mediaplayers</param>
+        ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func);
+
+        /// <summary>
+        ///     Runs one or more scripts
+        /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="entityIds">The unique id:s of the script</param>
+        IScript RunScript(INetDaemonApp app, params string[] entityIds);
     }
 }

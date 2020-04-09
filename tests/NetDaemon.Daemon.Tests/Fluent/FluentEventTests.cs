@@ -16,6 +16,9 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            await app.StartUpAsync(daemonHost);
+
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -25,7 +28,7 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
             string? message = "";
 
-            daemonHost
+            app
                 .Event("CUSTOM_EVENT")
                     .Call((ev, data) =>
                     {
@@ -53,10 +56,12 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            app.StartUpAsync(daemonHost);
 
             var cancelSource = hcMock.GetSourceWithTimeout();
 
-            Assert.Throws<NullReferenceException>(() => daemonHost
+            Assert.Throws<NullReferenceException>(() => app
                 .Event("CUSTOM_EVENT")
                     .Call(null).Execute());
         }
@@ -67,6 +72,9 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            await app.StartUpAsync(daemonHost);
+
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -76,7 +84,7 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
             string? message = "";
 
-            daemonHost
+            app
                 .Events(n => n.EventId == "CUSTOM_EVENT")
                     .Call((ev, data) =>
                     {
@@ -104,6 +112,9 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            await app.StartUpAsync(daemonHost);
+
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -113,7 +124,7 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
             string? message = "";
 
-            daemonHost
+            app
                 .Events(new string[] { "CUSTOM_EVENT" })
                     .Call((ev, data) =>
                     {
@@ -141,6 +152,9 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            await app.StartUpAsync(daemonHost);
+
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -150,7 +164,7 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
             string? message = "";
 
-            daemonHost
+            app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello World!")
                     .Call((ev, data) =>
                     {
@@ -178,6 +192,9 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            await app.StartUpAsync(daemonHost);
+
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -187,7 +204,7 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
             string? message = "";
 
-            daemonHost
+            app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello Test!")
                     .Call((ev, data) =>
                     {
@@ -214,6 +231,8 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            await app.StartUpAsync(daemonHost);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -223,7 +242,7 @@ namespace NetDaemon.Daemon.Tests
             var isCalled = false;
             string? message = "";
 
-            daemonHost
+            app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.NotExist == "Hello Test!")
                     .Call((ev, data) =>
                     {

@@ -42,7 +42,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
         private readonly IEnumerable<string> _entityIds;
         private INetDaemon _daemon;
-
+        private INetDaemonApp _app;
         private string? _option;
 
         /// <summary>
@@ -50,10 +50,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="entityIds">The entityIds of the InputSelects</param>
         /// <param name="daemon">The net daemon that manage Home Assistant API:s</param>
-        public InputSelectManager(IEnumerable<string> entityIds, INetDaemon daemon)
+        /// <param name="app">The Daemon App calling fluent API</param>
+        public InputSelectManager(IEnumerable<string> entityIds, INetDaemon daemon, INetDaemonApp app)
         {
             _entityIds = entityIds;
             _daemon = daemon;
+            _app = app;
         }
 
         /// <inheritdoc/>
