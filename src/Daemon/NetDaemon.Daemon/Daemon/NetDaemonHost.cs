@@ -21,7 +21,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <summary>
         /// The intervall used when disconnected
         /// </summary>
-        private const int _reconnectIntervall = 30000;
+        private const int _reconnectIntervall = 40000;
 
         internal readonly Channel<(string, string)> _ttsMessageQueue =
             Channel.CreateBounded<(string, string)>(20);
@@ -132,10 +132,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 : null;
         }
 
+        /// <inheritdoc/>
         public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
 
+        /// <inheritdoc/>
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
 
+        /// <inheritdoc/>
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
@@ -149,6 +152,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _stateActions[uniqueId] = (pattern, action);
             return uniqueId.ToString();
         }
+
+        /// <inheritdoc/>
         public void CancelListenState(string id)
         {
             // Remove and ignore if not exist
@@ -240,7 +245,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     if (!connectResult)
                     {
                         Connected = false;
-                        Logger.LogWarning("Home assistant is unavailable, retrying in 30 seconds...");
+                        Logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall} seconds...");
                         await _hassClient.CloseAsync().ConfigureAwait(false);
                         await Task.Delay(_reconnectIntervall, cancellationToken).ConfigureAwait(false);
 

@@ -116,7 +116,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             }
                             else
                             {
-                                _logger.LogWarning("Home assistant still unavailable, retrying in 30 seconds...");
+                                _logger.LogWarning("Home assistant still unavailable, retrying in 40 seconds...");
                             }
                         }
                     }
@@ -124,13 +124,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     {
                         if (!stoppingToken.IsCancellationRequested)
                         {
-                            _logger.LogWarning("Home assistant disconnected!, retrying in 30 seconds...");
+                            _logger.LogWarning("Home assistant disconnected!, retrying in 40 seconds...");
                         }
                     }
 
                     if (!stoppingToken.IsCancellationRequested)
                         // The service is still running, we have error in connection to hass
-                        await Task.Delay(30000, stoppingToken).ConfigureAwait(false); // Wait 5 seconds
+                        await Task.Delay(40000, stoppingToken).ConfigureAwait(false); // Wait 5 seconds
                 }
             }
             catch (OperationCanceledException)
