@@ -35,7 +35,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "on", "off",
                 lastUpdated, lastChanged);
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("off")
                 .AndNotChangeFor(TimeSpan.FromMilliseconds(100))
@@ -63,7 +63,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange((n, _) => n?.State == "on")
                 .UseEntity("light.correct_entity")
@@ -84,7 +84,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange((n, _) => n?.State == "on")
                 .UseEntity("light.correct_entity")
@@ -106,7 +106,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntity("light.correct_entity")
@@ -128,7 +128,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntity("light.correct_entity")
@@ -149,7 +149,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntities(new string[] { "light.correct_entity" })
@@ -176,7 +176,7 @@ namespace NetDaemon.Daemon.Tests
                 EntityId = "light.correct_entity"
             });
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntities(n => n.EntityId == "light.correct_entity")
@@ -197,14 +197,14 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntity("light.correct_entity")
                 .TurnOn()
                 .Execute();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("off")
                 .UseEntity("light.correct_entity")
@@ -227,7 +227,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
                 .UseEntity("light.correct_entity")
@@ -253,7 +253,7 @@ namespace NetDaemon.Daemon.Tests
             var triggered = false;
 
             // ACT
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange()
                 .Call((e, n, o) =>
@@ -279,7 +279,7 @@ namespace NetDaemon.Daemon.Tests
             var triggered = false;
 
             // ACT
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange()
                 .Call((e, n, o) =>
@@ -305,7 +305,7 @@ namespace NetDaemon.Daemon.Tests
             var triggered = false;
 
             // ACT
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange(allChanges: true)
                 .Call((e, n, o) =>
@@ -322,129 +322,12 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task TimerEveryShouldCallServiceCorrectNumberOfTimes()
-        {
-            // ARRANGE
-            DefaultDaemonHost
-                .Timer()
-                .Every(TimeSpan.FromMilliseconds(20))
-                .Entity("light.correct_light")
-                .TurnOn()
-                .Execute();
-
-            await RunDefauldDaemonUntilCanceled(300);
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
-            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_light"));
-        }
-
-        [Fact]
-        public async Task TimerEntitiesEveryShouldCallServiceCorrectNumberOfTimes()
-        {
-            // ARRANGE
-            DefaultDaemonHost
-                .Timer()
-                .Every(TimeSpan.FromMilliseconds(20))
-                .Entities(new string[] { "light.correct_light" })
-                .TurnOn()
-                .Execute();
-
-            var cancelSource = new CancellationTokenSource(100); //DefaultHassClientMock.GetSourceWithTimeout(100);
-
-            // ACTION
-            await RunDefauldDaemonUntilCanceled();
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
-            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_light"));
-        }
-
-        [Fact]
-        public async Task TimerEntitiesLambdaEveryShouldCallServiceCorrectNumberOfTimes()
-        {
-            // ARRANGE
-            DefaultDaemonHost.InternalState.Add("light.correct_light", new EntityState
-            {
-                EntityId = "light.correct_light"
-            });
-
-            DefaultDaemonHost
-                .Timer()
-                .Every(TimeSpan.FromMilliseconds(20))
-                .Entities(n => n.EntityId == "light.correct_light")
-                .TurnOn()
-                .Execute();
-
-            await RunDefauldDaemonUntilCanceled();
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(4));
-            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_light"));
-        }
-
-        [Fact]
-        public async Task TimerEveryWithAttributeShouldCallServiceCorrectNumberOfTimes()
-        {
-            // ARRANGE
-            DefaultDaemonHost
-                .Timer()
-                .Every(TimeSpan.FromMilliseconds(20))
-                .Entity("light.correct_light")
-                .TurnOn()
-                    .UsingAttribute("attr", "on")
-                .Execute();
-
-            await RunDefauldDaemonUntilCanceled();
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.AtLeast(2)); // Low value due to slow cloud builds
-            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("attr", "on"), ("entity_id", "light.correct_light"));
-        }
-
-        [Fact]
-        public async Task TimerToggleShouldCallCorrectServiceCall()
-        {
-            // ARRANGE
-            DefaultDaemonHost
-                .Timer()
-                .Every(TimeSpan.FromMilliseconds(20))
-                .Entity("light.correct_light")
-                .Toggle()
-                .Execute();
-
-            await RunDefauldDaemonUntilCanceled();
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("toggle", Times.AtLeast(2)); // Less cause of slow cloud CI builds
-            DefaultHassClientMock.VerifyCallService("light", "toggle", ("entity_id", "light.correct_light"));
-        }
-
-        [Fact]
-        public async Task TimerTurnOffShouldCallCorrectServiceCall()
-        {
-            // ARRANGE
-            DefaultDaemonHost
-                .Timer()
-                .Every(TimeSpan.FromMilliseconds(20))
-                .Entity("light.correct_light")
-                .TurnOff()
-                .Execute();
-
-            await RunDefauldDaemonUntilCanceled(300);
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.AtLeast(2));
-            DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_light"));
-        }
-
-        [Fact]
         public async Task ToggleEntityCallsCorrectServiceCall()
         {
             // ARRANGE
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .Toggle()
                 .ExecuteAsync();
@@ -460,7 +343,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .TurnOff()
                 .ExecuteAsync();
@@ -477,7 +360,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
 
             // ACT
-            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonHost
+            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonApp
                .Entities(n => throw new Exception("Some error"))
                .TurnOff()
                .ExecuteAsync());
@@ -496,7 +379,7 @@ namespace NetDaemon.Daemon.Tests
             await DefaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entities(n => n?.Attribute?.test >= 100)
                 .TurnOff()
                 .ExecuteAsync();
@@ -514,7 +397,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entities(n => n?.Attribute?.not_exists == "test")
                 .TurnOff()
                 .ExecuteAsync();
@@ -531,7 +414,7 @@ namespace NetDaemon.Daemon.Tests
             await RunDefauldDaemonUntilCanceled();
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entities(n => n.EntityId.StartsWith("light.correct_entity"))
                 .TurnOff()
                 .ExecuteAsync();
@@ -549,7 +432,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity", "light.correct_entity2")
                 .TurnOff()
                 .ExecuteAsync();
@@ -566,7 +449,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .TurnOn()
                 .ExecuteAsync();
@@ -581,7 +464,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .TurnOn()
                 .WithAttribute("brightness", 100)
@@ -599,7 +482,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .TurnOn()
                 .WithAttribute("brightness", 100)
@@ -619,7 +502,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .SetState(50)
                 .ExecuteAsync();
@@ -634,7 +517,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .SetState(50)
                 .WithAttribute("attr1", "str_value")
@@ -656,7 +539,7 @@ namespace NetDaemon.Daemon.Tests
             string? actualToState = "";
             string? actualFromState = "";
             var actualEntity = "";
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on").Call((entity, to, from) =>
                 {
@@ -682,7 +565,7 @@ namespace NetDaemon.Daemon.Tests
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
             // ACT
-            DefaultDaemonHost
+            DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange(to: "off")
                 .RunScript("thescript")
@@ -700,7 +583,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultDaemonHost.InternalDelayTimeForTts = 0; // For testing
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .MediaPlayer("media_player.correct_player")
                 .Speak("a message")
                 .ExecuteAsync();
@@ -725,7 +608,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .Play()
                 .ExecuteAsync();
@@ -746,7 +629,7 @@ namespace NetDaemon.Daemon.Tests
             };
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                     .MediaPlayers(n => n.EntityId == "media_player.player")
                     .Play()
                     .ExecuteAsync();
@@ -763,7 +646,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
 
             // ACT
-            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonHost
+            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonApp
                .MediaPlayers(n => throw new Exception("Some error"))
                .Play()
                .ExecuteAsync());
@@ -779,7 +662,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .MediaPlayers(new string[] { "media_player.player" })
                 .Play()
                 .ExecuteAsync();
@@ -794,7 +677,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .Pause()
                 .ExecuteAsync();
@@ -809,7 +692,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .PlayPause()
                 .ExecuteAsync();
@@ -824,7 +707,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .Stop()
                 .ExecuteAsync();
@@ -839,7 +722,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .InputSelect("input_select.myselect")
                 .SetOption("option1")
                 .ExecuteAsync();
@@ -856,7 +739,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .InputSelects(new string[] { "input_select.myselect" })
                 .SetOption("option1")
                 .ExecuteAsync();
@@ -874,7 +757,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             DefaultDaemonHost.InternalState["input_select.myselect"] = new EntityState { EntityId = "input_select.myselect" };
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .InputSelects(n => n.EntityId == "input_select.myselect")
                 .SetOption("option1")
                 .ExecuteAsync();
@@ -894,7 +777,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            var delayResult = DefaultDaemonHost
+            var delayResult = DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange(to: "on");
 
@@ -912,7 +795,7 @@ namespace NetDaemon.Daemon.Tests
 
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
 
-            var delayResult = DefaultDaemonHost
+            var delayResult = DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange((to, _) => to?.State == "on");
 

@@ -100,13 +100,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
 
-        public IEntity Entities(Func<IEntityProperties, bool> func)
+        public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
 
-                return new EntityManager(x.Select(n => n.EntityId).ToArray(), this);
+                return new EntityManager(x.Select(n => n.EntityId).ToArray(), this, app);
             }
             catch (Exception e)
             {
@@ -115,15 +115,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public IEntity Entities(IEnumerable<string> entityIds) => new EntityManager(entityIds, this);
+        public IEntity Entities(INetDaemonApp app, IEnumerable<string> entityIds) => new EntityManager(entityIds, this, app);
 
-        public IEntity Entity(params string[] entityIds) => new EntityManager(entityIds, this);
+        public IEntity Entity(INetDaemonApp app, params string[] entityIds) => new EntityManager(entityIds, this, app);
 
-        public IFluentEvent Event(params string[] eventParams) => new FluentEventManager(eventParams, this);
+        public IFluentEvent Event(INetDaemonApp app, params string[] eventParams) => new FluentEventManager(eventParams, this);
 
-        public IFluentEvent Events(Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
+        public IFluentEvent Events(INetDaemonApp app, Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
 
-        public IFluentEvent Events(IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
+        public IFluentEvent Events(INetDaemonApp app, IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
         public EntityState? GetState(string entity)
         {
@@ -161,19 +161,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public IMediaPlayer MediaPlayer(params string[] entityIds) => new MediaPlayerManager(entityIds, this);
+        public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds) => new MediaPlayerManager(entityIds, this, app);
 
         /// <inheritdoc/>
-        public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds) => new MediaPlayerManager(entityIds, this);
+        public IMediaPlayer MediaPlayers(INetDaemonApp app, IEnumerable<string> entityIds) => new MediaPlayerManager(entityIds, this, app);
 
         /// <inheritdoc/>
-        public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
+        public IMediaPlayer MediaPlayers(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
 
-                return new MediaPlayerManager(x.Select(n => n.EntityId).ToArray(), this);
+                return new MediaPlayerManager(x.Select(n => n.EntityId).ToArray(), this, app);
             }
             catch (Exception e)
             {
@@ -183,19 +183,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public ICamera Camera(params string[] entityIds) => new CameraManager(entityIds, this);
+        public ICamera Camera(INetDaemonApp app, params string[] entityIds) => new CameraManager(entityIds, this, app);
 
         /// <inheritdoc/>
-        public ICamera Cameras(IEnumerable<string> entityIds) => new CameraManager(entityIds, this);
+        public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds) => new CameraManager(entityIds, this, app);
 
         /// <inheritdoc/>
-        public ICamera Cameras(Func<IEntityProperties, bool> func)
+        public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
 
-                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this);
+                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this, app);
             }
             catch (Exception e)
             {
@@ -316,7 +316,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await _scheduler.Stop().ConfigureAwait(false);
         }
 
-        public IScript RunScript(params string[] entityId) => new EntityManager(entityId, this);
+        public IScript RunScript(INetDaemonApp app, params string[] entityId) => new EntityManager(entityId, this, app);
 
         public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
 
@@ -365,8 +365,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             _stopped = true;
         }
-
-        public ITime Timer() => new Common.TimeManager(this);
 
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
@@ -564,18 +562,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public IFluentInputSelect InputSelect(params string[] inputSelectParams) =>
-            new InputSelectManager(inputSelectParams, this);
+        public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams) =>
+            new InputSelectManager(inputSelectParams, this, app);
 
         /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams) =>
-            new InputSelectManager(inputSelectParams, this);
+        public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams) =>
+            new InputSelectManager(inputSelectParams, this, app);
 
         /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func)
+        public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
             IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
-            return new InputSelectManager(x, this);
+            return new InputSelectManager(x, this, app);
         }
 
         /// <inheritdoc/>

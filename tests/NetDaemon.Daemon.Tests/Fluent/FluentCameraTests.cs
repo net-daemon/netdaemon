@@ -2,8 +2,6 @@ using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.Dynamic;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -30,7 +28,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "disable_motion_detection";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .DisableMotionDetection()
                 .ExecuteAsync();
@@ -48,7 +46,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "disable_motion_detection";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Cameras(new string[] { entityId })
                 .DisableMotionDetection()
                 .ExecuteAsync();
@@ -72,7 +70,7 @@ namespace NetDaemon.Daemon.Tests
             };
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                     .Cameras(n => n.EntityId == entityId)
                     .DisableMotionDetection()
                     .ExecuteAsync();
@@ -90,7 +88,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "enable_motion_detection";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .EnableMotionDetection()
                 .ExecuteAsync();
@@ -108,7 +106,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "play_stream";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .PlayStream("media_player.player", "anyformat")
                 .ExecuteAsync();
@@ -130,7 +128,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "record";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .Record("filename", 1, 2)
                 .ExecuteAsync();
@@ -153,7 +151,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "snapshot";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .Snapshot("filename")
                 .ExecuteAsync();
@@ -174,7 +172,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "turn_on";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .TurnOn()
                 .ExecuteAsync();
@@ -192,7 +190,7 @@ namespace NetDaemon.Daemon.Tests
             var service_call = "turn_off";
 
             // ACT
-            await DefaultDaemonHost
+            await DefaultDaemonApp
                 .Camera(entityId)
                 .TurnOff()
                 .ExecuteAsync();
@@ -209,7 +207,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
 
             // ACT
-            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonHost
+            var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonApp
                .Cameras(n => throw new Exception("Some error"))
                .TurnOn()
                .ExecuteAsync());

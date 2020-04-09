@@ -209,66 +209,66 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     {
     }
 
-    /// <summary>
-    ///     Time operations
-    /// </summary>
-    public interface ITime
-    {
-        /// <summary>
-        ///     Run an action once every period of time
-        /// </summary>
-        /// <param name="timeSpan">The time between runs</param>
-        ITimeItems Every(TimeSpan timeSpan);
-    }
+    // /// <summary>
+    // ///     Time operations
+    // /// </summary>
+    // public interface ITime
+    // {
+    //     /// <summary>
+    //     ///     Run an action once every period of time
+    //     /// </summary>
+    //     /// <param name="timeSpan">The time between runs</param>
+    //     ITimeItems Every(TimeSpan timeSpan);
+    // }
 
-    /// <summary>
-    ///     Entities used on time actions
-    /// </summary>
-    public interface ITimeItems
-    {
-        /// <summary>
-        ///     Use entities with lambda expression for further actions
-        /// </summary>
-        /// <param name="func">Lambda expression to filter out entities</param>
-        ITimerEntity Entities(Func<IEntityProperties, bool> func);
+    // /// <summary>
+    // ///     Entities used on time actions
+    // /// </summary>
+    // public interface ITimeItems
+    // {
+    //     /// <summary>
+    //     ///     Use entities with lambda expression for further actions
+    //     /// </summary>
+    //     /// <param name="func">Lambda expression to filter out entities</param>
+    //     ITimerEntity Entities(Func<IEntityProperties, bool> func);
 
-        /// <summary>
-        ///     Use entities from list
-        /// </summary>
-        /// <param name="entities">The entities to perform actions on</param>
-        ITimerEntity Entities(IEnumerable<string> entities);
+    //     /// <summary>
+    //     ///     Use entities from list
+    //     /// </summary>
+    //     /// <param name="entities">The entities to perform actions on</param>
+    //     ITimerEntity Entities(IEnumerable<string> entities);
 
-        /// <summary>
-        ///     Use entity or multiple entities
-        /// </summary>
-        /// <param name="entityId">Unique id of the entity provided</param>
-        ITimerEntity Entity(params string[] entityId);
-    }
+    //     /// <summary>
+    //     ///     Use entity or multiple entities
+    //     /// </summary>
+    //     /// <param name="entityId">Unique id of the entity provided</param>
+    //     ITimerEntity Entity(params string[] entityId);
+    // }
 
-    /// <summary>
-    ///     The actions to perform on time functions
-    /// </summary>
-    public interface ITimerAction
-    {
-        /// <summary>
-        ///     Excecute commands
-        /// </summary>
-        ISchedulerResult Execute();
+    // /// <summary>
+    // ///     The actions to perform on time functions
+    // /// </summary>
+    // public interface ITimerAction
+    // {
+    //     /// <summary>
+    //     ///     Excecute commands
+    //     /// </summary>
+    //     ISchedulerResult Execute();
 
-        /// <summary>
-        ///     Use attribute on entity action in time actions
-        /// </summary>
-        /// <param name="name">Name of attribute</param>
-        /// <param name="value">Value of attribute</param>
-        ITimerAction UsingAttribute(string name, object value);
-    }
+    //     /// <summary>
+    //     ///     Use attribute on entity action in time actions
+    //     /// </summary>
+    //     /// <param name="name">Name of attribute</param>
+    //     /// <param name="value">Value of attribute</param>
+    //     ITimerAction UsingAttribute(string name, object value);
+    // }
 
-    /// <summary>
-    ///     Entity timer actions
-    /// </summary>
-    public interface ITimerEntity : ITurnOff<ITimerAction>, ITurnOn<ITimerAction>, IToggle<ITimerAction>
-    {
-    }
+    // /// <summary>
+    // ///     Entity timer actions
+    // /// </summary>
+    // public interface ITimerEntity : ITurnOff<ITimerAction>, ITurnOn<ITimerAction>, IToggle<ITimerAction>
+    // {
+    // }
 
     #region Media, Play, Stop, Pause, PlayPause, Speak
 
@@ -401,6 +401,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         protected readonly INetDaemon Daemon;
 
         /// <summary>
+        ///     The daemon used in the API
+        /// </summary>
+        protected readonly INetDaemonApp App;
+
+        /// <summary>
         ///     The EntityIds used
         /// </summary>
         protected readonly IEnumerable<string> EntityIds;
@@ -415,10 +420,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="entityIds">The unique ids of the entities managed</param>
         /// <param name="daemon">The Daemon that will handle API calls to Home Assistant</param>
-        public EntityBase(IEnumerable<string> entityIds, INetDaemon daemon)
+        /// <param name="app">The Daemon App calling fluent API</param>
+        public EntityBase(IEnumerable<string> entityIds, INetDaemon daemon, INetDaemonApp app)
         {
             EntityIds = entityIds;
             Daemon = daemon;
+            App = app;
         }
 
         /// <inheritdoc/>
@@ -462,7 +469,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="entityIds">The unique ids of the entities managed</param>
         /// <param name="daemon">The Daemon that will handle API calls to Home Assistant</param>
-        public EntityManager(IEnumerable<string> entityIds, INetDaemon daemon) : base(entityIds, daemon)
+        /// <param name="app">The Daemon App calling fluent API</param>
+        public EntityManager(IEnumerable<string> entityIds, INetDaemon daemon, INetDaemonApp app) : base(entityIds, daemon, app)
         {
 
         }
@@ -489,7 +497,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 {
                     try
                     {
-
                         var entityManager = (EntityManager)_currentState.Entity!;
 
                         if (_currentState.Lambda != null)
@@ -501,7 +508,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                             }
                             catch (Exception e)
                             {
-                                Daemon.Logger.LogWarning(e, "Failed to evaluate function");
+                                Daemon.Logger.LogWarning(e, $"Failed to evaluate function in App {App.Id}, EntityId: {entityIdInn}, From: {newState?.State} To: {oldState?.State}");
                                 return;
                             }
                         }
@@ -546,7 +553,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                         }
                                         catch (Exception e)
                                         {
-                                            Daemon.Logger.LogWarning(e, "Call function error in timespan");
+                                            Daemon.Logger.LogWarning(e, $"Call function error in timespan in App {App.Id}, EntityId: {entityIdInn}, From: {newState?.State} To: {oldState?.State}");
                                         }
                                     }
 
@@ -576,19 +583,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 }
                                 catch (Exception e)
                                 {
-                                    Daemon.Logger.LogWarning(e, "Call function error");
+                                    Daemon.Logger.LogWarning(e, $"Call function error, in App {App.Id}, EntityId: {entityIdInn}, From: {newState?.State} To: {oldState?.State}");
                                 }
                             }
 
                             else if (_currentState.ScriptToCall != null)
-                                await Daemon.RunScript(_currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
+                                await Daemon.RunScript(App, _currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
                             else
                                 await entityManager.ExecuteAsync(true).ConfigureAwait(false);
                         }
                     }
                     catch (Exception e)
                     {
-                        Daemon.Logger.LogWarning(e, "Unhandled error in ListenState");
+                        Daemon.Logger.LogWarning(e, $"Unhandled error in ListenState in App {App.Id}");
                     }
 
                 });
@@ -672,21 +679,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public IStateEntity UseEntities(Func<IEntityProperties, bool> func)
         {
-            _currentState.Entity = Daemon.Entities(func);
+            _currentState.Entity = Daemon.Entities(App, func);
             return this;
         }
 
         /// <inheritdoc/>
         public IStateEntity UseEntities(IEnumerable<string> entities)
         {
-            _currentState.Entity = Daemon.Entities(entities);
+            _currentState.Entity = Daemon.Entities(App, entities);
             return this;
         }
 
         /// <inheritdoc/>
         public IStateEntity UseEntity(params string[] entityId)
         {
-            _currentState.Entity = Daemon.Entity(entityId);
+            _currentState.Entity = Daemon.Entity(App, entityId);
             return this;
         }
 
@@ -851,101 +858,104 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
     }
 
-    /// <summary>
-    ///     Handles timer features
-    /// </summary>
-    public class TimeManager : ITime, ITimeItems, ITimerEntity, ITimerAction
-    {
-        private readonly INetDaemon _daemon;
-        private readonly List<string> _entityIds = new List<string>();
-        private TimeSpan _timeSpan;
-        private EntityManager? _entityManager;
+    // /// <summary>
+    // ///     Handles timer features
+    // /// </summary>
+    // public class TimeManager : ITime, ITimeItems, ITimerEntity, ITimerAction
+    // {
+    //     private readonly INetDaemon _daemon;
+    //     private readonly INetDaemonApp _app;
+    //     private readonly List<string> _entityIds = new List<string>();
+    //     private TimeSpan _timeSpan;
+    //     private EntityManager? _entityManager;
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        /// <param name="daemon">The NetDaemon that handles API calls to Home Assistant</param>
-        public TimeManager(INetDaemon daemon)
-        {
-            _daemon = daemon;
-        }
+    //     /// <summary>
+    //     ///     Constructor
+    //     /// </summary>
+    //     /// <param name="daemon">The NetDaemon that handles API calls to Home Assistant</param>
+    //     /// <param name="app">The Daemon App calling fluent API</param>
+    //     public TimeManager(INetDaemon daemon, INetDaemonApp app)
+    //     {
+    //         _daemon = daemon;
+    //         _app = app;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerEntity Entities(Func<IEntityProperties, bool> func)
-        {
-            var x = _daemon.State.Where(func);
-            _entityIds.AddRange(x.Select(n => n.EntityId).ToArray());
-            _entityManager = new EntityManager(_entityIds.ToArray(), _daemon);
-            return this;
-        }
+    //     /// <inheritdoc/>
+    //     public ITimerEntity Entities(Func<IEntityProperties, bool> func)
+    //     {
+    //         var x = _daemon.State.Where(func);
+    //         _entityIds.AddRange(x.Select(n => n.EntityId).ToArray());
+    //         _entityManager = new EntityManager(_entityIds.ToArray(), _daemon, _app);
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerEntity Entities(IEnumerable<string> entities)
-        {
-            _entityIds.AddRange(entities);
-            _entityManager = new EntityManager(_entityIds, _daemon);
-            return this;
-        }
+    //     /// <inheritdoc/>
+    //     public ITimerEntity Entities(IEnumerable<string> entities)
+    //     {
+    //         _entityIds.AddRange(entities);
+    //         _entityManager = new EntityManager(_entityIds, _daemon, _app);
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerEntity Entity(params string[] entityIds)
-        {
-            _entityIds.AddRange(entityIds);
-            _entityManager = new EntityManager(entityIds, _daemon);
-            return this;
-        }
+    //     /// <inheritdoc/>
+    //     public ITimerEntity Entity(params string[] entityIds)
+    //     {
+    //         _entityIds.AddRange(entityIds);
+    //         _entityManager = new EntityManager(entityIds, _daemon, _app);
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimeItems Every(TimeSpan timeSpan)
-        {
-            _timeSpan = timeSpan;
-            return this;
-        }
+    //     /// <inheritdoc/>
+    //     public ITimeItems Every(TimeSpan timeSpan)
+    //     {
+    //         _timeSpan = timeSpan;
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ISchedulerResult Execute()
-        {
-            _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
+    //     /// <inheritdoc/>
+    //     public ISchedulerResult Execute()
+    //     {
+    //         _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            return _daemon.Scheduler.RunEvery(_timeSpan, async () => { await _entityManager.ExecuteAsync(true).ConfigureAwait(false); });
-        }
+    //         return _daemon.Scheduler.RunEvery(_timeSpan, async () => { await _entityManager.ExecuteAsync(true).ConfigureAwait(false); });
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerAction Toggle()
-        {
-            _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
+    //     /// <inheritdoc/>
+    //     public ITimerAction Toggle()
+    //     {
+    //         _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            _entityManager.Toggle();
-            return this;
-        }
+    //         _entityManager.Toggle();
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerAction TurnOff()
-        {
-            _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
+    //     /// <inheritdoc/>
+    //     public ITimerAction TurnOff()
+    //     {
+    //         _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            _entityManager.TurnOff();
-            return this;
-        }
+    //         _entityManager.TurnOff();
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerAction TurnOn()
-        {
-            _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
+    //     /// <inheritdoc/>
+    //     public ITimerAction TurnOn()
+    //     {
+    //         _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            _entityManager.TurnOn();
-            return this;
-        }
+    //         _entityManager.TurnOn();
+    //         return this;
+    //     }
 
-        /// <inheritdoc/>
-        public ITimerAction UsingAttribute(string name, object value)
-        {
-            _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
+    //     /// <inheritdoc/>
+    //     public ITimerAction UsingAttribute(string name, object value)
+    //     {
+    //         _ = _entityManager ?? throw new NullReferenceException($"{nameof(_entityManager)} can not be null here!");
 
-            _entityManager.WithAttribute(name, value);
-            return this;
-        }
-    }
+    //         _entityManager.WithAttribute(name, value);
+    //         return this;
+    //     }
+    // }
 
     /// <summary>
     ///     Represents data about an action in a fluent API

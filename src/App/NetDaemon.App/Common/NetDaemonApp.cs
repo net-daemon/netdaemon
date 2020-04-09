@@ -15,7 +15,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
-    public class NetDaemonApp : INetDaemonApp, INetDaemon
+    public class NetDaemonApp : INetDaemonApp, INetDaemonBase
     {
         private INetDaemon? _daemon;
 
@@ -68,33 +68,33 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Entities(func);
+            return _daemon!.Entities(this, func);
         }
 
         /// <inheritdoc/>
         public IEntity Entities(IEnumerable<string> entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Entities(entityIds);
+            return _daemon!.Entities(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IEntity Entity(params string[] entityId)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Entity(entityId);
+            return _daemon!.Entity(this, entityId);
         }
 
         /// <inheritdoc/>
-        public IFluentEvent Event(params string[] eventParams) => _daemon?.Event(eventParams) ??
+        public IFluentEvent Event(params string[] eventParams) => _daemon?.Event(this, eventParams) ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
         /// <inheritdoc/>
-        public IFluentEvent Events(Func<FluentEventProperty, bool> func) => _daemon?.Events(func) ??
+        public IFluentEvent Events(Func<FluentEventProperty, bool> func) => _daemon?.Events(this, func) ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
         /// <inheritdoc/>
-        public IFluentEvent Events(IEnumerable<string> eventParams) => _daemon?.Events(eventParams) ??
+        public IFluentEvent Events(IEnumerable<string> eventParams) => _daemon?.Events(this, eventParams) ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
         /// <inheritdoc/>
@@ -156,49 +156,49 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public IMediaPlayer MediaPlayer(params string[] entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.MediaPlayer(entityIds);
+            return _daemon!.MediaPlayer(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.MediaPlayers(entityIds);
+            return _daemon!.MediaPlayers(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.MediaPlayers(func);
+            return _daemon!.MediaPlayers(this, func);
         }
 
         /// <inheritdoc/>
         public ICamera Camera(params string[] entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Camera(entityIds);
+            return _daemon!.Camera(this, entityIds);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(IEnumerable<string> entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Cameras(entityIds);
+            return _daemon!.Cameras(this, entityIds);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(Func<IEntityProperties, bool> func)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Cameras(func);
+            return _daemon!.Cameras(this, func);
         }
 
         /// <inheritdoc/>
         public IScript RunScript(params string[] entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.RunScript(entityIds);
+            return _daemon!.RunScript(this, entityIds);
         }
 
         /// <inheritdoc/>
@@ -324,21 +324,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public IFluentInputSelect InputSelect(params string[] inputSelectParams)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.InputSelect(inputSelectParams);
+            return _daemon!.InputSelect(this, inputSelectParams);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.InputSelects(inputSelectParams);
+            return _daemon!.InputSelects(this, inputSelectParams);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.InputSelects(func);
+            return _daemon!.InputSelects(this, func);
         }
 
         /// <inheritdoc/>

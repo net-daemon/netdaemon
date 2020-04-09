@@ -12,9 +12,11 @@ public class BatteryManager : NetDaemonApp
     public string? HelloWorldSecret { get; set; }
     public override async Task InitializeAsync()
     {
-        var app = (GlobalApp)GetApp("global_app");
+        // Scheduler.RunEvery(5000, () => { var x = 0; var z = 4 / x; return Task.CompletedTask; });
+        // Entity("sun.sun").WhenStateChange(allChanges: true).Call((entityid, to, from) => throw new Exception("Test")).Execute();
+        // var app = (GlobalApp)GetApp("global_app");
 
-        Log($"The global app shows {app.SharedThing}");
+        // Log($"The global app shows {app.SharedThing}");
         // int? test = null;
         // bool testa = test.HasValue;
 
