@@ -263,8 +263,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     Logger.LogInformation(
                         hassioToken != null
-                            ? "Successfully connected to Home Assistant in hassio add-on"
-                            : $"Successfully connected to Home Assistant on host {host}:{port}");
+                            ? "Successfully connected to Home Assistant Core in Home Assistant Add-on"
+                            : $"Successfully connected to Home Assistant Core on host {host}:{port}");
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
