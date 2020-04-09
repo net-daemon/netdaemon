@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JoySoftware.HassClient" Version="0.0.30-alpha" />
+    <PackageReference Include="JoySoftware.HassClient" Version="0.0.31-alpha" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.1" />
   </ItemGroup>
 
