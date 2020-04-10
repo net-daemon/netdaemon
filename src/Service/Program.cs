@@ -6,6 +6,9 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Service
 {
@@ -13,13 +16,14 @@ namespace Service
     {
         // private const string _hassioConfigPath = "/root/src/src/Service/.config/hassio_config.json";
         private const string _hassioConfigPath = "data/options.json";
-        private static LogLevel LogLevel = LogLevel.Trace;
+        private static LogEventLevel LogLevel = LogEventLevel.Verbose;
 
         public static async Task Main(string[] args)
         {
             try
             {
-                ///
+
+
                 if (File.Exists(_hassioConfigPath))
                 {
                     var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(
@@ -28,12 +32,12 @@ namespace Service
                     {
                         Program.LogLevel = hassAddOnSettings.LogLevel switch
                         {
-                            "info" => LogLevel.Information,
-                            "debug" => LogLevel.Debug,
-                            "error" => LogLevel.Error,
-                            "warning" => LogLevel.Warning,
-                            "trace" => LogLevel.Trace,
-                            _ => LogLevel.Information
+                            "info" => LogEventLevel.Information,
+                            "debug" => LogEventLevel.Debug,
+                            "error" => LogEventLevel.Error,
+                            "warning" => LogEventLevel.Warning,
+                            "trace" => LogEventLevel.Verbose,
+                            _ => LogEventLevel.Information
                         };
                     }
                     if (hassAddOnSettings.GenerateEntitiesOnStart is object)
@@ -41,10 +45,31 @@ namespace Service
                         Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
                     }
                 }
+                else
+                {
+                    var envLogLevel = Environment.GetEnvironmentVariable("HASS_LOG_LEVEL");
+                    Program.LogLevel = envLogLevel switch
+                    {
+                        "info" => LogEventLevel.Information,
+                        "debug" => LogEventLevel.Debug,
+                        "error" => LogEventLevel.Error,
+                        "warning" => LogEventLevel.Warning,
+                        "trace" => LogEventLevel.Verbose,
+                        _ => LogEventLevel.Information
+                    };
+                }
+
+                // Setup serilog
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .Enrich.FromLogContext()
+                    .MinimumLevel.Is(Program.LogLevel)
+                    .WriteTo.Console()
+                    .CreateLogger();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                System.Console.WriteLine("Home assistant add-on config not valid json, ending add-on...");
+                Log.Fatal(e, "Home assistant add-on config not valid json, ending add-on...");
                 return;
             }
 
@@ -57,10 +82,10 @@ namespace Service
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.AddConsole(options => options.IncludeScopes = false);
-                    logging.AddDebug();
-                    logging.AddFilter("Microsoft", LogLevel.Error);
-                    logging.SetMinimumLevel(Program.LogLevel);
+                    // logging.AddConsole(options => options.IncludeScopes = false);
+                    // logging.AddDebug();
+                    // logging.AddFilter("Microsoft", LogLevel.Error);
+                    logging.AddSerilog();
                 });
     }
 }

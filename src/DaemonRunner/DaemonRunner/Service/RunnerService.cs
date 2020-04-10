@@ -109,6 +109,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                         await daemonHostTask.ConfigureAwait(false);
                                     }
                                 }
+                                catch (TaskCanceledException)
+                                {
+                                    _logger.LogInformation("Canceling NetDaemon service...");
+                                }
                                 catch (Exception e)
                                 {
                                     _logger.LogError(e, "Failed to load applications");
