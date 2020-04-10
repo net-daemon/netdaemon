@@ -508,7 +508,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                             }
                             catch (Exception e)
                             {
-                                Daemon.Logger.LogWarning(e, $"Failed to evaluate function in App {App.Id}, EntityId: {entityIdInn}, From: {newState?.State} To: {oldState?.State}");
+                                Daemon.Logger.LogWarning(e,
+                                    "Failed to evaluate function in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}", App.Id, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
                                 return;
                             }
                         }
@@ -531,7 +532,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                         if (_currentState.ForTimeSpan != TimeSpan.Zero)
                         {
                             Daemon.Logger.LogDebug(
-                                $"AndNotChangeFor statement found, delaying {_currentState.ForTimeSpan}");
+                                "AndNotChangeFor statement found, delaying {time}", _currentState.ForTimeSpan);
                             await Task.Delay(_currentState.ForTimeSpan).ConfigureAwait(false);
                             var currentState = Daemon.GetState(entityIdInn);
                             if (currentState != null && currentState.State == newState?.State)
@@ -541,7 +542,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 {
                                     // No state has changed during the period
                                     Daemon.Logger.LogDebug(
-                                        $"State same {newState?.State} during period of {_currentState.ForTimeSpan}, executing action!");
+                                        "State same {newState} during period of {time}, executing action!", $"{newState?.State}", _currentState.ForTimeSpan);
                                     // The state has not changed during the time we waited
                                     if (_currentState.FuncToCall == null)
                                         await entityManager.ExecuteAsync(true).ConfigureAwait(false);
@@ -553,7 +554,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                         }
                                         catch (Exception e)
                                         {
-                                            Daemon.Logger.LogWarning(e, $"Call function error in timespan in App {App.Id}, EntityId: {entityIdInn}, From: {newState?.State} To: {oldState?.State}");
+                                            Daemon.Logger.LogWarning(e,
+                                                "Call function error in timespan in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}",
+                                                    App.Id, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
                                         }
                                     }
 
@@ -561,19 +564,27 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 else
                                 {
                                     Daemon.Logger.LogDebug(
-                                        $"State same {newState?.State} but different state changed: {currentState?.LastChanged}, expected {newState?.LastChanged}");
+                                        "State same {newState} but different state changed: {currentLastChanged}, expected {newLastChanged}",
+                                            $"{newState?.State}",
+                                            currentState?.LastChanged,
+                                            newState?.LastChanged);
                                 }
                             }
                             else
                             {
                                 Daemon.Logger.LogDebug(
-                                    $"State not same, do not execute for statement. {newState?.State} found, expected {currentState?.State}");
+                                    "State not same, do not execute for statement. {newState} found, expected {currentState}",
+                                    $"{newState?.State}",
+                                    $"{currentState?.State}");
                             }
                         }
                         else
                         {
                             Daemon.Logger.LogDebug(
-                                $"State {newState?.State} expected from {oldState?.State}, executing action!");
+                                "State {newState} expected from {oldState}, executing action!",
+                                    $"{newState?.State}",
+                                    $"{oldState?.State}"
+                                    );
 
                             if (_currentState.FuncToCall != null)
                             {
@@ -583,7 +594,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 }
                                 catch (Exception e)
                                 {
-                                    Daemon.Logger.LogWarning(e, $"Call function error, in App {App.Id}, EntityId: {entityIdInn}, From: {newState?.State} To: {oldState?.State}");
+                                    Daemon.Logger.LogWarning(e,
+                                               "Call function error in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}",
+                                                   App.Id, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
+
                                 }
                             }
 
@@ -595,7 +609,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     }
                     catch (Exception e)
                     {
-                        Daemon.Logger.LogWarning(e, $"Unhandled error in ListenState in App {App.Id}");
+                        Daemon.Logger.LogWarning(e, "Unhandled error in ListenState in App {appId}", App.Id);
                     }
 
                 });

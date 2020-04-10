@@ -1,4 +1,4 @@
-app:
+my_app:
     class: BatteryManager
     # HelloWorldSecret: !secret test_secret
     dependencies:

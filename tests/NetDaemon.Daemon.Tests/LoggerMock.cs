@@ -33,5 +33,37 @@ namespace NetDaemon.Daemon.Tests
                     It.IsAny<Exception>(),
                     It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), times);
         }
+
+        /// <summary>
+        ///     Assert if the log has been used at times
+        /// </summary>
+        /// <param name="level">The loglevel being checked</param>
+        /// <param name="times">The Times it has been logged</param>
+        public void AssertLogged(LogLevel level, string message, Times times)
+        {
+            MockLogger.Verify(
+                x => x.Log(
+                    level,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString() == message),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), times);
+        }
+
+        /// <summary>
+        ///     Assert if the log has been used at times
+        /// </summary>
+        /// <param name="level">The loglevel being checked</param>
+        /// <param name="times">The Times it has been logged</param>
+        public void AssertLogged(LogLevel level, Exception exception, string message, Times times)
+        {
+            MockLogger.Verify(
+                x => x.Log(
+                    level,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString() == message),
+                    exception,
+                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), times);
+        }
     }
 }

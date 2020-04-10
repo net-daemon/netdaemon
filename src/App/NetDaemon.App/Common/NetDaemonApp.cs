@@ -147,10 +147,89 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public void Log(string message, LogLevel level = LogLevel.Information) => Logger.Log(level, message);
+        public void Log(string message) => Log(LogLevel.Information, message);
 
         /// <inheritdoc/>
-        public void Log(string message, Exception exception, LogLevel level = LogLevel.Information) => Logger.Log(level, exception, message);
+        public void LogWarning(string message) => Log(LogLevel.Warning, message);
+
+        /// <inheritdoc/>
+        public void LogError(string message) => Log(LogLevel.Error, message);
+
+        /// <inheritdoc/>
+        public void LogTrace(string message) => Log(LogLevel.Trace, message);
+
+        /// <inheritdoc/>
+        public void LogDebug(string message) => Log(LogLevel.Debug, message);
+
+        /// <inheritdoc/>
+        public void Log(Exception exception, string message) => Log(LogLevel.Information, exception, message);
+        /// <inheritdoc/>
+        public void LogWarning(Exception exception, string message) => Log(LogLevel.Warning, exception, message);
+        /// <inheritdoc/>
+        public void LogError(Exception exception, string message) => Log(LogLevel.Error, exception, message);
+        /// <inheritdoc/>
+        public void LogDebug(Exception exception, string message) => Log(LogLevel.Debug, exception, message);
+        /// <inheritdoc/>
+        public void LogTrace(Exception exception, string message) => Log(LogLevel.Trace, exception, message);
+
+        /// <inheritdoc/>
+        public void Log(LogLevel level, string message, params object[] param)
+        {
+            if (param is object && param.Length > 0)
+            {
+                var result = param.Prepend(Id).ToArray();
+                Logger.Log(level, $"  {{Id}}: {message}", result);
+            }
+            else
+            {
+                Logger.Log(level, $"  {{Id}}: {message}", new object[] { Id ?? "" });
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Log(string message, params object[] param) => Log(LogLevel.Information, message, param);
+
+        /// <inheritdoc/>
+        public void LogWarning(string message, params object[] param) => Log(LogLevel.Warning, message, param);
+
+        /// <inheritdoc/>
+        public void LogError(string message, params object[] param) => Log(LogLevel.Error, message, param);
+
+        /// <inheritdoc/>
+        public void LogDebug(string message, params object[] param) => Log(LogLevel.Debug, message, param);
+
+        /// <inheritdoc/>
+        public void LogTrace(string message, params object[] param) => Log(LogLevel.Trace, message, param);
+
+
+        /// <inheritdoc/>
+        public void Log(LogLevel level, Exception exception, string message, params object[] param)
+        {
+            if (param is object && param.Length > 0)
+            {
+                var result = param.Prepend(Id).ToArray();
+                Logger.Log(level, exception, $"  {{Id}}: {message}", result);
+            }
+            else
+            {
+                Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] { Id ?? "" });
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Log(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
+
+        /// <inheritdoc/>
+        public void LogWarning(Exception exception, string message, params object[] param) => Log(LogLevel.Warning, exception, message, param);
+
+        /// <inheritdoc/>
+        public void LogError(Exception exception, string message, params object[] param) => Log(LogLevel.Error, exception, message, param);
+
+        /// <inheritdoc/>
+        public void LogDebug(Exception exception, string message, params object[] param) => Log(LogLevel.Debug, exception, message, param);
+
+        /// <inheritdoc/>
+        public void LogTrace(Exception exception, string message, params object[] param) => Log(LogLevel.Trace, exception, message, param);
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(params string[] entityIds)
