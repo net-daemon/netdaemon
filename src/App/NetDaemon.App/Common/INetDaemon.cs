@@ -377,6 +377,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     Selects one or more events to do action on
         /// </summary>
+        /// <param name="app">The Daemon App calling fluent API</param>
         /// <param name="eventParams">Events</param>
         IFluentEvent Event(INetDaemonApp app, params string[] eventParams);
 
