@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Service
 {
@@ -64,7 +65,7 @@ namespace Service
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
                     .MinimumLevel.Is(Program.LogLevel)
-                    .WriteTo.Console()
+                    .WriteTo.Console(theme: AnsiConsoleTheme.Literate)
                     .CreateLogger();
             }
             catch (Exception e)

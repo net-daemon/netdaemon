@@ -36,7 +36,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             if (_daemonHost == null)
                 return;
 
-            _logger.LogInformation("Stopping netdaemon...");
+            _logger.LogInformation("Stopping NetDaemon...");
             await _daemonHost.Stop().ConfigureAwait(false);
 
             await Task.WhenAny(_daemonHost.Stop(), Task.Delay(1000, cancellationToken)).ConfigureAwait(false);
@@ -46,7 +46,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         {
             try
             {
-                _logger.LogInformation($"Starting netdaemon (version {_version})...");
+                _logger.LogInformation($"Starting NeDaemon (version {_version})...");
 
                 var config = await ReadConfigAsync();
 
@@ -120,7 +120,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             }
                             else
                             {
-                                _logger.LogWarning("Home assistant still unavailable, retrying in 40 seconds...");
+                                _logger.LogWarning("Home Assistant Core still unavailable, retrying in 40 seconds...");
                             }
                         }
                     }
@@ -128,7 +128,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     {
                         if (!stoppingToken.IsCancellationRequested)
                         {
-                            _logger.LogWarning("Home assistant disconnected!, retrying in 40 seconds...");
+                            _logger.LogWarning("Home Assistant Core disconnected!, retrying in 40 seconds...");
                         }
                     }
 
@@ -142,10 +142,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             } // Normal exit
             catch (Exception e)
             {
-                _logger.LogError(e, "NetDaemon had unhandled exception, closing..");
+                _logger.LogError(e, "NetDaemon had unhandled exception, closing...");
             }
 
-            _logger.LogInformation("End netdaemon..");
+            _logger.LogInformation("Netdaemon exited!");
         }
 
         private async Task<HostConfig?> ReadConfigAsync()
