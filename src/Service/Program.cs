@@ -65,7 +65,7 @@ namespace Service
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
                     .MinimumLevel.Is(Program.LogLevel)
-                    .WriteTo.Console(theme: AnsiConsoleTheme.Literate)
+                    .WriteTo.Console(theme: AnsiConsoleTheme.Code, applyThemeToRedirectedOutput: true)
                     .CreateLogger();
             }
             catch (Exception e)
