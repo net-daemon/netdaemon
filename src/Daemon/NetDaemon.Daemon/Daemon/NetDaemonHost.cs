@@ -110,7 +110,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Failed to select entities using func");
+                Logger.LogError(e, "Failed to select entities using func in app {appId}", app.Id);
                 throw;
             }
         }
@@ -177,7 +177,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Failed to select mediaplayers func");
+                Logger.LogError(e, "Failed to select mediaplayers func in app {appId}", app.Id);
                 throw;
             }
         }
@@ -199,7 +199,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Failed to select camera func");
+                Logger.LogError(e, "Failed to select camera func in app {appId}", app.Id);
                 throw;
             }
         }
@@ -245,7 +245,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     if (!connectResult)
                     {
                         Connected = false;
-                        Logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall} seconds...");
+                        Logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
                         await _hassClient.CloseAsync().ConfigureAwait(false);
                         await Task.Delay(_reconnectIntervall, cancellationToken).ConfigureAwait(false);
 
@@ -264,7 +264,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     Logger.LogInformation(
                         hassioToken != null
                             ? "Successfully connected to Home Assistant Core in Home Assistant Add-on"
-                            : $"Successfully connected to Home Assistant Core on host {host}:{port}");
+                            : "Successfully connected to Home Assistant Core on host {host}:{port}", host, port);
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
@@ -341,7 +341,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Failed to set state");
+                Logger.LogError(e, "Failed to set state for entity {entityId}", entityId);
                 throw;
             }
         }

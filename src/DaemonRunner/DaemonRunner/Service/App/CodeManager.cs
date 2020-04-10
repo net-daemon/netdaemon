@@ -89,7 +89,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 }
                 catch (Exception e)
                 {
-                    _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall funcition");
+                    _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp.Id);
                 }
             });
         }
@@ -118,7 +118,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     }
                     catch (Exception e)
                     {
-                        _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function");
+                        _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp);
                     }
                 });
         }
@@ -249,7 +249,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     if (!appInstance.IsEnabled)
                     {
                         appInstance.Dispose();
-                        host!.Logger.LogInformation($"Skipped disabled app {appInstance.GetType().Name}");
+                        host!.Logger.LogInformation("Skipped disabled app class {class}", appInstance.GetType().Name);
                         continue;
                     }
 
@@ -285,7 +285,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             {
                 await app.InitializeAsync().ConfigureAwait(false);
                 app.HandleAttributeInitialization(host!);
-                host!.Logger.LogInformation($"Successfully loaded app {app.GetType().Name}");
+                host!.Logger.LogInformation("Successfully loaded app {appId} ({class})", app.Id, app.GetType().Name);
             }
 
             _instanciatedDaemonApps.AddRange(result);

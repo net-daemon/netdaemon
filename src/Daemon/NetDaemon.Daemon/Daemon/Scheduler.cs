@@ -109,7 +109,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 if (timeSpan > stopWatch.Elapsed)
                 {
                     var diff = timeSpan.Subtract(stopWatch.Elapsed);
-                    _logger.LogTrace($"RunEvery, Time: {_timeManager!.Current}, Span: {timeSpan},  Delay {diff}");
+                    _logger.LogTrace("RunEvery, Time: {time}, Span: {timeSpan},  Delay {diff}", _timeManager!.Current, timeSpan, diff);
                     await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
                 }
                 else
@@ -179,7 +179,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             while (!linkedCts.IsCancellationRequested)
             {
                 var diff = CalculateDailyTimeBetweenNowAndTargetTime(timeOfDayToTrigger);
-                _logger.LogTrace($"RunDaily, Time: {_timeManager!.Current}, parsed time: {timeOfDayToTrigger},  Delay {diff}");
+                _logger.LogTrace("RunDaily, Time: {time}, parsed time: {timeOfDayToTrigger},  Delay {diff}", _timeManager!.Current, timeOfDayToTrigger, diff);
                 await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
 
                 if (runOnDays != null)
@@ -188,7 +188,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     {
                         try
                         {
-                            _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
+                            _logger.LogTrace("RunDaily, Time: Invoke function {time}, parsed time: {timeOfDayToTrigger}", _timeManager!.Current, timeOfDayToTrigger);
                             await func.Invoke().ConfigureAwait(false);
                         }
                         catch (Exception e)
@@ -197,13 +197,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         }
                     }
                     else
-                        _logger.LogTrace($"RunDaily, Time: {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}, Not run, due to dayofweek");
+                        _logger.LogTrace("RunDaily, Time: {time}, parsed time: {timeOfDayToTrigger}, Not run, due to dayofweek", _timeManager!.Current, timeOfDayToTrigger);
                 }
                 else
                 {
                     try
                     {
-                        _logger.LogTrace($"RunDaily, Time: Invoke function {_timeManager!.Current}, parsed time: {timeOfDayToTrigger}");
+                        _logger.LogTrace("RunDaily, Time: Invoke function {time}, parsed time: {timeOfDayToTrigger}", _timeManager!.Current, timeOfDayToTrigger);
                         // No constraints on day of week
                         await func.Invoke().ConfigureAwait(false);
                     }
@@ -239,7 +239,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 var now = _timeManager?.Current;
                 var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
-                _logger.LogTrace($"RunEveryMinute, Delay {diff}");
+                _logger.LogTrace("RunEveryMinute, Delay {diff}", diff);
                 await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
                 try
                 {
@@ -279,7 +279,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             using CancellationTokenSource linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
 
-            _logger.LogTrace($"RunIn, Delay {timeSpan}");
+            _logger.LogTrace("RunIn, Delay {timeSpan}", timeSpan);
             await _timeManager!.Delay(timeSpan, linkedCts.Token).ConfigureAwait(false);
             try
             {
