@@ -103,7 +103,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             // ASSERT
             var x = new HostConfig
             {
-                LoggingLevel = LogLevel.Information,
                 Token = "1234",
                 Host = "host",
                 Port = 1234,
@@ -114,7 +113,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var obj = JsonSerializer.Serialize<HostConfig>(x);
 
-            Assert.Contains("log_level", obj);
             Assert.Contains("token", obj);
             Assert.Contains("host", obj);
             Assert.Contains("port", obj);
