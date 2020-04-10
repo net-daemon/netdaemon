@@ -1,5 +1,5 @@
 
-ARG BUILD_FROM=hassioaddons/base-amd64:5.0.3
+ARG BUILD_FROM=hassioaddons/base-amd64:7.1.0
 #ARG BUILD_FROM=alpine
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine as build
@@ -12,7 +12,7 @@ RUN \
     apk add --no-cache git \
     && git clone https://github.com/net-daemon/netdaemon.git \
     && cd netdaemon \
-    && git checkout dev
+    && git checkout color_logging_again
 
 # Build a self contained executable and trim the executable
 RUN \
@@ -35,15 +35,22 @@ RUN \
 # STAGE 2: Include binary in target add-on container
 FROM ${BUILD_FROM} AS runtime
 
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Build arguments
 ARG BUILD_ARCH
 
 # Copy binary and the config from build container
 COPY --from=build /netdaemon/bin/publish /daemon
+RUN chmod +x /daemon/Service
+
+# Copy root filesystem
+COPY rootfs /
 
 COPY install_dotnet_dep.sh /install_dotnet_dep.sh
 
-# Install .net core runtime deps
+# # Install .net core runtime deps
 RUN chmod +x /install_dotnet_dep.sh && /install_dotnet_dep.sh
 
 # Configure web servers to bind to port 80 when present
@@ -55,7 +62,7 @@ ENV ASPNETCORE_URLS=http://+:80 \
 
 ENV HASS_DAEMONAPPFOLDER /config/netdaemon
 
-CMD [ "/daemon/Service" ]
+# CMD [ "/bin/bash /daemon/run.sh" ]
 
 #
 # LABEL target docker image

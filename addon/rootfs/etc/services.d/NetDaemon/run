@@ -1,0 +1,11 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# NetDaemon Add-on
+# Starts NetDaemon
+# ==============================================================================
+
+cd /daemon || bashio::exit.nok "Could not change directory to Node-RED"
+
+bashio::log.info "Starting NetDaemon..."
+
+exec ./Service
