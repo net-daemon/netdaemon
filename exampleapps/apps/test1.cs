@@ -13,7 +13,8 @@ public class GlobalApp : NetDaemonApp
     public override async Task InitializeAsync()
     {
         SharedThing = "Hello world";
-
+        Log("Logging from global app");
+        LogError("OMG SOMETING IS WRONG {error}", "The error!");
     }
 }
 

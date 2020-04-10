@@ -1,21 +1,108 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
     public class NetDaemonApptests
     {
+        private readonly LoggerMock _logMock;
         private Mock<INetDaemon> _netDaemonMock;
+
+        private const string appTemplate = "  app: ";
         private JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
 
         public NetDaemonApptests()
         {
+            _logMock = new LoggerMock();
             _netDaemonMock = new Mock<INetDaemon>();
+            _netDaemonMock.SetupGet(n => n.Logger).Returns(_logMock.Logger);
+
             _app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
             _app.StartUpAsync(_netDaemonMock.Object);
+            _app.Id = "app";
+        }
+
+
+        [Theory]
+        [InlineData(LogLevel.Information, "Log")]
+        [InlineData(LogLevel.Warning, "LogWarning")]
+        [InlineData(LogLevel.Error, "LogError")]
+        [InlineData(LogLevel.Trace, "LogTrace")]
+        [InlineData(LogLevel.Debug, "LogDebug")]
+        public void LogMessageWithDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
+        {
+            // ARRANGE
+            var message = "message";
+            MethodInfo? methodInfo;
+
+            // ACT
+            methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string) });
+
+            methodInfo?.Invoke(_app, new object[] { message });
+            // ASSERT
+            _logMock.AssertLogged(level, appTemplate + message, Times.Once());
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Information, "Log")]
+        [InlineData(LogLevel.Warning, "LogWarning")]
+        [InlineData(LogLevel.Error, "LogError")]
+        [InlineData(LogLevel.Trace, "LogTrace")]
+        [InlineData(LogLevel.Debug, "LogDebug")]
+        public void LogMessageWithParamsAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
+        {
+            // ARRANGE
+            var message = "Hello {name}";
+
+            // ACT
+            var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string), typeof(object[]) });
+
+            methodInfo?.Invoke(_app, new object[] { message, new object[] { "Bob" } });
+            // ASSERT
+            _logMock.AssertLogged(level, appTemplate + "Hello Bob", Times.Once());
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Information, "Log")]
+        [InlineData(LogLevel.Warning, "LogWarning")]
+        [InlineData(LogLevel.Error, "LogError")]
+        [InlineData(LogLevel.Trace, "LogTrace")]
+        [InlineData(LogLevel.Debug, "LogDebug")]
+        public void LogMessageWithParamsExceptionAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
+        {
+            // ARRANGE
+            var message = "Hello {name}";
+            var exception = new NullReferenceException("Null");
+            // ACT
+            var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string), typeof(object[]) });
+
+            methodInfo?.Invoke(_app, new object[] { exception, message, new object[] { "Bob" } });
+            // ASSERT
+            _logMock.AssertLogged(level, exception, appTemplate + "Hello Bob", Times.Once());
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Information, "Log")]
+        [InlineData(LogLevel.Warning, "LogWarning")]
+        [InlineData(LogLevel.Error, "LogError")]
+        [InlineData(LogLevel.Trace, "LogTrace")]
+        [InlineData(LogLevel.Debug, "LogDebug")]
+        public void LogMessageWithExceptionAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
+        {
+            // ARRANGE
+            var message = "message";
+            var exception = new NullReferenceException("Null");
+            // ACT
+            var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string) });
+
+            methodInfo?.Invoke(_app, new object[] { exception, message });
+            // ASSERT
+            _logMock.AssertLogged(level, exception, appTemplate + message, Times.Once());
         }
 
         [Fact]
