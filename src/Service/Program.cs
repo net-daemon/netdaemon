@@ -82,14 +82,16 @@ namespace Service
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services => { services.AddHostedService<RunnerService>(); })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    // logging.AddConsole(options => options.IncludeScopes = false);
-                    // logging.AddDebug();
-                    // logging.AddFilter("Microsoft", LogLevel.Error);
-                    logging.AddSerilog();
-                });
+                .UseSerilog()
+                .ConfigureServices(services => { services.AddHostedService<RunnerService>(); });
+        // .ConfigureLogging(logging =>
+        // {
+        //     logging.ClearProviders();
+        //     // logging.AddConsole(options => options.IncludeScopes = false);
+        //     // logging.AddDebug();
+        //     // logging.AddFilter("Microsoft", LogLevel.Error);
+        //     logging.AddSerilog();
+        // }
+        // );
     }
 }
