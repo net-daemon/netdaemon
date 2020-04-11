@@ -67,26 +67,31 @@ namespace Service
                     .MinimumLevel.Is(Program.LogLevel)
                     .WriteTo.Console(theme: AnsiConsoleTheme.Code)
                     .CreateLogger();
+
+                CreateHostBuilder(args).Build().Run();
             }
             catch (Exception e)
             {
                 Log.Fatal(e, "Home assistant add-on config not valid json, ending add-on...");
-                return;
             }
-
-            CreateHostBuilder(args).Build().Run();
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services => { services.AddHostedService<RunnerService>(); })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    // logging.AddConsole(options => options.IncludeScopes = false);
-                    // logging.AddDebug();
-                    // logging.AddFilter("Microsoft", LogLevel.Error);
-                    logging.AddSerilog();
-                });
+                .UseSerilog()
+                .ConfigureServices(services => { services.AddHostedService<RunnerService>(); });
+        // .ConfigureLogging(logging =>
+        // {
+        //     logging.ClearProviders();
+        //     // logging.AddConsole(options => options.IncludeScopes = false);
+        //     // logging.AddDebug();
+        //     // logging.AddFilter("Microsoft", LogLevel.Error);
+        //     logging.AddSerilog();
+        // }
+        // );
     }
 }
