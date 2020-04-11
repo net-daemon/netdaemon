@@ -16,7 +16,7 @@ namespace Service
     internal class Program
     {
         // private const string _hassioConfigPath = "/root/src/src/Service/.config/hassio_config.json";
-        private const string _hassioConfigPath = "data/options.json";
+        private const string _hassioConfigPath = "/data/options.json";
         private static LogEventLevel LogLevel = LogEventLevel.Verbose;
 
         public static async Task Main(string[] args)
