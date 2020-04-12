@@ -181,6 +181,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             _loadedDaemonApps = new List<Type>(100);
             _instanciatedDaemonApps = new List<INetDaemonApp>(100);
 
+            _logger.LogInformation("Loading code and configuration from {path}", Path.GetFullPath(codeFolder));
+
             _yamlConfig = new YamlConfig(codeFolder);
 
             LoadLocalAssemblyApplicationsForDevelopment();
@@ -237,7 +239,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             CompileScriptsInCodeFolder();
 
             var result = new List<INetDaemonApp>();
-            foreach (string file in _yamlConfig.GetAllConfigFilePaths())
+            var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths();
+
+            if (allConfigFilePaths.Count() == 0)
+            {
+                _logger.LogWarning("No yaml configuration files found, please add files to [netdaemonfolder]/apps");
+            }
+            foreach (string file in allConfigFilePaths)
             {
                 var yamlAppConfig = new YamlAppConfig(DaemonAppTypes, File.OpenText(file), _yamlConfig, file);
 
@@ -380,7 +388,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             using (var peStream = new MemoryStream())
             {
-                foreach (var csFile in GetCsFiles(_codeFolder))
+
+                var csFiles = GetCsFiles(_codeFolder);
+                if (csFiles.Count() == 0 && _loadedDaemonApps.Count() == 0)
+                {
+                    // Only log when not have locally built assemblies, typically in dev environment
+                    _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                }
+
+                foreach (var csFile in csFiles)
                 {
                     var sourceText = SourceText.From(File.ReadAllText(csFile));
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
