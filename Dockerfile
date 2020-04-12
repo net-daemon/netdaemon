@@ -1,6 +1,11 @@
 # Build the NetDaemon with build container
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200-alpine as build
 
+# From buildx
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+# Add bash
 RUN apk add  \
     bash
 
