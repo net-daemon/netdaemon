@@ -2,15 +2,13 @@
 
 cd /tmp
 
-ARC=$(uname -m)
+echo -e "\033[31mBuilding NetDaemon for platform $TARGETPLATFORM\033[0m" >&2
 
-echo "Building NetDaemon for platform $ARC"
-
-if [ "$ARC" == "armhf" ]; then
+if [ "$TARGETPLATFORM" == "linux/arm/v7" ]; then
     export RID="linux-arm"
-elif [ "$ARC" == "aarch64" ]; then
+elif [ "$TARGETPLATFORM" == "linux/arm64" ]; then
     export RID="linux-arm"
-elif [ "$ARC" == "x86_64" ]; then
+elif [ "$TARGETPLATFORM" == "linux/amd64" ]; then
     export RID="linux-x64"
 else
     echo 'NOT VALID ARCHITECTURE' && exit 1
