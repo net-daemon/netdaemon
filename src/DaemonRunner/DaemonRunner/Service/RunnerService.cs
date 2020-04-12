@@ -53,6 +53,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 if (config == null)
                 {
                     _logger.LogError("No config specified, file or environment variables! Exiting...");
+
                     return;
                 }
 
