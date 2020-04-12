@@ -1,11 +1,11 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv /bin/bash
+
 # ==============================================================================
-# NetDaemon Add-on
+# NetDaemon Service
 # Starts NetDaemon
 # ==============================================================================
+cd /daemon || echo -e "\033[31mCould not change directory to daemon\033[0m" >&2
 
-cd /daemon || bashio::exit.nok "Could not change directory to Node-RED"
+echo -e "\033[32mStarting NetDaemon...\033[0m" >&2
 
-bashio::log.info "Starting NetDaemon..."
-
-exec ./Service
+./Service
