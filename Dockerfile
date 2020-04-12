@@ -1,8 +1,13 @@
 # Build the NetDaemon with build container
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200-alpine as build
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+
 RUN apk add  \
     bash
+
 
 # Copy the source to docker container
 COPY ./src /tmp/src
