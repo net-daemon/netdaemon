@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a bug with NetDaemon
+    url: https://github.com/net-daemon/netdaemon/issues
+    about: This is the main issue tracker for NetDaemon. Please report issues with the NetDaemon there.
+  - name: Report incorrect or missing information on the docs
+    url: https://github.com/net-daemon/docs/issues
+    about: Our documentation has its own issue tracker. Please report issues with the website there or even better contribute a PR.
+  - name: I have a question or need support
+    url: https://discord.gg/K3xwfcX
+    about: Joint the Discord server to get support from the community.
+  - name: Feature Request
+    url: https://discord.gg/K3xwfcX
+    about: Please join the Discord server and ask for a feature in the feature request channel
+  - name: I'm unsure where to go
+    url: https://discord.gg/K3xwfcX
+    about: If you are unsure where to go, then joining our chat in Discord is recommended; Just ask!
