@@ -203,9 +203,68 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             host.ListenCompanionServiceCall("reload_apps", async (_) => await ReloadApplicationsAsync(host));
 
+            RegisterAppSwitchesAndTheirStates(host);
+
             if (discoverServicesOnStartup)
             {
                 await InstanceAndInitApplications(host);
+            }
+        }
+
+        private void RegisterAppSwitchesAndTheirStates(INetDaemonHost host)
+        {
+            host.ListenServiceCall("switch", "turn_on", async (data) =>
+            {
+                await SetStateOnDaemonAppSwitch("on", data);
+            });
+
+            host.ListenServiceCall("switch", "turn_off", async (data) =>
+            {
+                await SetStateOnDaemonAppSwitch("off", data);
+            });
+
+            host.ListenServiceCall("switch", "toggle", async (data) =>
+            {
+                try
+                {
+                    string? entityId = data?.entity_id;
+                    if (entityId is null)
+                        return;
+
+                    var currentState = host.GetState(entityId)?.State as string;
+
+                    if (currentState == "on")
+                        await SetStateOnDaemonAppSwitch("off", data);
+                    else
+                        await SetStateOnDaemonAppSwitch("on", data);
+
+                }
+                catch (System.Exception e)
+                {
+                    _logger.LogWarning(e, "Failed to set state from netdaemon switch");
+                }
+            });
+
+            async Task SetStateOnDaemonAppSwitch(string state, dynamic? data)
+            {
+                string? entityId = data?.entity_id;
+                if (entityId is null)
+                    return;
+
+                if (!entityId.StartsWith("switch.netdaemon_"))
+                    return; // We only want app switches
+
+                List<(string, object)>? attributes = null;
+
+                var entityAttributes = host.GetState(entityId)?.Attribute as IDictionary<string, object>;
+
+                if (entityAttributes is object)
+                    attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
+
+                if (attributes is object)
+                    await host.SetState(entityId, state, attributes.ToArray());
+                else
+                    await host.SetState(entityId, state);
             }
         }
 
