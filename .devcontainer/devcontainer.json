@@ -32,6 +32,7 @@
 		"ms-dotnettools.csharp",
 		"formulahendry.dotnet-test-explorer",
 		"k--kato.docomment",
-		"ryanluker.vscode-coverage-gutters"
+		"ryanluker.vscode-coverage-gutters",
+		"eamodio.gitlens"
 	]
 }

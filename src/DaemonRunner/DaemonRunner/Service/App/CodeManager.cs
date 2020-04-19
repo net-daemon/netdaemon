@@ -282,6 +282,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 _loadedDaemonApps.Clear();
 
                 CompileScriptsInCodeFolder();
+                RegisterAppSwitchesAndTheirStates(host);
                 await InstanceAndInitApplications(host);
             }
             catch (System.Exception e)
