@@ -8,6 +8,8 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Tests
 {
+    public class FluentTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+
     public class FluentEventTests
     {
         [Fact]
@@ -16,7 +18,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
             dynamic dynObject = new ExpandoObject();
@@ -56,7 +58,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             app.StartUpAsync(daemonHost);
 
             var cancelSource = hcMock.GetSourceWithTimeout();
@@ -72,7 +74,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
             dynamic dynObject = new ExpandoObject();
@@ -112,7 +114,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
             dynamic dynObject = new ExpandoObject();
@@ -152,7 +154,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
             dynamic dynObject = new ExpandoObject();
@@ -192,7 +194,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
             dynamic dynObject = new ExpandoObject();
@@ -231,7 +233,7 @@ namespace NetDaemon.Daemon.Tests
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
