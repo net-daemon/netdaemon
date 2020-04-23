@@ -11,7 +11,12 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
-    public class NetDaemonTests : DaemonHostTestaBase
+    public class HostTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp
+    {
+
+    }
+
+    public class NetDaemonTests : DaemonHostTestBase
     {
         public NetDaemonTests() : base()
         {
@@ -532,7 +537,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void RegisterAppShouldReturnCorrectAppWhenUsingGetApp()
         {
             // ARRANGE
-            DefaultDaemonHost.RegisterAppInstance("appx", new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp());
+            DefaultDaemonHost.RegisterAppInstance("appx", new HostTestApp());
             // ACT
             var theApp = DefaultDaemonHost.GetApp("appx");
 
@@ -555,7 +560,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void ClearShouldReturnNullGetApp()
         {
             // ARRANGE
-            DefaultDaemonHost.RegisterAppInstance("appx", new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp());
+            DefaultDaemonHost.RegisterAppInstance("appx", new HostTestApp());
             var theApp = DefaultDaemonHost.GetApp("appx");
             Assert.NotNull(theApp);
 

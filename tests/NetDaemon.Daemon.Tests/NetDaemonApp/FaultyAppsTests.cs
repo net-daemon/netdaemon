@@ -14,7 +14,9 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class FaultyAppTests : DaemonHostTestaBase
+    public class DaemonAppTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+
+    public class FaultyAppTests : DaemonHostTestBase
     {
         private readonly JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
 
@@ -22,7 +24,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public FaultyAppTests() : base()
         {
 
-            _app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            _app = new DaemonAppTestApp();
             _app.StartUpAsync(DefaultDaemonHost);
 
         }

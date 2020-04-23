@@ -15,7 +15,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
-    public class NetDaemonApp : INetDaemonApp, INetDaemonBase
+    public abstract class NetDaemonApp : INetDaemonApp, INetDaemonBase
     {
         private INetDaemon? _daemon;
 

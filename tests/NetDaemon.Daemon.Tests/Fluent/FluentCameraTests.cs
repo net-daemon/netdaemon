@@ -14,7 +14,7 @@ namespace NetDaemon.Daemon.Tests
     ///     Mainly the tests checks if correct underlying call to "CallService"
     ///     has been made.
     /// </remarks>
-    public class FluentCameraTests : DaemonHostTestaBase
+    public class FluentCameraTests : DaemonHostTestBase
     {
         public FluentCameraTests() : base()
         {
