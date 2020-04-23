@@ -10,7 +10,7 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
-    public class DataRepositoryTests : DaemonHostTestaBase
+    public class DataRepositoryTests : DaemonHostTestBase
     {
         public static readonly string DataReposityryPath =
             Path.Combine(AppContext.BaseDirectory, "datarepository");
