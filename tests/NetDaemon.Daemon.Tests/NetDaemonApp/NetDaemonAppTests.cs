@@ -8,6 +8,8 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
+    public class AppTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+
     public class NetDaemonApptests
     {
         private readonly LoggerMock _logMock;
@@ -22,7 +24,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _netDaemonMock = new Mock<INetDaemon>();
             _netDaemonMock.SetupGet(n => n.Logger).Returns(_logMock.Logger);
 
-            _app = new JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp();
+            _app = new AppTestApp();
             _app.StartUpAsync(_netDaemonMock.Object);
             _app.Id = "app";
         }
