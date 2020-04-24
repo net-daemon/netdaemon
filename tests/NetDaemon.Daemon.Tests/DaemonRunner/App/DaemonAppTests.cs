@@ -89,7 +89,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ARRANGE
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
-            var yamlConfig = "app:\n\tclass: AssmeblyDaemonApp";
+            var yamlConfig = "app:\n  class: AssmeblyDaemonApp";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             // ASSERT
@@ -104,7 +104,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ARRANGE
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
-            var yamlConfig = "app:\n\tclass: NotFoundApp";
+            var yamlConfig = "app:\n  class: NotFoundApp";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             // ASSERT
