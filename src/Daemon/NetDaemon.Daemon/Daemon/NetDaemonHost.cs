@@ -16,13 +16,8 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
-    public class NetDaemonHost : INetDaemonHost
+    public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
-        /// <summary>
-        /// The intervall used when disconnected
-        /// </summary>
-        private const int _reconnectIntervall = 40000;
-
         internal readonly Channel<(string, string)> _ttsMessageQueue =
             Channel.CreateBounded<(string, string)>(20);
 
@@ -225,95 +220,66 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
             }
 
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                try
-                {
-                    bool connectResult;
+                bool connectResult;
 
-                    if (hassioToken != null)
+                if (hassioToken != null)
+                {
+                    // We are running as hassio add-on
+                    connectResult = await _hassClient.ConnectAsync(new Uri("ws://supervisor/core/websocket"),
+                        hassioToken, true).ConfigureAwait(false);
+                }
+                else
+                {
+                    connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true).ConfigureAwait(false);
+                }
+
+                if (!connectResult)
+                {
+                    Connected = false;
+                    return;
+                }
+
+                // Setup TTS
+                Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
+
+                await _hassClient.SubscribeToEvents().ConfigureAwait(false);
+
+                Connected = true;
+                InternalState = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
+                    .ToDictionary(n => n.EntityId);
+
+                Logger.LogInformation(
+                    hassioToken != null
+                        ? "Successfully connected to Home Assistant Core in Home Assistant Add-on"
+                        : "Successfully connected to Home Assistant Core on host {host}:{port}", host, port);
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    HassEvent changedEvent = await _hassClient.ReadEventAsync(cancellationToken).ConfigureAwait(false);
+                    if (changedEvent != null)
                     {
-                        // We are running as hassio add-on
-                        connectResult = await _hassClient.ConnectAsync(new Uri("ws://supervisor/core/websocket"),
-                            hassioToken, true).ConfigureAwait(false);
+                        // Remove all completed Tasks
+                        _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
+                        _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
                     }
                     else
                     {
-                        connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true).ConfigureAwait(false);
-                    }
-
-                    if (!connectResult)
-                    {
-                        Connected = false;
-                        Logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
-                        await _hassClient.CloseAsync().ConfigureAwait(false);
-                        await Task.Delay(_reconnectIntervall, cancellationToken).ConfigureAwait(false);
-
-                        continue;
-                    }
-
-                    // Setup TTS
-                    Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
-
-                    await _hassClient.SubscribeToEvents().ConfigureAwait(false);
-
-                    Connected = true;
-                    InternalState = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
-                        .ToDictionary(n => n.EntityId);
-
-                    Logger.LogInformation(
-                        hassioToken != null
-                            ? "Successfully connected to Home Assistant Core in Home Assistant Add-on"
-                            : "Successfully connected to Home Assistant Core on host {host}:{port}", host, port);
-
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        HassEvent changedEvent = await _hassClient.ReadEventAsync().ConfigureAwait(false);
-                        if (changedEvent != null)
-                        {
-                            // Remove all completed Tasks
-                            _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
-                            _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
-                        }
-                        else
-                        {
-                            // Will only happen when doing unit tests
-                            await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        // Normal behaviour do nothing
-                        await _scheduler.Stop().ConfigureAwait(false);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Connected = false;
-                    Logger.LogError(e, "Error, during operation");
-                }
-                finally
-                {
-                    try
-                    {
-                        await _hassClient.CloseAsync().ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                    }
-
-                    Connected = false;
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        await Task.Delay(_reconnectIntervall, cancellationToken).ConfigureAwait(false);
+                        // Will only happen when doing unit tests
+                        await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
-
-            await _scheduler.Stop().ConfigureAwait(false);
+            catch (OperationCanceledException)
+            {
+                // Normal
+            }
+            catch (Exception e)
+            {
+                Connected = false;
+                Logger.LogError(e, "Error, during operation");
+            }
         }
 
         public IScript RunScript(INetDaemonApp app, params string[] entityId) => new EntityManager(entityId, this, app);
@@ -350,18 +316,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public async Task Stop()
         {
-            if (_hassClient == null)
-            {
-                throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
-            }
-
             if (_stopped)
             {
                 return;
             }
 
-            await _hassClient.CloseAsync().ConfigureAwait(false);
+            _eventActions.Clear();
+            _eventFunctionList.Clear();
+            _stateActions.Clear();
+            _serviceCallFunctionList.Clear();
             await _scheduler.Stop().ConfigureAwait(false);
+
+            await _hassClient.CloseAsync().ConfigureAwait(false);
 
             _stopped = true;
         }
@@ -694,6 +660,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public void ClearAppInstances()
         {
             _daemonAppInstances.Clear();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Stop();
         }
     }
     public class DelayResult : IDelayResult

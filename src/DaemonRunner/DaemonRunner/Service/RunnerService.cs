@@ -21,9 +21,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
     {
         const string _version = "dev";
 
-        private NetDaemonHost? _daemonHost;
+        // private NetDaemonHost? _daemonHost;
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
+
+        /// <summary>
+        /// The intervall used when disconnected
+        /// </summary>
+        private const int _reconnectIntervall = 40000;
 
         public RunnerService(ILoggerFactory loggerFactory)
         {
@@ -33,13 +38,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (_daemonHost == null)
-                return;
-
             _logger.LogInformation("Stopping NetDaemon...");
-            await _daemonHost.Stop().ConfigureAwait(false);
-
-            await Task.WhenAny(_daemonHost.Stop(), Task.Delay(1000, cancellationToken)).ConfigureAwait(false);
+            await base.StopAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -61,7 +61,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                 var sourceFolder = config.SourceFolder;
                 var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
-                _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory);
 
                 sourceFolder = Path.Combine(config.SourceFolder!, "apps");
 
@@ -69,20 +68,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 if (!System.IO.Directory.Exists(sourceFolder))
                     System.IO.Directory.CreateDirectory(sourceFolder);
 
+                bool hasConnectedBefore = false;
+                bool generatedEntities = false;
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     try
                     {
+                        if (hasConnectedBefore)
+                        {
+                            // This is due to re-connect, it must be a re-connect
+                            // so delay before retry connect again
+                            await Task.Delay(_reconnectIntervall, stoppingToken).ConfigureAwait(false); // Wait x seconds
+                        }
+
+                        await using var _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory);
+
                         var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
                             stoppingToken);
 
-                        var nrOfTimesCheckForConnectedState = 0;
-                        while (!_daemonHost.Connected && !stoppingToken.IsCancellationRequested)
-                        {
-                            await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
-                            if (nrOfTimesCheckForConnectedState++ > 3)
-                                break;
-                        }
+                        await WaitForDaemonToConnect(_daemonHost, stoppingToken);
+
                         if (!stoppingToken.IsCancellationRequested)
                         {
                             if (_daemonHost.Connected)
@@ -93,8 +98,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                     var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? config.GenerateEntitiesOnStartup?.ToString();
                                     if (envGenEntities is object)
                                     {
-                                        if (envGenEntities == "True")
+                                        if (envGenEntities == "True" && !generatedEntities)
                                         {
+                                            generatedEntities = true;
                                             var codeGen = new CodeGenerator();
                                             var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
                                                 _daemonHost.State.Select(n => n.EntityId).Distinct());
@@ -108,6 +114,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);
+                                        if (!stoppingToken.IsCancellationRequested)
+                                        {
+                                            // It is disconnet, wait
+                                            _logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
+                                        }
                                     }
                                 }
                                 catch (TaskCanceledException)
@@ -121,7 +132,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             }
                             else
                             {
-                                _logger.LogWarning("Home Assistant Core still unavailable, retrying in 40 seconds...");
+                                _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
                             }
                         }
                     }
@@ -129,13 +140,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     {
                         if (!stoppingToken.IsCancellationRequested)
                         {
-                            _logger.LogWarning("Home Assistant Core disconnected!, retrying in 40 seconds...");
+
+                            _logger.LogWarning($"Home assistant is disconnected, retrying in {_reconnectIntervall / 1000} seconds...");
                         }
                     }
-
-                    if (!stoppingToken.IsCancellationRequested)
-                        // The service is still running, we have error in connection to hass
-                        await Task.Delay(40000, stoppingToken).ConfigureAwait(false); // Wait 5 seconds
+                    // If we reached here it could be a re-connect
+                    hasConnectedBefore = true;
                 }
             }
             catch (OperationCanceledException)
@@ -147,6 +157,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             }
 
             _logger.LogInformation("Netdaemon exited!");
+        }
+
+        private async Task WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        {
+            var nrOfTimesCheckForConnectedState = 0;
+
+            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
+                if (nrOfTimesCheckForConnectedState++ > 5)
+                    break;
+            }
         }
 
         private async Task<HostConfig?> ReadConfigAsync()
