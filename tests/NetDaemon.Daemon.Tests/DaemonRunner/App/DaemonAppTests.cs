@@ -345,7 +345,7 @@ app:
         }
 
         [Fact]
-        public void InsanceAppsThatHasMissingExecuteShouldLogWarning()
+        public void InsanceAppsThatHasMissingExecuteShouldLogError()
         {
             // ARRANGE
             var path = Path.Combine(FaultyAppPath, "ExecuteWarnings");
@@ -356,7 +356,7 @@ app:
             var codeManager = new CodeManager(path, moqLogger.Logger);
 
             // ASSERT
-            moqLogger.AssertLogged(LogLevel.Warning, Times.Exactly(13));
+            moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(13));
 
         }
 
