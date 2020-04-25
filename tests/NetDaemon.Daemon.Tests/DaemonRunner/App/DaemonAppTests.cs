@@ -338,11 +338,26 @@ app:
 
             moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
             var codeManager = CM(path);
-            codeManager.DaemonAppTypes.Append(typeof(AssmeblyDaemonApp));
             // ACT
             // ASSERT
             var ex = await Assert.ThrowsAsync<ApplicationException>(async () => { await codeManager.InstanceAndInitApplications(moqDaemon.Object); });
             Assert.Contains("Application dependencies is wrong", ex.Message);
+        }
+
+        [Fact]
+        public void InsanceAppsThatHasMissingExecuteShouldLogWarning()
+        {
+            // ARRANGE
+            var path = Path.Combine(FaultyAppPath, "ExecuteWarnings");
+            var moqDaemon = new Mock<INetDaemonHost>();
+            var moqLogger = new LoggerMock();
+
+            // ACT
+            var codeManager = new CodeManager(path, moqLogger.Logger);
+
+            // ASSERT
+            moqLogger.AssertLogged(LogLevel.Warning, Times.Exactly(13));
+
         }
 
         public static CodeManager CM(string path) => new CodeManager(path, new LoggerMock().Logger);
