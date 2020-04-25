@@ -3,6 +3,8 @@ using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using System;
@@ -434,7 +436,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 }
         }
 
-        private void CompileScriptsInCodeFolder()
+        internal void CompileScriptsInCodeFolder()
         {
             // If provided code folder and we dont have local loaded daemon apps
             if (!string.IsNullOrEmpty(_codeFolder) && _loadedDaemonApps.Count() == 0)
@@ -447,20 +449,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             var alc = new CollectibleAssemblyLoadContext();
 
             using (var peStream = new MemoryStream())
+            using (var symbolsStream = new MemoryStream())
             {
-
                 var csFiles = GetCsFiles(_codeFolder);
                 if (csFiles.Count() == 0 && _loadedDaemonApps.Count() == 0)
                 {
                     // Only log when not have locally built assemblies, typically in dev environment
                     _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
                 }
+                var embeddedTexts = new List<EmbeddedText>();
 
                 foreach (var csFile in csFiles)
                 {
-                    var sourceText = SourceText.From(File.ReadAllText(csFile));
-                    var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
-                    syntaxTrees.Add(syntaxTree);
+                    using (var fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        var sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true);
+                        embeddedTexts.Add(EmbeddedText.FromSource(csFile, sourceText));
+
+                        var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
+                        syntaxTrees.Add(syntaxTree);
+                    }
                 }
 
                 var metaDataReference = new List<MetadataReference>(10)
@@ -486,10 +494,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     syntaxTrees.ToArray(),
                     references: metaDataReference.ToArray(),
                     options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                        optimizationLevel: OptimizationLevel.Release,
+                        optimizationLevel: OptimizationLevel.Debug,
                         assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
 
-                var emitResult = compilation.Emit(peStream);
+                foreach (var syntaxTree in syntaxTrees)
+                {
+                    WarnIfExecuteIsMissing(syntaxTree, compilation);
+                }
+
+                var emitOptions = new EmitOptions(
+                        debugInformationFormat: DebugInformationFormat.PortablePdb,
+                        pdbFilePath: "netdaemondynamic.pdb");
+
+                var emitResult = compilation.Emit(
+                    peStream: peStream,
+                    pdbStream: symbolsStream,
+                    embeddedTexts: embeddedTexts,
+                    options: emitOptions);
+
                 if (emitResult.Success)
                 {
                     peStream.Seek(0, SeekOrigin.Begin);
@@ -517,10 +539,102 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     _logger.LogError(err);
                 }
             }
-            alc.Unload();
 
+            // Finally do cleanup and release memory
+            alc.Unload();
             GC.Collect();
             GC.WaitForPendingFinalizers();
+        }
+
+        /// <summary>
+        ///     All NetDaemonApp methods that needs to be closed with Execute or ExecuteAsync
+        /// </summary>
+        private static string[] _executeWarningOnInvocationNames = new string[]
+        {
+            "Entity",
+            "Entities",
+            "Event",
+            "Events",
+            "InputSelect",
+            "InputSelects",
+            "MediaPlayer",
+            "MediaPlayers",
+            "Camera",
+            "Cameras",
+            "RunScript"
+        };
+
+        /// <summary>
+        ///     Warn user if fluent command chain not ending with Execute or ExecuteAsync
+        /// </summary>
+        /// <param name="syntaxTree">The parsed syntax tree</param>
+        /// <param name="compilation">Compilated code</param>
+        private void WarnIfExecuteIsMissing(SyntaxTree syntaxTree, CSharpCompilation compilation)
+        {
+            var semModel = compilation.GetSemanticModel(syntaxTree);
+
+            var invocationExpressions = syntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
+            var linesReported = new List<int>();
+
+            foreach (var invocationExpression in invocationExpressions)
+            {
+                var symbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
+                if (symbol is null)
+                    continue;
+
+                if (string.IsNullOrEmpty(symbol?.Name) ||
+                    _executeWarningOnInvocationNames.Contains(symbol?.Name) == false)
+                    // The invocation name is empty or not in list of invocations
+                    // that needs to be closed with Execute or ExecuteAsync
+                    continue;
+
+                // Now find top invocation to match whole expression
+                InvocationExpressionSyntax topInvocationExpression = invocationExpression;
+
+                if (symbol is object && symbol.ContainingType.Name == "NetDaemonApp")
+                {
+                    var symbolName = symbol.Name;
+
+                    SyntaxNode? parentInvocationExpression = invocationExpression.Parent;
+
+                    while (parentInvocationExpression is object)
+                    {
+                        if (parentInvocationExpression is InvocationExpressionSyntax)
+                        {
+                            var parentSymbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
+                            if (parentSymbol?.Name == symbolName)
+                                topInvocationExpression = (InvocationExpressionSyntax)parentInvocationExpression;
+
+                        }
+                        parentInvocationExpression = parentInvocationExpression.Parent;
+                    }
+
+                    // Now when we have the top InvocationExpression,
+                    // lets check for Execute and ExecuteAsync
+                    if (ExpressionContainsExecuteInvocations(topInvocationExpression) == false)
+                    {
+                        var x = syntaxTree.GetLineSpan(topInvocationExpression.Span);
+                        if (linesReported.Contains(x.StartLinePosition.Line) == false)
+                        {
+                            _logger.LogWarning($"Missing Execute or ExecuteAsync in {syntaxTree.FilePath} ({x.StartLinePosition.Line},{x.StartLinePosition.Character}) near {topInvocationExpression.ToFullString()}");
+                            linesReported.Add(x.StartLinePosition.Line);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Todo: Refactor using something smarter than string match. In future use Roslyn
+        private bool ExpressionContainsExecuteInvocations(InvocationExpressionSyntax invocation)
+        {
+            var invocationString = invocation.ToFullString();
+
+            if (invocationString.Contains("ExecuteAsync()") || invocationString.Contains("Execute()"))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public static IEnumerable<string> GetCsFiles(string configFixturePath)
