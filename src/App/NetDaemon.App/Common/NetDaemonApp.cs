@@ -357,14 +357,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             }
 
             var appInfo = _daemon!.State
-                                  .Where(s => s.EntityId == $"switch.netdaemon_{Id?.ToLowerInvariant()}")
+                                  .Where(s => s.EntityId == $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}")
                                   .FirstOrDefault();
 
             var appState = appInfo?.State as string;
             if (appState == null || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
-                await _daemon.SetState($"switch.netdaemon_{Id?.ToLowerInvariant()}", "on");
+                await _daemon.SetState($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on");
 
                 return;
             }

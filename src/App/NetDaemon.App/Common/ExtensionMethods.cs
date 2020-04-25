@@ -1,5 +1,8 @@
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -23,6 +26,34 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
             dynamic result = attributes;
             return result;
+        }
+
+        /// <summary>
+        ///     Converts any unicode string to a safe Home Assistant name
+        /// </summary>
+        /// <param name="str">The unicode string to convert</param>
+        public static string ToSafeHomeAssistantEntityId(this string str)
+        {
+            string normalizedString = str.Normalize(NormalizationForm.FormD);
+            StringBuilder stringBuilder = new StringBuilder(str.Length);
+
+            foreach (char c in normalizedString)
+            {
+                switch (CharUnicodeInfo.GetUnicodeCategory(c))
+                {
+                    case UnicodeCategory.LowercaseLetter:
+                    case UnicodeCategory.UppercaseLetter:
+                    case UnicodeCategory.DecimalDigitNumber:
+                        stringBuilder.Append(c);
+                        break;
+                    case UnicodeCategory.SpaceSeparator:
+                    case UnicodeCategory.ConnectorPunctuation:
+                    case UnicodeCategory.DashPunctuation:
+                        stringBuilder.Append('_');
+                        break;
+                }
+            }
+            return stringBuilder.ToString().ToLowerInvariant();
         }
     }
 }
