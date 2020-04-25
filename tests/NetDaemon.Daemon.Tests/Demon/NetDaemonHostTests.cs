@@ -156,17 +156,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
-        public async Task RunWhenCanceledShouldCompleteWithCanceledException()
-        {
-            // ARRANGE
-
-            // ACT and ASSERT
-            await RunDefauldDaemonUntilCanceled(20);
-
-            Assert.False(DefaultDaemonHost.Connected);
-        }
-
-        [Fact]
         public async Task SendEventShouldCallCorrectMethod()
         {
             // ARRANGE
