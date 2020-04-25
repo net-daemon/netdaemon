@@ -616,7 +616,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         var x = syntaxTree.GetLineSpan(topInvocationExpression.Span);
                         if (linesReported.Contains(x.StartLinePosition.Line) == false)
                         {
-                            _logger.LogWarning($"Missing Execute or ExecuteAsync in {syntaxTree.FilePath} ({x.StartLinePosition.Line},{x.StartLinePosition.Character}) near {topInvocationExpression.ToFullString()}");
+                            _logger.LogWarning($"Missing Execute or ExecuteAsync in {syntaxTree.FilePath} ({x.StartLinePosition.Line + 1},{x.StartLinePosition.Character}) near {topInvocationExpression.ToFullString().Trim()}");
                             linesReported.Add(x.StartLinePosition.Line);
                         }
                     }

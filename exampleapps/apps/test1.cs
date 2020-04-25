@@ -15,6 +15,8 @@ public class GlobalApp : NetDaemonApp
         SharedThing = "Hello world";
         Log("Logging from global app");
         LogError("OMG SOMETING IS WRONG {error}", "The error!");
+
+        Entity("light.my_light").TurnOn();
     }
 }
 
