@@ -9,6 +9,7 @@ using Xunit;
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
     public class AppTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp2 : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
 
     public class NetDaemonApptests
     {
@@ -219,6 +220,23 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             // ASSERT
             _netDaemonMock.Verify(n => n.GetState("entityid"));
+        }
+
+        [Theory]
+        [InlineData("int", 10)]
+        [InlineData("str", "hello")]
+        public void GlobalShouldReturnCorrectData(string key, object value)
+        {
+            var _app_two = new AppTestApp2();
+            _app_two.StartUpAsync(_netDaemonMock.Object);
+            _app_two.Id = "app2";
+
+            // ARRANGE and  ACT
+            _app.Global[key] = value;
+
+            // ASSERT
+            Assert.Equal(_app_two.Global[key], value);
+
         }
     }
 }
