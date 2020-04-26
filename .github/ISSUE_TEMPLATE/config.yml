@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Report a bug with NetDaemon
-    url: https://github.com/net-daemon/netdaemon/issues
+  - name: New general issue
+    url: https://github.com/net-daemon/netdaemon/issues/new
     about: This is the main issue tracker for NetDaemon. Please report issues with the NetDaemon there.
   - name: Report incorrect or missing information on the docs
     url: https://github.com/net-daemon/docs/issues
