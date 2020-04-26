@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
     /// <summary>
@@ -54,5 +56,43 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     To state filter
         /// </summary>
         public object? To => _to;
+    }
+
+    /// <summary>
+    ///     Type of log to supress
+    /// </summary>
+    public enum SupressLogType
+    {
+        /// <summary>
+        ///     Supress Missing Execute Error in a method
+        /// </summary>
+        MissingExecute
+    }
+
+
+    /// <summary>
+    ///     Attribute to mark function as callback for state changes
+    /// </summary>
+    [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    public sealed class DisableLogAttribute : System.Attribute
+    {
+        // See the attribute guidelines at
+        //  http://go.microsoft.com/fwlink/?LinkId=85236
+        private SupressLogType[] _logTypesToSupress;
+
+
+        /// <summary>
+        ///     Default constructor
+        /// </summary>
+        /// <param name="logTypes">List of logtypes to supress</param>
+        public DisableLogAttribute(params SupressLogType[] logTypes)
+        {
+            _logTypesToSupress = logTypes;
+        }
+
+        /// <summary>
+        ///     Log types to supress
+        /// </summary>
+        public IEnumerable<SupressLogType> LogTypesToSupress => _logTypesToSupress;
     }
 }
