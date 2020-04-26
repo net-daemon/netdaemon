@@ -593,12 +593,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 if (symbol is object && symbol.ContainingType.Name == "NetDaemonApp")
                 {
+                    var disableLogging = false;
+
                     var symbolName = symbol.Name;
 
                     SyntaxNode? parentInvocationExpression = invocationExpression.Parent;
 
                     while (parentInvocationExpression is object)
                     {
+                        if (parentInvocationExpression is MethodDeclarationSyntax)
+                        {
+                            if (ExpressionContainsDisableLogging((MethodDeclarationSyntax)parentInvocationExpression))
+                            {
+                                disableLogging = true;
+                            }
+                        }
                         if (parentInvocationExpression is InvocationExpressionSyntax)
                         {
                             var parentSymbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
@@ -611,7 +620,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                     // Now when we have the top InvocationExpression,
                     // lets check for Execute and ExecuteAsync
-                    if (ExpressionContainsExecuteInvocations(topInvocationExpression) == false)
+                    if (ExpressionContainsExecuteInvocations(topInvocationExpression) == false && disableLogging == false)
                     {
                         var x = syntaxTree.GetLineSpan(topInvocationExpression.Span);
                         if (linesReported.Contains(x.StartLinePosition.Line) == false)
@@ -624,7 +633,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             }
         }
 
-        // Todo: Refactor using something smarter than string match. In future use Roslyn
+        // Todo: Refactor using something smarter than string match. In the future use Roslyn
+        private bool ExpressionContainsDisableLogging(MethodDeclarationSyntax methodInvocationExpression)
+        {
+            var invocationString = methodInvocationExpression.ToFullString();
+            if (invocationString.Contains("[DisableLog") && invocationString.Contains("SupressLogType.MissingExecute"))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // Todo: Refactor using something smarter than string match. In the future use Roslyn
         private bool ExpressionContainsExecuteInvocations(InvocationExpressionSyntax invocation)
         {
             var invocationString = invocation.ToFullString();

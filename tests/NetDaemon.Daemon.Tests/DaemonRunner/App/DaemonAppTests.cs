@@ -360,6 +360,22 @@ app:
 
         }
 
+        [Fact]
+        public void InsanceAppsThatHasMissingExecuteAndSupressLogsShouldNotLogError()
+        {
+            // ARRANGE
+            var path = Path.Combine(FaultyAppPath, "SupressLogs");
+            var moqDaemon = new Mock<INetDaemonHost>();
+            var moqLogger = new LoggerMock();
+
+            // ACT
+            var codeManager = new CodeManager(path, moqLogger.Logger);
+
+            // ASSERT
+            moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(1));
+
+        }
+
         public static CodeManager CM(string path) => new CodeManager(path, new LoggerMock().Logger);
     }
 }
