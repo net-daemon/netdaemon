@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -32,6 +33,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         private FluentExpandoObject? _storageObject;
         internal FluentExpandoObject? InternalStorageObject { get { return _storageObject; } set { _storageObject = value; } }
 
+        // This is declared as static since it will contain state shared globally
+        static ConcurrentDictionary<string, object> _global = new ConcurrentDictionary<string, object>();
+
         /// <summary>
         ///    Dependencies on other applications that will be initialized before this app
         /// </summary>
@@ -56,6 +60,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public bool IsEnabled { get; set; }
+
+        /// <inheritdoc/>
+        public ConcurrentDictionary<string, object> Global => _global;
 
         /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)

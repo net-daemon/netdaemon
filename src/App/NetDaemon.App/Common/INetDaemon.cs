@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -185,6 +186,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="entityIds">The unique id:s of the script</param>
         IScript RunScript(params string[] entityIds);
+
+        /// <summary>
+        ///     A thread safe key/value dictionary to safely share states within and between apps in memory
+        /// </summary>
+        ConcurrentDictionary<string, object> Global { get; }
     }
 
     /// <summary>
