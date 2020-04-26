@@ -1,7 +1,12 @@
 ---
 name: Report a bug with NetDaemon
 about: Report an issue with NetDaemon
+title: ''
+labels: ''
+assignees: ''
+
 ---
+
 <!-- READ THIS FIRST:
   - If you need additional help with this template, please refer to https://netdaemon.xtz/help/reporting_issues/
   - Make sure you are running the latest version of NetDaemon before reporting an issue: https://github.com/net-daemon/netdaemon/releases
