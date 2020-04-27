@@ -499,7 +499,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 foreach (var syntaxTree in syntaxTrees)
                 {
-                    WarnIfExecuteIsMissing(syntaxTree, compilation);
+                    if (Path.GetFileName(syntaxTree.FilePath) != "_EntityExtensions.cs")
+                        WarnIfExecuteIsMissing(syntaxTree, compilation);
                 }
 
                 var emitOptions = new EmitOptions(
