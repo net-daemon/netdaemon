@@ -13,12 +13,94 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
+    public static class Runner
+    {
+        private const string _hassioConfigPath = "/data/options.json";
+        private static LoggingLevelSwitch _levelSwitch = new LoggingLevelSwitch();
+
+        public static async Task Run(string[] args)
+        {
+            try
+            {
+                // Setup serilog
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .Enrich.FromLogContext()
+                    .MinimumLevel.ControlledBy(_levelSwitch)
+                    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+                    .CreateLogger();
+
+                if (File.Exists(_hassioConfigPath))
+                {
+                    try
+                    {
+                        var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(
+                                                      File.OpenRead(_hassioConfigPath)).ConfigureAwait(false);
+                        if (hassAddOnSettings.LogLevel is object)
+                        {
+                            _levelSwitch.MinimumLevel = hassAddOnSettings.LogLevel switch
+                            {
+                                "info" => LogEventLevel.Information,
+                                "debug" => LogEventLevel.Debug,
+                                "error" => LogEventLevel.Error,
+                                "warning" => LogEventLevel.Warning,
+                                "trace" => LogEventLevel.Verbose,
+                                _ => LogEventLevel.Information
+                            };
+                        }
+                        if (hassAddOnSettings.GenerateEntitiesOnStart is object)
+                        {
+                            Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        Log.Fatal(e, "Failed to read the Home Assistant Add-on config");
+                    }
+                }
+                else
+                {
+                    var envLogLevel = Environment.GetEnvironmentVariable("HASS_LOG_LEVEL");
+                    _levelSwitch.MinimumLevel = envLogLevel switch
+                    {
+                        "info" => LogEventLevel.Information,
+                        "debug" => LogEventLevel.Debug,
+                        "error" => LogEventLevel.Error,
+                        "warning" => LogEventLevel.Warning,
+                        "trace" => LogEventLevel.Verbose,
+                        _ => LogEventLevel.Information
+                    };
+                }
+
+                CreateHostBuilder(args).Build().Run();
+            }
+            catch (Exception e)
+            {
+                Log.Fatal(e, "Failed to start host...");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
+        }
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .UseSerilog()
+                .ConfigureServices(services => { services.AddHostedService<RunnerService>(); });
+    }
 
     public class RunnerService : BackgroundService
     {
+
+
         const string _version = "dev";
 
         // private NetDaemonHost? _daemonHost;
@@ -62,11 +144,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 var sourceFolder = config.SourceFolder;
                 var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
 
-                sourceFolder = Path.Combine(config.SourceFolder!, "apps");
+                var appSourceFolder = Path.Combine(config.SourceFolder!, "apps");
 
                 // Automatically create source directories
-                if (!System.IO.Directory.Exists(sourceFolder))
-                    System.IO.Directory.CreateDirectory(sourceFolder);
+                if (!System.IO.Directory.Exists(appSourceFolder))
+                    System.IO.Directory.CreateDirectory(appSourceFolder);
 
                 bool hasConnectedBefore = false;
                 bool generatedEntities = false;
@@ -105,10 +187,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                             var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
                                                 _daemonHost.State.Select(n => n.EntityId).Distinct());
 
-                                            System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder, "_EntityExtensions.cs"), source);
+                                            System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
                                         }
                                     }
-                                    using (var codeManager = new CodeManager(sourceFolder, _daemonHost.Logger))
+                                    using (var codeManager = new CodeManager(sourceFolder!, _daemonHost.Logger))
                                     {
                                         await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true);
 
