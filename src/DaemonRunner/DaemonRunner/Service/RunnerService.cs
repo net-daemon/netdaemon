@@ -60,6 +60,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
                         }
+                        // We are in Hassio so hard code the path
+                        Environment.SetEnvironmentVariable("HASS_DAEMONAPPFOLDER", "/config/netdaemon");
                     }
                     catch (System.Exception e)
                     {
@@ -144,11 +146,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 var sourceFolder = config.SourceFolder;
                 var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
 
-                var appSourceFolder = Path.Combine(config.SourceFolder!, "apps");
+                sourceFolder = Path.Combine(config.SourceFolder!, "apps");
 
                 // Automatically create source directories
-                if (!System.IO.Directory.Exists(appSourceFolder))
-                    System.IO.Directory.CreateDirectory(appSourceFolder);
+                if (!System.IO.Directory.Exists(sourceFolder))
+                    System.IO.Directory.CreateDirectory(sourceFolder);
 
                 bool hasConnectedBefore = false;
                 bool generatedEntities = false;

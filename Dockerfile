@@ -1,39 +1,20 @@
 # Build the NetDaemon with build container
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200-alpine as build
-
-# From buildx
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-
-# Add bash
-RUN apk add  \
-    bash
+FROM ludeeus/container:dotnet-base-s6
 
 # Copy the source to docker container
-COPY ./src /tmp/src
+COPY ./src /usr/src
 
-# Copy the build script for minimal single binary build
-COPY addon/rootfs/build/build.sh /tmp/build.sh
-RUN chmod +x /tmp/build.sh
-
-# Build the minimal single binary
-RUN /bin/bash /tmp/build.sh
-
-# Build the target container
-FROM netdaemon/base
-
-# Copy the built binaries and set execute permissions
-COPY --from=build /netdaemon/bin/publish /daemon
-RUN chmod +x /daemon/Service
-
-# Copy the S6 service scripts
-COPY addon/rootfs/etc /etc
+COPY Docker/rootfs/etc /etc
 
 # Set default values of NetDaemon env
 ENV \
+    DOTNET_NOLOGO=1\
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    HASS_RUN_PROJECT_FOLDER=/usr/src/Service \
     HASS_HOST=localhost \
     HASS_PORT=8123 \
     HASS_TOKEN=NOT_SET \
     HASS_DAEMONAPPFOLDER=/data
+
 
 ENTRYPOINT ["/init"]
