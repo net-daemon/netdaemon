@@ -427,6 +427,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         private void LoadLocalAssemblyApplicationsForDevelopment()
         {
+            var disableLoadLocalAssemblies = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
+            if (disableLoadLocalAssemblies is object && disableLoadLocalAssemblies == "true")
+                return;
+
             // Get daemon apps in entry assembly (mainly for development)
             var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
             if (apps != null)
