@@ -427,12 +427,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         private void LoadLocalAssemblyApplicationsForDevelopment()
         {
+
+
+            // Get daemon apps in entry assembly (mainly for development)
+            var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+
             var disableLoadLocalAssemblies = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
             if (disableLoadLocalAssemblies is object && disableLoadLocalAssemblies == "true")
                 return;
 
-            // Get daemon apps in entry assembly (mainly for development)
-            var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
             if (apps != null)
                 foreach (var localAppType in apps)
                 {
@@ -453,7 +456,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             var alc = new CollectibleAssemblyLoadContext();
 
             using (var peStream = new MemoryStream())
-            using (var symbolsStream = new MemoryStream())
+            // using (var symbolsStream = new MemoryStream())
             {
                 var csFiles = GetCsFiles(_codeFolder);
                 if (csFiles.Count() == 0 && _loadedDaemonApps.Count() == 0)
@@ -479,6 +482,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
@@ -498,7 +502,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     syntaxTrees.ToArray(),
                     references: metaDataReference.ToArray(),
                     options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                        optimizationLevel: OptimizationLevel.Debug,
+                        optimizationLevel: OptimizationLevel.Release,
                         assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
 
                 foreach (var syntaxTree in syntaxTrees)
@@ -513,8 +517,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 var emitResult = compilation.Emit(
                     peStream: peStream,
-                    pdbStream: symbolsStream,
-                    embeddedTexts: embeddedTexts,
+                    // pdbStream: symbolsStream,
+                    // embeddedTexts: embeddedTexts,
                     options: emitOptions);
 
                 if (emitResult.Success)
