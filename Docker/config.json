@@ -5,7 +5,7 @@
   "description": "Application daemon written in .NET core 3.1",
   "url": "http://netdaemon.xyz",
   "startup": "application",
-  "image": "netdaemon/homeassistant-addon-{arch}",
+  "image": "netdaemon/netdaemon",
   "arch": [
     "aarch64",
     "amd64",

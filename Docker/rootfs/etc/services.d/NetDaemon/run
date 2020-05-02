@@ -4,8 +4,8 @@
 # NetDaemon Service
 # Starts NetDaemon
 # ==============================================================================
-cd /daemon || echo -e "\033[31mCould not change directory to daemon\033[0m" >&2
+cd $HASS_RUN_PROJECT_FOLDER || echo -e "\033[31mCould not change directory to run project\033[0m" >&2
 
 echo -e "\033[32mStarting NetDaemon...\033[0m" >&2
 
-./Service
+dotnet run
