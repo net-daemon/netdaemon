@@ -77,7 +77,29 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public async Task EntityOnStateChangedLamdaToggleLightCallsCorrectServiceCall()
+        public async Task EntityOnStateChangedLamdaWithMultipleEntitiesCallsCorrectServiceCall()
+        {
+            // ARRANGE
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
+            var MotionEnabled = true;
+
+            DefaultDaemonApp
+                .Entities(new string[] { "binary_sensor.pir", "binary_sensor-pir2" })
+                .WhenStateChange((to, from) => @from?.State == "off" && to?.State == "on" && MotionEnabled)
+                .UseEntity("light.correct_entity")
+                .Toggle()
+                .Execute();
+
+            await RunDefauldDaemonUntilCanceled();
+
+            DefaultHassClientMock.VerifyCallServiceTimes("toggle", Times.Once());
+            DefaultHassClientMock.VerifyCallService("light", "toggle", ("entity_id", "light.correct_entity"));
+        }
+
+        [Fact]
+        public async Task OneEntityWithSeveralShouldCallsCorrectServiceCall()
         {
             // ARRANGE
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
