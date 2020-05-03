@@ -1,10 +1,12 @@
 # Build the NetDaemon with build container
-FROM ludeeus/container:dotnet-base-s6
+FROM ludeeus/container:dotnet-base
 
 # Copy the source to docker container
 COPY ./src /usr/src
 
-COPY Docker/rootfs/etc /etc
+# COPY Docker/rootfs/etc /etc
+COPY ./Docker/rootfs/etc/services.d/NetDaemon/run /rundaemon
+RUN chmod +x /rundaemon
 
 # Set default values of NetDaemon env
 ENV \
@@ -17,4 +19,4 @@ ENV \
     HASS_DAEMONAPPFOLDER=/data
 
 
-ENTRYPOINT ["/init"]
+ENTRYPOINT ["/rundaemon"]

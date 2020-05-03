@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv /bin/bash
+#!/bin/bash
 
 # ==============================================================================
 # NetDaemon Service
