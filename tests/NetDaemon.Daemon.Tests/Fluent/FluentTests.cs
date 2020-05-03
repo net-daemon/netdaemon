@@ -193,10 +193,10 @@ namespace NetDaemon.Daemon.Tests
             var cancelSource = DefaultHassClientMock.GetSourceWithTimeout(); //new CancellationTokenSource(1000);
 
             // Fake the
-            DefaultDaemonHost.InternalState.Add("light.correct_entity", new EntityState
+            DefaultDaemonHost.InternalState["light.correct_entity"] = new EntityState
             {
                 EntityId = "light.correct_entity"
-            });
+            };
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")

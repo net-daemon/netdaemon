@@ -209,7 +209,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             if (discoverServicesOnStartup)
             {
-                await InstanceAndInitApplications(host);
+                await InstanceAndInitApplications(host).ConfigureAwait(false);
             }
         }
 
@@ -217,12 +217,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             host.ListenServiceCall("switch", "turn_on", async (data) =>
             {
-                await SetStateOnDaemonAppSwitch("on", data);
+                await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
             });
 
             host.ListenServiceCall("switch", "turn_off", async (data) =>
             {
-                await SetStateOnDaemonAppSwitch("off", data);
+                await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
             });
 
             host.ListenServiceCall("switch", "toggle", async (data) =>
@@ -236,9 +236,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     var currentState = host.GetState(entityId)?.State as string;
 
                     if (currentState == "on")
-                        await SetStateOnDaemonAppSwitch("off", data);
+                        await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
                     else
-                        await SetStateOnDaemonAppSwitch("on", data);
+                        await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
 
                 }
                 catch (System.Exception e)
@@ -264,9 +264,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
 
                 if (attributes is object)
-                    await host.SetState(entityId, state, attributes.ToArray());
+                    await host.SetState(entityId, state, attributes.ToArray()).ConfigureAwait(false);
                 else
-                    await host.SetState(entityId, state);
+                    await host.SetState(entityId, state).ConfigureAwait(false);
             }
         }
 
@@ -285,7 +285,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 CompileScriptsInCodeFolder();
                 RegisterAppSwitchesAndTheirStates(host);
-                await InstanceAndInitApplications(host);
+                await InstanceAndInitApplications(host).ConfigureAwait(false);
             }
             catch (System.Exception e)
             {
@@ -359,7 +359,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             }
 
             _instanciatedDaemonApps.AddRange(result);
-            await host!.SetDaemonStateAsync(_loadedDaemonApps.Count, _instanciatedDaemonApps.Count);
+            await host!.SetDaemonStateAsync(_loadedDaemonApps.Count, _instanciatedDaemonApps.Count).ConfigureAwait(false);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

@@ -136,7 +136,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public async ValueTask<T> GetDataAsync<T>(string id)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.GetDataAsync<T>(id);
+            return await _daemon!.GetDataAsync<T>(id).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -291,14 +291,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.SendEvent(eventId, data);
+            return await _daemon!.SendEvent(eventId, data).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.SetState(entityId, state, attributes);
+            return await _daemon!.SetState(entityId, state, attributes).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -312,7 +312,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
             _daemon = daemon;
-            _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage());
+            _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
             _storageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
@@ -355,7 +355,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
-            var obj = await _daemon!.GetDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage());
+            var obj = await _daemon!.GetDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage()).ConfigureAwait(false);
 
             if (obj != null)
             {
@@ -371,7 +371,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             if (appState == null || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
-                await _daemon.SetState($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on");
+                await _daemon.SetState($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on").ConfigureAwait(false);
 
                 return;
             }
