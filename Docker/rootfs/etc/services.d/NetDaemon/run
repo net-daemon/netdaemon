@@ -12,9 +12,9 @@ if dotnet publish -v q -c Release -o /daemon; then
     dotnet build-server shutdown
     if test -f "/daemon/Service"; then
         echo -e "\033[32mStarting NetDaemon...\033[0m" >&2
-        /daemon/Service
+        exec /daemon/Service
     elif test -f "/daemon/daemonapp"; then
         echo -e "\033[32mStarting custom NetDaemon project...\033[0m" >&2
-        /daemon/daemonapp
+        exec /daemon/daemonapp
     fi
 fi
