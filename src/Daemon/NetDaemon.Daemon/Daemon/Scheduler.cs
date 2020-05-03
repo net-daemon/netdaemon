@@ -316,7 +316,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// </summary>
         public async Task Restart()
         {
-            await Stop();
+            await Stop().ConfigureAwait(false);
             _cancelSource = new CancellationTokenSource();
         }
 

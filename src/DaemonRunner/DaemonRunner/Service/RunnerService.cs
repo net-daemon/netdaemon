@@ -123,7 +123,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping NetDaemon...");
-            await base.StopAsync(cancellationToken);
+            await base.StopAsync(cancellationToken).ConfigureAwait(false);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -132,7 +132,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             {
                 _logger.LogInformation($"Starting NeDaemon (version {_version})...");
 
-                var config = await ReadConfigAsync();
+                var config = await ReadConfigAsync().ConfigureAwait(false);
 
                 if (config == null)
                 {
@@ -170,7 +170,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
                             stoppingToken);
 
-                        await WaitForDaemonToConnect(_daemonHost, stoppingToken);
+                        await WaitForDaemonToConnect(_daemonHost, stoppingToken).ConfigureAwait(false);
 
                         if (!stoppingToken.IsCancellationRequested)
                         {
@@ -194,7 +194,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                     }
                                     using (var codeManager = new CodeManager(sourceFolder!, _daemonHost.Logger))
                                     {
-                                        await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true);
+                                        await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
 
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);
@@ -303,7 +303,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     using (var fileStream = new FileStream(exampleFilePath, FileMode.CreateNew))
                     {
                         var options = new JsonSerializerOptions { WriteIndented = true, IgnoreNullValues = true };
-                        await JsonSerializer.SerializeAsync(fileStream, new HostConfig(), options);
+                        await JsonSerializer.SerializeAsync(fileStream, new HostConfig(), options).ConfigureAwait(false);
                     }
                 }
             }

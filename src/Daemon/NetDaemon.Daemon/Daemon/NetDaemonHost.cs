@@ -25,7 +25,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         internal int InternalDelayTimeForTts = 2500;
 
         // internal so we can use for unittest
-        internal IDictionary<string, EntityState> InternalState = new Dictionary<string, EntityState>();
+        internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
         private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
                     new List<(string pattern, Func<string, dynamic, Task> action)>();
@@ -84,7 +84,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public IScheduler Scheduler => _scheduler;
 
-        public IEnumerable<EntityState> State => InternalState?.Values!;
+        public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
                                 {
@@ -100,8 +100,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
-
-                return new EntityManager(x.Select(n => n.EntityId).ToArray(), this, app);
+                var selectedEntities = x.Select(n => n.EntityId).ToArray();
+                return new EntityManager(selectedEntities, this, app);
             }
             catch (Exception e)
             {
@@ -246,9 +246,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
-                Connected = true;
-                InternalState = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
+
+                var initialStates = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
                     .ToDictionary(n => n.EntityId);
+
+                foreach (var key in initialStates.Keys)
+                {
+                    InternalState[key] = initialStates[key];
+                }
+
+                Connected = true;
 
                 Logger.LogInformation(
                     hassioToken != null
@@ -257,6 +264,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
+
                     HassEvent changedEvent = await _hassClient.ReadEventAsync(cancellationToken).ConfigureAwait(false);
                     if (changedEvent != null)
                     {
@@ -550,7 +558,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _stateActions.Clear();
             _serviceCallFunctionList.Clear();
 
-            await _scheduler.Restart();
+            await _scheduler.Restart().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -565,7 +573,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 "Connected", // State will alawys be connected, otherwise state could not be set.
                 ("number_of_loaded_apps", numberOfLoadedApps),
                 ("number_of_running_apps", numberOfRunningApps),
-                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A"));
+                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -664,7 +672,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public async ValueTask DisposeAsync()
         {
-            await Stop();
+            await Stop().ConfigureAwait(false);
         }
     }
     public class DelayResult : IDelayResult
