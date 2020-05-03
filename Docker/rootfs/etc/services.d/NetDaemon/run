@@ -8,15 +8,15 @@ set -e
 
 declare runtype="Service"
 declare daemondir="/daemon"
-declare instansesrunning
+# declare instansesrunning
 
-instansesrunning=$(pgrep bash)
+# instansesrunning=$(pgrep bash)
 
-if [[ "${instansesrunning}" != "1" ]];then
-    echo -e "\\033[31mMultiple instances detected!\\033[0m" >&2
-    echo -e "\\033[31mStopping this one\\033[0m" >&2
-    exit 1
-fi
+# if [[ "${instansesrunning}" != "1" ]];then
+#     echo -e "\\033[31mMultiple instances detected!\\033[0m" >&2
+#     echo -e "\\033[31mStopping this one\\033[0m" >&2
+#     exit 1
+# fi
 
 cd "${HASS_RUN_PROJECT_FOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
