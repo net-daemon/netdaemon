@@ -1,5 +1,5 @@
 # Build the NetDaemon with build container
-FROM ludeeus/container:dotnet-base
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200
 
 # Copy the source to docker container
 COPY ./src /usr/src
@@ -10,8 +10,8 @@ RUN chmod +x /rundaemon
 
 # Set default values of NetDaemon env
 ENV \
-    DOTNET_NOLOGO=1\
-    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    DOTNET_NOLOGO=true \
+    DOTNET_CLI_TELEMETRY_OPTOUT=true \
     HASS_RUN_PROJECT_FOLDER=/usr/src/Service \
     HASS_HOST=localhost \
     HASS_PORT=8123 \
