@@ -1,20 +1,39 @@
-#!/bin/bash
+#!/bin/env bash
 
 # ==============================================================================
 # NetDaemon Service
 # Starts NetDaemon
 # ==============================================================================
-cd $HASS_RUN_PROJECT_FOLDER || echo -e "\033[31mCould not change directory to run project\033[0m" >&2
+set -e
 
-echo -e "\033[32mBuilding NetDaemon source...\033[0m" >&2
+declare runtype="Service"
+declare daemondir="/daemon"
+declare instansesrunning
 
-if dotnet publish -v q -c Release -o /daemon; then
-    dotnet build-server shutdown
-    if test -f "/daemon/Service"; then
-        echo -e "\033[32mStarting NetDaemon...\033[0m" >&2
-        exec /daemon/Service
-    elif test -f "/daemon/daemonapp"; then
-        echo -e "\033[32mStarting custom NetDaemon project...\033[0m" >&2
-        exec /daemon/daemonapp
-    fi
+instansesrunning=$(pgrep bash)
+
+if [[ "${instansesrunning}" != "1" ]];then
+    echo -e "\\033[31mMultiple instances detected!\\033[0m" >&2
+    echo -e "\\033[31mStopping this one\\033[0m" >&2
+    exit 1
 fi
+
+cd "${HASS_RUN_PROJECT_FOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+
+if [[ "${PWD}" != "${HASS_RUN_PROJECT_FOLDER}" ]]; then
+    exit 1
+fi
+
+echo -e "\\033[32mBuilding NetDaemon source...\\033[0m" >&2
+if dotnet publish -v q -c Release -o "${daemondir}"; then
+    dotnet build-server shutdown || exit 1
+fi
+
+if test -f "${daemondir}/Service"; then
+    echo -e "\\033[32mStarting NetDaemon...\\033[0m" >&2
+elif test -f "${daemondir}/daemonapp"; then
+    echo -e "\\033[32mStarting custom NetDaemon project...\\033[0m" >&2
+    runtype="daemonapp"
+fi
+
+exec "${daemondir}/${runtype}"
