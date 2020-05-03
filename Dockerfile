@@ -1,6 +1,7 @@
 # Build the NetDaemon with build container
 #mcr.microsoft.com/dotnet/core/sdk:3.1.200
-FROM ludeeus/container:dotnet-base
+#ludeeus/container:dotnet-base
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200
 
 # Copy the source to docker container
 COPY ./src /usr/src
