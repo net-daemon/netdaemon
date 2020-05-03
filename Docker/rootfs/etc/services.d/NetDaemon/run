@@ -9,11 +9,12 @@ cd $HASS_RUN_PROJECT_FOLDER || echo -e "\033[31mCould not change directory to ru
 echo -e "\033[32mBuilding NetDaemon source...\033[0m" >&2
 
 if dotnet publish -v q -c Release -o /daemon; then
+    dotnet build-server shutdown
     if test -f "/daemon/Service"; then
         echo -e "\033[32mStarting NetDaemon...\033[0m" >&2
         /daemon/Service
     elif test -f "/daemon/daemonapp"; then
-        echo -e "\033[32mStarting NetDaemon...\033[0m" >&2
+        echo -e "\033[32mStarting custom NetDaemon project...\033[0m" >&2
         /daemon/daemonapp
     fi
 fi
