@@ -8,7 +8,6 @@ COPY ./src /usr/src
 
 # COPY Docker/rootfs/etc /etc
 COPY ./Docker/rootfs/etc/services.d/NetDaemon/run /rundaemon
-RUN chmod +x /rundaemon
 
 # Set default values of NetDaemon env
 ENV \
@@ -21,4 +20,4 @@ ENV \
     HASS_DAEMONAPPFOLDER=/data
 
 
-ENTRYPOINT ["/rundaemon"]
+ENTRYPOINT ["bash", "/rundaemon"]
