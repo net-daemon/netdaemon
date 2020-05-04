@@ -58,6 +58,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         string EntityId { get; set; }
 
         /// <summary>
+        ///     Filter on area where the entity device are at
+        /// </summary>
+        string? Area { get; set; }
+
+        /// <summary>
         ///     Filter on last changed time
         /// </summary>
         DateTime LastChanged { get; set; }

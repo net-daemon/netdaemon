@@ -16,6 +16,10 @@ namespace NetDaemon.Daemon.Tests
         internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
         internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
 
+        internal HassAreas Areas = new HassAreas();
+        internal HassDevices Devices = new HassDevices();
+        internal HassEntities Entities = new HassEntities();
+
         public HassClientMock()
         {
             // diable warnings for this method
@@ -51,6 +55,19 @@ namespace NetDaemon.Daemon.Tests
                     });
                 }
             );
+
+            Setup(n => n.GetAreas()).ReturnsAsync(Areas);
+            Setup(n => n.GetDevices()).ReturnsAsync(Devices);
+            Setup(n => n.GetEntities()).ReturnsAsync(Entities);
+
+            // Setup one with area
+            Devices.Add(new HassDevice { Id = "device_idd", AreaId = "area_idd" });
+            Areas.Add(new HassArea { Name = "Area", Id = "area_idd" });
+            Entities.Add(new HassEntity
+            {
+                EntityId = "light.ligth_in_area",
+                DeviceId = "device_idd"
+            });
         }
 
         public static HassClientMock DefaultMock => new HassClientMock();
@@ -126,6 +143,16 @@ namespace NetDaemon.Daemon.Tests
                     ["anyattribute"] = "some attribute"
                 }
             };
+
+            FakeStates["light.ligth_in_area"] = new HassState
+            {
+                EntityId = "light.ligth_in_area",
+                State = "off",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["anyattribute"] = "some attribute"
+                }
+            };
         }
 
         public void AddCallServiceEvent(string domain, string service, dynamic data)
@@ -184,6 +211,7 @@ namespace NetDaemon.Daemon.Tests
                     EntityId = entityId,
                     NewState = new HassState
                     {
+                        EntityId = entityId,
                         State = toState,
                         Attributes = new Dictionary<string, object>
                         {
@@ -192,6 +220,7 @@ namespace NetDaemon.Daemon.Tests
                     },
                     OldState = new HassState
                     {
+                        EntityId = entityId,
                         State = fromState,
                         Attributes = new Dictionary<string, object>
                         {
@@ -269,7 +298,7 @@ namespace NetDaemon.Daemon.Tests
         /// <returns></returns>
         public CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
         {
-            return Debugger.IsAttached
+            return (Debugger.IsAttached)
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
         }
