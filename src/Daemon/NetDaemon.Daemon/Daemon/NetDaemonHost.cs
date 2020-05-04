@@ -246,13 +246,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
+                foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
+                {
+                    if (device is object && device.Id is object)
+                        _hassDevices[device.Id] = device;
+                }
+                foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
+                {
+                    if (area is object && area.Id is object)
+                        _hassAreas[area.Id] = area;
+                }
+                foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
+                {
+                    if (entity is object && entity.EntityId is object)
+                        _hassEntities[entity.EntityId] = entity;
+                }
 
                 var initialStates = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
                     .ToDictionary(n => n.EntityId);
 
+
+
                 foreach (var key in initialStates.Keys)
                 {
-                    InternalState[key] = initialStates[key];
+                    var state = initialStates[key];
+                    state.Area = GetAreaForEntityId(state.EntityId);
+                    InternalState[key] = state;
                 }
 
                 Connected = true;
@@ -275,7 +294,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     else
                     {
                         // Will only happen when doing unit tests
-                        await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+                        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -288,6 +307,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Connected = false;
                 Logger.LogError(e, "Error, during operation");
             }
+        }
+
+        internal string? GetAreaForEntityId(string entityId)
+        {
+            HassEntity? entity;
+            if (_hassEntities.TryGetValue(entityId, out entity) && entity is object)
+            {
+                if (entity.DeviceId is object)
+                {
+                    // The entity is on a device
+                    HassDevice? device;
+                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is object)
+                    {
+                        if (device.AreaId is object)
+                        {
+                            // This device is in an area
+                            HassArea? area;
+                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is object)
+                            {
+                                return area.Name;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public IScript RunScript(INetDaemonApp app, params string[] entityId) => new EntityManager(entityId, this, app);
@@ -359,7 +404,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         return;
                     }
 
-                    InternalState[stateData.EntityId] = stateData.NewState!.ToDaemonEntityState();
+                    // Make sure we get the area name with the new state
+                    var newState = stateData.NewState!.ToDaemonEntityState();
+                    newState.Area = GetAreaForEntityId(newState.EntityId);
+                    InternalState[stateData.EntityId] = newState;
 
                     var tasks = new List<Task>();
                     foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in _stateActions.Values)
@@ -505,6 +553,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+
+        // Internal for test
+        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
+            new ConcurrentDictionary<string, HassDevice>();
+        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
+            new ConcurrentDictionary<string, HassEntity>();
+        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
+            new ConcurrentDictionary<string, HassArea>();
 
         public Task SaveDataAsync<T>(string id, T data)
         {

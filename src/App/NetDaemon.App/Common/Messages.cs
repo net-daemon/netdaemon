@@ -26,26 +26,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public JsonElement? ServiceData { get; set; } = null;
     }
 
-    /// <summary>
-    ///     Event sent by Home Assistant when entity state changed
-    /// </summary>
-    public class StateChangedEvent
-    {
-        /// <summary>
-        ///     Unique id of the entity
-        /// </summary>
-        public string EntityId { get; set; } = "";
+    // /// <summary>
+    // ///     Event sent by Home Assistant when entity state changed
+    // /// </summary>
+    // public class StateChangedEvent
+    // {
+    //     /// <summary>
+    //     ///     Unique id of the entity
+    //     /// </summary>
+    //     public string EntityId { get; set; } = "";
 
-        /// <summary>
-        ///     Old state information
-        /// </summary>
-        public EntityState? OldState { get; set; } = null;
+    //     /// <summary>
+    //     ///     Old state information
+    //     /// </summary>
+    //     public EntityState? OldState { get; set; } = null;
 
-        /// <summary>
-        ///     New state information
-        /// </summary>
-        public EntityState? NewState { get; set; } = null;
-    }
+    //     /// <summary>
+    //     ///     New state information
+    //     /// </summary>
+    //     public EntityState? NewState { get; set; } = null;
+    // }
 
     /// <summary>
     ///     Detailed state information
@@ -60,8 +60,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     The state
         /// </summary>
-        /// <value></value>
         public dynamic? State { get; set; } = "";
+
+        /// <summary>
+        ///     The name of the Area in home assistant
+        /// </summary>
+        public string? Area { get; set; }
 
         /// <summary>
         ///     Attributes of the entity

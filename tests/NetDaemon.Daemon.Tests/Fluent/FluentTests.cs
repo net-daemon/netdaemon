@@ -1,4 +1,5 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
+﻿using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -825,6 +826,66 @@ namespace NetDaemon.Daemon.Tests
 
             Assert.True(delayResult.Task.IsCompletedSuccessfully);
             Assert.True(delayResult.Task.Result);
+        }
+
+        [Fact]
+        public async Task EntityInAreaOnStateChangedTurnOnLight()
+        {
+            // ARRANGE
+
+            var daemonTask = RunDefauldDaemonUntilCanceled(200, overrideDebugNotCancel: true);
+
+            while (DefaultDaemonHost.Connected == false)
+                await Task.Delay(10).ConfigureAwait(false);
+
+            // ACT
+            DefaultDaemonApp
+                .Entities(n => n.Area == "Area")
+                .WhenStateChange("on")
+                .UseEntity("light.correct_entity")
+                .TurnOn()
+                .Execute();
+
+            // light.light_in_area is setup so it has area = Area
+            DefaultHassClientMock.AddChangedEvent("light.ligth_in_area", "off", "on");
+
+            await daemonTask.ConfigureAwait(false);
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Once());
+            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
+
+
+        }
+
+        [Fact]
+        public async Task EntityInAreaOnStateChangedShouldTurnOn()
+        {
+            // ARRANGE
+
+            var daemonTask = RunDefauldDaemonUntilCanceled(200, overrideDebugNotCancel: true);
+
+            while (DefaultDaemonHost.Connected == false)
+                await Task.Delay(10).ConfigureAwait(false);
+
+            // ACT
+            DefaultDaemonApp
+                .Entity("binary_sensor.pir")
+                .WhenStateChange("on")
+                .UseEntities(n => n.Area == "Area")
+                .TurnOn()
+                .Execute();
+
+            // light.light_in_area is setup so it has area = Area
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            await daemonTask.ConfigureAwait(false);
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Once());
+            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.ligth_in_area"));
+
+
         }
     }
 }

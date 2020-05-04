@@ -560,5 +560,64 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ASSERT
             Assert.Null(theApp);
         }
+
+        [Fact]
+        public void EntityShouldReturCorrectValueForArea()
+        {
+            // ARRANGE
+            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
+            DefaultDaemonHost._hassEntities["light.lamp"] = new HassEntity
+            {
+                EntityId = "light.lamp",
+                DeviceId = "device_id"
+            };
+            // ACT
+            var areaName = DefaultDaemonHost.GetAreaForEntityId("light.lamp");
+
+            // ASSERT
+            Assert.Equal("Correct name", areaName);
+        }
+
+        [Fact]
+        public void EntityShouldReturNullForAreaNotExist()
+        {
+            // ARRANGE
+            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
+            DefaultDaemonHost._hassEntities["light.lamp"] = new HassEntity
+            {
+                EntityId = "light.lamp",
+                DeviceId = "device_id"
+            };
+            // ACT
+            var areaName = DefaultDaemonHost.GetAreaForEntityId("light.not_exist_lamp");
+
+            // ASSERT
+            Assert.Null(areaName);
+        }
+
+        [Fact]
+        public async Task StateChangeHasAreaInformation()
+        {
+            // ARRANGE
+            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
+            DefaultDaemonHost._hassEntities["binary_sensor.pir"] = new HassEntity
+            {
+                EntityId = "binary_sensor.pir",
+                DeviceId = "device_id"
+            };
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+
+            // ACT
+
+            await RunDefauldDaemonUntilCanceled();
+
+
+            // ASSERT
+            Assert.Equal("Correct name", DefaultDaemonHost.InternalState["binary_sensor.pir"].Area);
+        }
     }
 }
