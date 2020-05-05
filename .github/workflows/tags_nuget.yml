@@ -18,10 +18,10 @@ jobs:
         run: |
           sed -i '/        const string _version = /c\        const string _version = "${GIT_TAG_NAME}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: pack DaemonRunner
-        run: dotnet pack src/DaemonRunner/DaemonRunner/DaemonRunner.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
+        run: dotnet pack src/DaemonRunner/DaemonRunner/DaemonRunner.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-beta
       - name: pack App
-        run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
+        run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-beta
       - name: pack Daemon
-        run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-alpha
+        run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${GIT_TAG_NAME}-beta
       - name: push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true
