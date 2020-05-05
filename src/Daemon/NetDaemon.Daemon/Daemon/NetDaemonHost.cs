@@ -213,6 +213,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="cancellationToken"></param>
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
+            _cancelToken = cancellationToken;
+
             string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
 
             if (_hassClient == null)
@@ -228,7 +230,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     // We are running as hassio add-on
                     connectResult = await _hassClient.ConnectAsync(new Uri("ws://supervisor/core/websocket"),
-                        hassioToken, true).ConfigureAwait(false);
+                        hassioToken, false).ConfigureAwait(false);
                 }
                 else
                 {
@@ -244,35 +246,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
 
+                await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+
                 await _hassClient.SubscribeToEvents().ConfigureAwait(false);
-
-                foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
-                {
-                    if (device is object && device.Id is object)
-                        _hassDevices[device.Id] = device;
-                }
-                foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
-                {
-                    if (area is object && area.Id is object)
-                        _hassAreas[area.Id] = area;
-                }
-                foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
-                {
-                    if (entity is object && entity.EntityId is object)
-                        _hassEntities[entity.EntityId] = entity;
-                }
-
-                var initialStates = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
-                    .ToDictionary(n => n.EntityId);
-
-
-
-                foreach (var key in initialStates.Keys)
-                {
-                    var state = initialStates[key];
-                    state.Area = GetAreaForEntityId(state.EntityId);
-                    InternalState[key] = state;
-                }
 
                 Connected = true;
 
@@ -306,6 +282,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 Connected = false;
                 Logger.LogError(e, "Error, during operation");
+            }
+        }
+
+        internal async Task RefreshInternalStatesAndSetArea()
+        {
+            foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
+            {
+                if (device is object && device.Id is object)
+                    _hassDevices[device.Id] = device;
+            }
+            foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
+            {
+                if (area is object && area.Id is object)
+                    _hassAreas[area.Id] = area;
+            }
+            foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
+            {
+                if (entity is object && entity.EntityId is object)
+                    _hassEntities[entity.EntityId] = entity;
+            }
+            var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
+            var initialStates = hassStates.Select(n => n.ToDaemonEntityState())
+                .ToDictionary(n => n.EntityId);
+
+            InternalState.Clear();
+            foreach (var key in initialStates.Keys)
+            {
+                var state = initialStates[key];
+                state.Area = GetAreaForEntityId(state.EntityId);
+                InternalState[key] = state;
             }
         }
 
@@ -352,6 +358,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 if (result != null)
                 {
                     EntityState entityState = result.ToDaemonEntityState();
+                    entityState.Area = GetAreaForEntityId(entityState.EntityId);
                     InternalState[entityState.EntityId] = entityState;
                     return entityState;
                 }
@@ -472,6 +479,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     throw;
                 }
             }
+            else if (hassEvent.EventType == "device_registry_updated" || hassEvent.EventType == "area_registry_updated")
+            {
+                await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+            }
             else
             {
                 try
@@ -553,6 +564,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+        private CancellationToken _cancelToken;
 
         // Internal for test
         internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =

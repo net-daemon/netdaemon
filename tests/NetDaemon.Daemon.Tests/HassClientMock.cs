@@ -29,9 +29,13 @@ namespace NetDaemon.Daemon.Tests
             Setup(x => x.ConnectAsync(It.IsAny<string>(), It.IsAny<short>(), It.IsAny<bool>(),
                     It.IsAny<string>(), It.IsAny<bool>()))
                 .ReturnsAsync(true);
-            SetupGet(x => x.States).Returns(FakeStates);
 
             SetupDefaultStates();
+
+            SetupGet(x => x.States).Returns(FakeStates);
+
+            Setup(x => x.GetAllStates(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => { return (IEnumerable<HassState>)FakeStates.Values; });
 
             Setup(x => x.ReadEventAsync())
                 .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
