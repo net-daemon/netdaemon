@@ -213,6 +213,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="cancellationToken"></param>
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
+            _cancelToken = cancellationToken;
+
             string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
 
             if (_hassClient == null)
@@ -228,7 +230,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     // We are running as hassio add-on
                     connectResult = await _hassClient.ConnectAsync(new Uri("ws://supervisor/core/websocket"),
-                        hassioToken, true).ConfigureAwait(false);
+                        hassioToken, false).ConfigureAwait(false);
                 }
                 else
                 {
@@ -244,9 +246,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
 
-                await _hassClient.SubscribeToEvents().ConfigureAwait(false);
-
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+
+                await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
                 Connected = true;
 
@@ -300,8 +302,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 if (entity is object && entity.EntityId is object)
                     _hassEntities[entity.EntityId] = entity;
             }
-
-            var initialStates = _hassClient.States.Values.Select(n => n.ToDaemonEntityState())
+            var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
+            var initialStates = hassStates.Select(n => n.ToDaemonEntityState())
                 .ToDictionary(n => n.EntityId);
 
             InternalState.Clear();
@@ -356,6 +358,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 if (result != null)
                 {
                     EntityState entityState = result.ToDaemonEntityState();
+                    entityState.Area = GetAreaForEntityId(entityState.EntityId);
                     InternalState[entityState.EntityId] = entityState;
                     return entityState;
                 }
@@ -561,6 +564,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+        private CancellationToken _cancelToken;
 
         // Internal for test
         internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
