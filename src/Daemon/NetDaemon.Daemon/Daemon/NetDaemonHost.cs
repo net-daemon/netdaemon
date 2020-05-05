@@ -234,7 +234,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 }
                 else
                 {
-                    connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, true).ConfigureAwait(false);
+                    connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, false).ConfigureAwait(false);
                 }
 
                 if (!connectResult)

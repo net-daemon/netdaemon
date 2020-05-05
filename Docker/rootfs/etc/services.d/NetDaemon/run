@@ -15,15 +15,9 @@ if [[ "${PWD}" != "${HASS_RUN_PROJECT_FOLDER}" ]]; then
     exit 1
 fi
 
-if ! test -f "${daemondir}/Service"; then
-    # If the service does not exist exist compile any version, the built in or the
-    # the user provided csproj file. If it is internal they binaries will
-    # only be compiled once since the Service will exist next time.
-
-    echo -e "\\033[32mBuilding NetDaemon source...\\033[0m" >&2
-    if dotnet publish -v q -c Release -o "${daemondir}"; then
-        dotnet build-server shutdown || exit 1
-    fi
+echo -e "\\033[32mBuilding NetDaemon source...\\033[0m" >&2
+if dotnet publish -v q -c Release -o "${daemondir}"; then
+    dotnet build-server shutdown || exit 1
 fi
 
 if test -f "${daemondir}/Service"; then
