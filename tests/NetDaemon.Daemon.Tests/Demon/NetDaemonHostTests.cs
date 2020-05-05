@@ -619,5 +619,18 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ASSERT
             Assert.Equal("Correct name", DefaultDaemonHost.InternalState["binary_sensor.pir"].Area);
         }
+
+        [Fact]
+        public async Task SetStateShouldKeepSameArea()
+        {
+            // ARRANGE
+            await RunDefauldDaemonUntilCanceled();
+
+            // ACT
+            var state = await DefaultDaemonHost.SetState("light.ligth_in_area", "on", ("attr", "value"));
+
+            /// ASSERT
+            Assert.Equal("Area", state?.Area);
+        }
     }
 }
