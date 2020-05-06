@@ -6,7 +6,6 @@ using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -18,6 +17,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
@@ -96,7 +96,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .UseSerilog()
-                .ConfigureServices(services => { services.AddHostedService<RunnerService>(); });
+                .ConfigureServices(services =>
+                {
+                    services.AddHttpClient();
+                    services.AddHostedService<RunnerService>();
+                });
     }
 
     public class RunnerService : BackgroundService
@@ -104,6 +108,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
 
         const string _version = "dev";
+        private readonly IHttpClientFactory _httpClientFactory;
 
         // private NetDaemonHost? _daemonHost;
         private readonly ILogger<RunnerService> _logger;
@@ -114,8 +119,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         /// </summary>
         private const int _reconnectIntervall = 40000;
 
-        public RunnerService(ILoggerFactory loggerFactory)
+        public RunnerService(ILoggerFactory loggerFactory, IHttpClientFactory httpClientFactory)
         {
+            _httpClientFactory = httpClientFactory;
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
         }
@@ -165,7 +171,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             await Task.Delay(_reconnectIntervall, stoppingToken).ConfigureAwait(false); // Wait x seconds
                         }
 
-                        await using var _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory);
+                        await using var _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory, new HttpHandler(_httpClientFactory));
 
                         var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
                             stoppingToken);

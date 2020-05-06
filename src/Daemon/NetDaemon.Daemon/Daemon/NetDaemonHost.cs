@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -40,6 +41,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly Scheduler _scheduler;
 
         private readonly IDataRepository? _repository;
+        private readonly IHttpHandler? _httpHandler;
 
         // Used for testing
         internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
@@ -69,9 +71,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly List<(string, string, Func<dynamic?, Task>)> _companionServiceCallFunctionList
             = new List<(string, string, Func<dynamic?, Task>)>();
 
-        public NetDaemonHost(IHassClient? hassClient, IDataRepository? repository, ILoggerFactory? loggerFactory = null)
+        public NetDaemonHost(
+            IHassClient? hassClient,
+            IDataRepository? repository,
+            ILoggerFactory? loggerFactory = null,
+            IHttpHandler? httpHandler = null)
         {
             loggerFactory ??= DefaultLoggerFactory;
+            _httpHandler = httpHandler;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
@@ -92,6 +99,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                         .ClearProviders()
                                         .AddConsole();
                                 });
+
+        public IHttpHandler Http
+        {
+            get
+            {
+                _ = _httpHandler ?? throw new NullReferenceException("HttpHandler can not be null!");
+                return _httpHandler;
+            }
+        }
 
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
 
@@ -743,6 +759,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await Stop().ConfigureAwait(false);
         }
     }
+
     public class DelayResult : IDelayResult
     {
         private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
