@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Net.Http;
+using System.Net;
+using System.Text.Json;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -348,6 +350,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="id">Unique Id of the data</param>
         /// <returns>The data persistent or null if not exists</returns>
         ValueTask<T> GetDataAsync<T>(string id);
+
+        /// <summary>
+        ///     Http features of NetDaemon is exposed through the Http property
+        /// </summary>
+        IHttpHandler Http { get; }
     }
 
 
@@ -470,5 +477,53 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="app">The Daemon App calling fluent API</param>
         /// <param name="entityIds">The unique id:s of the script</param>
         IScript RunScript(INetDaemonApp app, params string[] entityIds);
+    }
+
+    /// <summary>
+    ///     Implements all Http features of NetDaemon
+    /// </summary>
+    public interface IHttpHandler
+    {
+        /// <summary>
+        ///     Returns a http client to use with http calls
+        /// </summary>
+        /// <param name="name">Logical name of the client to create</param>
+        /// <remarks>
+        ///     This method uses the HttpClientFactory in the background for
+        ///     more resource friendly usage of http client. You can cache the client
+        ///     or dispose the client each usage in a using block.
+        ///     Callers are also free to mutate the returned HttpClient
+        ///     instance's public properties as desired.
+        /// </remarks>
+        HttpClient CreateHttpClient(string? name = null);
+
+
+        /// <summary>
+        ///     Gets a json resopose deserialized
+        /// </summary>
+        /// <param name="url">Url</param>
+        /// <param name="options">Serialization options to use when serializing</param>
+        /// <param name="headers">name and value tuple of request headers, allowed values are string and IEnumerable of string</param>
+        /// <typeparam name="T">The type to use when deserializing</typeparam>
+        Task<T> GetJson<T>(string url, JsonSerializerOptions? options = null, params (string, object)[] headers);
+
+        /// <summary>
+        ///     Post a object that are serialized to a json request and returns a deserializes json response
+        /// </summary>
+        /// <param name="url">Url</param>
+        /// <param name="request">The object to use as request</param>
+        /// <param name="options">Serialization options to use when serializing</param>
+        /// <param name="headers">name and value tuple of request headers, allowed values are string and IEnumerable of string</param>
+        /// <typeparam name="T">The type to use when deserializing</typeparam>
+        Task<T> PostJson<T>(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers);
+
+        /// <summary>
+        ///     Post a object that are serialized to a json request
+        /// </summary>
+        /// <param name="url">Url</param>
+        /// <param name="request">The object to use as request</param>
+        /// <param name="options">Serialization options to use when serializing</param>
+        /// <param name="headers">name and value tuple of request headers, allowed values are string and IEnumerable of string</param>
+        Task PostJson(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers);
     }
 }

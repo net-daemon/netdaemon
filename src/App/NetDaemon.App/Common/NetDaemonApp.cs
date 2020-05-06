@@ -65,6 +65,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public ConcurrentDictionary<string, object> Global => _global;
 
         /// <inheritdoc/>
+        public IHttpHandler Http
+        {
+            get
+            {
+                _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+                return _daemon!.Http;
+            }
+        }
+        /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
@@ -447,7 +456,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.DelayUntilStateChange(entityIds, stateFunc);
         }
-
 
         /// <summary>
         ///     Implements the IEqualit.Equals method
