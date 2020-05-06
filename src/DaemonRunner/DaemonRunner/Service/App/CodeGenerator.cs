@@ -82,9 +82,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     {
                         var (fluent, fluentInterface) = _FluentApiMapper[domain];
                         var name = entity[(entity.IndexOf(".") + 1)..];
-                        // Make sure the name is valid
-                        if (long.TryParse(name, out _))
+                        // Quick check to make sure the name is a valid C# identifier. Should really check to make
+                        // sure it doesn't collide with a reserved keyword as well.
+                        if (!char.IsLetter(name[0]) && (name[0] != '_'))
+                        {
                             name = "e_" + name;
+                        }
 
                         var propertyCode = $@"public {fluentInterface} {name.ToCamelCase()} => _app.{fluent}(""{entity}"");";
                         var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
