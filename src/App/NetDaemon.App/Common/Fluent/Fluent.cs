@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Reactive.Linq;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -169,7 +170,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     When state change
     /// </summary>
-    public interface IStateChanged
+    public interface IStateChanged : IObservable<EntityState>
     {
         /// <summary>
         ///     When state change from or to a state
@@ -479,6 +480,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
 
         }
+
+        #region IObservable<EntityState> implementation
+
+        /// <inheritdoc/>
+        /// <summary>
+        /// This is a really dumb implementation that just passes through to the
+        /// underlying app and then filters by ID
+        /// </summary>
+        /// <param name="observer"></param>
+        /// <returns></returns>
+        public IDisposable Subscribe(IObserver<EntityState> observer)
+        {
+            return Daemon.Where(state => EntityIds.Contains(state.EntityId)).Subscribe(observer);
+        }
+        #endregion
 
         /// <inheritdoc/>
         public IState AndNotChangeFor(TimeSpan timeSpan)
