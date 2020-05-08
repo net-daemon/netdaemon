@@ -5,119 +5,10 @@ using System.Text.Json;
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
     /// <summary>
-    ///     Event from CallService
-    /// </summary>
-    public class ServiceEvent
-    {
-        /// <summary>
-        ///     Home Assistant domain
-        /// </summary>
-        public string Domain { get; set; } = "";
-
-        /// <summary>
-        ///     Service being called
-        /// </summary>
-        public string Service { get; set; } = "";
-
-        /// <summary>
-        ///     Data being sent by the service
-        /// </summary>
-        /// <value></value>
-        public JsonElement? ServiceData { get; set; } = null;
-    }
-
-    // /// <summary>
-    // ///     Event sent by Home Assistant when entity state changed
-    // /// </summary>
-    // public class StateChangedEvent
-    // {
-    //     /// <summary>
-    //     ///     Unique id of the entity
-    //     /// </summary>
-    //     public string EntityId { get; set; } = "";
-
-    //     /// <summary>
-    //     ///     Old state information
-    //     /// </summary>
-    //     public EntityState? OldState { get; set; } = null;
-
-    //     /// <summary>
-    //     ///     New state information
-    //     /// </summary>
-    //     public EntityState? NewState { get; set; } = null;
-    // }
-
-    /// <summary>
-    ///     Detailed state information
-    /// </summary>
-    public class EntityState : IEntityProperties
-    {
-        /// <summary>
-        ///     Unique id of the entity
-        /// </summary>
-        public string EntityId { get; set; } = "";
-
-        /// <summary>
-        ///     The state
-        /// </summary>
-        public dynamic? State { get; set; } = "";
-
-        /// <summary>
-        ///     The name of the Area in home assistant
-        /// </summary>
-        public string? Area { get; set; }
-
-        /// <summary>
-        ///     Attributes of the entity
-        /// </summary>
-        public dynamic? Attribute { get; set; } = new FluentExpandoObject(true, true);
-
-        /// <summary>
-        ///     Last changed, when state changed from and to different values
-        /// </summary>
-        public DateTime LastChanged { get; set; } = DateTime.MinValue;
-
-        /// <summary>
-        ///     Last updated, when entity state or attributes changed
-        /// </summary>
-        public DateTime LastUpdated { get; set; } = DateTime.MinValue;
-    }
-
-    /// <summary>
     ///     Home assistant config parameters
     /// </summary>
     public class Config
     {
-        /// <summary>
-        ///     Latitude of Home Assistant instance
-        /// </summary>
-        public float? Latitude { get; set; } = null;
-
-        /// <summary>
-        ///     Longitude of Home Assistant instance
-        /// </summary>
-        public float? Longitude { get; set; } = null;
-
-        /// <summary>
-        ///     Elevation of Home Assistant instance
-        /// </summary>
-        public int? Elevation { get; set; } = null;
-
-        /// <summary>
-        ///     Unity system being configured
-        /// </summary>
-        public HassUnitSystem? UnitSystem { get; set; } = null;
-
-        /// <summary>
-        ///     The name of the location
-        /// </summary>
-        public string? LocationName { get; set; } = null;
-
-        /// <summary>
-        ///     The timezone
-        /// </summary>
-        public string? TimeZone { get; set; } = null;
-
         /// <summary>
         ///     Components being installed and used
         /// </summary>
@@ -129,14 +20,80 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public string? ConfigDir { get; set; } = null;
 
         /// <summary>
-        ///     Whitelisted external directories
+        ///     Elevation of Home Assistant instance
         /// </summary>
-        public List<string>? WhitelistExternalDirs { get; set; } = null;
+        public int? Elevation { get; set; } = null;
+
+        /// <summary>
+        ///     Latitude of Home Assistant instance
+        /// </summary>
+        public float? Latitude { get; set; } = null;
+
+        /// <summary>
+        ///     The name of the location
+        /// </summary>
+        public string? LocationName { get; set; } = null;
+
+        /// <summary>
+        ///     Longitude of Home Assistant instance
+        /// </summary>
+        public float? Longitude { get; set; } = null;
+
+        /// <summary>
+        ///     The timezone
+        /// </summary>
+        public string? TimeZone { get; set; } = null;
+
+        /// <summary>
+        ///     Unity system being configured
+        /// </summary>
+        public HassUnitSystem? UnitSystem { get; set; } = null;
 
         /// <summary>
         ///     Current Home Assistant version
         /// </summary>
         public string? Version { get; set; } = null;
+
+        /// <summary>
+        ///     Whitelisted external directories
+        /// </summary>
+        public List<string>? WhitelistExternalDirs { get; set; } = null;
+    }
+
+    /// <summary>
+    ///     Detailed state information
+    /// </summary>
+    public class EntityState : IEntityProperties
+    {
+        /// <summary>
+        ///     The name of the Area in home assistant
+        /// </summary>
+        public string? Area { get; set; }
+
+        /// <summary>
+        ///     Attributes of the entity
+        /// </summary>
+        public dynamic? Attribute { get; set; } = new FluentExpandoObject(true, true);
+
+        /// <summary>
+        ///     Unique id of the entity
+        /// </summary>
+        public string EntityId { get; set; } = "";
+
+        /// <summary>
+        ///     Last changed, when state changed from and to different values
+        /// </summary>
+        public DateTime LastChanged { get; set; } = DateTime.MinValue;
+
+        /// <summary>
+        ///     Last updated, when entity state or attributes changed
+        /// </summary>
+        public DateTime LastUpdated { get; set; } = DateTime.MinValue;
+
+        /// <summary>
+        ///     The state
+        /// </summary>
+        public dynamic? State { get; set; } = "";
     }
 
     /// <summary>
@@ -163,5 +120,27 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Volume unit
         /// </summary>
         public string? Volume { get; set; } = null;
+    }
+
+    /// <summary>
+    ///     Event from CallService
+    /// </summary>
+    public class ServiceEvent
+    {
+        /// <summary>
+        ///     Home Assistant domain
+        /// </summary>
+        public string Domain { get; set; } = "";
+
+        /// <summary>
+        ///     Service being called
+        /// </summary>
+        public string Service { get; set; } = "";
+
+        /// <summary>
+        ///     Data being sent by the service
+        /// </summary>
+        /// <value></value>
+        public JsonElement? ServiceData { get; set; } = null;
     }
 }

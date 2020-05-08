@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
@@ -26,6 +25,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
         [JsonPropertyName("generate_entities")]
         public bool? GenerateEntitiesOnStartup { get; set; } = false;
-
     }
 }

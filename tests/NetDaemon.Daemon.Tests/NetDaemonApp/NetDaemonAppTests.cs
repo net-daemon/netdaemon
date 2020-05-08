@@ -9,6 +9,7 @@ using Xunit;
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
     public class AppTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+
     public class AppTestApp2 : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
 
     public class NetDaemonApptests
@@ -29,7 +30,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _app.StartUpAsync(_netDaemonMock.Object);
             _app.Id = "app";
         }
-
 
         [Theory]
         [InlineData(LogLevel.Information, "Log")]
@@ -135,7 +135,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _netDaemonMock.Verify(n => n.Entities(_app, It.IsAny<Func<IEntityProperties, bool>>()));
         }
 
-
         [Fact]
         public void CameraShouldCallCorrectDaemonEntity()
         {
@@ -236,7 +235,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             // ASSERT
             Assert.Equal(_app_two.Global[key], value);
-
         }
     }
 }

@@ -26,7 +26,6 @@ namespace app
             Log("Tomas light changed!");
             Log($"New state = {newState.State}");
 
-
             //await And("light.vardagsrummet")
             //    .TurnOn(
             //        ("brightness", 50),

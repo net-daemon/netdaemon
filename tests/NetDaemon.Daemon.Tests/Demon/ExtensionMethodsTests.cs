@@ -1,12 +1,9 @@
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using System.Text.Json;
-using Moq;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Threading.Tasks;
-using Xunit;
 using System.Linq;
+using System.Text.Json;
+using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
@@ -160,8 +157,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 LastChanged = new DateTime(2000, 1, 1, 1, 1, 1),
                 LastUpdated = new DateTime(2000, 1, 1, 1, 1, 2)
             };
-
-
 
             // ACT
             var entityState = hassState.ToDaemonEntityState();

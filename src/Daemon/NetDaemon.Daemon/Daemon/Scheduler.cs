@@ -83,12 +83,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             ScheduleTask(task);
 
             return new SchedulerResult(task, cancelSource);
-
         }
 
         private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
-
             using CancellationTokenSource linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(_cancelSource.Token, token);
 
@@ -118,8 +116,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 }
                 stopWatch.Reset();
             }
-
-
         }
 
         internal TimeSpan CalculateDailyTimeBetweenNowAndTargetTime(DateTime targetTime)
@@ -211,7 +207,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     {
                         _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
                     }
-
                 }
             }
         }
@@ -289,7 +284,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 _logger.LogWarning(e, "Unhandled exception invoking scheduled function");
             }
-
         }
 
         /// <summary>
@@ -410,6 +404,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _scheduledTask = scheduledTask;
             _cancelSource = cancelSource;
         }
+
         public Task Task => _scheduledTask;
         public CancellationTokenSource CancelSource => _cancelSource;
     }

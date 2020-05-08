@@ -3,6 +3,42 @@ using System.Collections.Generic;
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
     /// <summary>
+    ///     Type of log to supress
+    /// </summary>
+    public enum SupressLogType
+    {
+        /// <summary>
+        ///     Supress Missing Execute Error in a method
+        /// </summary>
+        MissingExecute
+    }
+
+    /// <summary>
+    ///     Attribute to mark function as callback for state changes
+    /// </summary>
+    [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    public sealed class DisableLogAttribute : System.Attribute
+    {
+        // See the attribute guidelines at
+        //  http://go.microsoft.com/fwlink/?LinkId=85236
+        private SupressLogType[] _logTypesToSupress;
+
+        /// <summary>
+        ///     Default constructor
+        /// </summary>
+        /// <param name="logTypes">List of logtypes to supress</param>
+        public DisableLogAttribute(params SupressLogType[] logTypes)
+        {
+            _logTypesToSupress = logTypes;
+        }
+
+        /// <summary>
+        ///     Log types to supress
+        /// </summary>
+        public IEnumerable<SupressLogType> LogTypesToSupress => _logTypesToSupress;
+    }
+
+    /// <summary>
     ///     Attribute to mark function as callback for service calls
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
@@ -14,13 +50,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public sealed class HomeAssistantStateChangedAttribute : System.Attribute
     {
+        private readonly bool _allChanges;
+
+        private readonly object? _from;
+
+        private readonly object? _to;
+
         // See the attribute guidelines at
         //  http://go.microsoft.com/fwlink/?LinkId=85236
         private string _entityId;
-
-        private readonly object? _to;
-        private readonly object? _from;
-        private readonly bool _allChanges;
 
         /// <summary>
         ///     Default constructor
@@ -38,14 +76,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <summary>
-        ///     Unique id of the entity
-        /// </summary>
-        public string EntityId => _entityId;
-
-        /// <summary>
         ///     Get all changes, even if only attribute changes
         /// </summary>
         public bool AllChanges => _allChanges;
+
+        /// <summary>
+        ///     Unique id of the entity
+        /// </summary>
+        public string EntityId => _entityId;
 
         /// <summary>
         ///     From state filter
@@ -56,43 +94,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     To state filter
         /// </summary>
         public object? To => _to;
-    }
-
-    /// <summary>
-    ///     Type of log to supress
-    /// </summary>
-    public enum SupressLogType
-    {
-        /// <summary>
-        ///     Supress Missing Execute Error in a method
-        /// </summary>
-        MissingExecute
-    }
-
-
-    /// <summary>
-    ///     Attribute to mark function as callback for state changes
-    /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
-    public sealed class DisableLogAttribute : System.Attribute
-    {
-        // See the attribute guidelines at
-        //  http://go.microsoft.com/fwlink/?LinkId=85236
-        private SupressLogType[] _logTypesToSupress;
-
-
-        /// <summary>
-        ///     Default constructor
-        /// </summary>
-        /// <param name="logTypes">List of logtypes to supress</param>
-        public DisableLogAttribute(params SupressLogType[] logTypes)
-        {
-            _logTypesToSupress = logTypes;
-        }
-
-        /// <summary>
-        ///     Log types to supress
-        /// </summary>
-        public IEnumerable<SupressLogType> LogTypesToSupress => _logTypesToSupress;
     }
 }

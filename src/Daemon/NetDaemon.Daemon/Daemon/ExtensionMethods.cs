@@ -94,10 +94,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 case JsonValueKind.String:
                     return ParseDataType(elem.GetString());
+
                 case JsonValueKind.False:
                     return false;
+
                 case JsonValueKind.True:
                     return true;
+
                 case JsonValueKind.Number:
                     long retVal;
                     if (elem.TryGetInt64(out retVal))
@@ -105,6 +108,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         return retVal;
                     }
                     return elem.GetDouble();
+
                 case JsonValueKind.Array:
                     var list = new List<object?>();
                     foreach (var val in elem.EnumerateArray())
@@ -112,6 +116,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         list.Add(val.ToDynamicValue());
                     }
                     return (IEnumerable<object?>)list;
+
                 case JsonValueKind.Object:
                     var obj = new Dictionary<string, object?>();
 

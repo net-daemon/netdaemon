@@ -1,10 +1,8 @@
-﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
+﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Dynamic;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -854,8 +852,6 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Once());
             DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.correct_entity"));
-
-
         }
 
         [Fact]
@@ -884,8 +880,6 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Once());
             DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.ligth_in_area"));
-
-
         }
     }
 }

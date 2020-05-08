@@ -1,6 +1,5 @@
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -120,7 +119,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Contains("source_folder", obj);
             Assert.Contains("generate_entities", obj);
         }
-
 
         [Fact]
         public void YamlScalarNodeToObjectUsingString()

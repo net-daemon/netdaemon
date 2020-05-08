@@ -239,7 +239,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
                     else
                         await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
-
                 }
                 catch (System.Exception e)
                 {
@@ -326,7 +325,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     result.Add(appInstance);
                     // Register the instance with the host
                     host.RegisterAppInstance(appInstance.Id!, (appInstance as NetDaemonApp)!);
-
                 }
             }
             if (result.SelectMany(n => n.Dependencies).Count() > 0)
@@ -375,7 +373,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         /// <param name="nodes">All nodes of directed acyclic graph.</param>
         /// <param name="edges">All edges of directed acyclic graph.</param>
         /// <returns>Sorted node in topological order.</returns>
-        static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
+        private static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
         {
             // Empty list that will contain the sorted elements
             var L = new List<T>();
@@ -386,7 +384,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             // while S is non-empty do
             while (S.Any())
             {
-
                 //  remove a node n from S
                 var n = S.First();
                 S.Remove(n);
@@ -623,7 +620,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                             var parentSymbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
                             if (parentSymbol?.Name == symbolName)
                                 topInvocationExpression = (InvocationExpressionSyntax)parentInvocationExpression;
-
                         }
                         parentInvocationExpression = parentInvocationExpression.Parent;
                     }

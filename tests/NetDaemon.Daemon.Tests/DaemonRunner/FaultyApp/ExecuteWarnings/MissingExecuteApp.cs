@@ -45,7 +45,6 @@ public class MissingExecuteApp : NetDaemonApp
            var x = new NestedClass(this);
            await x.DoAThing();
        });
-
     }
 }
 

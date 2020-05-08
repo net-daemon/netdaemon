@@ -1,23 +1,22 @@
 using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {
@@ -93,6 +92,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 Log.CloseAndFlush();
             }
         }
+
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .UseSerilog()
@@ -105,13 +105,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
     public class RunnerService : BackgroundService
     {
-
-
-        const string _version = "dev";
+        private const string _version = "dev";
         private readonly IHttpClientFactory _httpClientFactory;
 
         // private NetDaemonHost? _daemonHost;
         private readonly ILogger<RunnerService> _logger;
+
         private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
@@ -230,7 +229,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     {
                         if (!stoppingToken.IsCancellationRequested)
                         {
-
                             _logger.LogWarning($"Home assistant is disconnected, retrying in {_reconnectIntervall / 1000} seconds...");
                         }
                     }

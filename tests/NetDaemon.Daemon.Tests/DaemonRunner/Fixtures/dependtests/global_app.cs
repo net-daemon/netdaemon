@@ -33,8 +33,6 @@ namespace DependNs
 
             return Task.CompletedTask;
         }
-
-
     }
 
     public class GlobalApp : NetDaemonApp

@@ -12,6 +12,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
     {
         [JsonPropertyName("json_prop")] public string? Property { get; set; }
     }
+
     public class HttpTests : DaemonHostTestBase
     {
         public HttpTests() : base()
@@ -93,7 +94,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ASSERT
 
             Assert.Equal("hello world", result.Property);
-
         }
 
         [Fact]

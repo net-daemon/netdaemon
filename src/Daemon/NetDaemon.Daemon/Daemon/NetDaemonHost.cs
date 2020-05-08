@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -45,6 +44,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         // Used for testing
         internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
+
         private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
             new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
@@ -275,7 +275,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-
                     HassEvent changedEvent = await _hassClient.ReadEventAsync(cancellationToken).ConfigureAwait(false);
                     if (changedEvent != null)
                     {
@@ -585,8 +584,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         // Internal for test
         internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
             new ConcurrentDictionary<string, HassDevice>();
+
         internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
             new ConcurrentDictionary<string, HassEntity>();
+
         internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
             new ConcurrentDictionary<string, HassArea>();
 
@@ -697,7 +698,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 })!);
             }
 
-
             return result;
         }
 
@@ -768,6 +768,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private bool _isCanceled = false;
 
         internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
+
         public DelayResult(TaskCompletionSource<bool> delayTaskCompletionSource, INetDaemon daemon)
         {
             _delayTaskCompletionSource = delayTaskCompletionSource;
@@ -795,6 +796,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -817,8 +819,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             Dispose(true);
         }
 
-
-
-        #endregion
+        #endregion IDisposable Support
     }
 }

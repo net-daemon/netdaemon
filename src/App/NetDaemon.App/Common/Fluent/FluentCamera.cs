@@ -27,6 +27,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         T EnableMotionDetection();
     }
+
     /// <summary>
     ///     Generic interface for PlayStream
     /// </summary>
@@ -169,5 +170,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return CallServiceOnAllEntities(service, data);
         }
     }
-
 }
