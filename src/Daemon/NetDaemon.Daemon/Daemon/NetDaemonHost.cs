@@ -33,6 +33,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
                     new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
+        private readonly List<IObserver<EntityState>> _observers = new List<IObserver<EntityState>>();
+        
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
 
         private readonly IHassClient _hassClient;
@@ -434,6 +436,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             ));
                         }
                     }
+                    foreach (var observer in _observers)
+                    {
+                        observer.OnNext(newState);
+                    }
                     // No hit
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
@@ -720,10 +726,30 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         #region IObservable<EntityState> implementation
+
+        private class Unsubscriber : IDisposable 
+        {
+            private readonly IList<IObserver<EntityState>> _observers;
+            private readonly IObserver<EntityState> _observer;
+
+            public Unsubscriber(IList<IObserver<EntityState>> observers, IObserver<EntityState> observer)
+            {
+                this._observers = observers;
+                this._observer = observer;
+            }
+
+            public void Dispose()
+            {
+                if (!(_observer == null)) _observers.Remove(_observer);
+            }
+        }
         /// <inheritdoc/>
         public IDisposable Subscribe(IObserver<EntityState> observer)
         {
-            throw new NotImplementedException();
+            if (!_observers.Contains(observer))
+                _observers.Add(observer);
+
+            return new Unsubscriber(_observers, observer);
         }
 
         #endregion
