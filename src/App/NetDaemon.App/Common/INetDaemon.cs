@@ -196,7 +196,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     The interface that interacts with the daemon main logic
     /// </summary>
-    public interface INetDaemonBase
+    public interface INetDaemonBase : IObservable<EntityState>
     {
         /// <summary>
         ///     Logger to use

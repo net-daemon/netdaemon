@@ -719,6 +719,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return result;
         }
 
+        #region IObservable<EntityState> implementation
+        /// <inheritdoc/>
+        public IDisposable Subscribe(IObserver<EntityState> observer)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+
         /// <inheritdoc/>
         public NetDaemonApp? GetApp(string appInstanceId)
         {
@@ -742,6 +752,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             await Stop().ConfigureAwait(false);
         }
+
     }
     public class DelayResult : IDelayResult
     {

@@ -448,6 +448,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return _daemon!.DelayUntilStateChange(entityIds, stateFunc);
         }
 
+        #region IObservable<EntityState> implementation
+        /// <inheritdoc/>
+        public IDisposable Subscribe(IObserver<EntityState> observer)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.Subscribe(observer);
+        }
+
+        #endregion
 
         /// <summary>
         ///     Implements the IEqualit.Equals method
