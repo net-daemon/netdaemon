@@ -486,6 +486,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
                 };
 
                 var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();

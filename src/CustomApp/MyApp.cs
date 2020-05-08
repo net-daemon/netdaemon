@@ -1,44 +1,23 @@
 ﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System.Threading.Tasks;
+using System.Linq;
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace app
 {
     public class MyApp : NetDaemonApp
     {
-        //public override Task InitializeAsync()
-        //{
-        //    await ListenState("light.tomas_rum", OnTomasRoomChanged);
-
-        //    //await Action
-        //    //        .TurnOff
-        //    //            .UseEntities(
-        //    //            "light.mylight",
-        //    //            "light.yourlight"
-        //    //            )
-        //    //                .WithAttribute("brightness", 50).And
-        //    //        .TurnOff
-        //    //            .UseEntity("light.otherlight")
-        //    //        .ExecuteAsync();
-        //}
-
-        private async Task OnTomasRoomChanged(string entityId, EntityState newState, EntityState oldState)
+        public override async Task InitializeAsync()
         {
-            Log("Tomas light changed!");
-            Log($"New state = {newState.State}");
+            Log("Listing for events with Rx");
+            IObservable<EntityState> obs = this;
+            this.ForEach(e =>
+            {
+                Log("Rx - got global event for {0}, state is {1}", e.EntityId, e.State);
+            });
 
-
-            //await And("light.vardagsrummet")
-            //    .TurnOn(
-            //        ("brightness", 50),
-            //        ("color_temp", 123)
-            //    );
-
-            //await And("light.vardagsrummet")
-            //    .TurnOn()
-            //        .Attribute.brightness = 50
-            //        .Attribute.color_temp = 123;
-
-            await Task.Delay(10);
         }
     }
 }
