@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29521.150
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomApp", "src\CustomApp\CustomApp.csproj", "{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "src\Service\Service.csproj", "{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.App", "src\App\NetDaemon.App\NetDaemon.App.csproj", "{A3651DE3-09DE-48E7-8DB4-18D95F60DAC7}"
@@ -18,8 +16,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{53E4E82B-565F-4D91-8C87-52B3C3B74884}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{3BC5043B-C688-4D1D-8FA8-43310325D16D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomApp", "CustomApp", "{52C5E9CD-0837-4788-81D1-4953D1C2A304}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DaemonRunner", "src\DaemonRunner\DaemonRunner\DaemonRunner.csproj", "{E79D336A-0BA1-4662-A840-CAB24B3145B9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -38,18 +34,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Debug|x64.Build.0 = Debug|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Debug|x86.Build.0 = Debug|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Release|x64.ActiveCfg = Release|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Release|x64.Build.0 = Release|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Release|x86.ActiveCfg = Release|Any CPU
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8}.Release|x86.Build.0 = Release|Any CPU
 		{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29A76FB2-5F79-4914-8DFB-D63E6BA0539E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -115,7 +99,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{64F7ADB4-82EA-438F-9F5B-A46D33E752F8} = {52C5E9CD-0837-4788-81D1-4953D1C2A304}
 		{29A76FB2-5F79-4914-8DFB-D63E6BA0539E} = {3BC5043B-C688-4D1D-8FA8-43310325D16D}
 		{A3651DE3-09DE-48E7-8DB4-18D95F60DAC7} = {53E4E82B-565F-4D91-8C87-52B3C3B74884}
 		{1DF9E750-9308-4E12-8A48-CAABE68FF30A} = {42718370-2C75-4708-8C40-DD59D633C96E}
