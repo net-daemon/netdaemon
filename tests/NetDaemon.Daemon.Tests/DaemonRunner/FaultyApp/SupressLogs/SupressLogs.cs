@@ -21,5 +21,4 @@ public class SupressLogs : NetDaemonApp
         // This is not supressed
         Entity("Test");
     }
-
 }

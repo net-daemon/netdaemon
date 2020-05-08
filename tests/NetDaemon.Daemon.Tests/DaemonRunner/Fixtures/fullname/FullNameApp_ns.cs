@@ -5,7 +5,6 @@ using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace TheAppNameSpace2
 {
-
     /// <summary>
     ///     Greets (or insults) people when coming home :)
     /// </summary>
@@ -18,5 +17,4 @@ namespace TheAppNameSpace2
             return Task.CompletedTask;
         }
     }
-
 }

@@ -74,7 +74,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             }
         }
 
-
         public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
         {
             var netDaemonApp = (INetDaemonApp?)Activator.CreateInstance(netDaemonAppType);

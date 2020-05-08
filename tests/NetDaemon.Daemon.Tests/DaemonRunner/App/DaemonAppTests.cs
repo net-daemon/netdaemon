@@ -18,8 +18,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
     {
         public static readonly string ConfigFixturePath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "Fixtures");
+
         public static readonly string FaultyAppPath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "FaultyApp");
+
         public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(AppTests.ConfigFixturePath, filename));
 
         public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
@@ -327,6 +329,7 @@ app:
             moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
             moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_app_depend_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
         }
+
         //FaultyAppPath
         [Fact]
         public async Task InstanceAppsThatHasCircularDependenciesShouldReturnNull()
@@ -357,7 +360,6 @@ app:
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(13));
-
         }
 
         [Fact]
@@ -373,7 +375,6 @@ app:
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(1));
-
         }
 
         public static CodeManager CM(string path) => new CodeManager(path, new LoggerMock().Logger);

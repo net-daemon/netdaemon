@@ -13,7 +13,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
 {
     public class HostTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp
     {
-
     }
 
     public class NetDaemonTests : DaemonHostTestBase
@@ -614,7 +613,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ACT
 
             await RunDefauldDaemonUntilCanceled();
-
 
             // ASSERT
             Assert.Equal("Correct name", DefaultDaemonHost.InternalState["binary_sensor.pir"].Area);

@@ -1,18 +1,19 @@
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using Moq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
     public class HttpClientFactoryMock : Mock<IHttpClientFactory>
     {
-        HttpClient? _httpClient;
-        MockHttpMessageHandler? _handler;
+        private HttpClient? _httpClient;
+        private MockHttpMessageHandler? _handler;
         public MockHttpMessageHandler? MessageHandler => _handler;
+
         public HttpClientFactoryMock()
         {
         }
@@ -23,17 +24,17 @@ namespace NetDaemon.Daemon.Tests.Daemon
             _httpClient = new HttpClient(_handler);
             Setup(x => x.CreateClient(It.IsAny<string>())).Returns(_httpClient!);
         }
-
     }
+
     public class HttpHandlerMock : Mock<IHttpHandler>
     {
-        HttpClient? _httpClient;
-        MockHttpMessageHandler? _handler;
+        private HttpClient? _httpClient;
+        private MockHttpMessageHandler? _handler;
 
         public MockHttpMessageHandler? MessageHandler => _handler;
+
         public HttpHandlerMock()
         {
-
         }
 
         public void SetResponse(string response, HttpStatusCode statusCode = HttpStatusCode.OK)
@@ -58,6 +59,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             _response = response;
             _StatusCode = statusCode;
         }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var responseMessage = new HttpResponseMessage(_StatusCode);
@@ -69,5 +71,4 @@ namespace NetDaemon.Daemon.Tests.Daemon
             return responseMessage;
         }
     }
-
 }

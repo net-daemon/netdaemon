@@ -22,7 +22,6 @@ namespace Netdaemon.Generated.Extensions
         }
 
         public IEntity HallByra => _app.Entity("light.hall_byra");
-
     }
 
     public partial class SwitchEntities
@@ -34,7 +33,6 @@ namespace Netdaemon.Generated.Extensions
         }
 
         public IEntity Switch7 => _app.Entity("switch.switch7");
-
     }
 
     public partial class SceneEntities
@@ -46,7 +44,6 @@ namespace Netdaemon.Generated.Extensions
         }
 
         public IEntity Dag => _app.Entity("scene.day");
-
     }
 
     public partial class ScriptEntities

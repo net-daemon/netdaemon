@@ -6,7 +6,6 @@ using NetDaemon.Daemon.Tests.Daemon;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +23,7 @@ namespace NetDaemon.Daemon.Tests
         private readonly NetDaemonHost _notConnectedDaemonHost;
 
         private readonly INetDaemonApp _defaultDaemonApp;
+
         internal DaemonHostTestBase()
         {
             _loggerMock = new LoggerMock();

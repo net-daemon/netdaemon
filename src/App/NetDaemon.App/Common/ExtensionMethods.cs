@@ -1,5 +1,3 @@
-
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -46,6 +44,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     case UnicodeCategory.DecimalDigitNumber:
                         stringBuilder.Append(c);
                         break;
+
                     case UnicodeCategory.SpaceSeparator:
                     case UnicodeCategory.ConnectorPunctuation:
                     case UnicodeCategory.DashPunctuation:

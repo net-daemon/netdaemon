@@ -73,7 +73,6 @@ namespace NetDaemon.Daemon.Tests
                 });
 
                 await Task.Delay(100);
-
             }
 
             try
@@ -445,7 +444,6 @@ namespace NetDaemon.Daemon.Tests
                     return Task.CompletedTask;
                 });
                 await Task.Delay(1000);
-
             }
 
             try

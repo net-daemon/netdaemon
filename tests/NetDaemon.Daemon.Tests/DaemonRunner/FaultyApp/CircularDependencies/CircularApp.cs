@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 /// </summary>
 public class CircularApp : NetDaemonApp
 {
-
     public override Task InitializeAsync()
     {
         // Do nothing
 
         return Task.CompletedTask;
     }
-
 }

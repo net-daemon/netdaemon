@@ -46,7 +46,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             extensionClass = extensionClass.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword),
                 SyntaxFactory.Token(SyntaxKind.StaticKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
 
-
             // Get all available domains, this is used to create the extensionmethods
             var domains = GetDomainsFromEntities(entities);
 
@@ -59,7 +58,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     var methodDeclaration = CSharpSyntaxTree.ParseText(method).GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
                     extensionClass = extensionClass.AddMembers(methodDeclaration);
                 }
-
             }
             namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
 
@@ -92,10 +90,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         var propertyCode = $@"public {fluentInterface} {name.ToCamelCase()} => _app.{fluent}(""{entity}"");";
                         var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
                         entityClass = entityClass.AddMembers(propDeclaration);
-
                     }
                     namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
-
                 }
             }
 
@@ -110,6 +106,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         /// <param name="entities">A list of entities</param>
         internal static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) =>
             entities.Select(n => n[0..n.IndexOf(".")]).Distinct();
-
     }
 }

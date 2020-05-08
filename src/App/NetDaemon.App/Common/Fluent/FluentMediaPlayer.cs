@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-
     /// <summary>
     ///     Represents media player actions
     /// </summary>
@@ -107,5 +106,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             }
         }
     }
-
 }

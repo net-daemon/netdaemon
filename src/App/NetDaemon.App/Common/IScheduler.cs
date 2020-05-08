@@ -6,55 +6,10 @@ using System.Threading.Tasks;
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
     /// <summary>
-    ///     Scheduler result lets you manage scheduled tasks like check completion, cancel the tasks etc.
-    /// </summary>
-    public interface ISchedulerResult
-    {
-        /// <summary>
-        ///     Current running task
-        /// </summary>
-        Task Task { get; }
-
-        /// <summary>
-        ///     Use to cancel any scheduled execution
-        /// </summary>
-        CancellationTokenSource CancelSource { get; }
-    }
-
-    /// <summary>
     ///     Interface for scheduler actions
     /// </summary>
     public interface IScheduler : IAsyncDisposable
     {
-
-        /// <summary>
-        ///     Run function every milliseconds
-        /// </summary>
-        /// <param name="millisecondsDelay">Number of milliseconds</param>
-        /// <param name="func">The function to run</param>
-        ISchedulerResult RunEvery(int millisecondsDelay, Func<Task> func);
-
-        /// <summary>
-        ///     Run function every time span
-        /// </summary>
-        /// <param name="timeSpan">Timespan between runs</param>
-        /// <param name="func">The function to run</param>
-        ISchedulerResult RunEvery(TimeSpan timeSpan, Func<Task> func);
-
-        /// <summary>
-        ///     Run in milliseconds delay
-        /// </summary>
-        /// <param name="millisecondsDelay">Number of milliseconds before run</param>
-        /// <param name="func">The function to run</param>
-        ISchedulerResult RunIn(int millisecondsDelay, Func<Task> func);
-
-        /// <summary>
-        ///     Run in function in time span
-        /// </summary>
-        /// <param name="timeSpan">Timespan time before run function</param>
-        /// <param name="func">The function to run</param>
-        ISchedulerResult RunIn(TimeSpan timeSpan, Func<Task> func);
-
         /// <summary>
         ///     Run daily tasks
         /// </summary>
@@ -73,6 +28,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ISchedulerResult RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func);
 
         /// <summary>
+        ///     Run function every milliseconds
+        /// </summary>
+        /// <param name="millisecondsDelay">Number of milliseconds</param>
+        /// <param name="func">The function to run</param>
+        ISchedulerResult RunEvery(int millisecondsDelay, Func<Task> func);
+
+        /// <summary>
+        ///     Run function every time span
+        /// </summary>
+        /// <param name="timeSpan">Timespan between runs</param>
+        /// <param name="func">The function to run</param>
+        ISchedulerResult RunEvery(TimeSpan timeSpan, Func<Task> func);
+
+        /// <summary>
         ///      Run task every minute at given second
         /// </summary>
         /// <param name="second">The second in a minute to start (0-59)</param>
@@ -81,5 +50,35 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     It is safe to supress the task since it is handled internally in the scheduler
         /// </remarks>
         ISchedulerResult RunEveryMinute(short second, Func<Task> func);
+
+        /// <summary>
+        ///     Run in milliseconds delay
+        /// </summary>
+        /// <param name="millisecondsDelay">Number of milliseconds before run</param>
+        /// <param name="func">The function to run</param>
+        ISchedulerResult RunIn(int millisecondsDelay, Func<Task> func);
+
+        /// <summary>
+        ///     Run in function in time span
+        /// </summary>
+        /// <param name="timeSpan">Timespan time before run function</param>
+        /// <param name="func">The function to run</param>
+        ISchedulerResult RunIn(TimeSpan timeSpan, Func<Task> func);
+    }
+
+    /// <summary>
+    ///     Scheduler result lets you manage scheduled tasks like check completion, cancel the tasks etc.
+    /// </summary>
+    public interface ISchedulerResult
+    {
+        /// <summary>
+        ///     Use to cancel any scheduled execution
+        /// </summary>
+        CancellationTokenSource CancelSource { get; }
+
+        /// <summary>
+        ///     Current running task
+        /// </summary>
+        Task Task { get; }
     }
 }

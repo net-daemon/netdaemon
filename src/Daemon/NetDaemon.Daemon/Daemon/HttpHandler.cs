@@ -1,10 +1,9 @@
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
@@ -16,6 +15,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             _httpClientFactory = httpClientFactory;
         }
+
         public HttpClient CreateHttpClient(string? name = null)
         {
             _ = _httpClientFactory ?? throw new NullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
