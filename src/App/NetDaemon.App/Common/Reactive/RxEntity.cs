@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System.Text;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
@@ -7,19 +8,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
     public interface ITurnOn
     {
-        void TurnOn((string, object)[]? attributes);
+        void TurnOn(dynamic? attributes);
     }
     public interface ITurnOff
     {
-        void TurnOff((string, object)[]? attributes);
+        void TurnOff(dynamic? attributes);
     }
 
     public interface IToggle
     {
-        void Toggle((string, object)[]? attributes);
+        void Toggle(dynamic? attributes);
     }
 
-    public class RxEntity : ITurnOn, ITurnOff, IToggle
+    public interface ISetState
+    {
+        void SetState(dynamic state, dynamic? attributes);
+    }
+
+    public class RxEntity : ITurnOn, ITurnOff, IToggle, ISetState
     {
         private readonly INetDaemon _daemon;
         private readonly IEnumerable<string> _entityIds;
@@ -30,9 +36,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             _entityIds = entityIds; 
         }
 
-        public void TurnOff(params (string, object)[]? attributes) => CallServiceOnEntity("turn_off", attributes);
-        public void TurnOn(params (string, object)[]? attributes) => CallServiceOnEntity("turn_on", attributes);
-        public void Toggle(params (string, object)[]? attributes) => CallServiceOnEntity("toggle", attributes);
+        public void TurnOff(dynamic? attributes) => CallServiceOnEntity("turn_off", attributes);
+        public void TurnOn(dynamic? attributes) => CallServiceOnEntity("turn_on", attributes);
+        public void Toggle(dynamic? attributes) => CallServiceOnEntity("toggle", attributes);
+        public void SetState(dynamic state, dynamic? attributes)
+        {
+            foreach (var entityId in _entityIds)
+            {
+                var domain = GetDomainFromEntity(entityId);
+                _daemon.SetState(entityId, state, attributes);
+            }
+        }
 
         internal static string GetDomainFromEntity(string entity)
         {
@@ -43,19 +57,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             return entityParts[0];
         }
 
-        private void CallServiceOnEntity(string service, (string, object)[]? attributes = null)
+        private void CallServiceOnEntity(string service, dynamic? attributes = null)
         {
-            
+            dynamic? data=null; 
+
+            if (attributes is object )
+            {
+                if (attributes is IDictionary<string, object?> == false)
+                    data = ((object)attributes).ToExpandoObject();
+                else
+                    data = attributes;
+            }
+
             foreach (var entityId in _entityIds)
             {
                 var serviceData = new FluentExpandoObject();
-                
-                // Add attributes to dynamic object
-                if (attributes is object)
-                    foreach (var (attributeName, attributValue) in attributes)
-                    {
-                        serviceData[attributeName] = attributValue;
-                    }
+                // Maske sure we make a copy since we reuse all info but entity id
+                serviceData.CopyFrom(data);
 
                 var domain = GetDomainFromEntity(entityId);
                

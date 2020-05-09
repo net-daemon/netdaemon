@@ -229,6 +229,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="service">The service being called</param>
         /// <param name="data">Any data that the service requires</param>
         void CallService(string domain, string service, dynamic? data = null);
+
+        void SetState(string entityId, dynamic state, dynamic? attributes = null);
     }
 
     /// <summary>
@@ -489,7 +491,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityId">The unique id of the entity</param>
         /// <param name="state">The state being set</param>
         /// <param name="attributes">Name/Value pair of the attribute</param>
-        Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes);
+        Task<EntityState?> SetStateAsync(string entityId, dynamic state, params (string name, object val)[] attributes);
 
         /// <summary>
         ///     Use text-to-speech to speak a message

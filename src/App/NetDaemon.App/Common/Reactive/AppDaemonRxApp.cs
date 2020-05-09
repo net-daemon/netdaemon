@@ -66,6 +66,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             _daemon.CallService(domain, service, data);
         }
 
+        public void SetState(string entityId, dynamic state, dynamic? attributes= null)
+        {
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _daemon.SetState(entityId, state, attributes);
+        }
     }
 
     public class ReactiveState : IRxStateChange

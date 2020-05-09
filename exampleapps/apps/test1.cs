@@ -23,19 +23,25 @@ public class GlobalApp : NetDaemonRxApp
         //States.Where(t => t.New.EntityId.StartsWith("sensor.") && t.New.State != t.Old.State)
         //    .Subscribe(t => { Log("{entity}: {state}({oldstate})", t.New.EntityId, t.New.State, t.Old.State); });
 
-        //Observable.Interval(TimeSpan.FromSeconds(10)).Subscribe(e =>
-        //{
-        //    Entity("light.tomas_rum").Toggle();
-        //    var x = State("light.tomas_rum");
-        //    Log("The light in Tomas room is : {state}", x?.State);
+        int level = 10;
 
-        Log("Rx - TEST");
-        StateChanges.Subscribe(t => 
-        { 
-            Log("{entity}: {state}({oldstate})", t.New.EntityId, t.New.State, t.Old.State);
-            Thread.Sleep(1000);
-            Log("Slept 1000 ms");
+        Observable.Interval(TimeSpan.FromSeconds(5)).Subscribe(e =>
+        {
+
+            Entity("light.tomas_rum").TurnOn(new { brightness= level });
+            
+            var x = State("light.tomas_rum");
+            Log("The light in Tomas room is : {state}", x?.State);
+            SetState("sensor.works", "on", new { time = DateTime.Now.ToString() });
+            level += 10;
         });
+
+        //StateChanges.Subscribe(t => 
+        //{ 
+        //    Log("{entity}: {state}({oldstate})", t.New.EntityId, t.New.State, t.Old.State);
+        //    Thread.Sleep(1000);
+        //    Log("Slept 1000 ms");
+        //});
     //});
         //States.Subscribe(tuple =>
         //{

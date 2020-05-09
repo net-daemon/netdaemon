@@ -263,9 +263,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
 
                 if (attributes is object)
-                    await host.SetState(entityId, state, attributes.ToArray()).ConfigureAwait(false);
+                    await host.SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
                 else
-                    await host.SetState(entityId, state).ConfigureAwait(false);
+                    await host.SetStateAsync(entityId, state).ConfigureAwait(false);
             }
         }
 

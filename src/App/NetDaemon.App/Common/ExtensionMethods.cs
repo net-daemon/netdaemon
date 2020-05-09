@@ -1,4 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Dynamic;
 using System.Globalization;
 using System.Text;
 
@@ -24,6 +27,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
             dynamic result = attributes;
             return result;
+        }
+
+        /// <summary>
+        ///     Converts a anoumous type to expando object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static ExpandoObject ToExpandoObject(this object obj)
+        {
+            // Null-check
+
+            IDictionary<string, object> expando = new ExpandoObject();
+
+            foreach (PropertyDescriptor? property in TypeDescriptor.GetProperties(obj.GetType()))
+            {
+                if (property is object)
+                    expando.Add(property.Name, property.GetValue(obj));
+            }
+
+            return (ExpandoObject)expando;
         }
 
         /// <summary>

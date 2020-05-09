@@ -362,7 +362,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     FluentActionType.TurnOff => TurnOffAsync(entityId, attributes),
                     FluentActionType.TurnOn => TurnOnAsync(entityId, attributes),
                     FluentActionType.Toggle => ToggleAsync(entityId, attributes),
-                    FluentActionType.SetState => Daemon.SetState(entityId, fluentAction.State, attributes),
+                    FluentActionType.SetState => Daemon.SetStateAsync(entityId, fluentAction.State, attributes),
                     _ => throw new NotSupportedException($"Fluent action type not handled! {fluentAction.ActionType}")
                 };
                 taskList.Add(task);

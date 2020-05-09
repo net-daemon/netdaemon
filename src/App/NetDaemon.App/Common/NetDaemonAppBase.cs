@@ -106,7 +106,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             if (appState == null || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
-                await _daemon.SetState($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on").ConfigureAwait(false);
+                await _daemon.SetStateAsync($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on").ConfigureAwait(false);
 
                 return;
             }

@@ -400,7 +400,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateShouldCallCorrectFunction()
         {
-            await DefaultDaemonHost.SetState("sensor.any_sensor", "on", ("attr", "value"));
+            await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value"));
 
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
@@ -411,7 +411,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateShouldReturnCorrectData()
         {
-            await DefaultDaemonHost.SetState("sensor.any_sensor", "on", ("attr", "value"));
+            await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value"));
 
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
@@ -625,7 +625,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await RunDefauldDaemonUntilCanceled();
 
             // ACT
-            var state = await DefaultDaemonHost.SetState("light.ligth_in_area", "on", ("attr", "value"));
+            var state = await DefaultDaemonHost.SetStateAsync("light.ligth_in_area", "on", ("attr", "value"));
 
             /// ASSERT
             Assert.Equal("Area", state?.Area);

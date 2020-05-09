@@ -22,7 +22,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             Channel.CreateBounded<(string, string)>(20);
 
         internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageQueue =
-                Channel.CreateBounded<(string, string, dynamic?) >(20);
+                Channel.CreateBounded<(string, string, dynamic?)>(20);
+
+        internal readonly Channel<(string, dynamic, dynamic?)> _setStateMessageQueue =
+                Channel.CreateBounded<(string, dynamic, dynamic?)>(20);
 
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
@@ -269,6 +272,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
                 Task handleAsyncServiceCalls = HandleAsyncServiceCalls(cancellationToken);
+                Task hanldeAsyncSetState = HandleAsyncSetState(cancellationToken);
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -368,7 +372,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
 
-        public async Task<EntityState?> SetState(string entityId, dynamic state,
+        public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
                     params (string name, object val)[] attributes)
         {
             try
@@ -568,9 +572,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     (string domain, string service, dynamic? data)
                     = await _serviceCallMessageQueue.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                    await CallServiceAsync(domain, service, data).ConfigureAwait(false);
+                    await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false); ;
 
                     hasLoggedError = false;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore we are leaving
                 }
                 catch (Exception e)
                 {
@@ -579,7 +587,42 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     hasLoggedError = true;
                     await Task.Delay(100); // Do a delay to avoid loop
                 }
-                
+            }
+        }
+
+        public void SetState(string entityId, dynamic state, dynamic? attributes = null)
+        {
+            if (_setStateMessageQueue.Writer.TryWrite((entityId, state, attributes)) == false)
+                throw new ApplicationException("Servicecall queue full!");
+        }
+
+        private async Task HandleAsyncSetState(CancellationToken cancellationToken)
+        {
+            bool hasLoggedError = false;
+
+            //_serviceCallMessageQueue
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    (string entityId, dynamic state, dynamic? attributes)
+                    = await _setStateMessageQueue.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+
+                    await _hassClient.SetState(entityId, state, attributes).ConfigureAwait(false);
+
+                    hasLoggedError = false;
+                }
+                catch(OperationCanceledException)
+                {
+                    // Ignore we are leaving
+                }
+                catch (Exception e)
+                {
+                    if (hasLoggedError == false)
+                        Logger.LogDebug(e, "Failure setting state");
+                    hasLoggedError = true;
+                    await Task.Delay(100); // Do a delay to avoid loop
+                }
             }
         }
 
@@ -695,7 +738,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <inheritdoc/>
         public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
         {
-            await SetState(
+            await SetStateAsync(
                 "netdaemon.status",
                 "Connected", // State will alawys be connected, otherwise state could not be set.
                 ("number_of_loaded_apps", numberOfLoadedApps),
@@ -835,6 +878,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             if (_serviceCallMessageQueue.Writer.TryWrite((domain, service, data)) == false)
                 throw new ApplicationException("Servicecall queue full!");
         }
+
 
         #endregion
 

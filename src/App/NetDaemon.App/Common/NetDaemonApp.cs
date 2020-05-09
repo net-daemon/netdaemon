@@ -211,10 +211,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes)
+        public async Task<EntityState?> SetStateAsync(string entityId, dynamic state, params (string name, object val)[] attributes)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.SetState(entityId, state, attributes).ConfigureAwait(false);
+            return await _daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
