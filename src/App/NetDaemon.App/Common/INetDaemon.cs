@@ -3,13 +3,107 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Reactive.Linq;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
+
+    /// <summary>
+    ///     Apps that can be initialized
+    /// </summary>
+    public interface INetDaemonInitialableApp
+    {
+        /// <summary>
+        /// Init the application async, is called by the NetDaemon after startup
+        /// </summary>
+        Task InitializeAsync();
+
+        /// <summary>
+        /// Init the application sync, is called by the NetDaemon after startup
+        /// </summary>
+        Task Initialize();
+
+        /// <summary>
+        /// Start the application, normally implemented by the base class
+        /// </summary>
+        /// <param name="daemon"></param>
+        Task StartUpAsync(INetDaemon daemon);
+
+        /// <summary>
+        ///     Restores the app state
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        ///     Restores the state of the storage object.!--
+        ///     Todo: in the future also the state of tagged properties
+        ///
+        ///     It is implemented async so state will be lazy saved
+        /// </remarks>
+        Task RestoreAppStateAsync();
+
+        /// <summary>
+        ///     Saves the app state
+        /// </summary>
+        /// <remarks>
+        ///     Saves the state of the storage object.!--
+        ///     Todo: in the future also the state of tagged properties
+        ///
+        ///     It is implemented async so state will be lazy saved
+        /// </remarks>
+        void SaveAppState();
+
+
+    }
+
+    /// <summary>
+    ///     Shared features in both Reactive and async/await models
+    /// </summary>
+    public interface INetDaemonAppBase : INetDaemonInitialableApp, IDisposable, IEquatable<INetDaemonAppBase>
+    {
+                /// <summary>
+        ///     The dependencies that needs to be initialized before this app
+        /// </summary>
+        IEnumerable<string> Dependencies { get; set; }
+
+        /// <summary>
+        ///     A thread safe key/value dictionary to safely share states within and between apps in memory
+        /// </summary>
+        ConcurrentDictionary<string, object> Global { get; }
+
+        /// <summary>
+        ///     Unique id of the application
+        /// </summary>
+        public string? Id { get; set; }
+
+        /// <summary>
+        ///     Gets or sets a flag indicating whether this app is enabled.
+        ///     This property property can be controlled from Home Assistant.
+        /// </summary>
+        /// <remarks>
+        ///     A disabled app will not be initialized during the discovery.
+        /// </remarks>
+        public bool IsEnabled { get; set; }
+
+        /// <summary>
+        ///     Access stateful data
+        /// </summary>
+        /// <remarks>
+        ///     The dynamic setter will automatically persist the whole storage object
+        /// </remarks>
+        dynamic Storage { get; }
+
+        /// <summary>
+        ///     Http features of NetDaemon is exposed through the Http property
+        /// </summary>
+        IHttpHandler Http { get; }
+    }
+
     /// <summary>
     ///     Interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemon : INetDaemonBase
+    public interface INetDaemon : INetDaemonCommon,
+        //IObservable<EntityState> //,
+        IObservable<(EntityState, EntityState)>
     {
         /// <summary>
         ///     Selects one or more camera entities to do action on
@@ -122,45 +216,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="app">The Daemon App calling fluent API</param>
         /// <param name="entityIds">The unique id:s of the script</param>
         IScript RunScript(INetDaemonApp app, params string[] entityIds);
+
+        /// <summary>
+        ///     Http features of NetDaemon is exposed through the Http property
+        /// </summary>
+        IHttpHandler Http { get; }
+
+        /// <summary>
+        ///     Calls a service
+        /// </summary>
+        /// <param name="domain">The domain of the service</param>
+        /// <param name="service">The service being called</param>
+        /// <param name="data">Any data that the service requires</param>
+        void CallService(string domain, string service, dynamic? data = null);
     }
 
     /// <summary>
     ///     Base interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemonApp : IDisposable, IEquatable<INetDaemonApp>
+    public interface INetDaemonApp :  INetDaemonAppBase
     {
-        /// <summary>
-        ///     The dependencies that needs to be initialized before this app
-        /// </summary>
-        IEnumerable<string> Dependencies { get; set; }
-
-        /// <summary>
-        ///     A thread safe key/value dictionary to safely share states within and between apps in memory
-        /// </summary>
-        ConcurrentDictionary<string, object> Global { get; }
-
-        /// <summary>
-        ///     Unique id of the application
-        /// </summary>
-        public string? Id { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a flag indicating whether this app is enabled.
-        ///     This property property can be controlled from Home Assistant.
-        /// </summary>
-        /// <remarks>
-        ///     A disabled app will not be initialized during the discovery.
-        /// </remarks>
-        public bool IsEnabled { get; set; }
-
-        /// <summary>
-        ///     Access stateful data
-        /// </summary>
-        /// <remarks>
-        ///     The dynamic setter will automatically persist the whole storage object
-        /// </remarks>
-        dynamic Storage { get; }
-
         /// <summary>
         ///     Selects one or more camera entities to do action on
         /// </summary>
@@ -216,10 +291,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="func">The lambda expression selecting event</param>
         IFluentEvent Events(Func<FluentEventProperty, bool> func);
 
-        /// <summary>
-        /// Init the application, is called by the NetDaemon after startup
-        /// </summary>
-        Task InitializeAsync();
+        
 
         /// <summary>
         ///     Selects one or more input select to do action on
@@ -257,17 +329,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="func">The lambda expression selecting mediaplayers</param>
         IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func);
 
-        /// <summary>
-        ///     Restores the app state
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        ///     Restores the state of the storage object.!--
-        ///     Todo: in the future also the state of tagged properties
-        ///
-        ///     It is implemented async so state will be lazy saved
-        /// </remarks>
-        Task RestoreAppStateAsync();
+
 
         /// <summary>
         ///     Runs one or more scripts
@@ -275,33 +337,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityIds">The unique id:s of the script</param>
         IScript RunScript(params string[] entityIds);
 
-        /// <summary>
-        ///     Saves the app state
-        /// </summary>
-        /// <remarks>
-        ///     Saves the state of the storage object.!--
-        ///     Todo: in the future also the state of tagged properties
-        ///
-        ///     It is implemented async so state will be lazy saved
-        /// </remarks>
-        void SaveAppState();
 
-        /// <summary>
-        /// Start the application, normally implemented by the base class
-        /// </summary>
-        /// <param name="daemon"></param>
-        Task StartUpAsync(INetDaemon daemon);
     }
 
     /// <summary>
     ///     The interface that interacts with the daemon main logic
     /// </summary>
-    public interface INetDaemonBase
+    public interface INetDaemonCommon
     {
-        /// <summary>
-        ///     Http features of NetDaemon is exposed through the Http property
-        /// </summary>
-        IHttpHandler Http { get; }
+
 
         /// <summary>
         ///     Logger to use
@@ -324,6 +368,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </remarks>
         IEnumerable<EntityState> State { get; }
 
+
         /// <summary>
         ///     Calls a service
         /// </summary>
@@ -331,7 +376,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="service">The service being called</param>
         /// <param name="data">Any data that the service requires</param>
         /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
-        Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false);
+        Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Cancels the current listen state operation

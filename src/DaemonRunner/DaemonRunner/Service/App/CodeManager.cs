@@ -33,7 +33,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
     public static class DaemonAppExtensions
     {
-        public static void HandleAttributeInitialization(this INetDaemonApp netDaemonApp, INetDaemon _daemon)
+        public static async Task HandleAttributeInitialization(this INetDaemonAppBase netDaemonApp, INetDaemon _daemon)
         {
             var netDaemonAppType = netDaemonApp.GetType();
             foreach (var method in netDaemonAppType.GetMethods())
@@ -43,7 +43,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     switch (attr)
                     {
                         case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
-                            HandleServiceCallAttribute(_daemon, netDaemonApp, method);
+                            await HandleServiceCallAttribute(_daemon, netDaemonApp, method).ConfigureAwait(false);
                             break;
 
                         case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
@@ -57,7 +57,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         private static void HandleStateChangedAttribute(
             INetDaemon _daemon,
             HomeAssistantStateChangedAttribute hassStateChangedAttribute,
-            INetDaemonApp netDaemonApp,
+            INetDaemonAppBase netDaemonApp,
             MethodInfo method
             )
         {
@@ -96,7 +96,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             });
         }
 
-        private static void HandleServiceCallAttribute(INetDaemon _daemon, INetDaemonApp netDaemonApp, MethodInfo method)
+        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, INetDaemonAppBase netDaemonApp, MethodInfo method)
         {
             var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method);
             if (!signatureOk)
@@ -108,7 +108,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             dynamic serviceData = new FluentExpandoObject();
             serviceData.method = method.Name;
             serviceData.@class = netDaemonApp.GetType().Name;
-            _daemon.CallService("netdaemon", "register_service", serviceData);
+            await _daemon.CallServiceAsync("netdaemon", "register_service", serviceData).ConfigureAwait(false);
 
             _daemon.ListenServiceCall("netdaemon", $"{serviceData.@class}_{serviceData.method}",
                 async (data) =>
@@ -174,14 +174,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         private readonly YamlConfig _yamlConfig;
 
-        private readonly List<INetDaemonApp> _instanciatedDaemonApps;
+        private readonly List<INetDaemonAppBase> _instanciatedDaemonApps;
 
         public CodeManager(string codeFolder, ILogger logger)
         {
             _codeFolder = codeFolder;
             _logger = logger;
             _loadedDaemonApps = new List<Type>(100);
-            _instanciatedDaemonApps = new List<INetDaemonApp>(100);
+            _instanciatedDaemonApps = new List<INetDaemonAppBase>(100);
 
             _logger.LogInformation("Loading code and configuration from {path}", Path.GetFullPath(codeFolder));
 
@@ -292,14 +292,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             }
         }
 
-        public async Task<IEnumerable<INetDaemonApp>> InstanceAndInitApplications(INetDaemonHost? host)
+        public async Task<IEnumerable<INetDaemonAppBase>> InstanceAndInitApplications(INetDaemonHost? host)
         {
             _ = (host as INetDaemonHost) ?? throw new ArgumentNullException(nameof(host));
 
             host!.ClearAppInstances();
             CompileScriptsInCodeFolder();
 
-            var result = new List<INetDaemonApp>();
+            var result = new List<INetDaemonAppBase>();
             var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths();
 
             if (allConfigFilePaths.Count() == 0)
@@ -330,7 +330,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             if (result.SelectMany(n => n.Dependencies).Count() > 0)
             {
                 // There are dependecies defined
-                var edges = new HashSet<Tuple<INetDaemonApp, INetDaemonApp>>();
+                var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
 
                 foreach (var instance in result)
                 {
@@ -340,10 +340,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         if (dependentApp == null)
                             throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
 
-                        edges.Add(new Tuple<INetDaemonApp, INetDaemonApp>(instance, dependentApp));
+                        edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
                     }
                 }
-                var sortedInstances = TopologicalSort<INetDaemonApp>(result.ToHashSet(), edges) ??
+                var sortedInstances = TopologicalSort<INetDaemonAppBase>(result.ToHashSet(), edges) ??
                     throw new ApplicationException("Application dependencies is wrong, please check dependencies for circular dependencies!");
 
                 result = sortedInstances;
@@ -352,7 +352,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             foreach (var app in result)
             {
                 await app.InitializeAsync().ConfigureAwait(false);
-                app.HandleAttributeInitialization(host!);
+                await app.HandleAttributeInitialization(host!);
                 host!.Logger.LogInformation("Successfully loaded app {appId} ({class})", app.Id, app.GetType().Name);
             }
 
@@ -483,6 +483,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
                 };
 
                 var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
@@ -524,7 +525,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     peStream.Seek(0, SeekOrigin.Begin);
 
                     var asm = alc.LoadFromStream(peStream);
-                    var assemblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+                    var assemblyAppTypes = asm.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonAppBase)));
                     foreach (var app in assemblyAppTypes)
                     {
                         _loadedDaemonApps.Add(app);

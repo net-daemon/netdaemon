@@ -205,10 +205,10 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             data.AnyData = "data";
 
             // ACT
-            _app.CallService("domain", "service", data, false);
+            _app.CallServiceAsync("domain", "service", data, false);
 
             // ASSERT
-            _netDaemonMock.Verify(n => n.CallService("domain", "service", expandoData, false));
+            _netDaemonMock.Verify(n => n.CallServiceAsync("domain", "service", expandoData, false));
         }
 
         [Fact]

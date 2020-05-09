@@ -21,6 +21,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         internal readonly Channel<(string, string)> _ttsMessageQueue =
             Channel.CreateBounded<(string, string)>(20);
 
+        internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageQueue =
+                Channel.CreateBounded<(string, string, dynamic?) >(20);
+
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
 
@@ -41,6 +44,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private readonly IDataRepository? _repository;
         private readonly IHttpHandler? _httpHandler;
+
+        //private readonly List<IObserver<EntityState>> _observers = new List<IObserver<EntityState>>();
+        private readonly List<IObserver<(EntityState,EntityState)>> _observersTuples = new List<IObserver<(EntityState, EntityState)>>();
+
 
         // Used for testing
         internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
@@ -109,7 +116,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
+        public Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
 
         public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
@@ -261,6 +268,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
+                Task handleAsyncServiceCalls = HandleAsyncServiceCalls(cancellationToken);
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -428,6 +436,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     // Make sure we get the area name with the new state
                     var newState = stateData.NewState!.ToDaemonEntityState();
+                    var oldState = stateData.OldState!.ToDaemonEntityState();
                     newState.Area = GetAreaForEntityId(newState.EntityId);
                     InternalState[stateData.EntityId] = newState;
 
@@ -437,18 +446,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         if (string.IsNullOrEmpty(pattern))
                         {
                             tasks.Add(func(stateData.EntityId,
-                                stateData.NewState?.ToDaemonEntityState(),
-                                stateData.OldState?.ToDaemonEntityState()
+                                newState,
+                                oldState
                             ));
                         }
                         else if (stateData.EntityId.StartsWith(pattern))
                         {
                             tasks.Add(func(stateData.EntityId,
-                                stateData.NewState?.ToDaemonEntityState(),
-                                stateData.OldState?.ToDaemonEntityState()
+                                newState,
+                                oldState
                             ));
                         }
                     }
+                    // Call the observable with no blocking
+                    foreach (var observer in _observersTuples)
+                    {
+                        tasks.Add(Task.Run(()=>observer.OnNext((oldState, newState))));
+                    }
+
                     // No hit
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
@@ -539,6 +554,33 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
 
             return entityParts[0];
+        }
+
+        private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
+        {
+            bool hasLoggedError = false;
+
+            //_serviceCallMessageQueue
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    (string domain, string service, dynamic? data)
+                    = await _serviceCallMessageQueue.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+
+                    await CallServiceAsync(domain, service, data).ConfigureAwait(false);
+
+                    hasLoggedError = false;
+                }
+                catch (Exception e)
+                {
+                    if (hasLoggedError==false)
+                    Logger.LogDebug(e, "Failure sending call service");
+                    hasLoggedError = true;
+                    await Task.Delay(100); // Do a delay to avoid loop
+                }
+                
+            }
         }
 
         private async Task HandleTextToSpeechMessages(CancellationToken cancellationToken)
@@ -758,6 +800,44 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             await Stop().ConfigureAwait(false);
         }
+
+
+        #region IObservable<(EntityState, EntityState)> implementation
+
+        private class UnsubscriberEntityStateTuple : IDisposable
+        {
+            private readonly IList<IObserver<(EntityState, EntityState)>> _observers;
+            private readonly IObserver<(EntityState, EntityState)> _observer;
+
+
+            public UnsubscriberEntityStateTuple(IList<IObserver<(EntityState, EntityState)>> observers, IObserver<(EntityState, EntityState)> observer)
+            {
+                this._observers = observers;
+                this._observer = observer;
+            }
+
+            public void Dispose()
+            {
+                if (!(_observer == null)) _observers.Remove(_observer);
+            }
+        }
+        /// <inheritdoc/>
+        public IDisposable Subscribe(IObserver<(EntityState, EntityState)> observer)
+        {
+            if (!_observersTuples.Contains(observer))
+                _observersTuples.Add(observer);
+
+            return new UnsubscriberEntityStateTuple(_observersTuples, observer);
+        }
+
+        public void CallService(string domain, string service, dynamic? data = null)
+        {
+            if (_serviceCallMessageQueue.Writer.TryWrite((domain, service, data)) == false)
+                throw new ApplicationException("Servicecall queue full!");
+        }
+
+        #endregion
+
     }
 
     public class DelayResult : IDelayResult
@@ -795,6 +875,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _delayTaskCompletionSource.TrySetResult(false);
         }
 
+
+
+
         #region IDisposable Support
 
         private bool disposedValue = false; // To detect redundant calls
@@ -821,4 +904,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         #endregion IDisposable Support
     }
+
 }

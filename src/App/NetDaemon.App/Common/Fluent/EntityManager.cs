@@ -187,7 +187,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 var name = scriptName;
                 if (scriptName.Contains('.'))
                     name = scriptName[(scriptName.IndexOf('.') + 1)..];
-                var task = Daemon.CallService("script", name);
+                var task = Daemon.CallServiceAsync("script", name);
                 taskList.Add(task);
             }
 
@@ -382,7 +382,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return Daemon.CallService(domain, "toggle", attributes, false);
+            return Daemon.CallServiceAsync(domain, "toggle", attributes, false);
         }
 
         private Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -396,7 +396,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return Daemon.CallService(domain, "turn_off", attributes, false);
+            return Daemon.CallServiceAsync(domain, "turn_off", attributes, false);
         }
 
         private Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -410,7 +410,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return Daemon.CallService(domain, "turn_on", attributes, false);
+            return Daemon.CallServiceAsync(domain, "turn_on", attributes, false);
         }
     }
 }

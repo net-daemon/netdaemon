@@ -240,7 +240,7 @@ app:
             data.method = "HandleServiceCall";
             data.@class = "AssmeblyDaemonApp";
 
-            netDaemonMock.Verify(n => n.CallService("netdaemon", "register_service", expObject, false), Times.Once);
+            netDaemonMock.Verify(n => n.CallServiceAsync("netdaemon", "register_service", expObject, false), Times.Once);
             netDaemonMock.Verify(n => n.ListenServiceCall("netdaemon", "AssmeblyDaemonApp_HandleServiceCall", It.IsAny<Func<dynamic?, Task>>()), Times.Once);
         }
 

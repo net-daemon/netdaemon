@@ -17,7 +17,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         private readonly IEnumerable<Type> _types;
         private readonly YamlStream _yamlStream;
 
-        private readonly List<INetDaemonApp> _instances;
+        private readonly List<INetDaemonAppBase> _instances;
         private readonly YamlConfig _yamlConfig;
         private readonly string _yamlFilePath;
 
@@ -26,12 +26,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
-            _instances = new List<INetDaemonApp>();
+            _instances = new List<INetDaemonAppBase>();
             _yamlConfig = yamlConfig;
             _yamlFilePath = yamlFilePath;
         }
 
-        public IEnumerable<INetDaemonApp> Instances
+        public IEnumerable<INetDaemonAppBase> Instances
         {
             get
             {
@@ -74,9 +74,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             }
         }
 
-        public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
+        public INetDaemonAppBase? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
         {
-            var netDaemonApp = (INetDaemonApp?)Activator.CreateInstance(netDaemonAppType);
+            var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
 
             if (netDaemonApp == null)
                 return null;
@@ -112,7 +112,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             return netDaemonApp;
         }
 
-        public void SetPropertyFromYaml(INetDaemonApp app, PropertyInfo prop, YamlSequenceNode seq)
+        public void SetPropertyFromYaml(INetDaemonAppBase app, PropertyInfo prop, YamlSequenceNode seq)
         {
             if (prop.PropertyType.IsGenericType && prop.PropertyType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
@@ -150,7 +150,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
         }
 
-        public void SetPropertyFromYaml(INetDaemonApp app, PropertyInfo prop, YamlScalarNode sc)
+        public void SetPropertyFromYaml(INetDaemonAppBase app, PropertyInfo prop, YamlScalarNode sc)
         {
             ReplaceSecretIfExists(sc);
             var scalarValue = sc.ToObject(prop.PropertyType) ??
