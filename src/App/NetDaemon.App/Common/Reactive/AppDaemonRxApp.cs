@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -58,6 +59,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return new RxEntity(_daemon, new string[] { entityId });
+        }
+
+        public IObservable<long> RunDaily(string time)
+        {
+            DateTime timeOfDayToTrigger;
+
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
+            {
+                throw new FormatException($"{time} is not a valid time for the current locale");
+            }
+
+            return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1));
+        }
+
+        public IObservable<long> RunEvery(TimeSpan timespan)
+        {
+            return Observable.Interval(timespan);
         }
 
         public void SetState(string entityId, dynamic state, dynamic? attributes = null)

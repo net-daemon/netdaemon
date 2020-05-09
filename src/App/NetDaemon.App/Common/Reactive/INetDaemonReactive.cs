@@ -24,6 +24,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         EntityState? State(string entityId);
     }
 
+    public interface IRxSchedule
+    {
+        IObservable<long> RunEvery(TimeSpan timespan);
+        IObservable<long> RunDaily(string time);
+    }
+
     public interface IRxEntity
     {
         RxEntity Entities(Func<IEntityProperties, bool> func);

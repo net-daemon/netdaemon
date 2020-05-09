@@ -16,6 +16,8 @@ public class GlobalApp : NetDaemonRxApp
     //public string? SharedThing { get; set; }
     public override async Task InitializeAsync()
     {
+        RunDaily("20:28:00").Subscribe(e => Log("Now!"));
+
         //Log("Rx - TEST");
         //States.Subscribe(t => { Log("{entity}: {state}({oldstate})", t.New.EntityId, t.New.State, t.Old.State); });
 
@@ -23,19 +25,19 @@ public class GlobalApp : NetDaemonRxApp
         //States.Where(t => t.New.EntityId.StartsWith("sensor.") && t.New.State != t.Old.State)
         //    .Subscribe(t => { Log("{entity}: {state}({oldstate})", t.New.EntityId, t.New.State, t.Old.State); });
 
-        int level = 10;
+        //int level = 10;
 
-        Observable.Interval(TimeSpan.FromSeconds(5)).Subscribe(e =>
-        {
+        //Observable.Interval(TimeSpan.FromSeconds(5)).Subscribe(e =>
+        //{
 
-            Entity("light.tomas_rum").TurnOn(new { brightness= level });
-            
-            var x = State("light.tomas_rum");
-            Log("The light in Tomas room is : {state}", x?.State);
-            SetState("sensor.works", "on", new { time = DateTime.Now.ToString() });
-            Entity("sensor.test").SetState("on");
-            level += 10;
-        });
+        //    Entity("light.tomas_rum").TurnOn(new { brightness= level });
+
+        //    var x = State("light.tomas_rum");
+        //    Log("The light in Tomas room is : {state}", x?.State);
+        //    SetState("sensor.works", "on", new { time = DateTime.Now.ToString() });
+        //    Entity("sensor.test").SetState("on");
+        //    level += 10;
+        //});
 
         //StateChanges.Subscribe(t => 
         //{ 
@@ -43,7 +45,7 @@ public class GlobalApp : NetDaemonRxApp
         //    Thread.Sleep(1000);
         //    Log("Slept 1000 ms");
         //});
-    //});
+        //});
         //States.Subscribe(tuple =>
         //{
         //    var (o, n) = tuple;
