@@ -1,48 +1,34 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
-using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.Extensions.Logging;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
-
     /// <summary>
     ///     Base class for using the Reactive paradigm for apps
     /// </summary>
     public abstract class NetDaemonRxApp : NetDaemonAppBase, INetDaemonReactive
     {
-        ReactiveState? _reactiveState = null;
+        private ReactiveState? _reactiveState = null;
 
         public NetDaemonRxApp()
         {
-
         }
 
         public IRxStateChange StateChanges => _reactiveState;
 
-        public IEnumerable<EntityState> States => 
+        public IEnumerable<EntityState> States =>
             _daemon?.State ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
-        public async override Task StartUpAsync(INetDaemon daemon)
-        {
-            await base.StartUpAsync(daemon);
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _reactiveState = new ReactiveState(_daemon);
-        }
-
-        public EntityState? State(string entityId) => _daemon?.GetState(entityId);
-
-        public RxEntity Entity(string entityId)
+        public void CallService(string domain, string service, dynamic data)
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return new RxEntity(_daemon, new string[] { entityId });
+            _daemon.CallService(domain, service, data);
         }
+
         public RxEntity Entities(Func<IEntityProperties, bool> func)
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
@@ -60,17 +46,34 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             }
         }
 
-        public void CallService(string domain, string service, dynamic data)
+        public RxEntity Entities(params string[] entityIds) => Entities((IEnumerable<string>)entityIds);
+
+        public RxEntity Entities(IEnumerable<string> entityIds)
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _daemon.CallService(domain, service, data);
+            return new RxEntity(_daemon, entityIds);
         }
 
-        public void SetState(string entityId, dynamic state, dynamic? attributes= null)
+        public RxEntity Entity(string entityId)
+        {
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return new RxEntity(_daemon, new string[] { entityId });
+        }
+
+        public void SetState(string entityId, dynamic state, dynamic? attributes = null)
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             _daemon.SetState(entityId, state, attributes);
         }
+
+        public async override Task StartUpAsync(INetDaemon daemon)
+        {
+            await base.StartUpAsync(daemon);
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _reactiveState = new ReactiveState(_daemon);
+        }
+
+        public EntityState? State(string entityId) => _daemon?.GetState(entityId);
     }
 
     public class ReactiveState : IRxStateChange
@@ -81,6 +84,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             _daemon = daemon;
         }
+
         public IDisposable Subscribe(IObserver<(EntityState, EntityState)> observer)
         {
             return _daemon!.Subscribe(observer);

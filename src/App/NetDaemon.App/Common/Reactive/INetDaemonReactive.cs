@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
-using System.Collections.Concurrent;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
@@ -10,8 +7,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     {
         void CallService(string domain, string service, dynamic? data);
     }
-
-    
 
     /// <summary>
     ///     Implements the System.Reactive pattern for NetDaemon Apps
@@ -24,20 +19,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
         IEnumerable<EntityState> States { get; }
 
-        RxEntity Entity(string entityId);
-        EntityState? State(string entityId);
         void SetState(string entityId, dynamic state, dynamic? attributes);
+
+        EntityState? State(string entityId);
     }
 
     public interface IRxEntity
     {
         RxEntity Entities(Func<IEntityProperties, bool> func);
 
+        RxEntity Entities(IEnumerable<string> entityIds);
+
+        RxEntity Entities(params string[] entityIds);
+
         RxEntity Entity(string entityId);
     }
 
     public interface IRxStateChange : IObservable<(EntityState Old, EntityState New)>
     {
-
     }
 }

@@ -33,6 +33,7 @@ public class GlobalApp : NetDaemonRxApp
             var x = State("light.tomas_rum");
             Log("The light in Tomas room is : {state}", x?.State);
             SetState("sensor.works", "on", new { time = DateTime.Now.ToString() });
+            Entity("sensor.test").SetState("on");
             level += 10;
         });
 
