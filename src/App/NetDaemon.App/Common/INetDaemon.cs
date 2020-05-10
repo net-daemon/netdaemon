@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
+using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
@@ -101,10 +102,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemon : INetDaemonCommon,
-        //IObservable<EntityState> //,
-        IObservable<(EntityState Old, EntityState New)>
+    public interface INetDaemon : INetDaemonCommon
     {
+        /// <summary>
+        ///     The observable implementation for state changes
+        /// </summary>
+        IRxStateChange StateChanges { get; }
+
+        /// <summary>
+        ///     The observable implementation for event changes
+        /// </summary>
+        IRxEvent EventChanges { get; }
+
         /// <summary>
         ///     Selects one or more camera entities to do action on
         /// </summary>

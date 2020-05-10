@@ -3,10 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Reactive.Concurrency;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
@@ -29,16 +28,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     /// </summary>
     public abstract class NetDaemonRxApp : NetDaemonAppBase, INetDaemonReactive
     {
+        private ReactiveEvent? _reactiveEvent = null;
         private ReactiveState? _reactiveState = null;
-
         public NetDaemonRxApp()
         {
         }
 
-        public IObservable<(EntityState Old, EntityState New)> StateChanges => _reactiveState.Where(e => e.New.State != e.Old.State);
-
+        public IRxEvent EventChanges => _reactiveEvent;
         public IRxStateChange StateAllChanges => _reactiveState;
-
+        public IObservable<(EntityState Old, EntityState New)> StateChanges => _reactiveState.Where(e => e.New.State != e.Old.State);
         public IEnumerable<EntityState> States =>
             _daemon?.State ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
@@ -112,9 +110,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             await base.StartUpAsync(daemon);
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             _reactiveState = new ReactiveState(_daemon);
+            _reactiveEvent = new ReactiveEvent(_daemon);
         }
 
         public EntityState? State(string entityId) => _daemon?.GetState(entityId);
+    }
+
+    public class ReactiveEvent : IRxEvent
+    {
+        private readonly INetDaemon _daemon;
+
+        public ReactiveEvent(INetDaemon daemon)
+        {
+            _daemon = daemon;
+        }
+
+        public IDisposable Subscribe(IObserver<RxEvent> observer)
+        {
+            return _daemon!.EventChanges.Subscribe(observer);
+        }
     }
 
     public class ReactiveState : IRxStateChange
@@ -128,7 +142,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
         public IDisposable Subscribe(IObserver<(EntityState, EntityState)> observer)
         {
-            return _daemon!.Subscribe(observer);
+            return _daemon!.StateChanges.Subscribe(observer);
         }
+    }
+    public class RxEvent
+    {
+        private readonly dynamic? _data;
+        private readonly string? _domain;
+        private readonly string _eventName;
+        public RxEvent(string eventName, string? domain, dynamic? data)
+        {
+            _eventName = eventName;
+            _domain = domain;
+            _data = data;
+        }
+
+        public dynamic? Data => _data;
+        public dynamic? Domain => _domain;
+        public string Event => _eventName;
     }
 }

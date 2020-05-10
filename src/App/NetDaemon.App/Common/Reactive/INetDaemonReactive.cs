@@ -14,18 +14,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     public interface INetDaemonReactive : INetDaemonAppBase, ICallService, IRxEntity
     {
         /// <summary>
-        ///     The observable statestream state change
+        ///     The observable events
         /// </summary>
-        /// <remarks>
-        ///     Old state != New state
-        /// </remarks>
-        public IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
+        public IRxEvent EventChanges { get; }
 
         /// <summary>
         ///     The observable statestream, all changes inkluding attributes
         /// </summary>
         public IRxStateChange StateAllChanges { get; }
 
+        /// <summary>
+        ///     The observable statestream state change
+        /// </summary>
+        /// <remarks>
+        ///     Old state != New state
+        /// </remarks>
+        public IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
         /// <summary>
         ///     Enuberable of current states
         /// </summary>
@@ -48,28 +52,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
     public interface IRxAppHelpers
     {
-
-    }
-
-    public interface IRxSchedule
-    {
-        /// <summary>
-        ///     Shedules an action every (timespan) 
-        /// </summary>
-        /// <param name="timespan">The timespan to schedule</param>
-        IObservable<long> RunEvery(TimeSpan timespan);
-
-        /// <summary>
-        ///     Run daily at a specific time
-        /// </summary>
-        /// <param name="time">The time in "hh:mm:ss" format</param>
-        IObservable<long> RunDaily(string time);
-
-        /// <summary>
-        ///     Delays excecution of an action (timespan) time
-        /// </summary>
-        /// <param name="timespan">Timespan to delay</param>
-        IObservable<long> RunIn(TimeSpan timespan);
     }
 
     public interface IRxEntity
@@ -99,6 +81,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         RxEntity Entity(string entityId);
     }
 
+    public interface IRxEvent : IObservable<RxEvent>
+    {
+    }
+
+    public interface IRxSchedule
+    {
+        /// <summary>
+        ///     Run daily at a specific time
+        /// </summary>
+        /// <param name="time">The time in "hh:mm:ss" format</param>
+        IObservable<long> RunDaily(string time);
+
+        /// <summary>
+        ///     Shedules an action every (timespan)
+        /// </summary>
+        /// <param name="timespan">The timespan to schedule</param>
+        IObservable<long> RunEvery(TimeSpan timespan);
+        /// <summary>
+        ///     Delays excecution of an action (timespan) time
+        /// </summary>
+        /// <param name="timespan">Timespan to delay</param>
+        IObservable<long> RunIn(TimeSpan timespan);
+    }
     public interface IRxStateChange : IObservable<(EntityState Old, EntityState New)>
     {
     }

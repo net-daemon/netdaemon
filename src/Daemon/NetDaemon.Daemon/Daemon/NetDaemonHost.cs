@@ -1,5 +1,6 @@
 ﻿using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,10 +17,76 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
+    public class DelayResult : IDelayResult
+    {
+        private readonly INetDaemon _daemon;
+        private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
+        private bool _isCanceled = false;
+
+        public DelayResult(TaskCompletionSource<bool> delayTaskCompletionSource, INetDaemon daemon)
+        {
+            _delayTaskCompletionSource = delayTaskCompletionSource;
+            _daemon = daemon;
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> Task => _delayTaskCompletionSource.Task;
+
+        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
+        /// <inheritdoc/>
+        public void Cancel()
+        {
+            if (_isCanceled)
+                return;
+
+            _isCanceled = true;
+            foreach (var stateSubscription in StateSubscriptions)
+            {
+                _daemon.CancelListenState(stateSubscription);
+            }
+            StateSubscriptions.Clear();
+
+            // Also cancel all await if this is disposed
+            _delayTaskCompletionSource.TrySetResult(false);
+        }
+
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // Make sure any subscriptions are canceled
+                    Cancel();
+                }
+                disposedValue = true;
+            }
+        }
+        #endregion IDisposable Support
+    }
+
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
-        internal readonly Channel<(string, string)> _ttsMessageQueue =
-            Channel.CreateBounded<(string, string)>(20);
+        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
+            new ConcurrentDictionary<string, HassArea>();
+
+        // Internal for test
+        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
+            new ConcurrentDictionary<string, HassDevice>();
+
+        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
+            new ConcurrentDictionary<string, HassEntity>();
 
         internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageQueue =
                 Channel.CreateBounded<(string, string, dynamic?)>(20);
@@ -27,40 +94,42 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         internal readonly Channel<(string, dynamic, dynamic?)> _setStateMessageQueue =
                 Channel.CreateBounded<(string, dynamic, dynamic?)>(20);
 
+        internal readonly Channel<(string, string)> _ttsMessageQueue =
+                                                    Channel.CreateBounded<(string, string)>(20);
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
 
         // internal so we can use for unittest
         internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
+        private readonly List<(string, string, Func<dynamic?, Task>)> _companionServiceCallFunctionList
+            = new List<(string, string, Func<dynamic?, Task>)>();
+
+        private readonly ConcurrentDictionary<string, NetDaemonApp> _daemonAppInstances =
+            new ConcurrentDictionary<string, NetDaemonApp>();
+
         private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
-                    new List<(string pattern, Func<string, dynamic, Task> action)>();
+                                    new List<(string pattern, Func<string, dynamic, Task> action)>();
 
         private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
                     new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
 
+        private readonly EventObservable _eventObservables = new EventObservable();
+        private readonly List<IObserver<(string, dynamic?)>> _eventObserversTuples = new List<IObserver<(string, dynamic?)>>();
         private readonly IHassClient _hassClient;
 
-        private readonly Scheduler _scheduler;
-
-        private readonly IDataRepository? _repository;
         private readonly IHttpHandler? _httpHandler;
-
-        //private readonly List<IObserver<EntityState>> _observers = new List<IObserver<EntityState>>();
-        private readonly List<IObserver<(EntityState,EntityState)>> _observersTuples = new List<IObserver<(EntityState, EntityState)>>();
-
-
-        // Used for testing
-        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
+        private readonly IDataRepository? _repository;
+        private readonly Scheduler _scheduler;
+        private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
+            = new List<(string, string, Func<dynamic?, Task>)>();
 
         private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
             new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
-        private readonly ConcurrentDictionary<string, NetDaemonApp> _daemonAppInstances =
-            new ConcurrentDictionary<string, NetDaemonApp>();
-
+        private readonly StateChangeObservable _stateObservables = new StateChangeObservable();
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
             "light",
@@ -73,14 +142,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "script",
         };
 
+        private CancellationToken _cancelToken;
+        private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
         private bool _stopped;
-
-        private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
-            = new List<(string, string, Func<dynamic?, Task>)>();
-
-        private readonly List<(string, string, Func<dynamic?, Task>)> _companionServiceCallFunctionList
-            = new List<(string, string, Func<dynamic?, Task>)>();
-
         public NetDaemonHost(
             IHassClient? hassClient,
             IDataRepository? repository,
@@ -96,20 +160,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         public bool Connected { get; private set; }
-
-        public ILogger Logger { get; }
-
-        public IScheduler Scheduler => _scheduler;
-
-        public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
-
-        private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
-                                {
-                                    builder
-                                        .ClearProviders()
-                                        .AddConsole();
-                                });
-
+        public IRxEvent EventChanges => _eventObservables;
         public IHttpHandler Http
         {
             get
@@ -117,6 +168,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 _ = _httpHandler ?? throw new NullReferenceException("HttpHandler can not be null!");
                 return _httpHandler;
             }
+        }
+
+        public ILogger Logger { get; }
+        public IScheduler Scheduler => _scheduler;
+        public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
+        public IRxStateChange StateChanges => _stateObservables;
+        // Used for testing
+        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
+        private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
+                                {
+                                    builder
+                                        .ClearProviders()
+                                        .AddConsole();
+                                });
+        public void CallService(string domain, string service, dynamic? data = null)
+        {
+            if (_serviceCallMessageQueue.Writer.TryWrite((domain, service, data)) == false)
+                throw new ApplicationException("Servicecall queue full!");
         }
 
         public async Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
@@ -130,7 +199,120 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogError(e, "Failed call service");
             }
         }
-            
+
+        /// <inheritdoc/>
+        public ICamera Camera(INetDaemonApp app, params string[] entityIds) => new CameraManager(entityIds, this, app);
+
+        /// <inheritdoc/>
+        public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds) => new CameraManager(entityIds, this, app);
+
+        /// <inheritdoc/>
+        public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
+        {
+            try
+            {
+                IEnumerable<IEntityProperties> x = State.Where(func);
+
+                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this, app);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to select camera func in app {appId}", app.Id);
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void CancelListenState(string id)
+        {
+            // Remove and ignore if not exist
+            _stateActions.Remove(id, out _);
+        }
+
+        /// <inheritdoc/>
+        public void ClearAppInstances()
+        {
+            _daemonAppInstances.Clear();
+        }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false) =>
+            DelayUntilStateChange(new string[] { entityId }, to, from, allChanges);
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
+        {
+            // Use TaskCompletionSource to simulate a task that we can control
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var result = new DelayResult(taskCompletionSource, this);
+
+            foreach (var entityId in entityIds)
+            {
+                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                {
+                    if (to != null)
+                        if ((dynamic)to != newState?.State)
+                            return Task.CompletedTask;
+
+                    if (from != null)
+                        if ((dynamic)from != oldState?.State)
+                            return Task.CompletedTask;
+
+                    // If we don´t accept all changes in the state change
+                    // and we do not have a state change so return
+                    if (newState?.State == oldState?.State && !allChanges)
+                        return Task.CompletedTask;
+
+                    // If we reached this far we should complete task!
+                    taskCompletionSource.SetResult(true);
+                    // Also cancel all other ongoing state change subscriptions
+                    result.Cancel();
+
+                    return Task.CompletedTask;
+                })!);
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
+        {
+            // Use TaskCompletionSource to simulate a task that we can control
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var result = new DelayResult(taskCompletionSource, this);
+
+            foreach (var entityId in entityIds)
+            {
+                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                {
+                    try
+                    {
+                        if (!stateFunc(newState, oldState))
+                            return Task.CompletedTask;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogWarning(e, "Failed to evaluate function");
+                        return Task.CompletedTask;
+                    }
+
+                    // If we reached this far we should complete task!
+                    taskCompletionSource.SetResult(true);
+                    // Also cancel all other ongoing state change subscriptions
+                    result.Cancel();
+
+                    return Task.CompletedTask;
+                })!);
+            }
+
+            return result;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Stop().ConfigureAwait(false);
+        }
 
         public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
@@ -157,12 +339,55 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public IFluentEvent Events(INetDaemonApp app, IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
+        /// <inheritdoc/>
+        public NetDaemonApp? GetApp(string appInstanceId)
+        {
+            return _daemonAppInstances.ContainsKey(appInstanceId) ?
+                _daemonAppInstances[appInstanceId] : null;
+        }
+
+        public async ValueTask<T> GetDataAsync<T>(string id)
+        {
+            _ = _repository as IDataRepository ??
+              throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+
+            if (_dataCache.ContainsKey(id))
+            {
+                return (T)_dataCache[id];
+            }
+            var data = await _repository!.Get<T>(id).ConfigureAwait(false);
+
+            if (data != null)
+                _dataCache[id] = data;
+
+            return data;
+        }
+
         public EntityState? GetState(string entity)
         {
             return InternalState.TryGetValue(entity, out EntityState? returnValue)
                 ? returnValue
                 : null;
         }
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams) =>
+            new InputSelectManager(inputSelectParams, this, app);
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams) =>
+            new InputSelectManager(inputSelectParams, this, app);
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
+        {
+            IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
+            return new InputSelectManager(x, this, app);
+        }
+
+        /// <inheritdoc/>
+        public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
+            => _companionServiceCallFunctionList.Add(("netdaemon", service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
         public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
@@ -184,14 +409,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _stateActions[uniqueId] = (pattern, action);
             return uniqueId.ToString();
         }
-
-        /// <inheritdoc/>
-        public void CancelListenState(string id)
-        {
-            // Remove and ignore if not exist
-            _stateActions.Remove(id, out _);
-        }
-
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds) => new MediaPlayerManager(entityIds, this, app);
 
@@ -213,27 +430,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 throw;
             }
         }
-
         /// <inheritdoc/>
-        public ICamera Camera(INetDaemonApp app, params string[] entityIds) => new CameraManager(entityIds, this, app);
-
-        /// <inheritdoc/>
-        public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds) => new CameraManager(entityIds, this, app);
-
-        /// <inheritdoc/>
-        public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
+        public void RegisterAppInstance(string appInstance, NetDaemonApp app)
         {
-            try
-            {
-                IEnumerable<IEntityProperties> x = State.Where(func);
-
-                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this, app);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to select camera func in app {appId}", app.Id);
-                throw;
-            }
+            _daemonAppInstances[appInstance] = app;
         }
 
         /// <summary>
@@ -323,63 +523,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        internal async Task RefreshInternalStatesAndSetArea()
-        {
-            foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
-            {
-                if (device is object && device.Id is object)
-                    _hassDevices[device.Id] = device;
-            }
-            foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
-            {
-                if (area is object && area.Id is object)
-                    _hassAreas[area.Id] = area;
-            }
-            foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
-            {
-                if (entity is object && entity.EntityId is object)
-                    _hassEntities[entity.EntityId] = entity;
-            }
-            var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
-            var initialStates = hassStates.Select(n => n.ToDaemonEntityState())
-                .ToDictionary(n => n.EntityId);
-
-            InternalState.Clear();
-            foreach (var key in initialStates.Keys)
-            {
-                var state = initialStates[key];
-                state.Area = GetAreaForEntityId(state.EntityId);
-                InternalState[key] = state;
-            }
-        }
-
-        internal string? GetAreaForEntityId(string entityId)
-        {
-            HassEntity? entity;
-            if (_hassEntities.TryGetValue(entityId, out entity) && entity is object)
-            {
-                if (entity.DeviceId is object)
-                {
-                    // The entity is on a device
-                    HassDevice? device;
-                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is object)
-                    {
-                        if (device.AreaId is object)
-                        {
-                            // This device is in an area
-                            HassArea? area;
-                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is object)
-                            {
-                                return area.Name;
-                            }
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
         public IScript RunScript(INetDaemonApp app, params string[] entityId) => new EntityManager(entityId, this, app);
+
+        public Task SaveDataAsync<T>(string id, T data)
+        {
+            _ = _repository as IDataRepository ??
+                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _dataCache[id] = data;
+            return _repository!.Save(id, data);
+        }
 
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
@@ -392,6 +548,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogDebug(e, "Error sending event!");
             }
             return false;
+        }
+
+        /// <inheritdoc/>
+        public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
+        {
+            await SetStateAsync(
+                "netdaemon.status",
+                "Connected", // State will alawys be connected, otherwise state could not be set.
+                ("number_of_loaded_apps", numberOfLoadedApps),
+                ("number_of_running_apps", numberOfRunningApps),
+                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
+        }
+
+        public void SetState(string entityId, dynamic state, dynamic? attributes = null)
+        {
+            if (_setStateMessageQueue.Writer.TryWrite((entityId, state, attributes)) == false)
+                throw new ApplicationException("Servicecall queue full!");
         }
 
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
@@ -427,29 +600,93 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             try
             {
+                if (_stopped)
+                {
+                    return;
+                }
 
-            
-            if (_stopped)
-            {
-                return;
+                _eventActions.Clear();
+                _eventFunctionList.Clear();
+                _stateActions.Clear();
+                _serviceCallFunctionList.Clear();
+                await _scheduler.Stop().ConfigureAwait(false);
+
+                await _hassClient.CloseAsync().ConfigureAwait(false);
+
+                _stopped = true;
             }
-
-            _eventActions.Clear();
-            _eventFunctionList.Clear();
-            _stateActions.Clear();
-            _serviceCallFunctionList.Clear();
-            await _scheduler.Stop().ConfigureAwait(false);
-
-            await _hassClient.CloseAsync().ConfigureAwait(false);
-
-            _stopped = true;
-            }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logger.LogError(e, "Error stopping NetDaemon");
             }
         }
 
+        /// <inheritdoc/>
+        public async Task StopDaemonActivitiesAsync()
+        {
+            _eventActions.Clear();
+            _eventFunctionList.Clear();
+            _stateActions.Clear();
+            _serviceCallFunctionList.Clear();
+
+            await _scheduler.Restart().ConfigureAwait(false);
+        }
+
+        internal string? GetAreaForEntityId(string entityId)
+        {
+            HassEntity? entity;
+            if (_hassEntities.TryGetValue(entityId, out entity) && entity is object)
+            {
+                if (entity.DeviceId is object)
+                {
+                    // The entity is on a device
+                    HassDevice? device;
+                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is object)
+                    {
+                        if (device.AreaId is object)
+                        {
+                            // This device is in an area
+                            HassArea? area;
+                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is object)
+                            {
+                                return area.Name;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        internal async Task RefreshInternalStatesAndSetArea()
+        {
+            foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
+            {
+                if (device is object && device.Id is object)
+                    _hassDevices[device.Id] = device;
+            }
+            foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
+            {
+                if (area is object && area.Id is object)
+                    _hassAreas[area.Id] = area;
+            }
+            foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
+            {
+                if (entity is object && entity.EntityId is object)
+                    _hassEntities[entity.EntityId] = entity;
+            }
+            var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
+            var initialStates = hassStates.Select(n => n.ToDaemonEntityState())
+                .ToDictionary(n => n.EntityId);
+
+            InternalState.Clear();
+            foreach (var key in initialStates.Keys)
+            {
+                var state = initialStates[key];
+                state.Area = GetAreaForEntityId(state.EntityId);
+                InternalState[key] = state;
+            }
+        }
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             if (hassEvent.EventType == "state_changed")
@@ -494,22 +731,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         }
                     }
                     // Call the observable with no blocking
-                    foreach (var observer in _observersTuples)
+                    foreach (var observer in ((StateChangeObservable)StateChanges).Observers)
                     {
-                        tasks.Add(Task.Run(()=>
+                        tasks.Add(Task.Run(() =>
                         {
                             try
                             {
-                                
                                 observer.OnNext((oldState, newState));
-                                
                             }
                             catch (Exception e)
                             {
                                 observer.OnError(e);
-                                Logger.LogError(e, "Fail to OnNext on observer");
+                                Logger.LogError(e, "Fail to OnNext on state change observer");
                             }
-                            
                         }));
                     }
 
@@ -546,6 +780,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             tasks.Add(func(serviceCallData.Data));
                         }
                     }
+
+                    // Call the observable with no blocking
+                    foreach (var observer in ((EventObservable)EventChanges).Observers)
+                    {
+                        tasks.Add(Task.Run(() =>
+                        {
+                            try
+                            {
+                                observer.OnNext(
+                                    new RxEvent(serviceCallData.Service, serviceCallData.Domain,
+                                                         serviceCallData.ServiceData));
+                            }
+                            catch (Exception e)
+                            {
+                                observer.OnError(e);
+                                Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
+                            }
+                        }));
+                    }
+
                     if (tasks.Count > 0)
                     {
                         await tasks.WhenAll(token).ConfigureAwait(false);
@@ -586,6 +840,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             tasks.Add(func(hassEvent.EventType, hassEvent.Data));
                         }
                     }
+
+                    // Call the observable with no blocking
+                    foreach (var observer in ((EventObservable)EventChanges).Observers)
+                    {
+                        tasks.Add(Task.Run(() =>
+                        {
+                            try
+                            {
+                                observer.OnNext(
+                                    new RxEvent(hassEvent.EventType, null, hassEvent.Data));
+                            }
+                            catch (Exception e)
+                            {
+                                observer.OnError(e);
+                                Logger.LogError(e, "Fail to OnNext on event observer (event)");
+                            }
+                        }));
+                    }
+
                     if (tasks.Count > 0)
                     {
                         await tasks.WhenAll(token).ConfigureAwait(false);
@@ -631,20 +904,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 }
                 catch (Exception e)
                 {
-                    if (hasLoggedError==false)
-                    Logger.LogDebug(e, "Failure sending call service");
+                    if (hasLoggedError == false)
+                        Logger.LogDebug(e, "Failure sending call service");
                     hasLoggedError = true;
                     await Task.Delay(100); // Do a delay to avoid loop
                 }
             }
         }
-
-        public void SetState(string entityId, dynamic state, dynamic? attributes = null)
-        {
-            if (_setStateMessageQueue.Writer.TryWrite((entityId, state, attributes)) == false)
-                throw new ApplicationException("Servicecall queue full!");
-        }
-
         private async Task HandleAsyncSetState(CancellationToken cancellationToken)
         {
             bool hasLoggedError = false;
@@ -661,7 +927,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     hasLoggedError = false;
                 }
-                catch(OperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     // Ignore we are leaving
                 }
@@ -711,197 +977,27 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogError(e, "Error reading TTS channel");
             }
         }
+    }
+    #region IObservable<(EntityState, EntityState)> implementation
 
-        private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
-        private CancellationToken _cancelToken;
+    public class StateChangeObservable : IRxStateChange
+    {
+        private readonly List<IObserver<(EntityState, EntityState)>> _stateObserversTuples = new List<IObserver<(EntityState, EntityState)>>();
 
-        // Internal for test
-        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
-            new ConcurrentDictionary<string, HassDevice>();
+        public IEnumerable<IObserver<(EntityState, EntityState)>> Observers => _stateObserversTuples;
 
-        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
-            new ConcurrentDictionary<string, HassEntity>();
-
-        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
-            new ConcurrentDictionary<string, HassArea>();
-
-        public Task SaveDataAsync<T>(string id, T data)
+        public IDisposable Subscribe(IObserver<(EntityState Old, EntityState New)> observer)
         {
-            _ = _repository as IDataRepository ??
-                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+            if (!_stateObserversTuples.Contains(observer))
+                _stateObserversTuples.Add(observer);
 
-            if (data == null)
-                throw new ArgumentNullException(nameof(data));
-
-            _dataCache[id] = data;
-            return _repository!.Save(id, data);
+            return new UnsubscriberEntityStateTuple(_stateObserversTuples, observer);
         }
-
-        public async ValueTask<T> GetDataAsync<T>(string id)
-        {
-            _ = _repository as IDataRepository ??
-              throw new NullReferenceException($"{nameof(_repository)} can not be null!");
-
-            if (_dataCache.ContainsKey(id))
-            {
-                return (T)_dataCache[id];
-            }
-            var data = await _repository!.Get<T>(id).ConfigureAwait(false);
-
-            if (data != null)
-                _dataCache[id] = data;
-
-            return data;
-        }
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams) =>
-            new InputSelectManager(inputSelectParams, this, app);
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams) =>
-            new InputSelectManager(inputSelectParams, this, app);
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
-        {
-            IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
-            return new InputSelectManager(x, this, app);
-        }
-
-        /// <inheritdoc/>
-        public async Task StopDaemonActivitiesAsync()
-        {
-            _eventActions.Clear();
-            _eventFunctionList.Clear();
-            _stateActions.Clear();
-            _serviceCallFunctionList.Clear();
-
-            await _scheduler.Restart().ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
-            => _companionServiceCallFunctionList.Add(("netdaemon", service.ToLowerInvariant(), action));
-
-        /// <inheritdoc/>
-        public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
-        {
-            await SetStateAsync(
-                "netdaemon.status",
-                "Connected", // State will alawys be connected, otherwise state could not be set.
-                ("number_of_loaded_apps", numberOfLoadedApps),
-                ("number_of_running_apps", numberOfRunningApps),
-                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false) =>
-            DelayUntilStateChange(new string[] { entityId }, to, from, allChanges);
-
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
-        {
-            // Use TaskCompletionSource to simulate a task that we can control
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            var result = new DelayResult(taskCompletionSource, this);
-
-            foreach (var entityId in entityIds)
-            {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
-                {
-                    if (to != null)
-                        if ((dynamic)to != newState?.State)
-                            return Task.CompletedTask;
-
-                    if (from != null)
-                        if ((dynamic)from != oldState?.State)
-                            return Task.CompletedTask;
-
-                    // If we don´t accept all changes in the state change
-                    // and we do not have a state change so return
-                    if (newState?.State == oldState?.State && !allChanges)
-                        return Task.CompletedTask;
-
-                    // If we reached this far we should complete task!
-                    taskCompletionSource.SetResult(true);
-                    // Also cancel all other ongoing state change subscriptions
-                    result.Cancel();
-
-                    return Task.CompletedTask;
-                })!);
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
-        {
-            // Use TaskCompletionSource to simulate a task that we can control
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            var result = new DelayResult(taskCompletionSource, this);
-
-            foreach (var entityId in entityIds)
-            {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
-                {
-                    try
-                    {
-                        if (!stateFunc(newState, oldState))
-                            return Task.CompletedTask;
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning(e, "Failed to evaluate function");
-                        return Task.CompletedTask;
-                    }
-
-                    // If we reached this far we should complete task!
-                    taskCompletionSource.SetResult(true);
-                    // Also cancel all other ongoing state change subscriptions
-                    result.Cancel();
-
-                    return Task.CompletedTask;
-                })!);
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public NetDaemonApp? GetApp(string appInstanceId)
-        {
-            return _daemonAppInstances.ContainsKey(appInstanceId) ?
-                _daemonAppInstances[appInstanceId] : null;
-        }
-
-        /// <inheritdoc/>
-        public void RegisterAppInstance(string appInstance, NetDaemonApp app)
-        {
-            _daemonAppInstances[appInstance] = app;
-        }
-
-        /// <inheritdoc/>
-        public void ClearAppInstances()
-        {
-            _daemonAppInstances.Clear();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await Stop().ConfigureAwait(false);
-        }
-
-
-        #region IObservable<(EntityState, EntityState)> implementation
 
         private class UnsubscriberEntityStateTuple : IDisposable
         {
-            private readonly IList<IObserver<(EntityState, EntityState)>> _observers;
             private readonly IObserver<(EntityState, EntityState)> _observer;
-
-
+            private readonly IList<IObserver<(EntityState, EntityState)>> _observers;
             public UnsubscriberEntityStateTuple(IList<IObserver<(EntityState, EntityState)>> observers, IObserver<(EntityState, EntityState)> observer)
             {
                 this._observers = observers;
@@ -913,92 +1009,42 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 if (_observer is object) _observers.Remove(_observer);
             }
         }
-        /// <inheritdoc/>
-        public IDisposable Subscribe(IObserver<(EntityState, EntityState)> observer)
-        {
-         
-
-
-            if (!_observersTuples.Contains(observer))
-                _observersTuples.Add(observer);
-
-            return new UnsubscriberEntityStateTuple(_observersTuples, observer);
-        }
-
-        public void CallService(string domain, string service, dynamic? data = null)
-        {
-            if (_serviceCallMessageQueue.Writer.TryWrite((domain, service, data)) == false)
-                throw new ApplicationException("Servicecall queue full!");
-        }
-
-
-        #endregion
-
     }
 
-    public class DelayResult : IDelayResult
+    #endregion IObservable<(EntityState, EntityState)> implementation
+
+    #region IObservable<RxEvent> implementation
+
+    public class EventObservable : IRxEvent
     {
-        private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
-        private readonly INetDaemon _daemon;
+        private readonly List<IObserver<RxEvent>> _stateObserversTuples = new List<IObserver<RxEvent>>();
 
-        private bool _isCanceled = false;
+        public IEnumerable<IObserver<RxEvent>> Observers => _stateObserversTuples;
 
-        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
-
-        public DelayResult(TaskCompletionSource<bool> delayTaskCompletionSource, INetDaemon daemon)
+        public IDisposable Subscribe(IObserver<RxEvent> observer)
         {
-            _delayTaskCompletionSource = delayTaskCompletionSource;
-            _daemon = daemon;
+            if (!_stateObserversTuples.Contains(observer))
+                _stateObserversTuples.Add(observer);
+
+            return new UnsubscriberEntityStateTuple(_stateObserversTuples, observer);
         }
 
-        /// <inheritdoc/>
-        public Task<bool> Task => _delayTaskCompletionSource.Task;
-
-        /// <inheritdoc/>
-        public void Cancel()
+        private class UnsubscriberEntityStateTuple : IDisposable
         {
-            if (_isCanceled)
-                return;
-
-            _isCanceled = true;
-            foreach (var stateSubscription in StateSubscriptions)
+            private readonly IObserver<RxEvent> _observer;
+            private readonly IList<IObserver<RxEvent>> _observers;
+            public UnsubscriberEntityStateTuple(IList<IObserver<RxEvent>> observers, IObserver<RxEvent> observer)
             {
-                _daemon.CancelListenState(stateSubscription);
+                this._observers = observers;
+                this._observer = observer;
             }
-            StateSubscriptions.Clear();
 
-            // Also cancel all await if this is disposed
-            _delayTaskCompletionSource.TrySetResult(false);
-        }
-
-
-
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
+            public void Dispose()
             {
-                if (disposing)
-                {
-                    // Make sure any subscriptions are canceled
-                    Cancel();
-                }
-                disposedValue = true;
+                if (_observer is object) _observers.Remove(_observer);
             }
         }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-        }
-
-        #endregion IDisposable Support
     }
 
+    #endregion IObservable<(EntityState, EntityState)> implementation
 }
