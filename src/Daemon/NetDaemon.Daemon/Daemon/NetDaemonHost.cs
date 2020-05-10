@@ -695,12 +695,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     var stateData = (HassStateChangedEventData?)hassEvent.Data;
 
-                    if (stateData == null)
+                    if (stateData is null)
                     {
                         throw new NullReferenceException("StateData is null!");
                     }
 
-                    if (stateData.NewState == null)
+                    if (stateData.NewState is null || stateData.OldState is null)
                     {
                         // This is an entity that is removed and have no new state so just return;
                         return;

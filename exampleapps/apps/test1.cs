@@ -24,6 +24,7 @@ public class GlobalApp : NetDaemonRxApp
         //        Log("{entity} ({state})", x.New.EntityId, x.New.State);
         //    });
 
+        
         EventChanges
             .Subscribe(f =>
             {
