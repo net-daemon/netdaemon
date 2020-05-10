@@ -220,7 +220,9 @@ namespace NetDaemon.Daemon.Tests
                         Attributes = new Dictionary<string, object>
                         {
                             ["device_class"] = "motion"
-                        }
+                        },
+                        LastUpdated = DateTime.Now,
+                        LastChanged = DateTime.Now
                     },
                     OldState = new HassState
                     {
@@ -231,7 +233,8 @@ namespace NetDaemon.Daemon.Tests
                             ["device_class"] = "motion"
                         }
                     }
-                }
+                },
+                
             });
         }
 

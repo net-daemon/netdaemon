@@ -12,11 +12,29 @@ public class GlobalApp : NetDaemonRxApp
 {
     // private ISchedulerResult _schedulerResult;
     private int numberOfRuns = 0;
-
+    IDisposable task;
     //public string? SharedThing { get; set; }
-    public override async Task InitializeAsync()
+    public override Task InitializeAsync()
     {
-        RunDaily("20:28:00").Subscribe(e => Log("Now!"));
+        //StateChanges.Select(f => f.New.EntityId=="light.tomas_rum" && 
+        //                        f.New.State == "off")
+        //                        //f.New.Attribute.brightness < 20)
+        //                        .DistinctUntilChanged()
+        //                        .Where(x => x)
+        //                        .Throttle(TimeSpan.FromSeconds(10)).Subscribe(e => Log("Now!"));
+        // Delay(TimeSpan.FromSeconds(5)).Where(e => DateTime.Now.Subtract(State("binary_sensor.tomas_rum_pir").LastChanged) >= TimeSpan.FromSeconds(5))
+        //.Catch(ex => Log(ex, "ERROR IN THE STUFF"))
+        task = StateChanges.Where(n => n.New.EntityId == "binary_sensor.tomas_rum_pir" && n.New.State == "off" && n.Old.State == "on")
+            .Timeout(TimeSpan.FromSeconds(5)).Subscribe(e =>
+        //StateChanges.Where(n => n.New.EntityId == "light.tomas_rum" && n.New.State == "off" ).Delay(TimeSpan.FromSeconds(10)).Where(e => DateTime.Now.Subtract(e.New.LastChanged) >= TimeSpan.FromSeconds(10)).Subscribe(e =>
+        {
+            Log("New changed:{changed}", e.New.LastChanged);
+            //throw new Exception("helle");
+        }); //, ex => Log(ex, "ERROR IN THE STUFF")
+        //.Timeout(TimeSpan.FromSeconds(5)
+        return Task.CompletedTask;
+        //throw new Exception("Hello");
+        //RunDaily("20:28:00").Subscribe(e => Log("Now!"));
 
         //Log("Rx - TEST");
         //States.Subscribe(t => { Log("{entity}: {state}({oldstate})", t.New.EntityId, t.New.State, t.Old.State); });

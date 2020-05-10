@@ -119,7 +119,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
+        public async Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
+        {
+            try
+            {
+                await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed call service");
+            }
+        }
+            
 
         public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
@@ -370,7 +381,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public IScript RunScript(INetDaemonApp app, params string[] entityId) => new EntityManager(entityId, this, app);
 
-        public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
+        public async Task<bool> SendEvent(string eventId, dynamic? data = null)
+        {
+            try
+            {
+                return await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Logger.LogDebug(e, "Error sending event!");
+            }
+            return false;
+        }
 
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
                     params (string name, object val)[] attributes)
@@ -403,6 +425,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public async Task Stop()
         {
+            try
+            {
+
+            
             if (_stopped)
             {
                 return;
@@ -417,6 +443,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await _hassClient.CloseAsync().ConfigureAwait(false);
 
             _stopped = true;
+            }
+            catch(Exception e)
+            {
+                Logger.LogError(e, "Error stopping NetDaemon");
+            }
         }
 
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
@@ -465,7 +496,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     // Call the observable with no blocking
                     foreach (var observer in _observersTuples)
                     {
-                        tasks.Add(Task.Run(()=>observer.OnNext((oldState, newState))));
+                        tasks.Add(Task.Run(()=>
+                        {
+                            try
+                            {
+                                
+                                observer.OnNext((oldState, newState));
+                                
+                            }
+                            catch (Exception e)
+                            {
+                                observer.OnError(e);
+                                Logger.LogError(e, "Fail to OnNext on observer");
+                            }
+                            
+                        }));
                     }
 
                     // No hit
@@ -478,7 +523,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (state_changed)");
-                    throw;
                 }
             }
             else if (hassEvent.EventType == "call_service")
@@ -510,12 +554,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (service_call)");
-                    throw;
                 }
             }
             else if (hassEvent.EventType == "device_registry_updated" || hassEvent.EventType == "area_registry_updated")
             {
-                await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+                try
+                {
+                    await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Failed to RefreshInternalStatesAndSetArea");
+                }
             }
             else
             {
@@ -544,7 +594,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (custom_event)");
-                    throw;
                 }
             }
         }
@@ -861,12 +910,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             public void Dispose()
             {
-                if (!(_observer == null)) _observers.Remove(_observer);
+                if (_observer is object) _observers.Remove(_observer);
             }
         }
         /// <inheritdoc/>
         public IDisposable Subscribe(IObserver<(EntityState, EntityState)> observer)
         {
+         
+
+
             if (!_observersTuples.Contains(observer))
                 _observersTuples.Add(observer);
 

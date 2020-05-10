@@ -3,11 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Reactive.Concurrency;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
+    public static class ObservableExtensionMethods
+    {
+        public static IObservable<(EntityState Old, EntityState New)> HassSameStateFor(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan span)
+        {
+            return observable.Delay(span).Where(e => DateTime.Now.Subtract(e.New.LastChanged) >= span);
+        }
+    }
+
     /// <summary>
     ///     Base class for using the Reactive paradigm for apps
     /// </summary>
@@ -70,12 +80,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
 
-            return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1));
+            return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1), TaskPoolScheduler.Default);
         }
 
         public IObservable<long> RunEvery(TimeSpan timespan)
         {
-            return Observable.Interval(timespan);
+            return Observable.Interval(timespan, TaskPoolScheduler.Default);
+        }
+
+        public IObservable<long> RunIn(TimeSpan timespan)
+        {
+            return Observable.Timer(timespan, TaskPoolScheduler.Default);
         }
 
         public void SetState(string entityId, dynamic state, dynamic? attributes = null)

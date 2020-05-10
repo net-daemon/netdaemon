@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -231,6 +232,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             _logger.LogWarning($"Home assistant is disconnected, retrying in {_reconnectIntervall / 1000} seconds...");
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "MAJOR ERROR!");
                     }
                     // If we reached here it could be a re-connect
                     hasConnectedBefore = true;

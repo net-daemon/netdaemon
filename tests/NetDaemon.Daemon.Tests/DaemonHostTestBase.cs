@@ -1,4 +1,5 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 namespace NetDaemon.Daemon.Tests
 {
     public class BaseTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class BaseTestRxApp : JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp { }
 
     public partial class DaemonHostTestBase
     {
@@ -20,6 +22,7 @@ namespace NetDaemon.Daemon.Tests
         private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
         private readonly HttpHandlerMock _defaultHttpHandlerMock;
         private readonly NetDaemonHost _defaultDaemonHost;
+        private readonly BaseTestRxApp _defaultDaemonRxApp;
         private readonly NetDaemonHost _notConnectedDaemonHost;
 
         private readonly INetDaemonApp _defaultDaemonApp;
@@ -40,12 +43,17 @@ namespace NetDaemon.Daemon.Tests
             _defaultDaemonApp = new BaseTestApp();
             _defaultDaemonApp.StartUpAsync(_defaultDaemonHost);
 
+            _defaultDaemonRxApp = new BaseTestRxApp();
+            _defaultDaemonRxApp.StartUpAsync(_defaultDaemonHost);
+
             _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
         }
 
         public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
         public INetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
+        public BaseTestRxApp DefaultDaemonRxApp => _defaultDaemonRxApp;
+
         public NetDaemonHost NotConnectedDaemonHost => _notConnectedDaemonHost;
 
         public HassClientMock DefaultHassClientMock => _defaultHassClientMock;
