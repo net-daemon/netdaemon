@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System.Text;
+using System.Reactive.Linq;
+using JoySoftware.HomeAssistant.Client;
+using System.Linq;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
@@ -25,7 +28,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         void SetState(dynamic state, dynamic? attributes);
     }
 
-    public class RxEntity : ITurnOn, ITurnOff, IToggle, ISetState
+    public interface IObserve
+    {
+        IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
+        IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
+
+    }
+
+    public class RxEntity : ITurnOn, ITurnOff, IToggle, ISetState, IObserve
     {
         private readonly INetDaemon _daemon;
         private readonly IEnumerable<string> _entityIds;
@@ -84,5 +94,54 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
         }
 
+        public IDisposable Subscribe(IObserver<(EntityState Old, EntityState New)> observer) => throw new NotImplementedException();
+
+        public IObservable<(EntityState Old, EntityState New)> StateChanges
+        {
+            get
+            {
+                if (_entityIds.Count() > 1)
+                {
+                    var resultList
+                        = new List<IObservable<(EntityState Old, EntityState New)>>();
+
+                    foreach (var entity in _entityIds)
+                    {
+                        resultList.Add(_daemon.Where(f => f.New.EntityId == entity && f.New.State != f.Old.State));
+                    }
+                    return Observable.Merge(resultList);
+                }
+                else if (_entityIds.Count() == 1)
+                {
+                    return _daemon.Where(f => f.New.EntityId == _entityIds.First() && f.New.State != f.Old.State);
+                }
+
+                throw new Exception("Merge not allowed. No entity id:s were selected. Check your lambda query");
+            }
+        }
+
+        public IObservable<(EntityState Old, EntityState New)> StateAllChanges 
+        {
+            get
+            {
+                var resultList
+                    = new List<IObservable<(EntityState Old, EntityState New)>>();
+
+                if (_entityIds.Count() > 1)
+                {
+                    foreach (var entity in _entityIds)
+                    {
+                        resultList.Add(_daemon.Where(f => f.New.EntityId == entity));
+                    }
+                    return Observable.Merge(resultList);
+                }
+                else if (_entityIds.Count() == 1)
+                {
+                    return _daemon.Where(f => f.New.EntityId == _entityIds.First());
+                }
+
+                throw new Exception("StateAllChanges not allowed. No entity id:s were selected. Check your lambda query");
+            }
+        }
     }
 }

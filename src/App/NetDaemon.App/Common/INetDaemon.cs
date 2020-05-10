@@ -103,7 +103,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// </summary>
     public interface INetDaemon : INetDaemonCommon,
         //IObservable<EntityState> //,
-        IObservable<(EntityState, EntityState)>
+        IObservable<(EntityState Old, EntityState New)>
     {
         /// <summary>
         ///     Selects one or more camera entities to do action on
