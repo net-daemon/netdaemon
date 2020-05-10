@@ -28,8 +28,8 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         {
             bool isRun = false;
             using var ctx = DefaultDaemonRxApp.StateChanges
-                .Where(t => t.New.EntityId == "binary_sensor.pir" && t.New.State != t.Old.State)
-                .HassSameStateFor(TimeSpan.FromMilliseconds(50))
+                .Where(t => t.New.EntityId == "binary_sensor.pir")
+                .NDSameStateFor(TimeSpan.FromMilliseconds(50))
                 .Subscribe(e =>
                 {
                     isRun = true;

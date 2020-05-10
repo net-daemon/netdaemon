@@ -12,9 +12,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
     public static class ObservableExtensionMethods
     {
-        public static IObservable<(EntityState Old, EntityState New)> HassSameStateFor(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan span)
+        /// <summary>
+        ///     Is same for timespan time
+        /// </summary>
+        /// <param name="observable"></param>
+        /// <param name="span"></param>
+        /// <returns></returns>
+        public static IObservable<(EntityState Old, EntityState New)> NDSameStateFor(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan span)
         {
-            return observable.Delay(span).Where(e => DateTime.Now.Subtract(e.New.LastChanged) >= span);
+            return observable.Throttle(span);
         }
     }
 
@@ -29,7 +35,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
         }
 
-        public IRxStateChange StateChanges => _reactiveState;
+        public IObservable<(EntityState Old, EntityState New)> StateChanges => _reactiveState.Where(e => e.New.State != e.Old.State);
+
+        public IRxStateChange StateAllChanges => _reactiveState;
 
         public IEnumerable<EntityState> States =>
             _daemon?.State ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");

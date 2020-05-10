@@ -14,9 +14,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     public interface INetDaemonReactive : INetDaemonAppBase, ICallService, IRxEntity
     {
         /// <summary>
-        ///     The observable statestream
+        ///     The observable statestream state change
         /// </summary>
-        public IRxStateChange StateChanges { get; }
+        /// <remarks>
+        ///     Old state != New state
+        /// </remarks>
+        public IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
+
+        /// <summary>
+        ///     The observable statestream, all changes inkluding attributes
+        /// </summary>
+        public IRxStateChange StateAllChanges { get; }
 
         /// <summary>
         ///     Enuberable of current states
@@ -36,6 +44,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="entityId"></param>
         EntityState? State(string entityId);
+    }
+
+    public interface IRxAppHelpers
+    {
+
     }
 
     public interface IRxSchedule
