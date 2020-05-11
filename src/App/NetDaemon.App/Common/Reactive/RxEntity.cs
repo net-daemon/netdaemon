@@ -173,6 +173,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
         private void CallServiceOnEntity(string service, dynamic? attributes = null)
         {
+            if (_entityIds is null || _entityIds is object && _entityIds.Count() == 0)
+                return;
+
             dynamic? data = null;
 
             if (attributes is object)
@@ -183,7 +186,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                     data = attributes;
             }
 
-            foreach (var entityId in _entityIds)
+            foreach (var entityId in _entityIds!)
             {
                 var serviceData = new FluentExpandoObject();
                 // Maske sure we make a copy since we reuse all info but entity id
