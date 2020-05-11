@@ -25,7 +25,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public IEnumerable<EntityState> State => _daemon?.State ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
- 
+
         /// <inheritdoc/>
         public Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
@@ -163,7 +163,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public string? ListenState(string pattern, Func<string, EntityState?, EntityState?, Task> action) => _daemon?.ListenState(pattern, action);
 
-    
+
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(params string[] entityIds)
         {
@@ -217,12 +217,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return await _daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
         }
 
-        /// <inheritdoc/>
-        public void Speak(string entityId, string message)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _daemon!.Speak(entityId, message);
-        }
-   
+
+
     }
 }

@@ -22,7 +22,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         /// Init the application sync, is called by the NetDaemon after startup
         /// </summary>
-        Task Initialize();
+        void Initialize();
 
         /// <summary>
         /// Start the application, normally implemented by the base class
@@ -61,7 +61,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// </summary>
     public interface INetDaemonAppBase : INetDaemonInitialableApp, IDisposable, IEquatable<INetDaemonAppBase>
     {
-                /// <summary>
+        /// <summary>
         ///     The dependencies that needs to be initialized before this app
         /// </summary>
         IEnumerable<string> Dependencies { get; set; }
@@ -97,6 +97,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Http features of NetDaemon is exposed through the Http property
         /// </summary>
         IHttpHandler Http { get; }
+
+        /// <summary>
+        ///     Use text-to-speech to speak a message
+        /// </summary>
+        /// <param name="entityId">Unique id of the media player the speech should play</param>
+        /// <param name="message">The message that will be spoken</param>
+        void Speak(string entityId, string message);
+
     }
 
     /// <summary>
@@ -251,7 +259,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base interface that all NetDaemon apps needs to implement
     /// </summary>
-    public interface INetDaemonApp :  INetDaemonAppBase
+    public interface INetDaemonApp : INetDaemonAppBase
     {
         /// <summary>
         ///     Selects one or more camera entities to do action on
@@ -308,7 +316,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="func">The lambda expression selecting event</param>
         IFluentEvent Events(Func<FluentEventProperty, bool> func);
 
-        
+
 
         /// <summary>
         ///     Selects one or more input select to do action on

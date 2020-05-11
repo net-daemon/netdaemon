@@ -351,7 +351,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             foreach (var app in result)
             {
-                await app.InitializeAsync().ConfigureAwait(false);
+                // Init by calling the InitializeAsync
+                var taskInitAsync = app.InitializeAsync();
+                var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
+                if (taskAwaitedAsyncTask != taskInitAsync)
+                    _logger.LogWarning("InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!", app.Id);
+
+                // Init by calling the Initialize
+                var taskInit = Task.Run(app.Initialize);
+                var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
+                if (taskAwaitedTask != taskInit)
+                    _logger.LogWarning("Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!", app.Id);
+
                 await app.HandleAttributeInitialization(host!);
                 host!.Logger.LogInformation("Successfully loaded app {appId} ({class})", app.Id, app.GetType().Name);
             }
@@ -429,7 +440,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 return;
 
             // Get daemon apps in entry assembly (mainly for development)
-            var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonApp)));
+            var apps = Assembly.GetEntryAssembly()?.GetTypes().Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonAppBase)));
 
             if (apps != null)
                 foreach (var localAppType in apps)

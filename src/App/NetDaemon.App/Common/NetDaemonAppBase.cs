@@ -94,6 +94,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        public void Speak(string entityId, string message)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _daemon!.Speak(entityId, message);
+        }
+
+        /// <inheritdoc/>
         public async Task RestoreAppStateAsync()
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
@@ -173,8 +180,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
-
-        Task INetDaemonInitialableApp.Initialize() => throw new NotImplementedException();
 
         /// <inheritdoc/>
         protected virtual void Dispose(bool disposing)

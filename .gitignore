@@ -8,3 +8,5 @@ lcov.info
 codecover
 **.DS_Store
 .generated
+scripts/version.txt
+packages/

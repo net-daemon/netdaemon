@@ -31,7 +31,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="state">The state to set, primitives only</param>
         /// <param name="attributes">The attributes to set. Use anonomous type</param>
-        void SetState(dynamic state, dynamic? attributes);
+        void SetState(dynamic state, dynamic? attributes = null);
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         ///     Toggles state on/off
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type</param>
-        void Toggle(dynamic? attributes);
+        void Toggle(dynamic? attributes = null);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         ///     Turn off entity
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type.</param>
-        void TurnOff(dynamic? attributes);
+        void TurnOff(dynamic? attributes = null);
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         ///     Turn on entitry
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type.</param>
-        void TurnOn(dynamic? attributes);
+        void TurnOn(dynamic? attributes = null);
     }
 
     /// <summary>
@@ -140,7 +140,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public void SetState(dynamic state, dynamic? attributes)
+        public void SetState(dynamic state, dynamic? attributes = null)
         {
             foreach (var entityId in _entityIds)
             {
@@ -154,13 +154,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         public IDisposable Subscribe(IObserver<(EntityState Old, EntityState New)> observer) => throw new NotImplementedException();
 
         /// <inheritdoc/>
-        public void Toggle(dynamic? attributes) => CallServiceOnEntity("toggle", attributes);
+        public void Toggle(dynamic? attributes = null) => CallServiceOnEntity("toggle", attributes);
 
         /// <inheritdoc/>
-        public void TurnOff(dynamic? attributes) => CallServiceOnEntity("turn_off", attributes);
+        public void TurnOff(dynamic? attributes = null) => CallServiceOnEntity("turn_off", attributes);
 
         /// <inheritdoc/>
-        public void TurnOn(dynamic? attributes) => CallServiceOnEntity("turn_on", attributes);
+        public void TurnOn(dynamic? attributes = null) => CallServiceOnEntity("turn_on", attributes);
 
         internal static string GetDomainFromEntity(string entity)
         {
