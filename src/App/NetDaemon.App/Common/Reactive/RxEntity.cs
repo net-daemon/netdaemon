@@ -5,42 +5,91 @@ using System.Reactive.Linq;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
+    /// <summary>
+    ///     Interface for objects exposing observable state changes
+    /// </summary>
     public interface IObserve
     {
+        /// <summary>
+        ///     Observable, All state changes inkluding attributes
+        /// </summary>
         IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
+
+        /// <summary>
+        ///     Observable, All state changes. New.State!=Old.State
+        /// </summary>
         IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
     }
 
+    /// <summary>
+    ///     Interface for objects implements SetState
+    /// </summary>
     public interface ISetState
     {
+        /// <summary>
+        ///     Set entity state
+        /// </summary>
+        /// <param name="state">The state to set, primitives only</param>
+        /// <param name="attributes">The attributes to set. Use anonomous type</param>
         void SetState(dynamic state, dynamic? attributes);
     }
 
+    /// <summary>
+    ///     Interface for objects implements Toggle
+    /// </summary>
     public interface IToggle
     {
+        /// <summary>
+        ///     Toggles state on/off
+        /// </summary>
+        /// <param name="attributes">The attributes to set. Use anonomous type</param>
         void Toggle(dynamic? attributes);
     }
 
+    /// <summary>
+    ///     Interface for objects implements TurnOff
+    /// </summary>
     public interface ITurnOff
     {
+        /// <summary>
+        ///     Turn off entity
+        /// </summary>
+        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
         void TurnOff(dynamic? attributes);
     }
 
+    /// <summary>
+    ///     Interface for objects implements TurnOn
+    /// </summary>
     public interface ITurnOn
     {
+        /// <summary>
+        ///     Turn on entitry
+        /// </summary>
+        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
         void TurnOn(dynamic? attributes);
     }
+
+    /// <summary>
+    ///     Implements the entity of Rx API
+    /// </summary>
     public class RxEntity : ITurnOn, ITurnOff, IToggle, ISetState, IObserve
     {
         private readonly INetDaemon _daemon;
         private readonly IEnumerable<string> _entityIds;
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="daemon">The NetDaemon host object</param>
+        /// <param name="entityIds">Unique entity id:s</param>
         public RxEntity(INetDaemon daemon, IEnumerable<string> entityIds)
         {
             _daemon = daemon;
             _entityIds = entityIds;
         }
 
+        /// <inheritdoc/>
         public IObservable<(EntityState Old, EntityState New)> StateAllChanges
         {
             get
@@ -65,6 +114,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             }
         }
 
+        /// <inheritdoc/>
         public IObservable<(EntityState Old, EntityState New)> StateChanges
         {
             get
@@ -89,6 +139,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             }
         }
 
+        /// <inheritdoc/>
         public void SetState(dynamic state, dynamic? attributes)
         {
             foreach (var entityId in _entityIds)
@@ -98,13 +149,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             }
         }
 
+        /// <inheritdoc/>
+
         public IDisposable Subscribe(IObserver<(EntityState Old, EntityState New)> observer) => throw new NotImplementedException();
 
+        /// <inheritdoc/>
         public void Toggle(dynamic? attributes) => CallServiceOnEntity("toggle", attributes);
 
+        /// <inheritdoc/>
         public void TurnOff(dynamic? attributes) => CallServiceOnEntity("turn_off", attributes);
 
+        /// <inheritdoc/>
         public void TurnOn(dynamic? attributes) => CallServiceOnEntity("turn_on", attributes);
+
         internal static string GetDomainFromEntity(string entity)
         {
             var entityParts = entity.Split('.');

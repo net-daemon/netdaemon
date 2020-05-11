@@ -3,8 +3,17 @@ using System.Collections.Generic;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
+    /// <summary>
+    ///     Interface for objects that implements CallService
+    /// </summary>
     public interface ICallService
     {
+        /// <summary>
+        ///     Calls service in Home Assistant
+        /// </summary>
+        /// <param name="domain">Domain of sevice</param>
+        /// <param name="service">Service name</param>
+        /// <param name="data">Data provided to service. Use anonomous type</param>
         void CallService(string domain, string service, dynamic? data);
     }
 
@@ -30,6 +39,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         ///     Old state != New state
         /// </remarks>
         public IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
+
         /// <summary>
         ///     Enuberable of current states
         /// </summary>
@@ -50,10 +60,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         EntityState? State(string entityId);
     }
 
-    public interface IRxAppHelpers
-    {
-    }
+    //public interface IRxAppHelpers
+    //{
+    //}
 
+    /// <summary>
+    ///     Interface for entities in Rx API
+    /// </summary>
     public interface IRxEntity
     {
         /// <summary>
@@ -81,10 +94,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         RxEntity Entity(string entityId);
     }
 
+    /// <summary>
+    ///     Interface for Observable Events
+    /// </summary>
     public interface IRxEvent : IObservable<RxEvent>
     {
     }
 
+    /// <summary>
+    ///     Interface for scheduling
+    /// </summary>
     public interface IRxSchedule
     {
         /// <summary>
@@ -98,12 +117,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="timespan">The timespan to schedule</param>
         IObservable<long> RunEvery(TimeSpan timespan);
+
         /// <summary>
         ///     Delays excecution of an action (timespan) time
         /// </summary>
         /// <param name="timespan">Timespan to delay</param>
         IObservable<long> RunIn(TimeSpan timespan);
     }
+
+    /// <summary>
+    ///     Interface for observable state changes
+    /// </summary>
     public interface IRxStateChange : IObservable<(EntityState Old, EntityState New)>
     {
     }

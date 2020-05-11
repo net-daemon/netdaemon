@@ -16,15 +16,10 @@ public class GlobalApp : NetDaemonRxApp
     //public string? SharedThing { get; set; }
     public override Task InitializeAsync()
     {
-        //Entities("binary_sensor.tomas_rum_pir", "binary_sensor.vardagsrum_pir")
-        //    .Merge()
-        //    .Where(e => e.New.State == "off")
-        //    .Subscribe(x =>
-        //    {
-        //        Log("{entity} ({state})", x.New.EntityId, x.New.State);
-        //    });
-
         
+
+
+
         EventChanges
             .Subscribe(f =>
             {

@@ -239,6 +239,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="data">Any data that the service requires</param>
         void CallService(string domain, string service, dynamic? data = null);
 
+        /// <summary>
+        ///     Set entity state
+        /// </summary>
+        /// <param name="entityId">Entity unique id</param>
+        /// <param name="state">The state that being set, only primitives are supported</param>
+        /// <param name="attributes">Attributes, use anonomous types and lowercase letters</param>
         void SetState(string entityId, dynamic state, dynamic? attributes = null);
     }
 

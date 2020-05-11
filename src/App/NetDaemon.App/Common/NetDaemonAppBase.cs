@@ -76,15 +76,23 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return false;
         }
 
+        /// <summary>
+        ///     Initializes the app, is virtual and overridden
+        /// </summary>
         public virtual void Initialize()
         {
             // do nothing
         }
+
+        /// <summary>
+        ///     Initializes the app async, is virtual and overridden
+        /// </summary>
         public virtual Task InitializeAsync()
         {
             // Do nothing
             return Task.CompletedTask;
         }
+
         /// <inheritdoc/>
         public async Task RestoreAppStateAsync()
         {

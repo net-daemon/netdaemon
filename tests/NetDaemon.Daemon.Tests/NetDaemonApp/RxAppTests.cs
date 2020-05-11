@@ -1,22 +1,8 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System;
 using System.Threading.Tasks;
-using System.Reactive;
 using System.Reactive.Linq;
 
 using Xunit;
-using System.Reactive.Subjects;
-using System.Dynamic;
-using System.Diagnostics;
-using System.Threading;
-using Xunit.Abstractions;
-using Serilog;
-using System.Reactive.Linq;
-using System.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp

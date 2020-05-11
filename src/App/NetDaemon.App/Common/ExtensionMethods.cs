@@ -34,7 +34,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static ExpandoObject ToExpandoObject(this object obj)
+        internal static ExpandoObject ToExpandoObject(this object obj)
         {
             // Null-check
 
