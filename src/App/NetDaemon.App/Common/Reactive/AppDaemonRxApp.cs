@@ -124,6 +124,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
+        public void RunScript(params string[] script)
+        {
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+
+            foreach (var scriptName in script)
+            {
+                var name = scriptName;
+                if (scriptName.Contains('.'))
+                    name = scriptName[(scriptName.IndexOf('.') + 1)..];
+
+                _daemon.CallService("script", name);
+            }
+
+        }
+
+        /// <inheritdoc/>
         public async override Task StartUpAsync(INetDaemon daemon)
         {
             await base.StartUpAsync(daemon);

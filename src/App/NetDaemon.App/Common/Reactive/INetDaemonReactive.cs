@@ -18,9 +18,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     }
 
     /// <summary>
+    ///     Interface for objects that implements CallService
+    /// </summary>
+    public interface IRunScript
+    {
+        /// <summary>
+        ///     Calls service in Home Assistant
+        /// </summary>
+        /// <param name="script">Script to call</param>
+        void RunScript(params string[] script);
+    }
+
+    /// <summary>
     ///     Implements the System.Reactive pattern for NetDaemon Apps
     /// </summary>
-    public interface INetDaemonReactive : INetDaemonAppBase, ICallService, IRxEntity
+    public interface INetDaemonReactive : INetDaemonAppBase, ICallService, IRxEntity, IRunScript
     {
         /// <summary>
         ///     The observable events
