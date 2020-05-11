@@ -189,8 +189,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             foreach (var entityId in _entityIds!)
             {
                 var serviceData = new FluentExpandoObject();
-                // Maske sure we make a copy since we reuse all info but entity id
-                serviceData.CopyFrom(data);
+
+                if (data is object)
+                {
+                    // Maske sure we make a copy since we reuse all info but entity id
+                    serviceData.CopyFrom(data);
+                }
 
                 var domain = GetDomainFromEntity(entityId);
 
