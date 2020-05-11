@@ -128,8 +128,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             await base.StartUpAsync(daemon);
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _reactiveState = new ReactiveState(_daemon);
-            _reactiveEvent = new ReactiveEvent(_daemon);
+            _reactiveState = new ReactiveState(daemon);
+            _reactiveEvent = new ReactiveEvent(daemon);
         }
 
         /// <inheritdoc/>

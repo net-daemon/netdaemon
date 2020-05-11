@@ -223,18 +223,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             _daemon!.Speak(entityId, message);
         }
-
-        ///// <inheritdoc/>
-        //public virtual Task StartUpAsync(INetDaemon daemon) 
-        //{
-        //    return base.StartUpAsync(daemon);
-        //}
-
-        //public void StartUp()
-
-
-        /// <inheritdoc/>
-
-     
+   
     }
 }
