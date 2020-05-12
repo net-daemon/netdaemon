@@ -19,9 +19,10 @@ public class GlobalApp : NetDaemonRxApp
 
         var rand = new Random();
         var randNumber = rand.Next();
-        RunEvery(TimeSpan.FromSeconds(5)).Subscribe(s => Log("Hello world {rand}", randNumber));
+        RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world {rand}", randNumber));
 
 
+        RunEvery(TimeSpan.FromSeconds(15), () => throw new Exception("Ohh noo man!"));
 
         // EventChanges
         //     .Subscribe(f =>

@@ -92,7 +92,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public IObservable<long> RunDaily(string time)
+        public IDisposable RunDaily(string time, Action action)
         {
             DateTime timeOfDayToTrigger;
 
@@ -100,19 +100,77 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
-            return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1), TaskPoolScheduler.Default).TakeWhile(x => this.IsEnabled);
+
+            return Observable.Timer(
+                timeOfDayToTrigger,
+                TimeSpan.FromDays(1),
+                TaskPoolScheduler.Default)
+                .TakeWhile(x => this.IsEnabled)
+                .Subscribe(
+                    s =>
+                    {
+                        try
+                        {
+                            action();
+                        }
+                        catch (Exception e)
+                        {
+                            LogError(e, "Error, RunDaily APP: {app}", Id ?? "unknown");
+                        }
+
+                    },
+                    ex =>
+                    {
+                        LogError(ex, "Error, RunDaily_ex APP: {app}", Id ?? "unknown");
+                    });
         }
 
         /// <inheritdoc/>
-        public IObservable<long> RunEvery(TimeSpan timespan)
+        public IDisposable RunEvery(TimeSpan timespan, Action action)
         {
-            return Observable.Interval(timespan, TaskPoolScheduler.Default).TakeWhile(x => this.IsEnabled);
+            return Observable.Interval(timespan, TaskPoolScheduler.Default)
+                .TakeWhile(x => this.IsEnabled)
+                .Subscribe(
+                    s =>
+                    {
+                        try
+                        {
+                            action();
+                        }
+                        catch (Exception e)
+                        {
+                            LogError(e, "Error, RunEvery APP: {app}", Id ?? "unknown");
+                        }
+
+                    },
+                    ex =>
+                    {
+                        LogError(ex, "Error, RunEvery_ex APP: {app}", Id ?? "unknown");
+                    });
         }
 
         /// <inheritdoc/>
-        public IObservable<long> RunIn(TimeSpan timespan)
+        public IDisposable RunIn(TimeSpan timespan, Action action)
         {
-            return Observable.Timer(timespan, TaskPoolScheduler.Default).TakeWhile(x => this.IsEnabled);
+            return Observable.Timer(timespan, TaskPoolScheduler.Default)
+                .TakeWhile(x => this.IsEnabled)
+                .Subscribe(
+                    s =>
+                    {
+                        try
+                        {
+                            action();
+                        }
+                        catch (Exception e)
+                        {
+                            LogError(e, "Error, RunIn APP: {app}", Id ?? "unknown");
+                        }
+
+                    },
+                    ex =>
+                    {
+                        LogError(ex, "Error, RunIn_ex APP: {app}", Id ?? "unknown");
+                    });
         }
 
         /// <inheritdoc/>
