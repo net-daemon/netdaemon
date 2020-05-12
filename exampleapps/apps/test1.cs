@@ -16,15 +16,18 @@ public class GlobalApp : NetDaemonRxApp
     //public string? SharedThing { get; set; }
     public override Task InitializeAsync()
     {
-        
+
+        var rand = new Random();
+        var randNumber = rand.Next();
+        RunEvery(TimeSpan.FromSeconds(5)).Subscribe(s => Log("Hello world {rand}", randNumber));
 
 
 
-        EventChanges
-            .Subscribe(f =>
-            {
-                Log("event: {domain}.{event} - {data}", f?.Domain??"none", f.Event, f?.Data);
-            });
+        // EventChanges
+        //     .Subscribe(f =>
+        //     {
+        //         Log("event: {domain}.{event} - {data}", f?.Domain??"none", f.Event, f?.Data);
+        //     });
         return Task.CompletedTask;
     }
 }

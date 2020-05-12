@@ -4,6 +4,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
 using NetDaemon.Daemon.Tests.Daemon;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -15,7 +16,7 @@ namespace NetDaemon.Daemon.Tests
     public class BaseTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
     public class BaseTestRxApp : JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp { }
 
-    public partial class DaemonHostTestBase
+    public partial class DaemonHostTestBase : IAsyncDisposable
     {
         private readonly LoggerMock _loggerMock;
         private readonly HassClientMock _defaultHassClientMock;
@@ -41,10 +42,10 @@ namespace NetDaemon.Daemon.Tests
                 _defaultHttpHandlerMock.Object);
 
             _defaultDaemonApp = new BaseTestApp();
-            _defaultDaemonApp.StartUpAsync(_defaultDaemonHost);
+            _defaultDaemonApp.StartUpAsync(_defaultDaemonHost).Wait();
 
             _defaultDaemonRxApp = new BaseTestRxApp();
-            _defaultDaemonRxApp.StartUpAsync(_defaultDaemonHost);
+            _defaultDaemonRxApp.StartUpAsync(_defaultDaemonHost).Wait();
 
             _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
         }
@@ -125,6 +126,12 @@ namespace NetDaemon.Daemon.Tests
             {
                 // Expected behaviour
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _defaultDaemonHost.DisposeAsync();
+            await _notConnectedDaemonHost.DisposeAsync();
         }
     }
 }

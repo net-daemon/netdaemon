@@ -100,20 +100,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
-
-            return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1), TaskPoolScheduler.Default);
+            return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1), TaskPoolScheduler.Default).TakeWhile(x => this.IsEnabled);
         }
 
         /// <inheritdoc/>
         public IObservable<long> RunEvery(TimeSpan timespan)
         {
-            return Observable.Interval(timespan, TaskPoolScheduler.Default);
+            return Observable.Interval(timespan, TaskPoolScheduler.Default).TakeWhile(x => this.IsEnabled);
         }
 
         /// <inheritdoc/>
         public IObservable<long> RunIn(TimeSpan timespan)
         {
-            return Observable.Timer(timespan, TaskPoolScheduler.Default);
+            return Observable.Timer(timespan, TaskPoolScheduler.Default).TakeWhile(x => this.IsEnabled);
         }
 
         /// <inheritdoc/>

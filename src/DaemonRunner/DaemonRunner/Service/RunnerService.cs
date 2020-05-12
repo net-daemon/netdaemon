@@ -198,7 +198,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                             System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
                                         }
                                     }
-                                    using (var codeManager = new CodeManager(sourceFolder!, _daemonHost.Logger))
+                                    await using (var codeManager = new CodeManager(sourceFolder!, _daemonHost.Logger))
                                     {
                                         await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
 

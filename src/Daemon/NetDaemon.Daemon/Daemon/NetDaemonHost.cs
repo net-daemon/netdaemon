@@ -12,7 +12,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
@@ -117,7 +116,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
 
         private readonly EventObservable _eventObservables = new EventObservable();
-        private readonly List<IObserver<(string, dynamic?)>> _eventObserversTuples = new List<IObserver<(string, dynamic?)>>();
         private readonly IHassClient _hassClient;
 
         private readonly IHttpHandler? _httpHandler;
@@ -605,15 +603,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     return;
                 }
 
+                foreach (var eventObservable in _eventObservables.Observers)
+                    eventObservable.OnCompleted();
+
+                foreach (var stateObservable in _stateObservables.Observers)
+                    stateObservable.OnCompleted();
+
+                _eventObservables.Clear();
+                _stateObservables.Clear();
+
                 _eventActions.Clear();
                 _eventFunctionList.Clear();
                 _stateActions.Clear();
                 _serviceCallFunctionList.Clear();
+
                 await _scheduler.Stop().ConfigureAwait(false);
 
                 await _hassClient.CloseAsync().ConfigureAwait(false);
 
                 _stopped = true;
+
+                // Do a hard collect here to free resource
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
             catch (Exception e)
             {
@@ -742,7 +754,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             catch (Exception e)
                             {
                                 observer.OnError(e);
-                                Logger.LogError(e, "Fail to OnNext on state change observer");
+                                Logger.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
                             }
                         }));
                     }
@@ -993,6 +1005,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             return new UnsubscriberEntityStateTuple(_stateObserversTuples, observer);
         }
+        public void Clear() => _stateObserversTuples.Clear();
 
         private class UnsubscriberEntityStateTuple : IDisposable
         {
@@ -1006,6 +1019,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             public void Dispose()
             {
+                _observer.OnCompleted();
                 if (_observer is object) _observers.Remove(_observer);
             }
         }
@@ -1029,6 +1043,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return new UnsubscriberEntityStateTuple(_stateObserversTuples, observer);
         }
 
+        public void Clear() => _stateObserversTuples.Clear();
+
         private class UnsubscriberEntityStateTuple : IDisposable
         {
             private readonly IObserver<RxEvent> _observer;
@@ -1041,6 +1057,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
             public void Dispose()
             {
+                _observer.OnCompleted();
                 if (_observer is object) _observers.Remove(_observer);
             }
         }

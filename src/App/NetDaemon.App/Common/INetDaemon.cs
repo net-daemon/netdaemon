@@ -59,7 +59,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Shared features in both Reactive and async/await models
     /// </summary>
-    public interface INetDaemonAppBase : INetDaemonInitialableApp, IDisposable, IEquatable<INetDaemonAppBase>
+    public interface INetDaemonAppBase : INetDaemonInitialableApp, IAsyncDisposable, IEquatable<INetDaemonAppBase>
     {
         /// <summary>
         ///     The dependencies that needs to be initialized before this app

@@ -166,7 +166,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         }
     }
 
-    public sealed class CodeManager : IDisposable
+    public sealed class CodeManager : IAsyncDisposable
     {
         private readonly string _codeFolder;
         private readonly ILogger _logger;
@@ -191,13 +191,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             CompileScriptsInCodeFolder();
         }
 
-        public void Dispose()
-        {
-            foreach (var app in _instanciatedDaemonApps)
-            {
-                app.Dispose();
-            }
-        }
+
 
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps;
 
@@ -277,7 +271,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 foreach (var app in _instanciatedDaemonApps)
                 {
-                    app.Dispose();
+                    await app.DisposeAsync().ConfigureAwait(false);
                 }
                 _instanciatedDaemonApps.Clear();
                 _loadedDaemonApps.Clear();
@@ -317,7 +311,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                     if (!appInstance.IsEnabled)
                     {
-                        appInstance.Dispose();
+                        await appInstance.DisposeAsync().ConfigureAwait(false);
                         host!.Logger.LogInformation("Skipped disabled app class {class}", appInstance.GetType().Name);
                         continue;
                     }
@@ -678,6 +672,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         public static IEnumerable<string> GetCsFiles(string configFixturePath)
         {
             return Directory.EnumerateFiles(configFixturePath, "*.cs", SearchOption.AllDirectories);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var app in _instanciatedDaemonApps)
+            {
+                await app.DisposeAsync().ConfigureAwait(false);
+            }
+
         }
     }
 }

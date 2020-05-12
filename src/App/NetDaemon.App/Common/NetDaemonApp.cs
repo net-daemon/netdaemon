@@ -216,8 +216,5 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
         }
-
-
-
     }
 }

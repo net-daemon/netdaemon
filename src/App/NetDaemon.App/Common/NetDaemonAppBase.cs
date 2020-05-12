@@ -169,33 +169,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 catch { }   // Ignore errors in thread
             }
         }
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        // This code added to correctly implement the disposable pattern.
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-        }
-
-        /// <inheritdoc/>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _cancelSource.Cancel();
-                }
-
-                disposedValue = true;
-            }
-        }
-        #endregion IDisposable Support
-
 
         #region -- Logger helpers --
         /// <inheritdoc/>
@@ -285,6 +258,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public void LogWarning(Exception exception, string message, params object[] param) => Log(LogLevel.Warning, exception, message, param);
+
+        /// <summary>
+        ///     Async disposable support
+        /// </summary>
+        public virtual ValueTask DisposeAsync()
+        {
+            this.IsEnabled = false;
+            return new ValueTask();
+        }
 
 
         #endregion

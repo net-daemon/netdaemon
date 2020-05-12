@@ -17,7 +17,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
@@ -53,13 +53,13 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
-        public void ACustomEventNullValueCallThrowsNullReferenceException()
+        public async Task ACustomEventNullValueCallThrowsNullReferenceException()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
-            app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost);
 
             var cancelSource = hcMock.GetSourceWithTimeout();
 
@@ -73,7 +73,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
@@ -113,7 +113,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
@@ -153,7 +153,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
@@ -193,7 +193,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
 
@@ -232,7 +232,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             await app.StartUpAsync(daemonHost);
             dynamic dynObject = new ExpandoObject();

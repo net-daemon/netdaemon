@@ -126,13 +126,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
                     foreach (var entity in _entityIds)
                     {
-                        resultList.Add(_daemon.StateChanges.Where(f => f.New.EntityId == entity && f.New.State != f.Old.State));
+                        resultList.Add(_daemon.StateChanges.Where(f => f.New.EntityId == entity && f.New?.State != f.Old?.State));
                     }
                     return Observable.Merge(resultList);
                 }
                 else if (_entityIds.Count() == 1)
                 {
-                    return _daemon.StateChanges.Where(f => f.New.EntityId == _entityIds.First() && f.New.State != f.Old.State);
+                    return _daemon.StateChanges.Where(f => f.New.EntityId == _entityIds.First() && f.New?.State != f.Old?.State);
                 }
 
                 throw new Exception("Merge not allowed. No entity id:s were selected. Check your lambda query");
