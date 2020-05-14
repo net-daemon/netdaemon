@@ -571,7 +571,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.NotNull(theApp);
 
             // ACT
-            DefaultDaemonHost.ClearAppInstances();
+            DefaultDaemonHost.UnloadAllApps();
             theApp = DefaultDaemonHost.GetApp("appx");
 
             // ASSERT

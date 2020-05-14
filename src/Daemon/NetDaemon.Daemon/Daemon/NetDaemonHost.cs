@@ -44,8 +44,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         // internal so we can use for unittest
         internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
-        private readonly List<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions
-            = new List<(string, string, Func<dynamic?, Task>)>();
+        private readonly ConcurrentBag<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions
+            = new ConcurrentBag<(string, string, Func<dynamic?, Task>)>();
 
         /// <summary>
         ///     Currently running tasks for handling new events from HomeAssistant
@@ -60,8 +60,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         private readonly IDataRepository? _repository;
 
-        private readonly ConcurrentDictionary<string, NetDaemonApp> _runningAppInstances =
-            new ConcurrentDictionary<string, NetDaemonApp>();
+        private readonly ConcurrentDictionary<string, NetDaemonAppBase> _runningAppInstances =
+            new ConcurrentDictionary<string, NetDaemonAppBase>();
 
         private readonly Scheduler _scheduler;
 
@@ -123,8 +123,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public IRxStateChange StateChanges => _stateObservables;
 
         // For testing
-        internal ConcurrentDictionary<string, NetDaemonApp> InternalRunningAppInstances => _runningAppInstances;
+        internal ConcurrentDictionary<string, NetDaemonAppBase> InternalRunningAppInstances => _runningAppInstances;
 
+        public IEnumerable<NetDaemonAppBase> RunningAppInstances => _runningAppInstances.Values;
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
                                 {
                                     builder
@@ -173,8 +174,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public void ClearAppInstances()
+        public async Task UnloadAllApps()
         {
+            foreach (var app in _runningAppInstances)
+            {
+                await app.Value.DisposeAsync().ConfigureAwait(false);
+            }
             _runningAppInstances.Clear();
         }
 
@@ -204,7 +209,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         public IEntity Entity(INetDaemonApp app, params string[] entityIds) => new EntityManager(entityIds, this, app);
 
         /// <inheritdoc/>
-        public NetDaemonApp? GetApp(string appInstanceId)
+        public NetDaemonAppBase? GetApp(string appInstanceId)
         {
             return _runningAppInstances.ContainsKey(appInstanceId) ?
                 _runningAppInstances[appInstanceId] : null;
@@ -680,22 +685,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
-                        foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in app.Value.StateCallbacks.Values)
+                        if (app.Value is NetDaemonApp netDaemonApp)
                         {
-                            if (string.IsNullOrEmpty(pattern))
+                            foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in netDaemonApp.StateCallbacks.Values)
                             {
-                                tasks.Add(func(stateData.EntityId,
-                                    newState,
-                                    oldState
-                                ));
+                                if (string.IsNullOrEmpty(pattern))
+                                {
+                                    tasks.Add(func(stateData.EntityId,
+                                        newState,
+                                        oldState
+                                    ));
+                                }
+                                else if (stateData.EntityId.StartsWith(pattern))
+                                {
+                                    tasks.Add(func(stateData.EntityId,
+                                        newState,
+                                        oldState
+                                    ));
+                                }
                             }
-                            else if (stateData.EntityId.StartsWith(pattern))
-                            {
-                                tasks.Add(func(stateData.EntityId,
-                                    newState,
-                                    oldState
-                                ));
-                            }
+
                         }
                     }
 
@@ -741,13 +750,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
-                        foreach (var (domain, service, func) in app.Value.DaemonCallBacksForServiceCalls)
+                        if (app.Value is NetDaemonApp netDaemonApp)
                         {
-                            if (domain == serviceCallData.Domain &&
-                                service == serviceCallData.Service)
+                            foreach (var (domain, service, func) in netDaemonApp.DaemonCallBacksForServiceCalls)
                             {
-                                tasks.Add(func(serviceCallData.Data));
+                                if (domain == serviceCallData.Domain &&
+                                    service == serviceCallData.Service)
+                                {
+                                    tasks.Add(func(serviceCallData.Data));
+                                }
                             }
+
                         }
                     }
 
@@ -807,18 +820,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
-                        foreach ((string ev, Func<string, dynamic, Task> func) in app.Value.EventCallbacks)
+                        if (app.Value is NetDaemonApp netDaemonApp)
                         {
-                            if (ev == hassEvent.EventType)
+                            foreach ((string ev, Func<string, dynamic, Task> func) in netDaemonApp.EventCallbacks)
                             {
-                                tasks.Add(func(ev, hassEvent.Data));
+                                if (ev == hassEvent.EventType)
+                                {
+                                    tasks.Add(func(ev, hassEvent.Data));
+                                }
                             }
-                        }
-                        foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in app.Value.EventFunctionCallbacks)
-                        {
-                            if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
+                            foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in netDaemonApp.EventFunctionCallbacks)
                             {
-                                tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                                if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
+                                {
+                                    tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                                }
                             }
                         }
                     }

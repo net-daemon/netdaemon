@@ -62,6 +62,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <summary>
         ///     Clears all app instances registered
         /// </summary>
-        void ClearAppInstances();
+        Task UnloadAllApps();
     }
 }

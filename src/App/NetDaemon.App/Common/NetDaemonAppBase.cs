@@ -192,6 +192,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        public NetDaemonAppBase? GetApp(string appInstanceId)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon!.GetApp(appInstanceId);
+        }
+
+        /// <inheritdoc/>
         public void Log(string message) => Log(LogLevel.Information, message);
 
         /// <inheritdoc/>
@@ -227,6 +234,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] { Id ?? "" });
             }
         }
+
+
+
 
         /// <inheritdoc/>
         public void Log(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);

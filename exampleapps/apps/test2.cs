@@ -14,6 +14,7 @@ public class BatteryManager : NetDaemonApp
     {
         Log("Hello");
         Log("Hello {name}", "Tomas");
+        Event("TEST_EVENT").Call(async (ev, data) => { Log("EVENT2!"); }).Execute();
 
         // Scheduler.RunEvery(5000, () => { var x = 0; var z = 4 / x; return Task.CompletedTask; });
         // Entity("sun.sun").WhenStateChange(allChanges: true).Call((entityid, to, from) => throw new Exception("Test")).Execute();

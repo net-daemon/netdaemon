@@ -13,6 +13,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface INetDaemon : INetDaemonCommon
     {
         /// <summary>
+        ///     Get application instance by application instance id
+        /// </summary>
+        /// <param name="appInstanceId">The identity of the app instance</param>
+        NetDaemonAppBase? GetApp(string appInstanceId);
+
+        /// <summary>
+        ///     Returns a list of all running instances of NetDaemon apps
+        /// </summary>
+        IEnumerable<NetDaemonAppBase> RunningAppInstances { get; }
+
+        /// <summary>
         ///     The observable implementation for event changes
         /// </summary>
         IRxEvent EventChanges { get; }
@@ -367,6 +378,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityId">Unique id of the media player the speech should play</param>
         /// <param name="message">The message that will be spoken</param>
         void Speak(string entityId, string message);
+
+        /// <summary>
+        ///     Get application instance by application instance id
+        /// </summary>
+        /// <param name="appInstanceId">The identity of the app instance</param>
+        NetDaemonAppBase? GetApp(string appInstanceId);
     }
 
     /// <summary>
@@ -403,12 +420,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="data">Any data that the service requires</param>
         /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
         Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false);
-
-        /// <summary>
-        ///     Get application instance by application instance id
-        /// </summary>
-        /// <param name="appInstanceId">The identity of the app instance</param>
-        NetDaemonApp? GetApp(string appInstanceId);
 
         /// <summary>
         ///     Loads persistent data from unique id

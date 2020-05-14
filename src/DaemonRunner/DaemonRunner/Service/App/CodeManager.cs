@@ -178,14 +178,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         private readonly YamlConfig _yamlConfig;
 
-        private readonly List<INetDaemonAppBase> _instanciatedDaemonApps;
-
         public CodeManager(string codeFolder, ILogger logger)
         {
             _codeFolder = codeFolder;
             _logger = logger;
             _loadedDaemonApps = new List<Type>(100);
-            _instanciatedDaemonApps = new List<INetDaemonAppBase>(100);
 
             _logger.LogInformation("Loading code and configuration from {path}", Path.GetFullPath(codeFolder));
 
@@ -271,18 +268,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             try
             {
+                await host.UnloadAllApps().ConfigureAwait(false);
                 await host.StopDaemonActivitiesAsync();
 
-                foreach (var app in _instanciatedDaemonApps)
-                {
-                    await app.DisposeAsync().ConfigureAwait(false);
-                }
-                _instanciatedDaemonApps.Clear();
                 _loadedDaemonApps.Clear();
 
                 CompileScriptsInCodeFolder();
-                RegisterAppSwitchesAndTheirStates(host);
-                await InstanceAndInitApplications(host).ConfigureAwait(false);
+                await EnableApplicationDiscoveryServiceAsync(host, true).ConfigureAwait(false);
+                // RegisterAppSwitchesAndTheirStates(host);
+                // await InstanceAndInitApplications(host).ConfigureAwait(false);
             }
             catch (System.Exception e)
             {
@@ -294,7 +288,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         {
             _ = (host as INetDaemonHost) ?? throw new ArgumentNullException(nameof(host));
 
-            host!.ClearAppInstances();
+            await host!.UnloadAllApps().ConfigureAwait(false);
+
             CompileScriptsInCodeFolder();
 
             var result = new List<INetDaemonAppBase>();
@@ -365,8 +360,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 host!.Logger.LogInformation("Successfully loaded app {appId} ({class})", app.Id, app.GetType().Name);
             }
 
-            _instanciatedDaemonApps.AddRange(result);
-            await host!.SetDaemonStateAsync(_loadedDaemonApps.Count, _instanciatedDaemonApps.Count).ConfigureAwait(false);
+            await host!.SetDaemonStateAsync(_loadedDaemonApps.Count, host.RunningAppInstances.Count()).ConfigureAwait(false);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -681,12 +675,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         public async ValueTask DisposeAsync()
         {
             _logger.LogInformation("Try Dispose all apps");
-            foreach (var app in _instanciatedDaemonApps)
-            {
-                await app.DisposeAsync().ConfigureAwait(false);
-            }
-
-            _instanciatedDaemonApps.Clear();
 
             _logger.LogInformation("Done Dispose all apps");
         }
