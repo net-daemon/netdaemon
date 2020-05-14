@@ -82,23 +82,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             get
             {
-                var resultList
-                    = new List<IObservable<(EntityState Old, EntityState New)>>();
-
-                if (_entityIds.Count() > 1)
-                {
-                    foreach (var entity in _entityIds)
-                    {
-                        resultList.Add(_daemon.StateChanges.Where(f => f.New.EntityId == entity));
-                    }
-                    return Observable.Merge(resultList);
-                }
-                else if (_entityIds.Count() == 1)
-                {
-                    return _daemon.StateChanges.Where(f => f.New.EntityId == _entityIds.First());
-                }
-
-                throw new Exception("StateAllChanges not allowed. No entity id:s were selected. Check your lambda query");
+                return _daemon.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId));
             }
         }
 
@@ -107,23 +91,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             get
             {
-                if (_entityIds.Count() > 1)
-                {
-                    var resultList
-                        = new List<IObservable<(EntityState Old, EntityState New)>>();
-
-                    foreach (var entity in _entityIds)
-                    {
-                        resultList.Add(_daemon.StateChanges.Where(f => f.New.EntityId == entity && f.New?.State != f.Old?.State));
-                    }
-                    return Observable.Merge(resultList);
-                }
-                else if (_entityIds.Count() == 1)
-                {
-                    return _daemon.StateChanges.Where(f => f.New.EntityId == _entityIds.First() && f.New?.State != f.Old?.State);
-                }
-
-                throw new Exception("Merge not allowed. No entity id:s were selected. Check your lambda query");
+                return _daemon.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId) && f.New.State != f.Old.State);
             }
         }
 

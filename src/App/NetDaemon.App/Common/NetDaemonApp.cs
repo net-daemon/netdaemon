@@ -56,13 +56,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         private bool disposedValue = false; // To detect redundant calls
 
-        // This code added to correctly implement the disposable pattern.
+        /// <summary>
+        ///     Disposes the object and cancel delay
+        /// </summary>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
 
+        /// <summary>
+        ///     Disposes the object and cancel delay
+        /// </summary>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -108,6 +113,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public IScheduler Scheduler => _daemon?.Scheduler ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
+        /// <summary>
+        ///     All actions being performed for service call events
+        /// </summary>
         public List<(string, string, Func<dynamic?, Task>)> ServiceCallFunctions => _serviceCallFunctionList;
 
         /// <inheritdoc/>
