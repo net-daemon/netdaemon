@@ -43,7 +43,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             _reactiveState ?? throw new ApplicationException("Application not initialized correctly");
 
         /// <inheritdoc/>
-        public IObservable<(EntityState Old, EntityState New)> StateChanges => _reactiveState.Where(e => e.New.State != e.Old.State);
+        public IObservable<(EntityState Old, EntityState New)> StateChanges => _reactiveState.Where(e => e.New?.State != e.Old?.State);
 
         /// <inheritdoc/>
         public IEnumerable<EntityState> States =>
@@ -92,6 +92,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
+        public IDisposable RunEveryMinute(short second, Action action)
+        {
+            var now = DateTime.Now;
+            var startTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, second);
+
+            return CreateObservableTimer(startTime, TimeSpan.FromMinutes(1), action);
+        }
+
+        /// <inheritdoc/>
         public IDisposable RunDaily(string time, Action action)
         {
             DateTime timeOfDayToTrigger;
@@ -101,9 +110,32 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
 
+            return CreateObservableTimer(timeOfDayToTrigger, TimeSpan.FromDays(1), action);
+        }
+
+        /// <inheritdoc/>
+        public IDisposable RunEveryHour(string time, Action action)
+        {
+            DateTime timeOfDayToTrigger;
+            time = $"{DateTime.Now.Hour:D2}:{time}";
+
+
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
+            {
+                throw new FormatException($"{time} is not a valid time for the current locale");
+            }
+            if (DateTime.Now < timeOfDayToTrigger)
+                timeOfDayToTrigger = timeOfDayToTrigger.AddHours(1);
+
+            return CreateObservableTimer(timeOfDayToTrigger, TimeSpan.FromHours(1), action);
+
+        }
+
+        private IDisposable CreateObservableTimer(DateTime timeOfDayToTrigger, TimeSpan interval, Action action)
+        {
             return Observable.Timer(
                 timeOfDayToTrigger,
-                TimeSpan.FromDays(1),
+                interval,
                 TaskPoolScheduler.Default)
                 .TakeWhile(x => this.IsEnabled)
                 .Subscribe(
@@ -124,6 +156,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                         LogError(ex, "Error, RunDaily_ex APP: {app}", Id ?? "unknown");
                     });
         }
+
 
         /// <inheritdoc/>
         public IDisposable RunEvery(TimeSpan timespan, Action action)

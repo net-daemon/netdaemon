@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -64,6 +63,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         internal Channel<bool> InternalLazyStoreStateQueue => _lazyStoreStateQueue;
         internal FluentExpandoObject? InternalStorageObject { get { return _storageObject; } set { _storageObject = value; } }
+
         /// <summary>
         ///     Implements the IEqualit.Equals method
         /// </summary>
@@ -91,13 +91,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             // Do nothing
             return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public void Speak(string entityId, string message)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _daemon!.Speak(entityId, message);
         }
 
         /// <inheritdoc/>
@@ -138,6 +131,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        public void Speak(string entityId, string message)
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _daemon!.Speak(entityId, message);
+        }
+
+        /// <inheritdoc/>
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
             _daemon = daemon;
@@ -145,6 +145,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _storageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
+            Logger.LogInformation("Startup: {app}", GetUniqueIdForStorage());
             return Task.CompletedTask;
         }
 
@@ -166,11 +167,30 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
                             .ConfigureAwait(false);
                 }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
                 catch { }   // Ignore errors in thread
             }
         }
 
         #region -- Logger helpers --
+
+        /// <summary>
+        ///     Async disposable support
+        /// </summary>
+        public virtual ValueTask DisposeAsync()
+        {
+            Logger.LogInformation("Try dispose: {app}", GetUniqueIdForStorage());
+            _cancelSource.Cancel();
+            this.IsEnabled = false;
+            _storageObject = null;
+            _daemon = null;
+            Logger.LogInformation("Dispose: {app}", GetUniqueIdForStorage());
+            return new ValueTask();
+        }
+
         /// <inheritdoc/>
         public void Log(string message) => Log(LogLevel.Information, message);
 
@@ -259,16 +279,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public void LogWarning(Exception exception, string message, params object[] param) => Log(LogLevel.Warning, exception, message, param);
 
-        /// <summary>
-        ///     Async disposable support
-        /// </summary>
-        public virtual ValueTask DisposeAsync()
-        {
-            this.IsEnabled = false;
-            return new ValueTask();
-        }
-
-
-        #endregion
+        #endregion -- Logger helpers --
     }
 }

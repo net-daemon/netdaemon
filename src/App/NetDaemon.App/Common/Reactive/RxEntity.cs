@@ -37,34 +37,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     /// <summary>
     ///     Interface for objects implements Toggle
     /// </summary>
-    public interface IToggle
+    public interface ICanTurnOnAndOff
     {
         /// <summary>
-        ///     Toggles state on/off
+        ///     Toggles state on/off on entity
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type</param>
         void Toggle(dynamic? attributes = null);
-    }
 
-    /// <summary>
-    ///     Interface for objects implements TurnOff
-    /// </summary>
-    public interface ITurnOff
-    {
         /// <summary>
         ///     Turn off entity
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type.</param>
         void TurnOff(dynamic? attributes = null);
-    }
 
-    /// <summary>
-    ///     Interface for objects implements TurnOn
-    /// </summary>
-    public interface ITurnOn
-    {
         /// <summary>
-        ///     Turn on entitry
+        ///     Turn on entity
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type.</param>
         void TurnOn(dynamic? attributes = null);
@@ -73,7 +61,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     /// <summary>
     ///     Implements the entity of Rx API
     /// </summary>
-    public class RxEntity : ITurnOn, ITurnOff, IToggle, ISetState, IObserve
+    public class RxEntity : ICanTurnOnAndOff, ISetState, IObserve
     {
         private readonly INetDaemon _daemon;
         private readonly IEnumerable<string> _entityIds;
@@ -148,10 +136,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                 _daemon.SetState(entityId, state, attributes);
             }
         }
-
-        /// <inheritdoc/>
-
-        public IDisposable Subscribe(IObserver<(EntityState Old, EntityState New)> observer) => throw new NotImplementedException();
 
         /// <inheritdoc/>
         public void Toggle(dynamic? attributes = null) => CallServiceOnEntity("toggle", attributes);

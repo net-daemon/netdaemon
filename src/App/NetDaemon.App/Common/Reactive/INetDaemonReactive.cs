@@ -131,6 +131,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         IObservable<long> RunEvery(TimeSpan timespan);
 
         /// <summary>
+        ///     Shedules an action every (timespan)
+        /// </summary>
+        /// <param name="second">The timespan to schedule</param>
+        IObservable<long> RunEveryMinute(short second);
+
+        /// <summary>
+        ///     Shedules an action every (timespan)
+        /// </summary>
+        /// <param name="time">The time in "mm:ss" format</param>
+        IObservable<long> RunEveryHour(string time);
+
+
+        /// <summary>
         ///     Delays excecution of an action (timespan) time
         /// </summary>
         /// <param name="timespan">Timespan to delay</param>

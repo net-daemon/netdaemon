@@ -14,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +24,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
     {
         private const string _hassioConfigPath = "/data/options.json";
         private static LoggingLevelSwitch _levelSwitch = new LoggingLevelSwitch();
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .UseSerilog()
+                .ConfigureServices(services =>
+                {
+                    services.AddHttpClient();
+                    services.AddHostedService<RunnerService>();
+                });
 
         public static async Task Run(string[] args)
         {
@@ -93,32 +101,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 Log.CloseAndFlush();
             }
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseSerilog()
-                .ConfigureServices(services =>
-                {
-                    services.AddHttpClient();
-                    services.AddHostedService<RunnerService>();
-                });
     }
 
     public class RunnerService : BackgroundService
     {
-        private const string _version = "dev";
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        // private NetDaemonHost? _daemonHost;
-        private readonly ILogger<RunnerService> _logger;
-
-        private readonly ILoggerFactory _loggerFactory;
-
         /// <summary>
         /// The intervall used when disconnected
         /// </summary>
         private const int _reconnectIntervall = 40000;
 
+        private const string _version = "dev";
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        private readonly ILogger<RunnerService> _logger;
+
+        private readonly ILoggerFactory _loggerFactory;
         public RunnerService(ILoggerFactory loggerFactory, IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -252,16 +249,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             _logger.LogInformation("Netdaemon exited!");
         }
 
-        private async Task WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        private void EnsureApplicationDirectoryExists(HostConfig config)
         {
-            var nrOfTimesCheckForConnectedState = 0;
+            config.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
+            var appDirectory = Path.Combine(config.SourceFolder, "apps");
 
-            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
-                if (nrOfTimesCheckForConnectedState++ > 5)
-                    break;
-            }
+            Directory.CreateDirectory(appDirectory);
         }
 
         private async Task<HostConfig?> ReadConfigAsync()
@@ -324,12 +317,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
             return null;
         }
 
-        private void EnsureApplicationDirectoryExists(HostConfig config)
+        private async Task WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
-            config.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
-            var appDirectory = Path.Combine(config.SourceFolder, "apps");
+            var nrOfTimesCheckForConnectedState = 0;
 
-            Directory.CreateDirectory(appDirectory);
+            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
+                if (nrOfTimesCheckForConnectedState++ > 5)
+                    break;
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public class FluentEventManager : IFluentEvent, IExecute
     {
         private IEnumerable<string>? _events;
-        private INetDaemon _daemon;
+        private INetDaemonApp _daemon;
         private Func<string, dynamic, Task>? _functionToCall;
         private Func<FluentEventProperty, bool>? _funcSelector;
 
@@ -31,7 +31,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="events">The events to handle</param>
         /// <param name="daemon">NetDaemon that manage API calls to Home Assistant</param>
-        public FluentEventManager(IEnumerable<string> events, INetDaemon daemon)
+        public FluentEventManager(IEnumerable<string> events, INetDaemonApp daemon)
         {
             _events = events;
             _daemon = daemon;
@@ -42,7 +42,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="func">The lambda to filter events</param>
         /// <param name="daemon">NetDaemon that manage API calls to Home Assistant</param>
-        public FluentEventManager(Func<FluentEventProperty, bool> func, INetDaemon daemon)
+        public FluentEventManager(Func<FluentEventProperty, bool> func, INetDaemonApp daemon)
         {
             _funcSelector = func;
             _daemon = daemon;

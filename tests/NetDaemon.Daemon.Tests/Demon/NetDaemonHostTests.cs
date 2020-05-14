@@ -1,6 +1,7 @@
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -34,7 +35,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var message = "";
 
             // ACT
-            DefaultDaemonHost.ListenEvent("CUSTOM_EVENT", (ev, data) =>
+            DefaultDaemonApp.ListenEvent("CUSTOM_EVENT", (ev, data) =>
             {
                 isCalled = true;
                 message = data.Test;
@@ -47,6 +48,23 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.True(isCalled);
             Assert.Equal(HelloWorldData, message);
         }
+
+        [Fact]
+        public async Task AttributeServiceCallShouldFindCorrectFunction()
+        {
+            // ARRANGE
+            var app = new AssmeblyDaemonApp();
+            app.Id = "id";
+
+            DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
+
+            // ACT
+            await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Single(app.ServiceCallFunctions);
+        }
+
 
         [Fact]
         public void GetStateMissingEntityReturnsNull()
@@ -105,7 +123,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var isCalled = false;
 
             // ACT
-            DefaultDaemonHost.ListenEvent("OTHER_EVENT", (ev, data) =>
+            DefaultDaemonApp.ListenEvent("OTHER_EVENT", (ev, data) =>
             {
                 isCalled = true;
                 return Task.CompletedTask;
@@ -269,7 +287,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             string? reportedState = "";
 
             // ACT
-            DefaultDaemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
+            DefaultDaemonApp.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
             {
                 reportedState = newState?.State;
 
@@ -292,7 +310,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             int nrOfTimesCalled = 0;
 
             // ACT
-            DefaultDaemonHost.ListenState("", (entityId, newState, oldState) =>
+            DefaultDaemonApp.ListenState("", (entityId, newState, oldState) =>
             {
                 nrOfTimesCalled++;
 
@@ -329,14 +347,14 @@ namespace NetDaemon.Daemon.Tests.Daemon
             bool isCalled = false;
 
             // ACT
-            var id = DefaultDaemonHost.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
+            var id = DefaultDaemonApp.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
             {
                 isCalled = true;
 
                 return Task.CompletedTask;
             });
 
-            DefaultDaemonHost.CancelListenState(id!);
+            DefaultDaemonApp.CancelListenState(id!);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
@@ -344,7 +362,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.False(isCalled);
-            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -425,7 +443,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // ACT
-            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
@@ -433,7 +451,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.True(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -442,7 +460,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // ACT
-            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "off");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "off");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
@@ -450,7 +468,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.True(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -459,7 +477,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // ACT
-            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "unknown");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "unknown");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
@@ -467,7 +485,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.False(delayResult.Task.IsCompleted);
-            Assert.Single(DefaultDaemonHost.InternalStateActions);
+            Assert.Single(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -476,7 +494,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // ACT
-            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
@@ -484,7 +502,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.True(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -493,7 +511,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // ACT
-            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "on", toState: "off");
 
@@ -501,7 +519,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.False(delayResult.Task.IsCompleted);
-            Assert.Single(DefaultDaemonHost.InternalStateActions);
+            Assert.Single(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -510,7 +528,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // ACT
-            using var delayResult = DefaultDaemonHost.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
 
             delayResult.Cancel();
 
@@ -518,7 +536,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.False(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonHost.InternalStateActions);
+            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -630,5 +648,37 @@ namespace NetDaemon.Daemon.Tests.Daemon
             /// ASSERT
             Assert.Equal("Area", state?.Area);
         }
+
+        [Theory]
+        [InlineData(false, null, null, null, null)]
+        [InlineData(true, null, 10, null, 10)]
+        [InlineData(true, 10, null, 10, null)]
+        [InlineData(true, "unavailable", 10, null, 10)]
+        [InlineData(true, 10, "unavailable", 10, null)]
+        [InlineData(true, 10, 11, 10, 11)]
+        [InlineData(true, "hello", "world", "hello", "world")]
+        [InlineData(true, (long)10, 10.0d, 10.0d, 10.0d)]
+        [InlineData(true, 10.0d, (long)10, 10.0d, 10.0d)]
+        public void FixStateTypesShouldReturnCorrectValues(
+            bool result, dynamic? newState, dynamic? oldState, dynamic? expectedNewState, dynamic? expectedOldState)
+        {
+            HassStateChangedEventData state = new HassStateChangedEventData
+            {
+                NewState = new HassState
+                {
+                    State = newState
+                },
+                OldState = new HassState
+                {
+                    State = oldState
+                }
+            };
+
+            bool res = NetDaemonHost.FixStateTypes(state);
+            Assert.Equal(result, res);
+            Assert.Equal(expectedNewState, state.NewState.State);
+            Assert.Equal(expectedOldState, state.OldState.State);
+        }
+
     }
 }

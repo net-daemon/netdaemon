@@ -1,33 +1,30 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
 using NetDaemon.Daemon.Tests.Daemon;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace NetDaemon.Daemon.Tests
 {
     public class BaseTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+
     public class BaseTestRxApp : JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp { }
 
-    public partial class DaemonHostTestBase : IAsyncDisposable
+    public partial class DaemonHostTestBase : IAsyncLifetime
     {
-        private readonly LoggerMock _loggerMock;
-        private readonly HassClientMock _defaultHassClientMock;
-        private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
-        private readonly HttpHandlerMock _defaultHttpHandlerMock;
+        private readonly JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _defaultDaemonApp;
         private readonly NetDaemonHost _defaultDaemonHost;
         private readonly BaseTestRxApp _defaultDaemonRxApp;
+        private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
+        private readonly HassClientMock _defaultHassClientMock;
+        private readonly HttpHandlerMock _defaultHttpHandlerMock;
+        private readonly LoggerMock _loggerMock;
         private readonly NetDaemonHost _notConnectedDaemonHost;
-
-        private readonly INetDaemonApp _defaultDaemonApp;
-
         internal DaemonHostTestBase()
         {
             _loggerMock = new LoggerMock();
@@ -42,28 +39,30 @@ namespace NetDaemon.Daemon.Tests
                 _defaultHttpHandlerMock.Object);
 
             _defaultDaemonApp = new BaseTestApp();
-            _defaultDaemonApp.StartUpAsync(_defaultDaemonHost).Wait();
+            _defaultDaemonApp.Id = "app_id";
+
+            _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
 
             _defaultDaemonRxApp = new BaseTestRxApp();
-            _defaultDaemonRxApp.StartUpAsync(_defaultDaemonHost).Wait();
 
             _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
         }
 
-        public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
+        public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
-        public INetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
         public BaseTestRxApp DefaultDaemonRxApp => _defaultDaemonRxApp;
-
-        public NetDaemonHost NotConnectedDaemonHost => _notConnectedDaemonHost;
-
+        public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
         public HassClientMock DefaultHassClientMock => _defaultHassClientMock;
-
         public HttpHandlerMock DefaultHttpHandlerMock => _defaultHttpHandlerMock;
-
-        public LoggerMock LoggerMock => _loggerMock;
-
         public string HelloWorldData => "Hello world!";
+        public LoggerMock LoggerMock => _loggerMock;
+        public NetDaemonHost NotConnectedDaemonHost => _notConnectedDaemonHost;
+        async Task IAsyncLifetime.DisposeAsync()
+        {
+            await _defaultDaemonApp.DisposeAsync().ConfigureAwait(false);
+            await _defaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
+            await _defaultDaemonHost.DisposeAsync().ConfigureAwait(false);
+        }
 
         public dynamic GetDynamicDataObject(string testData = "testdata")
         {
@@ -85,19 +84,10 @@ namespace NetDaemon.Daemon.Tests
             return (expandoObject, expandoObject);
         }
 
-        public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
+        public async Task InitializeAsync()
         {
-            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
-                ? new CancellationTokenSource()
-                : new CancellationTokenSource(milliSeconds);
-            try
-            {
-                await _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected behaviour
-            }
+            await _defaultDaemonApp.StartUpAsync(_defaultDaemonHost).ConfigureAwait(false);
+            await _defaultDaemonRxApp.StartUpAsync(_defaultDaemonHost).ConfigureAwait(false);
         }
 
         public (Task, CancellationTokenSource) ReturnRunningDefauldDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
@@ -116,6 +106,20 @@ namespace NetDaemon.Daemon.Tests
             return (_notConnectedDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
 
+        public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
+        {
+            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+                ? new CancellationTokenSource()
+                : new CancellationTokenSource(milliSeconds);
+            try
+            {
+                await _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected behaviour
+            }
+        }
         public async Task WaitUntilCanceled(Task task)
         {
             try
@@ -126,12 +130,6 @@ namespace NetDaemon.Daemon.Tests
             {
                 // Expected behaviour
             }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await _defaultDaemonHost.DisposeAsync();
-            await _notConnectedDaemonHost.DisposeAsync();
         }
     }
 }

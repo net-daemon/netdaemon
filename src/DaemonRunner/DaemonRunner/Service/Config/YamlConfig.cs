@@ -16,8 +16,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
     {
         private readonly IEnumerable<Type> _types;
         private readonly YamlStream _yamlStream;
-
-        private readonly List<INetDaemonAppBase> _instances;
         private readonly YamlConfig _yamlConfig;
         private readonly string _yamlFilePath;
 
@@ -26,7 +24,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
-            _instances = new List<INetDaemonAppBase>();
+
             _yamlConfig = yamlConfig;
             _yamlFilePath = yamlFilePath;
         }
@@ -35,6 +33,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
         {
             get
             {
+                var instances = new List<INetDaemonAppBase>();
                 // For each app instance defined in the yaml config
                 foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
                 {
@@ -60,7 +59,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                             if (instance != null)
                             {
                                 instance.Id = appId;
-                                _instances.Add(instance);
+                                instances.Add(instance);
                             }
                         }
                     }
@@ -70,7 +69,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                     }
                 }
 
-                return _instances;
+                return instances;
             }
         }
 

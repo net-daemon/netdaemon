@@ -224,26 +224,6 @@ app:
             await Assert.ThrowsAsync<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
         }
 
-        [Fact]
-        public void AttributeServiceCallShouldFindCorrectFunction()
-        {
-            // ARRANGE
-            var app = new AssmeblyDaemonApp();
-            var netDaemonMock = new Mock<INetDaemon>();
-
-            // ACT
-            app.HandleAttributeInitialization(netDaemonMock.Object);
-
-            // ASSERT
-            var expObject = new ExpandoObject();
-            dynamic data = expObject;
-            data.method = "HandleServiceCall";
-            data.@class = "AssmeblyDaemonApp";
-
-            netDaemonMock.Verify(n => n.CallServiceAsync("netdaemon", "register_service", expObject, false), Times.Once);
-            netDaemonMock.Verify(n => n.ListenServiceCall("netdaemon", "AssmeblyDaemonApp_HandleServiceCall", It.IsAny<Func<dynamic?, Task>>()), Times.Once);
-        }
-
         [Theory]
         [InlineData("Some string")] //string
         [InlineData(10)]            //integer
@@ -258,11 +238,15 @@ app:
             class: AssmeblyDaemonApp
         ";
 
-            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
+            daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
+
+            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
+
 
             instance!.Id = "somefake_id";
             instance.InternalStorageObject = new FluentExpandoObject(false, true, daemon: instance);
+            instance.Logger = new Mock<ILogger>().Object;
             // await instance!.StartUpAsync(daemonMock.Object);
 
             // ACT
@@ -287,10 +271,12 @@ app:
 
             await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
+            daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
             var storageItem = new FluentExpandoObject();
             storageItem["Data"] = "SomeData";
 
+            daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
             daemonMock.Setup(n => n.GetDataAsync<IDictionary<string, object>>(It.IsAny<string>()))
                 .ReturnsAsync((IDictionary<string, object>)storageItem);
 

@@ -8,7 +8,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base class for entity fluent types
     /// </summary>
-    public class EntityBase : EntityState
+    public class EntityBase //: EntityState
     {
         internal readonly ConcurrentQueue<FluentAction> _actions =
             new ConcurrentQueue<FluentAction>();

@@ -40,15 +40,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             {
                 foreach (var attr in method.GetCustomAttributes(false))
                 {
-                    switch (attr)
+                    if (netDaemonApp is NetDaemonApp daemonApp)
                     {
-                        case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
-                            await HandleServiceCallAttribute(_daemon, netDaemonApp, method).ConfigureAwait(false);
-                            break;
 
-                        case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
-                            HandleStateChangedAttribute(_daemon, hassStateChangedAttribute, netDaemonApp, method);
-                            break;
+                        switch (attr)
+                        {
+                            case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
+                                await HandleServiceCallAttribute(_daemon, daemonApp, method).ConfigureAwait(false);
+                                break;
+
+                            case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
+                                HandleStateChangedAttribute(_daemon, hassStateChangedAttribute, daemonApp, method);
+                                break;
+                        }
                     }
                 }
             }
@@ -57,7 +61,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
         private static void HandleStateChangedAttribute(
             INetDaemon _daemon,
             HomeAssistantStateChangedAttribute hassStateChangedAttribute,
-            INetDaemonAppBase netDaemonApp,
+            NetDaemonApp netDaemonApp,
             MethodInfo method
             )
         {
@@ -69,7 +73,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 return;
             }
 
-            _daemon.ListenState(hassStateChangedAttribute.EntityId,
+            netDaemonApp.ListenState(hassStateChangedAttribute.EntityId,
             async (entityId, to, from) =>
             {
                 try
@@ -96,7 +100,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             });
         }
 
-        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, INetDaemonAppBase netDaemonApp, MethodInfo method)
+        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonApp netDaemonApp, MethodInfo method)
         {
             var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method);
             if (!signatureOk)
@@ -110,7 +114,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             serviceData.@class = netDaemonApp.GetType().Name;
             await _daemon.CallServiceAsync("netdaemon", "register_service", serviceData).ConfigureAwait(false);
 
-            _daemon.ListenServiceCall("netdaemon", $"{serviceData.@class}_{serviceData.method}",
+            netDaemonApp.ListenServiceCall("netdaemon", $"{serviceData.@class}_{serviceData.method}",
                 async (data) =>
                 {
                     try
@@ -676,11 +680,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
         public async ValueTask DisposeAsync()
         {
+            _logger.LogInformation("Try Dispose all apps");
             foreach (var app in _instanciatedDaemonApps)
             {
                 await app.DisposeAsync().ConfigureAwait(false);
             }
 
+            _instanciatedDaemonApps.Clear();
+
+            _logger.LogInformation("Done Dispose all apps");
         }
     }
 }

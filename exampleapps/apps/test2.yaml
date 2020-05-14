@@ -1,5 +1,5 @@
 my_app:
-    class: BatteryManager
-    # HelloWorldSecret: !secret test_secret
-    dependencies:
-      - global_app
+  class: BatteryManager
+  # HelloWorldSecret: !secret test_secret
+  # dependencies:
+  #   - global_app
