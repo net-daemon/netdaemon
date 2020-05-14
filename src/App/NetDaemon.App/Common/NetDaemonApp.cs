@@ -9,105 +9,31 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-    /// <summary>
-    ///     A class that implements the management of delays and cancel them
-    /// </summary>
-    public class DelayResult : IDelayResult
-    {
-        private readonly INetDaemonApp _daemon;
-        private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
-        private bool _isCanceled = false;
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        /// <param name="delayTaskCompletionSource"></param>
-        /// <param name="daemon"></param>
-        public DelayResult(TaskCompletionSource<bool> delayTaskCompletionSource, INetDaemonApp daemon)
-        {
-            _delayTaskCompletionSource = delayTaskCompletionSource;
-            _daemon = daemon;
-        }
-
-        /// <inheritdoc/>
-        public Task<bool> Task => _delayTaskCompletionSource.Task;
-
-        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
-
-        /// <inheritdoc/>
-        public void Cancel()
-        {
-            if (_isCanceled)
-                return;
-
-            _isCanceled = true;
-            foreach (var stateSubscription in StateSubscriptions)
-            {
-                //Todo: Handle
-                _daemon.CancelListenState(stateSubscription);
-            }
-            StateSubscriptions.Clear();
-
-            // Also cancel all await if this is disposed
-            _delayTaskCompletionSource.TrySetResult(false);
-        }
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        /// <summary>
-        ///     Disposes the object and cancel delay
-        /// </summary>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-        }
-
-        /// <summary>
-        ///     Disposes the object and cancel delay
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // Make sure any subscriptions are canceled
-                    Cancel();
-                }
-                disposedValue = true;
-            }
-        }
-
-        #endregion IDisposable Support
-    }
 
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
     public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {
-        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
+        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
                                     new List<(string pattern, Func<string, dynamic, Task> action)>();
 
-        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
+        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionSelectorCallbacks =
                     new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
-        private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
+        private readonly List<(string, string, Func<dynamic?, Task>)> _daemonCallBacksForServiceCalls
             = new List<(string, string, Func<dynamic?, Task>)>();
 
-        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
+        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateCallbacks =
                                     new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
         /// <summary>
         ///     All actions being performed for named events
         /// </summary>
-        public IList<(string pattern, Func<string, dynamic, Task> action)> EventActions => _eventActions;
+        public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks => _eventCallbacks;
         /// <summary>
         ///     All actions being performed for lambda selected events
         /// </summary>
-        public List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctions => _eventFunctionList;
+        public List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctionCallbacks => _eventFunctionSelectorCallbacks;
 
         /// <inheritdoc/>
         public IScheduler Scheduler => _daemon?.Scheduler ??
@@ -116,7 +42,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     All actions being performed for service call events
         /// </summary>
-        public List<(string, string, Func<dynamic?, Task>)> ServiceCallFunctions => _serviceCallFunctionList;
+        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
 
         /// <inheritdoc/>
         public IEnumerable<EntityState> State => _daemon?.State ??
@@ -124,10 +50,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>
-            StateActions => _stateActions;
+            StateCallbacks => _stateCallbacks;
 
         // Used for testing
-        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
+        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateCallbacks;
         /// <inheritdoc/>
         public Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
@@ -160,7 +86,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public void CancelListenState(string id)
         {
             // Remove and ignore if not exist
-            _stateActions.Remove(id, out _);
+            _stateCallbacks.Remove(id, out _);
         }
 
         /// <inheritdoc/>
@@ -174,7 +100,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             var taskCompletionSource = new TaskCompletionSource<bool>();
             var result = new DelayResult(taskCompletionSource, this);
 
-            //Todo: FIX
             foreach (var entityId in entityIds)
             {
                 result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
@@ -241,13 +166,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     Implements the async dispose pattern
         /// </summary>
-        /// <returns></returns>
         public async override ValueTask DisposeAsync()
         {
-            _stateActions.Clear();
-            _eventActions.Clear();
-            _eventFunctionList.Clear();
-            _serviceCallFunctionList.Clear();
+            _stateCallbacks.Clear();
+            _eventCallbacks.Clear();
+            _eventFunctionSelectorCallbacks.Clear();
+            _daemonCallBacksForServiceCalls.Clear();
 
             await base.DisposeAsync().ConfigureAwait(false);
         }
@@ -321,14 +245,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
+        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventCallbacks.Add((ev, action));
 
         /// <inheritdoc/>
-        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
+        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionSelectorCallbacks.Add((funcSelector, func));
 
         /// <inheritdoc/>
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
-            => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+            => _daemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
         /// <inheritdoc/>
         public string? ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action)
@@ -336,19 +260,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // Use guid as uniqe id but will externally use string so
             // The design can change incase guild wont cut it
             var uniqueId = Guid.NewGuid().ToString();
-            _stateActions[uniqueId] = (pattern, action);
+            _stateCallbacks[uniqueId] = (pattern, action);
             return uniqueId.ToString();
         }
-        // /// <inheritdoc/>
-        // public void ListenEvent(string ev, Func<string, dynamic?, Task> action) => _daemon?.ListenEvent(ev, action);
-
-        // /// <inheritdoc/>
-        // public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) =>
-        //         _daemon?.ListenEvent(funcSelector, func);
-
-        // /// <inheritdoc/>
-        // public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action) =>
-        //         _daemon?.ListenServiceCall(domain, service, action);
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(params string[] entityIds)

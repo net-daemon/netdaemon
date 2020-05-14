@@ -62,7 +62,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);
 
             // ASSERT
-            Assert.Single(app.ServiceCallFunctions);
+            Assert.Single(app.DaemonCallBacksForServiceCalls);
         }
 
 

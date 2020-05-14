@@ -150,7 +150,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     The apps actions to run on state changes
         /// </summary>
-        public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> StateActions { get; }
+        public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> StateCallbacks { get; }
 
         /// <summary>
         ///     Selects one or more camera entities to do action on

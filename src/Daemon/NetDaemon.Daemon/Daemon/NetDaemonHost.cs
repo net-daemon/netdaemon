@@ -680,7 +680,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
-                        foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in app.Value.StateActions.Values)
+                        foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in app.Value.StateCallbacks.Values)
                         {
                             if (string.IsNullOrEmpty(pattern))
                             {
@@ -741,7 +741,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
-                        foreach (var (domain, service, func) in app.Value.ServiceCallFunctions)
+                        foreach (var (domain, service, func) in app.Value.DaemonCallBacksForServiceCalls)
                         {
                             if (domain == serviceCallData.Domain &&
                                 service == serviceCallData.Service)
@@ -807,14 +807,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
-                        foreach ((string ev, Func<string, dynamic, Task> func) in app.Value.EventActions)
+                        foreach ((string ev, Func<string, dynamic, Task> func) in app.Value.EventCallbacks)
                         {
                             if (ev == hassEvent.EventType)
                             {
                                 tasks.Add(func(ev, hassEvent.Data));
                             }
                         }
-                        foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in app.Value.EventFunctions)
+                        foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in app.Value.EventFunctionCallbacks)
                         {
                             if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
                             {
