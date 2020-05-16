@@ -10,9 +10,11 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -133,7 +135,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
         {
             try
             {
-                _logger.LogInformation($"Starting NeDaemon (version {_version})...");
+
 
                 var config = await ReadConfigAsync().ConfigureAwait(false);
 
@@ -157,48 +159,65 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                 bool hasConnectedBefore = false;
                 bool generatedEntities = false;
+
+                CollectibleAssemblyLoadContext? alc = null;
+                IEnumerable<Type>? loadedDaemonApps;
+
                 while (!stoppingToken.IsCancellationRequested)
                 {
+
                     try
                     {
+
+
                         if (hasConnectedBefore)
                         {
                             // This is due to re-connect, it must be a re-connect
                             // so delay before retry connect again
                             await Task.Delay(_reconnectIntervall, stoppingToken).ConfigureAwait(false); // Wait x seconds
+                            _logger.LogInformation($"Restarting NeDaemon (version {_version})...");
                         }
 
                         await using var _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory, new HttpHandler(_httpClientFactory));
-
-                        var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
-                            stoppingToken);
-
-                        await WaitForDaemonToConnect(_daemonHost, stoppingToken).ConfigureAwait(false);
-
-                        if (!stoppingToken.IsCancellationRequested)
                         {
-                            if (_daemonHost.Connected)
+
+                            var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
+                                stoppingToken);
+
+                            await WaitForDaemonToConnect(_daemonHost, stoppingToken).ConfigureAwait(false);
+
+                            if (!stoppingToken.IsCancellationRequested)
                             {
-                                try
+                                if (_daemonHost.Connected)
                                 {
-                                    // Generate code if requested
-                                    var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? config.GenerateEntitiesOnStartup?.ToString();
-                                    if (envGenEntities is object)
+                                    try
                                     {
-                                        if (envGenEntities == "True" && !generatedEntities)
+                                        // Generate code if requested
+                                        var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? config.GenerateEntitiesOnStartup?.ToString();
+                                        if (envGenEntities is object)
                                         {
-                                            generatedEntities = true;
-                                            var codeGen = new CodeGenerator();
-                                            var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
-                                                _daemonHost.State.Select(n => n.EntityId).Distinct());
+                                            if (envGenEntities == "True" && !generatedEntities)
+                                            {
+                                                generatedEntities = true;
+                                                var codeGen = new CodeGenerator();
+                                                var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
+                                                    _daemonHost.State.Select(n => n.EntityId).Distinct());
 
-                                            System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
+                                                System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
+                                            }
                                         }
-                                    }
-                                    await using (var codeManager = new CodeManager(sourceFolder!, _daemonHost.Logger))
-                                    {
-                                        await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
+                                        (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
+                                        if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
+                                        {
+                                            _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                                            return;
+                                        }
+                                        alc!.Unloading += (c) => _logger.LogInformation("OMG IT IS UNLOADING!");
 
+                                        await using (var codeManager = new CodeManager(sourceFolder!, loadedDaemonApps, _daemonHost.Logger))
+                                        {
+                                            await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
+                                        }
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);
                                         if (!stoppingToken.IsCancellationRequested)
@@ -207,21 +226,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                             _logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
                                         }
                                     }
+                                    catch (TaskCanceledException)
+                                    {
+                                        _logger.LogInformation("Canceling NetDaemon service...");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _logger.LogError(e, "Failed to load applications");
+                                    }
                                 }
-                                catch (TaskCanceledException)
+                                else
                                 {
-                                    _logger.LogInformation("Canceling NetDaemon service...");
+                                    _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
                                 }
-                                catch (Exception e)
-                                {
-                                    _logger.LogError(e, "Failed to load applications");
-                                }
-                            }
-                            else
-                            {
-                                _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
                             }
                         }
+
+
+
                     }
                     catch (OperationCanceledException)
                     {
@@ -234,8 +256,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                     {
                         _logger.LogError(e, "MAJOR ERROR!");
                     }
+
                     // If we reached here it could be a re-connect
                     hasConnectedBefore = true;
+                    if (alc is object)
+                    {
+                        loadedDaemonApps = null;
+                        var alcWeakRef = new WeakReference(alc, trackResurrection: true);
+                        alc.Unload();
+                        alc = null;
+
+                        for (int i = 0; alcWeakRef.IsAlive && (i < 100); i++)
+                        {
+                            GC.Collect();
+                            GC.WaitForPendingFinalizers();
+                        }
+                    }
                 }
             }
             catch (OperationCanceledException)

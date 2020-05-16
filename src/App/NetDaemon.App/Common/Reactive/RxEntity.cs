@@ -63,7 +63,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     /// </summary>
     public class RxEntity : ICanTurnOnAndOff, ISetState, IObserve
     {
-        private readonly INetDaemon _daemon;
+        private readonly INetDaemonReactive _daemon;
         private readonly IEnumerable<string> _entityIds;
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="daemon">The NetDaemon host object</param>
         /// <param name="entityIds">Unique entity id:s</param>
-        public RxEntity(INetDaemon daemon, IEnumerable<string> entityIds)
+        public RxEntity(INetDaemonReactive daemon, IEnumerable<string> entityIds)
         {
             _daemon = daemon;
             _entityIds = entityIds;
@@ -91,7 +91,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             get
             {
-                return _daemon.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId) && f.New.State != f.Old.State);
+                return _daemon.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State);
             }
         }
 

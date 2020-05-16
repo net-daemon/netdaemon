@@ -57,7 +57,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// </summary>
         /// <param name="appInstanceId">the id of the app instance</param>
         /// <param name="app">The app instance</param>
-        void RegisterAppInstance(string appInstanceId, NetDaemonApp app);
+        void RegisterAppInstance(string appInstanceId, INetDaemonAppBase app);
 
         /// <summary>
         ///     Clears all app instances registered

@@ -16,27 +16,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Get application instance by application instance id
         /// </summary>
         /// <param name="appInstanceId">The identity of the app instance</param>
-        NetDaemonAppBase? GetApp(string appInstanceId);
+        INetDaemonAppBase? GetApp(string appInstanceId);
 
         /// <summary>
         ///     Returns a list of all running instances of NetDaemon apps
         /// </summary>
-        IEnumerable<NetDaemonAppBase> RunningAppInstances { get; }
-
-        /// <summary>
-        ///     The observable implementation for event changes
-        /// </summary>
-        IRxEvent EventChanges { get; }
+        IEnumerable<INetDaemonAppBase> RunningAppInstances { get; }
 
         /// <summary>
         ///     Http features of NetDaemon is exposed through the Http property
         /// </summary>
         IHttpHandler Http { get; }
 
-        /// <summary>
-        ///     The observable implementation for state changes
-        /// </summary>
-        IRxStateChange StateChanges { get; }
         /// <summary>
         ///     Calls a service
         /// </summary>
@@ -383,7 +374,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     Get application instance by application instance id
         /// </summary>
         /// <param name="appInstanceId">The identity of the app instance</param>
-        NetDaemonAppBase? GetApp(string appInstanceId);
+        INetDaemonAppBase? GetApp(string appInstanceId);
     }
 
     /// <summary>
@@ -426,7 +417,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         /// <param name="id">Unique Id of the data</param>
         /// <returns>The data persistent or null if not exists</returns>
-        ValueTask<T> GetDataAsync<T>(string id);
+        ValueTask<T?> GetDataAsync<T>(string id) where T : class;
 
         /// <summary>
         ///     Gets current state for the entity

@@ -42,7 +42,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// <summary>
         ///     The observable statestream, all changes inkluding attributes
         /// </summary>
-        public IRxStateChange StateAllChanges { get; }
+        public IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
 
         /// <summary>
         ///     The observable statestream state change
@@ -150,10 +150,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         IObservable<long> RunIn(TimeSpan timespan);
     }
 
-    /// <summary>
-    ///     Interface for observable state changes
-    /// </summary>
-    public interface IRxStateChange : IObservable<(EntityState Old, EntityState New)>
-    {
-    }
 }

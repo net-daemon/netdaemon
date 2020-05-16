@@ -44,8 +44,11 @@ namespace NetDaemon.Daemon.Tests
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
 
             _defaultDaemonRxApp = new BaseTestRxApp();
+            _defaultDaemonRxApp.Id = "app_id";
+            _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
 
             _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
+
         }
 
         public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;

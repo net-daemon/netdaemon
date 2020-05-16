@@ -26,28 +26,16 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
         public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
 
-        [Fact]
-        public void NrOfCsFilesShouldBeCorrect()
-        {
-            // ARRANGE
-            var targetCount = Directory.EnumerateFiles(ConfigFixturePath, "*.cs", SearchOption.AllDirectories).Count();
-
-            // ACT
-            IEnumerable<string> files = CodeManager.GetCsFiles(ConfigFixturePath);
-
-            // ASSERT
-            Assert.Equal(targetCount, files.Count());
-        }
 
         [Fact]
         public void FaultyApplicationShouldLogError()
         {
             // ARRANGE
             var path = Path.Combine(FaultyAppPath, "CompileErrors");
-
-            // ACT
             var loggerMock = new LoggerMock();
-            var cm = new CodeManager(path, loggerMock.Logger);
+            var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, loggerMock.Logger);
+            // ACT
+            var cm = new CodeManager(path, daemonApps, loggerMock.Logger);
 
             // ASSERT
             loggerMock.AssertLogged(LogLevel.Error, Times.Once());
@@ -340,9 +328,9 @@ app:
             var path = Path.Combine(FaultyAppPath, "ExecuteWarnings");
             var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
-
+            var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
             // ACT
-            var codeManager = new CodeManager(path, moqLogger.Logger);
+            var codeManager = new CodeManager(path, daemonApps, moqLogger.Logger);
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(13));
@@ -355,14 +343,20 @@ app:
             var path = Path.Combine(FaultyAppPath, "SupressLogs");
             var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
-
+            var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
             // ACT
-            var codeManager = new CodeManager(path, moqLogger.Logger);
+            var codeManager = new CodeManager(path, daemonApps, moqLogger.Logger);
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(1));
         }
 
-        public static CodeManager CM(string path) => new CodeManager(path, new LoggerMock().Logger);
+        public static CodeManager CM(string path)
+        {
+            var loggerMock = new LoggerMock().Logger;
+
+            var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, loggerMock);
+            return new CodeManager(path, daemonApps, loggerMock);
+        }
     }
 }

@@ -22,11 +22,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
         }
 
         /// <inheritdoc/>
-        public async ValueTask<T> Get<T>(string id)
+        public async ValueTask<T?> Get<T>(string id) where T : class
         {
             try
             {
+
                 var storageJsonFile = Path.Combine(_dataStoragePath, $"{id}_store.json");
+
+                if (!File.Exists(storageJsonFile))
+                    return null;
 
                 using var jsonStream = File.OpenRead(storageJsonFile);
 

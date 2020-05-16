@@ -6,6 +6,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
     {
         Task Save<T>(string id, T data);
 
-        ValueTask<T> Get<T>(string id);
+        ValueTask<T?> Get<T>(string id) where T : class;
     }
 }

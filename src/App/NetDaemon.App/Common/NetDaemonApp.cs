@@ -207,7 +207,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public IFluentEvent Events(IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
         /// <inheritdoc/>
-        public async ValueTask<T> GetDataAsync<T>(string id)
+        public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.GetDataAsync<T>(id).ConfigureAwait(false);

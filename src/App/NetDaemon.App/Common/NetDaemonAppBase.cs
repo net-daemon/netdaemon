@@ -182,17 +182,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         public virtual ValueTask DisposeAsync()
         {
-            Logger.LogInformation("Try dispose: {app}", GetUniqueIdForStorage());
             _cancelSource.Cancel();
             this.IsEnabled = false;
+            _lazyStoreStateTask = null;
             _storageObject = null;
             _daemon = null;
-            Logger.LogInformation("Dispose: {app}", GetUniqueIdForStorage());
             return new ValueTask();
         }
 
         /// <inheritdoc/>
-        public NetDaemonAppBase? GetApp(string appInstanceId)
+        public INetDaemonAppBase? GetApp(string appInstanceId)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.GetApp(appInstanceId);
