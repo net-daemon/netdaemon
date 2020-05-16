@@ -1,7 +1,7 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -108,14 +108,14 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
-app:
-    class: AssmeblyDaemonApp
-    StringConfig: a string
-    IntConfig: 10
-    EnumerableConfig:
-        - string 1
-        - string 2
-";
+        app:
+            class: AssmeblyDaemonApp
+            StringConfig: a string
+            IntConfig: 10
+            EnumerableConfig:
+                - string 1
+                - string 2
+        ";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
@@ -132,13 +132,13 @@ app:
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
-app:
-    class: AssmeblyDaemonApp
-    test_secret_string: !secret a_secret_string
-    test_secret_int: !secret a_secret_int
-    test_normal_string: not a secret string
-    test_normal_int: 0
-";
+        app:
+            class: AssmeblyDaemonApp
+            test_secret_string: !secret a_secret_string
+            test_secret_int: !secret a_secret_int
+            test_normal_string: not a secret string
+            test_normal_int: 0
+        ";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object,
                 Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs")).Instances;
@@ -156,14 +156,14 @@ app:
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
-app:
-    class: AssmeblyDaemonApp
-    string_config: a string
-    int_config: 10
-    enumerable_config:
-        - string 1
-        - string 2
-";
+        app:
+            class: AssmeblyDaemonApp
+            string_config: a string
+            int_config: 10
+            enumerable_config:
+                - string 1
+                - string 2
+        ";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
@@ -185,7 +185,7 @@ app:
             // ACT
             var codeManager = CM(path);
             // ASSERT
-            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
+            Assert.Equal(2, codeManager.InstanceDaemonApps().Count());
         }
 
         [Fact]
@@ -200,16 +200,7 @@ app:
             // ACT
             var codeManager = CM(path);
             // ASSERT
-            Assert.Equal(2, codeManager.InstanceAndInitApplications(moqDaemon.Object).Result.Count());
-        }
-
-        [Fact]
-        public async Task InstanceAndInitApplicationWithNullShouldThrowArgumentNullException()
-        {
-            // ARRANGE
-            var codeManager = CM(ConfigFixturePath);
-            // ACT/ASSERT
-            await Assert.ThrowsAsync<ArgumentNullException>(() => codeManager.InstanceAndInitApplications(null));
+            Assert.Equal(2, codeManager.InstanceDaemonApps().Count());
         }
 
         [Theory]
@@ -222,9 +213,9 @@ app:
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
-        app:
-            class: AssmeblyDaemonApp
-        ";
+                app:
+                    class: AssmeblyDaemonApp
+                ";
 
             var daemonMock = new Mock<INetDaemon>();
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
@@ -253,9 +244,9 @@ app:
             var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
-        app:
-            class: AssmeblyDaemonApp
-        ";
+                app:
+                    class: AssmeblyDaemonApp
+                ";
 
             await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
@@ -277,49 +268,54 @@ app:
             Assert.Equal("SomeData", instance.Storage.Data);
         }
 
-        [Fact]
-        public void InstanceAppFromConfigFilesInFolderWithDependenciesShouldReturnCorrectInstances()
-        {
-            // ARRANGE
-            var path = Path.Combine(ConfigFixturePath, "dependtests");
-            var moqDaemon = new Mock<INetDaemonHost>();
-            var moqLogger = new LoggerMock();
+        // Todo: Make test to test sorting in NetDaemon instead
+        // [Fact]
+        // public void InstanceAppFromConfigFilesInFolderWithDependenciesShouldReturnCorrectInstances()
+        // {
+        //     // ARRANGE
+        //     var path = Path.Combine(ConfigFixturePath, "dependtests");
+        //     var moqDaemon = new Mock<INetDaemonHost>();
+        //     var moqLogger = new LoggerMock();
 
-            moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
-            // ACT
-            var codeManager = CM(path);
-            // ASSERT
-            var instances = codeManager.InstanceAndInitApplications(moqDaemon.Object).Result;
+        //     moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
+        //     // ACT
+        //     var codeManager = CM(path);
+        //     // ASSERT
+        //     var instances = codeManager.InstanceDaemonApps();
 
-            Assert.Collection(instances,
-                i => Assert.Equal("app_global", i.Id),
-                i => Assert.Equal("app_dep_on_global", i.Id),
-                i => Assert.Equal("app_dep_on_global_and_other", i.Id),
-                i => Assert.Equal("app_dep_app_depend_on_global_and_other", i.Id)
-            );
+        //     // Todo: refactor this, only had to make test work after refactor
+        //     var realDaemon = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, new Mock<IHassClient>().Object, null, null);
+        //     instances = realDaemon.SortByDependency(instances);
 
-            moqDaemon.Verify(n => n.RegisterAppInstance("app_global", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
-            moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_on_global", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
-            moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
-            moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_app_depend_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
-        }
+        //     Assert.Collection(instances,
+        //         i => Assert.Equal("app_global", i.Id),
+        //         i => Assert.Equal("app_dep_on_global", i.Id),
+        //         i => Assert.Equal("app_dep_on_global_and_other", i.Id),
+        //         i => Assert.Equal("app_dep_app_depend_on_global_and_other", i.Id)
+        //     );
+
+        //     // moqDaemon.Verify(n => n.RegisterAppInstance("app_global", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
+        //     // moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_on_global", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
+        //     // moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
+        //     // moqDaemon.Verify(n => n.RegisterAppInstance("app_dep_app_depend_on_global_and_other", It.IsAny<JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp>()));
+        // }
 
         //FaultyAppPath
-        [Fact]
-        public async Task InstanceAppsThatHasCircularDependenciesShouldReturnNull()
-        {
-            // ARRANGE
-            var path = Path.Combine(FaultyAppPath, "CircularDependencies");
-            var moqDaemon = new Mock<INetDaemonHost>();
-            var moqLogger = new LoggerMock();
+        // [Fact]
+        // public async Task InstanceAppsThatHasCircularDependenciesShouldReturnNull()
+        // {
+        //     // ARRANGE
+        //     var path = Path.Combine(FaultyAppPath, "CircularDependencies");
+        //     var moqDaemon = new Mock<INetDaemonHost>();
+        //     var moqLogger = new LoggerMock();
 
-            moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
-            var codeManager = CM(path);
-            // ACT
-            // ASSERT
-            var ex = await Assert.ThrowsAsync<ApplicationException>(async () => { await codeManager.InstanceAndInitApplications(moqDaemon.Object); });
-            Assert.Contains("Application dependencies is wrong", ex.Message);
-        }
+        //     moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
+        //     var codeManager = CM(path);
+        //     // ACT
+        //     // ASSERT
+        //     var ex = await Assert.Throws<ApplicationException>( () => { codeManager.InstanceDaemonApps(); });
+        //     Assert.Contains("Application dependencies is wrong", ex.Message);
+        // }
 
         [Fact]
         public void InsanceAppsThatHasMissingExecuteShouldLogError()

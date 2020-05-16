@@ -10,7 +10,7 @@ using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
+namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Config
 {
     public class YamlAppConfig
     {

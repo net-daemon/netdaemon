@@ -7,6 +7,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -84,30 +85,17 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // Fake what is coming from hass client
-            var hassState = new HassState
-            {
-                EntityId = "light.testlight",
-                State = "on",
-                LastChanged = new DateTime(2020, 1, 2, 1, 2, 3),
-                LastUpdated = new DateTime(2020, 1, 2, 3, 2, 1),
-                Attributes = new Dictionary<string, object>
-                {
-                    ["color_temp"] = 390,
-                    ["brightness"] = 100,
-                    ["friendly_name"] = "The test light"
-                }
-            };
+            var task = RunDefauldDaemonUntilCanceled();
 
-            DefaultHassClientMock.FakeStates["light.testlight"] = hassState;
-
-            await RunDefauldDaemonUntilCanceled();
-
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
             // ACT
-            var entity = DefaultDaemonHost.GetState("light.testlight");
+            var entity = DefaultDaemonHost.GetState("light.correct_entity");
+
+            await task;
 
             // ASSERT
             Assert.NotNull(entity);
-            DefaultHassClientMock.AssertEqual(hassState, entity!);
+            Assert.Equal(entity?.State, "on");
         }
 
         // Todo: Add tests to test objects and arrays from the dynamic conversion
@@ -169,7 +157,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACT and ASSERT
             Assert.Throws<ArgumentNullException>(() =>
-                { var DefaultDaemonHost = new NetDaemonHost(null, null); });
+                { var DefaultDaemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, null, null); });
         }
 
         [Fact]
@@ -178,8 +166,12 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var eventData = GetDynamicDataObject();
 
+            var task = RunDefauldDaemonUntilCanceled();
+
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
             // ACT
             await DefaultDaemonHost.SendEvent("test_event", eventData);
+            await task;
 
             // ASSERT
             var expandoObject = (ExpandoObject)eventData;
@@ -189,8 +181,12 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SendEventWithNullDataShouldCallCorrectMethod()
         {
+            // ARRANGE
+            var task = RunDefauldDaemonUntilCanceled();
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
             // ACT
             await DefaultDaemonHost.SendEvent("test_event");
+            await task;
 
             // ASSERT
             DefaultHassClientMock.Verify(n => n.SendEvent("test_event", null));
@@ -539,17 +535,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
-        [Fact]
-        public void RegisterAppShouldReturnCorrectAppWhenUsingGetApp()
-        {
-            // ARRANGE
-            DefaultDaemonHost.RegisterAppInstance("appx", new HostTestApp());
-            // ACT
-            var theApp = DefaultDaemonHost.GetApp("appx");
-
-            // ASSERT
-            Assert.NotNull(theApp);
-        }
 
         [Fact]
         public void GetAppOnMissingAppShouldReturnNull()
@@ -563,16 +548,15 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
-        public void ClearShouldReturnNullGetApp()
+        public async Task ClearShouldReturnNullGetApp()
         {
             // ARRANGE
-            DefaultDaemonHost.RegisterAppInstance("appx", new HostTestApp());
-            var theApp = DefaultDaemonHost.GetApp("appx");
+            var theApp = DefaultDaemonHost.GetApp("app_id");
             Assert.NotNull(theApp);
 
             // ACT
-            DefaultDaemonHost.UnloadAllApps();
-            theApp = DefaultDaemonHost.GetApp("appx");
+            await DefaultDaemonHost.UnloadAllApps().ConfigureAwait(false);
+            theApp = DefaultDaemonHost.GetApp("app_id");
 
             // ASSERT
             Assert.Null(theApp);
@@ -640,11 +624,11 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task SetStateShouldKeepSameArea()
         {
             // ARRANGE
-            await RunDefauldDaemonUntilCanceled();
-
+            var task = RunDefauldDaemonUntilCanceled();
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
             // ACT
             var state = await DefaultDaemonHost.SetStateAsync("light.ligth_in_area", "on", ("attr", "value"));
-
+            await task;
             /// ASSERT
             Assert.Equal("Area", state?.Area);
         }

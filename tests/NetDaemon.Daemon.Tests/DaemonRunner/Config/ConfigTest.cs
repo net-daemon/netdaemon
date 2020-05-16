@@ -1,5 +1,5 @@
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;

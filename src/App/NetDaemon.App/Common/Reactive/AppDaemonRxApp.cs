@@ -329,8 +329,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             // To end timers
             _cancelTimers.Cancel();
 
-            _eventObservables!.Clear();
-            _stateObservables!.Clear();
+            if (_eventObservables is object)
+                _eventObservables!.Clear();
+
+            if (_stateObservables is object)
+                _stateObservables!.Clear();
 
             _eventObservables = null;
             _stateObservables = null;

@@ -99,7 +99,8 @@ namespace NetDaemon.Daemon.Tests
                 Attributes = new Dictionary<string, object>
                 {
                     ["test"] = 100
-                }
+                },
+                State = "on"
             };
 
             FakeStates["light.correct_entity2"] = new HassState
@@ -234,7 +235,7 @@ namespace NetDaemon.Daemon.Tests
                         }
                     }
                 },
-                
+
             });
         }
 

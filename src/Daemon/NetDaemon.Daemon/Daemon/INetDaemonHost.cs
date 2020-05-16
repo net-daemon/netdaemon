@@ -1,5 +1,6 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,12 +32,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task Stop();
 
         /// <summary>
-        ///     Stops all the daemon app activities (Schedulers, Service-, State- and Event- subscriptions).
-        /// </summary>
-        /// <returns> The operational task. </returns>
-        Task StopDaemonActivitiesAsync();
-
-        /// <summary>
         ///     Listens to the given service in the netdaemon domain. Those subscritions
         ///     are used internally and are not postponed during reloading service daemons.
         /// </summary>
@@ -53,15 +48,26 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps);
 
         /// <summary>
-        ///     Register appinstance with daemon
+        ///     Initializes the NetDaemon
         /// </summary>
-        /// <param name="appInstanceId">the id of the app instance</param>
-        /// <param name="app">The app instance</param>
-        void RegisterAppInstance(string appInstanceId, INetDaemonAppBase app);
+        Task Initialize();
 
         /// <summary>
         ///     Clears all app instances registered
         /// </summary>
         Task UnloadAllApps();
+
+        /// <summary>
+        ///     Reload all apps
+        /// </summary>
+        Task ReloadAllApps();
     }
+
+    public interface IInstanceDaemonApp
+    {
+
+        IEnumerable<INetDaemonAppBase> InstanceDaemonApps();
+        int Count { get; }
+    }
+
 }

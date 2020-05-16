@@ -163,13 +163,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 CollectibleAssemblyLoadContext? alc = null;
                 IEnumerable<Type>? loadedDaemonApps;
 
+                (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
+                if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
+                {
+                    _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                    return;
+                }
+                IInstanceDaemonApp codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+
+                // {
+                //     await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
+                // }
                 while (!stoppingToken.IsCancellationRequested)
                 {
-
                     try
                     {
-
-
                         if (hasConnectedBefore)
                         {
                             // This is due to re-connect, it must be a re-connect
@@ -178,7 +186,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                             _logger.LogInformation($"Restarting NeDaemon (version {_version})...");
                         }
 
-                        await using var _daemonHost = new NetDaemonHost(new HassClient(_loggerFactory), new DataRepository(storageFolder), _loggerFactory, new HttpHandler(_httpClientFactory));
+                        await using var _daemonHost =
+                            new NetDaemonHost(
+                                codeManager,
+                                new HassClient(_loggerFactory),
+                                new DataRepository(storageFolder),
+                                _loggerFactory,
+                                new HttpHandler(_httpClientFactory)
+                                );
                         {
 
                             var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
@@ -206,18 +221,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
                                             }
                                         }
-                                        (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
-                                        if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
-                                        {
-                                            _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
-                                            return;
-                                        }
-                                        alc!.Unloading += (c) => _logger.LogInformation("OMG IT IS UNLOADING!");
+                                        await _daemonHost.Initialize().ConfigureAwait(false);
 
-                                        await using (var codeManager = new CodeManager(sourceFolder!, loadedDaemonApps, _daemonHost.Logger))
-                                        {
-                                            await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
-                                        }
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);
                                         if (!stoppingToken.IsCancellationRequested)
@@ -241,9 +246,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                 }
                             }
                         }
-
-
-
                     }
                     catch (OperationCanceledException)
                     {
@@ -259,18 +261,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                     // If we reached here it could be a re-connect
                     hasConnectedBefore = true;
-                    if (alc is object)
-                    {
-                        loadedDaemonApps = null;
-                        var alcWeakRef = new WeakReference(alc, trackResurrection: true);
-                        alc.Unload();
-                        alc = null;
 
-                        for (int i = 0; alcWeakRef.IsAlive && (i < 100); i++)
-                        {
-                            GC.Collect();
-                            GC.WaitForPendingFinalizers();
-                        }
+                }
+                if (alc is object)
+                {
+                    loadedDaemonApps = null;
+                    var alcWeakRef = new WeakReference(alc, trackResurrection: true);
+                    alc.Unload();
+                    alc = null;
+
+                    for (int i = 0; alcWeakRef.IsAlive && (i < 100); i++)
+                    {
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
                     }
                 }
             }

@@ -1,4 +1,4 @@
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

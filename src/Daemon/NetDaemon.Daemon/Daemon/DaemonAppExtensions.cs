@@ -1,5 +1,5 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config;
+using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
+namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
     public static class DaemonAppExtensions
     {

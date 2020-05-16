@@ -33,6 +33,7 @@ namespace NetDaemon.Daemon.Tests
 
             _defaultHttpHandlerMock = new HttpHandlerMock();
             _defaultDaemonHost = new NetDaemonHost(
+                new Mock<IInstanceDaemonApp>().Object,
                 _defaultHassClientMock.Object,
                 _defaultDataRepositoryMock.Object,
                 _loggerMock.LoggerFactory,
@@ -44,11 +45,22 @@ namespace NetDaemon.Daemon.Tests
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
 
             _defaultDaemonRxApp = new BaseTestRxApp();
-            _defaultDaemonRxApp.Id = "app_id";
+            _defaultDaemonRxApp.Id = "app_rx_id";
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
 
-            _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
+            _notConnectedDaemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
 
+        }
+        protected async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        {
+            var nrOfTimesCheckForConnectedState = 0;
+
+            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(50, stoppingToken).ConfigureAwait(false);
+                if (nrOfTimesCheckForConnectedState++ > 5)
+                    break;
+            }
         }
 
         public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
