@@ -5,8 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
+// For mocking
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
@@ -143,34 +147,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// <inheritdoc/>
         public IDisposable RunEvery(TimeSpan timespan, Action action)
         {
-            var result = new DisposableTimerResult(_cancelTimers.Token);
-
-            Observable.Interval(timespan, TaskPoolScheduler.Default)
-                .Subscribe(
-                    s =>
-                    {
-                        try
-                        {
-                            if (this.IsEnabled)
-                                action();
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Do nothing
-                        }
-                        catch (Exception e)
-                        {
-                            LogError(e, "Error, RunEvery APP: {app}", Id ?? "unknown");
-                        }
-                    },
-                    ex =>
-                    {
-                        LogError(ex, "Error, RunEvery_ex APP: {app}", Id ?? "unknown");
-                    },
-                    () => Log("Exiting RunEvery for app {app}, {trigger}:{span}", Id!, timespan)
-                    , result.Token);
-
-            return result;
+            return CreateObservableIntervall(timespan, action);
         }
 
         /// <inheritdoc/>
@@ -279,7 +256,51 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// <inheritdoc/>
         public EntityState? State(string entityId) => _daemon?.GetState(entityId);
 
-        private IDisposable CreateObservableTimer(DateTime timeOfDayToTrigger, TimeSpan interval, Action action)
+        /// <summary>
+        ///     Creates an observable intervall
+        /// </summary>
+        /// <param name="timespan">Time span for intervall</param>
+        /// <param name="action">The action to call</param>
+        internal virtual IDisposable CreateObservableIntervall(TimeSpan timespan, Action action)
+        {
+            var result = new DisposableTimerResult(_cancelTimers.Token);
+
+            Observable.Interval(timespan, TaskPoolScheduler.Default)
+                .Subscribe(
+                    s =>
+                    {
+                        try
+                        {
+                            if (this.IsEnabled)
+                                action();
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // Do nothing
+                        }
+                        catch (Exception e)
+                        {
+                            LogError(e, "Error, RunEvery APP: {app}", Id ?? "unknown");
+                        }
+                    },
+                    ex =>
+                    {
+                        LogError(ex, "Error, RunEvery_ex APP: {app}", Id ?? "unknown");
+                    },
+                    () => Log("Exiting RunEvery for app {app}, {trigger}:{span}", Id!, timespan)
+                    , result.Token);
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Creates a observable timer that are tracked for errors
+        /// </summary>
+        /// <param name="timeOfDayToTrigger">When to start the timer</param>
+        /// <param name="interval">The intervall</param>
+        /// <param name="action">Action to call each intervall</param>
+        /// <returns></returns>
+        internal virtual IDisposable CreateObservableTimer(DateTime timeOfDayToTrigger, TimeSpan interval, Action action)
         {
             var result = new DisposableTimerResult(_cancelTimers.Token);
 
@@ -316,6 +337,4 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             return result;
         }
     }
-
-
 }

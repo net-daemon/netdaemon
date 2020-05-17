@@ -2,6 +2,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Moq;
 using NetDaemon.Daemon.Tests.Daemon;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -23,6 +24,7 @@ namespace NetDaemon.Daemon.Tests
         private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
         private readonly HassClientMock _defaultHassClientMock;
         private readonly HttpHandlerMock _defaultHttpHandlerMock;
+        private readonly Mock<JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp> _defaultMockedRxApp;
         private readonly LoggerMock _loggerMock;
         private readonly NetDaemonHost _notConnectedDaemonHost;
 
@@ -42,12 +44,20 @@ namespace NetDaemon.Daemon.Tests
 
             _defaultDaemonApp = new BaseTestApp();
             _defaultDaemonApp.Id = "app_id";
+            _defaultDaemonApp.IsEnabled = true;
 
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
 
             _defaultDaemonRxApp = new BaseTestRxApp();
             _defaultDaemonRxApp.Id = "app_rx_id";
+            _defaultDaemonRxApp.IsEnabled = true;
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
+
+            _defaultMockedRxApp = new Mock<JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp>() { CallBase = true };
+            _defaultMockedRxApp.Object.Id = "app_rx_mock_id";
+            _defaultMockedRxApp.Object.IsEnabled = true;
+            _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
+            _defaultDaemonHost.InternalRunningAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
 
             _notConnectedDaemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
         }
@@ -55,15 +65,11 @@ namespace NetDaemon.Daemon.Tests
         public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
 
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
-
         public BaseTestRxApp DefaultDaemonRxApp => _defaultDaemonRxApp;
-
         public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
-
         public HassClientMock DefaultHassClientMock => _defaultHassClientMock;
-
         public HttpHandlerMock DefaultHttpHandlerMock => _defaultHttpHandlerMock;
-
+        public Mock<JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp> DefaultMockedRxApp => _defaultMockedRxApp;
         public string HelloWorldData => "Hello world!";
 
         public LoggerMock LoggerMock => _loggerMock;
@@ -75,6 +81,7 @@ namespace NetDaemon.Daemon.Tests
             await _defaultDaemonApp.DisposeAsync().ConfigureAwait(false);
             await _defaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
             await _defaultDaemonHost.DisposeAsync().ConfigureAwait(false);
+            await _defaultMockedRxApp.Object.DisposeAsync().ConfigureAwait(false);
         }
 
         public dynamic GetDynamicDataObject(string testData = "testdata")
@@ -101,6 +108,7 @@ namespace NetDaemon.Daemon.Tests
         {
             await _defaultDaemonApp.StartUpAsync(_defaultDaemonHost).ConfigureAwait(false);
             await _defaultDaemonRxApp.StartUpAsync(_defaultDaemonHost).ConfigureAwait(false);
+            await _defaultMockedRxApp.Object.StartUpAsync(_defaultDaemonHost).ConfigureAwait(false);
         }
 
         public (Task, CancellationTokenSource) ReturnRunningDefauldDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
@@ -144,6 +152,17 @@ namespace NetDaemon.Daemon.Tests
             {
                 // Expected behaviour
             }
+        }
+
+        protected async Task<Task> GetConnectedNetDaemonTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
+        {
+            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+                    ? new CancellationTokenSource()
+                    : new CancellationTokenSource(milliSeconds);
+
+            var daemonTask = _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, cancelSource.Token);
+            return daemonTask;
         }
 
         protected async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)

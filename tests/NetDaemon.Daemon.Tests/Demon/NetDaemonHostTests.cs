@@ -363,8 +363,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             var dynObject = GetDynamicDataObject(HelloWorldData);
+            var daemonTask = await GetConnectedNetDaemonTask();
 
-            DefaultHassClientMock.AddCallServiceEvent("custom_domain", "any_service", dynObject);
 
             var isCalled = false;
             string? message = "";
@@ -377,7 +377,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 return Task.CompletedTask;
             });
 
-            await RunDefauldDaemonUntilCanceled();
+            DefaultHassClientMock.AddCallServiceEvent("custom_domain", "any_service", dynObject);
+
+            await daemonTask;
 
             // ASSERT
             Assert.True(isCalled);

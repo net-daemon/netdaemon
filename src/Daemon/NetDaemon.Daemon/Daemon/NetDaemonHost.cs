@@ -63,6 +63,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         private readonly IHttpHandler? _httpHandler;
 
         private readonly IDataRepository? _repository;
+
         private readonly ConcurrentDictionary<string, INetDaemonAppBase> _runningAppInstances =
             new ConcurrentDictionary<string, INetDaemonAppBase>();
 
@@ -286,6 +287,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             await LoadAllApps().ConfigureAwait(false);
             EnableApplicationDiscoveryServiceAsync();
         }
+
         /// <inheritdoc/>
         public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams)
         {
@@ -316,7 +318,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
-                                                                                                                                                                                                                                                                                                                                    => _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+            => _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds)
@@ -1250,6 +1252,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     await SetStateAsync(entityId, state).ConfigureAwait(false);
             }
         }
+
         private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
         {
             try
