@@ -41,7 +41,6 @@ namespace NetDaemon.Daemon.Tests
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => called = true);
 
             // ASSERT
-            await Task.Delay(10);
             Assert.False(called);
 
             await Task.Delay(100);
