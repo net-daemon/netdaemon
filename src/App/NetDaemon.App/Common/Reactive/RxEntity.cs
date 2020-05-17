@@ -6,6 +6,30 @@ using System.Reactive.Linq;
 namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 {
     /// <summary>
+    ///     Interface for objects implements Toggle
+    /// </summary>
+    public interface ICanTurnOnAndOff
+    {
+        /// <summary>
+        ///     Toggles state on/off on entity
+        /// </summary>
+        /// <param name="attributes">The attributes to set. Use anonomous type</param>
+        void Toggle(dynamic? attributes = null);
+
+        /// <summary>
+        ///     Turn off entity
+        /// </summary>
+        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
+        void TurnOff(dynamic? attributes = null);
+
+        /// <summary>
+        ///     Turn on entity
+        /// </summary>
+        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
+        void TurnOn(dynamic? attributes = null);
+    }
+
+    /// <summary>
     ///     Interface for objects exposing observable state changes
     /// </summary>
     public interface IObserve
@@ -35,35 +59,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     }
 
     /// <summary>
-    ///     Interface for objects implements Toggle
-    /// </summary>
-    public interface ICanTurnOnAndOff
-    {
-        /// <summary>
-        ///     Toggles state on/off on entity
-        /// </summary>
-        /// <param name="attributes">The attributes to set. Use anonomous type</param>
-        void Toggle(dynamic? attributes = null);
-
-        /// <summary>
-        ///     Turn off entity
-        /// </summary>
-        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
-        void TurnOff(dynamic? attributes = null);
-
-        /// <summary>
-        ///     Turn on entity
-        /// </summary>
-        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
-        void TurnOn(dynamic? attributes = null);
-    }
-
-    /// <summary>
     ///     Implements the entity of Rx API
     /// </summary>
     public class RxEntity : ICanTurnOnAndOff, ISetState, IObserve
     {
-        private readonly INetDaemonReactive _daemon;
+        private readonly INetDaemonReactive _daemonRxApp;
         private readonly IEnumerable<string> _entityIds;
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// <param name="entityIds">Unique entity id:s</param>
         public RxEntity(INetDaemonReactive daemon, IEnumerable<string> entityIds)
         {
-            _daemon = daemon;
+            _daemonRxApp = daemon;
             _entityIds = entityIds;
         }
 
@@ -82,7 +82,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             get
             {
-                return _daemon.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId));
+                return _daemonRxApp.StateAllChanges.Where(f => _entityIds.Contains(f.New.EntityId));
             }
         }
 
@@ -91,7 +91,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             get
             {
-                return _daemon.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State);
+                return _daemonRxApp.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State);
             }
         }
 
@@ -101,7 +101,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
             foreach (var entityId in _entityIds)
             {
                 var domain = GetDomainFromEntity(entityId);
-                _daemon.SetState(entityId, state, attributes);
+                _daemonRxApp.SetState(entityId, state, attributes);
             }
         }
 
@@ -152,7 +152,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
                 serviceData["entity_id"] = entityId;
 
-                _daemon.CallService(domain, service, serviceData);
+                _daemonRxApp.CallService(domain, service, serviceData);
             }
         }
     }

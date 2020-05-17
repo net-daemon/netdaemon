@@ -1,11 +1,9 @@
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,7 +63,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ASSERT
             Assert.Single(app.DaemonCallBacksForServiceCalls);
         }
-
 
         [Fact]
         public void GetStateMissingEntityReturnsNull()
@@ -535,7 +532,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
-
         [Fact]
         public void GetAppOnMissingAppShouldReturnNull()
         {
@@ -663,6 +659,5 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal(expectedNewState, state.NewState.State);
             Assert.Equal(expectedOldState, state.OldState.State);
         }
-
     }
 }

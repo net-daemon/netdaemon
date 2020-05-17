@@ -235,7 +235,6 @@ namespace NetDaemon.Daemon.Tests
                         }
                     }
                 },
-
             });
         }
 

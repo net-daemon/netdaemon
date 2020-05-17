@@ -18,18 +18,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
     }
 
     /// <summary>
-    ///     Interface for objects that implements CallService
-    /// </summary>
-    public interface IRunScript
-    {
-        /// <summary>
-        ///     Calls service in Home Assistant
-        /// </summary>
-        /// <param name="script">Script to call</param>
-        void RunScript(params string[] script);
-    }
-
-    /// <summary>
     ///     Implements the System.Reactive pattern for NetDaemon Apps
     /// </summary>
     public interface INetDaemonReactive : INetDaemonAppBase, ICallService, IRxEntity, IRunScript
@@ -72,9 +60,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         EntityState? State(string entityId);
     }
 
-    //public interface IRxAppHelpers
-    //{
-    //}
+    /// <summary>
+    ///     Interface for objects that implements CallService
+    /// </summary>
+    public interface IRunScript
+    {
+        /// <summary>
+        ///     Calls service in Home Assistant
+        /// </summary>
+        /// <param name="script">Script to call</param>
+        void RunScript(params string[] script);
+    }
 
     /// <summary>
     ///     Interface for entities in Rx API
@@ -133,21 +129,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// <summary>
         ///     Shedules an action every (timespan)
         /// </summary>
-        /// <param name="second">The timespan to schedule</param>
-        IObservable<long> RunEveryMinute(short second);
+        /// <param name="time">The time in "mm:ss" format</param>
+        IObservable<long> RunEveryHour(string time);
 
         /// <summary>
         ///     Shedules an action every (timespan)
         /// </summary>
-        /// <param name="time">The time in "mm:ss" format</param>
-        IObservable<long> RunEveryHour(string time);
-
-
+        /// <param name="second">The timespan to schedule</param>
+        IObservable<long> RunEveryMinute(short second);
         /// <summary>
         ///     Delays excecution of an action (timespan) time
         /// </summary>
         /// <param name="timespan">Timespan to delay</param>
         IObservable<long> RunIn(TimeSpan timespan);
     }
-
 }

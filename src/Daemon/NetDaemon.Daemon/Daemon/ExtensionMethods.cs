@@ -32,18 +32,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return tcs.Task;
         }
 
-        /// <summary>
-        /// A version of Task.WhenAll that can be canceled.
-        /// </summary>
-        /// <param name="tasks">The tasks to wait for.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        public static async Task WhenAll(this IEnumerable<Task> tasks, CancellationToken cancellationToken)
+        public static object ParseDataType(string state)
         {
-            if (tasks == null)
-                throw new ArgumentNullException(nameof(tasks), $"{nameof(tasks)} is null.");
+            if (Int64.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Int64 intValue))
+                return intValue;
 
-            await Task.WhenAny(Task.WhenAll(tasks), cancellationToken.AsTask()).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
+            if (Double.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Double doubleValue))
+                return doubleValue;
+
+            return state;
         }
 
         /// <summary>
@@ -130,17 +127,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return null;
         }
 
-        public static object ParseDataType(string state)
+        /// <summary>
+        /// A version of Task.WhenAll that can be canceled.
+        /// </summary>
+        /// <param name="tasks">The tasks to wait for.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public static async Task WhenAll(this IEnumerable<Task> tasks, CancellationToken cancellationToken)
         {
-            if (Int64.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Int64 intValue))
-                return intValue;
+            if (tasks == null)
+                throw new ArgumentNullException(nameof(tasks), $"{nameof(tasks)} is null.");
 
-            if (Double.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Double doubleValue))
-                return doubleValue;
-
-            return state;
+            await Task.WhenAny(Task.WhenAll(tasks), cancellationToken.AsTask()).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
         }
-
         // public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
         // {
         //     // Convert the tuple name/value pair to tuple that can be serialized dynamically

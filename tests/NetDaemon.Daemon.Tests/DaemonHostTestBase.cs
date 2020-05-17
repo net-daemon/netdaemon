@@ -25,6 +25,7 @@ namespace NetDaemon.Daemon.Tests
         private readonly HttpHandlerMock _defaultHttpHandlerMock;
         private readonly LoggerMock _loggerMock;
         private readonly NetDaemonHost _notConnectedDaemonHost;
+
         internal DaemonHostTestBase()
         {
             _loggerMock = new LoggerMock();
@@ -49,29 +50,26 @@ namespace NetDaemon.Daemon.Tests
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
 
             _notConnectedDaemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
-
-        }
-        protected async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
-        {
-            var nrOfTimesCheckForConnectedState = 0;
-
-            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(50, stoppingToken).ConfigureAwait(false);
-                if (nrOfTimesCheckForConnectedState++ > 5)
-                    break;
-            }
         }
 
         public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
+
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
+
         public BaseTestRxApp DefaultDaemonRxApp => _defaultDaemonRxApp;
+
         public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
+
         public HassClientMock DefaultHassClientMock => _defaultHassClientMock;
+
         public HttpHandlerMock DefaultHttpHandlerMock => _defaultHttpHandlerMock;
+
         public string HelloWorldData => "Hello world!";
+
         public LoggerMock LoggerMock => _loggerMock;
+
         public NetDaemonHost NotConnectedDaemonHost => _notConnectedDaemonHost;
+
         async Task IAsyncLifetime.DisposeAsync()
         {
             await _defaultDaemonApp.DisposeAsync().ConfigureAwait(false);
@@ -135,6 +133,7 @@ namespace NetDaemon.Daemon.Tests
                 // Expected behaviour
             }
         }
+
         public async Task WaitUntilCanceled(Task task)
         {
             try
@@ -144,6 +143,18 @@ namespace NetDaemon.Daemon.Tests
             catch (TaskCanceledException)
             {
                 // Expected behaviour
+            }
+        }
+
+        protected async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        {
+            var nrOfTimesCheckForConnectedState = 0;
+
+            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(50, stoppingToken).ConfigureAwait(false);
+                if (nrOfTimesCheckForConnectedState++ > 5)
+                    break;
             }
         }
     }

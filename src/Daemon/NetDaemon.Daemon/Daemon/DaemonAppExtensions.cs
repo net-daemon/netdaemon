@@ -1,6 +1,5 @@
 using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Dynamic;
@@ -24,7 +23,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 {
                     if (netDaemonApp is NetDaemonApp daemonApp)
                     {
-
                         switch (attr)
                         {
                             case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
@@ -38,77 +36,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     }
                 }
             }
-        }
-
-        private static void HandleStateChangedAttribute(
-            INetDaemon _daemon,
-            HomeAssistantStateChangedAttribute hassStateChangedAttribute,
-            NetDaemonApp netDaemonApp,
-            MethodInfo method
-            )
-        {
-            var (signatureOk, err) = CheckIfStateChangedSignatureIsOk(method);
-
-            if (!signatureOk)
-            {
-                _daemon.Logger.LogWarning(err);
-                return;
-            }
-
-            netDaemonApp.ListenState(hassStateChangedAttribute.EntityId,
-            async (entityId, to, from) =>
-            {
-                try
-                {
-                    if (hassStateChangedAttribute.To != null)
-                        if ((dynamic)hassStateChangedAttribute.To != to?.State)
-                            return;
-
-                    if (hassStateChangedAttribute.From != null)
-                        if ((dynamic)hassStateChangedAttribute.From != from?.State)
-                            return;
-
-                    // If we don´t accept all changes in the state change
-                    // and we do not have a state change so return
-                    if (to?.State == from?.State && !hassStateChangedAttribute.AllChanges)
-                        return;
-
-                    await method.InvokeAsync(netDaemonApp, entityId, to!, from!).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp.Id);
-                }
-            });
-        }
-
-        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonApp netDaemonApp, MethodInfo method)
-        {
-            var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method);
-            if (!signatureOk)
-            {
-                _daemon.Logger.LogWarning(err);
-                return;
-            }
-
-            dynamic serviceData = new FluentExpandoObject();
-            serviceData.method = method.Name;
-            serviceData.@class = netDaemonApp.GetType().Name;
-            await _daemon.CallServiceAsync("netdaemon", "register_service", serviceData).ConfigureAwait(false);
-
-            netDaemonApp.ListenServiceCall("netdaemon", $"{serviceData.@class}_{serviceData.method}",
-                async (data) =>
-                {
-                    try
-                    {
-                        var expObject = data as ExpandoObject;
-                        await method.InvokeAsync(netDaemonApp, expObject!).ConfigureAwait(false);
-                    }
-                    catch (Exception e)
-                    {
-                        _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp);
-                    }
-                });
         }
 
         private static (bool, string) CheckIfServiceCallSignatureIsOk(MethodInfo method)
@@ -149,6 +76,77 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 return (false, $"{method.Name} first parameter exepected to be EntityState for fromState");
 
             return (true, string.Empty);
+        }
+
+        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonApp netDaemonApp, MethodInfo method)
+        {
+            var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method);
+            if (!signatureOk)
+            {
+                _daemon.Logger.LogWarning(err);
+                return;
+            }
+
+            dynamic serviceData = new FluentExpandoObject();
+            serviceData.method = method.Name;
+            serviceData.@class = netDaemonApp.GetType().Name;
+            await _daemon.CallServiceAsync("netdaemon", "register_service", serviceData).ConfigureAwait(false);
+
+            netDaemonApp.ListenServiceCall("netdaemon", $"{serviceData.@class}_{serviceData.method}",
+                async (data) =>
+                {
+                    try
+                    {
+                        var expObject = data as ExpandoObject;
+                        await method.InvokeAsync(netDaemonApp, expObject!).ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp);
+                    }
+                });
+        }
+
+        private static void HandleStateChangedAttribute(
+                                    INetDaemon _daemon,
+            HomeAssistantStateChangedAttribute hassStateChangedAttribute,
+            NetDaemonApp netDaemonApp,
+            MethodInfo method
+            )
+        {
+            var (signatureOk, err) = CheckIfStateChangedSignatureIsOk(method);
+
+            if (!signatureOk)
+            {
+                _daemon.Logger.LogWarning(err);
+                return;
+            }
+
+            netDaemonApp.ListenState(hassStateChangedAttribute.EntityId,
+            async (entityId, to, from) =>
+            {
+                try
+                {
+                    if (hassStateChangedAttribute.To != null)
+                        if ((dynamic)hassStateChangedAttribute.To != to?.State)
+                            return;
+
+                    if (hassStateChangedAttribute.From != null)
+                        if ((dynamic)hassStateChangedAttribute.From != from?.State)
+                            return;
+
+                    // If we don´t accept all changes in the state change
+                    // and we do not have a state change so return
+                    if (to?.State == from?.State && !hassStateChangedAttribute.AllChanges)
+                        return;
+
+                    await method.InvokeAsync(netDaemonApp, entityId, to!, from!).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp.Id);
+                }
+            });
         }
     }
 }

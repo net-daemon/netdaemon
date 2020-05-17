@@ -45,27 +45,28 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         // internal so we can use for unittest
         internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
+        private readonly IInstanceDaemonApp _appInstanceManager;
+
+        // Internal token source for just cancel this objects activities
+        private readonly CancellationTokenSource _cancelDaemon = new CancellationTokenSource();
+
         private readonly ConcurrentBag<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions
-            = new ConcurrentBag<(string, string, Func<dynamic?, Task>)>();
+                            = new ConcurrentBag<(string, string, Func<dynamic?, Task>)>();
 
         /// <summary>
         ///     Currently running tasks for handling new events from HomeAssistant
         /// </summary>
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
 
-
-
         private readonly IHassClient _hassClient;
 
         private readonly IHttpHandler? _httpHandler;
 
         private readonly IDataRepository? _repository;
-        private readonly IInstanceDaemonApp _appInstanceManager;
         private readonly ConcurrentDictionary<string, INetDaemonAppBase> _runningAppInstances =
             new ConcurrentDictionary<string, INetDaemonAppBase>();
 
         private readonly Scheduler _scheduler;
-
 
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
@@ -81,10 +82,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         // Following token source and token are set at RUN
         private CancellationToken _cancelToken;
-        private CancellationTokenSource? _cancelTokenSource;
-        // Internal token source for just cancel this objects activities
-        private readonly CancellationTokenSource _cancelDaemon = new CancellationTokenSource();
 
+        private CancellationTokenSource? _cancelTokenSource;
         private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
 
         private bool _stopped;
@@ -115,256 +114,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             Logger.LogInformation("Instance NetDaemonHost");
         }
 
-        /// <inheritdoc/>
-        public async Task Initialize()
-        {
-            if (!Connected)
-                throw new ApplicationException("NetDaemon is not connected, no use in initializing");
-
-            await LoadAllApps().ConfigureAwait(false);
-            EnableApplicationDiscoveryServiceAsync();
-        }
-
-        public void EnableApplicationDiscoveryServiceAsync()
-        {
-            // For service call reload_apps we do just that... reload the fucking apps yay :)
-            ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps());
-
-            RegisterAppSwitchesAndTheirStates();
-        }
-
-        private void RegisterAppSwitchesAndTheirStates()
-        {
-            ListenServiceCall("switch", "turn_on", async (data) =>
-            {
-                await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
-            });
-
-            ListenServiceCall("switch", "turn_off", async (data) =>
-            {
-                await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
-            });
-
-            ListenServiceCall("switch", "toggle", async (data) =>
-            {
-                try
-                {
-                    string? entityId = data?.entity_id;
-                    if (entityId is null)
-                        return;
-
-                    var currentState = GetState(entityId)?.State as string;
-
-                    if (currentState == "on")
-                        await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
-                    else
-                        await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
-                }
-                catch (System.Exception e)
-                {
-                    Logger.LogWarning(e, "Failed to set state from netdaemon switch");
-                }
-            });
-
-            async Task SetStateOnDaemonAppSwitch(string state, dynamic? data)
-            {
-                string? entityId = data?.entity_id;
-                if (entityId is null)
-                    return;
-
-                if (!entityId.StartsWith("switch.netdaemon_"))
-                    return; // We only want app switches
-
-                List<(string, object)>? attributes = null;
-
-                var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
-
-                if (entityAttributes is object)
-                    attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
-
-                if (attributes is object)
-                    await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
-                else
-                    await SetStateAsync(entityId, state).ConfigureAwait(false);
-            }
-        }
-
-        /// <inheritdoc/>
-        public async Task UnloadAllApps()
-        {
-            if (_runningAppInstances is null || _runningAppInstances.Count() == 0)
-                return;
-
-            foreach (var app in _runningAppInstances)
-            {
-                await app.Value.DisposeAsync().ConfigureAwait(false);
-            }
-            _runningAppInstances.Clear();
-        }
-
-        /// <inheritdoc/>
-        public async Task ReloadAllApps()
-        {
-            await UnloadAllApps().ConfigureAwait(false);
-            await _scheduler.Restart().ConfigureAwait(false);
-            await LoadAllApps().ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        private async Task LoadAllApps()
-        {
-            // First unload any apps running
-            await UnloadAllApps().ConfigureAwait(false);
-
-            // Get all instances
-            var instancedApps = _appInstanceManager.InstanceDaemonApps();
-
-            if (_runningAppInstances.Count() > 0)
-                throw new ApplicationException("Did not expect running instances!");
-
-
-            foreach (INetDaemonAppBase appInstance in instancedApps!)
-            {
-                if (await RestoreAppState(appInstance).ConfigureAwait(false))
-                {
-                    _runningAppInstances[appInstance.Id!] = appInstance;
-                }
-            }
-
-            // Now run initialize on all sorted by dependencies
-            foreach (var sortedApp in SortByDependency(_runningAppInstances.Values))
-            {
-                // Init by calling the InitializeAsync
-                var taskInitAsync = sortedApp.InitializeAsync();
-                var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
-                if (taskAwaitedAsyncTask != taskInitAsync)
-                    Logger.LogWarning("InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!", sortedApp.Id);
-
-                // Init by calling the Initialize
-                var taskInit = Task.Run(sortedApp.Initialize);
-                var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
-                if (taskAwaitedTask != taskInit)
-                    Logger.LogWarning("Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!", sortedApp.Id);
-
-                // Todo: refactor
-                await sortedApp.HandleAttributeInitialization(this);
-                Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id, sortedApp.GetType().Name);
-
-            }
-
-            await SetDaemonStateAsync(_appInstanceManager.Count, _runningAppInstances.Count).ConfigureAwait(false);
-        }
-
-        internal IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
-        {
-            if (unsortedList.SelectMany(n => n.Dependencies).Count() > 0)
-            {
-                // There are dependecies defined
-                var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
-
-                foreach (var instance in unsortedList)
-                {
-                    foreach (var dependency in instance.Dependencies)
-                    {
-                        var dependentApp = unsortedList.Where(n => n.Id == dependency).FirstOrDefault();
-                        if (dependentApp == null)
-                            throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
-
-                        edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
-                    }
-                }
-                var sortedInstances = TopologicalSort<INetDaemonAppBase>(unsortedList.ToHashSet(), edges) ??
-                    throw new ApplicationException("Application dependencies is wrong, please check dependencies for circular dependencies!");
-
-                return sortedInstances;
-            }
-            return unsortedList.ToList();
-        }
-        /// <summary>
-        /// Topological Sorting (Kahn's algorithm)
-        /// </summary>
-        /// <remarks>https://en.wikipedia.org/wiki/Topological_sorting</remarks>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="nodes">All nodes of directed acyclic graph.</param>
-        /// <param name="edges">All edges of directed acyclic graph.</param>
-        /// <returns>Sorted node in topological order.</returns>
-        private static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
-        {
-            // Empty list that will contain the sorted elements
-            var L = new List<T>();
-
-            // Set of all nodes with no incoming edges
-            var S = new HashSet<T>(nodes.Where(n => edges.All(e => e.Item2.Equals(n) == false)));
-
-            // while S is non-empty do
-            while (S.Any())
-            {
-                //  remove a node n from S
-                var n = S.First();
-                S.Remove(n);
-
-                // add n to tail of L
-                L.Add(n);
-
-                // for each node m with an edge e from n to m do
-                foreach (var e in edges.Where(e => e.Item1.Equals(n)).ToList())
-                {
-                    var m = e.Item2;
-
-                    // remove edge e from the graph
-                    edges.Remove(e);
-
-                    // if m has no other incoming edges then
-                    if (edges.All(me => me.Item2.Equals(m) == false))
-                    {
-                        // insert m into S
-                        S.Add(m);
-                    }
-                }
-            }
-
-            // if graph has edges then
-            if (edges.Any())
-            {
-                // return error (graph has at least one cycle)
-                return null;
-            }
-            else
-            {
-                L.Reverse();
-                // return L (a topologically sorted order)
-                return L;
-            }
-        }
-        private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
-        {
-            try
-            {
-                // First do startup initialization to connect with this daemon instance
-                await appInstance.StartUpAsync(this).ConfigureAwait(false);
-                // The restore the state to load saved settings and if this app is enabled
-                await appInstance.RestoreAppStateAsync().ConfigureAwait(false);
-
-                if (!appInstance.IsEnabled)
-                {
-                    // We should not initialize this app, so dispose it and return
-                    await appInstance.DisposeAsync().ConfigureAwait(false);
-                    return false;
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to load app {appInstance.Id}");
-            }
-            // Error return false
-            return false;
-        }
-
-
         public bool Connected { get; private set; }
-
 
         public IHttpHandler Http
         {
@@ -377,21 +127,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
+        public IEnumerable<INetDaemonAppBase> RunningAppInstances => _runningAppInstances.Values;
+
         public IScheduler Scheduler => _scheduler;
 
         public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
 
-
         // For testing
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances => _runningAppInstances;
 
-        public IEnumerable<INetDaemonAppBase> RunningAppInstances => _runningAppInstances.Values;
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
-                                {
-                                    builder
-                                        .ClearProviders()
-                                        .AddConsole();
-                                });
+                                        {
+                                            builder
+                                                .ClearProviders()
+                                                .AddConsole();
+                                        });
 
         public void CallService(string domain, string service, dynamic? data = null)
         {
@@ -428,6 +178,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             this._cancelToken.ThrowIfCancellationRequested();
             return new CameraManager(entityIds, this, app);
         }
+
         /// <inheritdoc/>
         public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
@@ -445,13 +196,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-
-
         public async ValueTask DisposeAsync()
         {
             _cancelDaemon.Cancel();
             await Stop().ConfigureAwait(false);
             Logger.LogInformation("Instance NetDaemonHost Disposed");
+        }
+
+        public void EnableApplicationDiscoveryServiceAsync()
+        {
+            // For service call reload_apps we do just that... reload the fucking apps yay :)
+            ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps());
+
+            RegisterAppSwitchesAndTheirStates();
         }
 
         public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
@@ -521,6 +278,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
+        public async Task Initialize()
+        {
+            if (!Connected)
+                throw new ApplicationException("NetDaemon is not connected, no use in initializing");
+
+            await LoadAllApps().ConfigureAwait(false);
+            EnableApplicationDiscoveryServiceAsync();
+        }
+        /// <inheritdoc/>
         public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams)
         {
             this._cancelToken.ThrowIfCancellationRequested();
@@ -532,7 +298,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             this._cancelToken.ThrowIfCancellationRequested();
             return new InputSelectManager(inputSelectParams, this, app);
-
         }
 
         /// <inheritdoc/>
@@ -552,6 +317,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
                                                                                                                                                                                                                                                                                                                                     => _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds)
         {
@@ -581,6 +347,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 Logger.LogError(e, "Failed to select mediaplayers func in app {appId}", app.Id);
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task ReloadAllApps()
+        {
+            await UnloadAllApps().ConfigureAwait(false);
+            await _scheduler.Restart().ConfigureAwait(false);
+            await LoadAllApps().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -795,23 +569,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        // public void StopDaemonActivities()
-        // {
-        //     // Do some stuff to clear memory
-        //     // this is not nescessary now when
-        //     // we do not do hot-reload for recompile
-        //     // I keep this in-case we go that route
-        //     _hassAreas.Clear();
-        //     _hassDevices.Clear();
-        //     _hassEntities.Clear();
-        //     _runningAppInstances.Clear();
-        //     _daemonServiceCallFunctions.Clear();
-        //     _eventHandlerTasks.Clear();
-        //     _dataCache.Clear();
-        //     GC.Collect();
-        //     GC.WaitForPendingFinalizers();
-        // }
+        /// <inheritdoc/>
+        public async Task UnloadAllApps()
+        {
+            if (_runningAppInstances is null || _runningAppInstances.Count() == 0)
+                return;
 
+            foreach (var app in _runningAppInstances)
+            {
+                await app.Value.DisposeAsync().ConfigureAwait(false);
+            }
+            _runningAppInstances.Clear();
+        }
 
         /// <summary>
         ///     Fixes the type differences that can be from Home Assistant depending on
@@ -883,6 +652,22 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return true;
         }
 
+        // public void StopDaemonActivities()
+        // {
+        //     // Do some stuff to clear memory
+        //     // this is not nescessary now when
+        //     // we do not do hot-reload for recompile
+        //     // I keep this in-case we go that route
+        //     _hassAreas.Clear();
+        //     _hassDevices.Clear();
+        //     _hassEntities.Clear();
+        //     _runningAppInstances.Clear();
+        //     _daemonServiceCallFunctions.Clear();
+        //     _eventHandlerTasks.Clear();
+        //     _dataCache.Clear();
+        //     GC.Collect();
+        //     GC.WaitForPendingFinalizers();
+        // }
         internal string? GetAreaForEntityId(string entityId)
         {
             HassEntity? entity;
@@ -940,6 +725,33 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 InternalState[key] = state;
             }
         }
+
+        internal IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
+        {
+            if (unsortedList.SelectMany(n => n.Dependencies).Count() > 0)
+            {
+                // There are dependecies defined
+                var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
+
+                foreach (var instance in unsortedList)
+                {
+                    foreach (var dependency in instance.Dependencies)
+                    {
+                        var dependentApp = unsortedList.Where(n => n.Id == dependency).FirstOrDefault();
+                        if (dependentApp == null)
+                            throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
+
+                        edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
+                    }
+                }
+                var sortedInstances = TopologicalSort<INetDaemonAppBase>(unsortedList.ToHashSet(), edges) ??
+                    throw new ApplicationException("Application dependencies is wrong, please check dependencies for circular dependencies!");
+
+                return sortedInstances;
+            }
+            return unsortedList.ToList();
+        }
+
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             this._cancelToken.ThrowIfCancellationRequested();
@@ -1003,7 +815,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                     ));
                                 }
                             }
-
                         }
                         else if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
@@ -1025,8 +836,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             }
                         }
                     }
-
-
 
                     // No hit
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
@@ -1063,7 +872,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                     tasks.Add(func(serviceCallData.Data));
                                 }
                             }
-
                         }
                         else if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
@@ -1186,6 +994,63 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return entityParts[0];
         }
 
+        /// <summary>
+        /// Topological Sorting (Kahn's algorithm)
+        /// </summary>
+        /// <remarks>https://en.wikipedia.org/wiki/Topological_sorting</remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="nodes">All nodes of directed acyclic graph.</param>
+        /// <param name="edges">All edges of directed acyclic graph.</param>
+        /// <returns>Sorted node in topological order.</returns>
+        private static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
+        {
+            // Empty list that will contain the sorted elements
+            var L = new List<T>();
+
+            // Set of all nodes with no incoming edges
+            var S = new HashSet<T>(nodes.Where(n => edges.All(e => e.Item2.Equals(n) == false)));
+
+            // while S is non-empty do
+            while (S.Any())
+            {
+                //  remove a node n from S
+                var n = S.First();
+                S.Remove(n);
+
+                // add n to tail of L
+                L.Add(n);
+
+                // for each node m with an edge e from n to m do
+                foreach (var e in edges.Where(e => e.Item1.Equals(n)).ToList())
+                {
+                    var m = e.Item2;
+
+                    // remove edge e from the graph
+                    edges.Remove(e);
+
+                    // if m has no other incoming edges then
+                    if (edges.All(me => me.Item2.Equals(m) == false))
+                    {
+                        // insert m into S
+                        S.Add(m);
+                    }
+                }
+            }
+
+            // if graph has edges then
+            if (edges.Any())
+            {
+                // return error (graph has at least one cycle)
+                return null;
+            }
+            else
+            {
+                L.Reverse();
+                // return L (a topologically sorted order)
+                return L;
+            }
+        }
+
         private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
         {
             this._cancelToken.ThrowIfCancellationRequested();
@@ -1287,8 +1152,128 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
+        /// <inheritdoc/>
+        private async Task LoadAllApps()
+        {
+            // First unload any apps running
+            await UnloadAllApps().ConfigureAwait(false);
 
+            // Get all instances
+            var instancedApps = _appInstanceManager.InstanceDaemonApps();
 
+            if (_runningAppInstances.Count() > 0)
+                throw new ApplicationException("Did not expect running instances!");
+
+            foreach (INetDaemonAppBase appInstance in instancedApps!)
+            {
+                if (await RestoreAppState(appInstance).ConfigureAwait(false))
+                {
+                    _runningAppInstances[appInstance.Id!] = appInstance;
+                }
+            }
+
+            // Now run initialize on all sorted by dependencies
+            foreach (var sortedApp in SortByDependency(_runningAppInstances.Values))
+            {
+                // Init by calling the InitializeAsync
+                var taskInitAsync = sortedApp.InitializeAsync();
+                var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
+                if (taskAwaitedAsyncTask != taskInitAsync)
+                    Logger.LogWarning("InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!", sortedApp.Id);
+
+                // Init by calling the Initialize
+                var taskInit = Task.Run(sortedApp.Initialize);
+                var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
+                if (taskAwaitedTask != taskInit)
+                    Logger.LogWarning("Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!", sortedApp.Id);
+
+                // Todo: refactor
+                await sortedApp.HandleAttributeInitialization(this);
+                Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id, sortedApp.GetType().Name);
+            }
+
+            await SetDaemonStateAsync(_appInstanceManager.Count, _runningAppInstances.Count).ConfigureAwait(false);
+        }
+
+        private void RegisterAppSwitchesAndTheirStates()
+        {
+            ListenServiceCall("switch", "turn_on", async (data) =>
+            {
+                await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
+            });
+
+            ListenServiceCall("switch", "turn_off", async (data) =>
+            {
+                await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
+            });
+
+            ListenServiceCall("switch", "toggle", async (data) =>
+            {
+                try
+                {
+                    string? entityId = data?.entity_id;
+                    if (entityId is null)
+                        return;
+
+                    var currentState = GetState(entityId)?.State as string;
+
+                    if (currentState == "on")
+                        await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
+                    else
+                        await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
+                }
+                catch (System.Exception e)
+                {
+                    Logger.LogWarning(e, "Failed to set state from netdaemon switch");
+                }
+            });
+
+            async Task SetStateOnDaemonAppSwitch(string state, dynamic? data)
+            {
+                string? entityId = data?.entity_id;
+                if (entityId is null)
+                    return;
+
+                if (!entityId.StartsWith("switch.netdaemon_"))
+                    return; // We only want app switches
+
+                List<(string, object)>? attributes = null;
+
+                var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
+
+                if (entityAttributes is object)
+                    attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
+
+                if (attributes is object)
+                    await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
+                else
+                    await SetStateAsync(entityId, state).ConfigureAwait(false);
+            }
+        }
+        private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
+        {
+            try
+            {
+                // First do startup initialization to connect with this daemon instance
+                await appInstance.StartUpAsync(this).ConfigureAwait(false);
+                // The restore the state to load saved settings and if this app is enabled
+                await appInstance.RestoreAppStateAsync().ConfigureAwait(false);
+
+                if (!appInstance.IsEnabled)
+                {
+                    // We should not initialize this app, so dispose it and return
+                    await appInstance.DisposeAsync().ConfigureAwait(false);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to load app {appInstance.Id}");
+            }
+            // Error return false
+            return false;
+        }
     }
-
 }

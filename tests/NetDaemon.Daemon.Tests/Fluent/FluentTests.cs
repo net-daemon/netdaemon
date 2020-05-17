@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Dynamic;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,10 +30,9 @@ namespace NetDaemon.Daemon.Tests
             var lastChanged = new DateTime(2020, 1, 1, 1, 1, 1, 20);
             var lastUpdated = new DateTime(2020, 1, 1, 1, 1, 1, 50);
 
-            var cancelSource = DefaultHassClientMock.GetSourceWithTimeout(100);
+            var daemonTask = RunDefauldDaemonUntilCanceled(200); //overrideDebugNotCancel: true
 
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "on", "off",
-                lastUpdated, lastChanged);
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -42,15 +42,17 @@ namespace NetDaemon.Daemon.Tests
                 .TurnOff()
                 .Execute();
 
-            var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask();
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "on", "off",
+            lastUpdated, lastChanged);
+
             // ASSERT
             await Task.Delay(10); // After 10ms we should not have call
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Never());
-            await Task.Delay(500); // After 30ms we should have call
-
+            await Task.Delay(200); // After 30ms we should have call
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Once());
+            await daemonTask;
 
-            await WaitUntilCanceled(daemonTask);
+
         }
 
         [Fact]
@@ -396,8 +398,8 @@ namespace NetDaemon.Daemon.Tests
         public async Task TurnOffEntityLambdaAttributeSelectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            var cancelSource = DefaultHassClientMock.GetSourceWithTimeout();
-            await DefaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
+            var daemonTask = RunDefauldDaemonUntilCanceled(); //overrideDebugNotCancel: true
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
 
             // ACT
             await DefaultDaemonApp
@@ -411,6 +413,9 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity"));
             DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity2"));
             DefaultHassClientMock.VerifyCallService("switch", "turn_off", ("entity_id", "switch.correct_entity"));
+
+            await daemonTask;
+
         }
 
         [Fact]
@@ -432,7 +437,9 @@ namespace NetDaemon.Daemon.Tests
         public async Task TurnOffEntityLamdaSelectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            await RunDefauldDaemonUntilCanceled();
+            var daemonTask = RunDefauldDaemonUntilCanceled(); //overrideDebugNotCancel: true
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
+
 
             // ACT
             await DefaultDaemonApp
@@ -445,6 +452,8 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Exactly(2));
             DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity"));
             DefaultHassClientMock.VerifyCallService("light", "turn_off", ("entity_id", "light.correct_entity2"));
+
+            await daemonTask;
         }
 
         [Fact]
