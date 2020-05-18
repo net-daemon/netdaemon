@@ -23,6 +23,22 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task CallServiceShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            var (dynObj, expObj) = GetDynamicObject(
+               ("attr", "value"));
+
+            // ACT
+            DefaultDaemonRxApp.CallService("mydomain", "myservice", dynObj);
+            await daemonTask;
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallService("mydomain", "myservice", ("attr", "value"));
+        }
+
+        [Fact]
         public async Task NewAllEventDataShouldCallFunction()
         {
             // ARRANGE
@@ -52,6 +68,28 @@ namespace NetDaemon.Daemon.Tests
             var called = false;
 
             // ACT
+            DefaultDaemonRxApp.EventChanges
+                .Subscribe(s =>
+                {
+                    called = true;
+                });
+
+            DefaultHassClientMock.AddCustomEvent("AN_EVENT", new { somedata = "hello" });
+
+            await daemonTask;
+
+            // ASSERT
+            Assert.True(called);
+        }
+
+        [Fact]
+        public async Task NewStateEventShouldCallFunction()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            var called = false;
+
+            // ACT
             DefaultDaemonRxApp.StateChanges
                 .Subscribe(s =>
                 {
@@ -64,6 +102,40 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             Assert.True(called);
+        }
+
+        [Fact]
+        public async Task RunScriptShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            var (dynObj, expObj) = GetDynamicObject(
+               ("attr", "value"));
+
+            // ACT
+            DefaultDaemonRxApp.RunScript("myscript");
+            await daemonTask;
+
+            // ASSERT
+
+
+            DefaultHassClientMock.VerifyCallServiceTimes("myscript", Times.Once());
+        }
+
+        [Fact]
+        public async Task RunScriptWithDomainShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            var (dynObj, expObj) = GetDynamicObject(
+               ("attr", "value"));
+
+            // ACT
+            DefaultDaemonRxApp.RunScript("script.myscript");
+            await daemonTask;
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("myscript", Times.Once());
         }
 
         [Fact]
@@ -86,6 +158,21 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             Assert.False(called);
+        }
+        [Fact]
+        public async Task SetStateShouldReturnCorrectData()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            var (dynObj, expObj) = GetDynamicObject(
+               ("attr", "value"));
+
+            // ACT
+            DefaultDaemonRxApp.SetState("sensor.any_sensor", "on", dynObj);
+            await daemonTask;
+
+            // ASSERT
+            DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
         }
 
         [Fact]
@@ -111,6 +198,20 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             Assert.NotNull(entity);
         }
+        [Fact]
+        public async Task StatesShouldReturnCorrectEntity()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            // ACT
+            var entity = DefaultDaemonRxApp.States.FirstOrDefault(n => n.EntityId == "binary_sensor.pir");
+
+            await daemonTask.ConfigureAwait(false);
+            // ASSERT
+            Assert.NotNull(entity);
+            Assert.Equal("binary_sensor.pir", entity.EntityId);
+        }
+
         [Fact]
         public async Task UsingEntitiesLambdaNewEventShouldCallFunction()
         {
@@ -221,86 +322,6 @@ namespace NetDaemon.Daemon.Tests
             await daemonTask;
 
             Assert.True(isRun);
-        }
-
-        [Fact]
-        public async Task SetStateShouldReturnCorrectData()
-        {
-            // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask();
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
-
-            // ACT
-            DefaultDaemonRxApp.SetState("sensor.any_sensor", "on", dynObj);
-            await daemonTask;
-
-            // ASSERT
-            DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
-        }
-
-        [Fact]
-        public async Task RunScriptShouldCallCorrectFunction()
-        {
-            // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask();
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
-
-            // ACT
-            DefaultDaemonRxApp.RunScript("myscript");
-            await daemonTask;
-
-            // ASSERT
-
-
-            DefaultHassClientMock.VerifyCallServiceTimes("myscript", Times.Once());
-        }
-
-        [Fact]
-        public async Task RunScriptWithDomainShouldCallCorrectFunction()
-        {
-            // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask();
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
-
-            // ACT
-            DefaultDaemonRxApp.RunScript("script.myscript");
-            await daemonTask;
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes("myscript", Times.Once());
-        }
-
-        [Fact]
-        public async Task CallServiceShouldCallCorrectFunction()
-        {
-            // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask();
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
-
-            // ACT
-            DefaultDaemonRxApp.CallService("mydomain", "myservice", dynObj);
-            await daemonTask;
-
-            // ASSERT
-            DefaultHassClientMock.VerifyCallService("mydomain", "myservice", ("attr", "value"));
-        }
-
-        [Fact]
-        public async Task StatesShouldReturnCorrectEntity()
-        {
-            // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask();
-            // ACT
-            var entity = DefaultDaemonRxApp.States.FirstOrDefault(n => n.EntityId == "binary_sensor.pir");
-
-            await daemonTask.ConfigureAwait(false);
-            // ASSERT
-            Assert.NotNull(entity);
-            Assert.Equal("binary_sensor.pir", entity.EntityId);
         }
     }
 }

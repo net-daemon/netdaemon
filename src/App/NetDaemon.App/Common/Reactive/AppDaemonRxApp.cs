@@ -209,11 +209,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                             LogError(e, "Error, RunIn APP: {app}", Id ?? "unknown");
                         }
                     },
-                    ex =>
-                    {
-                        LogError(ex, "Error, RunIn_ex APP: {app}", Id ?? "unknown");
-                    },
-                    () => Log("Exiting RunIn for app {app}, {trigger}:{span}", Id!, timespan)
+                    () => LogTrace("Exiting RunIn for app {app}, {trigger}:{span}", Id!, timespan)
                     , result.Token);
             return result;
         }
@@ -283,11 +279,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                             LogError(e, "Error, RunEvery APP: {app}", Id ?? "unknown");
                         }
                     },
-                    ex =>
-                    {
-                        LogError(ex, "Error, RunEvery_ex APP: {app}", Id ?? "unknown");
-                    },
-                    () => Log("Exiting RunEvery for app {app}, {trigger}:{span}", Id!, timespan)
+                    () => LogTrace("Exiting RunEvery for app {app}, {trigger}:{span}", Id!, timespan)
                     , result.Token);
 
             return result;
@@ -324,10 +316,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                         {
                             LogError(e, "Error, RunDaily APP: {app}", Id ?? "unknown");
                         }
-                    },
-                    ex =>
-                    {
-                        LogError(ex, "Error, RunDaily_ex APP: {app}", Id ?? "unknown");
                     },
                     () => Log("Exiting timer for app {app}, {trigger}:{span}",
                             Id!, timeOfDayToTrigger, interval),
