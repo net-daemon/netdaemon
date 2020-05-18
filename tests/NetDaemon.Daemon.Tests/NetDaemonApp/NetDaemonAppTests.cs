@@ -41,7 +41,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             data.AnyData = "data";
 
             // ACT
-            _app.CallServiceAsync("domain", "service", data, false);
+            _app.CallService("domain", "service", data, false);
 
             // ASSERT
             _netDaemonMock.Verify(n => n.CallServiceAsync("domain", "service", expandoData, false));

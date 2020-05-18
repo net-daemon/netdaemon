@@ -1,5 +1,4 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,20 +12,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface INetDaemon : INetDaemonCommon
     {
         /// <summary>
-        ///     Get application instance by application instance id
+        ///     Http features of NetDaemon is exposed through the Http property
         /// </summary>
-        /// <param name="appInstanceId">The identity of the app instance</param>
-        INetDaemonAppBase? GetApp(string appInstanceId);
+        IHttpHandler Http { get; }
 
         /// <summary>
         ///     Returns a list of all running instances of NetDaemon apps
         /// </summary>
         IEnumerable<INetDaemonAppBase> RunningAppInstances { get; }
-
-        /// <summary>
-        ///     Http features of NetDaemon is exposed through the Http property
-        /// </summary>
-        IHttpHandler Http { get; }
 
         /// <summary>
         ///     Calls a service
@@ -35,6 +28,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="service">The service being called</param>
         /// <param name="data">Any data that the service requires</param>
         void CallService(string domain, string service, dynamic? data = null);
+
+        /// <summary>
+        ///     Calls a service
+        /// </summary>
+        /// <param name="domain">The domain of the service</param>
+        /// <param name="service">The service being called</param>
+        /// <param name="data">Any data that the service requires</param>
+        /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
+        Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Selects one or more camera entities to do action on
@@ -78,6 +80,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityId">The unique id of the entity</param>
         IEntity Entity(INetDaemonApp app, params string[] entityId);
 
+        /// <summary>
+        ///     Get application instance by application instance id
+        /// </summary>
+        /// <param name="appInstanceId">The identity of the app instance</param>
+        INetDaemonAppBase? GetApp(string appInstanceId);
         /// <summary>
         ///     Selects one or more input select to do action on
         /// </summary>
@@ -135,6 +142,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="app">The Daemon App calling fluent API</param>
         /// <param name="entityIds">The unique id:s of the script</param>
         IScript RunScript(INetDaemonApp app, params string[] entityIds);
+
         /// <summary>
         ///     Set entity state
         /// </summary>
@@ -153,6 +161,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     The apps actions to run on state changes
         /// </summary>
         public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> StateCallbacks { get; }
+
+        /// <summary>
+        ///     Calls a service
+        /// </summary>
+        /// <param name="domain">The domain of the service</param>
+        /// <param name="service">The service being called</param>
+        /// <param name="data">Any data that the service requires</param>
+        /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
+        Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Selects one or more camera entities to do action on
@@ -178,7 +195,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="id">The unique id provided in ListenState</param>
         ///
         void CancelListenState(string id);
-
         /// <summary>
         ///     Delays until state changes
         /// </summary>
@@ -203,6 +219,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityIds">The entities to wait for state changes</param>
         /// <param name="stateFunc">Lambda expression to select state changes</param>
         IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc);
+
         /// <summary>
         ///     Selects one or more entities to do action on
         /// </summary>
@@ -297,6 +314,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </remarks>
         string? ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action);
+
         /// <summary>
         ///     Selects one or more media player entities to do action on
         /// </summary>
@@ -363,18 +381,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     The dynamic setter will automatically persist the whole storage object
         /// </remarks>
         dynamic Storage { get; }
-        /// <summary>
-        ///     Use text-to-speech to speak a message
-        /// </summary>
-        /// <param name="entityId">Unique id of the media player the speech should play</param>
-        /// <param name="message">The message that will be spoken</param>
-        void Speak(string entityId, string message);
 
         /// <summary>
         ///     Get application instance by application instance id
         /// </summary>
         /// <param name="appInstanceId">The identity of the app instance</param>
         INetDaemonAppBase? GetApp(string appInstanceId);
+
+        /// <summary>
+        ///     Use text-to-speech to speak a message
+        /// </summary>
+        /// <param name="entityId">Unique id of the media player the speech should play</param>
+        /// <param name="message">The message that will be spoken</param>
+        void Speak(string entityId, string message);
     }
 
     /// <summary>
@@ -402,15 +421,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     updates the state before sending.
         /// </remarks>
         IEnumerable<EntityState> State { get; }
-
-        /// <summary>
-        ///     Calls a service
-        /// </summary>
-        /// <param name="domain">The domain of the service</param>
-        /// <param name="service">The service being called</param>
-        /// <param name="data">Any data that the service requires</param>
-        /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
-        Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Loads persistent data from unique id
@@ -470,6 +480,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// Init the application async, is called by the NetDaemon after startup
         /// </summary>
         Task InitializeAsync();
+
         /// <summary>
         ///     Restores the app state
         /// </summary>

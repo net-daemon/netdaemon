@@ -9,27 +9,32 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Common
 {
-
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
     public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {
-        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
-                                    new List<(string pattern, Func<string, dynamic, Task> action)>();
-
-        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionSelectorCallbacks =
-                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
-
         private readonly List<(string, string, Func<dynamic?, Task>)> _daemonCallBacksForServiceCalls
             = new List<(string, string, Func<dynamic?, Task>)>();
 
+        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
+                                            new List<(string pattern, Func<string, dynamic, Task> action)>();
+
+        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionSelectorCallbacks =
+                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
         private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateCallbacks =
                                     new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
+
+        /// <summary>
+        ///     All actions being performed for service call events
+        /// </summary>
+        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
+
         /// <summary>
         ///     All actions being performed for named events
         /// </summary>
         public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks => _eventCallbacks;
+
         /// <summary>
         ///     All actions being performed for lambda selected events
         /// </summary>
@@ -38,12 +43,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public IScheduler Scheduler => _daemon?.Scheduler ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-
-        /// <summary>
-        ///     All actions being performed for service call events
-        /// </summary>
-        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
-
         /// <inheritdoc/>
         public IEnumerable<EntityState> State => _daemon?.State ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
@@ -54,8 +53,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         // Used for testing
         internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateCallbacks;
+
         /// <inheritdoc/>
-        public Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
+        public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.CallServiceAsync(domain, service, data, waitForResponse);
@@ -246,6 +246,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => _daemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+
         /// <inheritdoc/>
         public string? ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action)
@@ -284,6 +285,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.RunScript(this, entityIds);
         }
+
         /// <inheritdoc/>
         public Task SaveDataAsync<T>(string id, T data)
         {
