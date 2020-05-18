@@ -8,11 +8,30 @@ using System.Threading.Tasks;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
+
     /// <summary>
     ///     The interface that interacts with the daemon host main logic
     /// </summary>
     public interface INetDaemonHost : INetDaemon
     {
+        /// <summary>
+        ///     Initializes the NetDaemon
+        /// </summary>
+        Task Initialize();
+
+        /// <summary>
+        ///     Listens to the given service in the netdaemon domain. Those subscritions
+        ///     are used internally and are not postponed during reloading service daemons.
+        /// </summary>
+        /// <param name="service"> The name of the service. </param>
+        /// <param name="action"> The async. action that is executed. </param>
+        void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action);
+
+        /// <summary>
+        ///     Reload all apps
+        /// </summary>
+        Task ReloadAllApps();
+
         /// <summary>
         ///     Runs the netdaemon host asynchronous.
         /// </summary>
@@ -25,26 +44,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Stops the netdaemon host asynchronous.
-        /// </summary>
-        /// <returns> The operational task. </returns>
-        Task Stop();
-
-        /// <summary>
-        ///     Stops all the daemon app activities (Schedulers, Service-, State- and Event- subscriptions).
-        /// </summary>
-        /// <returns> The operational task. </returns>
-        Task StopDaemonActivitiesAsync();
-
-        /// <summary>
-        ///     Listens to the given service in the netdaemon domain. Those subscritions
-        ///     are used internally and are not postponed during reloading service daemons.
-        /// </summary>
-        /// <param name="service"> The name of the service. </param>
-        /// <param name="action"> The async. action that is executed. </param>
-        void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action);
-
-        /// <summary>
         ///     Sends the status of the netdaemon host to Home Assistant.
         /// </summary>
         /// <param name="numberOfLoadedApps"> The number of loaded apps. </param>
@@ -53,15 +52,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps);
 
         /// <summary>
-        ///     Register appinstance with daemon
+        ///     Stops the netdaemon host asynchronous.
         /// </summary>
-        /// <param name="appInstanceId">the id of the app instance</param>
-        /// <param name="app">The app instance</param>
-        void RegisterAppInstance(string appInstanceId, NetDaemonApp app);
-
+        /// <returns> The operational task. </returns>
+        Task Stop();
         /// <summary>
         ///     Clears all app instances registered
         /// </summary>
-        void ClearAppInstances();
+        Task UnloadAllApps();
     }
 }

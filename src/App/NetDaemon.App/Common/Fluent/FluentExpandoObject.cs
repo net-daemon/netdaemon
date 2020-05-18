@@ -16,7 +16,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
         private readonly Dictionary<string, object> _dict = new Dictionary<string, object>();
-        private readonly INetDaemonApp? _daemonApp;
+        private readonly NetDaemonAppBase? _daemonApp;
         private readonly bool _ignoreCase;
         private readonly bool _returnNullMissingProperties;
 
@@ -29,7 +29,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="daemon">A NetDaemon object used for persistanse</param>
         public FluentExpandoObject(bool ignoreCase = false,
             bool returnNullMissingProperties = false,
-            ExpandoObject? root = null, INetDaemonApp? daemon = null)
+            ExpandoObject? root = null, NetDaemonAppBase? daemon = null)
         {
             _daemonApp = daemon;
             _ignoreCase = ignoreCase;

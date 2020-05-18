@@ -39,20 +39,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         IDelayResult IDelayStateChange.DelayUntilStateChange(object? to, object? from, bool allChanges)
         {
-            return this.Daemon.DelayUntilStateChange(this.EntityIds, to, from, allChanges);
+            return App.DelayUntilStateChange(this.EntityIds, to, from, allChanges);
         }
 
         /// <inheritdoc/>
         IDelayResult IDelayStateChange.DelayUntilStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
         {
-            return this.Daemon.DelayUntilStateChange(this.EntityIds, stateFunc);
+            return App.DelayUntilStateChange(this.EntityIds, stateFunc);
         }
 
         /// <inheritdoc/>
         public void Execute()
         {
             foreach (var entityId in EntityIds)
-                Daemon.ListenState(entityId, async (entityIdInn, newState, oldState) =>
+                App.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
                     try
                     {
@@ -187,7 +187,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 var name = scriptName;
                 if (scriptName.Contains('.'))
                     name = scriptName[(scriptName.IndexOf('.') + 1)..];
-                var task = Daemon.CallService("script", name);
+                var task = Daemon.CallServiceAsync("script", name);
                 taskList.Add(task);
             }
 
@@ -362,7 +362,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     FluentActionType.TurnOff => TurnOffAsync(entityId, attributes),
                     FluentActionType.TurnOn => TurnOnAsync(entityId, attributes),
                     FluentActionType.Toggle => ToggleAsync(entityId, attributes),
-                    FluentActionType.SetState => Daemon.SetState(entityId, fluentAction.State, attributes),
+                    FluentActionType.SetState => Daemon.SetStateAsync(entityId, fluentAction.State, attributes),
                     _ => throw new NotSupportedException($"Fluent action type not handled! {fluentAction.ActionType}")
                 };
                 taskList.Add(task);
@@ -382,7 +382,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return Daemon.CallService(domain, "toggle", attributes, false);
+            return Daemon.CallServiceAsync(domain, "toggle", attributes, false);
         }
 
         private Task TurnOffAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -396,7 +396,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return Daemon.CallService(domain, "turn_off", attributes, false);
+            return Daemon.CallServiceAsync(domain, "turn_off", attributes, false);
         }
 
         private Task TurnOnAsync(string entityId, params (string name, object val)[] attributeNameValuePair)
@@ -410,7 +410,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             // and add the entity id dynamically
             attributes.entity_id = entityId;
 
-            return Daemon.CallService(domain, "turn_on", attributes, false);
+            return Daemon.CallServiceAsync(domain, "turn_on", attributes, false);
         }
     }
 }

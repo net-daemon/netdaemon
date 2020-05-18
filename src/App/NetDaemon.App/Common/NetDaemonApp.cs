@@ -2,11 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -16,67 +12,53 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
-    public abstract class NetDaemonApp : INetDaemonApp, INetDaemonBase
+    public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {
-        // This is declared as static since it will contain state shared globally
-        private static ConcurrentDictionary<string, object> _global = new ConcurrentDictionary<string, object>();
+        private readonly List<(string, string, Func<dynamic?, Task>)> _daemonCallBacksForServiceCalls
+            = new List<(string, string, Func<dynamic?, Task>)>();
 
-        // To handle state saves max once at a time, internal due to tests
-        private readonly Channel<bool> _lazyStoreStateQueue =
-               Channel.CreateBounded<bool>(1);
+        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
+                                            new List<(string pattern, Func<string, dynamic, Task> action)>();
 
-        private CancellationTokenSource _cancelSource = new CancellationTokenSource();
-        private INetDaemon? _daemon;
-
-        private Task? _lazyStoreStateTask;
-        private FluentExpandoObject? _storageObject;
+        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionSelectorCallbacks =
+                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
+        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateCallbacks =
+                                    new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
 
         /// <summary>
-        ///    Dependencies on other applications that will be initialized before this app
+        ///     All actions being performed for service call events
         /// </summary>
-        public IEnumerable<string> Dependencies { get; set; } = new List<string>();
+        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
 
-        /// <inheritdoc/>
-        public ConcurrentDictionary<string, object> Global => _global;
+        /// <summary>
+        ///     All actions being performed for named events
+        /// </summary>
+        public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks => _eventCallbacks;
 
-        /// <inheritdoc/>
-        public IHttpHandler Http
-        {
-            get
-            {
-                _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-                return _daemon!.Http;
-            }
-        }
-
-        /// <inheritdoc/>
-        public string? Id { get; set; }
-
-        /// <inheritdoc/>
-        public bool IsEnabled { get; set; }
-
-        /// <inheritdoc/>
-        public ILogger? Logger { get; set; }
+        /// <summary>
+        ///     All actions being performed for lambda selected events
+        /// </summary>
+        public List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctionCallbacks => _eventFunctionSelectorCallbacks;
 
         /// <inheritdoc/>
         public IScheduler Scheduler => _daemon?.Scheduler ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-
         /// <inheritdoc/>
         public IEnumerable<EntityState> State => _daemon?.State ??
             throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
         /// <inheritdoc/>
-        public dynamic Storage => _storageObject ?? throw new NullReferenceException($"{nameof(_storageObject)} cant be null");
+        public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>
+            StateCallbacks => _stateCallbacks;
 
-        internal Channel<bool> InternalLazyStoreStateQueue => _lazyStoreStateQueue;
-        internal FluentExpandoObject? InternalStorageObject { get { return _storageObject; } set { _storageObject = value; } }
+        // Used for testing
+        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateCallbacks;
 
         /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.CallService(domain, service, data, waitForResponse);
+            return _daemon!.CallServiceAsync(domain, service, data, waitForResponse);
         }
 
         /// <inheritdoc/>
@@ -101,27 +83,97 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public void CancelListenState(string id) => _daemon?.CancelListenState(id);
+        public void CancelListenState(string id)
+        {
+            // Remove and ignore if not exist
+            _stateCallbacks.Remove(id, out _);
+        }
+
+        /// <inheritdoc/>
+        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false) =>
+            DelayUntilStateChange(new string[] { entityId }, to, from, allChanges);
 
         /// <inheritdoc/>
         public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.DelayUntilStateChange(entityIds, to, from, allChanges);
-        }
+            // Use TaskCompletionSource to simulate a task that we can control
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var result = new DelayResult(taskCompletionSource, this);
 
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.DelayUntilStateChange(entityId, to, from, allChanges);
+            foreach (var entityId in entityIds)
+            {
+                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                {
+                    if (to != null)
+                        if ((dynamic)to != newState?.State)
+                            return Task.CompletedTask;
+
+                    if (from != null)
+                        if ((dynamic)from != oldState?.State)
+                            return Task.CompletedTask;
+
+                    // If we don´t accept all changes in the state change
+                    // and we do not have a state change so return
+                    if (newState?.State == oldState?.State && !allChanges)
+                        return Task.CompletedTask;
+
+                    // If we reached this far we should complete task!
+                    taskCompletionSource.SetResult(true);
+                    // Also cancel all other ongoing state change subscriptions
+                    result.Cancel();
+
+                    return Task.CompletedTask;
+                })!);
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
         public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.DelayUntilStateChange(entityIds, stateFunc);
+            // Use TaskCompletionSource to simulate a task that we can control
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var result = new DelayResult(taskCompletionSource, this);
+
+            foreach (var entityId in entityIds)
+            {
+                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                {
+                    try
+                    {
+                        if (!stateFunc(newState, oldState))
+                            return Task.CompletedTask;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogWarning(e, "Failed to evaluate function");
+                        return Task.CompletedTask;
+                    }
+
+                    // If we reached this far we should complete task!
+                    taskCompletionSource.SetResult(true);
+                    // Also cancel all other ongoing state change subscriptions
+                    result.Cancel();
+
+                    return Task.CompletedTask;
+                })!);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Implements the async dispose pattern
+        /// </summary>
+        public async override ValueTask DisposeAsync()
+        {
+            _stateCallbacks.Clear();
+            _eventCallbacks.Clear();
+            _eventFunctionSelectorCallbacks.Clear();
+            _daemonCallBacksForServiceCalls.Clear();
+
+            await base.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -145,39 +197,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             return _daemon!.Entity(this, entityId);
         }
 
-        /// <summary>
-        ///     Implements the IEqualit.Equals method
-        /// </summary>
-        /// <param name="other">The instance to compare</param>
-        public bool Equals([AllowNull] INetDaemonApp other)
-        {
-            if (other is object && other.Id is object && this.Id is object && this.Id == other.Id)
-                return true;
-
-            return false;
-        }
+        /// <inheritdoc/>
+        public IFluentEvent Event(params string[] eventParams) => new FluentEventManager(eventParams, this);
 
         /// <inheritdoc/>
-        public IFluentEvent Event(params string[] eventParams) => _daemon?.Event(this, eventParams) ??
-            throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+        public IFluentEvent Events(Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
 
         /// <inheritdoc/>
-        public IFluentEvent Events(Func<FluentEventProperty, bool> func) => _daemon?.Events(this, func) ??
-            throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+        public IFluentEvent Events(IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
         /// <inheritdoc/>
-        public IFluentEvent Events(IEnumerable<string> eventParams) => _daemon?.Events(this, eventParams) ??
-            throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-
-        /// <inheritdoc/>
-        public NetDaemonApp? GetApp(string appInstanceId)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.GetApp(appInstanceId);
-        }
-
-        /// <inheritdoc/>
-        public async ValueTask<T> GetDataAsync<T>(string id)
+        public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.GetDataAsync<T>(id).ConfigureAwait(false);
@@ -185,13 +215,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public EntityState? GetState(string entityId) => _daemon?.GetState(entityId);
-
-        /// <inheritdoc/>
-        public virtual Task InitializeAsync()
-        {
-            // Do nothing as default
-            return Task.CompletedTask;
-        }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelect(params string[] inputSelectParams)
@@ -215,106 +238,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public void ListenEvent(string ev, Func<string, dynamic?, Task> action) => _daemon?.ListenEvent(ev, action);
+        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventCallbacks.Add((ev, action));
 
         /// <inheritdoc/>
-        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) =>
-                _daemon?.ListenEvent(funcSelector, func);
+        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionSelectorCallbacks.Add((funcSelector, func));
 
         /// <inheritdoc/>
-        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action) =>
-                _daemon?.ListenServiceCall(domain, service, action);
+        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
+            => _daemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
-        public string? ListenState(string pattern, Func<string, EntityState?, EntityState?, Task> action) => _daemon?.ListenState(pattern, action);
-
-        /// <inheritdoc/>
-        public void Log(string message) => Log(LogLevel.Information, message);
-
-        /// <inheritdoc/>
-        public void Log(Exception exception, string message) => Log(LogLevel.Information, exception, message);
-
-        /// <inheritdoc/>
-        public void Log(LogLevel level, string message, params object[] param)
+        public string? ListenState(string pattern,
+            Func<string, EntityState?, EntityState?, Task> action)
         {
-            if (param is object && param.Length > 0)
-            {
-                var result = param.Prepend(Id).ToArray();
-                Logger.Log(level, $"  {{Id}}: {message}", result);
-            }
-            else
-            {
-                Logger.Log(level, $"  {{Id}}: {message}", new object[] { Id ?? "" });
-            }
+            // Use guid as uniqe id but will externally use string so
+            // The design can change incase guild wont cut it
+            var uniqueId = Guid.NewGuid().ToString();
+            _stateCallbacks[uniqueId] = (pattern, action);
+            return uniqueId.ToString();
         }
-
-        /// <inheritdoc/>
-        public void Log(string message, params object[] param) => Log(LogLevel.Information, message, param);
-
-        /// <inheritdoc/>
-        public void Log(LogLevel level, Exception exception, string message, params object[] param)
-        {
-            if (param is object && param.Length > 0)
-            {
-                var result = param.Prepend(Id).ToArray();
-                Logger.Log(level, exception, $"  {{Id}}: {message}", result);
-            }
-            else
-            {
-                Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] { Id ?? "" });
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Log(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
-
-        /// <inheritdoc/>
-        public void LogDebug(string message) => Log(LogLevel.Debug, message);
-
-        /// <inheritdoc/>
-        public void LogDebug(Exception exception, string message) => Log(LogLevel.Debug, exception, message);
-
-        /// <inheritdoc/>
-        public void LogDebug(string message, params object[] param) => Log(LogLevel.Debug, message, param);
-
-        /// <inheritdoc/>
-        public void LogDebug(Exception exception, string message, params object[] param) => Log(LogLevel.Debug, exception, message, param);
-
-        /// <inheritdoc/>
-        public void LogError(string message) => Log(LogLevel.Error, message);
-
-        /// <inheritdoc/>
-        public void LogError(Exception exception, string message) => Log(LogLevel.Error, exception, message);
-
-        /// <inheritdoc/>
-        public void LogError(string message, params object[] param) => Log(LogLevel.Error, message, param);
-
-        /// <inheritdoc/>
-        public void LogError(Exception exception, string message, params object[] param) => Log(LogLevel.Error, exception, message, param);
-
-        /// <inheritdoc/>
-        public void LogTrace(string message) => Log(LogLevel.Trace, message);
-
-        /// <inheritdoc/>
-        public void LogTrace(Exception exception, string message) => Log(LogLevel.Trace, exception, message);
-
-        /// <inheritdoc/>
-        public void LogTrace(string message, params object[] param) => Log(LogLevel.Trace, message, param);
-
-        /// <inheritdoc/>
-        public void LogTrace(Exception exception, string message, params object[] param) => Log(LogLevel.Trace, exception, message, param);
-
-        /// <inheritdoc/>
-        public void LogWarning(string message) => Log(LogLevel.Warning, message);
-
-        /// <inheritdoc/>
-        public void LogWarning(Exception exception, string message) => Log(LogLevel.Warning, exception, message);
-
-        /// <inheritdoc/>
-        public void LogWarning(string message, params object[] param) => Log(LogLevel.Warning, message, param);
-
-        /// <inheritdoc/>
-        public void LogWarning(Exception exception, string message, params object[] param) => Log(LogLevel.Warning, exception, message, param);
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(params string[] entityIds)
@@ -338,47 +280,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task RestoreAppStateAsync()
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-
-            var obj = await _daemon!.GetDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage()).ConfigureAwait(false);
-
-            if (obj != null)
-            {
-                var expStore = (FluentExpandoObject)Storage;
-                expStore.CopyFrom(obj);
-            }
-
-            var appInfo = _daemon!.State
-                                  .Where(s => s.EntityId == $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}")
-                                  .FirstOrDefault();
-
-            var appState = appInfo?.State as string;
-            if (appState == null || (appState != "on" && appState != "off"))
-            {
-                IsEnabled = true;
-                await _daemon.SetState($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on").ConfigureAwait(false);
-
-                return;
-            }
-            IsEnabled = appState == "on";
-        }
-
-        /// <inheritdoc/>
         public IScript RunScript(params string[] entityIds)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.RunScript(this, entityIds);
-        }
-
-        /// <inheritdoc/>
-        public void SaveAppState()
-        {
-            // Intentionally ignores full queue since we know
-            // a state change already is in progress wich means
-            // this state will be saved
-            var x = _lazyStoreStateQueue.Writer.TryWrite(true);
         }
 
         /// <inheritdoc/>
@@ -396,78 +301,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task<EntityState?> SetState(string entityId, dynamic state, params (string name, object val)[] attributes)
+        public async Task<EntityState?> SetStateAsync(string entityId, dynamic state, params (string name, object val)[] attributes)
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.SetState(entityId, state, attributes).ConfigureAwait(false);
+            return await _daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
         }
-
-        /// <inheritdoc/>
-        public void Speak(string entityId, string message)
-        {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _daemon!.Speak(entityId, message);
-        }
-
-        /// <inheritdoc/>
-        public virtual Task StartUpAsync(INetDaemon daemon)
-        {
-            _daemon = daemon;
-            _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
-            _storageObject = new FluentExpandoObject(false, true, daemon: this);
-            Logger = daemon.Logger;
-
-            return Task.CompletedTask;
-        }
-
-        private string GetUniqueIdForStorage() => $"{this.GetType().Name}_{Id}".ToLowerInvariant();
-
-        private async Task HandleLazyStorage()
-        {
-            _ = _storageObject as FluentExpandoObject ??
-                throw new NullReferenceException($"{nameof(_storageObject)} cant be null!");
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-
-            while (!_cancelSource.IsCancellationRequested)
-            {
-                try
-                {
-                    // Dont care about the result, just that it is time to store state
-                    _ = await _lazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token);
-
-                    await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
-                            .ConfigureAwait(false);
-                }
-                catch { }   // Ignore errors in thread
-            }
-        }
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        // This code added to correctly implement the disposable pattern.
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-        }
-
-        /// <inheritdoc/>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _cancelSource.Cancel();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        #endregion IDisposable Support
     }
 }

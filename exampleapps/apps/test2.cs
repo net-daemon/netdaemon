@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using System.Linq;
 using System;
+using System.Reactive.Linq;
 using System.Collections.Generic;
 // using Netdaemon.Generated.Extensions;
-public class BatteryManager : NetDaemonApp
+public class BatteryManager : NetDaemonRxApp
 {
     // private ISchedulerResult _schedulerResult;
     private int numberOfRuns = 0;
@@ -14,6 +15,31 @@ public class BatteryManager : NetDaemonApp
     {
         Log("Hello");
         Log("Hello {name}", "Tomas");
+        // RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world!"));
+        // RunDaily("13:00:00", () => Log("Hello world!"));
+        // RunIn(TimeSpan.FromSeconds(5), () => Entity("light.tomas_rum").TurnOn());
+        // Entity("light.tomas_rum")
+        //     .StateChanges
+        //         .Subscribe(s => Log("Chanche {entity}", s.New.State));
+
+        // StateChanges
+        //     .Where(e => e.New.EntityId.StartsWith("light."))
+        //     .Subscribe(e =>
+        //        {
+        //            Log("Hello!");
+        //        });
+        // EventChanges
+        //        //   .Where(e => e.Domain == "scene" && e.Event == "turn_on")
+        //        .Subscribe(e =>
+        //        {
+        //            Log("Hello!");
+        //        },
+        //        err => LogError(err, "Ohh nooo!"),
+        //        () => Log("Ending event"));
+
+
+
+        // Event("TEST_EVENT").Call(async (ev, data) => { Log("EVENT2!"); }).Execute();
 
         // Scheduler.RunEvery(5000, () => { var x = 0; var z = 4 / x; return Task.CompletedTask; });
         // Entity("sun.sun").WhenStateChange(allChanges: true).Call((entityid, to, from) => throw new Exception("Test")).Execute();

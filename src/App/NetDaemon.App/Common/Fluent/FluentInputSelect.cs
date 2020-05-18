@@ -68,7 +68,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 data.entity_id = entityId;
                 data.option = _option;
 
-                tasks.Add(_daemon.CallService("input_select", "select_option", data));
+                tasks.Add(_daemon.CallServiceAsync("input_select", "select_option", data));
             }
 
             return Task.WhenAll(tasks);

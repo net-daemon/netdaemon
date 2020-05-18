@@ -10,14 +10,12 @@ using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
+namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Config
 {
     public class YamlAppConfig
     {
         private readonly IEnumerable<Type> _types;
         private readonly YamlStream _yamlStream;
-
-        private readonly List<INetDaemonApp> _instances;
         private readonly YamlConfig _yamlConfig;
         private readonly string _yamlFilePath;
 
@@ -26,15 +24,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
-            _instances = new List<INetDaemonApp>();
+
             _yamlConfig = yamlConfig;
             _yamlFilePath = yamlFilePath;
         }
 
-        public IEnumerable<INetDaemonApp> Instances
+        public IEnumerable<INetDaemonAppBase> Instances
         {
             get
             {
+                var instances = new List<INetDaemonAppBase>();
                 // For each app instance defined in the yaml config
                 foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
                 {
@@ -60,7 +59,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                             if (instance != null)
                             {
                                 instance.Id = appId;
-                                _instances.Add(instance);
+                                instances.Add(instance);
                             }
                         }
                     }
@@ -70,13 +69,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
                     }
                 }
 
-                return _instances;
+                return instances;
             }
         }
 
-        public INetDaemonApp? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
+        public INetDaemonAppBase? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
         {
-            var netDaemonApp = (INetDaemonApp?)Activator.CreateInstance(netDaemonAppType);
+            var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
 
             if (netDaemonApp == null)
                 return null;
@@ -112,7 +111,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             return netDaemonApp;
         }
 
-        public void SetPropertyFromYaml(INetDaemonApp app, PropertyInfo prop, YamlSequenceNode seq)
+        public void SetPropertyFromYaml(INetDaemonAppBase app, PropertyInfo prop, YamlSequenceNode seq)
         {
             if (prop.PropertyType.IsGenericType && prop.PropertyType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
@@ -150,7 +149,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.Config
             scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
         }
 
-        public void SetPropertyFromYaml(INetDaemonApp app, PropertyInfo prop, YamlScalarNode sc)
+        public void SetPropertyFromYaml(INetDaemonAppBase app, PropertyInfo prop, YamlScalarNode sc)
         {
             ReplaceSecretIfExists(sc);
             var scalarValue = sc.ToObject(prop.PropertyType) ??

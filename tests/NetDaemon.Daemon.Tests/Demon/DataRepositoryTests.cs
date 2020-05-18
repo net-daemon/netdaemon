@@ -26,7 +26,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var daemon = DefaultDaemonHost;
 
             // ACT
-            var data = await daemon.GetDataAsync<string?>("not_exists");
+            var data = await daemon.GetDataAsync<string>("not_exists");
             // ASSERT
             Assert.Null(data);
         }
@@ -80,7 +80,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             var dataReturned = await dataRepository.Get<IDictionary<string, object>>("RepositoryLoadSavedData_id");
             var returnedFluentExpandoObject = new FluentExpandoObject();
-            returnedFluentExpandoObject.CopyFrom(dataReturned);
+            returnedFluentExpandoObject.CopyFrom(dataReturned!);
 
             dynamic dynamicDataReturned = returnedFluentExpandoObject;
             // ASSERT
@@ -107,7 +107,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var dataReturned = await dataRepository.Get<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id");
 
             // ASSERT
-            Assert.Equal(storeData.AString, dataReturned.AString);
+            Assert.Equal(storeData.AString, dataReturned!.AString);
             Assert.Equal(storeData.AInt, dataReturned.AInt);
             Assert.Equal(storeData.ADateTime, dataReturned.ADateTime);
         }

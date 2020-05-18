@@ -8,7 +8,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Base class for entity fluent types
     /// </summary>
-    public class EntityBase : EntityState
+    public class EntityBase //: EntityState
     {
         internal readonly ConcurrentQueue<FluentAction> _actions =
             new ConcurrentQueue<FluentAction>();
@@ -64,7 +64,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 var domain = GetDomainFromEntity(entityId);
                 serviceData ??= new FluentExpandoObject();
                 serviceData.entity_id = entityId;
-                var task = Daemon.CallService(domain, service, serviceData);
+                var task = Daemon.CallServiceAsync(domain, service, serviceData);
                 taskList.Add(task);
             }
 

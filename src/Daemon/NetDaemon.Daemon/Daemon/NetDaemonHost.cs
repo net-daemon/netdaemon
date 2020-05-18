@@ -1,5 +1,6 @@
 ﻿using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -18,8 +20,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
-        internal readonly Channel<(string, string)> _ttsMessageQueue =
-            Channel.CreateBounded<(string, string)>(20);
+        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
+            new ConcurrentDictionary<string, HassArea>();
+
+        // Internal for test
+        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
+            new ConcurrentDictionary<string, HassDevice>();
+
+        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
+            new ConcurrentDictionary<string, HassEntity>();
+
+        internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageChannel =
+                Channel.CreateBounded<(string, string, dynamic?)>(20);
+
+        internal readonly Channel<(string, dynamic, dynamic?)> _setStateMessageChannel =
+                Channel.CreateBounded<(string, dynamic, dynamic?)>(20);
+
+        internal readonly Channel<(string, string)> _ttsMessageChannel =
+                                                    Channel.CreateBounded<(string, string)>(20);
 
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
@@ -27,29 +45,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         // internal so we can use for unittest
         internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
-        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventActions =
-                    new List<(string pattern, Func<string, dynamic, Task> action)>();
+        private readonly IInstanceDaemonApp _appInstanceManager;
 
-        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionList =
-                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
+        // Internal token source for just cancel this objects activities
+        private readonly CancellationTokenSource _cancelDaemon = new CancellationTokenSource();
 
+        private readonly ConcurrentBag<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions
+                            = new ConcurrentBag<(string, string, Func<dynamic?, Task>)>();
+
+        /// <summary>
+        ///     Currently running tasks for handling new events from HomeAssistant
+        /// </summary>
         private readonly List<Task> _eventHandlerTasks = new List<Task>();
 
         private readonly IHassClient _hassClient;
 
-        private readonly Scheduler _scheduler;
-
-        private readonly IDataRepository? _repository;
         private readonly IHttpHandler? _httpHandler;
 
-        // Used for testing
-        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateActions;
+        private readonly IDataRepository? _repository;
 
-        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateActions =
-            new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
+        private readonly ConcurrentDictionary<string, INetDaemonAppBase> _runningAppInstances =
+            new ConcurrentDictionary<string, INetDaemonAppBase>();
 
-        private readonly ConcurrentDictionary<string, NetDaemonApp> _daemonAppInstances =
-            new ConcurrentDictionary<string, NetDaemonApp>();
+        private readonly Scheduler _scheduler;
 
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
         {
@@ -63,19 +81,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             "script",
         };
 
+        // Following token source and token are set at RUN
+        private CancellationToken _cancelToken;
+
+        private CancellationTokenSource? _cancelTokenSource;
+        private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
+
         private bool _stopped;
 
-        private readonly List<(string, string, Func<dynamic?, Task>)> _serviceCallFunctionList
-            = new List<(string, string, Func<dynamic?, Task>)>();
-
-        private readonly List<(string, string, Func<dynamic?, Task>)> _companionServiceCallFunctionList
-            = new List<(string, string, Func<dynamic?, Task>)>();
-
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="hassClient">Client to use</param>
+        /// <param name="repository">Repository to use</param>
+        /// <param name="loggerFactory">The loggerfactory</param>
+        /// <param name="httpHandler">Http handler to use</param>
+        /// <param name="appInstanceManager">Handles instances of apps</param>
         public NetDaemonHost(
+            IInstanceDaemonApp appInstanceManager,
             IHassClient? hassClient,
             IDataRepository? repository,
             ILoggerFactory? loggerFactory = null,
-            IHttpHandler? httpHandler = null)
+            IHttpHandler? httpHandler = null
+            )
         {
             loggerFactory ??= DefaultLoggerFactory;
             _httpHandler = httpHandler;
@@ -83,22 +111,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
+            _appInstanceManager = appInstanceManager;
+            Logger.LogInformation("Instance NetDaemonHost");
         }
 
         public bool Connected { get; private set; }
-
-        public ILogger Logger { get; }
-
-        public IScheduler Scheduler => _scheduler;
-
-        public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
-
-        private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
-                                {
-                                    builder
-                                        .ClearProviders()
-                                        .AddConsole();
-                                });
 
         public IHttpHandler Http
         {
@@ -109,10 +126,96 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false) => _hassClient.CallService(domain, service, data, false);
+        public ILogger Logger { get; }
+
+        public IEnumerable<INetDaemonAppBase> RunningAppInstances => _runningAppInstances.Values;
+
+        public IScheduler Scheduler => _scheduler;
+
+        public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
+
+        // For testing
+        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances => _runningAppInstances;
+
+        private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
+                                        {
+                                            builder
+                                                .ClearProviders()
+                                                .AddConsole();
+                                        });
+
+        public void CallService(string domain, string service, dynamic? data = null)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            if (_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)) == false)
+                throw new ApplicationException("Servicecall queue full!");
+        }
+
+        public async Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed call service");
+            }
+        }
+
+        /// <inheritdoc/>
+        public ICamera Camera(INetDaemonApp app, params string[] entityIds)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new CameraManager(entityIds, this, app);
+        }
+
+        /// <inheritdoc/>
+        public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new CameraManager(entityIds, this, app);
+        }
+
+        /// <inheritdoc/>
+        public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            try
+            {
+                IEnumerable<IEntityProperties> x = State.Where(func);
+
+                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this, app);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to select camera func in app {appId}", app.Id);
+                throw;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _cancelDaemon.Cancel();
+            await Stop().ConfigureAwait(false);
+            Logger.LogInformation("Instance NetDaemonHost Disposed");
+        }
+
+        public void EnableApplicationDiscoveryServiceAsync()
+        {
+            // For service call reload_apps we do just that... reload the fucking apps yay :)
+            ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps());
+
+            RegisterAppSwitchesAndTheirStates();
+        }
 
         public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
+            this._cancelToken.ThrowIfCancellationRequested();
+
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
@@ -126,60 +229,115 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        public IEntity Entities(INetDaemonApp app, IEnumerable<string> entityIds) => new EntityManager(entityIds, this, app);
+        public IEntity Entities(INetDaemonApp app, IEnumerable<string> entityIds)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new EntityManager(entityIds, this, app);
+        }
 
-        public IEntity Entity(INetDaemonApp app, params string[] entityIds) => new EntityManager(entityIds, this, app);
+        public IEntity Entity(INetDaemonApp app, params string[] entityIds)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new EntityManager(entityIds, this, app);
+        }
 
-        public IFluentEvent Event(INetDaemonApp app, params string[] eventParams) => new FluentEventManager(eventParams, this);
+        /// <inheritdoc/>
+        public INetDaemonAppBase? GetApp(string appInstanceId)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
 
-        public IFluentEvent Events(INetDaemonApp app, Func<FluentEventProperty, bool> func) => new FluentEventManager(func, this);
+            return _runningAppInstances.ContainsKey(appInstanceId) ?
+                _runningAppInstances[appInstanceId] : null;
+        }
 
-        public IFluentEvent Events(INetDaemonApp app, IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
+        public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            _ = _repository as IDataRepository ??
+              throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+
+            if (_dataCache.ContainsKey(id))
+            {
+                return (T)_dataCache[id];
+            }
+            var data = await _repository!.Get<T>(id).ConfigureAwait(false);
+
+            if (data != null)
+                _dataCache[id] = data;
+
+            return data;
+        }
 
         public EntityState? GetState(string entity)
         {
+            this._cancelToken.ThrowIfCancellationRequested();
+
             return InternalState.TryGetValue(entity, out EntityState? returnValue)
                 ? returnValue
                 : null;
         }
 
         /// <inheritdoc/>
-        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventActions.Add((ev, action));
+        public async Task Initialize()
+        {
+            if (!Connected)
+                throw new ApplicationException("NetDaemon is not connected, no use in initializing");
+
+            await LoadAllApps().ConfigureAwait(false);
+            EnableApplicationDiscoveryServiceAsync();
+        }
 
         /// <inheritdoc/>
-        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionList.Add((funcSelector, func));
+        public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new InputSelectManager(inputSelectParams, this, app);
+        }
 
         /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new InputSelectManager(inputSelectParams, this, app);
+        }
+
+        /// <inheritdoc/>
+        public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
+            return new InputSelectManager(x, this, app);
+        }
+
+        /// <inheritdoc/>
+        public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            _daemonServiceCallFunctions.Add(("netdaemon", service.ToLowerInvariant(), action));
+        }
+
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
-            => _serviceCallFunctionList.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+            => _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
-        public string? ListenState(string pattern,
-            Func<string, EntityState?, EntityState?, Task> action)
+        public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds)
         {
-            // Use guid as uniqe id but will externally use string so
-            // The design can change incase guild wont cut it
-            var uniqueId = Guid.NewGuid().ToString();
-            _stateActions[uniqueId] = (pattern, action);
-            return uniqueId.ToString();
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new MediaPlayerManager(entityIds, this, app);
         }
 
         /// <inheritdoc/>
-        public void CancelListenState(string id)
+        public IMediaPlayer MediaPlayers(INetDaemonApp app, IEnumerable<string> entityIds)
         {
-            // Remove and ignore if not exist
-            _stateActions.Remove(id, out _);
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new MediaPlayerManager(entityIds, this, app);
         }
-
-        /// <inheritdoc/>
-        public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds) => new MediaPlayerManager(entityIds, this, app);
-
-        /// <inheritdoc/>
-        public IMediaPlayer MediaPlayers(INetDaemonApp app, IEnumerable<string> entityIds) => new MediaPlayerManager(entityIds, this, app);
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
+            this._cancelToken.ThrowIfCancellationRequested();
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
@@ -194,25 +352,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public ICamera Camera(INetDaemonApp app, params string[] entityIds) => new CameraManager(entityIds, this, app);
-
-        /// <inheritdoc/>
-        public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds) => new CameraManager(entityIds, this, app);
-
-        /// <inheritdoc/>
-        public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
+        public async Task ReloadAllApps()
         {
-            try
-            {
-                IEnumerable<IEntityProperties> x = State.Where(func);
-
-                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this, app);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to select camera func in app {appId}", app.Id);
-                throw;
-            }
+            await UnloadAllApps().ConfigureAwait(false);
+            await _scheduler.Restart().ConfigureAwait(false);
+            await LoadAllApps().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -229,7 +373,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="cancellationToken"></param>
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
-            _cancelToken = cancellationToken;
+            // Create combine cancellation token
+            _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_cancelDaemon.Token, cancellationToken);
+            _cancelToken = _cancelTokenSource.Token;
+
+            _cancelToken.ThrowIfCancellationRequested();
 
             string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
 
@@ -261,6 +409,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                 // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
+                Task handleAsyncServiceCalls = HandleAsyncServiceCalls(cancellationToken);
+                Task hanldeAsyncSetState = HandleAsyncSetState(cancellationToken);
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -300,8 +450,256 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
+        public IScript RunScript(INetDaemonApp app, params string[] entityId)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            return new EntityManager(entityId, this, app);
+        }
+
+        public Task SaveDataAsync<T>(string id, T data)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            _ = _repository as IDataRepository ??
+                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _dataCache[id] = data;
+            return _repository!.Save(id, data);
+        }
+
+        public async Task<bool> SendEvent(string eventId, dynamic? data = null)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            if (!Connected)
+                return false;
+
+            try
+            {
+                return await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Logger.LogDebug(e, "Error sending event!");
+            }
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            await SetStateAsync(
+                "netdaemon.status",
+                "Connected", // State will alawys be connected, otherwise state could not be set.
+                ("number_of_loaded_apps", numberOfLoadedApps),
+                ("number_of_running_apps", numberOfRunningApps),
+                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
+        }
+
+        public void SetState(string entityId, dynamic state, dynamic? attributes = null)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            if (_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)) == false)
+                throw new ApplicationException("Servicecall queue full!");
+        }
+
+        public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
+                    params (string name, object val)[] attributes)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            try
+            {
+                // Use expando object as all other methods
+                dynamic dynAttributes = attributes.ToDynamic();
+
+                HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes).ConfigureAwait(false);
+
+                if (result != null)
+                {
+                    EntityState entityState = result.ToDaemonEntityState();
+                    entityState.Area = GetAreaForEntityId(entityState.EntityId);
+                    InternalState[entityState.EntityId] = entityState;
+                    return entityState;
+                }
+
+                return null;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to set state for entity {entityId}", entityId);
+                throw;
+            }
+        }
+
+        public void Speak(string entityId, string message)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            _ttsMessageChannel.Writer.TryWrite((entityId, message));
+        }
+
+        public async Task Stop()
+        {
+            try
+            {
+                if (_stopped)
+                {
+                    return;
+                }
+                Logger.LogInformation("Try stopping Instance NetDaemonHost");
+
+                await UnloadAllApps().ConfigureAwait(false);
+
+                await _scheduler.Stop().ConfigureAwait(false);
+
+                await _hassClient.CloseAsync().ConfigureAwait(false);
+
+                InternalState.Clear();
+
+                _stopped = true;
+
+                Logger.LogInformation("Stopped Instance NetDaemonHost");
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error stopping NetDaemon");
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task UnloadAllApps()
+        {
+            if (_runningAppInstances is null || _runningAppInstances.Count() == 0)
+                return;
+
+            foreach (var app in _runningAppInstances)
+            {
+                await app.Value.DisposeAsync().ConfigureAwait(false);
+            }
+            _runningAppInstances.Clear();
+        }
+
+        /// <summary>
+        ///     Fixes the type differences that can be from Home Assistant depending on
+        ///     different conditions
+        /// </summary>
+        /// <param name="stateData">The state data to be fixed</param>
+        /// <remarks>
+        ///     If a sensor is unavailable that normally has a primtive value
+        ///     it can be a string. The automations might expect a integer.
+        ///     Another scenario is that a value of 10 is cast as long and
+        ///     next time a value of 11.3 is cast to double. T
+        ///     FixStateTypes fixes these problem by casting correct types
+        ///     or setting null. It returns false if the casts can not be
+        ///     managed.
+        /// </remarks>
+        internal static bool FixStateTypes(HassStateChangedEventData stateData)
+        {
+            // NewState and OldState can not be null, something is seriously wrong
+            if (stateData.NewState is null || stateData.OldState is null)
+                return false;
+
+            // Both states can not be null, something is seriously wrong
+            if (stateData.NewState.State is null && stateData.OldState.State is null)
+                return false;
+
+            if (stateData.NewState.State is object && stateData.OldState.State is object)
+            {
+                Type? newStateType = stateData.NewState?.State?.GetType();
+                Type? oldStateType = stateData.OldState?.State?.GetType();
+
+                if (newStateType != oldStateType)
+                {
+                    // We have a potential problem with unavailable or unknown entity state
+                    // Lets start checking that
+                    if (newStateType == typeof(string) || oldStateType == typeof(string))
+                    {
+                        // We have a statechange to or from string, just ignore for now and set the string to null
+                        // Todo: Implement a bool that tells that the change are unavailable
+                        if (newStateType == typeof(string))
+                            stateData!.NewState!.State = null;
+                        else
+                            stateData!.OldState!.State = null;
+                    }
+                    else if (newStateType == typeof(double) || oldStateType == typeof(double))
+                    {
+                        if (newStateType == typeof(double))
+                        {
+                            // Try convert the integer to double
+                            if (oldStateType == typeof(long))
+                                stateData!.OldState!.State = Convert.ToDouble(stateData!.NewState!.State);
+                            else
+                                return false; // We do not support any other conversion
+                        }
+                        else
+                        {
+                            // Try convert the long to double
+                            if (newStateType == typeof(long))
+                                stateData!.NewState!.State = Convert.ToDouble(stateData!.NewState!.State);
+                            else
+                                return false; // We do not support any other conversion
+                        }
+                    }
+                    else
+                    {
+                        // We do not support the conversion, just return false
+                    }
+                }
+            }
+            return true;
+        }
+
+        // public void StopDaemonActivities()
+        // {
+        //     // Do some stuff to clear memory
+        //     // this is not nescessary now when
+        //     // we do not do hot-reload for recompile
+        //     // I keep this in-case we go that route
+        //     _hassAreas.Clear();
+        //     _hassDevices.Clear();
+        //     _hassEntities.Clear();
+        //     _runningAppInstances.Clear();
+        //     _daemonServiceCallFunctions.Clear();
+        //     _eventHandlerTasks.Clear();
+        //     _dataCache.Clear();
+        //     GC.Collect();
+        //     GC.WaitForPendingFinalizers();
+        // }
+        internal string? GetAreaForEntityId(string entityId)
+        {
+            HassEntity? entity;
+            if (_hassEntities.TryGetValue(entityId, out entity) && entity is object)
+            {
+                if (entity.DeviceId is object)
+                {
+                    // The entity is on a device
+                    HassDevice? device;
+                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is object)
+                    {
+                        if (device.AreaId is object)
+                        {
+                            // This device is in an area
+                            HassArea? area;
+                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is object)
+                            {
+                                return area.Name;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         internal async Task RefreshInternalStatesAndSetArea()
         {
+            this._cancelToken.ThrowIfCancellationRequested();
+
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
                 if (device is object && device.Id is object)
@@ -330,125 +728,117 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        internal string? GetAreaForEntityId(string entityId)
+        internal IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
         {
-            HassEntity? entity;
-            if (_hassEntities.TryGetValue(entityId, out entity) && entity is object)
+            if (unsortedList.SelectMany(n => n.Dependencies).Count() > 0)
             {
-                if (entity.DeviceId is object)
+                // There are dependecies defined
+                var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
+
+                foreach (var instance in unsortedList)
                 {
-                    // The entity is on a device
-                    HassDevice? device;
-                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is object)
+                    foreach (var dependency in instance.Dependencies)
                     {
-                        if (device.AreaId is object)
-                        {
-                            // This device is in an area
-                            HassArea? area;
-                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is object)
-                            {
-                                return area.Name;
-                            }
-                        }
+                        var dependentApp = unsortedList.Where(n => n.Id == dependency).FirstOrDefault();
+                        if (dependentApp == null)
+                            throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
+
+                        edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
                     }
                 }
+                var sortedInstances = TopologicalSort<INetDaemonAppBase>(unsortedList.ToHashSet(), edges) ??
+                    throw new ApplicationException("Application dependencies is wrong, please check dependencies for circular dependencies!");
+
+                return sortedInstances;
             }
-            return null;
-        }
-
-        public IScript RunScript(INetDaemonApp app, params string[] entityId) => new EntityManager(entityId, this, app);
-
-        public async Task<bool> SendEvent(string eventId, dynamic? data = null) => await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
-
-        public async Task<EntityState?> SetState(string entityId, dynamic state,
-                    params (string name, object val)[] attributes)
-        {
-            try
-            {
-                // Use expando object as all other methods
-                dynamic dynAttributes = attributes.ToDynamic();
-
-                HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes).ConfigureAwait(false);
-
-                if (result != null)
-                {
-                    EntityState entityState = result.ToDaemonEntityState();
-                    entityState.Area = GetAreaForEntityId(entityState.EntityId);
-                    InternalState[entityState.EntityId] = entityState;
-                    return entityState;
-                }
-
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to set state for entity {entityId}", entityId);
-                throw;
-            }
-        }
-
-        public void Speak(string entityId, string message) => _ttsMessageQueue.Writer.TryWrite((entityId, message));
-
-        public async Task Stop()
-        {
-            if (_stopped)
-            {
-                return;
-            }
-
-            _eventActions.Clear();
-            _eventFunctionList.Clear();
-            _stateActions.Clear();
-            _serviceCallFunctionList.Clear();
-            await _scheduler.Stop().ConfigureAwait(false);
-
-            await _hassClient.CloseAsync().ConfigureAwait(false);
-
-            _stopped = true;
+            return unsortedList.ToList();
         }
 
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
+            this._cancelToken.ThrowIfCancellationRequested();
+
             if (hassEvent.EventType == "state_changed")
             {
                 try
                 {
                     var stateData = (HassStateChangedEventData?)hassEvent.Data;
 
-                    if (stateData == null)
+                    if (stateData is null)
                     {
                         throw new NullReferenceException("StateData is null!");
                     }
 
-                    if (stateData.NewState == null)
+                    if (stateData.NewState is null || stateData.OldState is null)
                     {
                         // This is an entity that is removed and have no new state so just return;
                         return;
                     }
 
+                    if (!FixStateTypes(stateData))
+                    {
+                        var sb = new StringBuilder();
+                        sb.AppendLine($"Can not fix state typing for {stateData?.NewState?.EntityId}");
+                        sb.AppendLine($"NewStateObject: {stateData?.NewState}");
+                        sb.AppendLine($"OldStateObject: {stateData?.OldState}");
+                        sb.AppendLine($"NewState: {stateData?.NewState?.State}");
+                        sb.AppendLine($"OldState: {stateData?.OldState?.State}");
+                        sb.AppendLine($"NewState type: {stateData?.NewState?.State?.GetType().ToString() ?? "null"}");
+                        sb.AppendLine($"OldState type: {stateData?.OldState?.State?.GetType().ToString() ?? "null"}");
+                        Logger.LogWarning(sb.ToString());
+                        return;
+                    }
+
                     // Make sure we get the area name with the new state
-                    var newState = stateData.NewState!.ToDaemonEntityState();
+                    var newState = stateData!.NewState!.ToDaemonEntityState();
+                    var oldState = stateData!.OldState!.ToDaemonEntityState();
                     newState.Area = GetAreaForEntityId(newState.EntityId);
                     InternalState[stateData.EntityId] = newState;
 
                     var tasks = new List<Task>();
-                    foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in _stateActions.Values)
+                    foreach (var app in _runningAppInstances)
                     {
-                        if (string.IsNullOrEmpty(pattern))
+                        if (app.Value is NetDaemonApp netDaemonApp)
                         {
-                            tasks.Add(func(stateData.EntityId,
-                                stateData.NewState?.ToDaemonEntityState(),
-                                stateData.OldState?.ToDaemonEntityState()
-                            ));
+                            foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in netDaemonApp.StateCallbacks.Values)
+                            {
+                                if (string.IsNullOrEmpty(pattern))
+                                {
+                                    tasks.Add(func(stateData.EntityId,
+                                        newState,
+                                        oldState
+                                    ));
+                                }
+                                else if (stateData.EntityId.StartsWith(pattern))
+                                {
+                                    tasks.Add(func(stateData.EntityId,
+                                        newState,
+                                        oldState
+                                    ));
+                                }
+                            }
                         }
-                        else if (stateData.EntityId.StartsWith(pattern))
+                        else if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
-                            tasks.Add(func(stateData.EntityId,
-                                stateData.NewState?.ToDaemonEntityState(),
-                                stateData.OldState?.ToDaemonEntityState()
-                            ));
+                            // Call the observable with no blocking
+                            foreach (var observer in ((StateChangeObservable)netDaemonRxApp.StateChangesObservable).Observers)
+                            {
+                                tasks.Add(Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        observer.OnNext((oldState, newState));
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        observer.OnError(e);
+                                        Logger.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
+                                    }
+                                }));
+                            }
                         }
                     }
+
                     // No hit
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
@@ -459,7 +849,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (state_changed)");
-                    throw;
                 }
             }
             else if (hassEvent.EventType == "call_service")
@@ -473,9 +862,43 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         throw new NullReferenceException("ServiceData is null! not expected");
                     }
                     var tasks = new List<Task>();
-                    var serviceCallFunctionList = _companionServiceCallFunctionList.Union(_serviceCallFunctionList);
+                    foreach (var app in _runningAppInstances)
+                    {
+                        if (app.Value is NetDaemonApp netDaemonApp)
+                        {
+                            foreach (var (domain, service, func) in netDaemonApp.DaemonCallBacksForServiceCalls)
+                            {
+                                if (domain == serviceCallData.Domain &&
+                                    service == serviceCallData.Service)
+                                {
+                                    tasks.Add(func(serviceCallData.Data));
+                                }
+                            }
+                        }
+                        else if (app.Value is NetDaemonRxApp netDaemonRxApp)
+                        {
+                            // Call the observable with no blocking
+                            foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
+                            {
+                                tasks.Add(Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        var rxEvent = new RxEvent(serviceCallData.Service, serviceCallData.Domain,
+                                                                 serviceCallData.ServiceData);
+                                        observer.OnNext(rxEvent);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        observer.OnError(e);
+                                        Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
+                                    }
+                                }));
+                            }
+                        }
+                    }
 
-                    foreach (var (domain, service, func) in serviceCallFunctionList)
+                    foreach (var (domain, service, func) in _daemonServiceCallFunctions)
                     {
                         if (domain == serviceCallData.Domain &&
                             service == serviceCallData.Service)
@@ -483,6 +906,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                             tasks.Add(func(serviceCallData.Data));
                         }
                     }
+
                     if (tasks.Count > 0)
                     {
                         await tasks.WhenAll(token).ConfigureAwait(false);
@@ -491,30 +915,62 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (service_call)");
-                    throw;
                 }
             }
             else if (hassEvent.EventType == "device_registry_updated" || hassEvent.EventType == "area_registry_updated")
             {
-                await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+                try
+                {
+                    await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Failed to RefreshInternalStatesAndSetArea");
+                }
             }
             else
             {
                 try
                 {
                     var tasks = new List<Task>();
-                    foreach ((string ev, Func<string, dynamic, Task> func) in _eventActions)
+                    foreach (var app in _runningAppInstances)
                     {
-                        if (ev == hassEvent.EventType)
+                        if (app.Value is NetDaemonApp netDaemonApp)
                         {
-                            tasks.Add(func(ev, hassEvent.Data));
+                            foreach ((string ev, Func<string, dynamic, Task> func) in netDaemonApp.EventCallbacks)
+                            {
+                                if (ev == hassEvent.EventType)
+                                {
+                                    tasks.Add(func(ev, hassEvent.Data));
+                                }
+                            }
+                            foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in netDaemonApp.EventFunctionCallbacks)
+                            {
+                                if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
+                                {
+                                    tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                                }
+                            }
                         }
-                    }
-                    foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in _eventFunctionList)
-                    {
-                        if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
+                        else if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
-                            tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                            // Call the observable with no blocking
+                            foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
+                            {
+                                tasks.Add(Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        var rxEvent = new RxEvent(hassEvent.EventType, null, hassEvent.Data);
+                                        observer.OnNext(rxEvent);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        observer.OnError(e);
+                                        Logger.LogError(e, "Fail to OnNext on event observer (event)");
+                                    }
+                                }));
+                            }
                         }
                     }
                     if (tasks.Count > 0)
@@ -525,7 +981,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                 catch (Exception e)
                 {
                     Logger.LogError(e, "Failed to handle new event (custom_event)");
-                    throw;
                 }
             }
         }
@@ -541,13 +996,134 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             return entityParts[0];
         }
 
+        /// <summary>
+        /// Topological Sorting (Kahn's algorithm)
+        /// </summary>
+        /// <remarks>https://en.wikipedia.org/wiki/Topological_sorting</remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="nodes">All nodes of directed acyclic graph.</param>
+        /// <param name="edges">All edges of directed acyclic graph.</param>
+        /// <returns>Sorted node in topological order.</returns>
+        private static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
+        {
+            // Empty list that will contain the sorted elements
+            var L = new List<T>();
+
+            // Set of all nodes with no incoming edges
+            var S = new HashSet<T>(nodes.Where(n => edges.All(e => e.Item2.Equals(n) == false)));
+
+            // while S is non-empty do
+            while (S.Any())
+            {
+                //  remove a node n from S
+                var n = S.First();
+                S.Remove(n);
+
+                // add n to tail of L
+                L.Add(n);
+
+                // for each node m with an edge e from n to m do
+                foreach (var e in edges.Where(e => e.Item1.Equals(n)).ToList())
+                {
+                    var m = e.Item2;
+
+                    // remove edge e from the graph
+                    edges.Remove(e);
+
+                    // if m has no other incoming edges then
+                    if (edges.All(me => me.Item2.Equals(m) == false))
+                    {
+                        // insert m into S
+                        S.Add(m);
+                    }
+                }
+            }
+
+            // if graph has edges then
+            if (edges.Any())
+            {
+                // return error (graph has at least one cycle)
+                return null;
+            }
+            else
+            {
+                L.Reverse();
+                // return L (a topologically sorted order)
+                return L;
+            }
+        }
+
+        private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            bool hasLoggedError = false;
+
+            //_serviceCallMessageQueue
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    (string domain, string service, dynamic? data)
+                    = await _serviceCallMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+
+                    await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false); ;
+
+                    hasLoggedError = false;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore we are leaving
+                }
+                catch (Exception e)
+                {
+                    if (hasLoggedError == false)
+                        Logger.LogDebug(e, "Failure sending call service");
+                    hasLoggedError = true;
+                    await Task.Delay(100); // Do a delay to avoid loop
+                }
+            }
+        }
+
+        private async Task HandleAsyncSetState(CancellationToken cancellationToken)
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+            bool hasLoggedError = false;
+
+            //_serviceCallMessageQueue
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    (string entityId, dynamic state, dynamic? attributes)
+                    = await _setStateMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+
+                    await _hassClient.SetState(entityId, state, attributes).ConfigureAwait(false);
+
+                    hasLoggedError = false;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore we are leaving
+                }
+                catch (Exception e)
+                {
+                    if (hasLoggedError == false)
+                        Logger.LogDebug(e, "Failure setting state");
+                    hasLoggedError = true;
+                    await Task.Delay(100); // Do a delay to avoid loop
+                }
+            }
+        }
+
         private async Task HandleTextToSpeechMessages(CancellationToken cancellationToken)
         {
+            this._cancelToken.ThrowIfCancellationRequested();
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    (string entityId, string message) = await _ttsMessageQueue.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                    (string entityId, string message) = await _ttsMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
                     dynamic attributes = new ExpandoObject();
                     attributes.entity_id = entityId;
@@ -578,247 +1154,129 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             }
         }
 
-        private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
-        private CancellationToken _cancelToken;
-
-        // Internal for test
-        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
-            new ConcurrentDictionary<string, HassDevice>();
-
-        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
-            new ConcurrentDictionary<string, HassEntity>();
-
-        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
-            new ConcurrentDictionary<string, HassArea>();
-
-        public Task SaveDataAsync<T>(string id, T data)
+        /// <inheritdoc/>
+        private async Task LoadAllApps()
         {
-            _ = _repository as IDataRepository ??
-                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+            // First unload any apps running
+            await UnloadAllApps().ConfigureAwait(false);
 
-            if (data == null)
-                throw new ArgumentNullException(nameof(data));
+            // Get all instances
+            var instancedApps = _appInstanceManager.InstanceDaemonApps();
 
-            _dataCache[id] = data;
-            return _repository!.Save(id, data);
-        }
+            if (_runningAppInstances.Count() > 0)
+                throw new ApplicationException("Did not expect running instances!");
 
-        public async ValueTask<T> GetDataAsync<T>(string id)
-        {
-            _ = _repository as IDataRepository ??
-              throw new NullReferenceException($"{nameof(_repository)} can not be null!");
-
-            if (_dataCache.ContainsKey(id))
+            foreach (INetDaemonAppBase appInstance in instancedApps!)
             {
-                return (T)_dataCache[id];
-            }
-            var data = await _repository!.Get<T>(id).ConfigureAwait(false);
-
-            if (data != null)
-                _dataCache[id] = data;
-
-            return data;
-        }
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams) =>
-            new InputSelectManager(inputSelectParams, this, app);
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams) =>
-            new InputSelectManager(inputSelectParams, this, app);
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
-        {
-            IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
-            return new InputSelectManager(x, this, app);
-        }
-
-        /// <inheritdoc/>
-        public async Task StopDaemonActivitiesAsync()
-        {
-            _eventActions.Clear();
-            _eventFunctionList.Clear();
-            _stateActions.Clear();
-            _serviceCallFunctionList.Clear();
-
-            await _scheduler.Restart().ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
-            => _companionServiceCallFunctionList.Add(("netdaemon", service.ToLowerInvariant(), action));
-
-        /// <inheritdoc/>
-        public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
-        {
-            await SetState(
-                "netdaemon.status",
-                "Connected", // State will alawys be connected, otherwise state could not be set.
-                ("number_of_loaded_apps", numberOfLoadedApps),
-                ("number_of_running_apps", numberOfRunningApps),
-                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(string entityId, object? to = null, object? from = null, bool allChanges = false) =>
-            DelayUntilStateChange(new string[] { entityId }, to, from, allChanges);
-
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
-        {
-            // Use TaskCompletionSource to simulate a task that we can control
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            var result = new DelayResult(taskCompletionSource, this);
-
-            foreach (var entityId in entityIds)
-            {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                if (await RestoreAppState(appInstance).ConfigureAwait(false))
                 {
-                    if (to != null)
-                        if ((dynamic)to != newState?.State)
-                            return Task.CompletedTask;
-
-                    if (from != null)
-                        if ((dynamic)from != oldState?.State)
-                            return Task.CompletedTask;
-
-                    // If we don´t accept all changes in the state change
-                    // and we do not have a state change so return
-                    if (newState?.State == oldState?.State && !allChanges)
-                        return Task.CompletedTask;
-
-                    // If we reached this far we should complete task!
-                    taskCompletionSource.SetResult(true);
-                    // Also cancel all other ongoing state change subscriptions
-                    result.Cancel();
-
-                    return Task.CompletedTask;
-                })!);
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
-        {
-            // Use TaskCompletionSource to simulate a task that we can control
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            var result = new DelayResult(taskCompletionSource, this);
-
-            foreach (var entityId in entityIds)
-            {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
-                {
-                    try
-                    {
-                        if (!stateFunc(newState, oldState))
-                            return Task.CompletedTask;
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogWarning(e, "Failed to evaluate function");
-                        return Task.CompletedTask;
-                    }
-
-                    // If we reached this far we should complete task!
-                    taskCompletionSource.SetResult(true);
-                    // Also cancel all other ongoing state change subscriptions
-                    result.Cancel();
-
-                    return Task.CompletedTask;
-                })!);
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public NetDaemonApp? GetApp(string appInstanceId)
-        {
-            return _daemonAppInstances.ContainsKey(appInstanceId) ?
-                _daemonAppInstances[appInstanceId] : null;
-        }
-
-        /// <inheritdoc/>
-        public void RegisterAppInstance(string appInstance, NetDaemonApp app)
-        {
-            _daemonAppInstances[appInstance] = app;
-        }
-
-        /// <inheritdoc/>
-        public void ClearAppInstances()
-        {
-            _daemonAppInstances.Clear();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await Stop().ConfigureAwait(false);
-        }
-    }
-
-    public class DelayResult : IDelayResult
-    {
-        private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
-        private readonly INetDaemon _daemon;
-
-        private bool _isCanceled = false;
-
-        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
-
-        public DelayResult(TaskCompletionSource<bool> delayTaskCompletionSource, INetDaemon daemon)
-        {
-            _delayTaskCompletionSource = delayTaskCompletionSource;
-            _daemon = daemon;
-        }
-
-        /// <inheritdoc/>
-        public Task<bool> Task => _delayTaskCompletionSource.Task;
-
-        /// <inheritdoc/>
-        public void Cancel()
-        {
-            if (_isCanceled)
-                return;
-
-            _isCanceled = true;
-            foreach (var stateSubscription in StateSubscriptions)
-            {
-                _daemon.CancelListenState(stateSubscription);
-            }
-            StateSubscriptions.Clear();
-
-            // Also cancel all await if this is disposed
-            _delayTaskCompletionSource.TrySetResult(false);
-        }
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // Make sure any subscriptions are canceled
-                    Cancel();
+                    _runningAppInstances[appInstance.Id!] = appInstance;
                 }
-                disposedValue = true;
+            }
+
+            // Now run initialize on all sorted by dependencies
+            foreach (var sortedApp in SortByDependency(_runningAppInstances.Values))
+            {
+                // Init by calling the InitializeAsync
+                var taskInitAsync = sortedApp.InitializeAsync();
+                var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
+                if (taskAwaitedAsyncTask != taskInitAsync)
+                    Logger.LogWarning("InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!", sortedApp.Id);
+
+                // Init by calling the Initialize
+                var taskInit = Task.Run(sortedApp.Initialize);
+                var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
+                if (taskAwaitedTask != taskInit)
+                    Logger.LogWarning("Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!", sortedApp.Id);
+
+                // Todo: refactor
+                await sortedApp.HandleAttributeInitialization(this);
+                Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id, sortedApp.GetType().Name);
+            }
+
+            await SetDaemonStateAsync(_appInstanceManager.Count, _runningAppInstances.Count).ConfigureAwait(false);
+        }
+
+        private void RegisterAppSwitchesAndTheirStates()
+        {
+            ListenServiceCall("switch", "turn_on", async (data) =>
+            {
+                await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
+            });
+
+            ListenServiceCall("switch", "turn_off", async (data) =>
+            {
+                await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
+            });
+
+            ListenServiceCall("switch", "toggle", async (data) =>
+            {
+                try
+                {
+                    string? entityId = data?.entity_id;
+                    if (entityId is null)
+                        return;
+
+                    var currentState = GetState(entityId)?.State as string;
+
+                    if (currentState == "on")
+                        await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
+                    else
+                        await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
+                }
+                catch (System.Exception e)
+                {
+                    Logger.LogWarning(e, "Failed to set state from netdaemon switch");
+                }
+            });
+
+            async Task SetStateOnDaemonAppSwitch(string state, dynamic? data)
+            {
+                string? entityId = data?.entity_id;
+                if (entityId is null)
+                    return;
+
+                if (!entityId.StartsWith("switch.netdaemon_"))
+                    return; // We only want app switches
+
+                List<(string, object)>? attributes = null;
+
+                var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
+
+                if (entityAttributes is object)
+                    attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
+
+                if (attributes is object)
+                    await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
+                else
+                    await SetStateAsync(entityId, state).ConfigureAwait(false);
             }
         }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
+        private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-        }
+            try
+            {
+                // First do startup initialization to connect with this daemon instance
+                await appInstance.StartUpAsync(this).ConfigureAwait(false);
+                // The restore the state to load saved settings and if this app is enabled
+                await appInstance.RestoreAppStateAsync().ConfigureAwait(false);
 
-        #endregion IDisposable Support
+                if (!appInstance.IsEnabled)
+                {
+                    // We should not initialize this app, so dispose it and return
+                    await appInstance.DisposeAsync().ConfigureAwait(false);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to load app {appInstance.Id}");
+            }
+            // Error return false
+            return false;
+        }
     }
 }

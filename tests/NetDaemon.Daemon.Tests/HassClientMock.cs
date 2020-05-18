@@ -13,18 +13,14 @@ namespace NetDaemon.Daemon.Tests
 {
     public class HassClientMock : Mock<IHassClient>
     {
-        internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
-        internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
-
         internal HassAreas Areas = new HassAreas();
         internal HassDevices Devices = new HassDevices();
         internal HassEntities Entities = new HassEntities();
-
+        internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
+        internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
         public HassClientMock()
         {
-            // diable warnings for this method
 #pragma warning disable 8619, 8620
-
             // Setup common mocks
             Setup(x => x.ConnectAsync(It.IsAny<string>(), It.IsAny<short>(), It.IsAny<bool>(),
                     It.IsAny<string>(), It.IsAny<bool>()))
@@ -91,74 +87,6 @@ namespace NetDaemon.Daemon.Tests
             }
         }
 
-        private void SetupDefaultStates()
-        {
-            FakeStates["light.correct_entity"] = new HassState
-            {
-                EntityId = "light.correct_entity",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["test"] = 100
-                }
-            };
-
-            FakeStates["light.correct_entity2"] = new HassState
-            {
-                EntityId = "light.correct_entity2",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["test"] = 101
-                }
-            };
-
-            FakeStates["switch.correct_entity"] = new HassState
-            {
-                EntityId = "switch.correct_entity",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["test"] = 105
-                }
-            };
-
-            FakeStates["light.filtered_entity"] = new HassState
-            {
-                EntityId = "light.filtered_entity",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["test"] = 90
-                }
-            };
-            FakeStates["binary_sensor.pir"] = new HassState
-            {
-                EntityId = "binary_sensor.pir",
-                State = "off",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["device_class"] = "motion"
-                }
-            };
-
-            FakeStates["media_player.player"] = new HassState
-            {
-                EntityId = "media_player.player",
-                State = "off",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["anyattribute"] = "some attribute"
-                }
-            };
-
-            FakeStates["light.ligth_in_area"] = new HassState
-            {
-                EntityId = "light.ligth_in_area",
-                State = "off",
-                Attributes = new Dictionary<string, object>
-                {
-                    ["anyattribute"] = "some attribute"
-                }
-            };
-        }
-
         public void AddCallServiceEvent(string domain, string service, dynamic data)
         {
             // Todo: Refactor to smth smarter
@@ -220,7 +148,9 @@ namespace NetDaemon.Daemon.Tests
                         Attributes = new Dictionary<string, object>
                         {
                             ["device_class"] = "motion"
-                        }
+                        },
+                        LastUpdated = DateTime.Now,
+                        LastChanged = DateTime.Now
                     },
                     OldState = new HassState
                     {
@@ -231,7 +161,7 @@ namespace NetDaemon.Daemon.Tests
                             ["device_class"] = "motion"
                         }
                     }
-                }
+                },
             });
         }
 
@@ -242,36 +172,6 @@ namespace NetDaemon.Daemon.Tests
                 EventType = eventType,
                 Data = data
             });
-        }
-
-        public void VerifyCallService(string domain, string service,
-            params (string attribute, object value)[] attributesTuples)
-        {
-            var attributes = new FluentExpandoObject();
-            foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
-
-            Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
-        }
-
-        public void VerifyCallServiceTimes(string service, Times times)
-        {
-            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
-        }
-
-        public void VerifySetState(string entity, string state,
-            params (string attribute, object value)[] attributesTuples)
-        {
-            var attributes = new FluentExpandoObject();
-            foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
-
-            Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);
-        }
-
-        public void VerifySetStateTimes(string entity, Times times)
-        {
-            Verify(n => n.SetState(entity, It.IsAny<string>(), It.IsAny<FluentExpandoObject>()), times);
         }
 
         public void AssertEqual(HassState hassState, EntityState entity)
@@ -305,6 +205,115 @@ namespace NetDaemon.Daemon.Tests
             return (Debugger.IsAttached)
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
+        }
+
+        public void VerifyCallService(string domain, string service,
+            params (string attribute, object value)[] attributesTuples)
+        {
+            var attributes = new FluentExpandoObject();
+            foreach (var attributesTuple in attributesTuples)
+                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+
+            Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
+        }
+
+        public void VerifyCallServiceTimes(string service, Times times)
+        {
+            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
+        }
+
+        public void VerifySetState(string entity, string state,
+            params (string attribute, object value)[] attributesTuples)
+        {
+            var attributes = new FluentExpandoObject();
+            foreach (var attributesTuple in attributesTuples)
+                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+
+            Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);
+        }
+
+        public void VerifySetStateTimes(string entity, Times times)
+        {
+            Verify(n => n.SetState(entity, It.IsAny<string>(), It.IsAny<FluentExpandoObject>()), times);
+        }
+
+        private void SetupDefaultStates()
+        {
+            FakeStates["light.correct_entity"] = new HassState
+            {
+                EntityId = "light.correct_entity",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["test"] = 100
+                },
+                State = "on"
+            };
+
+            FakeStates["light.correct_entity2"] = new HassState
+            {
+                EntityId = "light.correct_entity2",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["test"] = 101
+                }
+            };
+
+            FakeStates["switch.correct_entity"] = new HassState
+            {
+                EntityId = "switch.correct_entity",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["test"] = 105
+                }
+            };
+
+            FakeStates["light.filtered_entity"] = new HassState
+            {
+                EntityId = "light.filtered_entity",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["test"] = 90
+                }
+            };
+            FakeStates["binary_sensor.pir"] = new HassState
+            {
+                EntityId = "binary_sensor.pir",
+                State = "off",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["device_class"] = "motion"
+                }
+            };
+
+            FakeStates["binary_sensor.pir_2"] = new HassState
+            {
+                EntityId = "binary_sensor.pir_2",
+                State = "off",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["device_class"] = "motion"
+                }
+            };
+
+            FakeStates["media_player.player"] = new HassState
+            {
+                EntityId = "media_player.player",
+                State = "off",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["anyattribute"] = "some attribute"
+                }
+            };
+
+            FakeStates["light.ligth_in_area"] = new HassState
+            {
+                EntityId = "light.ligth_in_area",
+                State = "off",
+                Attributes = new Dictionary<string, object>
+                {
+                    ["anyattribute"] = "some attribute"
+                }
+            };
         }
     }
 }

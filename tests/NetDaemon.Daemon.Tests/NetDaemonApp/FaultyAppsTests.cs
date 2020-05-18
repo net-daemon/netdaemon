@@ -11,13 +11,15 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
     {
         private readonly JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
 
-        public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp App => _app;
-
         public FaultyAppTests() : base()
         {
             _app = new DaemonAppTestApp();
+            _app.Id = "id";
+            DefaultDaemonHost.InternalRunningAppInstances[_app.Id] = App;
             _app.StartUpAsync(DefaultDaemonHost);
         }
+
+        public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp App => _app;
 
         [Fact]
         public async Task ARunTimeErrorShouldLogWarning()
