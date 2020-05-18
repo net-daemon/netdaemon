@@ -210,7 +210,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var called = false;
-
+            var daemonTask = await GetConnectedNetDaemonTask(160);
             // ACT
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => called = true);
 
@@ -218,6 +218,8 @@ namespace NetDaemon.Daemon.Tests
             Assert.False(called);
 
             await Task.Delay(150);
+
+            await daemonTask.ConfigureAwait(false);
             Assert.True(called);
         }
     }
