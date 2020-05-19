@@ -201,7 +201,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         {
             _cancelDaemon.Cancel();
             await Stop().ConfigureAwait(false);
-            Logger.LogInformation("Instance NetDaemonHost Disposed");
+            Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
         public void EnableApplicationDiscoveryServiceAsync()
@@ -777,15 +777,18 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 
                     if (!FixStateTypes(stateData))
                     {
-                        var sb = new StringBuilder();
-                        sb.AppendLine($"Can not fix state typing for {stateData?.NewState?.EntityId}");
-                        sb.AppendLine($"NewStateObject: {stateData?.NewState}");
-                        sb.AppendLine($"OldStateObject: {stateData?.OldState}");
-                        sb.AppendLine($"NewState: {stateData?.NewState?.State}");
-                        sb.AppendLine($"OldState: {stateData?.OldState?.State}");
-                        sb.AppendLine($"NewState type: {stateData?.NewState?.State?.GetType().ToString() ?? "null"}");
-                        sb.AppendLine($"OldState type: {stateData?.OldState?.State?.GetType().ToString() ?? "null"}");
-                        Logger.LogWarning(sb.ToString());
+                        if (stateData?.NewState?.State != stateData?.OldState?.State)
+                        {
+                            var sb = new StringBuilder();
+                            sb.AppendLine($"Can not fix state typing for {stateData?.NewState?.EntityId}");
+                            sb.AppendLine($"NewStateObject: {stateData?.NewState}");
+                            sb.AppendLine($"OldStateObject: {stateData?.OldState}");
+                            sb.AppendLine($"NewState: {stateData?.NewState?.State}");
+                            sb.AppendLine($"OldState: {stateData?.OldState?.State}");
+                            sb.AppendLine($"NewState type: {stateData?.NewState?.State?.GetType().ToString() ?? "null"}");
+                            sb.AppendLine($"OldState type: {stateData?.OldState?.State?.GetType().ToString() ?? "null"}");
+                            Logger.LogTrace(sb.ToString());
+                        }
                         return;
                     }
 

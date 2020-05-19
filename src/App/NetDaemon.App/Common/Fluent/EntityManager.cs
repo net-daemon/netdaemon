@@ -163,6 +163,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 await entityManager.ExecuteAsync(true).ConfigureAwait(false);
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        // Do nothing
+                    }
                     catch (Exception e)
                     {
                         Daemon.Logger.LogWarning(e, "Unhandled error in ListenState in App {appId}", App.Id);
