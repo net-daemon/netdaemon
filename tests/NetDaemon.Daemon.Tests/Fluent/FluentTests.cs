@@ -890,5 +890,35 @@ namespace NetDaemon.Daemon.Tests
             DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Once());
             DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.ligth_in_area"));
         }
+
+        [Fact]
+        public async Task RunScriptShouldCallCorrectService()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+
+            // ACT
+            await DefaultDaemonApp.RunScript("testscript").ExecuteAsync();
+            await DefaultDaemonApp.RunScript("script.testscript").ExecuteAsync();
+            await daemonTask;
+
+            // ASSERT
+            DefaultHassClientMock.VerifyCallServiceTimes("testscript", Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SendEventShouldCallCorrectService()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+
+            // ACT
+            await DefaultDaemonApp.SendEvent("myevent");
+            await daemonTask;
+
+            // ASSERT
+            DefaultHassClientMock.Verify(n => n.SendEvent("myevent", It.IsAny<object>()));
+        }
     }
+
 }
