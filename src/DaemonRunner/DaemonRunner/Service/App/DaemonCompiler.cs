@@ -39,13 +39,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             // Load the internal apps (mainly for )
             var disableLoadLocalAssemblies = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
-            if (disableLoadLocalAssemblies is object && disableLoadLocalAssemblies == "true")
+            if (!(disableLoadLocalAssemblies is object && disableLoadLocalAssemblies == "true"))
             {
                 var localApps = LoadLocalAssemblyApplicationsForDevelopment();
                 if (localApps is object)
                     loadedApps.AddRange(localApps);
             }
-
+            if (loadedApps.Count() > 0)
+            {
+                // We do not want to get and compile the apps if it is includer
+                // this is typically when in dev environment
+                logger.LogInformation("Loading compiled built-in apps");
+                return (loadedApps, null);
+            }
             CollectibleAssemblyLoadContext alc;
             // Load the compiled apps
             var (compiledApps, compileErrorText) = GetCompiledApps(out alc, codeFolder, logger);
