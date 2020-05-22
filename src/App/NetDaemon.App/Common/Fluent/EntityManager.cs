@@ -67,8 +67,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                             }
                             catch (Exception e)
                             {
-                                Daemon.Logger.LogWarning(e,
-                                    "Failed to evaluate function in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}", App.Id, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
+                                App.LogWarning(e,
+                                    "Failed to evaluate function in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}", App.Id!, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
                                 return;
                             }
                         }
@@ -113,24 +113,24 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                         }
                                         catch (Exception e)
                                         {
-                                            Daemon.Logger.LogWarning(e,
+                                            App.LogError(e,
                                                 "Call function error in timespan in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}",
-                                                    App.Id, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
+                                                    App.Id!, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    Daemon.Logger.LogDebug(
+                                    App.LogDebug(
                                         "State same {newState} but different state changed: {currentLastChanged}, expected {newLastChanged}",
                                             $"{newState?.State}",
-                                            currentState?.LastChanged,
-                                            newState?.LastChanged);
+                                            currentState?.LastChanged!,
+                                            newState?.LastChanged!);
                                 }
                             }
                             else
                             {
-                                Daemon.Logger.LogDebug(
+                                App.LogDebug(
                                     "State not same, do not execute for statement. {newState} found, expected {currentState}",
                                     $"{newState?.State}",
                                     $"{currentState?.State}");
@@ -138,7 +138,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                         }
                         else
                         {
-                            Daemon.Logger.LogDebug(
+                            App.LogDebug(
                                 "State {newState} expected from {oldState}, executing action!",
                                     $"{newState?.State}",
                                     $"{oldState?.State}"
@@ -152,9 +152,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                                 }
                                 catch (Exception e)
                                 {
-                                    Daemon.Logger.LogWarning(e,
+                                    App.LogError(e,
                                                "Call function error in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}",
-                                                   App.Id, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
+                                                   App.Id!, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
                                 }
                             }
                             else if (_currentState.ScriptToCall != null)
@@ -169,7 +169,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     }
                     catch (Exception e)
                     {
-                        Daemon.Logger.LogWarning(e, "Unhandled error in ListenState in App {appId}", App.Id);
+                        App.LogWarning(e, "Unhandled error in ListenState in App {appId}", App.Id!);
                     }
                 });
 

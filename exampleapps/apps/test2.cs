@@ -13,6 +13,8 @@ public class BatteryManager : NetDaemonRxApp
     public string? HelloWorldSecret { get; set; }
     public override async Task InitializeAsync()
     {
+        // SetState("sensor.testing", "on", new { attributeobject = new { aobject = "hello" } });
+        RunEvery(TimeSpan.FromSeconds(5), () => SetAttribute("Time", DateTime.Now));
         Log("Hello");
         Log("Hello {name}", "Tomas");
         // RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world!"));
