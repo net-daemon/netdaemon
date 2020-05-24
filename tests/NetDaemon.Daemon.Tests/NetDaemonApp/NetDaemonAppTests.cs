@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
@@ -114,10 +115,10 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         [Theory]
         [InlineData("int", 10)]
         [InlineData("str", "hello")]
-        public void GlobalShouldReturnCorrectData(string key, object value)
+        public async Task GlobalShouldReturnCorrectData(string key, object value)
         {
-            var _app_two = new AppTestApp2();
-            _app_two.StartUpAsync(_netDaemonMock.Object);
+            await using var _app_two = new AppTestApp2();
+            await _app_two.StartUpAsync(_netDaemonMock.Object);
             _app_two.Id = "app2";
 
             // ARRANGE and  ACT

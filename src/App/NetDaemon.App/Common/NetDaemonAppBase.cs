@@ -19,14 +19,29 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     The NetDaemonHost instance
         /// </summary>
         protected INetDaemon? _daemon;
+        private Task? _manageRuntimeInformationUpdatesTask;
+
+        /// <summary>
+        ///     Next scheduled time
+        /// </summary>
+        protected DateTime? NextScheduledEvent { get; set; } = null;
 
         // This is declared as static since it will contain state shared globally
         private static ConcurrentDictionary<string, object> _global = new ConcurrentDictionary<string, object>();
+
+        private readonly ConcurrentDictionary<string, object> _attributes = new ConcurrentDictionary<string, object>();
 
         // To handle state saves max once at a time, internal due to tests
         private readonly Channel<bool> _lazyStoreStateQueue =
                Channel.CreateBounded<bool>(1);
 
+        private readonly Channel<bool> _updateRuntimeInfoChannel =
+               Channel.CreateBounded<bool>(5);
+
+        /// <summary>
+        ///     The last error message logged och catched
+        /// </summary>
+        public string? LastErrorMessage { get; set; } = null;
         private CancellationTokenSource _cancelSource = new CancellationTokenSource();
         private Task? _lazyStoreStateTask;
         private FluentExpandoObject? _storageObject;
@@ -107,20 +122,21 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             }
 
             var appInfo = _daemon!.State
-                                  .Where(s => s.EntityId == $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}")
+                                  .Where(s => s.EntityId == EntityId)
                                   .FirstOrDefault();
 
             var appState = appInfo?.State as string;
             if (appState == null || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
-                await _daemon.SetStateAsync($"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}", "on").ConfigureAwait(false);
+                await _daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
 
                 return;
             }
             IsEnabled = appState == "on";
         }
 
+        private string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
         /// <inheritdoc/>
         public void SaveAppState()
         {
@@ -141,11 +157,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
             _daemon = daemon;
+            _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
             _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
             _storageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
             Logger.LogInformation("Startup: {app}", GetUniqueIdForStorage());
+            UpdateRuntimeInformation();
             return Task.CompletedTask;
         }
 
@@ -180,14 +198,17 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <summary>
         ///     Async disposable support
         /// </summary>
-        public virtual ValueTask DisposeAsync()
+        public async virtual ValueTask DisposeAsync()
         {
             _cancelSource.Cancel();
+            if (_manageRuntimeInformationUpdatesTask is object)
+                await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
+
             this.IsEnabled = false;
             _lazyStoreStateTask = null;
             _storageObject = null;
             _daemon = null;
-            return new ValueTask();
+
         }
 
         /// <inheritdoc/>
@@ -253,16 +274,36 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public void LogDebug(Exception exception, string message, params object[] param) => Log(LogLevel.Debug, exception, message, param);
 
         /// <inheritdoc/>
-        public void LogError(string message) => Log(LogLevel.Error, message);
+        public void LogError(string message)
+        {
+            Log(LogLevel.Error, message);
+            LastErrorMessage = message;
+            UpdateRuntimeInformation();
+        }
 
         /// <inheritdoc/>
-        public void LogError(Exception exception, string message) => Log(LogLevel.Error, exception, message);
+        public void LogError(Exception exception, string message)
+        {
+            Log(LogLevel.Error, exception, message);
+            LastErrorMessage = message;
+            UpdateRuntimeInformation();
+        }
 
         /// <inheritdoc/>
-        public void LogError(string message, params object[] param) => Log(LogLevel.Error, message, param);
+        public void LogError(string message, params object[] param)
+        {
+            Log(LogLevel.Error, message, param);
+            LastErrorMessage = message;
+            UpdateRuntimeInformation();
+        }
 
         /// <inheritdoc/>
-        public void LogError(Exception exception, string message, params object[] param) => Log(LogLevel.Error, exception, message, param);
+        public void LogError(Exception exception, string message, params object[] param)
+        {
+            Log(LogLevel.Error, exception, message, param);
+            LastErrorMessage = message;
+            UpdateRuntimeInformation();
+        }
 
         /// <inheritdoc/>
         public void LogTrace(string message) => Log(LogLevel.Trace, message);
@@ -289,5 +330,84 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public void LogWarning(Exception exception, string message, params object[] param) => Log(LogLevel.Warning, exception, message, param);
 
         #endregion -- Logger helpers --
+
+        /// <inheritdoc/>
+        public void SetAttribute(string attribute, object? value)
+        {
+            if (value is object)
+            {
+                _attributes[attribute] = value;
+            }
+            else
+            {
+                _attributes.TryRemove(attribute, out _);
+            }
+            UpdateRuntimeInformation();
+        }
+
+        /// <summary>
+        ///     Updates runtime information
+        /// </summary>
+        /// <remarks>
+        ///     Use a channel to make sure bad apps do not flood the
+        ///     updating of
+        /// </remarks>
+        internal void UpdateRuntimeInformation()
+        {
+            // We just ignore if channel is full, it will be ok
+            _updateRuntimeInfoChannel.Writer.TryWrite(true);
+        }
+
+        private async Task ManageRuntimeInformationUpdates()
+        {
+            while (!_cancelSource.IsCancellationRequested)
+            {
+                try
+                {
+                    while (_updateRuntimeInfoChannel.Reader.TryRead(out _)) ;
+
+                    _ = await _updateRuntimeInfoChannel.Reader.ReadAsync(_cancelSource.Token);
+                    // do the deed
+                    await HandleUpdateRuntimeInformation().ConfigureAwait(false);
+                    // make sure we never push more messages that 10 per second
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Just exit
+                    break;
+                }
+            }
+        }
+
+        private async Task HandleUpdateRuntimeInformation()
+        {
+            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+
+            var runtimeInfo = new AppRuntimeInfo
+            {
+                HasError = false
+            };
+
+            if (_attributes.Count() > 0)
+                foreach (var (attr, value) in _attributes)
+                {
+                    if (value is object)
+                        runtimeInfo.AppAttributes[attr] = value;
+                }
+
+            if (NextScheduledEvent is object)
+                runtimeInfo.NextScheduledEvent = NextScheduledEvent;
+
+            if (LastErrorMessage is object)
+            {
+                runtimeInfo.LastErrorMessage = LastErrorMessage;
+                runtimeInfo.HasError = true;
+            }
+
+            await _daemon.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", runtimeInfo)).ConfigureAwait(false);
+        }
+
+
     }
 }

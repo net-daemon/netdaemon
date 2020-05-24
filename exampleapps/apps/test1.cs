@@ -16,7 +16,8 @@ public class GlobalApp : NetDaemonApp
     //public string? SharedThing { get; set; }
     public override Task InitializeAsync()
     {
-        Event("TEST_EVENT").Call(async (ev, data) => { Log("EVENT!"); }).Execute();
+
+        // Event("TEST_EVENT").Call(async (ev, data) => { Log("EVENT!"); }).Execute();
 
         return Task.CompletedTask;
     }

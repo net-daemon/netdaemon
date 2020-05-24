@@ -343,7 +343,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// <summary>
     ///     Shared features in both Reactive and async/await models
     /// </summary>
-    public interface INetDaemonAppBase : INetDaemonInitialableApp, IAsyncDisposable, IEquatable<INetDaemonAppBase>
+    public interface INetDaemonAppBase :
+        INetDaemonInitialableApp, IDoLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
     {
         /// <summary>
         ///     The dependencies that needs to be initialized before this app
@@ -394,6 +395,144 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="entityId">Unique id of the media player the speech should play</param>
         /// <param name="message">The message that will be spoken</param>
         void Speak(string entityId, string message);
+
+        /// <summary>
+        ///     Sets application instance attribute in Home Assistant
+        /// </summary>
+        /// <param name="attribute">Attribute name</param>
+        /// <param name="value">Value to set, null removes the attribute</param>
+        void SetAttribute(string attribute, object? value);
+
+
+
+
+    }
+
+    /// <summary>
+    ///     Interface for logging capabilities in NetDaemon Apps
+    /// </summary>
+    public interface IDoLogging
+    {
+        /// <summary>
+        ///     Logs a informational message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void Log(Exception exception, string message, params object[] param);
+
+
+        /// <summary>
+        ///     Logs a informational message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        void LogDebug(string message);
+
+        /// <summary>
+        ///     Logs a informational message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        void LogDebug(Exception exception, string message);
+
+        /// <summary>
+        ///     Logs a informational message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogDebug(string message, params object[] param);
+
+        /// <summary>
+        ///     Logs a debug message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogDebug(Exception exception, string message, params object[] param);
+
+        /// <summary>
+        ///     Logs an error message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        void LogError(string message);
+
+        /// <summary>
+        ///     Logs an error message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        void LogError(Exception exception, string message);
+        /// <summary>
+        ///     Logs an error message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogError(string message, params object[] param);
+
+        /// <summary>
+        ///     Logs an error message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogError(Exception exception, string message, params object[] param);
+
+
+        /// <summary>
+        ///     Logs a trace message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        void LogTrace(string message);
+
+        /// <summary>
+        ///     Logs a trace message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        void LogTrace(Exception exception, string message);
+
+        /// <summary>
+        ///     Logs a trace message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogTrace(string message, params object[] param);
+
+        /// <summary>
+        ///     Logs a trace message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogTrace(Exception exception, string message, params object[] param);
+
+        /// <summary>
+        ///     Logs a warning message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        void LogWarning(string message);
+
+        /// <summary>
+        ///     Logs a warning message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        void LogWarning(Exception exception, string message);
+
+        /// <summary>
+        ///     Logs a warning message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogWarning(string message, params object[] param);
+
+        /// <summary>
+        ///     Logs a warning message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogWarning(Exception exception, string message, params object[] param);
     }
 
     /// <summary>

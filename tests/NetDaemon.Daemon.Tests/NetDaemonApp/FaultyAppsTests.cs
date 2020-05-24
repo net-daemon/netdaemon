@@ -22,7 +22,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp App => _app;
 
         [Fact]
-        public async Task ARunTimeErrorShouldLogWarning()
+        public async Task ARunTimeErrorShouldLogError()
         {
             // ARRANGE
 
@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             await RunDefauldDaemonUntilCanceled();
 
-            LoggerMock.AssertLogged(LogLevel.Warning, Times.Once());
+            LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
     }
 }

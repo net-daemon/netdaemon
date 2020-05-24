@@ -274,6 +274,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         internal virtual IDisposable CreateObservableIntervall(TimeSpan timespan, Action action)
         {
             var result = new DisposableTimerResult(_cancelTimers.Token);
+            NextScheduledEvent = DateTime.Now + timespan;
+            UpdateRuntimeInformation();
 
             Observable.Interval(timespan, TaskPoolScheduler.Default)
                 .Subscribe(
@@ -282,7 +284,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                         try
                         {
                             if (this.IsEnabled)
+                            {
                                 action();
+                                NextScheduledEvent = DateTime.Now + timespan;
+                                UpdateRuntimeInformation();
+                            }
                         }
                         catch (OperationCanceledException)
                         {
@@ -310,6 +316,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         {
             var result = new DisposableTimerResult(_cancelTimers.Token);
 
+            NextScheduledEvent = timeOfDayToTrigger;
+            UpdateRuntimeInformation();
+
             Observable.Timer(
                 timeOfDayToTrigger,
                 interval,
@@ -320,7 +329,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                         try
                         {
                             if (this.IsEnabled)
+                            {
                                 action();
+                                timeOfDayToTrigger = DateTime.Now + interval;
+                                UpdateRuntimeInformation();
+                            }
                         }
                         catch (OperationCanceledException)
                         {

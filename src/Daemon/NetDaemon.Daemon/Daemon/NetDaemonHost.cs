@@ -835,7 +835,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                     catch (Exception e)
                                     {
                                         observer.OnError(e);
-                                        Logger.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
+                                        netDaemonRxApp.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
                                     }
                                 }));
                             }
