@@ -84,6 +84,32 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        public async Task NewEventMissingDataAttributeShouldReturnNull()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            string? missingAttribute = "has initial value";
+
+            // ACT
+            DefaultDaemonRxApp.EventChanges
+                .Subscribe(s =>
+                {
+                    missingAttribute = s.Data?.missing_data;
+                });
+
+            var expandoObj = new ExpandoObject();
+            dynamic dynExpObject = expandoObj;
+            dynExpObject.a_parameter = "hello";
+
+            DefaultHassClientMock.AddCustomEvent("AN_EVENT", dynExpObject);
+
+            await daemonTask;
+
+            // ASSERT
+            Assert.Null(missingAttribute);
+        }
+
+        [Fact]
         public async Task NewStateEventShouldCallFunction()
         {
             // ARRANGE
@@ -199,6 +225,22 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             Assert.NotNull(entity);
         }
+
+        [Fact]
+        public async Task StateShouldReturnNullIfAttributeNotExist()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+
+            // ACT
+            var entity = DefaultDaemonRxApp.State("binary_sensor.pir");
+
+            await daemonTask;
+
+            // ASSERT
+            Assert.Null(entity?.Attribute?.not_exists);
+        }
+
         [Fact]
         public async Task StatesShouldReturnCorrectEntity()
         {
@@ -234,6 +276,29 @@ namespace NetDaemon.Daemon.Tests
 
             // ASSERT
             Assert.True(called);
+        }
+
+        [Fact]
+        public async Task CallbackObserverAttributeMissingShouldReturnNull()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            string? missingString = "has initial value";
+
+            // ACT
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+                .StateChanges
+                .Subscribe(s =>
+                {
+                    missingString = s.New.Attribute?.missing_attribute;
+                });
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir_2", "off", "on");
+
+            await daemonTask;
+
+            // ASSERT
+            Assert.Null(missingString);
         }
 
         [Fact]

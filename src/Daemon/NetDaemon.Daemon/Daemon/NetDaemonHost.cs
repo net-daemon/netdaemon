@@ -935,6 +935,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             {
                 try
                 {
+                    // Convert ExpandoObject to FluentExpandoObject
+                    // We need to do this so not existing attributes
+                    // is returning null
+                    if (hassEvent.Data is ExpandoObject exObject)
+                    {
+                        hassEvent.Data = new FluentExpandoObject(true, true, exObject);
+                    }
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
