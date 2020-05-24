@@ -70,6 +70,16 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                         {
                             Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
                         }
+                        if (hassAddOnSettings.LogMessages is object && hassAddOnSettings.LogMessages == true)
+                        {
+                            Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
+                        }
+                        if (hassAddOnSettings.ProjectFolder is object &&
+                            string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
+                        {
+                            Environment.SetEnvironmentVariable("HASS_RUN_PROJECT_FOLDER", hassAddOnSettings.ProjectFolder);
+                        }
+
                         // We are in Hassio so hard code the path
                         Environment.SetEnvironmentVariable("HASS_DAEMONAPPFOLDER", "/config/netdaemon");
                     }
