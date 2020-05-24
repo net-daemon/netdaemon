@@ -128,7 +128,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
             }
 
-            metaDataReference.Add(MetadataReference.CreateFromFile(Assembly.GetEntryAssembly()?.Location));
+            metaDataReference.Add(MetadataReference.CreateFromFile(Assembly.GetEntryAssembly()?.Location!));
 
             return metaDataReference;
         }
