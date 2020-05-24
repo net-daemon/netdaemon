@@ -331,7 +331,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                             if (this.IsEnabled)
                             {
                                 action();
-                                timeOfDayToTrigger = DateTime.Now + interval;
+                                NextScheduledEvent = DateTime.Now + interval;
                                 UpdateRuntimeInformation();
                             }
                         }
