@@ -46,6 +46,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         IEnumerable<EntityState> States { get; }
 
         /// <summary>
+        ///     Loads persistent data from unique id
+        /// </summary>
+        /// <param name="id">Unique Id of the data</param>
+        /// <returns>The data persistent or null if not exists</returns>
+        T? GetData<T>(string id) where T : class;
+
+        /// <summary>
+        ///     Saves any data with unique id, data have to be json serializable
+        /// </summary>
+        /// <param name="id">Unique id for all apps</param>
+        /// <param name="data">Dynamic data being saved</param>
+        void SaveData<T>(string id, T data);
+
+        /// <summary>
         ///     Sets a state for entity
         /// </summary>
         /// <param name="entityId">EntityId</param>
@@ -137,6 +151,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="second">The timespan to schedule</param>
         IObservable<long> RunEveryMinute(short second);
+
         /// <summary>
         ///     Delays excecution of an action (timespan) time
         /// </summary>

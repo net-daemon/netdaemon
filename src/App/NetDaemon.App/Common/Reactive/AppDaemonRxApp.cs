@@ -119,6 +119,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
+        public T? GetData<T>(string id) where T : class
+        {
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            return _daemon.GetDataAsync<T>(id).Result;
+        }
+
+        /// <inheritdoc/>
         public IDisposable RunDaily(string time, Action action)
         {
             DateTime parsedTime;
@@ -227,6 +234,13 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
 
                 _daemon.CallService("script", name);
             }
+        }
+
+        /// <inheritdoc/>
+        public void SaveData<T>(string id, T data)
+        {
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _daemon.SaveDataAsync<T>(id, data).Wait();
         }
 
         /// <inheritdoc/>

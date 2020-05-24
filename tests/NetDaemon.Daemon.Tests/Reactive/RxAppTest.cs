@@ -2,6 +2,7 @@ using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Moq;
 using System;
+using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -322,6 +323,41 @@ namespace NetDaemon.Daemon.Tests
             await daemonTask;
 
             Assert.True(isRun);
+        }
+
+        [Fact]
+        public async Task SavedDataShouldReturnSameDataUsingExpando()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            dynamic data = new ExpandoObject();
+            data.Item = "Some data";
+
+            // ACT
+            DefaultDaemonRxApp.SaveData("data_exists", data);
+            var collectedData = DefaultDaemonRxApp.GetData<ExpandoObject>("data_exists");
+
+            await daemonTask;
+
+            // ASSERT
+            Assert.Equal(data, collectedData);
+        }
+
+        [Fact]
+        public async Task GetDataShouldReturnCachedValue()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            // ACT
+
+            DefaultDaemonRxApp.SaveData("GetDataShouldReturnCachedValue_id", "saved data");
+
+            DefaultDaemonRxApp.GetData<string>("GetDataShouldReturnCachedValue_id");
+
+            await daemonTask;
+            // ASSERT
+            DefaultDataRepositoryMock.Verify(n => n.Get<string>(It.IsAny<string>()), Times.Never);
+            DefaultDataRepositoryMock.Verify(n => n.Save<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
     }
 }
