@@ -68,7 +68,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         public string? Id { get; set; }
 
         /// <inheritdoc/>
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled { get; set; } = true;
 
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }
