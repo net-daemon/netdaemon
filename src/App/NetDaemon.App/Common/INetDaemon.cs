@@ -414,29 +414,56 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface IDoLogging
     {
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs an informational message
         /// </summary>
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
         void Log(Exception exception, string message, params object[] param);
-
+        
+        /// <summary>
+        ///     Logs an informational message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        void LogInformation(string message);
 
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs an informational message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        void LogInformation(Exception exception, string message);
+
+        /// <summary>
+        ///     Logs an informational message
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogInformation(string message, params object[] param);
+
+        /// <summary>
+        ///     Logs an informational message
+        /// </summary>
+        /// <param name="exception">A exception</param>
+        /// <param name="message">The message to log</param>
+        /// <param name="param">Params</param>
+        void LogInformation(Exception exception, string message, params object[] param);
+        
+        /// <summary>
+        ///     Logs a debug message
         /// </summary>
         /// <param name="message">The message to log</param>
         void LogDebug(string message);
 
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs a debug message
         /// </summary>
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
         void LogDebug(Exception exception, string message);
 
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs a debug message
         /// </summary>
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
@@ -462,6 +489,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
         void LogError(Exception exception, string message);
+        
         /// <summary>
         ///     Logs an error message
         /// </summary>
@@ -476,7 +504,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
         void LogError(Exception exception, string message, params object[] param);
-
 
         /// <summary>
         ///     Logs a trace message
