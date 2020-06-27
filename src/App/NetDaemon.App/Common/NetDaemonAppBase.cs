@@ -259,7 +259,19 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
 
         /// <inheritdoc/>
-        public void Log(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
+        public void Log(Exception exception, string message, params object[] param) => LogInformation(exception, message, param);
+
+        /// <inheritdoc/>
+        public void LogInformation(string message) => Log(LogLevel.Information, message);
+
+        /// <inheritdoc/>
+        public void LogInformation(Exception exception, string message) => Log(LogLevel.Information, exception, message);
+        
+        /// <inheritdoc/>
+        public void LogInformation(string message, params object[] param) => Log(LogLevel.Information, message, param);
+        
+        /// <inheritdoc/>
+        public void LogInformation(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
 
         /// <inheritdoc/>
         public void LogDebug(string message) => Log(LogLevel.Debug, message);
