@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -489,6 +489,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
         void LogError(Exception exception, string message);
+        
         /// <summary>
         ///     Logs an error message
         /// </summary>
@@ -503,7 +504,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
         void LogError(Exception exception, string message, params object[] param);
-
 
         /// <summary>
         ///     Logs a trace message
