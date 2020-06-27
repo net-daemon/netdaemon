@@ -6,9 +6,17 @@ You will find the docs on [github here](https://github.com/net-daemon/docs).
 ## How to contribute
 
 - Fork the repository
-- Write coded and tests
+- Write code and tests
 - Make sure the tests run before PR
 - Create a pullrequest against the NetDaemon Dev branch
+
+## Code quality
+
+- Use default linter and fix all warnings
+
+## Architecture
+
+- If you want to do bigger design changes, goto Discord group and discuss in #dev channel, see https://discord.gg/K3xwfcX
 
 ## Features and Issues
 
