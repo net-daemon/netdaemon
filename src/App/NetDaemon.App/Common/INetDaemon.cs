@@ -414,7 +414,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     public interface IDoLogging
     {
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs an informational message
         /// </summary>
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
@@ -450,20 +450,20 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         void LogInformation(Exception exception, string message, params object[] param);
         
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs a debug message
         /// </summary>
         /// <param name="message">The message to log</param>
         void LogDebug(string message);
 
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs a debug message
         /// </summary>
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
         void LogDebug(Exception exception, string message);
 
         /// <summary>
-        ///     Logs a informational message
+        ///     Logs a debug message
         /// </summary>
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
