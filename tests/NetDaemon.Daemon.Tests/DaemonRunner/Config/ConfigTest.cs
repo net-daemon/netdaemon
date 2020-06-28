@@ -1,10 +1,10 @@
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using NetDaemon.Daemon.Config;
+using NetDaemon.Service;
 using Xunit;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;

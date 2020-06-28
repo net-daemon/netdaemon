@@ -1,15 +1,14 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using NetDaemon.Common;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
+namespace NetDaemon.Service.App
 {
     public class CodeGenerator
     {

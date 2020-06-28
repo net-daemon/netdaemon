@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -9,6 +8,7 @@ using System.Threading.Tasks;
 using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Daemon.Config;
+using NetDaemon.Service.App;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
