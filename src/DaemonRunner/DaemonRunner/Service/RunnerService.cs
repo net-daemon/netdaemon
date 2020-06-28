@@ -1,6 +1,4 @@
 using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +17,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NetDaemon.Daemon;
+using NetDaemon.Daemon.Storage;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 {

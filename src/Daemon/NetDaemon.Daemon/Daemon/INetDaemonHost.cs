@@ -6,7 +6,7 @@ using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
 
     /// <summary>

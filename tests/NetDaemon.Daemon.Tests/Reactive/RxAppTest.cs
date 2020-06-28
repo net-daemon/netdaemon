@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Moq;
 using System;
 using System.Dynamic;

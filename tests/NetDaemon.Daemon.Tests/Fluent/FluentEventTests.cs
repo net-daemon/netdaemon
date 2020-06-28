@@ -1,9 +1,8 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using Moq;
+﻿using Moq;
 using System;
 using System.Dynamic;
 using System.Threading.Tasks;
+using NetDaemon.Daemon.Storage;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests

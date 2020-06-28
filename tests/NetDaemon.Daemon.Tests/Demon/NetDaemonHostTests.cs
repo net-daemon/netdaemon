@@ -1,5 +1,4 @@
 using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;

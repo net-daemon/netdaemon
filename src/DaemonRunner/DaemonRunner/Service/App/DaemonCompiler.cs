@@ -14,6 +14,7 @@ using System.Runtime.Loader;
 using System.Text;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
@@ -116,7 +117,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         MetadataReference.CreateFromFile(typeof(NetDaemonRxApp).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(NetDaemonHost).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
                     };
 

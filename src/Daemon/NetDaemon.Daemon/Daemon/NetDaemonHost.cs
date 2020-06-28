@@ -1,7 +1,4 @@
-﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -11,13 +8,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Client;
+using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon.Storage;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {

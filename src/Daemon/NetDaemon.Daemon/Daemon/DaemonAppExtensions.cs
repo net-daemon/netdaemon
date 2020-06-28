@@ -1,17 +1,17 @@
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
+using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
     public static class DaemonAppExtensions
     {
