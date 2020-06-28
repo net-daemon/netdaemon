@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using NetDaemon.Common;
+using NetDaemon.Common.Fluent;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 

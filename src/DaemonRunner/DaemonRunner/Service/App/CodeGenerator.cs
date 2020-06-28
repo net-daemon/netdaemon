@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
@@ -35,7 +36,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             var code = SyntaxFactory.CompilationUnit();
 
             // Add Usings statements
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("JoySoftware.HomeAssistant.NetDaemon.Common")));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("NetDaemon.Common")));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();

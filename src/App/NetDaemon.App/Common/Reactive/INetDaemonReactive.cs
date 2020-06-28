@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using NetDaemon.Common.Fluent;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
+namespace NetDaemon.Common.Reactive
 {
     /// <summary>
     ///     Interface for objects that implements CallService

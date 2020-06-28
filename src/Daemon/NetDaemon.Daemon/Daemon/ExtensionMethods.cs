@@ -1,11 +1,11 @@
 ﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NetDaemon.Common;
 
 namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
 {

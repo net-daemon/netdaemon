@@ -1,6 +1,6 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 

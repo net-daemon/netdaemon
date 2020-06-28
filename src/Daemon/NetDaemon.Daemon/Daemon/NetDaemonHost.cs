@@ -1,6 +1,4 @@
 ﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
 using Microsoft.Extensions.Logging;
 using System;
@@ -13,6 +11,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using NetDaemon.Common;
+using NetDaemon.Common.Fluent;
+using NetDaemon.Common.Reactive;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 

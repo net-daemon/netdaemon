@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using NetDaemon.Common.Fluent;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
+namespace NetDaemon.Common.Reactive
 {
     /// <summary>
     ///     Interface for objects implements Toggle

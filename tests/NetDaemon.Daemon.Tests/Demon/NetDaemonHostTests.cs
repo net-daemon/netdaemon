@@ -1,5 +1,4 @@
 using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -7,11 +6,12 @@ using System;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
+using NetDaemon.Common;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
-    public class HostTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp
+    public class HostTestApp : Common.NetDaemonApp
     {
     }
 

@@ -285,5 +285,5 @@ namespace NetDaemon.Daemon.Tests
         }
     }
 
-    public class FluentTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class FluentTestApp : NetDaemon.Common.NetDaemonApp { }
 }

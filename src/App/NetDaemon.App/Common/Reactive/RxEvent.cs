@@ -1,4 +1,4 @@
-﻿namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
+﻿namespace NetDaemon.Common.Reactive
 {
     /// <summary>
     ///     Represent an event from eventstream

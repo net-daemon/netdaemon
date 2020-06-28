@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common.Fluent
 {
     /// <summary>
     ///     Represents data about an action in a fluent API

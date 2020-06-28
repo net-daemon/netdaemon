@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using Microsoft.Extensions.Logging;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
+namespace NetDaemon.Common.Reactive
 {
     /// <summary>
     ///     Implements the observable interface for state changes

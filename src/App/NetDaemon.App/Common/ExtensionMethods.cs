@@ -1,11 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
 using System.Text;
+using NetDaemon.Common.Fluent;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Useful extension methods used
