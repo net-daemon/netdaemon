@@ -1,11 +1,11 @@
-﻿using Moq;
-using System;
+﻿using System;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Moq;
 using NetDaemon.Daemon.Storage;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Fluent
 {
     public class FluentEventTests
     {
