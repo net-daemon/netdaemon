@@ -17,10 +17,11 @@
 		"coverage-gutters.showLineCoverage": true,
 	},
 	"remoteEnv": {
-		"HASS_TOKEN": "${localEnv:HASS_TOKEN}"
-		"HASS_HOST": "${localEnv:HASS_HOST}"
-		"HASS_PORT": "${localEnv:HASS_PORT}"
-		"HASS_LOGLEVEL": "${localEnv:HASS_LOGLEVEL}"
+		"HASS_TOKEN": "${localEnv:HASS_TOKEN}",
+		"HASS_HOST": "${localEnv:HASS_HOST}",
+		"HASS_PORT": "${localEnv:HASS_PORT}",
+		"HASS_LOGLEVEL": "${localEnv:HASS_LOGLEVEL}",
+		"HASS_DAEMONAPPFOLDER": "${localEnv:HASS_DAEMONAPPFOLDER}"
 	},
 	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
 	// Uncomment the next line if you want to publish any ports.

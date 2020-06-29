@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using System.Linq;
 using System;
@@ -89,16 +90,11 @@ public class BatteryManager : NetDaemonRxApp
     //     Entity(Wh)
     // }
 
-    // private async Task MyMotionSensorStateChange(string entityId, EntityState? newState, EntityState? oldState)
-    // {
-    //     await Entity("light.light1").TurnOn().ExecuteAsync();
-    // }
-
-    // [HomeAssistantServiceCall]
-    // public async Task CallMeFromHass(dynamic data)
-    // {
-    //     Log("A call from hass!");
-    // }
+    [HomeAssistantServiceCall]
+    public void CallMeFromHass(dynamic data)
+    {
+        Log("A call from hass! {data}", data);
+    }
 }
 
 // public static class NotifyExtensions

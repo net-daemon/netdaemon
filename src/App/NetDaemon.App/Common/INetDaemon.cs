@@ -107,15 +107,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func);
 
         /// <summary>
-        ///     Listen to service calls
-        /// </summary>
-        /// <param name="domain">The domain of the service call</param>
-        /// <param name="service">The service being called</param>
-        /// <param name="action">The action to perform when service is called</param>
-        void ListenServiceCall(string domain, string service,
-            Func<dynamic?, Task> action);
-
-        /// <summary>
         ///     Selects one or more media player entities to do action on
         /// </summary>
         /// <param name="app">The Daemon App calling fluent API</param>
@@ -292,15 +283,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                          Func<string, dynamic, Task> action);
 
         /// <summary>
-        ///     Listen to service calls
-        /// </summary>
-        /// <param name="domain">The domain of the service call</param>
-        /// <param name="service">The service being called</param>
-        /// <param name="action">The action to perform when service is called</param>
-        void ListenServiceCall(string domain, string service,
-            Func<dynamic?, Task> action);
-
-        /// <summary>
         ///     Listen to statechange
         /// </summary>
         /// <param name="pattern">Match pattern, entity_id or domain</param>
@@ -403,7 +385,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <param name="value">Value to set, null removes the attribute</param>
         void SetAttribute(string attribute, object? value);
 
-
+        /// <summary>
+        ///     Listen to service calls
+        /// </summary>
+        /// <param name="domain">The domain of the service call</param>
+        /// <param name="service">The service being called</param>
+        /// <param name="action">The action to perform when service is called</param>
+        void ListenServiceCall(string domain, string service,
+            Func<dynamic?, Task> action);
 
 
     }

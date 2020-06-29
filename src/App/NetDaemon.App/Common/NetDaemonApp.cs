@@ -14,9 +14,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     /// </summary>
     public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {
-        private readonly List<(string, string, Func<dynamic?, Task>)> _daemonCallBacksForServiceCalls
-            = new List<(string, string, Func<dynamic?, Task>)>();
-
         private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
                                             new List<(string pattern, Func<string, dynamic, Task> action)>();
 
@@ -24,11 +21,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                     new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
         private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateCallbacks =
                                     new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
-
-        /// <summary>
-        ///     All actions being performed for service call events
-        /// </summary>
-        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
 
         /// <summary>
         ///     All actions being performed for named events
@@ -171,8 +163,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
             _stateCallbacks.Clear();
             _eventCallbacks.Clear();
             _eventFunctionSelectorCallbacks.Clear();
-            _daemonCallBacksForServiceCalls.Clear();
-
+    
             await base.DisposeAsync().ConfigureAwait(false);
         }
 
@@ -242,10 +233,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionSelectorCallbacks.Add((funcSelector, func));
-
-        /// <inheritdoc/>
-        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
-            => _daemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
         public string? ListenState(string pattern,
