@@ -229,6 +229,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                                     _daemonHost.State.Select(n => n.EntityId).Distinct());
 
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
+
+                                                var sourceRx = codeGen.GenerateCodeRx("Netdaemon.Generated.Reactive",
+                                                    _daemonHost.State.Select(n => n.EntityId).Distinct());
+                                                
+                                                System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx);
                                             }
                                         }
                                         await _daemonHost.Initialize().ConfigureAwait(false);

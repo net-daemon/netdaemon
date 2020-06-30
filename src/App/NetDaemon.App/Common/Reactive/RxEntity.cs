@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 
@@ -121,6 +122,40 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
                 throw new ApplicationException($"entity_id is mal formatted {entity}");
 
             return entityParts[0];
+        }
+
+        /// <summary>
+        ///     Calls a service using current entity id/s and the entity domain
+        /// </summary>
+        /// <param name="service">Name of the service to call</param>
+        /// <param name="data">Data to provide</param>
+        public void CallService(string service, dynamic? data = null) 
+        {
+            if (_entityIds is null || _entityIds is object && _entityIds.Count() == 0)
+                return;
+            
+            foreach (var entityId in _entityIds!)
+            {
+                var serviceData = new FluentExpandoObject();
+
+                if (data is ExpandoObject)
+                {
+                    // Maske sure we make a copy since we reuse all info but entity id
+                    serviceData.CopyFrom(data);
+                } 
+                else if (data is object)
+                {
+                    // It is initialized with anonmous type new {transitio=10} for example
+                    var expObject = ((object)data).ToExpandoObject();
+                    serviceData.CopyFrom(expObject);
+                }
+
+                var domain = GetDomainFromEntity(entityId);
+
+                serviceData["entity_id"] = entityId;
+
+                _daemonRxApp.CallService(domain, service, serviceData);
+            }
         }
 
         private void CallServiceOnEntity(string service, dynamic? attributes = null)

@@ -21,6 +21,7 @@
 		"HASS_HOST": "${localEnv:HASS_HOST}",
 		"HASS_PORT": "${localEnv:HASS_PORT}",
 		"HASS_LOGLEVEL": "${localEnv:HASS_LOGLEVEL}",
+		"HASS_GEN_ENTITIES": "${localEnv:HASS_GEN_ENTITIES}",
 		"HASS_DAEMONAPPFOLDER": "${localEnv:HASS_DAEMONAPPFOLDER}"
 	},
 	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
