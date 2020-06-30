@@ -144,6 +144,14 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                                 .AddConsole();
                                         });
 
+        
+        public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            return await _hassClient.GetServices();
+        }
+
         public void CallService(string domain, string service, dynamic? data = null)
         {
             this._cancelToken.ThrowIfCancellationRequested();
