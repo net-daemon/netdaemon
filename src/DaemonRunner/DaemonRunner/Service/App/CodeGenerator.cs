@@ -100,6 +100,77 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             return code.NormalizeWhitespace(indentation: "    ", eol: "\n").ToFullString();
         }
 
+        public string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities)
+        {
+            var code = SyntaxFactory.CompilationUnit();
+
+            // Add Usings statements
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("JoySoftware.HomeAssistant.NetDaemon.Common.Reactive")));
+
+            // Add namespace
+            var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
+
+            // Add support for extensions for entities
+            var extensionClass = SyntaxFactory.ClassDeclaration("GeneratedAppBase");
+
+            extensionClass = extensionClass.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+            extensionClass = extensionClass.AddBaseListTypes(
+                SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("NetDaemonRxApp")));
+
+            // Get all available domains, this is used to create the extensionmethods
+            var domains = GetDomainsFromEntities(entities);
+
+            foreach (var domain in domains)
+            {
+                if (_FluentApiMapper.ContainsKey(domain))
+                {
+                    var camelCaseDomain = domain.ToCamelCase();
+                    var property = $@"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);";
+                    var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
+                    extensionClass = extensionClass.AddMembers(propertyDeclaration);
+                }
+            }
+            namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
+
+            // Add the classes implementing the specific entities
+            foreach (var domain in GetDomainsFromEntities(entities))
+            {
+                if (_FluentApiMapper.ContainsKey(domain))
+                {
+                    var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
+    {{
+        private readonly NetDaemonRxApp _app;
+
+        public {domain.ToCamelCase()}Entities(NetDaemonRxApp app)
+        {{
+            _app = app;
+        }}
+    }}";
+                    var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+                    foreach (var entity in entities.Where(n => n.StartsWith(domain)))
+                    {
+                        
+                        var name = entity[(entity.IndexOf(".") + 1)..];
+                        // Quick check to make sure the name is a valid C# identifier. Should really check to make
+                        // sure it doesn't collide with a reserved keyword as well.
+                        if (!char.IsLetter(name[0]) && (name[0] != '_'))
+                        {
+                            name = "e_" + name;
+                        }
+
+                        var propertyCode = $@"public RxEntity {name.ToCamelCase()} => _app.Entity(""{entity}"");";
+                        var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
+                        entityClass = entityClass.AddMembers(propDeclaration);
+                    }
+                    namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
+                }
+            }
+
+            code = code.AddMembers(namespaceDeclaration);
+
+            return code.NormalizeWhitespace(indentation: "    ", eol: "\n").ToFullString();
+        }
+
         /// <summary>
         ///     Returns a list of domains from all entities
         /// </summary>
