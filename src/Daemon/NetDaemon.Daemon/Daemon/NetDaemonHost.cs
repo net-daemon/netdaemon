@@ -867,6 +867,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
+                        // Call any service call registered
                         if (app.Value is NetDaemonApp netDaemonApp)
                         {
                             foreach (var (domain, service, func) in netDaemonApp.DaemonCallBacksForServiceCalls)
@@ -880,6 +881,15 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                         }
                         else if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
+                            // Call any service call registered
+                            foreach (var (domain, service, func) in netDaemonRxApp.DaemonCallBacksForServiceCalls)
+                            {
+                                if (domain == serviceCallData.Domain &&
+                                    service == serviceCallData.Service)
+                                {
+                                    tasks.Add(func(serviceCallData.Data));
+                                }
+                            }
                             // Call the observable with no blocking
                             foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
                             {
