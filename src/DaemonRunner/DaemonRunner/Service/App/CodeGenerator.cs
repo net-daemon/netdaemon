@@ -66,7 +66,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-                
+
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
                     var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
@@ -128,17 +128,25 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             // Get all available domains, this is used to create the extensionmethods
             var domains = GetDomainsFromEntities(entities);
 
+            var singleServiceDomains = new string[] { "script" };
             foreach (var domain in domains)
             {
                 var camelCaseDomain = domain.ToCamelCase();
-                var property = $@"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);";
+
+                var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) == 0 ? false : true;
+
+                var property = isSingleServiceDomain ?
+                    $@"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
+                    $@"public {camelCaseDomain}Entity {camelCaseDomain} => new {domain.ToCamelCase()}Entity(this, new string[] {{""""}});";
+
                 var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
                 extensionClass = extensionClass.AddMembers(propertyDeclaration);
-        }
+            }
             namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
 
             foreach (var domain in GetDomainsFromEntities(entities))
             {
+
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entity : RxEntity
     {{
         public string EntityId => EntityIds.First();
@@ -159,16 +167,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
 
-                // var entityIdProperty = $@"public string EntityId => EntityIds.First();";
-                // var entityIdPropertyDeclaration = CSharpSyntaxTree.ParseText(entityIdProperty).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
-                // entityClass = entityClass.AddMembers(entityIdPropertyDeclaration);
-
-                // var stateProperty = $@"public EntityState? State => DaemonRxApp.State(EntityId)?.State;";
-                // var statePropertyDeclaration = CSharpSyntaxTree.ParseText(stateProperty).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
-                // entityClass = entityClass.AddMembers(statePropertyDeclaration);
-
                 // They allready have default implementation
-                var skipServices = new string[] {"turn_on", "turn_off", "toggle"};
+                var skipServices = new string[] { "turn_on", "turn_off", "toggle" };
 
                 foreach (var s in services.Where(n => n.Domain == domain).SelectMany(n => n.Services))
                 {
@@ -177,7 +177,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                     var name = s.Service[(s.Service.IndexOf(".") + 1)..];
 
-                    if (Array.IndexOf(skipServices, name) >=0)
+                    if (Array.IndexOf(skipServices, name) >= 0)
                         continue;
 
                     // Quick check to make sure the name is a valid C# identifier. Should really check to make
@@ -186,8 +186,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     {
                         name = "s_" + name;
                     }
-                    var hasEntityId = s.Fields.Count(c => c.Field == "entity_id") > 0? true : false;
-                    var entityAssignmentStatement = hasEntityId? @"serviceData[""entity_id""] = EntityId;" : "";
+                    var hasEntityId = s.Fields.Count(c => c.Field == "entity_id") > 0 ? true : false;
+                    var entityAssignmentStatement = hasEntityId ? @"serviceData[""entity_id""] = EntityId;" : "";
+
                     var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)
                     {{
                         var serviceData = new FluentExpandoObject();
@@ -207,6 +208,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                     ";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
                     entityClass = entityClass.AddMembers(methodDeclaration);
+
                 }
                 namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
 
@@ -215,7 +217,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-    
+
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
     {{
         private readonly NetDaemonRxApp _app;
@@ -228,7 +230,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
                 foreach (var entity in entities.Where(n => n.StartsWith(domain)))
                 {
-                    
+
                     var name = entity[(entity.IndexOf(".") + 1)..];
                     // Quick check to make sure the name is a valid C# identifier. Should really check to make
                     // sure it doesn't collide with a reserved keyword as well.
