@@ -203,6 +203,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ACT
             var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask();
 
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
+
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             var (_, expObject) = GetDynamicObject(
