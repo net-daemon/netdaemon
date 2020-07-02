@@ -1,4 +1,6 @@
 using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
+using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -37,7 +39,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             var code = SyntaxFactory.CompilationUnit();
 
             // Add Usings statements
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("JoySoftware.HomeAssistant.NetDaemon.Common")));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -71,9 +73,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                 {
                     var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
     {{
-        private readonly NetDaemonApp _app;
+        private readonly {nameof(NetDaemonApp)} _app;
 
-        public {domain.ToCamelCase()}Entities(NetDaemonApp app)
+        public {domain.ToCamelCase()}Entities({nameof(NetDaemonApp)} app)
         {{
             _app = app;
         }}
@@ -112,8 +114,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections.Generic")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Dynamic")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("JoySoftware.HomeAssistant.NetDaemon.Common")));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("JoySoftware.HomeAssistant.NetDaemon.Common.Reactive")));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -123,7 +125,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
             extensionClass = extensionClass.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
             extensionClass = extensionClass.AddBaseListTypes(
-                SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("NetDaemonRxApp")));
+                SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(nameof(NetDaemonRxApp))));
 
             // Get all available domains, this is used to create the extensionmethods
             var domains = GetDomainsFromEntities(entities);
@@ -220,9 +222,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
 
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
     {{
-        private readonly NetDaemonRxApp _app;
+        private readonly {nameof(NetDaemonRxApp)} _app;
 
-        public {domain.ToCamelCase()}Entities(NetDaemonRxApp app)
+        public {domain.ToCamelCase()}Entities( {nameof(NetDaemonRxApp)} app)
         {{
             _app = app;
         }}
