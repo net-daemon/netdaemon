@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon.Tests
             var lastChanged = new DateTime(2020, 1, 1, 1, 1, 1, 20);
             var lastUpdated = new DateTime(2020, 1, 1, 1, 1, 1, 50);
 
-            var daemonTask = RunDefauldDaemonUntilCanceled(200); //overrideDebugNotCancel: true
+            var daemonTask = RunDefauldDaemonUntilCanceled(300); //overrideDebugNotCancel: true
 
             await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
 
@@ -48,7 +48,7 @@ namespace NetDaemon.Daemon.Tests
             // ASSERT
             await Task.Delay(10); // After 10ms we should not have call
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Never());
-            await Task.Delay(200); // After 30ms we should have call
+            await Task.Delay(300); // After 30ms we should have call
             DefaultHassClientMock.VerifyCallServiceTimes("turn_off", Times.Once());
             await daemonTask;
 

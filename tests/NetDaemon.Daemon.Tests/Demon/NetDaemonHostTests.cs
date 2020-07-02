@@ -26,6 +26,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
 
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
+
             dynamic helloWorldDataObject = GetDynamicDataObject(HelloWorldData);
 
             DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", helloWorldDataObject);
@@ -55,7 +57,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var app = new AssmeblyDaemonApp();
             app.Id = "id";
 
+
             DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
 
             // ACT
             await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);
@@ -68,7 +72,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void GetStateMissingEntityReturnsNull()
         {
             // ARRANGE
-
+            
             // ACT
             var entity = DefaultDaemonHost.GetState("light.missing_entity");
 
@@ -203,6 +207,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ACT
             var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask();
 
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
+
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
 
             var (_, expObject) = GetDynamicObject(
@@ -225,6 +231,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // Get a running default Daemon
             var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask(500);
+
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
 
             DefaultDaemonHost.InternalDelayTimeForTts = 0; // Allow now extra waittime
 
