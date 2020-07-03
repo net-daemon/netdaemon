@@ -23,6 +23,17 @@ namespace NetDaemon.Common
         private Task? _manageRuntimeInformationUpdatesTask;
 
         /// <summary>
+        ///     Registered callbacks for service calls
+        /// </summary>
+        private readonly List<(string, string, Func<dynamic?, Task>)> _daemonCallBacksForServiceCalls
+            = new List<(string, string, Func<dynamic?, Task>)>();
+
+        /// <summary>
+        ///     All actions being performed for service call events
+        /// </summary>
+        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
+
+        /// <summary>
         ///     Next scheduled time
         /// </summary>
         protected DateTime? NextScheduledEvent { get; set; } = null;
@@ -205,6 +216,8 @@ namespace NetDaemon.Common
             if (_manageRuntimeInformationUpdatesTask is object)
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
+            _daemonCallBacksForServiceCalls.Clear();
+            
             this.IsEnabled = false;
             _lazyStoreStateTask = null;
             _storageObject = null;
@@ -218,6 +231,10 @@ namespace NetDaemon.Common
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.GetApp(appInstanceId);
         }
+
+        /// <inheritdoc/>
+        public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
+            => _daemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
         public void Log(string message) => Log(LogLevel.Information, message);

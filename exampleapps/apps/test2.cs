@@ -1,11 +1,13 @@
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.NetDaemon.Common;
 using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using System.Linq;
 using System;
 using System.Reactive.Linq;
 using System.Collections.Generic;
-// using Netdaemon.Generated.Extensions;
-public class BatteryManager : NetDaemonRxApp
+using Netdaemon.Generated.Reactive;
+public class BatteryManager : GeneratedAppBase //NetDaemonRxApp
+// public class BatteryManager : NetDaemonRxApp 
 {
     // private ISchedulerResult _schedulerResult;
     private int numberOfRuns = 0;
@@ -13,10 +15,11 @@ public class BatteryManager : NetDaemonRxApp
     public string? HelloWorldSecret { get; set; }
     public override async Task InitializeAsync()
     {
+        // Remote.Tvrummet.TurnOn(new {activity="TV"});
+        // Log(Remote.Tvrummet.State);
+        // Log(Remote.Tvrummet.Area);
+
         // SetState("sensor.testing", "on", new { attributeobject = new { aobject = "hello" } });
-        RunEvery(TimeSpan.FromSeconds(5), () => SetAttribute("Time", DateTime.Now));
-        Log("Hello");
-        Log("Hello {name}", "Tomas");
         // RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world!"));
         // RunDaily("13:00:00", () => Log("Hello world!"));
         // RunIn(TimeSpan.FromSeconds(5), () => Entity("light.tomas_rum").TurnOn());
@@ -89,16 +92,11 @@ public class BatteryManager : NetDaemonRxApp
     //     Entity(Wh)
     // }
 
-    // private async Task MyMotionSensorStateChange(string entityId, EntityState? newState, EntityState? oldState)
-    // {
-    //     await Entity("light.light1").TurnOn().ExecuteAsync();
-    // }
-
-    // [HomeAssistantServiceCall]
-    // public async Task CallMeFromHass(dynamic data)
-    // {
-    //     Log("A call from hass!");
-    // }
+    [HomeAssistantServiceCall]
+    public void CallMeFromHass(dynamic data)
+    {
+        Log("A call from hass! {data}", data);
+    }
 }
 
 // public static class NotifyExtensions

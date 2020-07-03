@@ -206,5 +206,45 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal((float)1.5f, scalarValue.ToObject(typeof(float)));
             Assert.Equal((double)1.5, scalarValue.ToObject(typeof(double)));
         }
+
+        [Fact]
+        public void YamlAdvancedObjectsShouldReturnCorrectData()
+        {
+            var yaml = @"
+            a_string: hello world
+            an_int: 10
+            a_bool: true
+            a_string_list:
+            - hi
+            - this
+            - is
+            - cool!
+            devices:
+            - name: tv
+              commands:
+                - name: command1
+                  data: some code
+                - name: command2
+                  data: some code2";
+
+            var yamlConfig = new YamlAppConfig(new List<Type>(), new System.IO.StringReader(yaml), new YamlConfig(ConfigFixturePath), ConfigFixturePath);
+
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+
+            var instance = (AppComplexConfig?)yamlConfig.InstanceAndSetPropertyConfig(typeof(AppComplexConfig), root, "id");
+
+            Assert.Equal("hello world", instance?.AString);
+            Assert.Equal(10, instance?.AnInt);
+            Assert.Equal(true, instance?.ABool);
+            Assert.NotNull(instance?.Devices);
+            Assert.Equal(1, instance?.Devices.Count());
+            Assert.Equal("tv", instance?.Devices.First().name);
+            Assert.Equal("command1", instance?.Devices.First().commands.ElementAt(0).name);
+            Assert.Equal("some code", instance?.Devices.First().commands.ElementAt(0).data);
+            Assert.Equal("command2", instance?.Devices.First().commands.ElementAt(1).name);
+            Assert.Equal("some code2", instance?.Devices.First().commands.ElementAt(1).data);
+        }
     }
 }

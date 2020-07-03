@@ -34,7 +34,7 @@ namespace NetDaemon.Common
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        internal static ExpandoObject ToExpandoObject(this object obj)
+        public static ExpandoObject ToExpandoObject(this object obj)
         {
             // Null-check
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using NetDaemon.Common.Fluent;
@@ -64,8 +65,14 @@ namespace NetDaemon.Common.Reactive
     /// </summary>
     public class RxEntity : ICanTurnOnAndOff, ISetState, IObserve
     {
-        private readonly INetDaemonReactive _daemonRxApp;
-        private readonly IEnumerable<string> _entityIds;
+        /// <summary>
+        ///     The protected daemon app instance
+        /// </summary>
+        protected readonly INetDaemonReactive DaemonRxApp;
+        /// <summary>
+        ///     Entity ids being handled by the RxEntity
+        /// </summary>
+        protected readonly IEnumerable<string> EntityIds;
 
         /// <summary>
         ///     Constructor
@@ -74,8 +81,8 @@ namespace NetDaemon.Common.Reactive
         /// <param name="entityIds">Unique entity id:s</param>
         public RxEntity(INetDaemonReactive daemon, IEnumerable<string> entityIds)
         {
-            _daemonRxApp = daemon;
-            _entityIds = entityIds;
+            DaemonRxApp = daemon;
+            EntityIds = entityIds;
         }
 
         /// <inheritdoc/>
@@ -83,7 +90,7 @@ namespace NetDaemon.Common.Reactive
         {
             get
             {
-                return _daemonRxApp.StateAllChanges.Where(f => _entityIds.Contains(f.New.EntityId));
+                return DaemonRxApp.StateAllChanges.Where(f => EntityIds.Contains(f.New.EntityId));
             }
         }
 
@@ -92,17 +99,17 @@ namespace NetDaemon.Common.Reactive
         {
             get
             {
-                return _daemonRxApp.StateChanges.Where(f => _entityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State);
+                return DaemonRxApp.StateChanges.Where(f => EntityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State);
             }
         }
 
         /// <inheritdoc/>
         public void SetState(dynamic state, dynamic? attributes = null)
         {
-            foreach (var entityId in _entityIds)
+            foreach (var entityId in EntityIds)
             {
                 var domain = GetDomainFromEntity(entityId);
-                _daemonRxApp.SetState(entityId, state, attributes);
+                DaemonRxApp.SetState(entityId, state, attributes);
             }
         }
 
@@ -124,9 +131,43 @@ namespace NetDaemon.Common.Reactive
             return entityParts[0];
         }
 
+        /// <summary>
+        ///     Calls a service using current entity id/s and the entity domain
+        /// </summary>
+        /// <param name="service">Name of the service to call</param>
+        /// <param name="data">Data to provide</param>
+        public void CallService(string service, dynamic? data = null) 
+        {
+            if (EntityIds is null || EntityIds is object && EntityIds.Count() == 0)
+                return;
+            
+            foreach (var entityId in EntityIds!)
+            {
+                var serviceData = new FluentExpandoObject();
+
+                if (data is ExpandoObject)
+                {
+                    // Maske sure we make a copy since we reuse all info but entity id
+                    serviceData.CopyFrom(data);
+                } 
+                else if (data is object)
+                {
+                    // It is initialized with anonmous type new {transitio=10} for example
+                    var expObject = ((object)data).ToExpandoObject();
+                    serviceData.CopyFrom(expObject);
+                }
+
+                var domain = GetDomainFromEntity(entityId);
+
+                serviceData["entity_id"] = entityId;
+
+                DaemonRxApp.CallService(domain, service, serviceData);
+            }
+        }
+
         private void CallServiceOnEntity(string service, dynamic? attributes = null)
         {
-            if (_entityIds is null || _entityIds is object && _entityIds.Count() == 0)
+            if (EntityIds is null || EntityIds is object && EntityIds.Count() == 0)
                 return;
 
             dynamic? data = null;
@@ -139,7 +180,7 @@ namespace NetDaemon.Common.Reactive
                     data = attributes;
             }
 
-            foreach (var entityId in _entityIds!)
+            foreach (var entityId in EntityIds!)
             {
                 var serviceData = new FluentExpandoObject();
 
@@ -153,7 +194,7 @@ namespace NetDaemon.Common.Reactive
 
                 serviceData["entity_id"] = entityId;
 
-                _daemonRxApp.CallService(domain, service, serviceData);
+                DaemonRxApp.CallService(domain, service, serviceData);
             }
         }
     }

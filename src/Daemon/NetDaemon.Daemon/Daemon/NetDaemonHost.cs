@@ -145,6 +145,14 @@ namespace NetDaemon.Daemon
                                                 .AddConsole();
                                         });
 
+        
+        public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
+        {
+            this._cancelToken.ThrowIfCancellationRequested();
+
+            return await _hassClient.GetServices();
+        }
+
         public void CallService(string domain, string service, dynamic? data = null)
         {
             this._cancelToken.ThrowIfCancellationRequested();
@@ -868,6 +876,7 @@ namespace NetDaemon.Daemon
                     var tasks = new List<Task>();
                     foreach (var app in _runningAppInstances)
                     {
+                        // Call any service call registered
                         if (app.Value is NetDaemonApp netDaemonApp)
                         {
                             foreach (var (domain, service, func) in netDaemonApp.DaemonCallBacksForServiceCalls)
@@ -881,6 +890,15 @@ namespace NetDaemon.Daemon
                         }
                         else if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
+                            // Call any service call registered
+                            foreach (var (domain, service, func) in netDaemonRxApp.DaemonCallBacksForServiceCalls)
+                            {
+                                if (domain == serviceCallData.Domain &&
+                                    service == serviceCallData.Service)
+                                {
+                                    tasks.Add(func(serviceCallData.Data));
+                                }
+                            }
                             // Call the observable with no blocking
                             foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
                             {

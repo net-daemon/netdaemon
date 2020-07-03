@@ -92,51 +92,81 @@ namespace NetDaemon.Daemon.Config
 
                 var valueType = entry.Value.NodeType;
 
-                switch (valueType)
-                {
-                    case YamlNodeType.Sequence:
-                        SetPropertyFromYaml(netDaemonApp, prop, (YamlSequenceNode)entry.Value);
-                        break;
+                var instance = InstanceProperty(netDaemonApp, prop.PropertyType, entry.Value);
 
-                    case YamlNodeType.Scalar:
-                        SetPropertyFromYaml(netDaemonApp, prop, (YamlScalarNode)entry.Value);
-                        break;
-
-                    case YamlNodeType.Mapping:
-                        var map = (YamlMappingNode)entry.Value;
-                        break;
-                }
+                prop.SetValue(netDaemonApp, instance);
             }
 
             return netDaemonApp;
         }
 
-        public void SetPropertyFromYaml(INetDaemonAppBase app, PropertyInfo prop, YamlSequenceNode seq)
+        private object? InstanceProperty(Object? parent, Type instanceType, YamlNode node)
         {
-            if (prop.PropertyType.IsGenericType && prop.PropertyType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+
+            if (node.NodeType == YamlNodeType.Scalar)
             {
-                Type listType = prop.PropertyType?.GetGenericArguments()[0] ??
-                    throw new NullReferenceException($"The property {prop.Name} of Class {app.GetType().Name} is not compatible with configuration");
-
-                IList list = listType.CreateListOfPropertyType() ??
-                    throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
-
-                foreach (YamlNode item in seq.Children)
-                {
-                    if (item.NodeType != YamlNodeType.Scalar)
-                    {
-                        throw new NotSupportedException($"The property {prop.Name} of Class {app.GetType().Name} is not compatible with configuration");
-                    }
-                    var scalarNode = (YamlScalarNode)item;
-                    ReplaceSecretIfExists(scalarNode);
-                    var value = ((YamlScalarNode)item).ToObject(listType) ??
-                        throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} has wrong type in items");
-
-                    list.Add(value);
-                }
-                // Bind the list to the property
-                prop.SetValue(app, list);
+                var scalarNode = (YamlScalarNode)node;
+                ReplaceSecretIfExists(scalarNode);
+                return ((YamlScalarNode)node).ToObject(instanceType);
             }
+            else if (node.NodeType == YamlNodeType.Sequence)
+            {
+                if (instanceType.IsGenericType && instanceType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                {
+                    Type listType = instanceType?.GetGenericArguments()[0] ??
+                        throw new NullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
+
+                    IList list = listType.CreateListOfPropertyType() ??
+                        throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
+
+                    foreach (YamlNode item in ((YamlSequenceNode)node).Children)
+                    {
+
+                        var instance = InstanceProperty(null, listType, item) ??
+                            throw new NotSupportedException($"The class {parent?.GetType().Name} has wrong type in items");
+
+                        list.Add(instance);
+                    }
+
+                    return list;
+                }
+            }
+            else if (node.NodeType == YamlNodeType.Mapping)
+            {
+                var instance = Activator.CreateInstance(instanceType);
+
+                foreach (KeyValuePair<YamlNode, YamlNode> entry in ((YamlMappingNode)node).Children)
+                {
+                    string? scalarPropertyName = ((YamlScalarNode)entry.Key).Value;
+                    // Just continue to next configuration if null or class declaration
+                    if (scalarPropertyName == null) continue;
+
+                    var childProp = instanceType.GetYamlProperty(scalarPropertyName) ??
+                        throw new MissingMemberException($"{scalarPropertyName} is missing from the type {instanceType}");
+
+                    var valueType = entry.Value.NodeType;
+                    Object? result = null;
+
+                    switch (valueType)
+                    {
+                        case YamlNodeType.Sequence:
+                            result = InstanceProperty(instance, childProp.PropertyType, (YamlSequenceNode)entry.Value);
+
+                            break;
+
+                        case YamlNodeType.Scalar:
+                            result = InstanceProperty(instance, childProp.PropertyType, (YamlScalarNode)entry.Value);
+                            break;
+
+                        case YamlNodeType.Mapping:
+                            var map = (YamlMappingNode)entry.Value;
+                            break;
+                    }
+                    childProp.SetValue(instance, result);
+                }
+                return instance;
+            }
+            return null;
         }
 
         private void ReplaceSecretIfExists(YamlScalarNode scalarNode)
@@ -147,16 +177,6 @@ namespace NetDaemon.Daemon.Config
             var secretReplacement = _yamlConfig.GetSecretFromPath(scalarNode.Value!, Path.GetDirectoryName(_yamlFilePath)!);
 
             scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
-        }
-
-        public void SetPropertyFromYaml(INetDaemonAppBase app, PropertyInfo prop, YamlScalarNode sc)
-        {
-            ReplaceSecretIfExists(sc);
-            var scalarValue = sc.ToObject(prop.PropertyType) ??
-                throw new NotSupportedException($"The class {app.GetType().Name} and property {prop.Name} unexpected value {sc.Value} is wrong type");
-
-            // Bind the list to the property
-            prop.SetValue(app, scalarValue);
         }
 
         private string? GetTypeNameFromClassConfig(YamlMappingNode appNode)

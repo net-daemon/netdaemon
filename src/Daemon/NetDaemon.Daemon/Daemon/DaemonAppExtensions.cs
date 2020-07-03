@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
+using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -27,7 +28,7 @@ namespace NetDaemon.Daemon
                         switch (attr)
                         {
                             case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
-                                await HandleServiceCallAttribute(_daemon, daemonApp, method).ConfigureAwait(false);
+                                await HandleServiceCallAttribute(_daemon, daemonApp, method, true).ConfigureAwait(false);
                                 break;
 
                             case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
@@ -35,13 +36,22 @@ namespace NetDaemon.Daemon
                                 break;
                         }
                     }
+                    else if (netDaemonApp is NetDaemonRxApp daemonRxApp)
+                    {
+                        switch (attr)
+                        {
+                            case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
+                                await HandleServiceCallAttribute(_daemon, daemonRxApp, method, false).ConfigureAwait(false);
+                                break;
+                        }
+                    }
                 }
             }
         }
 
-        private static (bool, string) CheckIfServiceCallSignatureIsOk(MethodInfo method)
+        private static (bool, string) CheckIfServiceCallSignatureIsOk(MethodInfo method, bool async)
         {
-            if (method.ReturnType != typeof(Task))
+            if (async && method.ReturnType != typeof(Task))
                 return (false, $"{method.Name} has not correct return type, expected Task");
 
             var parameters = method.GetParameters();
@@ -79,9 +89,9 @@ namespace NetDaemon.Daemon
             return (true, string.Empty);
         }
 
-        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonApp netDaemonApp, MethodInfo method)
+        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonAppBase netDaemonApp, MethodInfo method, bool async=true)
         {
-            var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method);
+            var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method, async);
             if (!signatureOk)
             {
                 _daemon.Logger.LogWarning(err);
@@ -99,6 +109,7 @@ namespace NetDaemon.Daemon
                     try
                     {
                         var expObject = data as ExpandoObject;
+
                         await method.InvokeAsync(netDaemonApp, expObject!).ConfigureAwait(false);
                     }
                     catch (Exception e)
@@ -107,6 +118,7 @@ namespace NetDaemon.Daemon
                     }
                 });
         }
+        
 
         private static void HandleStateChangedAttribute(
                                     INetDaemon _daemon,

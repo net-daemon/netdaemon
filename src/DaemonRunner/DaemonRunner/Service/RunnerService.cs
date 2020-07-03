@@ -226,8 +226,14 @@ namespace NetDaemon.Service
                                                 var codeGen = new CodeGenerator();
                                                 var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
                                                     _daemonHost.State.Select(n => n.EntityId).Distinct());
-
+                                                
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
+                                                
+                                                var services = await _daemonHost.GetAllServices();
+                                                var sourceRx = codeGen.GenerateCodeRx("Netdaemon.Generated.Reactive",
+                                                    _daemonHost.State.Select(n => n.EntityId).Distinct(), services);
+                                                
+                                                System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx);
                                             }
                                         }
                                         await _daemonHost.Initialize().ConfigureAwait(false);

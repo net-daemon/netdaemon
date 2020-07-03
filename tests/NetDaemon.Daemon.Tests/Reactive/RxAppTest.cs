@@ -86,7 +86,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task NewEventMissingDataAttributeShouldReturnNull()
         {
             // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask();
+            var daemonTask = await GetConnectedNetDaemonTask(200);
             string? missingAttribute = "has initial value";
 
             // ACT
