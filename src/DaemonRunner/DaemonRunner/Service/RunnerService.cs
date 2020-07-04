@@ -8,112 +8,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Storage;
 using NetDaemon.Service.App;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
 
 namespace NetDaemon.Service
 {
-    public static class Runner
-    {
-        private const string _hassioConfigPath = "/data/options.json";
-        private static LoggingLevelSwitch _levelSwitch = new LoggingLevelSwitch();
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseSerilog()
-                .ConfigureServices(services =>
-                {
-                    services.AddHttpClient();
-                    services.AddHostedService<RunnerService>();
-                });
-
-        public static async Task Run(string[] args)
-        {
-            try
-            {
-                // Setup serilog
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                    .Enrich.FromLogContext()
-                    .MinimumLevel.ControlledBy(_levelSwitch)
-                    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
-                    .CreateLogger();
-
-                if (File.Exists(_hassioConfigPath))
-                {
-                    try
-                    {
-                        var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(
-                                                      File.OpenRead(_hassioConfigPath)).ConfigureAwait(false);
-                        if (hassAddOnSettings.LogLevel is object)
-                        {
-                            _levelSwitch.MinimumLevel = hassAddOnSettings.LogLevel switch
-                            {
-                                "info" => LogEventLevel.Information,
-                                "debug" => LogEventLevel.Debug,
-                                "error" => LogEventLevel.Error,
-                                "warning" => LogEventLevel.Warning,
-                                "trace" => LogEventLevel.Verbose,
-                                _ => LogEventLevel.Information
-                            };
-                        }
-                        if (hassAddOnSettings.GenerateEntitiesOnStart is object)
-                        {
-                            Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
-                        }
-                        if (hassAddOnSettings.LogMessages is object && hassAddOnSettings.LogMessages == true)
-                        {
-                            Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
-                        }
-                        if (hassAddOnSettings.ProjectFolder is object &&
-                            string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
-                        {
-                            Environment.SetEnvironmentVariable("HASS_RUN_PROJECT_FOLDER", hassAddOnSettings.ProjectFolder);
-                        }
-
-                        // We are in Hassio so hard code the path
-                        Environment.SetEnvironmentVariable("HASS_DAEMONAPPFOLDER", "/config/netdaemon");
-                    }
-                    catch (System.Exception e)
-                    {
-                        Log.Fatal(e, "Failed to read the Home Assistant Add-on config");
-                    }
-                }
-                else
-                {
-                    var envLogLevel = Environment.GetEnvironmentVariable("HASS_LOG_LEVEL");
-                    _levelSwitch.MinimumLevel = envLogLevel switch
-                    {
-                        "info" => LogEventLevel.Information,
-                        "debug" => LogEventLevel.Debug,
-                        "error" => LogEventLevel.Error,
-                        "warning" => LogEventLevel.Warning,
-                        "trace" => LogEventLevel.Verbose,
-                        _ => LogEventLevel.Information
-                    };
-                }
-
-                CreateHostBuilder(args).Build().Run();
-            }
-            catch (Exception e)
-            {
-                Log.Fatal(e, "Failed to start host...");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-        }
-    }
-
     public class RunnerService : BackgroundService
     {
         /// <summary>
