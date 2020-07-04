@@ -10,3 +10,4 @@ codecover
 .generated
 scripts/version.txt
 packages/
+_EntityExtensions*
