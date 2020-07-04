@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
 using System.Linq;
 using System;
 using System.Reactive.Linq;
 using System.Collections.Generic;
 using Netdaemon.Generated.Reactive;
+using NetDaemon.Common;
+
 public class BatteryManager : GeneratedAppBase //NetDaemonRxApp
 // public class BatteryManager : NetDaemonRxApp 
 {

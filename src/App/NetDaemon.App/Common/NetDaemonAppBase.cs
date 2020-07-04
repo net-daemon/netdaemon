@@ -217,7 +217,7 @@ namespace NetDaemon.Common
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
             _daemonCallBacksForServiceCalls.Clear();
-            
+
             this.IsEnabled = false;
             _lazyStoreStateTask = null;
             _storageObject = null;
@@ -284,10 +284,10 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         public void LogInformation(Exception exception, string message) => Log(LogLevel.Information, exception, message);
-        
+
         /// <inheritdoc/>
         public void LogInformation(string message, params object[] param) => Log(LogLevel.Information, message, param);
-        
+
         /// <inheritdoc/>
         public void LogInformation(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
 
@@ -435,7 +435,7 @@ namespace NetDaemon.Common
                 runtimeInfo.HasError = true;
             }
 
-            await _daemon.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", runtimeInfo)).ConfigureAwait(false);
+            await _daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", runtimeInfo)).ConfigureAwait(false);
         }
 
 

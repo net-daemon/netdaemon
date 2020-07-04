@@ -14,7 +14,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -33,7 +34,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
             var app = new FluentTestApp();
             app.Id = "id";
@@ -76,7 +77,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -119,7 +120,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -162,7 +163,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -204,7 +205,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -245,7 +246,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 

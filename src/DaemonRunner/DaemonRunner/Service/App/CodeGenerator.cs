@@ -40,6 +40,7 @@ namespace NetDaemon.Service.App
 
             // Add Usings statements
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemon.Common.Fluent.IMediaPlayer).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -116,6 +117,7 @@ namespace NetDaemon.Service.App
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonRxApp).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemon.Common.Fluent.FluentExpandoObject).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();

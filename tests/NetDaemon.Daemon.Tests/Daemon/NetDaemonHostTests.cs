@@ -71,7 +71,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void GetStateMissingEntityReturnsNull()
         {
             // ARRANGE
-            
+
             // ACT
             var entity = DefaultDaemonHost.GetState("light.missing_entity");
 
@@ -157,7 +157,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACT and ASSERT
             Assert.Throws<ArgumentNullException>(() =>
-                { var DefaultDaemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, null, null); });
+                { var DefaultDaemonHost = new NetDaemonHost(null, null); });
         }
 
         [Fact]

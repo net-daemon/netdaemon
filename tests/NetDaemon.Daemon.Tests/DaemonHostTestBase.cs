@@ -36,7 +36,6 @@ namespace NetDaemon.Daemon.Tests
 
             _defaultHttpHandlerMock = new HttpHandlerMock();
             _defaultDaemonHost = new NetDaemonHost(
-                new Mock<IInstanceDaemonApp>().Object,
                 _defaultHassClientMock.Object,
                 _defaultDataRepositoryMock.Object,
                 _loggerMock.LoggerFactory,
@@ -59,7 +58,7 @@ namespace NetDaemon.Daemon.Tests
             _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
             _defaultDaemonHost.InternalRunningAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
 
-            _notConnectedDaemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
+            _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, _defaultDataRepositoryMock.Object, _loggerMock.LoggerFactory);
         }
 
         public Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;

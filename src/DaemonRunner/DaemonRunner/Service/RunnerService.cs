@@ -170,15 +170,9 @@ namespace NetDaemon.Service
                 bool generatedEntities = false;
 
                 CollectibleAssemblyLoadContext? alc = null;
-                IEnumerable<Type>? loadedDaemonApps;
+                IEnumerable<Type>? loadedDaemonApps = null;
 
-                (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
-                if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
-                {
-                    _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
-                    return;
-                }
-                IInstanceDaemonApp codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                IInstanceDaemonApp? codeManager = null;
 
                 // {
                 //     await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
@@ -197,7 +191,6 @@ namespace NetDaemon.Service
 
                         await using var _daemonHost =
                             new NetDaemonHost(
-                                codeManager,
                                 new HassClient(_loggerFactory),
                                 new DataRepository(storageFolder),
                                 _loggerFactory,
@@ -226,17 +219,28 @@ namespace NetDaemon.Service
                                                 var codeGen = new CodeGenerator();
                                                 var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
                                                     _daemonHost.State.Select(n => n.EntityId).Distinct());
-                                                
+
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
-                                                
+
                                                 var services = await _daemonHost.GetAllServices();
                                                 var sourceRx = codeGen.GenerateCodeRx("Netdaemon.Generated.Reactive",
                                                     _daemonHost.State.Select(n => n.EntityId).Distinct(), services);
-                                                
+
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx);
                                             }
                                         }
-                                        await _daemonHost.Initialize().ConfigureAwait(false);
+                                        if (loadedDaemonApps is null)
+                                        {
+                                            (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
+                                        }
+
+                                        if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
+                                        {
+                                            _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                                            return;
+                                        }
+                                        codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                                        await _daemonHost.Initialize(codeManager).ConfigureAwait(false);
 
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);

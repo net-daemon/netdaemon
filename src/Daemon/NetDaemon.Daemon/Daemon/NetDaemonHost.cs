@@ -46,7 +46,7 @@ namespace NetDaemon.Daemon
         // internal so we can use for unittest
         internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
-        private readonly IInstanceDaemonApp _appInstanceManager;
+        private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
         private readonly CancellationTokenSource _cancelDaemon = new CancellationTokenSource();
@@ -99,7 +99,6 @@ namespace NetDaemon.Daemon
         /// <param name="httpHandler">Http handler to use</param>
         /// <param name="appInstanceManager">Handles instances of apps</param>
         public NetDaemonHost(
-            IInstanceDaemonApp appInstanceManager,
             IHassClient? hassClient,
             IDataRepository? repository,
             ILoggerFactory? loggerFactory = null,
@@ -112,7 +111,6 @@ namespace NetDaemon.Daemon
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
-            _appInstanceManager = appInstanceManager;
             Logger.LogInformation("Instance NetDaemonHost");
         }
 
@@ -145,7 +143,7 @@ namespace NetDaemon.Daemon
                                                 .AddConsole();
                                         });
 
-        
+
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
             this._cancelToken.ThrowIfCancellationRequested();
@@ -288,10 +286,12 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public async Task Initialize()
+        public async Task Initialize(IInstanceDaemonApp appInstanceManager)
         {
             if (!Connected)
                 throw new ApplicationException("NetDaemon is not connected, no use in initializing");
+
+            _appInstanceManager = appInstanceManager;
 
             await LoadAllApps().ConfigureAwait(false);
             EnableApplicationDiscoveryServiceAsync();
@@ -1186,6 +1186,8 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         private async Task LoadAllApps()
         {
+            _ = _appInstanceManager ?? throw new NullReferenceException(nameof(_appInstanceManager));
+
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
 
