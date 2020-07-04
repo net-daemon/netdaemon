@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,11 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using NetDaemon.Common;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Config
+namespace NetDaemon.Daemon.Config
 {
     public class YamlAppConfig
     {

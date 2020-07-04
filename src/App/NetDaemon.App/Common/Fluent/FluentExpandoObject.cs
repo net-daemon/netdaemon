@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common.Fluent
 {
     /// <summary>
     ///     A custom expando object to alow to return null values if properties does not exist

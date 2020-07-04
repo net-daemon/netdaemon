@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
+namespace NetDaemon.Daemon.Storage
 {
     public interface IDataRepository
     {

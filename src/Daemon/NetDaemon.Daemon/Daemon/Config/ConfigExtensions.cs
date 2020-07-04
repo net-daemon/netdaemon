@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Config
+namespace NetDaemon.Daemon.Config
 {
     // public interface IDaemonAppConfig
     // {

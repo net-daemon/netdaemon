@@ -1,5 +1,4 @@
 ﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
 using System;
 using System.Collections.Concurrent;
@@ -7,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using NetDaemon.Common;
+using NetDaemon.Common.Fluent;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests

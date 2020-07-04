@@ -1,18 +1,18 @@
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Config;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using JoySoftware.HomeAssistant.Client;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
+namespace NetDaemon.Service.App
 {
     public class CodeGenerator
     {
@@ -39,7 +39,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             var code = SyntaxFactory.CompilationUnit();
 
             // Add Usings statements
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -114,8 +114,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections.Generic")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Dynamic")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp).Namespace!)));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonRxApp).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();

@@ -1,12 +1,11 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using Moq;
-using System;
+﻿using System;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Moq;
+using NetDaemon.Daemon.Storage;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Fluent
 {
     public class FluentEventTests
     {
@@ -285,5 +284,5 @@ namespace NetDaemon.Daemon.Tests
         }
     }
 
-    public class FluentTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class FluentTestApp : NetDaemon.Common.NetDaemonApp { }
 }

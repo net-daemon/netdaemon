@@ -1,22 +1,23 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using NetDaemon.Common;
+using NetDaemon.Common.Fluent;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class AppTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp : NetDaemon.Common.NetDaemonApp { }
 
-    public class AppTestApp2 : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp2 : NetDaemon.Common.NetDaemonApp { }
 
     public class NetDaemonApptests
     {
         private const string appTemplate = "  app: ";
         private readonly LoggerMock _logMock;
-        private JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
+        private NetDaemon.Common.NetDaemonApp _app;
         private Mock<INetDaemon> _netDaemonMock;
 
         public NetDaemonApptests()

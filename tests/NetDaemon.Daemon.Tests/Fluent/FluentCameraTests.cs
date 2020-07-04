@@ -1,11 +1,11 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Microsoft.Extensions.Logging;
-using Moq;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NetDaemon.Common;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Fluent
 {
     /// <summary>
     ///     Tests the fluent API parts of the daemon

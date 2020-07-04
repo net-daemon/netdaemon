@@ -1,14 +1,13 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using Moq;
 using System;
 using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Moq;
+using NetDaemon.Common.Reactive;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Reactive
 {
     /// <summary>
     ///     Tests the fluent API parts of the daemon

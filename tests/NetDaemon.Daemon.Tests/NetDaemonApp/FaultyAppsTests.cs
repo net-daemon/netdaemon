@@ -5,11 +5,11 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class DaemonAppTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class DaemonAppTestApp : NetDaemon.Common.NetDaemonApp { }
 
     public class FaultyAppTests : DaemonHostTestBase
     {
-        private readonly JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp _app;
+        private readonly NetDaemon.Common.NetDaemonApp _app;
 
         public FaultyAppTests() : base()
         {
@@ -19,7 +19,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _app.StartUpAsync(DefaultDaemonHost);
         }
 
-        public JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp App => _app;
+        public NetDaemon.Common.NetDaemonApp App => _app;
 
         [Fact]
         public async Task ARunTimeErrorShouldLogError()

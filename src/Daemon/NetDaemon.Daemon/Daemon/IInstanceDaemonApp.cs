@@ -1,10 +1,10 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
     /// <summary>
     ///     Interface for objects implementing the InstanceDeamonApps features
