@@ -94,6 +94,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         ///     The state
         /// </summary>
         public dynamic? State { get; set; } = "";
+
+        /// <summary>
+        /// Context
+        /// </summary>
+        public Context? Context { get; set; }
     }
 
     /// <summary>

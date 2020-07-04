@@ -10,7 +10,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
     ///     Implements interface for managing entities in the fluent API
     /// </summary>
     public class EntityManager : EntityBase, IEntity, IAction,
-        IStateEntity, IState, IStateAction, IScript, IDelayStateChange
+        IStateEntity, IState, IStateAction, IScript
     {
         /// <summary>
         ///     Constructor

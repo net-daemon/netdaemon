@@ -70,7 +70,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         {
             get
             {
-                _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+                _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
                 return _daemon!.Http;
             }
         }
@@ -132,9 +132,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 expStore.CopyFrom(obj);
             }
 
-            var appInfo = _daemon!.State
-                                  .Where(s => s.EntityId == EntityId)
-                                  .FirstOrDefault();
+            var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
 
             var appState = appInfo?.State as string;
             if (appState == null || (appState != "on" && appState != "off"))
@@ -182,9 +180,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         private async Task HandleLazyStorage()
         {
-            _ = _storageObject as FluentExpandoObject ??
+            _ = _storageObject ??
                 throw new NullReferenceException($"{nameof(_storageObject)} cant be null!");
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
             while (!_cancelSource.IsCancellationRequested)
             {
@@ -227,7 +225,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// <inheritdoc/>
         public INetDaemonAppBase? GetApp(string appInstanceId)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.GetApp(appInstanceId);
         }
 
@@ -411,7 +409,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         private async Task HandleUpdateRuntimeInformation()
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
             var runtimeInfo = new AppRuntimeInfo
             {
