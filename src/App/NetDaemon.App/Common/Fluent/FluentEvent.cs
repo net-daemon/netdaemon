@@ -10,7 +10,7 @@ namespace NetDaemon.Common.Fluent
     public interface IFluentEvent
     {
         /// <summary>
-        ///     The fuction to execute
+        ///     The function to execute
         /// </summary>
         /// <param name="func"></param>
         IExecute Call(Func<string, dynamic?, Task>? func);

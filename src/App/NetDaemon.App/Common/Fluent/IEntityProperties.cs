@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common.Fluent
 {
     /// <summary>
     ///     Properties on entities that can be filtered in lambda expression
@@ -37,14 +37,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
         /// </summary>
         dynamic? State { get; set; }
 
-        public Context Context { get; set; }
-    }
-
-    public class Context
-    {
-        public string Id { get; set; }
-        public string ParentId { get; set; }
-        public string UserId { get; set; }
-
+        /// <summary>
+        ///     Context
+        /// </summary>
+        public Context? Context { get; set; }
     }
 }
