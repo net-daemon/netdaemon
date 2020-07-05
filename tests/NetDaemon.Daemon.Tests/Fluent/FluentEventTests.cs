@@ -1,12 +1,11 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using Moq;
-using System;
+﻿using System;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Moq;
+using NetDaemon.Daemon.Storage;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Fluent
 {
     public class FluentEventTests
     {
@@ -15,7 +14,8 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
+
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -34,7 +34,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
             var app = new FluentTestApp();
             app.Id = "id";
@@ -77,7 +77,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -120,7 +120,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -163,7 +163,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -205,7 +205,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -246,7 +246,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
-            await using var daemonHost = new NetDaemonHost(new Mock<IInstanceDaemonApp>().Object, hcMock.Object, new Mock<IDataRepository>().Object);
+            await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
             var app = new FluentTestApp();
             app.Id = "id";
 
@@ -285,5 +285,5 @@ namespace NetDaemon.Daemon.Tests
         }
     }
 
-    public class FluentTestApp : JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp { }
+    public class FluentTestApp : NetDaemon.Common.NetDaemonApp { }
 }

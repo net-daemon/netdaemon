@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common.Reactive
+namespace NetDaemon.Common.Reactive
 {
     /// <summary>
     ///     Implements a IDisposable to cancel timers

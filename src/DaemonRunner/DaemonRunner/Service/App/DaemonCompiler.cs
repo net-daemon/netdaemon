@@ -1,10 +1,3 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,10 +6,19 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
+using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
+namespace NetDaemon.Service.App
 {
 
     internal class CollectibleAssemblyLoadContext : AssemblyLoadContext
@@ -112,11 +114,11 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App
                         MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.NetDaemonApp).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(JoySoftware.HomeAssistant.NetDaemon.Common.Reactive.NetDaemonRxApp).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.RunnerService).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(NetDaemonApp).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(NetDaemonRxApp).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(RunnerService).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(JoySoftware.HomeAssistant.NetDaemon.Daemon.NetDaemonHost).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(NetDaemonHost).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
                     };
 

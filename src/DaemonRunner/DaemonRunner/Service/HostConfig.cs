@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
+namespace NetDaemon.Service
 {
     public class HostConfig
     {

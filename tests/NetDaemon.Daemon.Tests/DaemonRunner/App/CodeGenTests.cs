@@ -1,5 +1,5 @@
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
 using System.Linq;
+using NetDaemon.Service.App;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App

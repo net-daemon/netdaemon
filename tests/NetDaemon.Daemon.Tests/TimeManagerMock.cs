@@ -1,5 +1,4 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using Moq;
+﻿using Moq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

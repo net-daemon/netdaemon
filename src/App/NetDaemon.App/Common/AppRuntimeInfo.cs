@@ -1,9 +1,8 @@
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Runtime information an app instance. The app instance is a switch in

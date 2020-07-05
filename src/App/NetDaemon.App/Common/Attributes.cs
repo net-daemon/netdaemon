@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Type of log to supress

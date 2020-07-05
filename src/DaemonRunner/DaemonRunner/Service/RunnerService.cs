@@ -1,120 +1,21 @@
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service.App;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Client;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NetDaemon.Daemon;
+using NetDaemon.Daemon.Storage;
+using NetDaemon.Service.App;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
+namespace NetDaemon.Service
 {
-    public static class Runner
-    {
-        private const string _hassioConfigPath = "/data/options.json";
-        private static LoggingLevelSwitch _levelSwitch = new LoggingLevelSwitch();
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseSerilog()
-                .ConfigureServices(services =>
-                {
-                    services.AddHttpClient();
-                    services.AddHostedService<RunnerService>();
-                });
-
-        public static async Task Run(string[] args)
-        {
-            try
-            {
-                // Setup serilog
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                    .Enrich.FromLogContext()
-                    .MinimumLevel.ControlledBy(_levelSwitch)
-                    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
-                    .CreateLogger();
-
-                if (File.Exists(_hassioConfigPath))
-                {
-                    try
-                    {
-                        var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(
-                                                      File.OpenRead(_hassioConfigPath)).ConfigureAwait(false);
-                        if (hassAddOnSettings.LogLevel is object)
-                        {
-                            _levelSwitch.MinimumLevel = hassAddOnSettings.LogLevel switch
-                            {
-                                "info" => LogEventLevel.Information,
-                                "debug" => LogEventLevel.Debug,
-                                "error" => LogEventLevel.Error,
-                                "warning" => LogEventLevel.Warning,
-                                "trace" => LogEventLevel.Verbose,
-                                _ => LogEventLevel.Information
-                            };
-                        }
-                        if (hassAddOnSettings.GenerateEntitiesOnStart is object)
-                        {
-                            Environment.SetEnvironmentVariable("HASS_GEN_ENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
-                        }
-                        if (hassAddOnSettings.LogMessages is object && hassAddOnSettings.LogMessages == true)
-                        {
-                            Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
-                        }
-                        if (hassAddOnSettings.ProjectFolder is object &&
-                            string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
-                        {
-                            Environment.SetEnvironmentVariable("HASS_RUN_PROJECT_FOLDER", hassAddOnSettings.ProjectFolder);
-                        }
-
-                        // We are in Hassio so hard code the path
-                        Environment.SetEnvironmentVariable("HASS_DAEMONAPPFOLDER", "/config/netdaemon");
-                    }
-                    catch (System.Exception e)
-                    {
-                        Log.Fatal(e, "Failed to read the Home Assistant Add-on config");
-                    }
-                }
-                else
-                {
-                    var envLogLevel = Environment.GetEnvironmentVariable("HASS_LOG_LEVEL");
-                    _levelSwitch.MinimumLevel = envLogLevel switch
-                    {
-                        "info" => LogEventLevel.Information,
-                        "debug" => LogEventLevel.Debug,
-                        "error" => LogEventLevel.Error,
-                        "warning" => LogEventLevel.Warning,
-                        "trace" => LogEventLevel.Verbose,
-                        _ => LogEventLevel.Information
-                    };
-                }
-
-                CreateHostBuilder(args).Build().Run();
-            }
-            catch (Exception e)
-            {
-                Log.Fatal(e, "Failed to start host...");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-        }
-    }
-
     public class RunnerService : BackgroundService
     {
         /// <summary>
@@ -171,15 +72,9 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                 bool generatedEntities = false;
 
                 CollectibleAssemblyLoadContext? alc = null;
-                IEnumerable<Type>? loadedDaemonApps;
+                IEnumerable<Type>? loadedDaemonApps = null;
 
-                (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
-                if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
-                {
-                    _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
-                    return;
-                }
-                IInstanceDaemonApp codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                IInstanceDaemonApp? codeManager = null;
 
                 // {
                 //     await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
@@ -198,7 +93,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
 
                         await using var _daemonHost =
                             new NetDaemonHost(
-                                codeManager,
                                 new HassClient(_loggerFactory),
                                 new DataRepository(storageFolder),
                                 _loggerFactory,
@@ -227,17 +121,28 @@ namespace JoySoftware.HomeAssistant.NetDaemon.DaemonRunner.Service
                                                 var codeGen = new CodeGenerator();
                                                 var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
                                                     _daemonHost.State.Select(n => n.EntityId).Distinct());
-                                                
+
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
-                                                
+
                                                 var services = await _daemonHost.GetAllServices();
                                                 var sourceRx = codeGen.GenerateCodeRx("Netdaemon.Generated.Reactive",
                                                     _daemonHost.State.Select(n => n.EntityId).Distinct(), services);
-                                                
+
                                                 System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx);
                                             }
                                         }
-                                        await _daemonHost.Initialize().ConfigureAwait(false);
+                                        if (loadedDaemonApps is null)
+                                        {
+                                            (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
+                                        }
+
+                                        if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
+                                        {
+                                            _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                                            return;
+                                        }
+                                        codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                                        await _daemonHost.Initialize(codeManager).ConfigureAwait(false);
 
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);

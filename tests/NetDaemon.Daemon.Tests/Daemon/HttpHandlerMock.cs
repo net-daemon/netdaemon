@@ -1,10 +1,10 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using Moq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NetDaemon.Common;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {

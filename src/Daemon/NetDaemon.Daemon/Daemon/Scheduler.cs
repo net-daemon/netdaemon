@@ -1,6 +1,4 @@
-﻿using JoySoftware.HomeAssistant.NetDaemon.Common;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,8 +6,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using NetDaemon.Common;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
     /// <summary>
     ///     Interface to be able to mock the time

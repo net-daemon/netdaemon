@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <RootNamespace>JoySoftware.HomeAssistant.NetDaemon</RootNamespace>
+    <RootNamespace>NetDaemon</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.DaemonRunner</PackageId>
     <Version>0.1.29-alpha</Version>
     <Authors>helto4real</Authors>
@@ -18,8 +18,8 @@
     </PackageDescription>
     <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
     <tags>Home Assistant</tags>
-
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="JoySoftware.HassClient" Version="0.5.5-beta" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.6.0" />
@@ -27,10 +27,11 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.5" />
     <PackageReference Include="YamlDotNet" Version="8.1.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
-
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
     <ProjectReference Include="..\..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
   </ItemGroup>
+  
 </Project>

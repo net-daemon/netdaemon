@@ -1,11 +1,10 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
-namespace NetDaemon.Daemon.Tests
+namespace NetDaemon.Daemon.Tests.Reactive
 {
     /// <summary>
     ///     Tests the fluent API parts of the daemon

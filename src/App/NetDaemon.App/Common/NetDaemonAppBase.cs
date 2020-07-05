@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,8 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using NetDaemon.Common.Fluent;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Base class for all NetDaemon App types
@@ -214,7 +215,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
             _daemonCallBacksForServiceCalls.Clear();
-            
+
             this.IsEnabled = false;
             _lazyStoreStateTask = null;
             _storageObject = null;
@@ -281,10 +282,10 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
 
         /// <inheritdoc/>
         public void LogInformation(Exception exception, string message) => Log(LogLevel.Information, exception, message);
-        
+
         /// <inheritdoc/>
         public void LogInformation(string message, params object[] param) => Log(LogLevel.Information, message, param);
-        
+
         /// <inheritdoc/>
         public void LogInformation(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
 
@@ -432,7 +433,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Common
                 runtimeInfo.HasError = true;
             }
 
-            await _daemon.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", runtimeInfo)).ConfigureAwait(false);
+            await _daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", runtimeInfo)).ConfigureAwait(false);
         }
 
 

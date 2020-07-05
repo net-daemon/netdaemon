@@ -1,12 +1,12 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
 
     /// <summary>
@@ -17,7 +17,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <summary>
         ///     Initializes the NetDaemon
         /// </summary>
-        Task Initialize();
+        /// <param name="appInstanceManager">Handles all instancing of applications. </param>
+        Task Initialize(IInstanceDaemonApp appInstanceManager);
 
         /// <summary>
         ///     Listens to the given service in the netdaemon domain. Those subscritions

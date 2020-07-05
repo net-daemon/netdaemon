@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Interface for scheduler actions

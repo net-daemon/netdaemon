@@ -1,9 +1,4 @@
-﻿using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.NetDaemon.Common;
-using JoySoftware.HomeAssistant.NetDaemon.Common.Reactive;
-using JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -13,10 +8,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Client;
+using Microsoft.Extensions.Logging;
+using NetDaemon.Common;
+using NetDaemon.Common.Fluent;
+using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon.Storage;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
@@ -45,7 +46,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         // internal so we can use for unittest
         internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
 
-        private readonly IInstanceDaemonApp _appInstanceManager;
+        private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
         private readonly CancellationTokenSource _cancelDaemon = new CancellationTokenSource();
@@ -98,7 +99,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <param name="httpHandler">Http handler to use</param>
         /// <param name="appInstanceManager">Handles instances of apps</param>
         public NetDaemonHost(
-            IInstanceDaemonApp appInstanceManager,
             IHassClient? hassClient,
             IDataRepository? repository,
             ILoggerFactory? loggerFactory = null,
@@ -111,7 +111,6 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
-            _appInstanceManager = appInstanceManager;
             Logger.LogInformation("Instance NetDaemonHost");
         }
 
@@ -144,7 +143,7 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
                                                 .AddConsole();
                                         });
 
-        
+
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
             this._cancelToken.ThrowIfCancellationRequested();
@@ -287,10 +286,12 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public async Task Initialize()
+        public async Task Initialize(IInstanceDaemonApp appInstanceManager)
         {
             if (!Connected)
                 throw new ApplicationException("NetDaemon is not connected, no use in initializing");
+
+            _appInstanceManager = appInstanceManager;
 
             await LoadAllApps().ConfigureAwait(false);
             EnableApplicationDiscoveryServiceAsync();
@@ -1185,6 +1186,8 @@ namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
         /// <inheritdoc/>
         private async Task LoadAllApps()
         {
+            _ = _appInstanceManager ?? throw new NullReferenceException(nameof(_appInstanceManager));
+
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
 

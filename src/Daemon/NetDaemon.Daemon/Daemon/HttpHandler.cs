@@ -1,11 +1,11 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using NetDaemon.Common;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon
+namespace NetDaemon.Daemon
 {
     public class HttpHandler : IHttpHandler
     {

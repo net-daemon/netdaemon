@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Scheduler result lets you manage scheduled tasks like check completion, cancel the tasks etc.

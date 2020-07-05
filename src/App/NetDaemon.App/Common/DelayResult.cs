@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Common
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     A class that implements the management of delays and cancel them

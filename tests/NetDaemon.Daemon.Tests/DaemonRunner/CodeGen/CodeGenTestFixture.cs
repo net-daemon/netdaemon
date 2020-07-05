@@ -1,4 +1,5 @@
-using JoySoftware.HomeAssistant.NetDaemon.Common;
+using NetDaemon.Common;
+using NetDaemon.Common.Fluent;
 
 namespace Netdaemon.Generated.Extensions
 {

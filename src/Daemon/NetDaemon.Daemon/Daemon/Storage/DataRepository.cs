@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace JoySoftware.HomeAssistant.NetDaemon.Daemon.Storage
+namespace NetDaemon.Daemon.Storage
 {
     public class DataRepository : IDataRepository
     {

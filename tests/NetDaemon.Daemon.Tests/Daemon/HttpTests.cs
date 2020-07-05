@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.NetDaemon.Daemon;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
