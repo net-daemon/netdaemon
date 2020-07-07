@@ -14,6 +14,8 @@ using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
+using NetDaemon.Infrastructure.Extensions;
+using NetDaemon.Mapping;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
@@ -530,7 +532,7 @@ namespace NetDaemon.Daemon
 
                 if (result != null)
                 {
-                    EntityState entityState = result.ToDaemonEntityState();
+                    EntityState entityState = result.Map();
                     entityState.Area = GetAreaForEntityId(entityState.EntityId);
                     InternalState[entityState.EntityId] = entityState;
                     return entityState;
@@ -725,7 +727,7 @@ namespace NetDaemon.Daemon
                     _hassEntities[entity.EntityId] = entity;
             }
             var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
-            var initialStates = hassStates.Select(n => n.ToDaemonEntityState())
+            var initialStates = hassStates.Select(n => n.Map())
                 .ToDictionary(n => n.EntityId);
 
             InternalState.Clear();
@@ -765,7 +767,7 @@ namespace NetDaemon.Daemon
 
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             if (hassEvent.EventType == "state_changed")
             {
@@ -802,8 +804,8 @@ namespace NetDaemon.Daemon
                     }
 
                     // Make sure we get the area name with the new state
-                    var newState = stateData!.NewState!.ToDaemonEntityState();
-                    var oldState = stateData!.OldState!.ToDaemonEntityState();
+                    var newState = stateData!.NewState!.Map();
+                    var oldState = stateData!.OldState!.Map();
                     newState.Area = GetAreaForEntityId(newState.EntityId);
                     InternalState[stateData.EntityId] = newState;
 
@@ -855,6 +857,9 @@ namespace NetDaemon.Daemon
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
                     {
+                        
+                        await tasks.WhenAll(token).ConfigureAwait(false);
+
                         await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }

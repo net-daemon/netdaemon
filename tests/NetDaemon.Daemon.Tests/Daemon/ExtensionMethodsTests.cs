@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using JoySoftware.HomeAssistant.Client;
+using NetDaemon.Infrastructure.Extensions;
+using NetDaemon.Mapping;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
@@ -16,7 +19,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("str");
 
             // ACT
-            var obj = prop.ToDynamicValue();
+            var obj = JsonElementExtensions.ToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<string>(obj);
@@ -31,7 +34,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("bool");
 
             // ACT
-            var obj = prop.ToDynamicValue();
+            var obj = JsonElementExtensions.ToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<bool>(obj);
@@ -46,7 +49,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("bool");
 
             // ACT
-            var obj = prop.ToDynamicValue();
+            var obj = JsonElementExtensions.ToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<bool>(obj);
@@ -61,7 +64,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("int");
             long expectedValue = 10;
             // ACT
-            var obj = prop.ToDynamicValue();
+            var obj = JsonElementExtensions.ToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<long>(obj);
@@ -76,7 +79,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("int");
             double expectedValue = 10.5;
             // ACT
-            var obj = prop.ToDynamicValue();
+            var obj = JsonElementExtensions.ToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<double>(obj);
@@ -91,7 +94,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("array");
 
             // ACT
-            var obj = prop.ToDynamicValue();
+            var obj = JsonElementExtensions.ToDynamicValue(prop);
             var arr = obj as IEnumerable<object?>;
 
             // ASSERT
@@ -106,7 +109,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var doc = JsonDocument.Parse("{\"str\": \"string\"}");
 
             // ACT
-            var obj = doc.RootElement.ToDynamicValue() as IDictionary<string, object?>;
+            var obj = JsonElementExtensions.ToDynamicValue(doc.RootElement) as IDictionary<string, object?>;
 
             // ASSERT
             Assert.Equal("string", obj?["str"]);
@@ -118,7 +121,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             long expectedValue = 10;
             // ACT
-            var longValue = ExtensionMethods.ParseDataType("10");
+            var longValue = StringParser.ParseDataType("10");
             // ASSERT
             Assert.IsType<long>(longValue);
             Assert.Equal(expectedValue, longValue);
@@ -130,7 +133,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             double expectedValue = 10.5;
             // ACT
-            var doubeValue = ExtensionMethods.ParseDataType("10.5");
+            var doubeValue = StringParser.ParseDataType("10.5");
             // ASSERT
             Assert.IsType<double>(doubeValue);
             Assert.Equal(expectedValue, doubeValue);
@@ -144,7 +147,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var doc = JsonDocument.Parse("{\"str\": \"attr3value\"}");
             var prop = doc.RootElement.GetProperty("str");
 
-            var hassState = new JoySoftware.HomeAssistant.Client.HassState
+            var hassState = new HassState
             {
                 EntityId = "light.fake",
                 Attributes = new Dictionary<string, object>
@@ -154,11 +157,17 @@ namespace NetDaemon.Daemon.Tests.Daemon
                     ["attr3"] = prop
                 },
                 LastChanged = new DateTime(2000, 1, 1, 1, 1, 1),
-                LastUpdated = new DateTime(2000, 1, 1, 1, 1, 2)
+                LastUpdated = new DateTime(2000, 1, 1, 1, 1, 2),
+                Context = new HassContext
+                {
+                    Id = "idguid",
+                    ParentId = "parentidguid",
+                    UserId = "useridguid"
+                }
             };
 
             // ACT
-            var entityState = hassState.ToDaemonEntityState();
+            var entityState = hassState.Map();
 
             // ASSERT
             Assert.Equal("light.fake", entityState.EntityId);
@@ -168,6 +177,10 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal("attr1value", entityState?.Attribute?.attr1);
             Assert.Equal("attr2value", entityState?.Attribute?.attr2);
             Assert.Equal("attr3value", entityState?.Attribute?.attr3);
+            Assert.NotNull(entityState?.Context);
+            Assert.Equal("idguid", hassState.Context.Id);
+            Assert.Equal("parentidguid", hassState.Context.ParentId);
+            Assert.Equal("useridguid", hassState.Context.UserId);
         }
     }
 }

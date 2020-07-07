@@ -50,28 +50,28 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.CallServiceAsync(domain, service, data, waitForResponse);
         }
 
         /// <inheritdoc/>
         public ICamera Camera(params string[] entityIds)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.Camera(this, entityIds);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(IEnumerable<string> entityIds)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.Cameras(this, entityIds);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.Cameras(this, func);
         }
 
@@ -171,21 +171,21 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.Entities(this, func);
         }
 
         /// <inheritdoc/>
         public IEntity Entities(IEnumerable<string> entityIds)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.Entities(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IEntity Entity(params string[] entityId)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.Entity(this, entityId);
         }
 
@@ -201,7 +201,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.GetDataAsync<T>(id).ConfigureAwait(false);
         }
 
@@ -211,21 +211,21 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public IFluentInputSelect InputSelect(params string[] inputSelectParams)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.InputSelect(this, inputSelectParams);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.InputSelects(this, inputSelectParams);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.InputSelects(this, func);
         }
 
@@ -239,59 +239,59 @@ namespace NetDaemon.Common
         public string? ListenState(string pattern,
             Func<string, EntityState?, EntityState?, Task> action)
         {
-            // Use guid as uniqe id but will externally use string so
-            // The design can change incase guild wont cut it
+            // Use guid as unique id but will externally use string so
+            // The design can change in-case guid won't cut it.
             var uniqueId = Guid.NewGuid().ToString();
             _stateCallbacks[uniqueId] = (pattern, action);
-            return uniqueId.ToString();
+            return uniqueId;
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(params string[] entityIds)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.MediaPlayer(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.MediaPlayers(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.MediaPlayers(this, func);
         }
 
         /// <inheritdoc/>
         public IScript RunScript(params string[] entityIds)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.RunScript(this, entityIds);
         }
 
         /// <inheritdoc/>
         public Task SaveDataAsync<T>(string id, T data)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return _daemon!.SaveDataAsync<T>(id, data);
         }
 
         /// <inheritdoc/>
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.SendEvent(eventId, data).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state, params (string name, object val)[] attributes)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
         }
     }
