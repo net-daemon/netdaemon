@@ -52,16 +52,6 @@ namespace NetDaemon.Daemon
                                         .AddConsole();
                                 });
 
-        /// <summary>
-        ///     Time when task was completed, these probably wont be used more than in tests
-        /// </summary>
-        public DateTime CompletedTime { get; } = DateTime.MaxValue;
-
-        /// <summary>
-        ///     Calculated start time, these probably wont be used more than in tests
-        /// </summary>
-        public DateTime StartTime { get; } = DateTime.MinValue;
-
         /// <inheritdoc/>
         public ISchedulerResult RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
 
