@@ -9,7 +9,7 @@ namespace NetDaemon.Mapping
     public static class EntityStateMapper
     {
         /// <summary>
-        ///     Converts HassState to DaemonState
+        ///     Converts HassState to EntityState
         /// </summary>
         /// <param name="hassState"></param>
         /// <returns></returns>
