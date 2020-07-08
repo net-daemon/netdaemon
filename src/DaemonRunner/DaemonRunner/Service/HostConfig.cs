@@ -4,10 +4,6 @@ namespace NetDaemon.Service
 {
     public class HostConfig
     {
-        public HostConfig()
-        {
-        }
-
         [JsonPropertyName("token")]
         public string Token { get; set; } = "enter hass token here";
 

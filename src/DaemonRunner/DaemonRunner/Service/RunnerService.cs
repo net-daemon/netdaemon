@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
@@ -25,13 +23,15 @@ namespace NetDaemon.Service
 
         private const string _version = "dev";
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HostConfig _configuration;
 
         private readonly ILogger<RunnerService> _logger;
 
         private readonly ILoggerFactory _loggerFactory;
-        public RunnerService(ILoggerFactory loggerFactory, IHttpClientFactory httpClientFactory)
+        public RunnerService(ILoggerFactory loggerFactory, IHttpClientFactory httpClientFactory, HostConfig configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
         }
@@ -46,27 +46,22 @@ namespace NetDaemon.Service
         {
             try
             {
-
-
-                var config = await ReadConfigAsync().ConfigureAwait(false);
-
-                if (config == null)
+                if (_configuration == null)
                 {
                     _logger.LogError("No config specified, file or environment variables! Exiting...");
-
                     return;
                 }
 
-                EnsureApplicationDirectoryExists(config);
+                EnsureApplicationDirectoryExists(_configuration);
 
-                var sourceFolder = config.SourceFolder;
-                var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
+                var sourceFolder = _configuration.SourceFolder;
+                var storageFolder = Path.Combine(_configuration.SourceFolder!, ".storage");
 
-                sourceFolder = Path.Combine(config.SourceFolder!, "apps");
+                sourceFolder = Path.Combine(_configuration.SourceFolder!, "apps");
 
                 // Automatically create source directories
-                if (!System.IO.Directory.Exists(sourceFolder))
-                    System.IO.Directory.CreateDirectory(sourceFolder);
+                if (!Directory.Exists(sourceFolder))
+                    Directory.CreateDirectory(sourceFolder);
 
                 bool hasConnectedBefore = false;
                 bool generatedEntities = false;
@@ -74,11 +69,6 @@ namespace NetDaemon.Service
                 CollectibleAssemblyLoadContext? alc = null;
                 IEnumerable<Type>? loadedDaemonApps = null;
 
-                IInstanceDaemonApp? codeManager = null;
-
-                // {
-                //     await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
-                // }
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     try
@@ -100,7 +90,7 @@ namespace NetDaemon.Service
                                 );
                         {
 
-                            var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
+                            var daemonHostTask = _daemonHost.Run(_configuration.Host, _configuration.Port, _configuration.Ssl, _configuration.Token,
                                 stoppingToken);
 
                             await WaitForDaemonToConnect(_daemonHost, stoppingToken).ConfigureAwait(false);
@@ -112,7 +102,7 @@ namespace NetDaemon.Service
                                     try
                                     {
                                         // Generate code if requested
-                                        var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? config.GenerateEntitiesOnStartup?.ToString();
+                                        var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? _configuration.GenerateEntitiesOnStartup?.ToString();
                                         if (envGenEntities is object)
                                         {
                                             if (envGenEntities == "True" && !generatedEntities)
@@ -141,14 +131,15 @@ namespace NetDaemon.Service
                                             _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
                                             return;
                                         }
-                                        codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+
+                                        IInstanceDaemonApp? codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
                                         await _daemonHost.Initialize(codeManager).ConfigureAwait(false);
 
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);
                                         if (!stoppingToken.IsCancellationRequested)
                                         {
-                                            // It is disconnet, wait
+                                            // It is disconnected, wait
                                             _logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
                                         }
                                     }
@@ -215,66 +206,6 @@ namespace NetDaemon.Service
             var appDirectory = Path.Combine(config.SourceFolder, "apps");
 
             Directory.CreateDirectory(appDirectory);
-        }
-
-        private async Task<HostConfig?> ReadConfigAsync()
-        {
-            try
-            {
-                // Check if we have HASSIO add-on options
-
-                // if (File.Exists("/data/options.json"))    Todo: We read configs here later
-                if (Environment.GetEnvironmentVariable("HASSIO_TOKEN") != null)
-                {
-                    //var hassioConfig = JsonSerializer.Deserialize<Config>(File.ReadAllBytes("/data/options.json"));
-                    var hassioConfig = new HostConfig();
-                    hassioConfig.Host = "";
-                    hassioConfig.Port = 0;
-                    hassioConfig.Token = Environment.GetEnvironmentVariable("HASSIO_TOKEN") ?? string.Empty;
-                    hassioConfig.SourceFolder = Environment.GetEnvironmentVariable("HASS_DAEMONAPPFOLDER");
-                    return hassioConfig;
-                }
-
-                // Check if config is in a file same folder as exefile
-                var filenameForExecutingAssembly = Assembly.GetExecutingAssembly().Location;
-                var folderOfExecutingAssembly = Path.GetDirectoryName(filenameForExecutingAssembly);
-                var configFilePath = Path.Combine(folderOfExecutingAssembly!, "daemon_config.json");
-
-                if (File.Exists(configFilePath))
-                    return JsonSerializer.Deserialize<HostConfig>(File.ReadAllBytes(configFilePath));
-
-                var token = Environment.GetEnvironmentVariable("HASS_TOKEN");
-                if (token != null)
-                {
-                    var config = new HostConfig();
-                    config.Token = token;
-                    config.Host = Environment.GetEnvironmentVariable("HASS_HOST") ?? config.Host;
-                    config.Port = short.TryParse(Environment.GetEnvironmentVariable("HASS_PORT"), out var port)
-                        ? port
-                        : config.Port;
-                    config.SourceFolder = Environment.GetEnvironmentVariable("HASS_DAEMONAPPFOLDER") ??
-                                          Path.Combine(folderOfExecutingAssembly!, "daemonapp");
-                    return config;
-                }
-
-                var exampleFilePath = Path.Combine(folderOfExecutingAssembly!, "daemon_config_example.json");
-                if (!File.Exists(exampleFilePath))
-                {
-                    var json = JsonSerializer.Serialize(new HostConfig());
-
-                    using (var fileStream = new FileStream(exampleFilePath, FileMode.CreateNew))
-                    {
-                        var options = new JsonSerializerOptions { WriteIndented = true, IgnoreNullValues = true };
-                        await JsonSerializer.SerializeAsync(fileStream, new HostConfig(), options).ConfigureAwait(false);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to get configuration!");
-            }
-
-            return null;
         }
 
         private async Task WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
