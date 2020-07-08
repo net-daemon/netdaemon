@@ -7,11 +7,17 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@master
+
             - uses: actions/setup-dotnet@v1
               with:
                 dotnet-version: '3.1.200' # SDK Version
+
+            - name: Enable problem matchers
+              run: echo "::add-matcher::.github/matchers/dotnet.json"
+
             - name: Build code
               run: dotnet build
+
             - name: Test code
               run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=${{github.workspace}}/codecover/lcov.info
 
