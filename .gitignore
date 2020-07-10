@@ -1,13 +1,51 @@
-# Compiled directories
+### NetDaemon ###
+# Generated app files
+_EntityExtensions*
+
+# Build scripts
+packages/
+scripts/version.txt
+
+# Other
+.generated
+**.DS_Store
+
+### DotnetCore ###
+# .NET Core build folders
 [Bb]in/
 [Oo]bj/
-.vs
-*.user
-TestResults
+
+# MSTest test results
+[Tt]est[Rr]esult*/
+
+# Coverage files
 lcov.info
 codecover
-**.DS_Store
-.generated
-scripts/version.txt
-packages/
-_EntityExtensions*
+
+### VisualStudioCode ###
+# Setting files
+*.code-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/daemon.code-snippets
+
+# History files
+.history
+
+### VisualStudio ###
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+### Jetbrains / Rider ###
+# User-specific files
+.idea/
