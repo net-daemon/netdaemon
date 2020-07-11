@@ -5,7 +5,7 @@ using Serilog.Sinks.SystemConsole.Themes;
 
 namespace NetDaemon.Service.Support
 {
-    public static class SerilogConfigurator
+    internal static class SerilogConfigurator
     {
         private static readonly LoggingLevelSwitch LevelSwitch = new LoggingLevelSwitch();
         

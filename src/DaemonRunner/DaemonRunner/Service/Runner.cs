@@ -28,8 +28,8 @@ namespace NetDaemon.Service
                     .UseSerilog(Log.Logger)
                     .ConfigureServices((context, services) =>
                     {
-                        services.AddOptions<HomeAssistantSettings>().Bind(context.Configuration.GetSection("HomeAssistant"));
-                        services.AddOptions<NetDaemonSettings>().Bind(context.Configuration.GetSection("NetDaemon"));
+                        services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
+                        services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
 
                         services.AddNetDaemon();
                     })
