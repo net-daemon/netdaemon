@@ -5,18 +5,15 @@ using Serilog.Sinks.SystemConsole.Themes;
 
 namespace NetDaemon.Service.Support
 {
-    internal static class SeriLogConfigurator
+    public static class SerilogConfigurator
     {
         private static readonly LoggingLevelSwitch LevelSwitch = new LoggingLevelSwitch();
-
-        public static LoggerConfiguration GetConfiguration()
-        {
-            return Configure(new LoggerConfiguration());
-        }
         
-        public static LoggerConfiguration Configure(LoggerConfiguration configuration)
+        public static LoggerConfiguration Configure()
         {
-            return configuration
+            var loggerConfiguration = new LoggerConfiguration();
+
+            return loggerConfiguration
                 .MinimumLevel.ControlledBy(LevelSwitch)
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
