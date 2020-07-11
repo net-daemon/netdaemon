@@ -39,7 +39,6 @@ namespace Service
 
         private static async Task ReadHassioConfig()
         {
-            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-3.1#environment-variables
             try
             {
                 var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(File.OpenRead(HassioConfigPath)).ConfigureAwait(false);
