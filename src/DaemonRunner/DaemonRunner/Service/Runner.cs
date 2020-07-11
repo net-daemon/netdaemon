@@ -24,18 +24,9 @@ namespace NetDaemon.Service
                 if (File.Exists(_hassioConfigPath))
                     await ReadHassioConfig();
 
-                await Host.CreateDefaultBuilder(args)
-                    .UseSerilog(Log.Logger)
-                    .ConfigureServices((context, services) =>
-                    {
-                        services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                        services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
+                var netDaemon = UseNetDaemon(args);
 
-                        services.AddNetDaemon();
-                    })
-                    .Build()
-                    .RunAsync();
-
+                await netDaemon.Build().RunAsync();
             }
             catch (Exception e)
             {
@@ -45,6 +36,19 @@ namespace NetDaemon.Service
             {
                 Log.CloseAndFlush();
             }
+        }
+
+        public static IHostBuilder UseNetDaemon(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .UseSerilog(Log.Logger)
+                .ConfigureServices((context, services) =>
+                {
+                    services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
+                    services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
+
+                    services.AddNetDaemon();
+                });
         }
 
         private static async Task ReadHassioConfig()
