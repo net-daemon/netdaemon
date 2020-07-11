@@ -3,7 +3,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace NetDaemon.Service.Support
+namespace Service
 {
     internal static class SerilogConfigurator
     {
