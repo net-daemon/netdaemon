@@ -125,9 +125,7 @@ namespace NetDaemon.Service.App
             var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assembliesFromCurrentAppDomain)
             {
-                if (assembly.FullName != null
-                    && !assembly.FullName.Contains("Dynamic")
-                    && !string.IsNullOrEmpty(assembly.Location))
+                if (!assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location))
                     metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
             }
 
