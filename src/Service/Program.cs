@@ -56,7 +56,7 @@ namespace Service
                     Environment.SetEnvironmentVariable("NETDAEMON__PROJECTFOLDER", hassAddOnSettings.ProjectFolder);
 
                 // We are in Hassio so hard code the path
-                Environment.SetEnvironmentVariable("NETDAEMON__APPFOLDER", "/config/netdaemon");
+                Environment.SetEnvironmentVariable("NETDAEMON__SOURCEFOLDER", "/config/netdaemon");
             }
             catch (Exception e)
             {
