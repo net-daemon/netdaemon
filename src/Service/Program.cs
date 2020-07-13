@@ -47,16 +47,16 @@ namespace Service
                     SerilogConfigurator.SetMinimumLogLevel(hassAddOnSettings.LogLevel);
 
                 if (hassAddOnSettings.GenerateEntitiesOnStart is object)
-                    Environment.SetEnvironmentVariable("NetDaemon__GenerateEntities", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
+                    Environment.SetEnvironmentVariable("NETDAEMON__GENERATEENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
 
                 if (hassAddOnSettings.LogMessages is object && hassAddOnSettings.LogMessages == true)
                     Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
 
                 if (hassAddOnSettings.ProjectFolder is object && string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
-                    Environment.SetEnvironmentVariable("HASS_RUN_PROJECT_FOLDER", hassAddOnSettings.ProjectFolder);
+                    Environment.SetEnvironmentVariable("NETDAEMON__PROJECTFOLDER", hassAddOnSettings.ProjectFolder);
 
                 // We are in Hassio so hard code the path
-                Environment.SetEnvironmentVariable("NetDaemon__AppFolder", "/config/netdaemon");
+                Environment.SetEnvironmentVariable("NETDAEMON__APPFOLDER", "/config/netdaemon");
             }
             catch (Exception e)
             {
