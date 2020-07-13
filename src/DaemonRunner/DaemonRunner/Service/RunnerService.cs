@@ -3,37 +3,47 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Storage;
 using NetDaemon.Service.App;
+using NetDaemon.Service.Configuration;
 
 namespace NetDaemon.Service
 {
     public class RunnerService : BackgroundService
     {
         /// <summary>
-        /// The intervall used when disconnected
+        /// The interval used when disconnected
         /// </summary>
-        private const int _reconnectIntervall = 40000;
+        private const int ReconnectInterval = 40000;
+        private const string Version = "dev";
 
-        private const string _version = "dev";
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HomeAssistantSettings _homeAssistantSettings;
+        private readonly NetDaemonSettings _netDaemonSettings;
 
         private readonly ILogger<RunnerService> _logger;
-
         private readonly ILoggerFactory _loggerFactory;
-        public RunnerService(ILoggerFactory loggerFactory, IHttpClientFactory httpClientFactory)
+        private bool _entitiesGenerated;
+
+        public RunnerService(
+            ILoggerFactory loggerFactory, 
+            IHttpClientFactory httpClientFactory, 
+            IOptions<NetDaemonSettings> netDaemonSettings,
+            IOptions<HomeAssistantSettings> homeAssistantSettings
+            )
         {
-            _httpClientFactory = httpClientFactory;
-            _logger = loggerFactory.CreateLogger<RunnerService>();
             _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<RunnerService>();
+            _httpClientFactory = httpClientFactory;
+            _homeAssistantSettings = homeAssistantSettings.Value;
+            _netDaemonSettings = netDaemonSettings.Value;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -46,39 +56,26 @@ namespace NetDaemon.Service
         {
             try
             {
-
-
-                var config = await ReadConfigAsync().ConfigureAwait(false);
-
-                if (config == null)
+                if (_netDaemonSettings == null)
                 {
                     _logger.LogError("No config specified, file or environment variables! Exiting...");
-
                     return;
                 }
 
-                EnsureApplicationDirectoryExists(config);
+                EnsureApplicationDirectoryExists(_netDaemonSettings);
 
-                var sourceFolder = config.SourceFolder;
-                var storageFolder = Path.Combine(config.SourceFolder!, ".storage");
-
-                sourceFolder = Path.Combine(config.SourceFolder!, "apps");
+                var storageFolder = Path.Combine(_netDaemonSettings.SourceFolder!, ".storage");
+                var sourceFolder = Path.Combine(_netDaemonSettings.SourceFolder!, "apps");
 
                 // Automatically create source directories
-                if (!System.IO.Directory.Exists(sourceFolder))
-                    System.IO.Directory.CreateDirectory(sourceFolder);
+                if (!Directory.Exists(sourceFolder))
+                    Directory.CreateDirectory(sourceFolder);
 
-                bool hasConnectedBefore = false;
-                bool generatedEntities = false;
+                var hasConnectedBefore = false;
 
                 CollectibleAssemblyLoadContext? alc = null;
                 IEnumerable<Type>? loadedDaemonApps = null;
 
-                IInstanceDaemonApp? codeManager = null;
-
-                // {
-                //     await codeManager.EnableApplicationDiscoveryServiceAsync(_daemonHost, discoverServicesOnStartup: true).ConfigureAwait(false);
-                // }
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     try
@@ -87,69 +84,58 @@ namespace NetDaemon.Service
                         {
                             // This is due to re-connect, it must be a re-connect
                             // so delay before retry connect again
-                            await Task.Delay(_reconnectIntervall, stoppingToken).ConfigureAwait(false); // Wait x seconds
-                            _logger.LogInformation($"Restarting NeDaemon (version {_version})...");
+                            await Task.Delay(ReconnectInterval, stoppingToken).ConfigureAwait(false); // Wait x seconds
+                            _logger.LogInformation($"Restarting NeDaemon (version {Version})...");
                         }
 
-                        await using var _daemonHost =
+                        await using var daemonHost =
                             new NetDaemonHost(
                                 new HassClient(_loggerFactory),
                                 new DataRepository(storageFolder),
                                 _loggerFactory,
                                 new HttpHandler(_httpClientFactory)
-                                );
+                            );
                         {
 
-                            var daemonHostTask = _daemonHost.Run(config.Host, config.Port, config.Ssl, config.Token,
-                                stoppingToken);
+                            var daemonHostTask = daemonHost.Run(
+                                _homeAssistantSettings.Host,
+                                _homeAssistantSettings.Port,
+                                _homeAssistantSettings.Ssl,
+                                _homeAssistantSettings.Token,
+                                stoppingToken
+                            );
 
-                            await WaitForDaemonToConnect(_daemonHost, stoppingToken).ConfigureAwait(false);
+                            await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false);
 
                             if (!stoppingToken.IsCancellationRequested)
                             {
-                                if (_daemonHost.Connected)
+                                if (daemonHost.Connected)
                                 {
                                     try
                                     {
                                         // Generate code if requested
-                                        var envGenEntities = Environment.GetEnvironmentVariable("HASS_GEN_ENTITIES") ?? config.GenerateEntitiesOnStartup?.ToString();
-                                        if (envGenEntities is object)
-                                        {
-                                            if (envGenEntities == "True" && !generatedEntities)
-                                            {
-                                                generatedEntities = true;
-                                                var codeGen = new CodeGenerator();
-                                                var source = codeGen.GenerateCode("Netdaemon.Generated.Extensions",
-                                                    _daemonHost.State.Select(n => n.EntityId).Distinct());
+                                        await GenerateEntities(daemonHost, sourceFolder);
 
-                                                System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source);
-
-                                                var services = await _daemonHost.GetAllServices();
-                                                var sourceRx = codeGen.GenerateCodeRx("Netdaemon.Generated.Reactive",
-                                                    _daemonHost.State.Select(n => n.EntityId).Distinct(), services);
-
-                                                System.IO.File.WriteAllText(System.IO.Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx);
-                                            }
-                                        }
                                         if (loadedDaemonApps is null)
                                         {
                                             (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
                                         }
 
-                                        if (loadedDaemonApps is null || loadedDaemonApps.Count() == 0)
+                                        if (loadedDaemonApps is null || !loadedDaemonApps.Any())
                                         {
                                             _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
                                             return;
                                         }
-                                        codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
-                                        await _daemonHost.Initialize(codeManager).ConfigureAwait(false);
+
+                                        IInstanceDaemonApp? codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                                        await daemonHost.Initialize(codeManager).ConfigureAwait(false);
 
                                         // Wait until daemon stops
                                         await daemonHostTask.ConfigureAwait(false);
                                         if (!stoppingToken.IsCancellationRequested)
                                         {
-                                            // It is disconnet, wait
-                                            _logger.LogWarning($"Home assistant is unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
+                                            // It is disconnected, wait
+                                            _logger.LogWarning($"Home assistant is unavailable, retrying in {ReconnectInterval / 1000} seconds...");
                                         }
                                     }
                                     catch (TaskCanceledException)
@@ -163,7 +149,7 @@ namespace NetDaemon.Service
                                 }
                                 else
                                 {
-                                    _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {_reconnectIntervall / 1000} seconds...");
+                                    _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {ReconnectInterval / 1000} seconds...");
                                 }
                             }
                         }
@@ -172,7 +158,7 @@ namespace NetDaemon.Service
                     {
                         if (!stoppingToken.IsCancellationRequested)
                         {
-                            _logger.LogWarning($"Home assistant is disconnected, retrying in {_reconnectIntervall / 1000} seconds...");
+                            _logger.LogWarning($"Home assistant is disconnected, retrying in {ReconnectInterval / 1000} seconds...");
                         }
                     }
                     catch (Exception e)
@@ -206,75 +192,42 @@ namespace NetDaemon.Service
                 _logger.LogError(e, "NetDaemon had unhandled exception, closing...");
             }
 
-            _logger.LogInformation("Netdaemon exited!");
+            _logger.LogInformation("NetDaemon exited!");
         }
 
-        private void EnsureApplicationDirectoryExists(HostConfig config)
+        private async Task GenerateEntities(NetDaemonHost daemonHost, string sourceFolder)
         {
-            config.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
-            var appDirectory = Path.Combine(config.SourceFolder, "apps");
+            if (!_netDaemonSettings.GenerateEntities.GetValueOrDefault())
+                return;
+
+            if (_entitiesGenerated)
+                return;
+
+            _entitiesGenerated = true;
+            var codeGen = new CodeGenerator();
+            var source = codeGen.GenerateCode(
+                "Netdaemon.Generated.Extensions",
+                daemonHost.State.Select(n => n.EntityId).Distinct()
+            );
+
+            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source).ConfigureAwait(false);
+
+            var services = await daemonHost.GetAllServices();
+            var sourceRx = codeGen.GenerateCodeRx(
+                "Netdaemon.Generated.Reactive",
+                daemonHost.State.Select(n => n.EntityId).Distinct(),
+                services
+            );
+
+            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx).ConfigureAwait(false);
+        }
+
+        private void EnsureApplicationDirectoryExists(NetDaemonSettings settings)
+        {
+            settings.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
+            var appDirectory = Path.Combine(settings.SourceFolder, "apps");
 
             Directory.CreateDirectory(appDirectory);
-        }
-
-        private async Task<HostConfig?> ReadConfigAsync()
-        {
-            try
-            {
-                // Check if we have HASSIO add-on options
-
-                // if (File.Exists("/data/options.json"))    Todo: We read configs here later
-                if (Environment.GetEnvironmentVariable("HASSIO_TOKEN") != null)
-                {
-                    //var hassioConfig = JsonSerializer.Deserialize<Config>(File.ReadAllBytes("/data/options.json"));
-                    var hassioConfig = new HostConfig();
-                    hassioConfig.Host = "";
-                    hassioConfig.Port = 0;
-                    hassioConfig.Token = Environment.GetEnvironmentVariable("HASSIO_TOKEN") ?? string.Empty;
-                    hassioConfig.SourceFolder = Environment.GetEnvironmentVariable("HASS_DAEMONAPPFOLDER");
-                    return hassioConfig;
-                }
-
-                // Check if config is in a file same folder as exefile
-                var filenameForExecutingAssembly = Assembly.GetExecutingAssembly().Location;
-                var folderOfExecutingAssembly = Path.GetDirectoryName(filenameForExecutingAssembly);
-                var configFilePath = Path.Combine(folderOfExecutingAssembly!, "daemon_config.json");
-
-                if (File.Exists(configFilePath))
-                    return JsonSerializer.Deserialize<HostConfig>(File.ReadAllBytes(configFilePath));
-
-                var token = Environment.GetEnvironmentVariable("HASS_TOKEN");
-                if (token != null)
-                {
-                    var config = new HostConfig();
-                    config.Token = token;
-                    config.Host = Environment.GetEnvironmentVariable("HASS_HOST") ?? config.Host;
-                    config.Port = short.TryParse(Environment.GetEnvironmentVariable("HASS_PORT"), out var port)
-                        ? port
-                        : config.Port;
-                    config.SourceFolder = Environment.GetEnvironmentVariable("HASS_DAEMONAPPFOLDER") ??
-                                          Path.Combine(folderOfExecutingAssembly!, "daemonapp");
-                    return config;
-                }
-
-                var exampleFilePath = Path.Combine(folderOfExecutingAssembly!, "daemon_config_example.json");
-                if (!File.Exists(exampleFilePath))
-                {
-                    var json = JsonSerializer.Serialize(new HostConfig());
-
-                    using (var fileStream = new FileStream(exampleFilePath, FileMode.CreateNew))
-                    {
-                        var options = new JsonSerializerOptions { WriteIndented = true, IgnoreNullValues = true };
-                        await JsonSerializer.SerializeAsync(fileStream, new HostConfig(), options).ConfigureAwait(false);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to get configuration!");
-            }
-
-            return null;
         }
 
         private async Task WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)

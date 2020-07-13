@@ -13,12 +13,12 @@ COPY ./Docker/rootfs/etc/services.d/NetDaemon/run /rundaemon
 ENV \
     DOTNET_NOLOGO=true \
     DOTNET_CLI_TELEMETRY_OPTOUT=true \
-    HASS_RUN_PROJECT_FOLDER=/usr/src/Service \
-    HASS_HOST=localhost \
+    NETDAEMON__PROJECTFOLDER=/usr/src/Service \
+    HOMEASSISTANT__HOST=localhost \
+    HOMEASSISTANT__PORT=8123 \
+    HOMEASSISTANT__TOKEN=NOT_SET \
     HASSCLIENT_MSGLOGLEVEL=Default \
-    HASS_PORT=8123 \
-    HASS_TOKEN=NOT_SET \
-    HASS_DAEMONAPPFOLDER=/data
+    NETDAEMON__SOURCEFOLDER=/data
 
 
 ENTRYPOINT ["bash", "/rundaemon"]

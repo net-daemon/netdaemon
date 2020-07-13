@@ -94,33 +94,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             };
 
         [Fact]
-        public void JSonSerializeShouldBeCorrectForConfig()
-        {
-            // ARRANGE & ACT
-            var secrets = YamlConfig.GetAllSecretsFromPath(ConfigFixturePath);
-
-            // ASSERT
-            var x = new HostConfig
-            {
-                Token = "1234",
-                Host = "host",
-                Port = 1234,
-                Ssl = true,
-                GenerateEntitiesOnStartup = false,
-                SourceFolder = "somefolder"
-            };
-
-            var obj = JsonSerializer.Serialize<HostConfig>(x);
-
-            Assert.Contains("token", obj);
-            Assert.Contains("host", obj);
-            Assert.Contains("port", obj);
-            Assert.Contains("ssl", obj);
-            Assert.Contains("source_folder", obj);
-            Assert.Contains("generate_entities", obj);
-        }
-
-        [Fact]
         public void YamlScalarNodeToObjectUsingString()
         {
             // ARRANGE

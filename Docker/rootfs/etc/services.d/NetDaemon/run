@@ -9,9 +9,9 @@ set -e
 declare runtype="Service"
 declare daemondir="/daemon"
 
-cd "${HASS_RUN_PROJECT_FOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+cd "${NETDAEMON__PROJECTFOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
-if [[ "${PWD}" != "${HASS_RUN_PROJECT_FOLDER}" ]]; then
+if [[ "${PWD}" != "${NETDAEMON__PROJECTFOLDER}" ]]; then
     exit 1
 fi
 
