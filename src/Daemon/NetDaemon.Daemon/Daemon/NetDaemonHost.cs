@@ -69,6 +69,8 @@ namespace NetDaemon.Daemon
 
         private readonly ConcurrentDictionary<string, INetDaemonAppBase> _runningAppInstances =
             new ConcurrentDictionary<string, INetDaemonAppBase>();
+        private readonly ConcurrentDictionary<string, INetDaemonAppBase> _allAppInstances =
+            new ConcurrentDictionary<string, INetDaemonAppBase>();
 
         private readonly Scheduler _scheduler;
 
@@ -130,6 +132,8 @@ namespace NetDaemon.Daemon
         public ILogger Logger { get; }
 
         public IEnumerable<INetDaemonAppBase> RunningAppInstances => _runningAppInstances.Values;
+
+        public IEnumerable<INetDaemonAppBase> AllAppInstances => _allAppInstances.Values;
 
         public IScheduler Scheduler => _scheduler;
 
@@ -428,6 +432,7 @@ namespace NetDaemon.Daemon
                 await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
                 Connected = true;
+                _stopped = false;
 
                 Logger.LogInformation(
                     hassioToken != null
@@ -593,6 +598,7 @@ namespace NetDaemon.Daemon
                 await app.Value.DisposeAsync().ConfigureAwait(false);
             }
             _runningAppInstances.Clear();
+            _allAppInstances.Clear();
         }
 
         /// <summary>
@@ -857,7 +863,7 @@ namespace NetDaemon.Daemon
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
                     {
-                        
+
                         await tasks.WhenAll(token).ConfigureAwait(false);
 
                         await tasks.WhenAll(token).ConfigureAwait(false);
@@ -1208,6 +1214,7 @@ namespace NetDaemon.Daemon
                 {
                     _runningAppInstances[appInstance.Id!] = appInstance;
                 }
+                _allAppInstances[appInstance.Id!] = appInstance;
             }
 
             // Now run initialize on all sorted by dependencies

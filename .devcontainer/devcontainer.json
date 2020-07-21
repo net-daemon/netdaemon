@@ -25,10 +25,13 @@
 		"NETDAEMON__SOURCEFOLDER": "${localEnv:NETDAEMON__SOURCEFOLDER}"
 	},
 	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
-	// Uncomment the next line if you want to publish any ports.
-	"appPort": [
-		5001
-	],
+	// Uncomment the next line if you want to publish or forward any ports.
+	// "forwardPorts": [
+	// 	5000
+	// ],
+	// "appPort": [
+	// 	5000
+	// ],
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "dotnet restore",
 	// Uncomment the next line to use a non-root user. On Linux, this will prevent
