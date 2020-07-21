@@ -8,9 +8,7 @@ COPY ./src /usr/src
 COPY ./Docker/rootfs/etc /etc
 
 # Install S6 and the Admin site
-RUN apt update && apt install -y ca-certificates \
-    \
-    && wget -qO /s6 \
+RUN wget -qO /s6 \
         https://raw.githubusercontent.com/ludeeus/container/master/rootfs/s6/install \
     && bash /s6 \
     \
