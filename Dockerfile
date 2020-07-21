@@ -23,7 +23,10 @@ RUN wget -qO /s6 \
     && git clone https://github.com/net-daemon/admin.git /admin \
     && cd /admin \
     && git checkout tags/1.0.0 \
-    && make deploy
+    && make deploy \
+    \
+    && rm -fr /var/lib/apt/lists/* \ 
+    && rm -fr /tmp/* /var/{cache,log}/*
 
 # Set default values of NetDaemon env
 ENV \
