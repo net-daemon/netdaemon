@@ -25,6 +25,7 @@ RUN \
     \
     && git clone https://github.com/net-daemon/admin.git /admin \
     && cd /admin \
+    && git checkout tags/1.0.0 \
     && make deploy
 
 # Set default values of NetDaemon env
