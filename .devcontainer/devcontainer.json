@@ -27,7 +27,7 @@
 	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
 	// Uncomment the next line if you want to publish any ports.
 	"appPort": [
-		5001
+		5000
 	],
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "dotnet restore",

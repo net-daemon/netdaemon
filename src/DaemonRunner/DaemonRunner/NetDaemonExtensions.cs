@@ -1,5 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO;
+using System.Net;
+using JoySoftware.HomeAssistant.Client;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using NetDaemon.Daemon;
+using NetDaemon.Daemon.Storage;
 using NetDaemon.Service;
 using NetDaemon.Service.Configuration;
 
@@ -14,8 +21,13 @@ namespace NetDaemon
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                 services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
 
-                services.AddHttpClient();
-                services.AddHostedService<RunnerService>();
+            }).ConfigureWebHostDefaults(webbuilder =>
+            {
+                webbuilder.UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Loopback, 5000); //HTTP port
+                });
+                webbuilder.UseStartup<ApiStartup>();
             });
         }
     }
