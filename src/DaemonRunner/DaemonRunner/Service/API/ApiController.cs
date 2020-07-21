@@ -34,7 +34,7 @@ namespace NetDaemon.Service.Api
             _homeassistantSettings = homeAssistantSettings.Value;
         }
 
-        [Route("config")]
+        [Route("settings")]
         [HttpGet]
         public ApiConfig? Config()
         {
