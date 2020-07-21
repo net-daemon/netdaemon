@@ -1,13 +1,29 @@
 # Build the NetDaemon with build container
-#mcr.microsoft.com/dotnet/core/sdk:3.1.200
-#ludeeus/container:dotnet-base
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1.302
 
 # Copy the source to docker container
 COPY ./src /usr/src
 
 # COPY Docker/rootfs/etc /etc
-COPY ./Docker/rootfs/etc/services.d/NetDaemon/run /rundaemon
+COPY ./Docker/rootfs/etc /etc
+
+# Install S6 and the Admin site
+RUN wget -qO /s6 \
+        https://raw.githubusercontent.com/ludeeus/container/master/rootfs/s6/install \
+    && bash /s6 \
+    \
+    && wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+    \
+    && apt update && apt install -y \
+        nodejs \
+        yarn \
+        make \
+    \
+    && git clone https://github.com/net-daemon/admin.git /admin \
+    && cd /admin \
+    && git checkout tags/1.0.0 \
+    && make deploy
 
 # Set default values of NetDaemon env
 ENV \
@@ -21,4 +37,4 @@ ENV \
     NETDAEMON__SOURCEFOLDER=/data
 
 
-ENTRYPOINT ["bash", "/rundaemon"]
+ENTRYPOINT ["/init"]
