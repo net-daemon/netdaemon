@@ -120,7 +120,7 @@ namespace NetDaemon.Service
 
                                     if (loadedDaemonApps is null || !loadedDaemonApps.Any())
                                     {
-                                        _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                                        _logger.LogWarning("No .cs files files found, please add files to {sourceFolder}/apps", sourceFolder);
                                         return;
                                     }
 
