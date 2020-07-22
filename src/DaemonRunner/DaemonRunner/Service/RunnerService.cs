@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Daemon;
-using NetDaemon.Daemon.Storage;
 using NetDaemon.Service.App;
 using NetDaemon.Service.Configuration;
 
@@ -24,32 +22,35 @@ namespace NetDaemon.Service
         private const int ReconnectInterval = 40000;
         private const string Version = "dev";
 
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly HomeAssistantSettings _homeAssistantSettings;
         private readonly NetDaemonSettings _netDaemonSettings;
 
         private readonly ILogger<RunnerService> _logger;
         private readonly ILoggerFactory _loggerFactory;
+
+        private readonly IServiceProvider _serviceProvider;
+
         private bool _entitiesGenerated;
 
         public RunnerService(
-            ILoggerFactory loggerFactory, 
-            IHttpClientFactory httpClientFactory, 
+            ILoggerFactory loggerFactory,
             IOptions<NetDaemonSettings> netDaemonSettings,
-            IOptions<HomeAssistantSettings> homeAssistantSettings
+            IOptions<HomeAssistantSettings> homeAssistantSettings,
+            IServiceProvider serviceProvider
             )
         {
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<RunnerService>();
-            _httpClientFactory = httpClientFactory;
             _homeAssistantSettings = homeAssistantSettings.Value;
             _netDaemonSettings = netDaemonSettings.Value;
+            _serviceProvider = serviceProvider;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping NetDaemon...");
             await base.StopAsync(cancellationToken).ConfigureAwait(false);
+
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -76,6 +77,9 @@ namespace NetDaemon.Service
                 CollectibleAssemblyLoadContext? alc = null;
                 IEnumerable<Type>? loadedDaemonApps = null;
 
+                await using var daemonHost =
+                            _serviceProvider.GetService<NetDaemonHost>();
+
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     try
@@ -88,69 +92,61 @@ namespace NetDaemon.Service
                             _logger.LogInformation($"Restarting NeDaemon (version {Version})...");
                         }
 
-                        await using var daemonHost =
-                            new NetDaemonHost(
-                                new HassClient(_loggerFactory),
-                                new DataRepository(storageFolder),
-                                _loggerFactory,
-                                new HttpHandler(_httpClientFactory)
-                            );
+
+
+                        var daemonHostTask = daemonHost.Run(
+                            _homeAssistantSettings.Host,
+                            _homeAssistantSettings.Port,
+                            _homeAssistantSettings.Ssl,
+                            _homeAssistantSettings.Token,
+                            stoppingToken
+                        );
+
+                        await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false);
+
+                        if (!stoppingToken.IsCancellationRequested)
                         {
-
-                            var daemonHostTask = daemonHost.Run(
-                                _homeAssistantSettings.Host,
-                                _homeAssistantSettings.Port,
-                                _homeAssistantSettings.Ssl,
-                                _homeAssistantSettings.Token,
-                                stoppingToken
-                            );
-
-                            await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false);
-
-                            if (!stoppingToken.IsCancellationRequested)
+                            if (daemonHost.Connected)
                             {
-                                if (daemonHost.Connected)
+                                try
                                 {
-                                    try
+                                    // Generate code if requested
+                                    await GenerateEntities(daemonHost, sourceFolder);
+
+                                    if (loadedDaemonApps is null)
                                     {
-                                        // Generate code if requested
-                                        await GenerateEntities(daemonHost, sourceFolder);
-
-                                        if (loadedDaemonApps is null)
-                                        {
-                                            (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
-                                        }
-
-                                        if (loadedDaemonApps is null || !loadedDaemonApps.Any())
-                                        {
-                                            _logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
-                                            return;
-                                        }
-
-                                        IInstanceDaemonApp? codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
-                                        await daemonHost.Initialize(codeManager).ConfigureAwait(false);
-
-                                        // Wait until daemon stops
-                                        await daemonHostTask.ConfigureAwait(false);
-                                        if (!stoppingToken.IsCancellationRequested)
-                                        {
-                                            // It is disconnected, wait
-                                            _logger.LogWarning($"Home assistant is unavailable, retrying in {ReconnectInterval / 1000} seconds...");
-                                        }
+                                        (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
                                     }
-                                    catch (TaskCanceledException)
+
+                                    if (loadedDaemonApps is null || !loadedDaemonApps.Any())
                                     {
-                                        _logger.LogInformation("Canceling NetDaemon service...");
+                                        _logger.LogWarning("No .cs files files found, please add files to {sourceFolder}/apps", sourceFolder);
+                                        return;
                                     }
-                                    catch (Exception e)
+
+                                    IInstanceDaemonApp? codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                                    await daemonHost.Initialize(codeManager).ConfigureAwait(false);
+
+                                    // Wait until daemon stops
+                                    await daemonHostTask.ConfigureAwait(false);
+                                    if (!stoppingToken.IsCancellationRequested)
                                     {
-                                        _logger.LogError(e, "Failed to load applications");
+                                        // It is disconnected, wait
+                                        _logger.LogWarning($"Home assistant is unavailable, retrying in {ReconnectInterval / 1000} seconds...");
                                     }
                                 }
-                                else
+                                catch (TaskCanceledException)
                                 {
-                                    _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {ReconnectInterval / 1000} seconds...");
+                                    _logger.LogInformation("Canceling NetDaemon service...");
                                 }
+                                catch (Exception e)
+                                {
+                                    _logger.LogError(e, "Failed to load applications");
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {ReconnectInterval / 1000} seconds...");
                             }
                         }
                     }
@@ -164,6 +160,10 @@ namespace NetDaemon.Service
                     catch (Exception e)
                     {
                         _logger.LogError(e, "MAJOR ERROR!");
+                    }
+                    finally
+                    {
+                        await daemonHost.Stop().ConfigureAwait(false);
                     }
 
                     // If we reached here it could be a re-connect

@@ -1,10 +1,5 @@
-#!/bin/env bash
-
-# ==============================================================================
-# NetDaemon Service
-# Starts NetDaemon
-# ==============================================================================
-set -e
+#!/usr/bin/with-contenv bash
+echo "Starting NetDaemon Runner"
 
 declare runtype="Service"
 declare daemondir="/daemon"
