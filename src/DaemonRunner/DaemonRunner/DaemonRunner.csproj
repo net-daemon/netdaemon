@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.DaemonRunner</PackageId>
-    <Version>0.1.29-alpha</Version>
+    <Version>0.1.30-alpha</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
     <description>A .net core appdaemon for Home Assistant</description>
