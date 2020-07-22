@@ -22,7 +22,7 @@ RUN wget -qO /s6 \
     \
     && git clone https://github.com/net-daemon/admin.git /admin \
     && cd /admin \
-    && git checkout tags/1.2.0 \
+    && git checkout tags/1.2.1 \
     && make deploy \
     \
     && rm -fr /var/lib/apt/lists/* \ 
