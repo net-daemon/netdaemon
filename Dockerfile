@@ -22,7 +22,7 @@ RUN wget -qO /s6 \
     \
     && git clone https://github.com/net-daemon/admin.git /admin \
     && cd /admin \
-    && git checkout tags/1.2.1 \
+    && git checkout tags/1.2.2 \
     && make deploy \
     \
     && rm -fr /var/lib/apt/lists/* \ 
@@ -37,7 +37,8 @@ ENV \
     HOMEASSISTANT__PORT=8123 \
     HOMEASSISTANT__TOKEN=NOT_SET \
     HASSCLIENT_MSGLOGLEVEL=Default \
-    NETDAEMON__SOURCEFOLDER=/data
+    NETDAEMON__SOURCEFOLDER=/data \
+    NETDAEMON__ADMIN=true
 
 
 ENTRYPOINT ["/init"]
