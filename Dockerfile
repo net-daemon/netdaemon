@@ -39,7 +39,7 @@ ENV \
     HASSCLIENT_MSGLOGLEVEL=Default \
     NETDAEMON__SOURCEFOLDER=/data \
     NETDAEMON__ADMIN=true \
-    ASPNETCORE_URLS=http://localhost:5000
+    ASPNETCORE_URLS=http://+:5000
 
 
 ENTRYPOINT ["/init"]
