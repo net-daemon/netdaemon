@@ -16,16 +16,15 @@ namespace NetDaemon
     {
         public static IHostBuilder UseNetDaemon(this IHostBuilder hostBuilder)
         {
+
             return hostBuilder.ConfigureServices((context, services) =>
             {
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                 services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
-
             }).ConfigureWebHostDefaults(webbuilder =>
             {
                 webbuilder.UseKestrel(options =>
                 {
-                    options.Listen(IPAddress.Loopback, 5000); //HTTP port
                 });
                 webbuilder.UseStartup<ApiStartup>();
             });
