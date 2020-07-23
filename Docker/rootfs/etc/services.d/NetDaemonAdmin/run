@@ -1,6 +1,10 @@
 #!/usr/bin/with-contenv bash
-echo "Starting NetDaemon Admin"
 
-cd /admin || exit 1
-
-exec node ./host/admin.js
+if [[ $NETDAEMON_ADMIN == "true" ]]
+then 
+    echo "Starting NetDaemon Admin"
+    cd /admin || exit 1
+    exec node ./host/admin.js
+else
+    exec sleep 2147483647
+fi
