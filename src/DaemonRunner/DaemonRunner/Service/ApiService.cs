@@ -18,9 +18,14 @@ namespace NetDaemon.Service
 {
     public class ApiStartup
     {
+        bool _useAdmin = false;
+
         public ApiStartup(IConfiguration configuration)
         {
             Configuration = configuration;
+
+            var enableAdminValue = Configuration.GetSection("NetDaemon").GetSection("Admin").Value;
+            bool.TryParse(enableAdminValue, out _useAdmin);
         }
 
         public IConfiguration Configuration { get; }
@@ -35,27 +40,36 @@ namespace NetDaemon.Service
             services.AddTransient<IHttpHandler, NetDaemon.Daemon.HttpHandler>();
             services.AddSingleton<NetDaemonHost>();
             services.AddHttpClient();
-            services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
-            services.AddRouting();
+
+
+            if (_useAdmin == true)
+            {
+                // Only enable them if 
+                services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
+                services.AddRouting();
+            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (_useAdmin == true)
             {
-                app.UseDeveloperExceptionPage();
+                if (env.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
+
+                // app.UseHttpsRedirection();
+
+                app.UseRouting();
+
+                // app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                });
             }
-
-            // app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            // app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
         }
     }
 }
