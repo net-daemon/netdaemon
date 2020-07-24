@@ -8,6 +8,10 @@ using System.Threading;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
 // using Netdaemon.Generated.Extensions;
+
+/// <summary>
+///     Does some awesome stuff
+/// </summary>
 public class GlobalApp : NetDaemonApp
 {
     // private ISchedulerResult _schedulerResult;

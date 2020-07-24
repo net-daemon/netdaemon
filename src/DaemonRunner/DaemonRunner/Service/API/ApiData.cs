@@ -11,6 +11,8 @@ namespace NetDaemon.Service.Api
 
         public bool IsEnabled { get; set; }
 
+        public string? Description { get; set; }
+
     }
 
     public class ApiConfig
