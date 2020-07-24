@@ -257,14 +257,6 @@ namespace NetDaemon.Service.App
                         {
                             switch (kind.Kind())
                             {
-                                // case SyntaxKind.SingleLineCommentTrivia:
-                                //     comments += kind.ToString();
-                                //     break;
-
-                                // case SyntaxKind.MultiLineCommentTrivia:
-                                //     var nodeText = kind.ToString();
-                                //     comments += nodeText.Substring(2, nodeText.Length - 4);
-                                //     break;
                                 case SyntaxKind.SingleLineDocumentationCommentTrivia:
                                     var doc = kind.ToString();
                                     doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(summary)\s*>", "");
@@ -388,10 +380,6 @@ namespace NetDaemon.Service.App
             }
 
             return false;
-        }
-
-        private class SingleLineSyntaxCommentTrivia
-        {
         }
     }
 }
