@@ -350,6 +350,11 @@ namespace NetDaemon.Common
         public string? Id { get; set; }
 
         /// <summary>
+        ///     Returns the description, is the decorating comment of app class
+        /// </summary>
+        public string Description { get; }
+
+        /// <summary>
         ///     Gets or sets a flag indicating whether this app is enabled.
         ///     This property property can be controlled from Home Assistant.
         /// </summary>
@@ -410,7 +415,7 @@ namespace NetDaemon.Common
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
         void Log(Exception exception, string message, params object[] param);
-        
+
         /// <summary>
         ///     Logs an informational message
         /// </summary>
@@ -438,7 +443,7 @@ namespace NetDaemon.Common
         /// <param name="message">The message to log</param>
         /// <param name="param">Params</param>
         void LogInformation(Exception exception, string message, params object[] param);
-        
+
         /// <summary>
         ///     Logs a debug message
         /// </summary>
@@ -479,7 +484,7 @@ namespace NetDaemon.Common
         /// <param name="exception">A exception</param>
         /// <param name="message">The message to log</param>
         void LogError(Exception exception, string message);
-        
+
         /// <summary>
         ///     Logs an error message
         /// </summary>

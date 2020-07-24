@@ -55,15 +55,15 @@ namespace NetDaemon.Service.Api
         [Route("apps")]
         public IEnumerable<ApiApplication>? Apps()
         {
+
             return _host?.AllAppInstances.Select(n => new ApiApplication()
             {
                 Id = n.Id,
                 Dependencies = n.Dependencies,
-                IsEnabled = n.IsEnabled
+                IsEnabled = n.IsEnabled,
+                Description = n.Description
             });
         }
-
-
     }
 
 }

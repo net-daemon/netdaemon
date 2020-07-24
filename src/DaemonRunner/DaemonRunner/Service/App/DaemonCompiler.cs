@@ -162,6 +162,8 @@ namespace NetDaemon.Service.App
                 {
                     if (Path.GetFileName(syntaxTree.FilePath) != "_EntityExtensions.cs")
                         WarnIfExecuteIsMissing(syntaxTree, compilation, logger);
+
+                    InterceptAppInfo(syntaxTree, compilation, logger);
                 }
 
                 // var emitOptions = new EmitOptions(
@@ -234,6 +236,65 @@ namespace NetDaemon.Service.App
             "RunScript"
         };
 
+        private static void InterceptAppInfo(SyntaxTree syntaxTree, CSharpCompilation compilation, ILogger logger)
+        {
+            var semModel = compilation.GetSemanticModel(syntaxTree);
+
+            var classDeclarationExpressions = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
+
+            foreach (var classDeclaration in classDeclarationExpressions)
+            {
+                //(IMethodSymbol?)
+                var symbol = semModel?.GetDeclaredSymbol(classDeclaration);
+                if (symbol is null)
+                    continue;
+
+                if (symbol.BaseType?.Name == "NetDaemonApp" || symbol.BaseType?.Name == "NetDaemonRxApp" || symbol.BaseType?.Name == "GeneratedAppBase")
+                {
+                    if (classDeclaration.HasStructuredTrivia)
+                    {
+                        foreach (var kind in classDeclaration.GetLeadingTrivia())
+                        {
+                            switch (kind.Kind())
+                            {
+                                // case SyntaxKind.SingleLineCommentTrivia:
+                                //     comments += kind.ToString();
+                                //     break;
+
+                                // case SyntaxKind.MultiLineCommentTrivia:
+                                //     var nodeText = kind.ToString();
+                                //     comments += nodeText.Substring(2, nodeText.Length - 4);
+                                //     break;
+                                case SyntaxKind.SingleLineDocumentationCommentTrivia:
+                                    var doc = kind.ToString();
+                                    doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(summary)\s*>", "");
+                                    doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(\/summary)\s*>", "");
+                                    doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)\/\/\/", "");
+                                    string comment = "";
+                                    foreach (var row in doc.Split('\n'))
+                                    {
+                                        var commentRow = row.Trim();
+                                        if (commentRow.Length > 0)
+                                            comment += commentRow + "\n";
+                                    }
+                                    var app_key = symbol.ContainingNamespace.Name == "" ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;
+
+                                    if (!NetDaemonAppBase.CompileTimeProperties.ContainsKey(app_key))
+                                    {
+                                        NetDaemonAppBase.CompileTimeProperties[app_key] = new Dictionary<string, string>();
+                                    }
+                                    NetDaemonAppBase.CompileTimeProperties[app_key]["description"] = comment;
+
+                                    break;
+                            }
+
+                        }
+                    }
+                }
+
+            }
+            var linesReported = new List<int>();
+        }
         /// <summary>
         ///     Warn user if fluent command chain not ending with Execute or ExecuteAsync
         /// </summary>
@@ -248,6 +309,7 @@ namespace NetDaemon.Service.App
 
             foreach (var invocationExpression in invocationExpressions)
             {
+
                 var symbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
                 if (symbol is null)
                     continue;
@@ -263,6 +325,8 @@ namespace NetDaemon.Service.App
 
                 if (symbol is object && symbol.ContainingType.Name == "NetDaemonApp")
                 {
+                    var comment = symbol.GetDocumentationCommentXml();
+                    System.Console.WriteLine("HELLO COMMENT: " + comment);
                     var disableLogging = false;
 
                     var symbolName = symbol.Name;
@@ -326,5 +390,8 @@ namespace NetDaemon.Service.App
             return false;
         }
 
+        private class SingleLineSyntaxCommentTrivia
+        {
+        }
     }
 }

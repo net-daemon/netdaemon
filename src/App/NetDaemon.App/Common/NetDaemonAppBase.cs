@@ -17,6 +17,11 @@ namespace NetDaemon.Common
     public abstract class NetDaemonAppBase : INetDaemonAppBase
     {
         /// <summary>
+        ///     A set of properties found in static analysis of code for each app
+        /// </summary>
+        public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; set; } = new Dictionary<string, Dictionary<string, string>>();
+
+        /// <summary>
         ///     The NetDaemonHost instance
         /// </summary>
         protected INetDaemon? _daemon;
@@ -81,6 +86,28 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         public bool IsEnabled { get; set; } = true;
+
+        /// <inheritdoc/>
+        public string Description
+        {
+            get
+            {
+                var app_key = this.GetType().FullName;
+
+                if (app_key is null)
+                    return "";
+
+                if (CompileTimeProperties.ContainsKey(app_key))
+                {
+                    if (CompileTimeProperties[app_key].ContainsKey("description"))
+                    {
+                        return CompileTimeProperties[app_key]["description"];
+                    }
+                }
+                return "";
+            }
+        }
+
 
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }
