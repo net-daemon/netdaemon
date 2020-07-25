@@ -10,7 +10,7 @@ jobs:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: "Set version number"
         run: |
           sed -i '/        const string _version = /c\        const string _version = "dev build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs

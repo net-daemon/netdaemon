@@ -10,7 +10,7 @@ jobs:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       - uses: olegtarasov/get-tag@v2

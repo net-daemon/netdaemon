@@ -3,7 +3,7 @@ name: Test docker builds
 on:
   pull_request:
     branches:
-      - master
+      - main
       - dev
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     name: Test image build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1

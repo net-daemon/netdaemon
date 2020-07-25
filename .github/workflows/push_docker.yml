@@ -3,17 +3,17 @@ name: Deploy dev builds to Docker Hub
 on:
    push:
      branches:
-      - master
+      - main
 
 jobs:
   deploy:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: "Set version number"
         run: |
-          sed -i '/        const string _version = /c\        const string _version = "master build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+          sed -i '/        const string _version = /c\        const string _version = "main build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       - name: Set up Docker Buildx

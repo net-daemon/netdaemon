@@ -14,7 +14,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageDescription>
       A application daemon for writing automations for the free open source home automations software Home Assisstant written in .net core 3.
-      Please see https://github.com/helto4real/netdaemon/blob/master/README.md for docs.
+      Please see https://github.com/helto4real/netdaemon/blob/main/README.md for docs.
     </PackageDescription>
     <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
     <tags>Home Assistant</tags>
