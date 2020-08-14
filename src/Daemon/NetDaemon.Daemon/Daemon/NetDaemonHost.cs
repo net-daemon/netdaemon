@@ -34,13 +34,13 @@ namespace NetDaemon.Daemon
             new ConcurrentDictionary<string, HassEntity>();
 
         internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageChannel =
-                Channel.CreateBounded<(string, string, dynamic?)>(20);
+                Channel.CreateBounded<(string, string, dynamic?)>(200);
 
         internal readonly Channel<(string, dynamic, dynamic?)> _setStateMessageChannel =
-                Channel.CreateBounded<(string, dynamic, dynamic?)>(20);
+                Channel.CreateBounded<(string, dynamic, dynamic?)>(200);
 
         internal readonly Channel<(string, string)> _ttsMessageChannel =
-                                                    Channel.CreateBounded<(string, string)>(20);
+                                                    Channel.CreateBounded<(string, string)>(200);
 
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
