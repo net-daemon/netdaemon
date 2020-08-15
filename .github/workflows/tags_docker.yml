@@ -17,8 +17,7 @@ jobs:
         name: Set tag envronment variable
       - name: "Set version number"
         run: |
-          
-        sed -i '/        private const string Version = /c\        private const string Version =  "${GIT_TAG_NAME}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+          sed -i '/        private const string Version = /c\        private const string Version =  "${GIT_TAG_NAME}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: Set up Docker Buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
