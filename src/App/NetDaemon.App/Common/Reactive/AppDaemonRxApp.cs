@@ -81,7 +81,7 @@ namespace NetDaemon.Common.Reactive
             _reactiveState = null;
 
             await base.DisposeAsync().ConfigureAwait(false);
-            Log("RxApp {app} is Disposed", Id!);
+            LogDebug("RxApp {app} is Disposed", Id!);
         }
 
         /// <inheritdoc/>

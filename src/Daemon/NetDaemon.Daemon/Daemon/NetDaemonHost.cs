@@ -419,6 +419,15 @@ namespace NetDaemon.Daemon
                 if (!connectResult)
                 {
                     Connected = false;
+                    await _hassClient.CloseAsync().ConfigureAwait(false);
+                    return;
+                }
+
+                var hassConfig = await _hassClient.GetConfig().ConfigureAwait(false);
+                if (hassConfig.State != "RUNNING")
+                {
+                    Logger.LogInformation("Home Assistant is not ready yet, state: {state} ..", hassConfig.State);
+                    await _hassClient.CloseAsync();
                     return;
                 }
 
@@ -567,7 +576,7 @@ namespace NetDaemon.Daemon
                 {
                     return;
                 }
-                Logger.LogInformation("Try stopping Instance NetDaemonHost");
+                Logger.LogDebug("Try stopping Instance NetDaemonHost");
 
                 await UnloadAllApps().ConfigureAwait(false);
 
@@ -578,6 +587,8 @@ namespace NetDaemon.Daemon
                 InternalState.Clear();
 
                 _stopped = true;
+
+                Connected = false;
 
                 Logger.LogInformation("Stopped Instance NetDaemonHost");
             }

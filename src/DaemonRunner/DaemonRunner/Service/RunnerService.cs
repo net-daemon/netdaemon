@@ -19,7 +19,7 @@ namespace NetDaemon.Service
         /// <summary>
         /// The interval used when disconnected
         /// </summary>
-        private const int ReconnectInterval = 40000;
+        private const int ReconnectInterval = 10000;
         private const string Version = "dev";
 
         private readonly HomeAssistantSettings _homeAssistantSettings;
@@ -102,7 +102,10 @@ namespace NetDaemon.Service
                             stoppingToken
                         );
 
-                        await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false);
+                        if (await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false) == false)
+                        {
+                            continue;
+                        }
 
                         if (!stoppingToken.IsCancellationRequested)
                         {
@@ -132,7 +135,7 @@ namespace NetDaemon.Service
                                     if (!stoppingToken.IsCancellationRequested)
                                     {
                                         // It is disconnected, wait
-                                        _logger.LogWarning($"Home assistant is unavailable, retrying in {ReconnectInterval / 1000} seconds...");
+                                        // _logger.LogWarning($"Home assistant is unavailable, retrying in {ReconnectInterval / 1000} seconds...");
                                     }
                                 }
                                 catch (TaskCanceledException)
@@ -230,16 +233,17 @@ namespace NetDaemon.Service
             Directory.CreateDirectory(appDirectory);
         }
 
-        private async Task WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        private async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
             var nrOfTimesCheckForConnectedState = 0;
 
             while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
+                await Task.Delay(500, stoppingToken).ConfigureAwait(false);
                 if (nrOfTimesCheckForConnectedState++ > 5)
                     break;
             }
+            return daemonHost.Connected;
         }
     }
 }
