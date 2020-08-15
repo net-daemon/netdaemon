@@ -1297,13 +1297,16 @@ namespace NetDaemon.Daemon
 
                 var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
 
-                if (entityAttributes is object)
+                if (entityAttributes is object && entityAttributes.Count > 0)
                     attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
 
-                if (attributes is object)
+                if (attributes is object && attributes.Count > 0)
                     await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
                 else
                     await SetStateAsync(entityId, state).ConfigureAwait(false);
+
+                await ReloadAllApps();
+
             }
         }
 

@@ -300,9 +300,6 @@ namespace NetDaemon.Common
             }
         }
 
-
-
-
         /// <inheritdoc/>
         public void Log(Exception exception, string message, params object[] param) => LogInformation(exception, message, param);
 

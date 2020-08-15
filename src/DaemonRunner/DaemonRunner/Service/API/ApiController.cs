@@ -19,6 +19,7 @@ namespace NetDaemon.Service.Api
         private readonly ILogger<ApiController> _logger;
         private readonly NetDaemonSettings? _netdaemonSettings;
         private readonly HomeAssistantSettings? _homeassistantSettings;
+        private static string[] validStates = new string[] { "enable", "disable" };
 
         private readonly NetDaemonHost? _host;
         public ApiController(
@@ -67,7 +68,7 @@ namespace NetDaemon.Service.Api
             });
         }
 
-        private static string[] validStates = new string[] { "enable", "disable" };
+
         [HttpPost]
         [Route("app/state/{id?}/{state?}")]
         public IActionResult SetState([FromRoute] string id, [FromRoute] string state)
