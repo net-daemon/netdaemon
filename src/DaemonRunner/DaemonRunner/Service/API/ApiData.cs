@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NetDaemon.Service.Configuration;
 
@@ -12,6 +13,10 @@ namespace NetDaemon.Service.Api
         public bool IsEnabled { get; set; }
 
         public string? Description { get; set; }
+
+        public DateTime? NextScheduledEvent { get; set; }
+
+        public string? LastErrorMessage { get; set; }
 
     }
 

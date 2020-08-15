@@ -61,9 +61,32 @@ namespace NetDaemon.Service.Api
                 Id = n.Id,
                 Dependencies = n.Dependencies,
                 IsEnabled = n.IsEnabled,
-                Description = n.Description
+                Description = n.Description,
+                NextScheduledEvent = n.RuntimeInfo.NextScheduledEvent,
+                LastErrorMessage = n.RuntimeInfo.LastErrorMessage
             });
         }
+
+        private static string[] validStates = new string[] { "enable", "disable" };
+        [HttpPost]
+        [Route("app/state/{id?}/{state?}")]
+        public IActionResult SetState([FromRoute] string id, [FromRoute] string state)
+        {
+            if (!validStates.Contains(state) || string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+            if (state == "enable")
+            {
+                _host?.CallService("switch", "turn_on", new { entity_id = $"switch.netdaemon_{id?.ToSafeHomeAssistantEntityId()}" });
+            }
+            else
+            {
+                _host?.CallService("switch", "turn_off", new { entity_id = $"switch.netdaemon_{id?.ToSafeHomeAssistantEntityId()}" });
+            }
+            return Ok();
+        }
+
     }
 
 }

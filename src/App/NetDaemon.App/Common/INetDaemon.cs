@@ -401,6 +401,11 @@ namespace NetDaemon.Common
             Func<dynamic?, Task> action);
 
 
+        /// <summary>
+        ///     Returns different runtime information about an app
+        /// </summary>
+        public AppRuntimeInfo RuntimeInfo { get; }
+
     }
 
     /// <summary>

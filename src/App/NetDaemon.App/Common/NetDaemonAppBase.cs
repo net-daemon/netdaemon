@@ -38,10 +38,6 @@ namespace NetDaemon.Common
         /// </summary>
         public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
 
-        /// <summary>
-        ///     Next scheduled time
-        /// </summary>
-        protected DateTime? NextScheduledEvent { get; set; } = null;
 
         // This is declared as static since it will contain state shared globally
         private static ConcurrentDictionary<string, object> _global = new ConcurrentDictionary<string, object>();
@@ -55,10 +51,10 @@ namespace NetDaemon.Common
         private readonly Channel<bool> _updateRuntimeInfoChannel =
                Channel.CreateBounded<bool>(5);
 
-        /// <summary>
-        ///     The last error message logged och catched
-        /// </summary>
-        public string? LastErrorMessage { get; set; } = null;
+        // /// <summary>
+        // ///     The last error message logged och catched
+        // /// </summary>
+        // public string? RuntimeInfo.LastErrorMessage { get; set; } = null;
         private CancellationTokenSource _cancelSource = new CancellationTokenSource();
         private Task? _lazyStoreStateTask;
         private FluentExpandoObject? _storageObject;
@@ -174,6 +170,12 @@ namespace NetDaemon.Common
         }
 
         private string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
+
+        AppRuntimeInfo _runtimeInfo = new AppRuntimeInfo { HasError = false };
+
+        /// <inheritdoc/>
+        public AppRuntimeInfo RuntimeInfo => _runtimeInfo;
+
         /// <inheritdoc/>
         public void SaveAppState()
         {
@@ -332,7 +334,7 @@ namespace NetDaemon.Common
         public void LogError(string message)
         {
             Log(LogLevel.Error, message);
-            LastErrorMessage = message;
+            RuntimeInfo.LastErrorMessage = message;
             UpdateRuntimeInformation();
         }
 
@@ -340,7 +342,7 @@ namespace NetDaemon.Common
         public void LogError(Exception exception, string message)
         {
             Log(LogLevel.Error, exception, message);
-            LastErrorMessage = message;
+            RuntimeInfo.LastErrorMessage = message;
             UpdateRuntimeInformation();
         }
 
@@ -348,7 +350,7 @@ namespace NetDaemon.Common
         public void LogError(string message, params object[] param)
         {
             Log(LogLevel.Error, message, param);
-            LastErrorMessage = message;
+            RuntimeInfo.LastErrorMessage = message;
             UpdateRuntimeInformation();
         }
 
@@ -356,7 +358,7 @@ namespace NetDaemon.Common
         public void LogError(Exception exception, string message, params object[] param)
         {
             Log(LogLevel.Error, exception, message, param);
-            LastErrorMessage = message;
+            RuntimeInfo.LastErrorMessage = message;
             UpdateRuntimeInformation();
         }
 
@@ -391,11 +393,14 @@ namespace NetDaemon.Common
         {
             if (value is object)
             {
-                _attributes[attribute] = value;
+                RuntimeInfo.AppAttributes[attribute] = value;
             }
             else
             {
-                _attributes.TryRemove(attribute, out _);
+                if (RuntimeInfo.AppAttributes.ContainsKey(attribute))
+                {
+                    RuntimeInfo.AppAttributes.Remove(attribute);
+                }
             }
             UpdateRuntimeInformation();
         }
@@ -439,28 +444,12 @@ namespace NetDaemon.Common
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
-            var runtimeInfo = new AppRuntimeInfo
+            if (RuntimeInfo.LastErrorMessage is object)
             {
-                HasError = false
-            };
-
-            if (_attributes.Count() > 0)
-                foreach (var (attr, value) in _attributes)
-                {
-                    if (value is object)
-                        runtimeInfo.AppAttributes[attr] = value;
-                }
-
-            if (NextScheduledEvent is object)
-                runtimeInfo.NextScheduledEvent = NextScheduledEvent;
-
-            if (LastErrorMessage is object)
-            {
-                runtimeInfo.LastErrorMessage = LastErrorMessage;
-                runtimeInfo.HasError = true;
+                RuntimeInfo.HasError = true;
             }
 
-            await _daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", runtimeInfo)).ConfigureAwait(false);
+            await _daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
         }
 
 
