@@ -46,6 +46,7 @@ namespace NetDaemon.Service
             {
                 // Only enable them if 
                 services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
+                services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
                 services.AddRouting();
             }
         }
@@ -59,11 +60,7 @@ namespace NetDaemon.Service
                     app.UseDeveloperExceptionPage();
                 }
 
-                // app.UseHttpsRedirection();
-
                 app.UseRouting();
-
-                // app.UseAuthorization();
 
                 app.UseEndpoints(endpoints =>
                 {

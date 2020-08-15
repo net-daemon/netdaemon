@@ -275,7 +275,7 @@ namespace NetDaemon.Common.Reactive
         internal virtual IDisposable CreateObservableIntervall(TimeSpan timespan, Action action)
         {
             var result = new DisposableTimerResult(_cancelTimers.Token);
-            NextScheduledEvent = DateTime.Now + timespan;
+            RuntimeInfo.NextScheduledEvent = DateTime.Now + timespan;
             UpdateRuntimeInformation();
 
             Observable.Interval(timespan, TaskPoolScheduler.Default)
@@ -287,7 +287,7 @@ namespace NetDaemon.Common.Reactive
                             if (this.IsEnabled)
                             {
                                 action();
-                                NextScheduledEvent = DateTime.Now + timespan;
+                                RuntimeInfo.NextScheduledEvent = DateTime.Now + timespan;
                                 UpdateRuntimeInformation();
                             }
                         }
@@ -317,7 +317,7 @@ namespace NetDaemon.Common.Reactive
         {
             var result = new DisposableTimerResult(_cancelTimers.Token);
 
-            NextScheduledEvent = timeOfDayToTrigger;
+            RuntimeInfo.NextScheduledEvent = timeOfDayToTrigger;
             UpdateRuntimeInformation();
 
             Observable.Timer(
@@ -332,7 +332,7 @@ namespace NetDaemon.Common.Reactive
                             if (this.IsEnabled)
                             {
                                 action();
-                                NextScheduledEvent = DateTime.Now + interval;
+                                RuntimeInfo.NextScheduledEvent = DateTime.Now + interval;
                                 UpdateRuntimeInformation();
                             }
                         }
