@@ -40,6 +40,8 @@ namespace NetDaemon.Daemon.Tests
             Setup(x => x.ReadEventAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
 
+            Setup(x => x.GetConfig()).ReturnsAsync(new HassConfig { State = "RUNNING" });
+
             Setup(x => x.SetState(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object?>())).Returns<string, string, object>(
                 (entityId, state, attributes) =>
                 {
