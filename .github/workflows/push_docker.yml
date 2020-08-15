@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@main
       - name: "Set version number"
         run: |
-          sed -i '/        const string _version = /c\        const string _version = "main build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+        sed -i '/        private const string Version = /c\        private const string Version =  "main";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       - name: Set up Docker Buildx
