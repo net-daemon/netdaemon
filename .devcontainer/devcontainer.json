@@ -28,9 +28,9 @@
 	},
 	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
 	// Uncomment the next line if you want to publish or forward any ports.
-	// "forwardPorts": [
-	// 	5000
-	// ],
+	"forwardPorts": [
+		5000
+	],
 	// "appPort": [
 	// 	5000
 	// ],

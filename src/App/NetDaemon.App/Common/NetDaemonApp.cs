@@ -164,7 +164,6 @@ namespace NetDaemon.Common
             _stateCallbacks.Clear();
             _eventCallbacks.Clear();
             _eventFunctionSelectorCallbacks.Clear();
-    
             await base.DisposeAsync().ConfigureAwait(false);
         }
 

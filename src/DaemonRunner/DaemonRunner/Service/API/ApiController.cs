@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
+using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon;
-using NetDaemon.Service.Configuration;
 
 namespace NetDaemon.Service.Api
 {

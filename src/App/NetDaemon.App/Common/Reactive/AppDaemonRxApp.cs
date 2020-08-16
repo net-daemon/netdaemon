@@ -72,9 +72,6 @@ namespace NetDaemon.Common.Reactive
             if (_stateObservables is object)
                 _stateObservables!.Clear();
 
-            _eventObservables = null;
-            _stateObservables = null;
-
             // Make sure we release all references so the apps can be
             // unloaded correctly
             _reactiveEvent = null;

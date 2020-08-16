@@ -61,5 +61,11 @@ namespace NetDaemon.Daemon
         ///     Clears all app instances registered
         /// </summary>
         Task UnloadAllApps();
+
+        /// <summary>
+        ///     To subscribe to external event, typical the API does this
+        /// </summary>
+        /// <param name="func">callback function</param>
+        void SubscribeToExternalEvents(Func<ExternalEventBase, Task> func);
     }
 }

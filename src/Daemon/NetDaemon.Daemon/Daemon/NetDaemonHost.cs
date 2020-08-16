@@ -23,6 +23,8 @@ namespace NetDaemon.Daemon
 {
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
+        internal readonly ConcurrentBag<Func<ExternalEventBase, Task>> _externalEventCallSubscribers =
+            new ConcurrentBag<Func<ExternalEventBase, Task>>();
         internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
             new ConcurrentDictionary<string, HassArea>();
 
@@ -1278,13 +1280,10 @@ namespace NetDaemon.Daemon
                 if (!entityId.StartsWith("switch.netdaemon_"))
                     return; // We only want app switches
 
-
                 await SetDependentState(entityId, state);
-
-
-
                 await ReloadAllApps();
 
+                await PostExternalEvent(new AppsInformationEvent());
             }
         }
 
@@ -1360,6 +1359,27 @@ namespace NetDaemon.Daemon
             }
             // Error return false
             return false;
+        }
+
+        /// <inheritdoc/>
+        public void SubscribeToExternalEvents(Func<ExternalEventBase, Task> func)
+        {
+            _externalEventCallSubscribers.Add(func);
+        }
+
+        private async Task PostExternalEvent(ExternalEventBase ev)
+        {
+            if (_externalEventCallSubscribers.Count == 0)
+                return;
+
+            var callbackTaskList = new List<Task>(_externalEventCallSubscribers.Count);
+
+            foreach (var callback in _externalEventCallSubscribers)
+            {
+                callbackTaskList.Add(Task.Run(() => callback(ev)));
+            }
+
+            await callbackTaskList.WhenAll(_cancelToken);
         }
     }
 }

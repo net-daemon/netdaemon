@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon;
 using NetDaemon.Service.App;
-using NetDaemon.Service.Configuration;
 
 namespace NetDaemon.Service
 {

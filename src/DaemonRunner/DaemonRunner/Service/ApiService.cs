@@ -7,12 +7,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Storage;
-using NetDaemon.Service.Configuration;
 using NetDaemon.Service;
 using Microsoft.Extensions.Options;
 using System.IO;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Common;
+using System;
+using System.Net.WebSockets;
+using Microsoft.AspNetCore.WebSockets;
+using NetDaemon.Service.Api;
+using NetDaemon.Common.Configuration;
 
 namespace NetDaemon.Service
 {
@@ -44,7 +48,7 @@ namespace NetDaemon.Service
 
             if (_useAdmin == true)
             {
-                // Only enable them if 
+                // Only enable them if use addmin
                 services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
                 services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
                 services.AddRouting();
@@ -59,7 +63,14 @@ namespace NetDaemon.Service
                 {
                     app.UseDeveloperExceptionPage();
                 }
+                var webSocketOptions = new WebSocketOptions()
+                {
+                    KeepAliveInterval = TimeSpan.FromSeconds(120),
+                    ReceiveBufferSize = 4 * 1024
+                };
 
+                app.UseWebSockets(webSocketOptions);
+                app.UseMiddleware<ApiWebsocketMiddleware>();
                 app.UseRouting();
 
                 app.UseEndpoints(endpoints =>
