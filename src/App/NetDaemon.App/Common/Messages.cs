@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using NetDaemon.Common.Fluent;
@@ -100,7 +101,36 @@ namespace NetDaemon.Common
         /// Context
         /// </summary>
         public Context? Context { get; set; }
+
+        /// <summary>
+        ///     returns a pretty print of EntityState
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            string attributes = "";
+            if (Attribute is IDictionary attr)
+            {
+                foreach (var key in attr.Keys)
+                {
+                    if (key is object)
+                    {
+                        attributes = attributes + string.Format("       {0}:{1}", key, attr[key]);
+                    }
+                }
+            }
+            return string.Format(@"
+                EntityId:       {0}
+                State:          {1}
+                Area:           {2}
+                LastChanged:    {3}
+                LastUpdated:    {4}
+                Attributes:
+                {5}
+            ", EntityId, State, Area, LastChanged, LastUpdated, attributes);
+        }
     }
+
 
     /// <summary>
     ///     Unit system parameters for Home Assistant
