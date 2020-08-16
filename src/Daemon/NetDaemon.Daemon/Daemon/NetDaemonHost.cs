@@ -1279,7 +1279,7 @@ namespace NetDaemon.Daemon
                     return; // We only want app switches
 
 
-                SetDependentState(entityId, state);
+                await SetDependentState(entityId, state);
 
 
 
