@@ -547,6 +547,7 @@ namespace NetDaemon.Daemon
                 if (result != null)
                 {
                     EntityState entityState = result.Map();
+                    entityState.State = state;
                     entityState.Area = GetAreaForEntityId(entityState.EntityId);
                     InternalState[entityState.EntityId] = entityState;
                     return entityState;
@@ -604,7 +605,7 @@ namespace NetDaemon.Daemon
             if (_runningAppInstances is null || _runningAppInstances.Count() == 0)
                 return;
 
-            foreach (var app in _runningAppInstances)
+            foreach (var app in _allAppInstances)
             {
                 await app.Value.DisposeAsync().ConfigureAwait(false);
             }
@@ -682,22 +683,6 @@ namespace NetDaemon.Daemon
             return true;
         }
 
-        // public void StopDaemonActivities()
-        // {
-        //     // Do some stuff to clear memory
-        //     // this is not nescessary now when
-        //     // we do not do hot-reload for recompile
-        //     // I keep this in-case we go that route
-        //     _hassAreas.Clear();
-        //     _hassDevices.Clear();
-        //     _hassEntities.Clear();
-        //     _runningAppInstances.Clear();
-        //     _daemonServiceCallFunctions.Clear();
-        //     _eventHandlerTasks.Clear();
-        //     _dataCache.Clear();
-        //     GC.Collect();
-        //     GC.WaitForPendingFinalizers();
-        // }
         internal string? GetAreaForEntityId(string entityId)
         {
             HassEntity? entity;
@@ -1293,20 +1278,64 @@ namespace NetDaemon.Daemon
                 if (!entityId.StartsWith("switch.netdaemon_"))
                     return; // We only want app switches
 
-                List<(string, object)>? attributes = null;
 
-                var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
+                SetDependentState(entityId, state);
 
-                if (entityAttributes is object)
-                    attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
 
-                if (attributes is object)
-                    await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
-                else
-                    await SetStateAsync(entityId, state).ConfigureAwait(false);
+
+                await ReloadAllApps();
+
             }
         }
 
+        private async Task SetDependentState(string entityId, string state)
+        {
+            var app = _allAppInstances.Values.Where(n => n.EntityId == entityId).FirstOrDefault();
+
+            if (app is object)
+            {
+                if (state == "off")
+                {
+                    // We need to turn off any dependent apps
+                    var depApps = _allAppInstances.Values.Where(n => n.Dependencies.Contains(app.Id));
+
+                    foreach (var depApp in depApps)
+                    {
+                        await SetDependentState(depApp.EntityId, state).ConfigureAwait(false);
+                    }
+                    app.IsEnabled = false;
+                    Logger.LogError("SET APP {app} state = disabled", app.Id);
+                }
+                else if (state == "on")
+                {
+                    app.IsEnabled = true;
+                    // Enable all apps that this app is dependent on
+                    foreach (var depOnId in app.Dependencies)
+                    {
+                        var depOnApp = _allAppInstances.Values.Where(n => n.Id == depOnId).FirstOrDefault();
+                        if (depOnApp is object)
+                        {
+                            await SetDependentState(depOnApp.EntityId, state).ConfigureAwait(false);
+
+                        }
+                    }
+                    Logger.LogError("SET APP {app} state = enabled", app.Id);
+                }
+            }
+
+            List<(string, object)>? attributes = null;
+
+            var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
+
+            if (entityAttributes is object && entityAttributes.Count > 0)
+                attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
+
+            if (attributes is object && attributes.Count > 0)
+                await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
+            else
+                await SetStateAsync(entityId, state).ConfigureAwait(false);
+
+        }
         private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
         {
             try

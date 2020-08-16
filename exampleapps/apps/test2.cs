@@ -24,7 +24,7 @@ namespace NStest
             // Log(Remote.Tvrummet.Area);
 
             // SetState("sensor.testing", "on", new { attributeobject = new { aobject = "hello" } });
-            // RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world!"));
+            RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world!"));
             // RunDaily("13:00:00", () => Log("Hello world!"));
             // RunIn(TimeSpan.FromSeconds(5), () => Entity("light.tomas_rum").TurnOn());
             // Entity("light.tomas_rum")

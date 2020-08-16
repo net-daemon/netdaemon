@@ -350,6 +350,11 @@ namespace NetDaemon.Common
         public string? Id { get; set; }
 
         /// <summary>
+        ///     Unique id of the application entity
+        /// </summary>
+        public string EntityId { get; }
+
+        /// <summary>
         ///     Returns the description, is the decorating comment of app class
         /// </summary>
         public string Description { get; }

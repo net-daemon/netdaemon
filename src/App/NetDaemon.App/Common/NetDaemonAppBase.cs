@@ -157,7 +157,6 @@ namespace NetDaemon.Common
             }
 
             var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
-
             var appState = appInfo?.State as string;
             if (appState == null || (appState != "on" && appState != "off"))
             {
@@ -169,7 +168,8 @@ namespace NetDaemon.Common
             IsEnabled = appState == "on";
         }
 
-        private string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
+        /// <inheritdoc/>
+        public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
         AppRuntimeInfo _runtimeInfo = new AppRuntimeInfo { HasError = false };
 
@@ -202,6 +202,17 @@ namespace NetDaemon.Common
             Logger = daemon.Logger;
 
             Logger.LogInformation("Startup: {app}", GetUniqueIdForStorage());
+
+            var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
+            var appState = appInfo?.State as string;
+            if (appState == null || (appState != "on" && appState != "off"))
+            {
+                IsEnabled = true;
+            }
+            else
+            {
+                IsEnabled = appState == "on";
+            }
             UpdateRuntimeInformation();
             return Task.CompletedTask;
         }
@@ -299,9 +310,6 @@ namespace NetDaemon.Common
                 Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] { Id ?? "" });
             }
         }
-
-
-
 
         /// <inheritdoc/>
         public void Log(Exception exception, string message, params object[] param) => LogInformation(exception, message, param);
