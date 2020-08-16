@@ -63,8 +63,8 @@ namespace NetDaemon.Service.Api
                 Dependencies = n.Dependencies,
                 IsEnabled = n.IsEnabled,
                 Description = n.Description,
-                NextScheduledEvent = n.RuntimeInfo.NextScheduledEvent,
-                LastErrorMessage = n.RuntimeInfo.LastErrorMessage
+                NextScheduledEvent = n.IsEnabled ? n.RuntimeInfo.NextScheduledEvent : null,
+                LastErrorMessage = n.IsEnabled ? n.RuntimeInfo.LastErrorMessage : null
             });
         }
 
