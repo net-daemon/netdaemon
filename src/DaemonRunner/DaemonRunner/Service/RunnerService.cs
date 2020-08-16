@@ -19,7 +19,7 @@ namespace NetDaemon.Service
         /// <summary>
         /// The interval used when disconnected
         /// </summary>
-        private const int ReconnectInterval = 10000;
+        private const int ReconnectInterval = 30000;
         private const string Version = "custom compiled";
 
         private readonly HomeAssistantSettings _homeAssistantSettings;
