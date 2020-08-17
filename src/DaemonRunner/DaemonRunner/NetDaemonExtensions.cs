@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Storage;
 using NetDaemon.Service;
-using NetDaemon.Service.Configuration;
 
 namespace NetDaemon
 {
