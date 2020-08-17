@@ -186,7 +186,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
             await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""apps""}"), WebSocketMessageType.Text, true, CancellationToken.None);
 
-            var response = (IEnumerable<ApiApplication>)await ReadObject(websocket, typeof(IEnumerable<ApiApplication>));
+            var res = (WsAppsResult)await ReadObject(websocket, typeof(WsAppsResult));
+            var response = res.Data!;
 
             Assert.Equal(4, response?.Count());
 
@@ -211,7 +212,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
             await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""settings""}"), WebSocketMessageType.Text, true, CancellationToken.None);
 
-            var response = (ApiConfig)await ReadObject(websocket, typeof(ApiConfig));
+            var res = (WsConfigResult)await ReadObject(websocket, typeof(WsConfigResult));
+            var response = res.Data;
 
             Assert.NotNull(response);
 

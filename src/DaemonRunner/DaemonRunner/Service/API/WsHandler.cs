@@ -106,17 +106,22 @@ namespace NetDaemon.Service.Api
                         switch (msg.Type)
                         {
                             case "apps":
-                                var apps = _host?.AllAppInstances.Select(n => new ApiApplication()
-                                {
-                                    Id = n.Id,
-                                    Dependencies = n.Dependencies,
-                                    IsEnabled = n.IsEnabled,
-                                    Description = n.Description,
-                                    NextScheduledEvent = n.IsEnabled ? n.RuntimeInfo.NextScheduledEvent : null,
-                                    LastErrorMessage = n.IsEnabled ? n.RuntimeInfo.LastErrorMessage : null
-                                });
 
-                                await SendStringAsync(currentSocket, JsonSerializer.Serialize<IEnumerable<ApiApplication>>(apps ?? new ApiApplication[] { }, _jsonOptions), ct);
+                                var eventMessage = new WsExternalEvent
+                                {
+                                    Type = "apps",
+                                    Data = _host?.AllAppInstances.Select(n => new ApiApplication()
+                                    {
+                                        Id = n.Id,
+                                        Dependencies = n.Dependencies,
+                                        IsEnabled = n.IsEnabled,
+                                        Description = n.Description,
+                                        NextScheduledEvent = n.IsEnabled ? n.RuntimeInfo.NextScheduledEvent : null,
+                                        LastErrorMessage = n.IsEnabled ? n.RuntimeInfo.LastErrorMessage : null
+                                    })
+                                };
+
+                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions));
 
                                 break;
                             case "settings":
@@ -125,12 +130,19 @@ namespace NetDaemon.Service.Api
                                     DaemonSettings = _netdaemonSettings,
                                     HomeAssistantSettings = _homeassistantSettings
                                 };
+
                                 // For first release we do not expose the token
                                 if (tempResult.HomeAssistantSettings is object)
                                 {
                                     tempResult.HomeAssistantSettings.Token = "";
                                 }
-                                await SendStringAsync(currentSocket, JsonSerializer.Serialize<ApiConfig>(tempResult, _jsonOptions), ct);
+                                var settingsMessage = new WsExternalEvent
+                                {
+                                    Type = "settins",
+                                    Data = tempResult
+                                };
+
+                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(settingsMessage, _jsonOptions));
                                 break;
 
                             case "app":
