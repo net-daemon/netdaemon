@@ -24,7 +24,7 @@ namespace NetDaemon.Service.Api
 
         private readonly RequestDelegate _next;
 
-        private readonly ILogger<ApiController> _logger;
+        private readonly ILogger<ApiWebsocketMiddleware> _logger;
         private readonly NetDaemonSettings? _netdaemonSettings;
         private readonly HomeAssistantSettings? _homeassistantSettings;
 
@@ -42,7 +42,7 @@ namespace NetDaemon.Service.Api
             NetDaemonHost? host = null
             )
         {
-            _logger = loggerFactory.CreateLogger<ApiController>();
+            _logger = loggerFactory.CreateLogger<ApiWebsocketMiddleware>();
             _host = host;
             _netdaemonSettings = netDaemonSettings.Value;
             _homeassistantSettings = homeAssistantSettings.Value;

@@ -74,6 +74,11 @@ namespace NetDaemon.Daemon
         private readonly ConcurrentDictionary<string, INetDaemonAppBase> _allAppInstances =
             new ConcurrentDictionary<string, INetDaemonAppBase>();
 
+        /// <summary>
+        ///     Used for testing
+        /// </summary>
+        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances => _allAppInstances;
+
         private readonly Scheduler _scheduler;
 
         private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>

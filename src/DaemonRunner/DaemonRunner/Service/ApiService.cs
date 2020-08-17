@@ -49,9 +49,9 @@ namespace NetDaemon.Service
             if (_useAdmin == true)
             {
                 // Only enable them if use addmin
-                services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
-                services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
-                services.AddRouting();
+                // services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
+                // services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
+                // services.AddRouting();
             }
         }
 
@@ -68,15 +68,8 @@ namespace NetDaemon.Service
                     KeepAliveInterval = TimeSpan.FromSeconds(120),
                     ReceiveBufferSize = 4 * 1024
                 };
-
                 app.UseWebSockets(webSocketOptions);
                 app.UseMiddleware<ApiWebsocketMiddleware>();
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllers();
-                });
             }
         }
     }
