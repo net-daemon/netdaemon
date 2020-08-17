@@ -190,7 +190,7 @@ namespace NetDaemon.Service.Api
 
         public async Task BroadCast(string message, CancellationToken ct = default(CancellationToken))
         {
-            _logger.LogInformation("Broadcasting to {count} clients", _sockets.Count);
+            _logger.LogDebug("Broadcasting to {count} clients", _sockets.Count);
             foreach (var socket in _sockets)
             {
                 if (socket.Value.State != WebSocketState.Open)
