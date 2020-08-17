@@ -138,7 +138,7 @@ namespace NetDaemon.Service.Api
                                 }
                                 var settingsMessage = new WsExternalEvent
                                 {
-                                    Type = "settins",
+                                    Type = "settings",
                                     Data = tempResult
                                 };
 
