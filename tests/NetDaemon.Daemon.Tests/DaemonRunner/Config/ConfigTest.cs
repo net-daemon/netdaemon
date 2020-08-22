@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using Microsoft.Extensions.Options;
+using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon.Config;
-using NetDaemon.Service;
 using Xunit;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
@@ -19,6 +19,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
 
         public string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
+
+        public IOptions<NetDaemonSettings> CreateSettings(string sourcePath) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        {
+            SourceFolder = sourcePath
+        });
 
         [Fact]
         public void NormalLoadSecretsShouldGetCorrectValues()
@@ -72,7 +77,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void SecretShouldBeRelevantDependingOnFolderLevel(string secret, string configPath, string secretValue)
         {
             // ARRANGE
-            var config = new YamlConfig(ConfigFixturePath);
+            var config = new YamlConfig(CreateSettings(ConfigFixturePath));
 
             // ACT
 
@@ -200,7 +205,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 - name: command2
                   data: some code2";
 
-            var yamlConfig = new YamlAppConfig(new List<Type>(), new System.IO.StringReader(yaml), new YamlConfig(ConfigFixturePath), ConfigFixturePath);
+            var yamlConfig = new YamlAppConfig(
+                new List<Type>(),
+                new System.IO.StringReader(yaml),
+                new YamlConfig(CreateSettings(ConfigFixturePath)),
+                ConfigFixturePath
+            );
 
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));

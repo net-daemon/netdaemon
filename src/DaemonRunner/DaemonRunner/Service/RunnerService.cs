@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon;
+using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
 
 namespace NetDaemon.Service
@@ -26,9 +27,9 @@ namespace NetDaemon.Service
         private readonly NetDaemonSettings _netDaemonSettings;
 
         private readonly ILogger<RunnerService> _logger;
-        private readonly ILoggerFactory _loggerFactory;
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly IYamlConfig _yamlConfig;
 
         private bool _entitiesGenerated;
 
@@ -36,14 +37,15 @@ namespace NetDaemon.Service
             ILoggerFactory loggerFactory,
             IOptions<NetDaemonSettings> netDaemonSettings,
             IOptions<HomeAssistantSettings> homeAssistantSettings,
-            IServiceProvider serviceProvider
+            IServiceProvider serviceProvider,
+            IYamlConfig yamlConfig
             )
         {
-            _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _homeAssistantSettings = homeAssistantSettings.Value;
             _netDaemonSettings = netDaemonSettings.Value;
             _serviceProvider = serviceProvider;
+            _yamlConfig = yamlConfig;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -127,7 +129,7 @@ namespace NetDaemon.Service
                                         return;
                                     }
 
-                                    IInstanceDaemonApp? codeManager = new CodeManager(sourceFolder, loadedDaemonApps, _logger);
+                                    IInstanceDaemonApp? codeManager = new CodeManager(loadedDaemonApps, _logger, _yamlConfig);
                                     await daemonHost.Initialize(codeManager).ConfigureAwait(false);
 
                                     // Wait until daemon stops
