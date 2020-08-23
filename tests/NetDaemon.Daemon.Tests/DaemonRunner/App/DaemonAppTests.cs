@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using NetDaemon.Common;
+using NetDaemon.Common.Configuration;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
@@ -25,7 +27,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
         public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
 
+        public IOptions<NetDaemonSettings> CreateSettings(string sourcePath) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        {
+            SourceFolder = sourcePath
+        });
 
+        
         [Fact]
         public void FaultyApplicationShouldLogError()
         {
@@ -33,8 +40,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var path = Path.Combine(FaultyAppPath, "CompileErrors");
             var loggerMock = new LoggerMock();
             var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, loggerMock.Logger);
+            var netDaemonSettings = CreateSettings(path);
+
             // ACT
-            var cm = new CodeManager(path, daemonApps, loggerMock.Logger);
+            var cm = new CodeManager(daemonApps, loggerMock.Logger, new YamlConfig(netDaemonSettings));
 
             // ASSERT
             loggerMock.AssertLogged(LogLevel.Error, Times.Once());
@@ -76,7 +85,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigShouldReturnCorrectType()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var yamlConfigMock = new Mock<IYamlConfig>();
+            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
+                .Returns(new[] {Path.Combine(ConfigFixturePath, "level2", "level3")});
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n  class: AssmeblyDaemonApp";
             // ACT
@@ -91,11 +103,17 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigNotFoundShouldReturnNull()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var yamlConfigMock = new Mock<IYamlConfig>();
+
+            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
+                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n  class: NotFoundApp";
+            
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
+            
             // ASSERT
             Assert.Empty(instances);
         }
@@ -104,7 +122,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigShouldHaveCorrectProperties()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var yamlConfigMock = new Mock<IYamlConfig>();
+            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
+                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
         app:
@@ -128,7 +149,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigWithSecretsShouldHaveCorrectProperties()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var config = new YamlConfig(CreateSettings(Path.Combine(ConfigFixturePath, "level2", "level3")));
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
         app:
@@ -139,8 +161,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             test_normal_int: 0
         ";
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object,
-                Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs")).Instances;
+            var instances = new YamlAppConfig(
+                types,
+                new StringReader(yamlConfig),
+                config,
+                Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs")
+            ).Instances;
             var instance = instances.FirstOrDefault() as AssmeblyDaemonApp;
             // ASSERT
             Assert.Equal("this is a secret string", instance?.TestSecretString);
@@ -152,7 +178,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void InstanceAppFromConfigShouldHaveCorrectPropertiesCamelCaseConvert()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var yamlConfigMock = new Mock<IYamlConfig>();
+            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
+                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
         app:
@@ -209,7 +238,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public async Task StorageShouldReturnSameValueAsSet(object data)
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var yamlConfigMock = new Mock<IYamlConfig>();
+
+            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
+                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
                 app:
@@ -240,7 +273,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public async Task StorageShouldRestoreWithCorrectValues()
         {
             // ARRANGE
-            var yamlConfigMock = new Mock<YamlConfig>(Path.Combine(ConfigFixturePath, "level2", "level3"));
+            var yamlConfigMock = new Mock<IYamlConfig>();
+
+            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
+                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
+
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
                 app:
@@ -324,8 +361,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
             var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
+            var configMock = new Mock<IYamlConfig>();
+
             // ACT
-            var codeManager = new CodeManager(path, daemonApps, moqLogger.Logger);
+            var codeManager = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(13));
@@ -339,19 +378,22 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
             var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
+            var configMock = new Mock<IYamlConfig>();
+
             // ACT
-            var codeManager = new CodeManager(path, daemonApps, moqLogger.Logger);
+            var codeManager = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(1));
         }
 
-        public static CodeManager CM(string path)
+        public CodeManager CM(string path)
         {
             var loggerMock = new LoggerMock().Logger;
+            var config = new YamlConfig(CreateSettings(path));
 
             var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, loggerMock);
-            return new CodeManager(path, daemonApps, loggerMock);
+            return new CodeManager(daemonApps, loggerMock, config);
         }
     }
 }

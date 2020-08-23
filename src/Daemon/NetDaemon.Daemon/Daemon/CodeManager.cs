@@ -13,23 +13,21 @@ namespace NetDaemon.Daemon
 {
     public sealed class CodeManager : IInstanceDaemonApp
     {
-        private readonly string _codeFolder;
         private readonly ILogger _logger;
-        private readonly YamlConfig _yamlConfig;
+        private readonly IYamlConfig _yamlConfig;
         private IEnumerable<Type>? _loadedDaemonApps;
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        /// <param name="codeFolder">Path to code folder</param>
         /// <param name="daemonAppTypes">App compiled app types</param>
         /// <param name="logger">ILogger instance to use</param>
-        public CodeManager(string codeFolder, IEnumerable<Type> daemonAppTypes, ILogger logger)
+        /// <param name="yamlConfig"></param>
+        public CodeManager(IEnumerable<Type> daemonAppTypes, ILogger logger, IYamlConfig yamlConfig)
         {
             _logger = logger;
-            _codeFolder = codeFolder;
             _loadedDaemonApps = daemonAppTypes;
-            _yamlConfig = new YamlConfig(codeFolder);
+            _yamlConfig = yamlConfig;
         }
 
         public int Count => _loadedDaemonApps.Count();
@@ -48,7 +46,7 @@ namespace NetDaemon.Daemon
             // Get all yaml config file paths
             var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths();
 
-            if (allConfigFilePaths.Count() == 0)
+            if (!allConfigFilePaths.Any())
             {
                 _logger.LogWarning("No yaml configuration files found, please add files to [netdaemonfolder]/apps");
                 return result;
