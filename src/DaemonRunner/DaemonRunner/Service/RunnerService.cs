@@ -30,15 +30,19 @@ namespace NetDaemon.Service
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IYamlConfig _yamlConfig;
+        private readonly IDaemonAppCompiler _daemonAppCompiler;
 
         private bool _entitiesGenerated;
+        private IEnumerable<Type>? _loadedDaemonApps;
+
 
         public RunnerService(
             ILoggerFactory loggerFactory,
             IOptions<NetDaemonSettings> netDaemonSettings,
             IOptions<HomeAssistantSettings> homeAssistantSettings,
             IServiceProvider serviceProvider,
-            IYamlConfig yamlConfig
+            IYamlConfig yamlConfig,
+            IDaemonAppCompiler daemonAppCompiler
             )
         {
             _logger = loggerFactory.CreateLogger<RunnerService>();
@@ -46,13 +50,13 @@ namespace NetDaemon.Service
             _netDaemonSettings = netDaemonSettings.Value;
             _serviceProvider = serviceProvider;
             _yamlConfig = yamlConfig;
+            _daemonAppCompiler = daemonAppCompiler;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping NetDaemon...");
             await base.StopAsync(cancellationToken).ConfigureAwait(false);
-
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,7 +71,6 @@ namespace NetDaemon.Service
 
                 EnsureApplicationDirectoryExists(_netDaemonSettings);
 
-                var storageFolder = Path.Combine(_netDaemonSettings.SourceFolder!, ".storage");
                 var sourceFolder = Path.Combine(_netDaemonSettings.SourceFolder!, "apps");
 
                 // Automatically create source directories
@@ -76,11 +79,9 @@ namespace NetDaemon.Service
 
                 var hasConnectedBefore = false;
 
-                CollectibleAssemblyLoadContext? alc = null;
-                IEnumerable<Type>? loadedDaemonApps = null;
+                _loadedDaemonApps = null;
 
-                await using var daemonHost =
-                            _serviceProvider.GetService<NetDaemonHost>();
+                await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>();
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
@@ -93,8 +94,6 @@ namespace NetDaemon.Service
                             await Task.Delay(ReconnectInterval, stoppingToken).ConfigureAwait(false); // Wait x seconds
                             _logger.LogInformation($"Restarting NeDaemon (version {Version})...");
                         }
-
-
 
                         var daemonHostTask = daemonHost.Run(
                             _homeAssistantSettings.Host,
@@ -118,18 +117,13 @@ namespace NetDaemon.Service
                                     // Generate code if requested
                                     await GenerateEntities(daemonHost, sourceFolder);
 
-                                    if (loadedDaemonApps is null)
-                                    {
-                                        (loadedDaemonApps, alc) = DaemonCompiler.GetDaemonApps(sourceFolder!, _logger);
-                                    }
+                                    if (_loadedDaemonApps is null)
+                                        _loadedDaemonApps = _daemonAppCompiler.GetApps();
 
-                                    if (loadedDaemonApps is null || !loadedDaemonApps.Any())
-                                    {
-                                        _logger.LogWarning("No .cs files files found, please add files to {sourceFolder}/apps", sourceFolder);
+                                    if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
                                         return;
-                                    }
 
-                                    IInstanceDaemonApp? codeManager = new CodeManager(loadedDaemonApps, _logger, _yamlConfig);
+                                    IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
                                     await daemonHost.Initialize(codeManager).ConfigureAwait(false);
 
                                     // Wait until daemon stops
@@ -174,19 +168,6 @@ namespace NetDaemon.Service
                     // If we reached here it could be a re-connect
                     hasConnectedBefore = true;
 
-                }
-                if (alc is object)
-                {
-                    loadedDaemonApps = null;
-                    var alcWeakRef = new WeakReference(alc, trackResurrection: true);
-                    alc.Unload();
-                    alc = null;
-
-                    for (int i = 0; alcWeakRef.IsAlive && (i < 100); i++)
-                    {
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                    }
                 }
             }
             catch (OperationCanceledException)

@@ -15,13 +15,13 @@ using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon;
+using NetDaemon.Infrastructure.Extensions;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
 namespace NetDaemon.Service.App
 {
-
-    internal class CollectibleAssemblyLoadContext : AssemblyLoadContext
+    public class CollectibleAssemblyLoadContext : AssemblyLoadContext
     {
         public CollectibleAssemblyLoadContext() : base(isCollectible: true)
         {
@@ -39,21 +39,6 @@ namespace NetDaemon.Service.App
         {
             var loadedApps = new List<Type>(50);
 
-            // Load the internal apps (mainly for )
-            var disableLoadLocalAssemblies = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
-            if (!(disableLoadLocalAssemblies is object && disableLoadLocalAssemblies == "true"))
-            {
-                var localApps = LoadLocalAssemblyApplicationsForDevelopment();
-                if (localApps is object)
-                    loadedApps.AddRange(localApps);
-            }
-            if (loadedApps.Count() > 0)
-            {
-                // We do not want to get and compile the apps if it is includer
-                // this is typically when in dev environment
-                logger.LogInformation("Loading compiled built-in apps");
-                return (loadedApps, null);
-            }
             CollectibleAssemblyLoadContext alc;
             // Load the compiled apps
             var (compiledApps, compileErrorText) = GetCompiledApps(out alc, codeFolder, logger);
@@ -68,29 +53,74 @@ namespace NetDaemon.Service.App
             return (loadedApps, alc);
         }
 
-        private static IEnumerable<Type>? LoadLocalAssemblyApplicationsForDevelopment()
+        public static (IEnumerable<Type>?, string) GetCompiledApps(out CollectibleAssemblyLoadContext alc, string codeFolder, ILogger logger)
         {
-            // Get daemon apps in entry assembly (mainly for development)
-            return Assembly.GetEntryAssembly()?.GetTypes()
-                .Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonAppBase)));
+            var assembly = GetCompiledAppAssembly(out alc, codeFolder, logger);
+
+            if (assembly == null)
+                return (null, "Compile error");
+
+            return (assembly.GetTypesWhereSubclassOf<NetDaemonAppBase>(), string.Empty);
+        }
+
+        public static Assembly GetCompiledAppAssembly(out CollectibleAssemblyLoadContext alc, string codeFolder, ILogger logger)
+        {
+            alc = new CollectibleAssemblyLoadContext();
+
+            try
+            {
+                var compilation = GetCsCompilation(codeFolder);
+
+                foreach (var syntaxTree in compilation.SyntaxTrees)
+                {
+                    if (Path.GetFileName(syntaxTree.FilePath) != "_EntityExtensions.cs")
+                        WarnIfExecuteIsMissing(syntaxTree, compilation, logger);
+
+                    InterceptAppInfo(syntaxTree, compilation);
+                }
+
+                using (var peStream = new MemoryStream())
+                {
+                    var emitResult = compilation.Emit(peStream: peStream);
+
+                    if (emitResult.Success)
+                    {
+                        peStream.Seek(0, SeekOrigin.Begin);
+
+                        return alc!.LoadFromStream(peStream);
+                    }
+                    else
+                    {
+                        PrettyPrintCompileError(emitResult, logger);
+
+                        return null!;
+                    }
+                }
+            }
+            finally
+            {
+                alc.Unload();
+                // Finally do cleanup and release memory
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
 
         private static List<SyntaxTree> LoadSyntaxTree(string codeFolder)
         {
             var result = new List<SyntaxTree>(50);
 
-            // Get the paths for all .cs files recurcivlely in app folder
+            // Get the paths for all .cs files recursively in app folder
             var csFiles = Directory.EnumerateFiles(codeFolder, "*.cs", SearchOption.AllDirectories);
 
-
-            var embeddedTexts = new List<EmbeddedText>();
+            //var embeddedTexts = new List<EmbeddedText>();
 
             foreach (var csFile in csFiles)
             {
                 using (var fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     var sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true);
-                    embeddedTexts.Add(EmbeddedText.FromSource(csFile, sourceText));
+                    //embeddedTexts.Add(EmbeddedText.FromSource(csFile, sourceText));
 
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
                     result.Add(syntaxTree);
@@ -140,70 +170,19 @@ namespace NetDaemon.Service.App
             var metaDataReference = GetDefaultReferences();
 
 
-            return CSharpCompilation.Create($"net_{Path.GetRandomFileName()}.dll",
+            return CSharpCompilation.Create(
+                $"net_{Path.GetRandomFileName()}.dll",
                 syntaxTrees.ToArray(),
                 references: metaDataReference.ToArray(),
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                options: new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
                     optimizationLevel: OptimizationLevel.Release,
-                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
+                )
+            );
         }
 
-        public static (IEnumerable<Type>?, string) GetCompiledApps(out CollectibleAssemblyLoadContext alc, string codeFolder, ILogger logger)
-        {
-
-            alc = new CollectibleAssemblyLoadContext();
-
-
-            try
-            {
-                var compilation = GetCsCompilation(codeFolder);
-
-                foreach (var syntaxTree in compilation.SyntaxTrees)
-                {
-                    if (Path.GetFileName(syntaxTree.FilePath) != "_EntityExtensions.cs")
-                        WarnIfExecuteIsMissing(syntaxTree, compilation, logger);
-
-                    InterceptAppInfo(syntaxTree, compilation, logger);
-                }
-
-                // var emitOptions = new EmitOptions(
-                //         debugInformationFormat: DebugInformationFormat.PortablePdb,
-                //         pdbFilePath: "netdaemondynamic.pdb");
-
-                using (var peStream = new MemoryStream())
-                // using (var symbolsStream = new MemoryStream())
-                {
-                    var emitResult = compilation.Emit(
-                        peStream: peStream
-                        // pdbStream: symbolsStream,
-                        // embeddedTexts: embeddedTexts,
-                        /*options: emitOptions*/);
-
-                    if (emitResult.Success)
-                    {
-                        peStream.Seek(0, SeekOrigin.Begin);
-
-                        var asm = alc!.LoadFromStream(peStream);
-                        return (asm.GetTypes() // Get all types
-                                .Where(type => type.IsClass && type.IsSubclassOf(typeof(NetDaemonAppBase))) // That is a app
-                                    , ""); // And return a list apps
-                    }
-                    else
-                    {
-                        return (null, PrettyPrintCompileError(emitResult));
-                    }
-                }
-            }
-            finally
-            {
-                alc.Unload();
-                // Finally do cleanup and release memory
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-        private static string PrettyPrintCompileError(EmitResult emitResult)
+        private static void PrettyPrintCompileError(EmitResult emitResult, ILogger logger)
         {
             var msg = new StringBuilder();
             msg.AppendLine($"Compiler error!");
@@ -215,13 +194,13 @@ namespace NetDaemon.Service.App
                     msg.AppendLine(emitResultDiagnostic.ToString());
                 }
             }
-            return msg.ToString();
 
+            logger.LogError(msg.ToString());
         }
         /// <summary>
         ///     All NetDaemonApp methods that needs to be closed with Execute or ExecuteAsync
         /// </summary>
-        private static string[] _executeWarningOnInvocationNames = new string[]
+        private static readonly string[] ExecuteWarningOnInvocationNames = new string[]
         {
             "Entity",
             "Entities",
@@ -236,7 +215,7 @@ namespace NetDaemon.Service.App
             "RunScript"
         };
 
-        private static void InterceptAppInfo(SyntaxTree syntaxTree, CSharpCompilation compilation, ILogger logger)
+        private static void InterceptAppInfo(SyntaxTree syntaxTree, CSharpCompilation compilation)
         {
             var semModel = compilation.GetSemanticModel(syntaxTree);
 
@@ -285,7 +264,6 @@ namespace NetDaemon.Service.App
                 }
 
             }
-            var linesReported = new List<int>();
         }
         /// <summary>
         ///     Warn user if fluent command chain not ending with Execute or ExecuteAsync
@@ -307,7 +285,7 @@ namespace NetDaemon.Service.App
                     continue;
 
                 if (string.IsNullOrEmpty(symbol?.Name) ||
-                    _executeWarningOnInvocationNames.Contains(symbol?.Name) == false)
+                    ExecuteWarningOnInvocationNames.Contains(symbol?.Name) == false)
                     // The invocation name is empty or not in list of invocations
                     // that needs to be closed with Execute or ExecuteAsync
                     continue;
@@ -317,8 +295,6 @@ namespace NetDaemon.Service.App
 
                 if (symbol is object && symbol.ContainingType.Name == "NetDaemonApp")
                 {
-                    var comment = symbol.GetDocumentationCommentXml();
-                    System.Console.WriteLine("HELLO COMMENT: " + comment);
                     var disableLogging = false;
 
                     var symbolName = symbol.Name;

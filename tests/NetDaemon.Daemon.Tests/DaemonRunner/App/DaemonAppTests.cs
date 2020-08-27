@@ -46,7 +46,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var cm = new CodeManager(daemonApps, loggerMock.Logger, new YamlConfig(netDaemonSettings));
 
             // ASSERT
-            loggerMock.AssertLogged(LogLevel.Error, Times.Once());
+            loggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
         }
 
         [Fact]
