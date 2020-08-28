@@ -15,7 +15,7 @@ namespace NetDaemon.Daemon.Test.Tests
 
 
             await daemon.ConfigureAwait(false);
-            DefaultHassClientMock.VerifyCallService("light", "turn_on", ("entity_id", "light.thelight"));
+            VerifyCallService("light", "turn_on", ("entity_id", "light.thelight"));
         }
     }
 }
