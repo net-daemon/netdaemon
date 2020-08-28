@@ -18,5 +18,16 @@ namespace NetDaemon.Common.Reactive
         {
             return observable.Throttle(span);
         }
+
+        /// <summary>
+        ///     Is same for timespan time
+        /// </summary>
+        /// <param name="observable"></param>
+        /// <param name="timeout">Timeout waiting for state</param>
+        /// <returns></returns>
+        public static IObservable<(EntityState Old, EntityState New)> NDFirstOrTimeout(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan timeout)
+        {
+            return observable.Timeout(timeout, Observable.Return((new NetDaemon.Common.EntityState() { State = "TimeOut" }, new NetDaemon.Common.EntityState() { State = "TimeOut" }))).Take(1);
+        }
     }
 }
