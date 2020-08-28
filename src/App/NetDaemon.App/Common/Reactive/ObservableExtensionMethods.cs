@@ -20,7 +20,7 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <summary>
-        ///     Wait for state the specified
+        ///     Wait for state the specified time
         /// </summary>
         /// <param name="observable"></param>
         /// <param name="timeout">Timeout waiting for state</param>
