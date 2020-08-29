@@ -113,19 +113,16 @@ namespace NetDaemon.Service.App
             // Get the paths for all .cs files recursively in app folder
             var csFiles = Directory.EnumerateFiles(codeFolder, "*.cs", SearchOption.AllDirectories);
 
-            //var embeddedTexts = new List<EmbeddedText>();
-
             foreach (var csFile in csFiles)
             {
                 using (var fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     var sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true);
-                    //embeddedTexts.Add(EmbeddedText.FromSource(csFile, sourceText));
-
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
                     result.Add(syntaxTree);
                 }
             }
+
             return result;
 
         }
@@ -223,46 +220,47 @@ namespace NetDaemon.Service.App
 
             foreach (var classDeclaration in classDeclarationExpressions)
             {
-                //(IMethodSymbol?)
                 var symbol = semModel?.GetDeclaredSymbol(classDeclaration);
+
                 if (symbol is null)
                     continue;
 
-                if (symbol.BaseType?.Name == "NetDaemonApp" || symbol.BaseType?.Name == "NetDaemonRxApp" || symbol.BaseType?.Name == "GeneratedAppBase")
+                if (symbol.BaseType?.Name != "NetDaemonApp" && symbol.BaseType?.Name != "NetDaemonRxApp" && symbol.BaseType?.Name != "GeneratedAppBase")
+                    continue;
+
+                if (!classDeclaration.HasStructuredTrivia)
+                    continue;
+
+                foreach (var kind in classDeclaration.GetLeadingTrivia())
                 {
-                    if (classDeclaration.HasStructuredTrivia)
+                    switch (kind.Kind())
                     {
-                        foreach (var kind in classDeclaration.GetLeadingTrivia())
-                        {
-                            switch (kind.Kind())
+                        case SyntaxKind.SingleLineDocumentationCommentTrivia:
+                            var doc = kind.ToString();
+                            doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(summary)\s*>", string.Empty);
+                            doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(\/summary)\s*>", string.Empty);
+                            doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)\/\/\/", "");
+                            string comment = string.Empty;
+
+                            foreach (var row in doc.Split('\n'))
                             {
-                                case SyntaxKind.SingleLineDocumentationCommentTrivia:
-                                    var doc = kind.ToString();
-                                    doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(summary)\s*>", "");
-                                    doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(\/summary)\s*>", "");
-                                    doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)\/\/\/", "");
-                                    string comment = "";
-                                    foreach (var row in doc.Split('\n'))
-                                    {
-                                        var commentRow = row.Trim();
-                                        if (commentRow.Length > 0)
-                                            comment += commentRow + "\n";
-                                    }
-                                    var app_key = symbol.ContainingNamespace.Name == "" ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;
-
-                                    if (!NetDaemonAppBase.CompileTimeProperties.ContainsKey(app_key))
-                                    {
-                                        NetDaemonAppBase.CompileTimeProperties[app_key] = new Dictionary<string, string>();
-                                    }
-                                    NetDaemonAppBase.CompileTimeProperties[app_key]["description"] = comment;
-
-                                    break;
+                                var commentRow = row.Trim();
+                                if (commentRow.Length > 0)
+                                    comment += commentRow + "\n";
                             }
 
-                        }
+                            var app_key = symbol.ContainingNamespace.Name == "" ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;
+
+                            if (!NetDaemonAppBase.CompileTimeProperties.ContainsKey(app_key))
+                            {
+                                NetDaemonAppBase.CompileTimeProperties[app_key] = new Dictionary<string, string>();
+                            }
+
+                            NetDaemonAppBase.CompileTimeProperties[app_key]["description"] = comment;
+
+                            break;
                     }
                 }
-
             }
         }
         /// <summary>
@@ -279,7 +277,6 @@ namespace NetDaemon.Service.App
 
             foreach (var invocationExpression in invocationExpressions)
             {
-
                 var symbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
                 if (symbol is null)
                     continue;
