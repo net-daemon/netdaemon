@@ -10,7 +10,7 @@ namespace NetDaemon.Daemon.Test.Tests
         {
             var app = new RxApp { Id = "fakeId" };
             AddAppInstance(app);
-            var daemon = await GetConnectedNetDaemonTask();
+            var daemon = await GetConnectedNetDaemonTask(200);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
 
