@@ -229,7 +229,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
 
             // Get a running default Daemon
-            var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask(500);
+            var (daemonTask, _) = ReturnRunningDefauldDaemonHostTask(700);
 
             await WaitForDefaultDaemonToConnect(DefaultDaemonHost, CancellationToken.None);
 
@@ -263,7 +263,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Once);
 
-            await Task.Delay(100);
+            await Task.Delay(150);
             // Called twice
             DefaultHassClientMock.Verify(n => n.CallService("tts", "google_cloud_say", expectedAttributesExpObject, true), Times.Exactly(2));
 
