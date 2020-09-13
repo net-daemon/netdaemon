@@ -41,14 +41,7 @@ namespace NetDaemon
         private static bool BypassLocalAssemblyLoading()
         {
             var value = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
-
-            if (string.IsNullOrWhiteSpace(value))
-                return false;
-
-            if (bool.TryParse(value, out var boolResult))
-                return boolResult;
-
-            return false;
+            return bool.TryParse(value, out var result) && result;
         }
     }
 }
