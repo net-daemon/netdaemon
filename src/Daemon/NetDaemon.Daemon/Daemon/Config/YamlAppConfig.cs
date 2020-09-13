@@ -79,18 +79,25 @@ namespace NetDaemon.Daemon.Config
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
                 string? scalarPropertyName = ((YamlScalarNode)entry.Key).Value;
-                // Just continue to next configuration if null or class declaration
-                if (scalarPropertyName == null) continue;
-                if (scalarPropertyName == "class") continue;
+                try
+                {
+                    // Just continue to next configuration if null or class declaration
+                    if (scalarPropertyName == null) continue;
+                    if (scalarPropertyName == "class") continue;
 
-                var prop = netDaemonAppType.GetYamlProperty(scalarPropertyName) ??
-                           throw new MissingMemberException($"{scalarPropertyName} is missing from the type {netDaemonAppType}");
+                    var prop = netDaemonAppType.GetYamlProperty(scalarPropertyName) ??
+                            throw new MissingMemberException($"{scalarPropertyName} is missing from the type {netDaemonAppType}");
 
-                var valueType = entry.Value.NodeType;
+                    var valueType = entry.Value.NodeType;
 
-                var instance = InstanceProperty(netDaemonApp, prop.PropertyType, entry.Value);
+                    var instance = InstanceProperty(netDaemonApp, prop.PropertyType, entry.Value);
 
-                prop.SetValue(netDaemonApp, instance);
+                    prop.SetValue(netDaemonApp, instance);
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException($"Failed to set value {scalarPropertyName}", e);
+                }
             }
 
             return netDaemonApp;

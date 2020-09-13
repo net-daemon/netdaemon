@@ -54,11 +54,19 @@ namespace NetDaemon.Daemon
 
             foreach (string file in allConfigFilePaths)
             {
-                var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, File.OpenText(file), _yamlConfig, file);
-
-                foreach (var appInstance in yamlAppConfig.Instances)
+                try
                 {
-                    result.Add(appInstance);
+                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, File.OpenText(file), _yamlConfig, file);
+
+                    foreach (var appInstance in yamlAppConfig.Instances)
+                    {
+                        result.Add(appInstance);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error instance the app from the file {file}", file);
+                    throw e;
                 }
             }
             return result;
