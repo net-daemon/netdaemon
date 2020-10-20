@@ -28,9 +28,5 @@ ENV TZ=Europe/Stockholm
 RUN apt-get update \
     && apt-get -y install dialog git iproute2 procps 2>&1
 
-# Get the awesome promt
-RUN apt-get -y install golang-go \
-    && go get -u github.com/justjanne/powerline-go
-
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=noninteractive
