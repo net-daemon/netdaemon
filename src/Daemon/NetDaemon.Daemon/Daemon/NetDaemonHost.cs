@@ -927,7 +927,14 @@ namespace NetDaemon.Daemon
                                     }
                                     catch (Exception e)
                                     {
-                                        observer.OnError(e);
+                                        try
+                                        {
+                                            observer.OnError(e);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Logger.LogError(ex, "Fail to OnError on event observer (service_call)");
+                                        }
                                         Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
                                     }
                                 }));

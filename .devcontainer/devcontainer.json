@@ -26,7 +26,7 @@
 		"NETDAEMON__ADMIN": "${localEnv:NETDAEMON__ADMIN}",
 		"ASPNETCORE_URLS": "${localEnv:ASPNETCORE_URLS}"
 	},
-	"postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
+	// "postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
 	// Uncomment the next line if you want to publish or forward any ports.
 	"forwardPorts": [
 		5000

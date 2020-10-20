@@ -83,8 +83,16 @@ namespace NetDaemon.Daemon.Tests.Daemon
             returnedFluentExpandoObject.CopyFrom(dataReturned!);
 
             dynamic dynamicDataReturned = returnedFluentExpandoObject;
+            var x = dataBeingSaved.SomeString;
+            var y = dynamicDataReturned!.SomeString;
+
+            if (dataBeingSaved.SomeString == dynamicDataReturned?.SomeString)
+            {
+                System.Console.WriteLine("hello");
+            }
+
             // ASSERT
-            Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned!.SomeString);
+            Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned?.SomeString);
             Assert.Equal(dataBeingSaved.SomeInt, dynamicDataReturned!.SomeInt);
             Assert.Equal(dataBeingSaved.SomeFloat, dynamicDataReturned!.SomeFloat);
             Assert.Equal(dataBeingSaved.SomeDateTime, dynamicDataReturned!.SomeDateTime);

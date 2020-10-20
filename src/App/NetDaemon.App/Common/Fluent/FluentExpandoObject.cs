@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Text.Json;
+using JoySoftware.HomeAssistant.Client;
 
 namespace NetDaemon.Common.Fluent
 {
@@ -189,7 +191,18 @@ namespace NetDaemon.Common.Fluent
 
             foreach (var keyValuePair in obj)
             {
-                UpdateDictionary(keyValuePair.Key, keyValuePair.Value);
+                if (keyValuePair.Value is JsonElement val)
+                {
+                    var dynValue = val.ToDynamicValue();
+                    if (dynValue is object)
+                    {
+                        UpdateDictionary(keyValuePair.Key, dynValue);
+                    }
+                }
+                else
+                {
+                    UpdateDictionary(keyValuePair.Key, keyValuePair.Value);
+                }
             }
 
             return this;
