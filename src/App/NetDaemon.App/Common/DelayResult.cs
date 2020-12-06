@@ -29,7 +29,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public Task<bool> Task => _delayTaskCompletionSource.Task;
 
-        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new ConcurrentBag<string>();
+        internal ConcurrentBag<string> StateSubscriptions { get; set; } = new();
 
         /// <inheritdoc/>
         public void Cancel()

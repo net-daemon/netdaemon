@@ -138,7 +138,7 @@ namespace NetDaemon.Common.Reactive
         /// <param name="data">Data to provide</param>
         public void CallService(string service, dynamic? data = null)
         {
-            if (EntityIds is null || EntityIds is object && EntityIds.Count() == 0)
+            if (EntityIds is null || EntityIds is not null && EntityIds.Count() == 0)
                 return;
 
             foreach (var entityId in EntityIds!)
@@ -150,11 +150,11 @@ namespace NetDaemon.Common.Reactive
                     // Maske sure we make a copy since we reuse all info but entity id
                     serviceData.CopyFrom(data);
                 }
-                else if (data is object)
+                else if (data is not null)
                 {
                     // It is initialized with anonmous type new {transition=10} for example
                     var expObject = ((object)data).ToExpandoObject();
-                    if (expObject is object)
+                    if (expObject is not null)
                     {
                         serviceData.CopyFrom(expObject);
                     }
@@ -170,12 +170,12 @@ namespace NetDaemon.Common.Reactive
 
         private void CallServiceOnEntity(string service, dynamic? attributes = null)
         {
-            if (EntityIds is null || EntityIds is object && EntityIds.Count() == 0)
+            if (EntityIds is null || EntityIds is not null && EntityIds.Count() == 0)
                 return;
 
             dynamic? data = null;
 
-            if (attributes is object)
+            if (attributes is not null)
             {
                 if (attributes is IDictionary<string, object?> == false)
                     data = ((object)attributes).ToExpandoObject();
@@ -187,7 +187,7 @@ namespace NetDaemon.Common.Reactive
             {
                 var serviceData = new FluentExpandoObject();
 
-                if (data is object)
+                if (data is not null)
                 {
                     // Maske sure we make a copy since we reuse all info but entity id
                     serviceData.CopyFrom(data);

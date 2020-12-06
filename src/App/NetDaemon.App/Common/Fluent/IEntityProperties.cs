@@ -10,36 +10,36 @@ namespace NetDaemon.Common.Fluent
         /// <summary>
         ///     Filter on area where the entity device are at
         /// </summary>
-        string? Area { get; set; }
+        string? Area { get; }
 
         /// <summary>
         ///     Filter on attribute
         /// </summary>
-        dynamic? Attribute { get; set; }
+        dynamic? Attribute { get; }
 
         /// <summary>
         ///     Filter on unique id of the entity
         /// </summary>
-        string EntityId { get; set; }
+        string EntityId { get; }
 
         /// <summary>
         ///     Filter on last changed time
         /// </summary>
-        DateTime LastChanged { get; set; }
+        DateTime LastChanged { get; }
 
         /// <summary>
         ///     Filter on last updated time
         /// </summary>
-        DateTime LastUpdated { get; set; }
+        DateTime LastUpdated { get; }
 
         /// <summary>
         ///     Filter on state
         /// </summary>
-        dynamic? State { get; set; }
+        dynamic? State { get; }
 
         /// <summary>
         ///     Context
         /// </summary>
-        public Context? Context { get; set; }
+        public Context? Context { get; }
     }
 }

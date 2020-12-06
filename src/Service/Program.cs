@@ -43,16 +43,16 @@ namespace Service
             {
                 var hassAddOnSettings = await JsonSerializer.DeserializeAsync<HassioConfig>(File.OpenRead(HassioConfigPath)).ConfigureAwait(false);
 
-                if (hassAddOnSettings?.LogLevel is object)
+                if (hassAddOnSettings?.LogLevel is not null)
                     SerilogConfigurator.SetMinimumLogLevel(hassAddOnSettings.LogLevel);
 
-                if (hassAddOnSettings?.GenerateEntitiesOnStart is object)
+                if (hassAddOnSettings?.GenerateEntitiesOnStart is not null)
                     Environment.SetEnvironmentVariable("NETDAEMON__GENERATEENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
 
-                if (hassAddOnSettings?.LogMessages is object && hassAddOnSettings.LogMessages == true)
+                if (hassAddOnSettings?.LogMessages is not null && hassAddOnSettings.LogMessages == true)
                     Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
 
-                if (hassAddOnSettings?.ProjectFolder is object && string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
+                if (hassAddOnSettings?.ProjectFolder is not null && string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
                     Environment.SetEnvironmentVariable("NETDAEMON__PROJECTFOLDER", hassAddOnSettings.ProjectFolder);
 
                 // We are in Hassio so hard code the path

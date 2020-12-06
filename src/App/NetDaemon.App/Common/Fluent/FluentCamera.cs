@@ -114,7 +114,7 @@ namespace NetDaemon.Common.Fluent
 
             serviceData.media_player = mediaPlayerId;
 
-            if (format is object)
+            if (format is not null)
                 serviceData.format = format;
 
             _serviceCall = ("play_stream", serviceData);
@@ -128,9 +128,9 @@ namespace NetDaemon.Common.Fluent
 
             serviceData.filename = fileName;
 
-            if (duration is object)
+            if (duration is not null)
                 serviceData.duration = duration;
-            if (lookback is object)
+            if (lookback is not null)
                 serviceData.lookback = lookback;
 
             _serviceCall = ("record", serviceData);

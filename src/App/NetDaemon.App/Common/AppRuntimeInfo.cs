@@ -33,7 +33,7 @@ namespace NetDaemon.Common
         ///     in app switch
         /// </summary>
         [JsonPropertyName("app_attributes")]
-        public Dictionary<string, object> AppAttributes { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> AppAttributes { get; set; } = new();
 
 
     }

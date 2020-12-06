@@ -64,7 +64,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             var responseMessage = new HttpResponseMessage(_StatusCode);
 
-            if (request is object && request.Content is object)
+            if (request is not null && request.Content is not null)
                 _requestContent = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             responseMessage.Content = new ByteArrayContent(Encoding.ASCII.GetBytes(_response));

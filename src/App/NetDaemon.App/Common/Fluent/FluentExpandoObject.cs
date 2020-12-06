@@ -17,7 +17,7 @@ namespace NetDaemon.Common.Fluent
     /// </remarks>
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
-        private readonly Dictionary<string, object> _dict = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _dict = new();
         private readonly NetDaemonAppBase? _daemonApp;
         private readonly bool _ignoreCase;
         private readonly bool _returnNullMissingProperties;
@@ -194,7 +194,7 @@ namespace NetDaemon.Common.Fluent
                 if (keyValuePair.Value is JsonElement val)
                 {
                     var dynValue = val.ToDynamicValue();
-                    if (dynValue is object)
+                    if (dynValue is not null)
                     {
                         UpdateDictionary(keyValuePair.Key, dynValue);
                     }

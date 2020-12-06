@@ -20,7 +20,7 @@ namespace NetDaemon.Service.Api
 
     public class ApiWebsocketMiddleware
     {
-        private static ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
+        private static ConcurrentDictionary<string, WebSocket> _sockets = new();
 
         private readonly RequestDelegate _next;
 
@@ -101,7 +101,7 @@ namespace NetDaemon.Service.Api
                         break;
                     }
 
-                    if (msg is object)
+                    if (msg is not null)
                     {
                         switch (msg.Type)
                         {
@@ -132,7 +132,7 @@ namespace NetDaemon.Service.Api
                                 };
 
                                 // For first release we do not expose the token
-                                if (tempResult.HomeAssistantSettings is object)
+                                if (tempResult.HomeAssistantSettings is not null)
                                 {
                                     tempResult.HomeAssistantSettings.Token = "";
                                 }
@@ -152,7 +152,7 @@ namespace NetDaemon.Service.Api
                                     _logger.LogDebug("App should not bee null.");
                                     continue;
                                 }
-                                if (msg.ServiceData is object)
+                                if (msg.ServiceData is not null)
                                 {
                                     var command = JsonSerializer.Deserialize<WsAppCommand>(msg.ServiceData.Value.GetRawText(), _jsonOptions);
                                     if (command is null)
@@ -160,7 +160,7 @@ namespace NetDaemon.Service.Api
                                         _logger.LogDebug("Failed to read command.");
                                         continue;
                                     }
-                                    if (command.IsEnabled is object)
+                                    if (command.IsEnabled is not null)
                                     {
                                         if (command.IsEnabled ?? false)
                                         {

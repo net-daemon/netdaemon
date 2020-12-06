@@ -13,10 +13,10 @@ namespace NetDaemon.Daemon.Test
         }
 
         public ILoggerFactory LoggerFactory => MockLoggerFactory.Object;
-        public Mock<ILoggerFactory> MockLoggerFactory { get; } = new Mock<ILoggerFactory>();
+        public Mock<ILoggerFactory> MockLoggerFactory { get; } = new();
 
         public ILogger Logger => MockLogger.Object;
-        public Mock<ILogger> MockLogger { get; } = new Mock<ILogger>();
+        public Mock<ILogger> MockLogger { get; } = new();
 
         /// <summary>
         ///     Assert if the log has been used at times
