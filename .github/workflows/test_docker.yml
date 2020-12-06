@@ -17,10 +17,11 @@ jobs:
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
+      # --platform linux/arm,linux/arm64,linux/amd64 \
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/amd64 \
             --output "type=image,push=false" \
             --no-cache \
             --file ./Dockerfile . \
