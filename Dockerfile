@@ -14,13 +14,19 @@ RUN \
 # && rm -R /admin/node_modules
 
 # Build the NetDaemon with build container
-FROM ludeeus/container:dotnet5-base-s6
+# FROM ludeeus/container:dotnet5-base-s6
+FROM mcr.microsoft.com/dotnet/sdk:5.0.100
 
 # Copy the source to docker container
 COPY ./src /usr/src
 
 # COPY Docker/rootfs/etc /etc
 COPY ./Docker/rootfs/etc /etc
+
+COPY ./Docker/s6.sh /s6.sh
+
+RUN chmod 700 /s6.sh
+RUN /s6.sh
 
 # COPY admin
 COPY --from=builder /admin /admin
@@ -30,6 +36,8 @@ RUN apt update && apt install -y \
     nodejs \
     yarn \
     make
+
+
 
 # Set default values of NetDaemon env
 ENV \
