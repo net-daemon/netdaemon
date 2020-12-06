@@ -255,6 +255,20 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        public async Task EntityIdsShouldReturnCorrectItems()
+        {
+            // ARRANGE
+            var daemonTask = await GetConnectedNetDaemonTask();
+            // ACT
+            var entities = DefaultDaemonRxApp.EntityIds.ToList();
+
+            await daemonTask.ConfigureAwait(false);
+            // ASSERT
+            Assert.NotNull(entities);
+            Assert.Equal(8, entities.Count());
+        }
+
+        [Fact]
         public async Task UsingEntitiesLambdaNewEventShouldCallFunction()
         {
             // ARRANGE

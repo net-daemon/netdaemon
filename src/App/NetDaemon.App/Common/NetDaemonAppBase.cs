@@ -177,6 +177,10 @@ namespace NetDaemon.Common
         public AppRuntimeInfo RuntimeInfo => _runtimeInfo;
 
         /// <inheritdoc/>
+        public IEnumerable<string> EntityIds => _daemon?.State.Select(n => n.EntityId) ??
+            throw new NullReferenceException("Deamon not expected to be null");
+
+        /// <inheritdoc/>
         public void SaveAppState()
         {
             // Intentionally ignores full queue since we know

@@ -411,6 +411,10 @@ namespace NetDaemon.Common
         /// </summary>
         public AppRuntimeInfo RuntimeInfo { get; }
 
+        /// <summary>
+        ///     Returns all entities (EntityId) that are currently registered
+        /// </summary>
+        public IEnumerable<string> EntityIds { get; }
     }
 
     /// <summary>
