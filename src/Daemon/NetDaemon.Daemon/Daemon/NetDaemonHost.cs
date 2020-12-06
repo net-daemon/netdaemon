@@ -49,7 +49,7 @@ namespace NetDaemon.Daemon
         internal int InternalDelayTimeForTts = 2500;
 
         // internal so we can use for unittest
-        internal ConcurrentDictionary<string, EntityState> InternalState = new ConcurrentDictionary<string, EntityState>();
+        internal ConcurrentDictionary<string, EntityState> InternalState = new();
 
         private IInstanceDaemonApp? _appInstanceManager;
 
@@ -62,7 +62,7 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Currently running tasks for handling new events from HomeAssistant
         /// </summary>
-        private readonly List<Task> _eventHandlerTasks = new List<Task>();
+        private readonly List<Task> _eventHandlerTasks = new();
 
         private readonly IHassClient _hassClient;
 
@@ -82,7 +82,7 @@ namespace NetDaemon.Daemon
 
         private readonly Scheduler _scheduler;
 
-        private readonly List<string> _supportedDomainsForTurnOnOff = new List<string>
+        private readonly List<string> _supportedDomainsForTurnOnOff = new()
         {
             "light",
             "switch",
@@ -555,8 +555,11 @@ namespace NetDaemon.Daemon
                 if (result != null)
                 {
                     EntityState entityState = result.Map();
-                    entityState.State = state;
-                    entityState.Area = GetAreaForEntityId(entityState.EntityId);
+                    entityState = entityState with
+                    {
+                        State = state,
+                        Area = GetAreaForEntityId(entityState.EntityId)
+                    };
                     InternalState[entityState.EntityId] = entityState;
                     return entityState;
                 }
@@ -645,7 +648,7 @@ namespace NetDaemon.Daemon
             if (stateData.NewState.State is null && stateData.OldState.State is null)
                 return false;
 
-            if (stateData.NewState.State is object && stateData.OldState.State is object)
+            if (stateData.NewState.State is not null && stateData.OldState.State is not null)
             {
                 Type? newStateType = stateData.NewState?.State?.GetType();
                 Type? oldStateType = stateData.OldState?.State?.GetType();
@@ -694,19 +697,19 @@ namespace NetDaemon.Daemon
         internal string? GetAreaForEntityId(string entityId)
         {
             HassEntity? entity;
-            if (_hassEntities.TryGetValue(entityId, out entity) && entity is object)
+            if (_hassEntities.TryGetValue(entityId, out entity) && entity is not null)
             {
-                if (entity.DeviceId is object)
+                if (entity.DeviceId is not null)
                 {
                     // The entity is on a device
                     HassDevice? device;
-                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is object)
+                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is not null)
                     {
-                        if (device.AreaId is object)
+                        if (device.AreaId is not null)
                         {
                             // This device is in an area
                             HassArea? area;
-                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is object)
+                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is not null)
                             {
                                 return area.Name;
                             }
@@ -723,17 +726,17 @@ namespace NetDaemon.Daemon
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
-                if (device is object && device.Id is object)
+                if (device is not null && device.Id is not null)
                     _hassDevices[device.Id] = device;
             }
             foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
             {
-                if (area is object && area.Id is object)
+                if (area is not null && area.Id is not null)
                     _hassAreas[area.Id] = area;
             }
             foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
             {
-                if (entity is object && entity.EntityId is object)
+                if (entity is not null && entity.EntityId is not null)
                     _hassEntities[entity.EntityId] = entity;
             }
             var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
@@ -744,7 +747,10 @@ namespace NetDaemon.Daemon
             foreach (var key in initialStates.Keys)
             {
                 var state = initialStates[key];
-                state.Area = GetAreaForEntityId(state.EntityId);
+                state = state with
+                {
+                    Area = GetAreaForEntityId(state.EntityId)
+                };
                 InternalState[key] = state;
             }
         }
@@ -816,7 +822,8 @@ namespace NetDaemon.Daemon
                     // Make sure we get the area name with the new state
                     var newState = stateData!.NewState!.Map();
                     var oldState = stateData!.OldState!.Map();
-                    newState.Area = GetAreaForEntityId(newState.EntityId);
+                    // TODO: refactor map to take area as input to avoid the copy
+                    newState = newState with { Area = GetAreaForEntityId(newState.EntityId) };
                     InternalState[stateData.EntityId] = newState;
 
                     var tasks = new List<Task>();
@@ -1304,7 +1311,7 @@ namespace NetDaemon.Daemon
         {
             var app = _allAppInstances.Values.Where(n => n.EntityId == entityId).FirstOrDefault();
 
-            if (app is object)
+            if (app is not null)
             {
                 if (state == "off")
                 {
@@ -1325,7 +1332,7 @@ namespace NetDaemon.Daemon
                     foreach (var depOnId in app.Dependencies)
                     {
                         var depOnApp = _allAppInstances.Values.Where(n => n.Id == depOnId).FirstOrDefault();
-                        if (depOnApp is object)
+                        if (depOnApp is not null)
                         {
                             await SetDependentState(depOnApp.EntityId, state).ConfigureAwait(false);
 
@@ -1339,10 +1346,10 @@ namespace NetDaemon.Daemon
 
             var entityAttributes = GetState(entityId)?.Attribute as IDictionary<string, object>;
 
-            if (entityAttributes is object && entityAttributes.Count > 0)
+            if (entityAttributes is not null && entityAttributes.Count > 0)
                 attributes = entityAttributes.Keys.Select(n => (n, entityAttributes[n])).ToList();
 
-            if (attributes is object && attributes.Count > 0)
+            if (attributes is not null && attributes.Count > 0)
                 await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
             else
                 await SetStateAsync(entityId, state).ConfigureAwait(false);

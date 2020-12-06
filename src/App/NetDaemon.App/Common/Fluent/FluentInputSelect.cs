@@ -61,7 +61,7 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public Task ExecuteAsync()
         {
-            List<Task> tasks = new List<Task>();
+            List<Task> tasks = new();
             foreach (var entityId in _entityIds)
             {
                 dynamic data = new FluentExpandoObject();

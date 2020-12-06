@@ -19,7 +19,7 @@ namespace NetDaemon.Common
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
         /// </summary>
-        public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; set; } = new Dictionary<string, Dictionary<string, string>>();
+        public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; set; } = new();
 
         /// <summary>
         ///     The NetDaemonHost instance
@@ -40,9 +40,9 @@ namespace NetDaemon.Common
 
 
         // This is declared as static since it will contain state shared globally
-        private static ConcurrentDictionary<string, object> _global = new ConcurrentDictionary<string, object>();
+        private static ConcurrentDictionary<string, object> _global = new();
 
-        private readonly ConcurrentDictionary<string, object> _attributes = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, object> _attributes = new();
 
         // To handle state saves max once at a time, internal due to tests
         private readonly Channel<bool> _lazyStoreStateQueue =
@@ -120,7 +120,7 @@ namespace NetDaemon.Common
         /// <param name="other">The instance to compare</param>
         public bool Equals([AllowNull] INetDaemonAppBase other)
         {
-            if (other is object && other.Id is object && this.Id is object && this.Id == other.Id)
+            if (other is not null && other.Id is not null && this.Id is not null && this.Id == other.Id)
                 return true;
 
             return false;
@@ -251,7 +251,7 @@ namespace NetDaemon.Common
         public async virtual ValueTask DisposeAsync()
         {
             _cancelSource.Cancel();
-            if (_manageRuntimeInformationUpdatesTask is object)
+            if (_manageRuntimeInformationUpdatesTask is not null)
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
             _daemonCallBacksForServiceCalls.Clear();
@@ -283,7 +283,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Log(LogLevel level, string message, params object[] param)
         {
-            if (param is object && param.Length > 0)
+            if (param is not null && param.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();
                 Logger.Log(level, $"  {{Id}}: {message}", result);
@@ -300,7 +300,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Log(LogLevel level, Exception exception, string message, params object[] param)
         {
-            if (param is object && param.Length > 0)
+            if (param is not null && param.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();
                 Logger.Log(level, exception, $"  {{Id}}: {message}", result);
@@ -399,7 +399,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void SetAttribute(string attribute, object? value)
         {
-            if (value is object)
+            if (value is not null)
             {
                 RuntimeInfo.AppAttributes[attribute] = value;
             }
@@ -452,7 +452,7 @@ namespace NetDaemon.Common
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
-            if (RuntimeInfo.LastErrorMessage is object)
+            if (RuntimeInfo.LastErrorMessage is not null)
             {
                 RuntimeInfo.HasError = true;
             }

@@ -71,7 +71,7 @@ namespace NetDaemon.Daemon
 
         private void AddHeaders(HttpClient httpClient, (string, object)[] headers)
         {
-            if (headers is object && headers.Length > 0)
+            if (headers is not null && headers.Length > 0)
             {
                 httpClient.DefaultRequestHeaders.Clear();
                 foreach (var (name, header) in headers)

@@ -5,6 +5,7 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0.100
 
+RUN apt-get update && apt-get install openssh-client
 # This Dockerfile adds a non-root 'vscode' user with sudo access. However, for Linux,
 # this user's GID/UID must match your local user UID/GID to avoid permission issues
 # with bind mounts. Update USER_UID / USER_GID if yours is not 1000. See

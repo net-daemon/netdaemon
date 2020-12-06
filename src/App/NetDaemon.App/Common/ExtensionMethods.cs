@@ -42,7 +42,7 @@ namespace NetDaemon.Common
 
             foreach (PropertyDescriptor? property in TypeDescriptor.GetProperties(obj.GetType()))
             {
-                if (property is object)
+                if (property is not null)
                     expando.Add(property.Name, property.GetValue(obj));
             }
 

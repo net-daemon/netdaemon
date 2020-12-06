@@ -81,7 +81,7 @@ namespace NetDaemon.Common.Reactive
 
             public void Dispose()
             {
-                if (_observer is object)
+                if (_observer is not null)
                 {
                     _observers.TryRemove(_observer, out _);
                 }

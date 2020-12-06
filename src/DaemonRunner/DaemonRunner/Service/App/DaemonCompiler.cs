@@ -43,7 +43,7 @@ namespace NetDaemon.Service.App
             // Load the compiled apps
             var (compiledApps, compileErrorText) = GetCompiledApps(out alc, codeFolder, logger);
 
-            if (compiledApps is object)
+            if (compiledApps is not null)
                 loadedApps.AddRange(compiledApps);
             else if (string.IsNullOrEmpty(compileErrorText) == false)
                 logger.LogError(compileErrorText);
@@ -290,7 +290,7 @@ namespace NetDaemon.Service.App
                 // Now find top invocation to match whole expression
                 InvocationExpressionSyntax topInvocationExpression = invocationExpression;
 
-                if (symbol is object && symbol.ContainingType.Name == "NetDaemonApp")
+                if (symbol is not null && symbol.ContainingType.Name == "NetDaemonApp")
                 {
                     var disableLogging = false;
 
@@ -298,7 +298,7 @@ namespace NetDaemon.Service.App
 
                     SyntaxNode? parentInvocationExpression = invocationExpression.Parent;
 
-                    while (parentInvocationExpression is object)
+                    while (parentInvocationExpression is not null)
                     {
                         if (parentInvocationExpression is MethodDeclarationSyntax)
                         {

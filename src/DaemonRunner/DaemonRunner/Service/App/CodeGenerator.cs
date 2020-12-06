@@ -197,7 +197,7 @@ namespace NetDaemon.Service.App
                     {
                         name = "s_" + name;
                     }
-                    var hasEntityId = (s.Fields is object && s.Fields.Count(c => c.Field == "entity_id") > 0) ? true : false;
+                    var hasEntityId = (s.Fields is not null && s.Fields.Count(c => c.Field == "entity_id") > 0) ? true : false;
                     var entityAssignmentStatement = hasEntityId ? @"serviceData[""entity_id""] = EntityId;" : "";
 
                     var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)
@@ -208,7 +208,7 @@ namespace NetDaemon.Service.App
                         {{
                             serviceData.CopyFrom(data);
                         }} 
-                        else if (data is object)
+                        else if (data is not null)
                         {{
                             var expObject = ((object)data).ToExpandoObject();
                             serviceData.CopyFrom(expObject);

@@ -17,8 +17,8 @@ namespace NetDaemon.Daemon.Test
         internal HassAreas Areas = new HassAreas();
         internal HassDevices Devices = new HassDevices();
         internal HassEntities Entities = new HassEntities();
-        internal ConcurrentQueue<HassEvent> FakeEvents = new ConcurrentQueue<HassEvent>();
-        internal ConcurrentDictionary<string, HassState> FakeStates = new ConcurrentDictionary<string, HassState>();
+        internal ConcurrentQueue<HassEvent> FakeEvents = new();
+        internal ConcurrentDictionary<string, HassState> FakeStates = new();
 
         /// <summary>
         ///     Default constructor

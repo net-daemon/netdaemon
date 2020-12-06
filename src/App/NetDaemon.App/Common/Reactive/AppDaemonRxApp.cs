@@ -67,10 +67,10 @@ namespace NetDaemon.Common.Reactive
             // To end timers
             _cancelTimers.Cancel();
 
-            if (_eventObservables is object)
+            if (_eventObservables is not null)
                 _eventObservables!.Clear();
 
-            if (_stateObservables is object)
+            if (_stateObservables is not null)
                 _stateObservables!.Clear();
 
             // Make sure we release all references so the apps can be
