@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -42,7 +43,9 @@ namespace NetDaemon.Daemon.Config
             }
             if (configPath != _configFolder)
             {
-                return GetSecretFromPath(secret, Directory.GetParent(configPath).FullName);
+                var parentPath = Directory.GetParent(configPath)?.FullName ?? throw new ApplicationException("Parent folder of config path does not exist");
+
+                return GetSecretFromPath(secret, parentPath);
             }
             return null;
         }

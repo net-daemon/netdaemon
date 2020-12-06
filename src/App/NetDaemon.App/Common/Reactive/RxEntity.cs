@@ -136,11 +136,11 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="service">Name of the service to call</param>
         /// <param name="data">Data to provide</param>
-        public void CallService(string service, dynamic? data = null) 
+        public void CallService(string service, dynamic? data = null)
         {
             if (EntityIds is null || EntityIds is object && EntityIds.Count() == 0)
                 return;
-            
+
             foreach (var entityId in EntityIds!)
             {
                 var serviceData = new FluentExpandoObject();
@@ -149,12 +149,15 @@ namespace NetDaemon.Common.Reactive
                 {
                     // Maske sure we make a copy since we reuse all info but entity id
                     serviceData.CopyFrom(data);
-                } 
+                }
                 else if (data is object)
                 {
-                    // It is initialized with anonmous type new {transitio=10} for example
+                    // It is initialized with anonmous type new {transition=10} for example
                     var expObject = ((object)data).ToExpandoObject();
-                    serviceData.CopyFrom(expObject);
+                    if (expObject is object)
+                    {
+                        serviceData.CopyFrom(expObject);
+                    }
                 }
 
                 var domain = GetDomainFromEntity(entityId);

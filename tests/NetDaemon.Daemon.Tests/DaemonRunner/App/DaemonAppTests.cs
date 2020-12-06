@@ -32,7 +32,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             SourceFolder = sourcePath
         });
 
-        
+
         [Fact]
         public void FaultyApplicationShouldLogError()
         {
@@ -87,7 +87,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ARRANGE
             var yamlConfigMock = new Mock<IYamlConfig>();
             yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
-                .Returns(new[] {Path.Combine(ConfigFixturePath, "level2", "level3")});
+                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
 
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n  class: AssmeblyDaemonApp";
@@ -110,10 +110,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = "app:\n  class: NotFoundApp";
-            
+
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
-            
+
             // ASSERT
             Assert.Empty(instances);
         }
@@ -142,7 +142,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
             Assert.Equal(10, instance?.IntConfig);
-            Assert.Equal(2, instance?.EnumerableConfig.Count());
+            Assert.Equal(2, instance?.EnumerableConfig?.Count());
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
             Assert.Equal(10, instance?.IntConfig);
-            Assert.Equal(2, instance?.EnumerableConfig.Count());
+            Assert.Equal(2, instance?.EnumerableConfig?.Count());
         }
 
         [Fact]

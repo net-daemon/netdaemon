@@ -220,7 +220,7 @@ namespace NetDaemon.Daemon.Tests
                    int i = int.Parse("Not an integer makes runtime error!");
                    return Task.CompletedTask;
                });
-                await Task.Delay(1000);
+                await Task.Delay(1500);
             }
             try
             {

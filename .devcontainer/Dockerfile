@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
 #-------------------------------------------------------------------------------------------------------------
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster
+FROM mcr.microsoft.com/dotnet/sdk:5.0.100
 
 # This Dockerfile adds a non-root 'vscode' user with sudo access. However, for Linux,
 # this user's GID/UID must match your local user UID/GID to avoid permission issues
@@ -24,9 +24,6 @@ ARG INSTALL_AZURE_CLI="false"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Stockholm
 
-# Configure apt and install packages
-RUN apt-get update \
-    && apt-get -y install dialog git iproute2 procps 2>&1
-
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TEST=AK

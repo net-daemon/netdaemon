@@ -99,7 +99,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
             Assert.NotNull(arr);
-            Assert.Equal(3, arr.Count());
+            Assert.Equal(3, arr?.Count());
         }
 
         [Fact]

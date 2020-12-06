@@ -63,21 +63,22 @@ namespace NetDaemon.Daemon.Storage
         }
     }
 
-    public class ExpandoDictionaryConverter : JsonConverter<Dictionary<string, object>>
+    public class ExpandoDictionaryConverter : JsonConverter<Dictionary<string, object?>>
     {
-        public override Dictionary<string, object> Read(
+        public override Dictionary<string, object?> Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
             JsonSerializerOptions options)
         {
-            var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(ref reader);
-            var returnObject = new Dictionary<string, object>();
-            var returnDict = (IDictionary<string, object>)returnObject;
+            var dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(ref reader)
+                ?? throw new ApplicationException("Null result deserializing dictionary");
+            var returnObject = new Dictionary<string, object?>();
+            var returnDict = (IDictionary<string, object?>)returnObject;
             foreach (var x in dict.Keys)
             {
                 if (dict[x] is JsonElement jsonElem)
                 {
-                    returnDict[x] = jsonElem!.ToObjectValue() ?? dict[x];
+                    returnDict[x] = jsonElem.ToObjectValue() ?? dict[x];
                 }
             }
             return returnObject;
@@ -85,16 +86,16 @@ namespace NetDaemon.Daemon.Storage
 
         public override void Write(
             Utf8JsonWriter writer,
-            Dictionary<string, object> value,
+            Dictionary<string, object?> value,
             JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize<Dictionary<string, object>>(writer, value, options);
+            JsonSerializer.Serialize<Dictionary<string, object?>>(writer, value, options);
         }
     }
 
     public static class ExpandoExtensions
     {
-        public static object ParseString(string strToParse)
+        public static object? ParseString(string? strToParse)
         {
             if (DateTime.TryParse(strToParse, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
                 return dateTime;

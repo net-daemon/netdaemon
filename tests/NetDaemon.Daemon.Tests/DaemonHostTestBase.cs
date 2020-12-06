@@ -126,7 +126,7 @@ namespace NetDaemon.Daemon.Tests
             return (_notConnectedDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
 
-        public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
+        public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 200, bool overrideDebugNotCancel = false)
         {
             var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                 ? new CancellationTokenSource()

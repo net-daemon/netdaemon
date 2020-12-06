@@ -97,8 +97,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
             var webSocketOptions = new WebSocketOptions()
             {
-                KeepAliveInterval = TimeSpan.FromSeconds(120),
-                ReceiveBufferSize = 4 * 1024
+                KeepAliveInterval = TimeSpan.FromSeconds(120)
+                // ReceiveBufferSize = 4 * 1024
             };
 
             app.UseWebSockets(webSocketOptions);
@@ -172,7 +172,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             return await wsc.ConnectAsync(new Uri(_server.BaseAddress, "ws"), CancellationToken.None).ConfigureAwait(false);
         }
 
-        private async Task<object> ReadObject(WebSocket ws, Type t)
+        private async Task<object?> ReadObject(WebSocket ws, Type t)
         {
             var s = await ReadString(ws);
             return JsonSerializer.Deserialize(s, t, _jsonOptions);
@@ -186,23 +186,27 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
             await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""apps""}"), WebSocketMessageType.Text, true, CancellationToken.None);
 
-            var res = (WsAppsResult)await ReadObject(websocket, typeof(WsAppsResult));
-            var response = res.Data!;
+            var res = (WsAppsResult?)await ReadObject(websocket, typeof(WsAppsResult));
+            Assert.NotNull(res);
+            var response = res?.Data!;
 
             Assert.Equal(4, response?.Count());
 
-            var app = response.Where(n => n.Id == "app_id").First();
-            Assert.True(app.IsEnabled);
-            Assert.Null(app.NextScheduledEvent);
+            var app = response?.Where(n => n.Id == "app_id").First();
+            Assert.NotNull(app);
+            Assert.True(app?.IsEnabled);
+            Assert.Null(app?.NextScheduledEvent);
 
-            var app2 = response.Where(n => n.Id == "app_id2").First();
-            Assert.False(app2.IsEnabled);
+            var app2 = response?.Where(n => n.Id == "app_id2").First();
+            Assert.NotNull(app2);
+            Assert.False(app2?.IsEnabled);
             // Should be null if disabled always
-            Assert.Null(app.NextScheduledEvent);
+            Assert.Null(app?.NextScheduledEvent);
 
-            var appRx = response.Where(n => n.Id == "app_rx_id").First();
-            Assert.True(appRx.IsEnabled);
-            Assert.NotNull(appRx.NextScheduledEvent);
+            var appRx = response?.Where(n => n.Id == "app_rx_id").First();
+            Assert.NotNull(appRx);
+            Assert.True(appRx?.IsEnabled);
+            Assert.NotNull(appRx?.NextScheduledEvent);
         }
 
         [Fact]
@@ -212,8 +216,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
             await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""settings""}"), WebSocketMessageType.Text, true, CancellationToken.None);
 
-            var res = (WsConfigResult)await ReadObject(websocket, typeof(WsConfigResult));
-            var response = res.Data;
+            var res = (WsConfigResult?)await ReadObject(websocket, typeof(WsConfigResult));
+            Assert.NotNull(res);
+            var response = res?.Data;
 
             Assert.NotNull(response);
 

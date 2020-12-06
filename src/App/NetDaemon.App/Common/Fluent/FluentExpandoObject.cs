@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Text.Json;
+using JoySoftware.HomeAssistant.Client;
 
 namespace NetDaemon.Common.Fluent
 {
@@ -125,7 +127,7 @@ namespace NetDaemon.Common.Fluent
         public ICollection<object> Values => ((IDictionary<string, object>)_dict).Values;
 
         /// <inheritdoc/>
-        public override bool TrySetMember(SetMemberBinder binder, object value)
+        public override bool TrySetMember(SetMemberBinder binder, object? value)
         {
             UpdateDictionary(binder.Name, value);
             if (_daemonApp != null)
@@ -137,7 +139,7 @@ namespace NetDaemon.Common.Fluent
         }
 
         /// <inheritdoc/>
-        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
+        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object? value)
         {
             if (!(indexes[0] is string)) return base.TrySetIndex(binder, indexes, value);
 
@@ -146,7 +148,7 @@ namespace NetDaemon.Common.Fluent
         }
 
         /// <inheritdoc/>
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        public override bool TryGetMember(GetMemberBinder binder, out object? result)
         {
             var key = NormalizePropertyName(binder.Name);
 
@@ -182,14 +184,25 @@ namespace NetDaemon.Common.Fluent
         ///     Copy all items from  FluentExpandoObject
         /// </summary>
         /// <param name="obj">The object to copy from</param>
-        public dynamic CopyFrom(IDictionary<string, object> obj)
+        public dynamic CopyFrom(IDictionary<string, object?> obj)
         {
             // Clear any items before copy
             Clear();
 
             foreach (var keyValuePair in obj)
             {
-                UpdateDictionary(keyValuePair.Key, keyValuePair.Value);
+                if (keyValuePair.Value is JsonElement val)
+                {
+                    var dynValue = val.ToDynamicValue();
+                    if (dynValue is object)
+                    {
+                        UpdateDictionary(keyValuePair.Key, dynValue);
+                    }
+                }
+                else
+                {
+                    UpdateDictionary(keyValuePair.Key, keyValuePair.Value);
+                }
             }
 
             return this;
@@ -235,8 +248,9 @@ namespace NetDaemon.Common.Fluent
             return string.Join(", ", _dict.Select(pair => pair.Key + " = " + pair.Value ?? "(null)").ToArray());
         }
 
-        private void UpdateDictionary(string name, object value)
+        private void UpdateDictionary(string name, object? value)
         {
+            _ = value ?? throw new ArgumentNullException("value", "value cannot be null");
             var key = NormalizePropertyName(name);
             if (_dict.ContainsKey(key))
                 _dict[key] = value;

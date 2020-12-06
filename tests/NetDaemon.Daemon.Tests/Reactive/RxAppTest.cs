@@ -251,7 +251,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await daemonTask.ConfigureAwait(false);
             // ASSERT
             Assert.NotNull(entity);
-            Assert.Equal("binary_sensor.pir", entity.EntityId);
+            Assert.Equal("binary_sensor.pir", entity?.EntityId);
         }
 
         [Fact]
