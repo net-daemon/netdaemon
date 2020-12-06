@@ -10,7 +10,7 @@ jobs:
 
             - uses: actions/setup-dotnet@v1
               with:
-                dotnet-version: '3.1.200' # SDK Version
+                dotnet-version: '5.0.200' # SDK Version
 
             - name: Enable problem matchers
               run: echo "::add-matcher::.github/matchers/dotnet.json"
