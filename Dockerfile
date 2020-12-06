@@ -10,8 +10,8 @@ RUN \
     && make deploy \
     \
     && rm -fr /var/lib/apt/lists/* \
-    && rm -fr /tmp/* /var/{cache,log}/* \
-    && rm -R /admin/node_modules
+    && rm -fr /tmp/* /var/{cache,log}/*  
+# && rm -R /admin/node_modules
 
 # Build the NetDaemon with build container
 FROM ludeeus/container:dotnet5-base-s6
