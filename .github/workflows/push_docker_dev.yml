@@ -25,7 +25,7 @@ jobs:
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/amd64 \
+            --platform linux/arm,linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile . \
