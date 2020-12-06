@@ -148,7 +148,7 @@ namespace NetDaemon.Common
         {
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
-            var obj = await _daemon!.GetDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage()).ConfigureAwait(false);
+            var obj = await _daemon!.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage()).ConfigureAwait(false);
 
             if (obj != null)
             {

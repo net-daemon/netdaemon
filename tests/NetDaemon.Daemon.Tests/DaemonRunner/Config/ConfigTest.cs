@@ -222,12 +222,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal(10, instance?.AnInt);
             Assert.Equal(true, instance?.ABool);
             Assert.NotNull(instance?.Devices);
-            Assert.Equal(1, instance?.Devices.Count());
-            Assert.Equal("tv", instance?.Devices.First().name);
-            Assert.Equal("command1", instance?.Devices.First().commands.ElementAt(0).name);
-            Assert.Equal("some code", instance?.Devices.First().commands.ElementAt(0).data);
-            Assert.Equal("command2", instance?.Devices.First().commands.ElementAt(1).name);
-            Assert.Equal("some code2", instance?.Devices.First().commands.ElementAt(1).data);
+            Assert.Equal(1, instance?.Devices?.Count());
+            Assert.Equal("tv", instance?.Devices?.First().name);
+            Assert.Equal("command1", instance?.Devices?.First()?.commands?.ElementAt(0).name);
+            Assert.Equal("some code", instance?.Devices?.First()?.commands?.ElementAt(0).data);
+            Assert.Equal("command2", instance?.Devices?.First()?.commands?.ElementAt(1).name);
+            Assert.Equal("some code2", instance?.Devices?.First()?.commands?.ElementAt(1).data);
         }
     }
 }

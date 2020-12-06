@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon
             _yamlConfig = yamlConfig;
         }
 
-        public int Count => _loadedDaemonApps.Count();
+        public int Count => _loadedDaemonApps?.Count() ?? throw new NullReferenceException("_loadedDaemonApps cannot be null");
 
         // Internal for testing
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps!;
@@ -66,7 +66,7 @@ namespace NetDaemon.Daemon
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Error instance the app from the file {file}", file);
-                    throw e;
+                    throw new ApplicationException($"Error instance the app from the file {file}", e);
                 }
             }
             return result;

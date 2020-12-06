@@ -65,8 +65,8 @@ namespace NetDaemon.Service
                 }
                 var webSocketOptions = new WebSocketOptions()
                 {
-                    KeepAliveInterval = TimeSpan.FromSeconds(120),
-                    ReceiveBufferSize = 4 * 1024
+                    KeepAliveInterval = TimeSpan.FromSeconds(120)
+                    // ReceiveBufferSize = 4 * 1024
                 };
                 app.UseWebSockets(webSocketOptions);
                 app.UseMiddleware<ApiWebsocketMiddleware>();

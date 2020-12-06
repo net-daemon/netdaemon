@@ -81,7 +81,8 @@ namespace NetDaemon.Service
 
                 _loadedDaemonApps = null;
 
-                await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>();
+                await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>()
+                    ?? throw new ApplicationException("Failed to get service for NetDaemonHost");
 
                 while (!stoppingToken.IsCancellationRequested)
                 {

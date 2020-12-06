@@ -34,11 +34,11 @@ namespace NetDaemon.Common
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static ExpandoObject ToExpandoObject(this object obj)
+        public static ExpandoObject? ToExpandoObject(this object obj)
         {
             // Null-check
 
-            IDictionary<string, object> expando = new ExpandoObject();
+            IDictionary<string, object?> expando = new ExpandoObject();
 
             foreach (PropertyDescriptor? property in TypeDescriptor.GetProperties(obj.GetType()))
             {

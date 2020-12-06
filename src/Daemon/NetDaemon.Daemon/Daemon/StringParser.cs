@@ -5,7 +5,7 @@ namespace NetDaemon.Daemon
 {
     internal static class StringParser
     {
-        public static object ParseDataType(string state)
+        public static object? ParseDataType(string? state)
         {
             if (Int64.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out Int64 intValue))
                 return intValue;

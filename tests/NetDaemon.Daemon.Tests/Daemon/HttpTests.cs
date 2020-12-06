@@ -92,7 +92,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var result = await httpHandler.GetJson<SerializedReturn>("http://fake.com").ConfigureAwait(false);
             // ASSERT
 
-            Assert.Equal("hello world", result.Property);
+            Assert.Equal("hello world", result?.Property);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var result = await httpHandler.PostJson<SerializedReturn>("http://fake.com", new { posted = "some value" }).ConfigureAwait(false);
             // ASSERT
 
-            Assert.Equal("hello world", result.Property);
+            Assert.Equal("hello world", result?.Property);
             Assert.Equal("{\"posted\":\"some value\"}", factoryMock?.MessageHandler?.RequestContent);
         }
 

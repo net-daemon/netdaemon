@@ -73,7 +73,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             dataBeingSaved.SomeString = "this data should be saved!";
             dataBeingSaved.SomeInt = 123456;
             dataBeingSaved.SomeFloat = 1.23456;
-            dataBeingSaved.SomeDateTime = now;
+            dataBeingSaved.SomeDateTime = DateTime.Parse("2020-12-05T20:31:41.1769766+01:00");
 
             // ACT
             await dataRepository.Save<IDictionary<string, object>>("RepositoryLoadSavedData_id", dataBeingSaved);
@@ -95,7 +95,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned?.SomeString);
             Assert.Equal(dataBeingSaved.SomeInt, dynamicDataReturned!.SomeInt);
             Assert.Equal(dataBeingSaved.SomeFloat, dynamicDataReturned!.SomeFloat);
-            Assert.Equal(dataBeingSaved.SomeDateTime, dynamicDataReturned!.SomeDateTime);
+            // There is no way for json serilizer to know this is a datetime
+            Assert.Equal("2020-12-05T20:31:41.1769766+01:00", dynamicDataReturned!.SomeDateTime);
         }
 
         [Fact]

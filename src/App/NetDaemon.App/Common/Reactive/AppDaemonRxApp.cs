@@ -40,7 +40,8 @@ namespace NetDaemon.Common.Reactive
             _reactiveState ?? throw new ApplicationException("Application not initialized correctly (StateAllChanges>");
 
         /// <inheritdoc/>
-        public IObservable<(EntityState Old, EntityState New)> StateChanges => _reactiveState.Where(e => e.New?.State != e.Old?.State);
+        public IObservable<(EntityState Old, EntityState New)> StateChanges =>
+            _reactiveState?.Where(e => e.New?.State != e.Old?.State) ?? throw new ApplicationException("Application not initialized correctly (StateAllChanges>");
 
         /// <summary>
         ///     Returns the observables states implementation of AppDaemonRxApps

@@ -14,7 +14,7 @@ RUN \
     && rm -R /admin/node_modules
 
 # Build the NetDaemon with build container
-FROM ludeeus/container:dotnet-base-s6
+FROM ludeeus/container:dotnet5-base-s6
 
 # Copy the source to docker container
 COPY ./src /usr/src
