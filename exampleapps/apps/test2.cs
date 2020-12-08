@@ -42,13 +42,10 @@ namespace NStest
             //            Log("Hello!");
             //        });
             // EventChanges
-            //        //   .Where(e => e.Domain == "scene" && e.Event == "turn_on")
             //        .Subscribe(e =>
             //        {
-            //            Log("Hello!");
-            //        },
-            //        err => LogError(err, "Ohh nooo!"),
-            //        () => Log("Ending event"));
+            //            Log($"Event: {e.Domain }.{e.Event}, {e.Data?.EntityId}");
+            //        });
 
 
 
