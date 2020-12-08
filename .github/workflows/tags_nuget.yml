@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@main
       - uses: actions/setup-dotnet@v1
+        with:
+            dotnet-version: '5.0.100' # SDK Version
       # - uses: olegtarasov/get-tag@v2
       #   name: Set tag envronment variable
       - name: "Set version number"
