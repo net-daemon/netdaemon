@@ -32,16 +32,25 @@ namespace NetDaemon
 
         private static void RegisterNetDaemonAssembly(IServiceCollection services)
         {
-            if (BypassLocalAssemblyLoading())
+            if (!BypassLocalAssemblyLoading())
                 services.AddSingleton<IDaemonAppCompiler, LocalDaemonAppCompiler>();
             else
                 services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
         }
 
+        /// <summary>
+        ///     Returns true if local loading of assemblies should be preferred. 
+        ///     This is typically when running in container. When running in dev
+        ///     you want the local loading
+        /// </summary>
         private static bool BypassLocalAssemblyLoading()
         {
             var value = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
-            return bool.TryParse(value, out var result) && result;
+            if (bool.TryParse(value, out var result))
+            {
+                return result;
+            }
+            return false;
         }
     }
 }
