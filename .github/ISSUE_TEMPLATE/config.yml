@@ -11,7 +11,7 @@ contact_links:
     about: Joint the Discord server to get support from the community.
   - name: Add and discuss a feature request
     url: https://github.com/net-daemon/netdaemon/discussions
-    about: Please join the Discord server and ask for a feature in the feature request channel
+    about: Please join the github discussions and ask for a feature in the feature request channel
   - name: I'm unsure where to go
     url: https://discord.gg/K3xwfcX
     about: If you are unsure where to go, then joining our chat in Discord is recommended; Just ask!
