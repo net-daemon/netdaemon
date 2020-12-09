@@ -9,8 +9,8 @@ contact_links:
   - name: I have a question or need support
     url: https://discord.gg/K3xwfcX
     about: Joint the Discord server to get support from the community.
-  - name: Discuss feature request before posting
-    url: https://discord.gg/K3xwfcX
+  - name: Add and discuss a feature request
+    url: https://github.com/net-daemon/netdaemon/discussions
     about: Please join the Discord server and ask for a feature in the feature request channel
   - name: I'm unsure where to go
     url: https://discord.gg/K3xwfcX
