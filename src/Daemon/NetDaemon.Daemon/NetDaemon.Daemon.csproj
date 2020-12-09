@@ -23,7 +23,7 @@
     <PackageReference Include="JoySoftware.HassClient" Version="20.49.1-beta" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
-    <PackageReference Include="YamlDotNet" Version="8.1.2" />
+    <PackageReference Include="YamlDotNet" Version="9.1.0" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
   
