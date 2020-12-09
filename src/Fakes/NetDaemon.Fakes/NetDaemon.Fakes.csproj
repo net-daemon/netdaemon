@@ -1,31 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon</RootNamespace>
-    <PackageId>JoySoftware.NetDaemon.Test</PackageId>
-    <Version>0.1.29-alpha</Version>
+    <PackageId>JoySoftware.NetDaemon.Fakes</PackageId>
+    <Version>20.49.2-beta</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
     <description>A .net core appdaemon for Home Assistant</description>
-    <projectUrl>https://github.com/helto4real/net-hassclient</projectUrl>
+    <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IsPackable>true</IsPackable>
     <PackageDescription>
-      A client for manage the free open source home automations software Home Assisstant written in .net core 3.
-      Please see https://github.com/helto4real/net-hassclient/blob/main/README.md for docs.
+      A application daemon for writing automations for the free open source home automations software Home Assisstant written in .net 5.
+      This is the unit test capabilities, mocks and fakes.
     </PackageDescription>
-    <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
+    <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
     <tags>Home Assistant</tags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
     <ItemGroup>
-    <ProjectReference Include="..\..\src\App\NetDaemon.App\NetDaemon.App.csproj" />
-    <ProjectReference Include="..\..\src\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
-    <ProjectReference Include="..\..\src\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
+    <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
+    <ProjectReference Include="..\..\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
+    <ProjectReference Include="..\..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
   </ItemGroup>
     <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="Moq" Version="4.15.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">

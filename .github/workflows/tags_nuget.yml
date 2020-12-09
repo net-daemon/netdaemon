@@ -26,6 +26,6 @@ jobs:
       - name: pack Daemon
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
       - name: pack Test
-        run: dotnet pack tests/NetDaemon.Test/NetDaemon.Test.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
+        run: dotnet pack src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
       - name: push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true

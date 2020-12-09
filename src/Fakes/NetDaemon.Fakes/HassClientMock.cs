@@ -10,8 +10,11 @@ using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using Xunit;
 
-namespace NetDaemon.Daemon.Test
+namespace NetDaemon.Daemon.Fakes
 {
+    /// <summary>
+    ///     Mock for HassClient
+    /// </summary>
     public class HassClientMock : Mock<IHassClient>
     {
         internal HassAreas Areas = new HassAreas();
@@ -75,6 +78,9 @@ namespace NetDaemon.Daemon.Test
             });
         }
 
+        /// <summary>
+        ///     Default instance of mock
+        /// </summary>
         public static HassClientMock DefaultMock => new HassClientMock();
 
         /// <summary>
@@ -92,6 +98,12 @@ namespace NetDaemon.Daemon.Test
             }
         }
 
+        /// <summary>
+        ///     Adds a new call_service event to mock
+        /// </summary>
+        /// <param name="domain">Domain of service</param>
+        /// <param name="service">Service to fake</param>
+        /// <param name="data">Data sent by service</param>
         public void AddCallServiceEvent(string domain, string service, dynamic data)
         {
             // Todo: Refactor to smth smarter
@@ -107,6 +119,14 @@ namespace NetDaemon.Daemon.Test
             });
         }
 
+        /// <summary>
+        ///     Adds a new changed event
+        /// </summary>
+        /// <param name="entityId">Id of entity that has changes in state</param>
+        /// <param name="fromState">Old state</param>
+        /// <param name="toState">New state</param>
+        /// <param name="lastUpdated">Last updated</param>
+        /// <param name="lastChanged">Last changed</param>
         public void AddChangedEvent(string entityId, object fromState, object toState, DateTime lastUpdated, DateTime lastChanged)
         {
             // Todo: Refactor to smth smarter
@@ -138,6 +158,12 @@ namespace NetDaemon.Daemon.Test
             });
         }
 
+        /// <summary>
+        ///     Adds a changed event for entity
+        /// </summary>
+        /// <param name="entityId">Id of entity</param>
+        /// <param name="fromState">From state</param>
+        /// <param name="toState">To state</param>
         public void AddChangedEvent(string entityId, object fromState, object toState)
         {
             FakeEvents.Enqueue(new HassEvent
@@ -170,6 +196,11 @@ namespace NetDaemon.Daemon.Test
             });
         }
 
+        /// <summary>
+        ///     Adds a custom event
+        /// </summary>
+        /// <param name="eventType">Type of event</param>
+        /// <param name="data">Data sent by event</param>
         public void AddCustomEvent(string eventType, dynamic? data)
         {
             FakeEvents.Enqueue(new HassEvent
@@ -179,6 +210,11 @@ namespace NetDaemon.Daemon.Test
             });
         }
 
+        /// <summary>
+        ///     Assert if the HassClient entity state is equeal to NetDaemon entity state
+        /// </summary>
+        /// <param name="hassState">HassClient state instance</param>
+        /// <param name="entity">NetDaemon state instance</param>
         public void AssertEqual(HassState hassState, EntityState entity)
         {
             Assert.Equal(hassState.EntityId, entity.EntityId);
@@ -212,6 +248,12 @@ namespace NetDaemon.Daemon.Test
                 : new CancellationTokenSource(milliSeconds);
         }
 
+        /// <summary>
+        ///     Verifies that call_service is called
+        /// </summary>
+        /// <param name="domain">Service domain</param>
+        /// <param name="service">Service to verify</param>
+        /// <param name="attributesTuples">Attributes sent by service</param>
         public void VerifyCallService(string domain, string service,
             params (string attribute, object value)[] attributesTuples)
         {
@@ -222,11 +264,22 @@ namespace NetDaemon.Daemon.Test
             Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
         }
 
+        /// <summary>
+        ///     Verifies service being sent "times" times
+        /// </summary>
+        /// <param name="service">The service to check</param>
+        /// <param name="times">The number of times it should been called</param>
         public void VerifyCallServiceTimes(string service, Times times)
         {
             Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
         }
 
+        /// <summary>
+        ///     Verify state if entity
+        /// </summary>
+        /// <param name="entity">Entity to verify</param>
+        /// <param name="state">The state to verify</param>
+        /// <param name="attributesTuples">Attributes to verify</param>
         public void VerifySetState(string entity, string state,
             params (string attribute, object value)[] attributesTuples)
         {
@@ -237,6 +290,11 @@ namespace NetDaemon.Daemon.Test
             Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);
         }
 
+        /// <summary>
+        ///     Verify that the state been set number of times
+        /// </summary>
+        /// <param name="entity">Entity that the state being set</param>
+        /// <param name="times">Number of times set</param>
         public void VerifySetStateTimes(string entity, Times times)
         {
             Verify(n => n.SetState(entity, It.IsAny<string>(), It.IsAny<FluentExpandoObject>()), times);
