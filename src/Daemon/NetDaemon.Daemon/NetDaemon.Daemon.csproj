@@ -6,17 +6,17 @@
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.Daemon</PackageId>
-    <Version>0.1.29-alpha</Version>
+    <Version>20.49.2-beta</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
     <description>A .net core appdaemon for Home Assistant</description>
     <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageDescription>
-      A client for manage the free open source home automations software Home Assisstant written in .net core 3.
-      Please see https://github.com/net-daemon/netdaemon/blob/dev/README.md for docs.
+      A application daemon for writing automations for the free open source home automations software Home Assisstant written in .net 5.
+      This is the NetDaemon core capabilities.
     </PackageDescription>
-    <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
+    <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
     <tags>Home Assistant</tags>
   </PropertyGroup>
   <ItemGroup>

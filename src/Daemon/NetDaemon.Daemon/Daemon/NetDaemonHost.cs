@@ -18,7 +18,7 @@ using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Mapping;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
-[assembly: InternalsVisibleTo("NetDaemon.Test")]
+[assembly: InternalsVisibleTo("NetDaemon.Fakes")]
 
 namespace NetDaemon.Daemon
 {

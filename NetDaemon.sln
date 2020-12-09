@@ -26,7 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DaemonRunner", "DaemonRunne
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{32E20E48-2F62-447B-83A2-DB2EA7F61AB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Test", "tests\NetDaemon.Test\NetDaemon.Test.csproj", "{E1844E4F-2711-4A04-B70C-D67D5D2C8F31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Fakes", "src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj", "{E1844E4F-2711-4A04-B70C-D67D5D2C8F31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

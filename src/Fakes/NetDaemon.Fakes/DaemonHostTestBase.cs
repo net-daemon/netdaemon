@@ -11,9 +11,12 @@ using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
 using Xunit;
 
-namespace NetDaemon.Daemon.Test
+namespace NetDaemon.Daemon.Fakes
 {
 
+    /// <summary>
+    ///     Base class for test classes
+    /// </summary>
     public partial class DaemonHostTestBase : IAsyncLifetime
     {
         private readonly NetDaemonHost _defaultDaemonHost;
@@ -37,10 +40,25 @@ namespace NetDaemon.Daemon.Test
 
         }
 
+        /// <summary>
+        ///     Returns default DaemonHost mock
+        /// </summary>
         public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
+        /// <summary>
+        ///     Returns default data repository mock
+        /// </summary>
         public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
+        /// <summary>
+        ///     Returns default HassClient mock
+        /// </summary>
         public HassClientMock DefaultHassClientMock => _defaultHassClientMock;
+        /// <summary>
+        ///     Returns default HttpHandler mock
+        /// </summary>
         public HttpHandlerMock DefaultHttpHandlerMock => _defaultHttpHandlerMock;
+        /// <summary>
+        ///     Returns default logger mock
+        /// </summary>
         public LoggerMock LoggerMock => _loggerMock;
 
         Task IAsyncLifetime.DisposeAsync()
@@ -162,6 +180,11 @@ namespace NetDaemon.Daemon.Test
             DefaultHassClientMock.VerifyCallServiceTimes(service, times);
         }
 
+        /// <summary>
+        ///     Returns default DaemonHost
+        /// </summary>
+        /// <param name="milliSeconds">Timeout in ms</param>
+        /// <param name="overrideDebugNotCancel">True if use timeout while debug test</param>
         public async Task<(Task, CancellationTokenSource)> ReturnRunningDefauldDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
             await InitApps();
@@ -171,7 +194,14 @@ namespace NetDaemon.Daemon.Test
             return (_defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
 
-        public async Task RunDefauldDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
+
+        /// <summary>
+        ///     Runs the default daemon to process messages until canceled
+        /// </summary>
+        /// <param name="milliSeconds">Timeout time</param>
+        /// <param name="overrideDebugNotCancel">True if debugging should cancel</param>
+        /// <returns></returns>
+        public async Task RunDefaultDaemonUntilCanceled(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
             var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                 ? new CancellationTokenSource()
@@ -187,6 +217,11 @@ namespace NetDaemon.Daemon.Test
             }
         }
 
+        /// <summary>
+        ///     Wait for task until canceled
+        /// </summary>
+        /// <param name="task">Task to wait for</param>
+        /// <returns></returns>
         public async Task WaitUntilCanceled(Task task)
         {
             try
@@ -199,6 +234,9 @@ namespace NetDaemon.Daemon.Test
             }
         }
 
+        /// <summary>
+        ///     Initialize applications
+        /// </summary>
         public async Task InitApps()
         {
             foreach (var inst in DefaultDaemonHost.InternalAllAppInstances)
@@ -213,6 +251,12 @@ namespace NetDaemon.Daemon.Test
             }
         }
 
+        /// <summary>
+        ///     Get already pre-connected mock NetDaemon object
+        /// </summary>
+        /// <param name="milliSeconds">Timeout in milliseconds</param>
+        /// <param name="overrideDebugNotCancel">True to use timeout while debugging</param>
+        /// <returns></returns>
         protected async Task<Task> GetConnectedNetDaemonTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
             var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
@@ -226,13 +270,19 @@ namespace NetDaemon.Daemon.Test
             return daemonTask;
         }
 
-        protected async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        /// <summary>
+        ///     Wait until default NetDaemon has connected
+        /// </summary>
+        /// <param name="daemonHost">Daemon object</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        protected async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken cancellationToken)
         {
             var nrOfTimesCheckForConnectedState = 0;
 
-            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
+            while (!daemonHost.Connected && !cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(50, stoppingToken).ConfigureAwait(false);
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                 if (nrOfTimesCheckForConnectedState++ > 100)
                     break;
             }
