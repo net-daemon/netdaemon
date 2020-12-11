@@ -20,7 +20,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _app = new DaemonRxAppTestApp();
             _app.Id = "id";
             DefaultDaemonHost.InternalRunningAppInstances[_app.Id] = App;
-            _app.StartUpAsync(DefaultDaemonHost);
+            _app.StartUpAsync(DefaultDaemonHost).Wait();
         }
 
         public NetDaemon.Common.Reactive.NetDaemonRxApp App => _app;
@@ -162,7 +162,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Where(e => e.New.Attribute.an_int == "WTF this is not an int!!")
+                .Where(e => e.New.Attribute!.an_int == "WTF this is not an int!!")
                 .Subscribe(s =>
                 {
                     int x = int.Parse("ss");

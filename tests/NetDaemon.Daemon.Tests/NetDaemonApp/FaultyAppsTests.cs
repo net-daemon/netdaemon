@@ -19,7 +19,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _app = new DaemonAppTestApp();
             _app.Id = "id";
             DefaultDaemonHost.InternalRunningAppInstances[_app.Id] = App;
-            _app.StartUpAsync(DefaultDaemonHost);
+            _app.StartUpAsync(DefaultDaemonHost).Wait();
         }
 
         public NetDaemon.Common.NetDaemonApp App => _app;
@@ -86,7 +86,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             // ARRANGE
             bool eventRun = false;
             App
-                .Entities(e => e.Attribute.does_not_exist == "yay")
+                .Entities(e => e.Attribute!.does_not_exist == "yay")
                 .WhenStateChange()
                 .Call((entity, from, to) =>
                 {
