@@ -30,6 +30,7 @@ RUN /build.sh
 
 # Final stage, create the runtime container
 FROM mcr.microsoft.com/dotnet/sdk:5.0.100
+
 COPY ./Docker/rootfs/etc /etc
 COPY ./Docker/s6.sh /s6.sh
 
