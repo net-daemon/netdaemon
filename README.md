@@ -8,7 +8,7 @@ Welcome to the NetDaemon project. This is the application daemon for Home Assist
 
 Please see [https://netdaemon.xyz](https://netdaemon.xyz) for detailed instructions how to get started using NetDaemon.
 
-> **The NetDaemon is currently in alpha release so expect things to change.**
+> **The NetDaemon is currently in beta release so expect things to change.**
 
 ## Issues
 
