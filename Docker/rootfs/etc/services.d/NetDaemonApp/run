@@ -3,23 +3,24 @@ echo "Starting NetDaemon Runner"
 
 declare runtype="Service"
 declare daemondir="/daemon"
-
-cd "${NETDAEMON__PROJECTFOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
-
-if [[ "${PWD}" != "${NETDAEMON__PROJECTFOLDER}" ]]; then
+declare custom_daemondir="/custom_daemon"
+if [ ! -d "/data" ]; then
+    echo -e "\\033[31mMissing mapping to apps, please map '/data' to your apps folder\\033[0m" >&2
     exit 1
 fi
 
-echo -e "\\033[32mBuilding NetDaemon source...\\033[0m" >&2
-if dotnet publish -v q -c Release -o "${daemondir}"; then
-    dotnet build-server shutdown || exit 1
-fi
+if [ -z "${NETDAEMON__PROJECTFOLDER}" ]; then
+    echo -e "\\033[32mRunning pre-compiled NetDaemon...\\033[0m" >&2
+    cd "${daemondir}"
+    exec "./${runtype}"
+else
+    echo -e "\\033[32mRun the custom project provided...\\033[0m" >&2
+    cd "${NETDAEMON__PROJECTFOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
-if test -f "${daemondir}/Service"; then
-    echo -e "\\033[32mStarting NetDaemon...\\033[0m" >&2
-elif test -f "${daemondir}/daemonapp"; then
-    echo -e "\\033[32mStarting custom NetDaemon project...\\033[0m" >&2
-    runtype="daemonapp"
+    if [[ "${PWD}" != "${NETDAEMON__PROJECTFOLDER}" ]]; then
+        echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
+        exit 1
+    fi
+    
+    dotnet run -c Release
 fi
-
-exec "${daemondir}/${runtype}"
