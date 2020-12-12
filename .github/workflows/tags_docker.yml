@@ -1,4 +1,5 @@
 #### Publish tags to docker hub
+
 name: Deploy to Docker Hub for tags
 on:
    push:
@@ -11,18 +12,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-      # - uses: olegtarasov/get-tag@v2
-      #   name: Set tag envronment variable
       - name: "Set version number"
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-      - name: Set up Docker Buildx
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
         id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          version: latest
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       - name: Run Buildx
         run: |
           docker buildx build \
@@ -33,3 +37,5 @@ jobs:
             --compress \
             --tag netdaemon/netdaemon:latest \
             --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
+
+            

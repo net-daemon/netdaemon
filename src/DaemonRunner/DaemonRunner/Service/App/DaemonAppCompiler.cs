@@ -24,11 +24,14 @@ namespace NetDaemon.Service.App
 
         public IEnumerable<Type> GetApps()
         {
+            _logger.LogDebug("Loading dynamically compiled apps...");
             var assembly = Load();
             var apps = assembly.GetTypesWhereSubclassOf<NetDaemonAppBase>();
 
             if (!apps.Any())
                 _logger.LogWarning("No .cs files found, please add files to {sourceFolder}/apps", _netDaemonSettings.Value.SourceFolder);
+            else
+                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count());
 
             return apps;
         }

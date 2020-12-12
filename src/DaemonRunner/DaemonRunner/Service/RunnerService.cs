@@ -73,6 +73,8 @@ namespace NetDaemon.Service
 
                 var sourceFolder = Path.Combine(_netDaemonSettings.SourceFolder!, "apps");
 
+                _logger.LogDebug("Finding apps in {folder}...", sourceFolder);
+
                 // Automatically create source directories
                 if (!Directory.Exists(sourceFolder))
                     Directory.CreateDirectory(sourceFolder);
@@ -122,7 +124,10 @@ namespace NetDaemon.Service
                                         _loadedDaemonApps = _daemonAppCompiler.GetApps();
 
                                     if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
+                                    {
+                                        _logger.LogError("No apps found, exiting...");
                                         return;
+                                    }
 
                                     IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
                                     await daemonHost.Initialize(codeManager).ConfigureAwait(false);
@@ -189,6 +194,8 @@ namespace NetDaemon.Service
 
             if (_entitiesGenerated)
                 return;
+
+            _logger.LogDebug("Generating entities ..");
 
             _entitiesGenerated = true;
             var codeGen = new CodeGenerator();

@@ -19,12 +19,15 @@ namespace NetDaemon.Service.App
 
         public IEnumerable<Type> GetApps()
         {
+            _logger.LogDebug("Loading local assembly apps...");
             var assembly = Load();
 
             var apps = assembly.GetTypesWhereSubclassOf<NetDaemonAppBase>();
 
             if (!apps.Any())
                 _logger.LogWarning("No local daemon apps found.");
+            else
+                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count());
 
             return apps;
         }
