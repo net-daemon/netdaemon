@@ -11,10 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-      # - uses: olegtarasov/get-tag@v2
-      #   name: Set tag envronment variable
       - name: "Set version number"
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
@@ -28,6 +24,8 @@ jobs:
       -
         name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       - name: Run Buildx
         run: |
           docker buildx build \
