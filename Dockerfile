@@ -4,7 +4,9 @@ FROM ludeeus/container:frontend as builder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
-RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" > /log
+RUN echo "I am running on $BUILDPLATFORM" > /log \
+    && echo "building for $TARGETPLATFORM" > /log 
+
 
 RUN \
     apk add make \

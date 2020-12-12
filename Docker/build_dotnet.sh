@@ -1,6 +1,8 @@
 #!/bin/bash
 ARCH=$(uname -m)
 
+echo "UNAME IS!!!!: $ARCH"
+
 if [ $ARCH == "armv7l" ]; then
     dotnet publish /usr/src/Service/Service.csproj -v q -c Release -r "linux-arm" -o "/daemon"
 elif [ $ARCH == "aarch64" ]; then
