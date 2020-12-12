@@ -20,9 +20,14 @@ jobs:
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: Set up Docker Buildx
         id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
+        uses: crazy-max/ghaction-docker-buildx@v3
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
+      -
+        name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+        
       - name: Run Buildx
         run: |
           docker buildx build \
