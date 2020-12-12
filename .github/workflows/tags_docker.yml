@@ -1,6 +1,5 @@
 #### Publish tags to docker hub
 
-# linux/arm/v7,,linux/amd64
 name: Deploy to Docker Hub for tags
 on:
    push:
@@ -31,7 +30,7 @@ jobs:
       - name: Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm64 \
+            --platform linux/arm,linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile . \
