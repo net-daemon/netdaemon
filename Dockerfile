@@ -1,6 +1,11 @@
 # Build the NetDaemon Admin with build container
 FROM ludeeus/container:frontend as builder
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" > /log
+
 RUN \
     apk add make \
     \
@@ -13,11 +18,15 @@ RUN \
     && rm -fr /tmp/* /var/{cache,log}/*  
 
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:5.0.100 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:5.0.101-buster-slim-amd64 as netbuilder
 
 # Copy the source to docker container
 COPY ./src /usr/src
-RUN dotnet publish /usr/src/Service/Service.csproj -v q -c Release -o "/daemon"
+COPY ./Docker/build_dotnet.sh /build.sh 
+RUN chmod 700 /build.sh
+
+# Run build script for all platforms since dotnet is not QEMU compatible
+RUN /build.sh
 
 # Final stage, create the runtime container
 FROM mcr.microsoft.com/dotnet/sdk:5.0.100
