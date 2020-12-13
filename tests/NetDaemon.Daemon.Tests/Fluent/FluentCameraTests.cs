@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NetDaemon.Common;
+using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Fluent
@@ -14,7 +15,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
     ///     Mainly the tests checks if correct underlying call to "CallService"
     ///     has been made.
     /// </remarks>
-    public class FluentCameraTests : DaemonHostTestBase
+    public class FluentCameraTests : CoreDaemonHostTestBase
     {
         public FluentCameraTests() : base()
         {
@@ -35,7 +36,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call, ("entity_id", entityId));
+            DefaultHassClientMock.VerifyCallServiceTuple("camera", service_call, ("entity_id", entityId));
         }
 
         [Fact]
@@ -53,7 +54,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call, ("entity_id", entityId));
+            DefaultHassClientMock.VerifyCallServiceTuple("camera", service_call, ("entity_id", entityId));
         }
 
         [Fact]
@@ -77,7 +78,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call, ("entity_id", entityId));
+            DefaultHassClientMock.VerifyCallServiceTuple("camera", service_call, ("entity_id", entityId));
         }
 
         [Fact]
@@ -95,7 +96,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call, ("entity_id", entityId));
+            DefaultHassClientMock.VerifyCallServiceTuple("camera", service_call, ("entity_id", entityId));
         }
 
         [Fact]
@@ -112,8 +113,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .ExecuteAsync();
 
             // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call,
+            VerifyCallServiceTimes(service_call, Times.Once());
+            VerifyCallServiceTuple("camera", service_call,
                 ("media_player", "media_player.player"),
                 ("format", "anyformat"),
                 ("entity_id", entityId)
@@ -134,8 +135,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .ExecuteAsync();
 
             // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call,
+            VerifyCallServiceTimes(service_call, Times.Once());
+            VerifyCallServiceTuple("camera", service_call,
                 ("filename", "filename"),
                 ("duration", 1),
                 ("lookback", 2),
@@ -157,8 +158,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .ExecuteAsync();
 
             // ASSERT
-            DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call,
+            VerifyCallServiceTimes(service_call, Times.Once());
+            VerifyCallServiceTuple("camera", service_call,
                 ("filename", "filename"),
                 ("entity_id", entityId)
                 );
@@ -179,7 +180,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call, ("entity_id", entityId));
+            DefaultHassClientMock.VerifyCallServiceTuple("camera", service_call, ("entity_id", entityId));
         }
 
         [Fact]
@@ -197,7 +198,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
-            DefaultHassClientMock.VerifyCallService("camera", service_call, ("entity_id", entityId));
+            DefaultHassClientMock.VerifyCallServiceTuple("camera", service_call, ("entity_id", entityId));
         }
 
         [Fact]

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Moq;
+using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Reactive
@@ -16,9 +18,9 @@ namespace NetDaemon.Daemon.Tests.Reactive
     ///     Mainly the tests checks if correct underlying call to "CallService"
     ///     has been made.
     /// </remarks>
-    public class RxAppTest : CoreDaemonHostTestBase
+    public class FakeTests : CoreDaemonHostTestBase
     {
-        public RxAppTest() : base()
+        public FakeTests() : base()
         {
         }
 
@@ -33,7 +35,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.CallService("mydomain", "myservice", dynObj);
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             VerifyCallServiceTuple("mydomain", "myservice", ("attr", "value"));
@@ -57,7 +58,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.True(called);
         }
@@ -80,7 +80,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.True(called);
         }
@@ -90,7 +89,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await FakeDaemonInit().ConfigureAwait(false);
-
             string? missingAttribute = "has initial value";
 
             // ACT
@@ -107,7 +105,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.AddCustomEvent("AN_EVENT", dynExpObject);
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             Assert.Null(missingAttribute);
@@ -131,7 +128,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.True(called);
         }
@@ -141,13 +137,14 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await FakeDaemonInit().ConfigureAwait(false);
+
             var (dynObj, expObj) = GetDynamicObject(
                ("attr", "value"));
 
             // ACT
             DefaultDaemonRxApp.RunScript("myscript");
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
+            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
 
@@ -166,7 +163,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.RunScript("script.myscript");
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes("myscript", Times.Once());
@@ -190,7 +186,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.False(called);
         }
@@ -199,13 +194,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await FakeDaemonInit().ConfigureAwait(false);
+
             var (dynObj, expObj) = GetDynamicObject(
                ("attr", "value"));
 
             // ACT
             DefaultDaemonRxApp.SetState("sensor.any_sensor", "on", dynObj);
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
@@ -231,7 +226,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.NotNull(entity);
         }
@@ -246,7 +240,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var entity = DefaultDaemonRxApp.State("binary_sensor.pir");
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             Assert.Null(entity?.Attribute?.not_exists);
@@ -299,7 +292,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.True(called);
         }
@@ -309,6 +301,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await FakeDaemonInit().ConfigureAwait(false);
+
             string? missingString = "has initial value";
 
             // ACT
@@ -322,7 +315,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir_2", "off", "on");
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             Assert.Null(missingString);
@@ -347,7 +339,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.True(called);
         }
@@ -370,7 +361,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             // ASSERT
             Assert.True(called);
@@ -395,14 +385,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.False(called);
         }
         [Fact]
         public async Task WhenStateStaysSameForTimeItShouldCallFunction()
         {
-            await FakeDaemonInit(300).ConfigureAwait(false);
+            await FakeDaemonInit().ConfigureAwait(false);
 
             bool isRun = false;
             using var ctx = DefaultDaemonRxApp.StateChanges
@@ -416,7 +405,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
 
             Assert.True(isRun);
         }
@@ -435,7 +423,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
 
-
             // ASSERT
             Assert.Equal(data, collectedData);
         }
@@ -452,10 +439,28 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultDaemonRxApp.GetData<string>("GetDataShouldReturnCachedValue_id");
 
             await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
-
             // ASSERT
             DefaultDataRepositoryMock.Verify(n => n.Get<string>(It.IsAny<string>()), Times.Never);
             DefaultDataRepositoryMock.Verify(n => n.Save<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task TestFakeAppTurnOnCorrectLight()
+        {
+            // Add the app to test
+            await AddAppInstance(new FakeApp());
+
+            // Init NetDaemon core runtime
+            await FakeDaemonInit().ConfigureAwait(false);
+
+            // Fake a changed event from en entity
+            AddChangedEvent("binary_sensor.kitchen", "off", "on");
+
+            // Run the NetDemon Core to process the messages
+            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+
+            // Verify that netdaemon called light.turn_on 
+            VerifyCallService("light", "turn_on", "light.kitchen");
         }
     }
 }

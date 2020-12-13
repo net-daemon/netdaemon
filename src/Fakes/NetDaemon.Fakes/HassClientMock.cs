@@ -17,11 +17,31 @@ namespace NetDaemon.Daemon.Fakes
     /// </summary>
     public class HassClientMock : Mock<IHassClient>
     {
-        internal HassAreas Areas = new HassAreas();
-        internal HassDevices Devices = new HassDevices();
-        internal HassEntities Entities = new HassEntities();
-        internal ConcurrentQueue<HassEvent> FakeEvents = new();
-        internal ConcurrentDictionary<string, HassState> FakeStates = new();
+        /// <summary>
+        ///     Fake areas in HassClient
+        /// </summary>
+        /// <returns></returns>
+        public HassAreas Areas = new HassAreas();
+
+        /// <summary>
+        ///     Fake devices in HassClient
+        /// </summary>
+        /// <returns></returns>
+        public HassDevices Devices = new HassDevices();
+
+        /// <summary>
+        ///     Fake entities in HassClient
+        /// </summary>
+        public HassEntities Entities = new HassEntities();
+
+        /// <summary>
+        ///     Fake events in HassClient
+        /// </summary>
+        public ConcurrentQueue<HassEvent> FakeEvents = new();
+        /// <summary>
+        ///     All current fake entities and it's states
+        /// </summary>
+        public ConcurrentDictionary<string, HassState> FakeStates = new();
 
         /// <summary>
         ///     Default constructor
@@ -104,7 +124,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="domain">Domain of service</param>
         /// <param name="service">Service to fake</param>
         /// <param name="data">Data sent by service</param>
-        public void AddCallServiceEvent(string domain, string service, dynamic data)
+        public void AddCallServiceEvent(string domain, string service, dynamic? data = null)
         {
             // Todo: Refactor to smth smarter
             FakeEvents.Enqueue(new HassEvent
@@ -254,7 +274,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="domain">Service domain</param>
         /// <param name="service">Service to verify</param>
         /// <param name="attributesTuples">Attributes sent by service</param>
-        public void VerifyCallService(string domain, string service,
+        public void VerifyCallServiceTuple(string domain, string service,
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
@@ -262,6 +282,38 @@ namespace NetDaemon.Daemon.Fakes
                 ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
 
             Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
+        }
+
+        /// <summary>
+        ///     Verifies that call_service is called
+        /// </summary>
+        /// <param name="domain">Service domain</param>
+        /// <param name="service">Service to verify</param>
+        /// <param name="data">Data sent by service</param>
+        /// <param name="waitForResponse">If service was waiting for response</param>
+        /// <param name="times">Number of times called</param>
+        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Moq.Times? times = null)
+        {
+            if (times is not null)
+                Verify(n => n.CallService(domain, service, data!, waitForResponse), times.Value);
+            else
+                Verify(n => n.CallService(domain, service, data!, waitForResponse), Times.AtLeastOnce);
+
+        }
+
+        /// <summary>
+        ///     Verifies that call_service is called
+        /// </summary>
+        /// <param name="domain">Service domain</param>
+        /// <param name="service">Service to verify</param>
+        /// <param name="waitForResponse">If service was waiting for response</param>
+        /// <param name="times">Number of times called</param>
+        public void VerifyCallService(string domain, string service, bool waitForResponse = false, Moq.Times? times = null)
+        {
+            if (times is not null)
+                Verify(n => n.CallService(domain, service, It.IsAny<object>(), waitForResponse), times.Value);
+            else
+                Verify(n => n.CallService(domain, service, It.IsAny<object>(), waitForResponse), Times.AtLeastOnce);
         }
 
         /// <summary>
@@ -273,6 +325,8 @@ namespace NetDaemon.Daemon.Fakes
         {
             Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
         }
+
+
 
         /// <summary>
         ///     Verify state if entity
