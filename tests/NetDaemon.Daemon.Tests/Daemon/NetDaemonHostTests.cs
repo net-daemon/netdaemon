@@ -258,7 +258,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
             string? reportedState = "";
 
@@ -270,6 +269,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 return Task.CompletedTask;
             });
 
+            AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
@@ -281,8 +281,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-            DefaultHassClientMock.AddChangedEvent("light.mylight", fromState: "on", toState: "off");
 
             int nrOfTimesCalled = 0;
 
@@ -293,6 +291,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
                 return Task.CompletedTask;
             });
+
+            AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
+            AddChangedEvent("light.mylight", fromState: "on", toState: "off");
 
             await RunFakeDaemonUntilTimeout();
 

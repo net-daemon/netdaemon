@@ -58,7 +58,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -67,6 +66,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -78,7 +78,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var MotionEnabled = true;
 
@@ -89,6 +88,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Toggle()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("toggle", Times.Once());
@@ -100,7 +100,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -109,6 +108,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Toggle()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("toggle", Times.Once());
@@ -121,17 +121,18 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            AddChangedEvent("binary_sensor.pir", "off", "on");
-            AddChangedEvent("binary_sensor.pir", "off", "on");
-
             DefaultDaemonApp
-                .Entity("binary_sensor.pir")
-                .WhenStateChange("on")
-                .UseEntity("light.correct_entity")
-                .TurnOn()
-                .Execute();
+           .Entity("binary_sensor.pir")
+           .WhenStateChange("on")
+           .UseEntity("light.correct_entity")
+           .TurnOn()
+           .Execute();
 
+
+            AddChangedEvent("binary_sensor.pir", "off", "on");
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
             VerifyCallServiceTimes("turn_on", Times.Exactly(2));
             VerifyCallServiceTuple("light", "turn_on",
                 ("entity_id", "light.correct_entity"));
@@ -142,7 +143,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -151,6 +151,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -162,7 +163,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -171,6 +171,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -183,7 +184,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
 
             // Fake the
@@ -199,6 +199,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -211,7 +212,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -227,6 +227,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOff()
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -240,7 +241,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -249,6 +249,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .WithAttribute("transition", 0)
                 .Execute();
+
+            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -263,7 +265,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var triggered = false;
 
@@ -277,6 +278,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
                     return Task.CompletedTask;
                 })
                 .Execute();
+
+            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
@@ -288,7 +291,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "off");
 
             var triggered = false;
 
@@ -302,6 +304,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
                     return Task.CompletedTask;
                 })
                 .Execute();
+
+            AddChangedEvent("binary_sensor.pir", "off", "off");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -314,7 +318,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "off");
 
             var triggered = false;
 
@@ -329,6 +332,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 })
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "off");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.True(triggered);
@@ -548,7 +552,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             string? actualToState = "";
             string? actualFromState = "";
@@ -563,6 +566,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                     return Task.CompletedTask;
                 }).Execute();
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.Equal("on", actualToState);
@@ -573,9 +577,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         [Fact]
         public async Task EntityOnStateTriggerScript()
         {
-            await InitializeFakeDaemon().ConfigureAwait(false);
             // ARRANGE
-            AddChangedEvent("binary_sensor.pir", "on", "off");
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
             DefaultDaemonApp
@@ -584,6 +587,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .RunScript("thescript")
                 .Execute();
 
+            AddChangedEvent("binary_sensor.pir", "on", "off");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallService("script", "thescript", false);
@@ -787,14 +791,13 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityDelayUntilStateChangeShouldReturnTrue()
         {
             // ARRANGE
-
             await InitializeFakeDaemon().ConfigureAwait(false);
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var delayResult = DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange(to: "on");
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.True(delayResult.Task.IsCompletedSuccessfully);
@@ -807,12 +810,12 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var delayResult = DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange((to, _) => to?.State == "on");
 
+            AddChangedEvent("binary_sensor.pir", "off", "on");
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.True(delayResult.Task.IsCompletedSuccessfully);
