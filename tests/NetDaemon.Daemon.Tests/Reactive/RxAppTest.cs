@@ -402,7 +402,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         [Fact]
         public async Task WhenStateStaysSameForTimeItShouldCallFunction()
         {
-            await FakeDaemonInit(300).ConfigureAwait(false);
+            await FakeDaemonInit(500).ConfigureAwait(false);
 
             bool isRun = false;
             using var ctx = DefaultDaemonRxApp.StateChanges
