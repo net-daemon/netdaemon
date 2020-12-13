@@ -25,7 +25,10 @@ namespace NetDaemon.Daemon.Fakes
         private readonly HttpHandlerMock _defaultHttpHandlerMock;
         private readonly LoggerMock _loggerMock;
 
-        internal DaemonHostTestBase()
+        /// <summary>
+        ///     Default contructor
+        /// </summary>
+        public DaemonHostTestBase()
         {
             _loggerMock = new LoggerMock();
             _defaultHassClientMock = HassClientMock.DefaultMock;
