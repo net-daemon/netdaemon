@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task ARunTimeErrorShouldLogError()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             App
                 .Entity("binary_sensor.pir")
@@ -42,7 +42,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
@@ -51,7 +51,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task MissingEntityShouldNotLogError()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             App
                 .Entity("binary_sensor.pir")
@@ -63,7 +63,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
         }
@@ -72,7 +72,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task MissingEntityShouldNotLogErrorAndNotBreakOtherApps()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             bool eventRun = false, event2Run = false;
 
@@ -102,7 +102,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
             Assert.True(eventRun);
@@ -114,7 +114,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task ARunTimeErrorShouldNotBreakOtherApps()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             bool eventRun = false, event2Run = false;
 
@@ -144,7 +144,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
@@ -156,7 +156,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task ARunTimeErrorInAttributeSelectorShouldNotBreakOtherApps()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             bool eventRun = false, event2Run = false;
 
@@ -187,7 +187,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             AddDefaultEvent();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
@@ -200,7 +200,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task ToUnavailableShouldNotBreak()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             bool eventRun = false, event2Run = false;
 
@@ -231,7 +231,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             AddEventFakeGoingUnavailable();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
             Assert.False(eventRun);
@@ -243,7 +243,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task FromUnavailableShouldNotBreak()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             bool eventRun = false, event2Run = false;
 
@@ -274,7 +274,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             AddEventFakeFromUnavailable();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
             Assert.False(eventRun);

@@ -195,13 +195,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task RunInFailureShouldLogError()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => throw new Exception("RxError"));
 
             // ASSERT
             await Task.Delay(150);
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
 
@@ -210,7 +210,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             var called = false;
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => called = true);
@@ -220,7 +220,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await Task.Delay(150);
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             Assert.True(called);
         }
     }

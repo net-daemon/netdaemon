@@ -29,7 +29,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task ARunTimeErrorShouldLogError()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             App
                 .Entity("binary_sensor.pir")
@@ -43,7 +43,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
@@ -52,7 +52,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task ARunTimeErrorShouldNotBreakOtherApps()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             bool eventRun = false;
             App
                 .Entity("binary_sensor.pir")
@@ -76,7 +76,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
@@ -87,7 +87,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task MissingAttributeShouldNotBreakOtherApps()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             bool eventRun = false;
             App
                 .Entities(e => e.Attribute!.does_not_exist == "yay")
@@ -111,7 +111,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
@@ -122,7 +122,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task MissingEntityShouldNotBreakOtherApps()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             bool eventRun = false;
             App
                 .Entity("binary_sensor.pir")
@@ -146,7 +146,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.True(eventRun);
 

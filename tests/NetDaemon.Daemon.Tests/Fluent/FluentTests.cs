@@ -32,7 +32,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             var lastChanged = new DateTime(2020, 1, 1, 1, 1, 1, 20);
             var lastUpdated = new DateTime(2020, 1, 1, 1, 1, 1, 50);
 
-            await FakeDaemonInit(300).ConfigureAwait(false);
+            await InitializeFakeDaemon(300).ConfigureAwait(false);
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -50,14 +50,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
             VerifyCallServiceTimes("turn_off", Times.Never());
             await Task.Delay(300); // After 30ms we should have call
             VerifyCallServiceTimes("turn_off", Times.Once());
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
         }
 
         [Fact]
         public async Task EntityOnStateChangedLamdaTurnOnLightCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
@@ -67,7 +67,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.correct_entity"));
@@ -77,7 +77,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedLamdaWithMultipleEntitiesCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var MotionEnabled = true;
@@ -89,7 +89,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Toggle()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("toggle", Times.Once());
             VerifyCallServiceTuple("light", "toggle", ("entity_id", "light.correct_entity"));
@@ -99,7 +99,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task OneEntityWithSeveralShouldCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
@@ -109,7 +109,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Toggle()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("toggle", Times.Once());
             VerifyCallServiceTuple("light", "toggle", ("entity_id", "light.correct_entity"));
@@ -119,7 +119,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedMultipleTimesCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             AddChangedEvent("binary_sensor.pir", "off", "on");
             AddChangedEvent("binary_sensor.pir", "off", "on");
@@ -131,7 +131,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             VerifyCallServiceTimes("turn_on", Times.Exactly(2));
             VerifyCallServiceTuple("light", "turn_on",
                 ("entity_id", "light.correct_entity"));
@@ -141,7 +141,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedTurnOnLightCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
@@ -151,7 +151,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.correct_entity"));
@@ -161,7 +161,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedEntitiesTurnOnLightCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
@@ -171,7 +171,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.correct_entity"));
@@ -181,7 +181,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedEntitiesLambdaTurnOnLightCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -199,7 +199,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.correct_entity"));
@@ -209,7 +209,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedTurnOnLightCallsCorrectServiceCallButNoTurnOff()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -227,7 +227,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOff()
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.correct_entity"));
@@ -239,7 +239,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateChangedTurnOnLightWithAttributesCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             DefaultDaemonApp
@@ -250,7 +250,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .WithAttribute("transition", 0)
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on",
@@ -262,7 +262,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateDefaultTriggerOnAnyStateChange()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var triggered = false;
@@ -278,7 +278,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 })
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.True(triggered);
         }
@@ -287,7 +287,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateNotTriggerOnSameState()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "off");
 
             var triggered = false;
@@ -303,7 +303,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 })
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
             Assert.False(triggered);
@@ -313,7 +313,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateIncludeAttributesTriggerOnSameState()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "off");
 
             var triggered = false;
@@ -329,7 +329,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 })
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.True(triggered);
         }
@@ -388,7 +388,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOffEntityLambdaAttributeSelectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
             await DefaultDaemonApp
@@ -403,7 +403,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             VerifyCallServiceTuple("light", "turn_off", ("entity_id", "light.correct_entity2"));
             VerifyCallServiceTuple("switch", "turn_off", ("entity_id", "switch.correct_entity"));
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
         }
 
         [Fact]
@@ -425,7 +425,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOffEntityLamdaSelectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entities(n => n.EntityId.StartsWith("light.correct_entity"))
@@ -438,7 +438,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             VerifyCallServiceTuple("light", "turn_off", ("entity_id", "light.correct_entity"));
             VerifyCallServiceTuple("light", "turn_off", ("entity_id", "light.correct_entity2"));
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
         }
 
         [Fact]
@@ -547,7 +547,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityOnStateCallFunction()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             string? actualToState = "";
@@ -563,7 +563,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                     return Task.CompletedTask;
                 }).Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.Equal("on", actualToState);
             Assert.Equal("off", actualFromState);
@@ -573,7 +573,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         [Fact]
         public async Task EntityOnStateTriggerScript()
         {
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ARRANGE
             AddChangedEvent("binary_sensor.pir", "on", "off");
 
@@ -584,7 +584,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .RunScript("thescript")
                 .Execute();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             VerifyCallService("script", "thescript", false);
             // Verify(n => n.CallService("script", "thescript", It.IsAny<object>(), false));
@@ -593,7 +593,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         [Fact]
         public async Task SpeakCallsCorrectServiceCall()
         {
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ARRANGE
             DefaultDaemonHost.InternalDelayTimeForTts = 0; // For testing
 
@@ -614,7 +614,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             VerifyCallService("tts", "google_cloud_say", expObject, true);
             // Verify(n => n.CallService("tts", "google_cloud_say", expObject, true));
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
         }
 
         [Fact]
@@ -788,14 +788,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
 
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
             var delayResult = DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange(to: "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.True(delayResult.Task.IsCompletedSuccessfully);
             Assert.True(delayResult.Task.Result);
@@ -805,7 +805,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityDelayUntilStateChangeLamdaShouldReturnTrue()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -813,7 +813,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange((to, _) => to?.State == "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.True(delayResult.Task.IsCompletedSuccessfully);
             Assert.True(delayResult.Task.Result);
@@ -823,7 +823,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task EntityInAreaOnStateChangedTurnOnLight()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // Fake the state
             SetEntityState("light.ligth_in_area", area: "Area");
@@ -839,7 +839,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // light.light_in_area is setup so it has area = Area
             AddChangedEvent("light.ligth_in_area", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -851,7 +851,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
 
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // Fake the state
             SetEntityState("light.ligth_in_area", area: "Area");
@@ -867,7 +867,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // light.light_in_area is setup so it has area = Area
             AddChangedEvent("binary_sensor.pir", "off", "on");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             VerifyCallServiceTimes("turn_on", Times.Once());
             VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.ligth_in_area"));
@@ -877,13 +877,13 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task RunScriptShouldCallCorrectService()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
             await DefaultDaemonApp.RunScript("testscript").ExecuteAsync();
             await DefaultDaemonApp.RunScript("script.testscript").ExecuteAsync();
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             VerifyCallServiceTimes("testscript", Times.Exactly(2));
         }
@@ -892,12 +892,12 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task SendEventShouldCallCorrectService()
         {
             // ARRANGE
-            await FakeDaemonInit().ConfigureAwait(false);
+            await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
             await DefaultDaemonApp.SendEvent("myevent");
 
-            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             VerifyEventSent("myevent");
         }

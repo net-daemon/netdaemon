@@ -358,7 +358,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="timeout">Timeout (ms) of how long fake daemon will stay connected and process events</param>
         /// <param name="overrideDebugNotCancel">True if running debug mode should not cancel on timeout</param>
-        protected async Task FakeDaemonInit(short timeout = 300, bool overrideDebugNotCancel = false)
+        protected async Task InitializeFakeDaemon(short timeout = 300, bool overrideDebugNotCancel = false)
         {
             _fakeConnectedDaemon = await GetConnectedNetDaemonTask(timeout, overrideDebugNotCancel);
         }
@@ -367,7 +367,7 @@ namespace NetDaemon.Daemon.Fakes
         /// 
         /// </summary>
         /// <returns></returns>
-        protected async Task FakeRunDaemonCoreUntilTimeout()
+        protected async Task RunFakeDaemonUntilTimeout()
         {
             _ = _fakeConnectedDaemon ??
                 throw new NullReferenceException("No task to process, did you forget to run InitFakeDaemon at the beginning of the test?");
