@@ -3,6 +3,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Client;
 using Moq;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
@@ -461,6 +462,43 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // Verify that netdaemon called light.turn_on 
             VerifyCallService("light", "turn_on", "light.kitchen");
+        }
+
+
+        [Fact]
+        public async Task TestFakeAppCallNoteWhenBatteryLevelBelowValue()
+        {
+            // Add the app to test
+            await AddAppInstance(new FakeApp());
+
+            // Init NetDaemon core runtime
+            await FakeDaemonInit().ConfigureAwait(false);
+
+            // Fake a changed event from en entity
+            AddChangeEvent(new()
+            {
+                EntityId = "sensor.temperature",
+                State = 10.0,
+                Attributes = new()
+                {
+                    ["battery_level"] = 18.2
+                }
+            }
+            , new()
+            {
+                EntityId = "sensor.temperature",
+                State = 10.0,
+                Attributes = new()
+                {
+                    ["battery_level"] = 12.0
+                }
+            });
+
+            // Run the NetDemon Core to process the messages
+            await FakeRunDaemonCoreUntilTimeout().ConfigureAwait(false);
+
+            // Verify that netdaemon called light.turn_on 
+            VerifyCallService("notify", "notify", new { title = "Hello from Home Assistant" });
         }
     }
 }

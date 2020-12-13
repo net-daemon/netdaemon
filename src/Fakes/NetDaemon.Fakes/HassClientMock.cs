@@ -217,6 +217,25 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
+        ///     Adds a changed event for entity
+        /// </summary>
+        /// <param name="fromState">The from state advanced details</param>
+        /// <param name="toState">The to state advanced details</param>
+        public void AddChangeEventFull(HassState? fromState, HassState? toState)
+        {
+            FakeEvents.Enqueue(new HassEvent
+            {
+                EventType = "state_changed",
+                Data = new HassStateChangedEventData
+                {
+                    EntityId = toState?.EntityId ?? fromState?.EntityId ?? "",
+                    NewState = toState,
+                    OldState = fromState
+                },
+            });
+        }
+
+        /// <summary>
         ///     Adds a custom event
         /// </summary>
         /// <param name="eventType">Type of event</param>

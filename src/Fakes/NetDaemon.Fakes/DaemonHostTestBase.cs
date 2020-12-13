@@ -164,10 +164,11 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Adds a full home assistant fake event
         /// </summary>
-        /// <param name="hassEvent">Event to fake</param>
-        public void AddChangedEvent(HassEvent hassEvent)
+        /// <param name="fromState"></param>
+        /// <param name="toState"></param>
+        public void AddChangeEvent(HassState? fromState, HassState? toState)
         {
-            DefaultHassClientMock.FakeEvents.Enqueue(hassEvent);
+            DefaultHassClientMock.AddChangeEventFull(fromState, toState);
         }
 
         /// <summary>

@@ -18,6 +18,14 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 {
                     Entity("light.kitchen").TurnOn();
                 });
+
+            Entity("sensor.temperature")
+                .StateAllChanges
+                .Where(e => e.New?.Attribute?.battery_level < 15)
+                .Subscribe(s =>
+                {
+                    this.CallService("notify", "notify", new { title = "Hello from Home Assistant" });
+                });
         }
     }
 }
