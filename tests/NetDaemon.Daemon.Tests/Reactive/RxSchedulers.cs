@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Reactive
@@ -13,7 +14,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
     ///     Mainly the tests checks if correct underlying call to "CallService"
     ///     has been made.
     /// </remarks>
-    public class RxSchedulerTest : DaemonHostTestBase
+    public class RxSchedulerTest : CoreDaemonHostTestBase
     {
         public RxSchedulerTest() : base()
         {
@@ -155,7 +156,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<FormatException>(() =>
-             DefaultMockedRxApp.Object.RunEveryHour("no good input", () => System.Console.WriteLine("Test")));
+            DefaultMockedRxApp.Object.RunEveryHour("no good input", () => System.Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -194,13 +195,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task RunInFailureShouldLogError()
         {
             // ARRANGE
-            var daemonTask = await GetConnectedNetDaemonTask(160);
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => throw new Exception("RxError"));
 
             // ASSERT
             await Task.Delay(150);
-            await daemonTask;
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
 
@@ -209,7 +210,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             var called = false;
-            var daemonTask = await GetConnectedNetDaemonTask(160);
+            await InitializeFakeDaemon().ConfigureAwait(false);
+
             // ACT
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => called = true);
 
@@ -218,7 +220,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             await Task.Delay(150);
 
-            await daemonTask.ConfigureAwait(false);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             Assert.True(called);
         }
     }

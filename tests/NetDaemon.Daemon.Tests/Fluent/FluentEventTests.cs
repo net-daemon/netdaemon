@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Threading.Tasks;
 using Moq;
+using NetDaemon.Daemon.Fakes;
 using NetDaemon.Daemon.Storage;
 using Xunit;
 

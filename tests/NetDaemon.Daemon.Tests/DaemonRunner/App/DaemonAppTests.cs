@@ -12,6 +12,7 @@ using NetDaemon.Common.Fluent;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
 using Xunit;
+using NetDaemon.Daemon.Fakes;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 {

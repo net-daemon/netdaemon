@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NetDaemon.Common;
 using Xunit;
+using NetDaemon.Daemon.Fakes;
 
 namespace NetDaemon.Daemon.Tests
 {
