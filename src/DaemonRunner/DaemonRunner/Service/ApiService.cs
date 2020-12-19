@@ -47,15 +47,6 @@ namespace NetDaemon.Service
             services.AddTransient<IHttpHandler, NetDaemon.Daemon.HttpHandler>();
             services.AddSingleton<NetDaemonHost>();
             services.AddHttpClient();
-
-
-            if (_useAdmin == true)
-            {
-                // Only enable them if use addmin
-                // services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
-                // services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
-                // services.AddRouting();
-            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
