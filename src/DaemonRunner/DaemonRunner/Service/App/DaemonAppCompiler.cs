@@ -16,10 +16,13 @@ namespace NetDaemon.Service.App
         private readonly ILogger<DaemonAppCompiler> _logger;
         private readonly IOptions<NetDaemonSettings> _netDaemonSettings;
 
+        private string? _sourceFolder = null;
         public DaemonAppCompiler(ILogger<DaemonAppCompiler> logger, IOptions<NetDaemonSettings> netDaemonSettings)
         {
             _logger = logger;
             _netDaemonSettings = netDaemonSettings;
+            _sourceFolder = netDaemonSettings.Value.GetAppSourceDirectory();
+
         }
 
         public IEnumerable<Type> GetApps()
@@ -29,7 +32,7 @@ namespace NetDaemon.Service.App
             var apps = assembly.GetTypesWhereSubclassOf<NetDaemonAppBase>();
 
             if (!apps.Any())
-                _logger.LogWarning("No .cs files found, please add files to {sourceFolder}/apps", _netDaemonSettings.Value.SourceFolder);
+                _logger.LogWarning("No .cs files found, please add files to {sourceFolder}", _sourceFolder);
             else
                 _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count());
 
@@ -39,8 +42,7 @@ namespace NetDaemon.Service.App
         public Assembly Load()
         {
             CollectibleAssemblyLoadContext alc;
-            var appFolder = Path.Combine(_netDaemonSettings.Value.SourceFolder!, "apps");
-            return DaemonCompiler.GetCompiledAppAssembly(out alc, appFolder!, _logger);
+            return DaemonCompiler.GetCompiledAppAssembly(out alc, _sourceFolder!, _logger);
         }
     }
 }

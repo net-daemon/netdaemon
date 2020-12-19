@@ -45,12 +45,14 @@ namespace NetDaemon
         /// </summary>
         private static bool BypassLocalAssemblyLoading()
         {
-            var value = Environment.GetEnvironmentVariable("HASS_DISABLE_LOCAL_ASM");
-            if (bool.TryParse(value, out var result))
-            {
-                return result;
-            }
-            return false;
+
+            var appSource = Environment.GetEnvironmentVariable("NETDAEMON__APPSOURCE") ??
+                throw new NullReferenceException("NETDAEMON__APPSOURCE cannot be null!");
+
+            if (appSource.EndsWith(".csproj") || appSource.EndsWith(".dll"))
+                return false;
+            else
+                return true;
         }
     }
 }

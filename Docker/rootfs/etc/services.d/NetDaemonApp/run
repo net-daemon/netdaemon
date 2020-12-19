@@ -1,26 +1,77 @@
 #!/usr/bin/with-contenv bash
 echo "Starting NetDaemon Runner"
 
-declare runtype="Service"
+declare runtype="Service.dll"
 declare daemondir="/daemon"
-declare custom_daemondir="/custom_daemon"
+declare is_custom_app_source=false
+declare is_project=false
+
 if [ ! -d "/data" ]; then
     echo -e "\\033[31mMissing mapping to apps, please map '/data' to your apps folder\\033[0m" >&2
     exit 1
 fi
 
-if [ -z "${NETDAEMON__PROJECTFOLDER}" ]; then
-    echo -e "\\033[32mRunning pre-compiled NetDaemon...\\033[0m" >&2
-    cd "${daemondir}"
-    exec "./${runtype}"
-else
-    echo -e "\\033[32mRun the custom project provided...\\033[0m" >&2
-    cd "${NETDAEMON__PROJECTFOLDER}" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+if [[ "${NETDAEMON__APPSOURCE}" == *.csproj ]] || [[ "${NETDAEMON__APPSOURCE}" == *.dll ]]; 
+then 
+    # make path relative /data if not hardcode
+    if [[ "${NETDAEMON__APPSOURCE}" != /* ]];
+    then
+        export NETDAEMON__APPSOURCE="/data/${NETDAEMON__APPSOURCE}"
+    fi 
 
-    if [[ "${PWD}" != "${NETDAEMON__PROJECTFOLDER}" ]]; then
+    # The provided application source is ether a project or pre-compiled .Net application
+    if [ ! -f ${NETDAEMON__APPSOURCE} ] && [ ! -d ${NETDAEMON__APPSOURCE} ];
+    then
+        
+        echo -e "\\033[31mThe executable or project ${NETDAEMON__APPSOURCE} cannot be found. Please check the settings.\\033[0m" >&2
+        exit 1
+    fi
+
+    if [[ "${NETDAEMON__APPSOURCE}" == *.csproj ]];
+    then
+        is_project=true
+    fi
+
+    if [ -z "${NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE}" ] || [[ "${NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE}" != true ]];
+    then
+        echo -e "\\033[33mWarning: you are using a custom daemon, this can potentially be unsecure. Please review your security." \
+        "To remove this warning, set NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE=false \033[0m" >&2
+    fi            
+    is_custom_app_source=true
+fi
+
+if  [[ $is_custom_app_source == false ]]; then
+    echo -e "\\033[32mRunning pre-compiled NetDaemon...\\033[0m" >&2
+    # This is a hack that makes the current behavor backwards compatible
+    # if there is a "apps" folder use that or any kind of project
+    # structure will mess it up
+    dir "/data"
+    if [ -d "/data/apps" ];
+    then
+        export NETDAEMON__APPSOURCE="/data/apps"
+        echo -e "\\033[32mFound apps folder, using ${NETDAEMON__APPSOURCE}...\\033[0m" >&2
+    fi
+
+    cd "${daemondir}"
+    dotnet Service.dll
+else 
+    # We allow for custom projects and solutions to be used
+    echo -e "\\033[32mRun the custom daemon at ${NETDAEMON__APPSOURCE}..\\033[0m" >&2
+    cd "$(dirname "${NETDAEMON__APPSOURCE}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+
+    if [[ "${PWD}" != "$(dirname "${NETDAEMON__APPSOURCE}")" ]]; then
         echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
         exit 1
     fi
-    
-    dotnet run -c Release
+
+    if [[ $is_project == true ]];
+    then
+        echo -e "\\033[32mPlease wait while restore, compile and run custom project...\\033[0m" >&2
+        dotnet run -v m -c Release -p "$(basename "${NETDAEMON__APPSOURCE}")"
+    else
+        echo -e "\\033[32m Running custom pre-compiled daemon...\\033[0m" >&2
+
+        dotnet "$(basename "${NETDAEMON__APPSOURCE}")"
+    fi
 fi
+

@@ -30,4 +30,4 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TEST=AK
 
 # We do not load local assemblies
-ENV HASS_DISABLE_LOCAL_ASM=true
+ENV NETDAEMON__APPSOURCE=/workspaces/netdaemon/exampleapps

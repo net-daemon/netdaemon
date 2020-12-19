@@ -20,9 +20,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
         public string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
 
-        public IOptions<NetDaemonSettings> CreateSettings(string sourcePath) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        public IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
         {
-            SourceFolder = sourcePath
+            AppSource = appSource
         });
 
         [Fact]

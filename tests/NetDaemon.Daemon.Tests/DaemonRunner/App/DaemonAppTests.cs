@@ -28,9 +28,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
         public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
 
-        public IOptions<NetDaemonSettings> CreateSettings(string sourcePath) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        public IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
         {
-            SourceFolder = sourcePath
+            AppSource = appSource
         });
 
 

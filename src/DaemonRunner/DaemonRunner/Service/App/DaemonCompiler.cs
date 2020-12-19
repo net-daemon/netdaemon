@@ -48,7 +48,7 @@ namespace NetDaemon.Service.App
             else if (string.IsNullOrEmpty(compileErrorText) == false)
                 logger.LogError(compileErrorText);
             else if (loadedApps.Count == 0)
-                logger.LogWarning("No .cs files files found, please add files to [netdaemonfolder]/apps");
+                logger.LogWarning("No .cs files files found, please add files to netdaemonfolder {codeFolder}", codeFolder);
 
             return (loadedApps, alc);
         }

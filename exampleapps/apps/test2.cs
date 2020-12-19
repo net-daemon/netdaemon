@@ -3,14 +3,14 @@ using System.Linq;
 using System;
 using System.Reactive.Linq;
 using System.Collections.Generic;
-using Netdaemon.Generated.Reactive;
+using NetDaemon.Common.Reactive;
 using NetDaemon.Common;
 
 namespace NStest
 {
 
     /// <summary> cool multiple lines </summary>
-    public class BatteryManager : GeneratedAppBase //NetDaemonRxApp
+    public class BatteryManager : NetDaemonRxApp
                                                    // public class BatteryManager : NetDaemonRxApp 
     {
         // private ISchedulerResult _schedulerResult;

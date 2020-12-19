@@ -51,11 +51,19 @@ static async Task ReadHassioConfig()
         if (hassAddOnSettings?.LogMessages is not null && hassAddOnSettings.LogMessages == true)
             Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
 
-        if (hassAddOnSettings?.ProjectFolder is not null && string.IsNullOrEmpty(hassAddOnSettings.ProjectFolder) == false)
-            Environment.SetEnvironmentVariable("NETDAEMON__PROJECTFOLDER", hassAddOnSettings.ProjectFolder);
+        _ = hassAddOnSettings?.AppSource ??
+            throw new NullReferenceException("AppSource cannot be null");
 
-        // We are in Hassio so hard code the path
-        Environment.SetEnvironmentVariable("NETDAEMON__SOURCEFOLDER", "/config/netdaemon");
+        if (!hassAddOnSettings.AppSource.StartsWith("/") || hassAddOnSettings.AppSource[1] == ':')
+        {
+            // Hard codede path
+            Environment.SetEnvironmentVariable("NETDAEMON__APPSOURCE", hassAddOnSettings.AppSource);
+        }
+        else
+        {
+            // We are in Hassio so hard code the path
+            Environment.SetEnvironmentVariable("NETDAEMON__APPSOURCE", Path.Combine("/config/netdaemon", hassAddOnSettings.AppSource));
+        }
     }
     catch (Exception e)
     {

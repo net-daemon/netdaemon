@@ -35,6 +35,7 @@ namespace NetDaemon.Service
         private bool _entitiesGenerated;
         private IEnumerable<Type>? _loadedDaemonApps;
 
+        private string? _sourcePath = null;
 
         public RunnerService(
             ILoggerFactory loggerFactory,
@@ -69,15 +70,16 @@ namespace NetDaemon.Service
                     return;
                 }
 
-                EnsureApplicationDirectoryExists(_netDaemonSettings);
+                _sourcePath = _netDaemonSettings.GetAppSourceDirectory();
 
-                var sourceFolder = Path.Combine(_netDaemonSettings.SourceFolder!, "apps");
+                // EnsureApplicationDirectoryExists(_netDaemonSettings);
 
-                _logger.LogDebug("Finding apps in {folder}...", sourceFolder);
+
+                _logger.LogDebug("Finding apps in {folder}...", _sourcePath);
 
                 // Automatically create source directories
-                if (!Directory.Exists(sourceFolder))
-                    Directory.CreateDirectory(sourceFolder);
+                if (_sourcePath is string && !Directory.Exists(_sourcePath))
+                    throw new FileNotFoundException("Source path {path} does not exist", _sourcePath);
 
                 var hasConnectedBefore = false;
 
@@ -118,7 +120,8 @@ namespace NetDaemon.Service
                                 try
                                 {
                                     // Generate code if requested
-                                    await GenerateEntities(daemonHost, sourceFolder);
+                                    if (_sourcePath is string)
+                                        await GenerateEntities(daemonHost, _sourcePath);
 
                                     if (_loadedDaemonApps is null)
                                         _loadedDaemonApps = _daemonAppCompiler.GetApps();
@@ -216,13 +219,13 @@ namespace NetDaemon.Service
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx).ConfigureAwait(false);
         }
 
-        private void EnsureApplicationDirectoryExists(NetDaemonSettings settings)
-        {
-            settings.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
-            var appDirectory = Path.Combine(settings.SourceFolder, "apps");
+        // private void EnsureApplicationDirectoryExists(NetDaemonSettings settings)
+        // {
+        //     settings.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
+        //     var appDirectory = Path.Combine(settings.SourceFolder, "apps");
 
-            Directory.CreateDirectory(appDirectory);
-        }
+        //     Directory.CreateDirectory(appDirectory);
+        // }
 
         private async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
