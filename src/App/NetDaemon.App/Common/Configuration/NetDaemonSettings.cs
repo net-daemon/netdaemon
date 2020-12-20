@@ -16,6 +16,7 @@ namespace NetDaemon.Common.Configuration
         ///     If Admin gui would be  used
         /// </summary>
         public bool? Admin { get; set; } = false;
+
         /// <summary>
         ///     Where the apps are found
         /// </summary>

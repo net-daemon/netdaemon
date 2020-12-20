@@ -54,7 +54,7 @@ static async Task ReadHassioConfig()
         _ = hassAddOnSettings?.AppSource ??
             throw new NullReferenceException("AppSource cannot be null");
 
-        if (!hassAddOnSettings.AppSource.StartsWith("/") || hassAddOnSettings.AppSource[1] == ':')
+        if (hassAddOnSettings.AppSource.StartsWith("/") || hassAddOnSettings.AppSource[1] == ':')
         {
             // Hard codede path
             Environment.SetEnvironmentVariable("NETDAEMON__APPSOURCE", hassAddOnSettings.AppSource);
