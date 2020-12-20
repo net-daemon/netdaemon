@@ -33,6 +33,7 @@ FROM mcr.microsoft.com/dotnet/sdk:5.0.100
 RUN apt update && apt install -y \
     nodejs \
     yarn \
+    jq \
     make
 
 COPY ./Docker/rootfs/etc /etc
@@ -49,6 +50,7 @@ COPY --from=netbuilder /daemon /daemon
 
 # Set default values of NetDaemon env
 ENV \
+    S6_KEEP_ENV=1 \
     DOTNET_NOLOGO=true \
     DOTNET_CLI_TELEMETRY_OPTOUT=true \
     HASSCLIENT_MSGLOGLEVEL=Default \

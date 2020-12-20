@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Service
+namespace Service.Infrastructure
 {
     public class HassioConfig
     {

@@ -1,22 +1,43 @@
 #!/usr/bin/with-contenv bash
 echo "Starting NetDaemon Runner"
 
-declare runtype="Service.dll"
 declare daemondir="/daemon"
 declare is_custom_app_source=false
 declare is_project=false
+declare is_addon=false
 
 if [ ! -d "/data" ]; then
     echo -e "\\033[31mMissing mapping to apps, please map '/data' to your apps folder\\033[0m" >&2
     exit 1
 fi
 
+if [ -f "/data/options.json" ]; then
+    echo -e "\\033[31m AddOn found!!.\\033[0m" >&2
+    export NETDAEMON__APPSOURCE=$( jq -r .app_source /data/options.json )
+    is_addon=true
+fi
+
+
 if [[ "${NETDAEMON__APPSOURCE}" == *.csproj ]] || [[ "${NETDAEMON__APPSOURCE}" == *.dll ]]; 
 then 
-    # make path relative /data if not hardcode
+    is_custom_app_source=true
+
+    if [ -z "${NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE}" ] || [[ "${NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE}" != true ]];
+    then
+        echo -e "\\033[33mWarning: you are using a custom daemon, this can potentially be unsecure. Please review your security." \
+        "To remove this warning, set NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE=false \033[0m" >&2
+    fi 
+
+    # make path relative to data folder (/config/netdaemon if addon) 
+    # if the path is a relative path
     if [[ "${NETDAEMON__APPSOURCE}" != /* ]];
     then
-        export NETDAEMON__APPSOURCE="/data/${NETDAEMON__APPSOURCE}"
+        if [[ $is_addon == true ]];
+        then
+            export NETDAEMON__APPSOURCE="/config/netdaemon/${NETDAEMON__APPSOURCE}"
+        else
+            export NETDAEMON__APPSOURCE="/data/${NETDAEMON__APPSOURCE}"
+        fi
     fi 
 
     # The provided application source is ether a project or pre-compiled .Net application
@@ -31,29 +52,21 @@ then
     then
         is_project=true
     fi
-
-    if [ -z "${NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE}" ] || [[ "${NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE}" != true ]];
-    then
-        echo -e "\\033[33mWarning: you are using a custom daemon, this can potentially be unsecure. Please review your security." \
-        "To remove this warning, set NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE=false \033[0m" >&2
-    fi            
-    is_custom_app_source=true
 fi
 
 if  [[ $is_custom_app_source == false ]]; then
-    echo -e "\\033[32mRunning pre-compiled NetDaemon...\\033[0m" >&2
+    echo -e "\\033[32mRunning standard NetDaemon at ${daemondir}...\\033[0m" >&2
     # This is a hack that makes the current behavor backwards compatible
     # if there is a "apps" folder use that or any kind of project
     # structure will mess it up
-    dir "/data"
-    if [ -d "/data/apps" ];
+    if [[ $is_addon == false ]] && [ -d "/data/apps" ];
     then
         export NETDAEMON__APPSOURCE="/data/apps"
         echo -e "\\033[32mFound apps folder, using ${NETDAEMON__APPSOURCE}...\\033[0m" >&2
     fi
 
     cd "${daemondir}"
-    dotnet Service.dll
+    exec dotnet Service.dll
 else 
     # We allow for custom projects and solutions to be used
     echo -e "\\033[32mRun the custom daemon at ${NETDAEMON__APPSOURCE}..\\033[0m" >&2
@@ -67,11 +80,12 @@ else
     if [[ $is_project == true ]];
     then
         echo -e "\\033[32mPlease wait while restore, compile and run custom project...\\033[0m" >&2
-        dotnet run -v m -c Release -p "$(basename "${NETDAEMON__APPSOURCE}")"
+        project="$(basename "${NETDAEMON__APPSOURCE}")"
+        exec dotnet run -v m -c Release -p $project
     else
         echo -e "\\033[32m Running custom pre-compiled daemon...\\033[0m" >&2
-
-        dotnet "$(basename "${NETDAEMON__APPSOURCE}")"
+        runme="$(basename "${NETDAEMON__APPSOURCE}")" 
+        exec dotnet $runme
     fi
 fi
 
