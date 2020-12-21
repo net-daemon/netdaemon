@@ -40,19 +40,13 @@ namespace NetDaemon.Service
             // services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
             services.AddHostedService<RunnerService>();
             services.AddTransient<IHassClient, HassClient>();
-            services.AddTransient<IDataRepository>(n => new DataRepository(Path.Combine(n.GetRequiredService<IOptions<NetDaemonSettings>>().Value.SourceFolder!, ".storage")));
+            services.AddTransient<IDataRepository>(n => new DataRepository(
+                Path.Combine(
+                     n.GetRequiredService<IOptions<NetDaemonSettings>>().Value.GetAppSourceDirectory()
+                    , ".storage")));
             services.AddTransient<IHttpHandler, NetDaemon.Daemon.HttpHandler>();
             services.AddSingleton<NetDaemonHost>();
             services.AddHttpClient();
-
-
-            if (_useAdmin == true)
-            {
-                // Only enable them if use addmin
-                // services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetExecutingAssembly()));
-                // services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
-                // services.AddRouting();
-            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

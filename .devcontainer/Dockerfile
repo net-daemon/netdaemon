@@ -28,6 +28,3 @@ ENV TZ=Europe/Stockholm
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TEST=AK
-
-# We do not load local assemblies
-ENV HASS_DISABLE_LOCAL_ASM=true

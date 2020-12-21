@@ -48,7 +48,7 @@ namespace NetDaemon.Daemon
 
             if (!allConfigFilePaths.Any())
             {
-                _logger.LogWarning("No yaml configuration files found, please add files to [netdaemonfolder]/apps");
+                _logger.LogWarning("No yaml configuration files found, please add yaml configuration to insance apps!");
                 return result;
             }
 

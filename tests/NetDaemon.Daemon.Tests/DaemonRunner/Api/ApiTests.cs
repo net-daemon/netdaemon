@@ -223,8 +223,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
             Assert.NotNull(response);
 
-            Assert.NotNull(response?.DaemonSettings?.ProjectFolder);
-            Assert.NotNull(response?.DaemonSettings?.SourceFolder);
+            Assert.NotNull(response?.DaemonSettings?.AppSource);
 
         }
     }

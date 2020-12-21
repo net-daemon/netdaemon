@@ -23,7 +23,7 @@ namespace NetDaemon.Daemon.Config
 
         public YamlConfig(IOptions<NetDaemonSettings> netDaemonSettings)
         {
-            _configFolder = netDaemonSettings.Value.SourceFolder!;
+            _configFolder = netDaemonSettings.Value.GetAppSourceDirectory();
             _secrets = GetAllSecretsFromPath(_configFolder);
         }
 
