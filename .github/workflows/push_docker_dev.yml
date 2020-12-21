@@ -34,4 +34,4 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon:dev_5
+            --tag netdaemon/netdaemon:dev
