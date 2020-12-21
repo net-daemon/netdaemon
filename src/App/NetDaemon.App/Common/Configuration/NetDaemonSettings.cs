@@ -34,7 +34,7 @@ namespace NetDaemon.Common.Configuration
         /// </summary>
         public string GetAppSourceDirectory()
         {
-            var source = AppSource?.Trim() ?? throw new NullReferenceException("AppSource cannot be null!");
+            var source = AppSource?.Trim() ?? Directory.GetCurrentDirectory();
 
             if (source.EndsWith(".csproj") || source.EndsWith(".dll"))
             {

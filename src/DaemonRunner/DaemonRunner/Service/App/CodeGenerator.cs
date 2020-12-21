@@ -162,15 +162,15 @@ namespace NetDaemon.Service.App
     {{
         public string EntityId => EntityIds.First();
 
-        public string? Area => DaemonRxApp.State(EntityId)?.Area;
+        public string? Area => DaemonRxApp?.State(EntityId)?.Area;
 
-        public dynamic? Attribute => DaemonRxApp.State(EntityId)?.Attribute;
+        public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
         
-        public DateTime LastChanged => DaemonRxApp.State(EntityId).LastChanged;
+        public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
 
-        public DateTime LastUpdated => DaemonRxApp.State(EntityId).LastUpdated;
+        public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
 
-        public dynamic? State => DaemonRxApp.State(EntityId)?.State;
+        public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
 
         public {domain.ToCamelCase()}Entity(INetDaemonReactive daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {{          
@@ -211,7 +211,8 @@ namespace NetDaemon.Service.App
                         else if (data is not null)
                         {{
                             var expObject = ((object)data).ToExpandoObject();
-                            serviceData.CopyFrom(expObject);
+                            if (expObject is not null)
+                                serviceData.CopyFrom(expObject);
                         }}
                         {entityAssignmentStatement}
                         DaemonRxApp.CallService(""{domain}"", ""{s.Service}"", serviceData);

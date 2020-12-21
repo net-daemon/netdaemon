@@ -9,9 +9,8 @@ using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service;
 using NetDaemon.Service.App;
-using NetDaemon.Service.Infrastructure;
 using Serilog;
-using Service.Infrastructure;
+using NetDaemon.Infrastructure.Config;
 
 namespace NetDaemon
 {
@@ -57,7 +56,7 @@ namespace NetDaemon
 
         private static void RegisterNetDaemonAssembly(IServiceCollection services)
         {
-            if (!BypassLocalAssemblyLoading())
+            if (UseLocalAssemblyLoading())
                 services.AddSingleton<IDaemonAppCompiler, LocalDaemonAppCompiler>();
             else
                 services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
@@ -68,16 +67,19 @@ namespace NetDaemon
         ///     This is typically when running in container. When running in dev
         ///     you want the local loading
         /// </summary>
-        private static bool BypassLocalAssemblyLoading()
+        private static bool UseLocalAssemblyLoading()
         {
 
-            var appSource = Environment.GetEnvironmentVariable("NETDAEMON__APPSOURCE") ??
-                throw new NullReferenceException("NETDAEMON__APPSOURCE cannot be null!");
+
+            var appSource = Environment.GetEnvironmentVariable("NETDAEMON__APPSOURCE");
+
+            if (string.IsNullOrEmpty(appSource))
+                return true;
 
             if (appSource.EndsWith(".csproj") || appSource.EndsWith(".dll"))
-                return false;
-            else
                 return true;
+            else
+                return false;
         }
 
         /// <summary>

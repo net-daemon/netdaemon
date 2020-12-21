@@ -5,7 +5,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace NetDaemon.Service.Infrastructure
+namespace NetDaemon.Infrastructure.Config
 {
     internal class NetDaemonTheme : Serilog.Sinks.SystemConsole.Themes.ConsoleTheme
     {
