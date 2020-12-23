@@ -156,12 +156,30 @@ namespace NetDaemon.Common
                 expStore.CopyFrom(obj);
             }
 
+            bool isDisabled = this.Storage.__IsDisabled ?? false;
             var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             var appState = appInfo?.State as string;
-            if (appState == null || (appState != "on" && appState != "off"))
+
+            if (isDisabled)
+            {
+                IsEnabled = false;
+                if (appState != "off")
+                {
+                    dynamic serviceData = new FluentExpandoObject();
+                    serviceData.entity_id = EntityId;
+                    await _daemon.CallServiceAsync("switch", "turn_off", serviceData);
+                }
+                return;
+            }
+            else if (appState == null || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
-                await _daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
+                if (appState != "on")
+                {
+                    dynamic serviceData = new FluentExpandoObject();
+                    serviceData.entity_id = EntityId;
+                    await _daemon.CallServiceAsync("switch", "turn_on", serviceData);
+                }
 
                 return;
             }
@@ -221,7 +239,10 @@ namespace NetDaemon.Common
             return Task.CompletedTask;
         }
 
-        private string GetUniqueIdForStorage() => $"{this.GetType().Name}_{Id}".ToLowerInvariant();
+        /// <summary>
+        ///     Returns unique Id for instance
+        /// </summary>
+        public string GetUniqueIdForStorage() => $"{this.GetType().Name}_{Id}".ToLowerInvariant();
 
         private async Task HandleLazyStorage()
         {
@@ -243,7 +264,10 @@ namespace NetDaemon.Common
                 {
                     break;
                 }
-                catch { }   // Ignore errors in thread
+                catch (Exception e)
+                {
+                    Logger.LogError("Error in storage queue {e}", e);
+                }   // Ignore errors in thread
             }
         }
 
