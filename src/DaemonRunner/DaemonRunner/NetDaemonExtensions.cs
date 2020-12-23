@@ -89,7 +89,10 @@ namespace NetDaemon
                 var hassAddOnSettings = JsonSerializer.Deserialize<HassioConfig>(File.ReadAllBytes(HassioConfigPath));
 
                 if (hassAddOnSettings?.LogLevel is not null)
+                {
+                    Environment.SetEnvironmentVariable("LOGGING__MINIMUMLEVEL", hassAddOnSettings.LogLevel);
                     SerilogConfigurator.SetMinimumLogLevel(hassAddOnSettings.LogLevel);
+                }
 
                 if (hassAddOnSettings?.GenerateEntitiesOnStart is not null)
                     Environment.SetEnvironmentVariable("NETDAEMON__GENERATEENTITIES", hassAddOnSettings.GenerateEntitiesOnStart.ToString());
