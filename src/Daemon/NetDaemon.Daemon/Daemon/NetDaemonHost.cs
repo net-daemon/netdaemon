@@ -1323,7 +1323,8 @@ namespace NetDaemon.Daemon
                         await SetDependentState(depApp.EntityId, state).ConfigureAwait(false);
                     }
                     app.IsEnabled = false;
-                    Logger.LogError("SET APP {app} state = disabled", app.Id);
+                    await PersistAppStateAsync((NetDaemonAppBase)app);
+                    Logger.LogDebug("SET APP {app} state = disabled", app.Id);
                 }
                 else if (state == "on")
                 {
@@ -1338,7 +1339,8 @@ namespace NetDaemon.Daemon
 
                         }
                     }
-                    Logger.LogError("SET APP {app} state = enabled", app.Id);
+                    await PersistAppStateAsync((NetDaemonAppBase)app);
+                    Logger.LogDebug("SET APP {app} state = enabled", app.Id);
                 }
             }
 
@@ -1355,6 +1357,18 @@ namespace NetDaemon.Daemon
                 await SetStateAsync(entityId, state).ConfigureAwait(false);
 
         }
+
+        //TODO: Refactor this
+        private async Task PersistAppStateAsync(NetDaemonAppBase app)
+        {
+
+            var obj = await GetDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage()).ConfigureAwait(false) ??
+                new Dictionary<string, object?>();
+
+            obj["__IsDisabled"] = !app.IsEnabled;
+            await SaveDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage(), obj);
+        }
+
         private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
         {
             try
