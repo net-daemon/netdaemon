@@ -1,0 +1,17 @@
+﻿{
+    "Logging": {
+        "ConsoleThemeType": "System"
+    },
+    "NetDaemon": {
+        "Admin": false,
+        "ProjectFolder": "",
+        "SourceFolder": "",
+        "GenerateEntities": false
+    },
+    "HomeAssistant": {
+        "Host": "HOME_ASSISTANT_IP",
+        "Port": 8123,
+        "Ssl": false,
+        "Token": "TOKEN"
+    }
+}
