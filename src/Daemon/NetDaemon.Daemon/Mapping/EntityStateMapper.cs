@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using JoySoftware.HomeAssistant.Client;
+using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Common;
 
 namespace NetDaemon.Mapping
@@ -45,7 +46,7 @@ namespace NetDaemon.Mapping
             {
                 if (value is JsonElement elem)
                 {
-                    var dynValue = elem.ToDynamicValue();
+                    var dynValue = elem.ConvertToDynamicValue();
 
                     if (dynValue != null)
                         dict[key] = dynValue;

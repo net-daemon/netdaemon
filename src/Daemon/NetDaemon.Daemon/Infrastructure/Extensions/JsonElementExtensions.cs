@@ -6,7 +6,7 @@ namespace NetDaemon.Infrastructure.Extensions
 {
     internal static class JsonElementExtensions
     {
-        public static object? ToDynamicValue(this JsonElement elem)
+        public static object? ConvertToDynamicValue(this JsonElement elem)
         {
             switch (elem.ValueKind)
             {
@@ -31,7 +31,7 @@ namespace NetDaemon.Infrastructure.Extensions
                     var list = new List<object?>();
                     foreach (var val in elem.EnumerateArray())
                     {
-                        list.Add(val.ToDynamicValue());
+                        list.Add(val.ConvertToDynamicValue());
                     }
                     return (IEnumerable<object?>)list;
 
@@ -40,7 +40,7 @@ namespace NetDaemon.Infrastructure.Extensions
 
                     foreach (var prop in elem.EnumerateObject())
                     {
-                        obj[prop.Name] = prop.Value.ToDynamicValue();
+                        obj[prop.Name] = prop.Value.ConvertToDynamicValue();
                     }
                     return (IDictionary<string, object?>)obj;
             }
