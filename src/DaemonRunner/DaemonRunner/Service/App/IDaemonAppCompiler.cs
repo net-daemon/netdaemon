@@ -12,6 +12,5 @@ namespace NetDaemon.Service.App
         /// <returns></returns>
         [Obsolete("Only exists while migrating the world to IOC.")]
         IEnumerable<Type> GetApps();
-        Assembly Load();
     }
 }

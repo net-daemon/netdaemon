@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
+    <ProjectReference Include="..\DevelopmentApps\NetDaemon.DevelopmentApps.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,12 +23,5 @@
     <None Update="appsettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="apps\DebugApp.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="_appsettings.Development.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
-
 </Project>

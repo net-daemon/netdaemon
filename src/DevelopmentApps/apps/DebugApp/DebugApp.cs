@@ -1,12 +1,8 @@
-using System.Threading.Tasks;
-using System.Linq;
 using System;
-using System.Reactive.Linq;
-using System.Collections.Generic;
-using NetDaemon.Common.Reactive;
 using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
 
-namespace Debug
+namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
 
     /// <summary> Use this class as startingpoint for debugging </summary>
@@ -15,7 +11,7 @@ namespace Debug
 
         public override void Initialize()
         {
-            RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello world!"));
+            RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello developer!"));
         }
 
         [HomeAssistantServiceCall]
