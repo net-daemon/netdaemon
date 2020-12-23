@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Infrastructure.Extensions;
@@ -20,9 +22,9 @@ namespace NetDaemon.Service.App
         public IEnumerable<Type> GetApps()
         {
             _logger.LogDebug("Loading local assembly apps...");
-            var assembly = Load();
-
-            var apps = assembly.GetTypesWhereSubclassOf<NetDaemonAppBase>();
+            
+            var assemblies = LoadAll();
+            var apps = assemblies.SelectMany(x => x.GetTypesWhereSubclassOf<NetDaemonAppBase>()).ToList();
 
             if (!apps.Any())
                 _logger.LogWarning("No local daemon apps found.");
@@ -32,9 +34,24 @@ namespace NetDaemon.Service.App
             return apps;
         }
 
-        public Assembly Load()
+        private IEnumerable<Assembly> LoadAll()
         {
-            return Assembly.GetEntryAssembly()!;
+            var binFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location)!;
+            var netDaemonDlls = Directory.GetFiles(binFolder, "NetDaemon.*.dll");
+
+            var alreadyLoadedAssemblies = AssemblyLoadContext.Default.Assemblies
+                .Where(x => !x.IsDynamic)
+                .Select(x => x.Location)
+                .ToList();
+
+            var netDaemonDllsToLoadDynamically = netDaemonDlls.Except(alreadyLoadedAssemblies);
+
+            foreach (var netDaemonDllToLoadDynamically in netDaemonDllsToLoadDynamically)
+            {
+                AssemblyLoadContext.Default.LoadFromAssemblyPath(netDaemonDllToLoadDynamically);
+            }
+
+            return AssemblyLoadContext.Default.Assemblies;
         }
     }
 }
