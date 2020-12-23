@@ -1,90 +1,41 @@
 ﻿using System.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.SystemConsole.Themes;
 
 namespace NetDaemon.Infrastructure.Config
 {
-    internal class NetDaemonTheme : Serilog.Sinks.SystemConsole.Themes.ConsoleTheme
-    {
-        public override bool CanBuffer => false;
-
-        protected override int ResetCharCount => 0;
-
-        public override bool Equals(object? obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        public override void Reset(TextWriter output)
-        {
-            output.Write("\u001b[0m");
-        }
-
-        public override int Set(TextWriter output, ConsoleThemeStyle style)
-        {
-            string? x = style switch
-            {
-                ConsoleThemeStyle.LevelError => "\u001b[0;31m",
-                ConsoleThemeStyle.Name => "\u001b[1;34m",
-                ConsoleThemeStyle.LevelInformation => "\u001b[0;36m",
-                ConsoleThemeStyle.LevelWarning => "\u001b[1;33m",
-                ConsoleThemeStyle.LevelFatal => "\u001b[0;31m",
-                ConsoleThemeStyle.LevelDebug => "\u001b[0;37m",
-                ConsoleThemeStyle.Scalar => "\u001b[1;34m",
-                ConsoleThemeStyle.String => "\u001b[0;36m",
-                _ => null
-            };
-
-            if (x is not null)
-            {
-                output.Write(x);
-                return x.Length;
-            }
-            return 0;
-        }
-
-        public override string? ToString()
-        {
-            return base.ToString();
-        }
-    }
-
     public static class SerilogConfigurator
     {
         private static readonly LoggingLevelSwitch LevelSwitch = new LoggingLevelSwitch();
 
-        public static LoggerConfiguration Configure()
+        public static LoggerConfiguration Configure(LoggerConfiguration loggerConfiguration, IHostEnvironment hostingEnvironment)
         {
-            var minimumLevel = GetMinimumLogLevel();
+            var loggingConfiguration = GetLoggingConfiguration(hostingEnvironment);
 
-            SetMinimumLogLevel(minimumLevel);
+            SetMinimumLogLevel(loggingConfiguration.MinimumLevel);
 
-            return new LoggerConfiguration()
+            return loggerConfiguration
                 .MinimumLevel.ControlledBy(LevelSwitch)
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(theme: new NetDaemonTheme(), applyThemeToRedirectedOutput: true);
+                .WriteTo.Console(theme: NetDaemonConsoleThemes.GetThemeByType(loggingConfiguration.ConsoleThemeType), applyThemeToRedirectedOutput: true);
         }
 
-        private static string GetMinimumLogLevel()
+        private static LoggingConfiguration GetLoggingConfiguration(IHostEnvironment hostingEnvironment)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
 
-            var logValue = configuration.GetSection("Logging")["MinimumLevel"];
-
-            return string.IsNullOrEmpty(logValue) ? "info" : logValue;
+            var loggingConfiguration = new LoggingConfiguration();
+            configuration.GetSection("Logging").Bind(loggingConfiguration);
+            return loggingConfiguration;
         }
 
         public static void SetMinimumLogLevel(string level)
@@ -99,6 +50,5 @@ namespace NetDaemon.Infrastructure.Config
                 _ => LogEventLevel.Information
             };
         }
-
     }
 }
