@@ -49,3 +49,4 @@ codecover
 ### Jetbrains / Rider ###
 # User-specific files
 .idea/
+appsettings.Development.json

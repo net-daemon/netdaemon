@@ -17,6 +17,7 @@ namespace NetDaemon
     public static class NetDaemonExtensions
     {
         const string HassioConfigPath = "/data/options.json";
+
         public static IHostBuilder UseNetDaemon(this IHostBuilder hostBuilder)
         {
             if (File.Exists(HassioConfigPath))
@@ -30,7 +31,6 @@ namespace NetDaemon
                     services.AddSingleton<IYamlConfig, YamlConfig>();
 
                     RegisterNetDaemonAssembly(services);
-
                 })
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
@@ -41,12 +41,10 @@ namespace NetDaemon
 
         public static IHostBuilder UseDefaultNetDaemonLogging(this IHostBuilder hostBuilder)
         {
-            return hostBuilder
-                .ConfigureWebHostDefaults(webbuilder =>
-                {
-                    Log.Logger = SerilogConfigurator.Configure().CreateLogger();
-                    webbuilder.UseSerilog(Log.Logger);
-                });
+            return hostBuilder.UseSerilog((context, loggerConfiguration) =>
+            {
+                SerilogConfigurator.Configure(loggerConfiguration, context.HostingEnvironment);
+            });
         }
 
         public static void CleanupNetDaemon()
@@ -69,8 +67,6 @@ namespace NetDaemon
         /// </summary>
         private static bool UseLocalAssemblyLoading()
         {
-
-
             var appSource = Environment.GetEnvironmentVariable("NETDAEMON__APPSOURCE");
 
             if (string.IsNullOrEmpty(appSource))
