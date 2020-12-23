@@ -19,7 +19,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("str");
 
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(prop);
+            var obj = JsonElementExtensions.ConvertToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<string>(obj);
@@ -34,7 +34,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("bool");
 
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(prop);
+            var obj = JsonElementExtensions.ConvertToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<bool>(obj);
@@ -49,7 +49,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("bool");
 
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(prop);
+            var obj = JsonElementExtensions.ConvertToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<bool>(obj);
@@ -64,7 +64,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("int");
             long expectedValue = 10;
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(prop);
+            var obj = JsonElementExtensions.ConvertToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<long>(obj);
@@ -79,7 +79,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("int");
             double expectedValue = 10.5;
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(prop);
+            var obj = JsonElementExtensions.ConvertToDynamicValue(prop);
 
             // ASSERT
             Assert.IsType<double>(obj);
@@ -94,7 +94,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var prop = doc.RootElement.GetProperty("array");
 
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(prop);
+            var obj = JsonElementExtensions.ConvertToDynamicValue(prop);
             var arr = obj as IEnumerable<object?>;
 
             // ASSERT
@@ -109,7 +109,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var doc = JsonDocument.Parse("{\"str\": \"string\"}");
 
             // ACT
-            var obj = JsonElementExtensions.ToDynamicValue(doc.RootElement) as IDictionary<string, object?>;
+            var obj = JsonElementExtensions.ConvertToDynamicValue(doc.RootElement) as IDictionary<string, object?>;
 
             // ASSERT
             Assert.Equal("string", obj?["str"]);
