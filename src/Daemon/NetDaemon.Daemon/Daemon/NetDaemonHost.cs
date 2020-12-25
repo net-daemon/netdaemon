@@ -100,7 +100,6 @@ namespace NetDaemon.Daemon
         private CancellationTokenSource? _cancelTokenSource;
         private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
 
-        private bool _stopped;
 
         /// <summary>
         ///     Constructor
@@ -123,7 +122,7 @@ namespace NetDaemon.Daemon
             _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
-            Logger.LogInformation("Instance NetDaemonHost");
+            Logger.LogTrace("Instance NetDaemonHost");
         }
 
         public bool Connected { get; private set; }
@@ -449,7 +448,6 @@ namespace NetDaemon.Daemon
                 await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
                 Connected = true;
-                _stopped = false;
 
                 Logger.LogInformation(
                     hassioToken != null
@@ -611,7 +609,6 @@ namespace NetDaemon.Daemon
 
                 InternalState.Clear();
 
-                _stopped = true;
 
                 Connected = false;
                 await _hassClient.CloseAsync().ConfigureAwait(false);
