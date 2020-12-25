@@ -295,10 +295,13 @@ namespace NetDaemon.Common.Reactive
                         }
                         catch (Exception e)
                         {
-                            LogError(e, "Error, RunEvery APP: {app}", Id ?? "unknown");
+                            LogError(e, "Error, ObservableIntervall APP: {app}", Id ?? "unknown");
                         }
                     },
-                    () => LogTrace("Exiting RunEvery for app {app}, {trigger}:{span}", Id!, timespan)
+                    ex =>
+                    {
+                        LogTrace("Exiting ObservableIntervall for app {app}, {trigger}:{span}", Id!, timespan);
+                    }
                     , result.Token);
 
             return result;

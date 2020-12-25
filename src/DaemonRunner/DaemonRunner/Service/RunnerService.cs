@@ -37,6 +37,8 @@ namespace NetDaemon.Service
 
         private string? _sourcePath = null;
 
+        private bool _hasConnectedBefore = false;
+
         public RunnerService(
             ILoggerFactory loggerFactory,
             IOptions<NetDaemonSettings> netDaemonSettings,
@@ -81,102 +83,14 @@ namespace NetDaemon.Service
                 if (_sourcePath is string && !Directory.Exists(_sourcePath))
                     throw new FileNotFoundException("Source path {path} does not exist", _sourcePath);
 
-                var hasConnectedBefore = false;
+
 
                 _loadedDaemonApps = null;
 
                 await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>()
                     ?? throw new ApplicationException("Failed to get service for NetDaemonHost");
-
-                while (!stoppingToken.IsCancellationRequested)
                 {
-                    try
-                    {
-                        if (hasConnectedBefore)
-                        {
-                            // This is due to re-connect, it must be a re-connect
-                            // so delay before retry connect again
-                            await Task.Delay(ReconnectInterval, stoppingToken).ConfigureAwait(false); // Wait x seconds
-                            _logger.LogInformation($"Restarting NeDaemon (version {Version})...");
-                        }
-
-                        var daemonHostTask = daemonHost.Run(
-                            _homeAssistantSettings.Host,
-                            _homeAssistantSettings.Port,
-                            _homeAssistantSettings.Ssl,
-                            _homeAssistantSettings.Token,
-                            stoppingToken
-                        );
-
-                        if (await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false) == false)
-                        {
-                            continue;
-                        }
-
-                        if (!stoppingToken.IsCancellationRequested)
-                        {
-                            if (daemonHost.Connected)
-                            {
-                                try
-                                {
-                                    // Generate code if requested
-                                    if (_sourcePath is string)
-                                        await GenerateEntities(daemonHost, _sourcePath);
-
-                                    if (_loadedDaemonApps is null)
-                                        _loadedDaemonApps = _daemonAppCompiler.GetApps();
-
-                                    if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
-                                    {
-                                        _logger.LogError("No apps found, exiting...");
-                                        return;
-                                    }
-
-                                    IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
-                                    await daemonHost.Initialize(codeManager).ConfigureAwait(false);
-
-                                    // Wait until daemon stops
-                                    await daemonHostTask.ConfigureAwait(false);
-                                    if (!stoppingToken.IsCancellationRequested)
-                                    {
-                                        // It is disconnected, wait
-                                        // _logger.LogWarning($"Home assistant is unavailable, retrying in {ReconnectInterval / 1000} seconds...");
-                                    }
-                                }
-                                catch (TaskCanceledException)
-                                {
-                                    _logger.LogInformation("Canceling NetDaemon service...");
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.LogError(e, "Failed to load applications");
-                                }
-                            }
-                            else
-                            {
-                                _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {ReconnectInterval / 1000} seconds...");
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        if (!stoppingToken.IsCancellationRequested)
-                        {
-                            _logger.LogWarning($"Home assistant is disconnected, retrying in {ReconnectInterval / 1000} seconds...");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "MAJOR ERROR!");
-                    }
-                    finally
-                    {
-                        await daemonHost.Stop().ConfigureAwait(false);
-                    }
-
-                    // If we reached here it could be a re-connect
-                    hasConnectedBefore = true;
-
+                    await Run(daemonHost, stoppingToken);
                 }
             }
             catch (OperationCanceledException)
@@ -190,6 +104,103 @@ namespace NetDaemon.Service
             _logger.LogInformation("NetDaemon exited!");
         }
 
+        private async Task Run(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    if (_hasConnectedBefore)
+                    {
+                        // This is due to re-connect, it must be a re-connect
+                        // so delay before retry connect again
+                        await Task.Delay(ReconnectInterval, stoppingToken).ConfigureAwait(false); // Wait x seconds
+                        _logger.LogInformation($"Restarting NeDaemon (version {Version})...");
+                    }
+
+                    var daemonHostTask = daemonHost.Run(
+                        _homeAssistantSettings.Host,
+                        _homeAssistantSettings.Port,
+                        _homeAssistantSettings.Ssl,
+                        _homeAssistantSettings.Token,
+                        stoppingToken
+                    );
+
+                    if (await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false) == false)
+                    {
+                        continue;
+                    }
+
+                    if (!stoppingToken.IsCancellationRequested)
+                    {
+                        if (daemonHost.Connected)
+                        {
+                            try
+                            {
+                                // Generate code if requested
+                                if (_sourcePath is string)
+                                    await GenerateEntities(daemonHost, _sourcePath);
+
+                                if (_loadedDaemonApps is null)
+                                    _loadedDaemonApps = _daemonAppCompiler.GetApps();
+
+                                if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
+                                {
+                                    _logger.LogError("No apps found, exiting...");
+                                    return;
+                                }
+
+                                IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
+                                await daemonHost.Initialize(codeManager).ConfigureAwait(false);
+
+                                // Wait until daemon stops
+                                await daemonHostTask.ConfigureAwait(false);
+
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                _logger.LogInformation("Canceling NetDaemon service...");
+                            }
+                            catch (Exception e)
+                            {
+                                _logger.LogError(e, "Failed to load applications");
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Home Assistant Core still unavailable, retrying in {ReconnectInterval / 1000} seconds...");
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    if (!stoppingToken.IsCancellationRequested)
+                    {
+                        _logger.LogWarning($"Home assistant is disconnected, retrying in {ReconnectInterval / 1000} seconds...");
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "MAJOR ERROR!");
+                }
+                finally
+                {
+                    try
+                    {
+                        await daemonHost.Stop().ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError("Error stopping NetDaemonInstance, enable trace level logging for details");
+                        _logger.LogTrace(e, "Error stopping NetDaemonInstance");
+                    }
+                }
+
+                // If we reached here it could be a re-connect
+                _hasConnectedBefore = true;
+
+            }
+        }
         private async Task GenerateEntities(NetDaemonHost daemonHost, string sourceFolder)
         {
             if (!_netDaemonSettings.GenerateEntities.GetValueOrDefault())

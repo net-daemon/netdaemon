@@ -22,7 +22,7 @@ namespace NetDaemon.Service.App
         public IEnumerable<Type> GetApps()
         {
             _logger.LogDebug("Loading local assembly apps...");
-            
+
             var assemblies = LoadAll();
             var apps = assemblies.SelectMany(x => x.GetTypesWhereSubclassOf<NetDaemonAppBase>()).ToList();
 
@@ -48,6 +48,7 @@ namespace NetDaemon.Service.App
 
             foreach (var netDaemonDllToLoadDynamically in netDaemonDllsToLoadDynamically)
             {
+                _logger.LogTrace("Loading {dll} into AssemblyLoadContext", netDaemonDllToLoadDynamically);
                 AssemblyLoadContext.Default.LoadFromAssemblyPath(netDaemonDllToLoadDynamically);
             }
 

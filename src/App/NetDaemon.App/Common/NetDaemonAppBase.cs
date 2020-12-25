@@ -163,27 +163,27 @@ namespace NetDaemon.Common
             if (isDisabled)
             {
                 IsEnabled = false;
-                if (appState != "off")
+                if (appState == "on")
                 {
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
+                    await _daemon.SetStateAsync(EntityId, "off").ConfigureAwait(false);
                     await _daemon.CallServiceAsync("switch", "turn_off", serviceData);
                 }
                 return;
             }
-            else if (appState == null || (appState != "on" && appState != "off"))
+            else
             {
                 IsEnabled = true;
-                if (appState != "on")
+                if (appState == "off")
                 {
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
+                    await _daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
                     await _daemon.CallServiceAsync("switch", "turn_on", serviceData);
                 }
-
                 return;
             }
-            IsEnabled = appState == "on";
         }
 
         /// <inheritdoc/>
@@ -223,7 +223,7 @@ namespace NetDaemon.Common
             _storageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
-            Logger.LogInformation("Startup: {app}", GetUniqueIdForStorage());
+            Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
             var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             var appState = appInfo?.State as string;
