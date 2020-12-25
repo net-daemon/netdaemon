@@ -16,15 +16,17 @@
 		"coverage-gutters.showGutterCoverage": false,
 		"coverage-gutters.showLineCoverage": true,
 	},
-	"remoteEnv": {
-		"HOMEASSISTANT__TOKEN": "${localEnv:HOMEASSISTANT__TOKEN}",
-		"HOMEASSISTANT__HOST": "${localEnv:HOMEASSISTANT__HOST}",
-		"HOMEASSISTANT__PORT": "${localEnv:HOMEASSISTANT__PORT}",
-		"LOGGING__MINIMUMLEVEL": "${localEnv:LOGGING__MINIMUMLEVEL}",
-		"NETDAEMON__GENERATEENTITIES": "${localEnv:NETDAEMON__GENERATEENTITIES}",
-		"NETDAEMON__ADMIN": "${localEnv:NETDAEMON__ADMIN}",
-		"ASPNETCORE_URLS": "${localEnv:ASPNETCORE_URLS}"
-	},
+	// You can uncomment these if you rather have settings in 
+	// Host environment varialbes. 
+	// "remoteEnv": {
+	// 	"HOMEASSISTANT__TOKEN": "${localEnv:HOMEASSISTANT__TOKEN}",
+	// 	"HOMEASSISTANT__HOST": "${localEnv:HOMEASSISTANT__HOST}",
+	// 	"HOMEASSISTANT__PORT": "${localEnv:HOMEASSISTANT__PORT}",
+	// 	"LOGGING__MINIMUMLEVEL": "${localEnv:LOGGING__MINIMUMLEVEL}",
+	// 	"NETDAEMON__GENERATEENTITIES": "${localEnv:NETDAEMON__GENERATEENTITIES}",
+	// 	"NETDAEMON__ADMIN": "${localEnv:NETDAEMON__ADMIN}",
+	// 	"ASPNETCORE_URLS": "${localEnv:ASPNETCORE_URLS}"
+	// },
 	// "postCreateCommand": "dotnet restore && .devcontainer/install_prettyprompt.sh",
 	// Uncomment the next line if you want to publish or forward any ports.
 	"forwardPorts": [

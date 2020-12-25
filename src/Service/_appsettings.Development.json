@@ -1,17 +1,17 @@
 ﻿{
     "Logging": {
+        "MinimumLevel": "Debug",
         "ConsoleThemeType": "System"
+    },
+    "HomeAssistant": {
+        "Host": "ENTER YOUR IP TO Development Home Assistant here",
+        "Port": 8124,
+        "Ssl": false,
+        "Token": "ENTER YOUR TOKEN"
     },
     "NetDaemon": {
         "Admin": false,
-        "ProjectFolder": "",
-        "SourceFolder": "",
-        "GenerateEntities": false
-    },
-    "HomeAssistant": {
-        "Host": "HOME_ASSISTANT_IP",
-        "Port": 8123,
-        "Ssl": false,
-        "Token": "TOKEN"
+        "GenerateEntities": false,
+        "AppSource": "./"
     }
 }

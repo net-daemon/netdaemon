@@ -84,6 +84,7 @@ namespace NetDaemon.Common.Reactive
                 if (_observer is not null)
                 {
                     _observers.TryRemove(_observer, out _);
+                    _observer.OnCompleted();
                 }
                 // System.Console.WriteLine($"Subscribers:{_observers.Count}");
             }

@@ -461,6 +461,17 @@ namespace NetDaemon.Daemon
                     HassEvent changedEvent = await _hassClient.ReadEventAsync(cancellationToken).ConfigureAwait(false);
                     if (changedEvent != null)
                     {
+                        if (changedEvent.Data is HassServiceEventData hseData)
+                        {
+                            if (hseData.Domain == "homeassistant" &&
+                               (hseData.Service == "stop" || hseData.Service == "restart"))
+                            {
+                                // The user stopped HA so just stop processing messages
+                                Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
+                                    hseData.Service == "stop" ? "stopping" : "restarting");
+                                return;
+                            }
+                        }
                         // Remove all completed Tasks
                         _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
                         _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
@@ -474,12 +485,19 @@ namespace NetDaemon.Daemon
             }
             catch (OperationCanceledException)
             {
-                // Normal
+                // Normal operation, ignore and return
             }
             catch (Exception e)
             {
                 Connected = false;
                 Logger.LogError(e, "Error, during operation");
+            }
+            finally
+            {
+                // Set cancel token to avoid background processes
+                // to access disconnected Home Assistant
+                Connected = false;
+                _cancelTokenSource.Cancel();
             }
         }
 
@@ -584,44 +602,37 @@ namespace NetDaemon.Daemon
         {
             try
             {
-                if (_stopped)
-                {
-                    return;
-                }
-                Logger.LogDebug("Try stopping Instance NetDaemonHost");
+                Logger.LogTrace("Try stopping Instance NetDaemonHost");
 
                 await UnloadAllApps().ConfigureAwait(false);
 
                 await _scheduler.Stop().ConfigureAwait(false);
 
-                await _hassClient.CloseAsync().ConfigureAwait(false);
 
                 InternalState.Clear();
 
                 _stopped = true;
 
                 Connected = false;
-
-                Logger.LogInformation("Stopped Instance NetDaemonHost");
+                await _hassClient.CloseAsync().ConfigureAwait(false);
+                Logger.LogTrace("Stopped Instance NetDaemonHost");
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error stopping NetDaemon");
+                Logger.LogError("Error stopping NetDaemon, use trace level for details");
+                Logger.LogTrace(e, "Error stopping NetDaemon");
             }
         }
 
         /// <inheritdoc/>
         public async Task UnloadAllApps()
         {
-            if (_runningAppInstances is null || _runningAppInstances.Count() == 0)
-                return;
-
             foreach (var app in _allAppInstances)
             {
                 await app.Value.DisposeAsync().ConfigureAwait(false);
             }
-            _runningAppInstances.Clear();
             _allAppInstances.Clear();
+            _runningAppInstances.Clear();
         }
 
         /// <summary>
@@ -1228,11 +1239,12 @@ namespace NetDaemon.Daemon
 
             foreach (INetDaemonAppBase appInstance in instancedApps!)
             {
+                _allAppInstances[appInstance.Id!] = appInstance;
                 if (await RestoreAppState(appInstance).ConfigureAwait(false))
                 {
                     _runningAppInstances[appInstance.Id!] = appInstance;
                 }
-                _allAppInstances[appInstance.Id!] = appInstance;
+
             }
 
             // Now run initialize on all sorted by dependencies
