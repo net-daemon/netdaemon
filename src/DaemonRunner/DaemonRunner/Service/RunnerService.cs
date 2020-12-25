@@ -58,7 +58,7 @@ namespace NetDaemon.Service
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Stopping NetDaemon...");
+            _logger.LogInformation("Stopping NetDaemon service...");
             await base.StopAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -66,24 +66,24 @@ namespace NetDaemon.Service
         {
             try
             {
+                _logger.LogInformation($"Starting NeDaemon service (version {Version})...");
+
                 if (_netDaemonSettings == null)
                 {
-                    _logger.LogError("No config specified, file or environment variables! Exiting...");
+                    _logger.LogError("No configuration specified, in appsettings or environment variables! Exiting...");
                     return;
                 }
 
                 _sourcePath = _netDaemonSettings.GetAppSourceDirectory();
 
-                // EnsureApplicationDirectoryExists(_netDaemonSettings);
-
-
-                _logger.LogDebug("Finding apps in {folder}...", _sourcePath);
+                _logger.LogTrace("Finding apps in {folder}...", _sourcePath);
 
                 // Automatically create source directories
                 if (_sourcePath is string && !Directory.Exists(_sourcePath))
-                    throw new FileNotFoundException("Source path {path} does not exist", _sourcePath);
-
-
+                {
+                    _logger.LogError("Path to app source does not exist {path}, exiting...", _sourcePath);
+                    return;
+                }
 
                 _loadedDaemonApps = null;
 
@@ -101,7 +101,7 @@ namespace NetDaemon.Service
                 _logger.LogError(e, "NetDaemon had unhandled exception, closing...");
             }
 
-            _logger.LogInformation("NetDaemon exited!");
+            _logger.LogInformation("NetDaemon service exited!");
         }
 
         private async Task Run(NetDaemonHost daemonHost, CancellationToken stoppingToken)
@@ -115,7 +115,7 @@ namespace NetDaemon.Service
                         // This is due to re-connect, it must be a re-connect
                         // so delay before retry connect again
                         await Task.Delay(ReconnectInterval, stoppingToken).ConfigureAwait(false); // Wait x seconds
-                        _logger.LogInformation($"Restarting NeDaemon (version {Version})...");
+                        _logger.LogInformation($"Restarting NeDaemon service (version {Version})...");
                     }
 
                     var daemonHostTask = daemonHost.Run(
@@ -146,7 +146,7 @@ namespace NetDaemon.Service
 
                                 if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
                                 {
-                                    _logger.LogError("No apps found, exiting...");
+                                    _logger.LogError("No NetDaemon apps could be found, exiting...");
                                     return;
                                 }
 
@@ -159,7 +159,7 @@ namespace NetDaemon.Service
                             }
                             catch (TaskCanceledException)
                             {
-                                _logger.LogInformation("Canceling NetDaemon service...");
+                                _logger.LogTrace("Canceling NetDaemon service...");
                             }
                             catch (Exception e)
                             {
@@ -181,7 +181,8 @@ namespace NetDaemon.Service
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "MAJOR ERROR!");
+                    _logger.LogError("Error in NetDaemon service!, set trace log level to see details.");
+                    _logger.LogTrace(e, "Error in NetDaemon service!");
                 }
                 finally
                 {
@@ -209,7 +210,7 @@ namespace NetDaemon.Service
             if (_entitiesGenerated)
                 return;
 
-            _logger.LogDebug("Generating entities ..");
+            _logger.LogTrace("Generating entities from Home Assistant instance ..");
 
             _entitiesGenerated = true;
             var codeGen = new CodeGenerator();

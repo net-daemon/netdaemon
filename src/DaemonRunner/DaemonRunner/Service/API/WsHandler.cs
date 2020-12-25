@@ -179,7 +179,7 @@ namespace NetDaemon.Service.Api
             }
             catch (Exception e)
             {
-                _logger.LogTrace(e, "Websocket problem found");
+                _logger.LogTrace(e, "Unhandled error in websocket communication");
             }
 
             _sockets.TryRemove(socketId, out _);
@@ -196,7 +196,7 @@ namespace NetDaemon.Service.Api
 
         public async Task BroadCast(string message, CancellationToken ct = default(CancellationToken))
         {
-            _logger.LogDebug("Broadcasting to {count} clients", _sockets.Count);
+            _logger.LogTrace("Broadcasting to {count} clients", _sockets.Count);
             foreach (var socket in _sockets)
             {
                 if (socket.Value.State != WebSocketState.Open)

@@ -65,7 +65,8 @@ namespace NetDaemon.Daemon
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Error instance the app from the file {file}", file);
+                    _logger.LogTrace(e, "Error instance the app from the file {file}", file);
+                    _logger.LogError("Error instance the app from the file {file}, use trace flag for details", file);
                     throw new ApplicationException($"Error instance the app from the file {file}", e);
                 }
             }
