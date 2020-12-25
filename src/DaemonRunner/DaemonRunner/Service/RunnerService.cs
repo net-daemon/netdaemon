@@ -218,7 +218,7 @@ namespace NetDaemon.Service
                 daemonHost.State.Select(n => n.EntityId).Distinct()
             );
 
-            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensions.cs"), source).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensions.cs.gen"), source).ConfigureAwait(false);
 
             var services = await daemonHost.GetAllServices();
             var sourceRx = codeGen.GenerateCodeRx(
@@ -227,16 +227,8 @@ namespace NetDaemon.Service
                 services
             );
 
-            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs"), sourceRx).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
         }
-
-        // private void EnsureApplicationDirectoryExists(NetDaemonSettings settings)
-        // {
-        //     settings.SourceFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".netdaemon");
-        //     var appDirectory = Path.Combine(settings.SourceFolder, "apps");
-
-        //     Directory.CreateDirectory(appDirectory);
-        // }
 
         private async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
