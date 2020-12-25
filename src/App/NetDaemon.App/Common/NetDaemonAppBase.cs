@@ -223,7 +223,7 @@ namespace NetDaemon.Common
             _storageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
-            Logger.LogInformation("Startup: {app}", GetUniqueIdForStorage());
+            Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
             var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             var appState = appInfo?.State as string;
