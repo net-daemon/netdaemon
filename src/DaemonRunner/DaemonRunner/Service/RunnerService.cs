@@ -90,7 +90,7 @@ namespace NetDaemon.Service
                 await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>()
                     ?? throw new ApplicationException("Failed to get service for NetDaemonHost");
                 {
-                    await Run(daemonHost, stoppingToken);
+                    await Run(daemonHost, stoppingToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -126,7 +126,7 @@ namespace NetDaemon.Service
                         stoppingToken
                     );
 
-                    if (await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false) == false)
+                    if (!await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false))
                     {
                         continue;
                     }
@@ -139,12 +139,12 @@ namespace NetDaemon.Service
                             {
                                 // Generate code if requested
                                 if (_sourcePath is string)
-                                    await GenerateEntities(daemonHost, _sourcePath);
+                                    await GenerateEntities(daemonHost, _sourcePath).ConfigureAwait(false);
 
                                 if (_loadedDaemonApps is null)
                                     _loadedDaemonApps = _daemonAppCompiler.GetApps();
 
-                                if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
+                                if (_loadedDaemonApps?.Any() != true)
                                 {
                                     _logger.LogError("No NetDaemon apps could be found, exiting...");
                                     return;
@@ -155,7 +155,6 @@ namespace NetDaemon.Service
 
                                 // Wait until daemon stops
                                 await daemonHostTask.ConfigureAwait(false);
-
                             }
                             catch (TaskCanceledException)
                             {
@@ -199,7 +198,6 @@ namespace NetDaemon.Service
 
                 // If we reached here it could be a re-connect
                 _hasConnectedBefore = true;
-
             }
         }
         private async Task GenerateEntities(NetDaemonHost daemonHost, string sourceFolder)
@@ -221,7 +219,7 @@ namespace NetDaemon.Service
 
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensions.cs.gen"), source).ConfigureAwait(false);
 
-            var services = await daemonHost.GetAllServices();
+            var services = await daemonHost.GetAllServices().ConfigureAwait(false);
             var sourceRx = codeGen.GenerateCodeRx(
                 "Netdaemon.Generated.Reactive",
                 daemonHost.State.Select(n => n.EntityId).Distinct(),
@@ -231,7 +229,7 @@ namespace NetDaemon.Service
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
         }
 
-        private async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        private static async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
             var nrOfTimesCheckForConnectedState = 0;
 

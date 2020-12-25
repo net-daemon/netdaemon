@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon.Config
             foreach (char c in str)
             {
                 if (char.IsUpper(c) && !isStart)
-                    build.Append("_");
+                    build.Append('_');
                 else
                     isStart = false;
                 build.Append(char.ToLower(c));
@@ -55,7 +55,6 @@ namespace NetDaemon.Daemon.Config
                 nextIsUpper = false;
                 isFirstCharacter = false;
             }
-            var returnString = build.ToString();
 
             return build.ToString();
         }

@@ -22,8 +22,8 @@ namespace NetDaemon.Common
         ///     Run daily tasks
         /// </summary>
         /// <param name="time">The time in the format HH:mm:ss</param>
-        /// <param name="func">The action to run</param>
         /// <param name="runOnDays">A list of days the scheduler will run on</param>
+        /// <param name="func">The action to run</param>
         /// <returns></returns>
         ISchedulerResult RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func);
 

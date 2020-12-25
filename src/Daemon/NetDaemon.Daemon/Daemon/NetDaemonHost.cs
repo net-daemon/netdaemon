@@ -24,17 +24,18 @@ namespace NetDaemon.Daemon
 {
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
+        private static readonly ConcurrentBag<Func<ExternalEventBase, Task>> concurrentBag = new();
         internal readonly ConcurrentBag<Func<ExternalEventBase, Task>> _externalEventCallSubscribers =
-            new ConcurrentBag<Func<ExternalEventBase, Task>>();
+            concurrentBag;
         internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
-            new ConcurrentDictionary<string, HassArea>();
+            new();
 
         // Internal for test
         internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
-            new ConcurrentDictionary<string, HassDevice>();
+            new();
 
         internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
-            new ConcurrentDictionary<string, HassEntity>();
+            new();
 
         internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageChannel =
                 Channel.CreateBounded<(string, string, dynamic?)>(200);
@@ -54,10 +55,10 @@ namespace NetDaemon.Daemon
         private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
-        private readonly CancellationTokenSource _cancelDaemon = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancelDaemon = new();
 
         private readonly ConcurrentBag<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions
-                            = new ConcurrentBag<(string, string, Func<dynamic?, Task>)>();
+                            = new();
 
         /// <summary>
         ///     Currently running tasks for handling new events from HomeAssistant
@@ -70,36 +71,17 @@ namespace NetDaemon.Daemon
 
         private readonly IDataRepository? _repository;
 
-        private readonly ConcurrentDictionary<string, INetDaemonAppBase> _runningAppInstances =
-            new ConcurrentDictionary<string, INetDaemonAppBase>();
-        private readonly ConcurrentDictionary<string, INetDaemonAppBase> _allAppInstances =
-            new ConcurrentDictionary<string, INetDaemonAppBase>();
-
         /// <summary>
         ///     Used for testing
         /// </summary>
-        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances => _allAppInstances;
+        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances { get; } = new();
 
         private readonly Scheduler _scheduler;
-
-        private readonly List<string> _supportedDomainsForTurnOnOff = new()
-        {
-            "light",
-            "switch",
-            "input_boolean",
-            "automation",
-            "input_boolean",
-            "camera",
-            "scene",
-            "script",
-        };
 
         // Following token source and token are set at RUN
         private CancellationToken _cancelToken;
 
         private CancellationTokenSource? _cancelTokenSource;
-        private IDictionary<string, object> _dataCache = new Dictionary<string, object>();
-
 
         /// <summary>
         ///     Constructor
@@ -119,7 +101,8 @@ namespace NetDaemon.Daemon
             loggerFactory ??= DefaultLoggerFactory;
             _httpHandler = httpHandler;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
-            _hassClient = hassClient ?? throw new ArgumentNullException("HassClient can't be null!");
+            _hassClient = hassClient
+                        ?? throw new ArgumentNullException(nameof(hassClient));
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
             Logger.LogTrace("Instance NetDaemonHost");
@@ -138,16 +121,16 @@ namespace NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
-        public IEnumerable<INetDaemonAppBase> RunningAppInstances => _runningAppInstances.Values;
+        public IEnumerable<INetDaemonAppBase> RunningAppInstances => InternalRunningAppInstances.Values;
 
-        public IEnumerable<INetDaemonAppBase> AllAppInstances => _allAppInstances.Values;
+        public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
 
         public IScheduler Scheduler => _scheduler;
 
         public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
 
         // For testing
-        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances => _runningAppInstances;
+        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
                                         {
@@ -156,19 +139,20 @@ namespace NetDaemon.Daemon
                                                 .AddConsole();
                                         });
 
+        public IDictionary<string, object> DataCache { get; } = new Dictionary<string, object>();
 
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
             this._cancelToken.ThrowIfCancellationRequested();
 
-            return await _hassClient.GetServices();
+            return await _hassClient.GetServices().ConfigureAwait(false);
         }
 
         public void CallService(string domain, string service, dynamic? data = null)
         {
             this._cancelToken.ThrowIfCancellationRequested();
 
-            if (_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)) == false)
+            if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
                 throw new ApplicationException("Servicecall queue full!");
         }
 
@@ -224,10 +208,10 @@ namespace NetDaemon.Daemon
             Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
-        public void EnableApplicationDiscoveryServiceAsync()
+        public void EnableApplicationDiscoveryService()
         {
             // For service call reload_apps we do just that... reload the fucking apps yay :)
-            ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps());
+            ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps().ConfigureAwait(false));
 
             RegisterAppSwitchesAndTheirStates();
         }
@@ -266,25 +250,25 @@ namespace NetDaemon.Daemon
         {
             this._cancelToken.ThrowIfCancellationRequested();
 
-            return _runningAppInstances.ContainsKey(appInstanceId) ?
-                _runningAppInstances[appInstanceId] : null;
+            return InternalRunningAppInstances.ContainsKey(appInstanceId) ?
+                InternalRunningAppInstances[appInstanceId] : null;
         }
 
-        public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
+        public async Task<T?> GetDataAsync<T>(string id) where T : class
         {
             this._cancelToken.ThrowIfCancellationRequested();
 
             _ = _repository as IDataRepository ??
-              throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
 
-            if (_dataCache.ContainsKey(id))
+            if (DataCache.ContainsKey(id))
             {
-                return (T)_dataCache[id];
+                return (T)DataCache[id];
             }
             var data = await _repository!.Get<T>(id).ConfigureAwait(false);
 
             if (data != null)
-                _dataCache[id] = data;
+                DataCache[id] = data;
 
             return data;
         }
@@ -307,7 +291,7 @@ namespace NetDaemon.Daemon
             _appInstanceManager = appInstanceManager;
 
             await LoadAllApps().ConfigureAwait(false);
-            EnableApplicationDiscoveryServiceAsync();
+            EnableApplicationDiscoveryService();
         }
 
         /// <inheritdoc/>
@@ -434,7 +418,7 @@ namespace NetDaemon.Daemon
                 if (hassConfig.State != "RUNNING")
                 {
                     Logger.LogInformation("Home Assistant is not ready yet, state: {state} ..", hassConfig.State);
-                    await _hassClient.CloseAsync();
+                    await _hassClient.CloseAsync().ConfigureAwait(false);
                     return;
                 }
 
@@ -515,7 +499,7 @@ namespace NetDaemon.Daemon
             if (data == null)
                 throw new ArgumentNullException(nameof(data));
 
-            _dataCache[id] = data;
+            DataCache[id] = data;
             return _repository!.Save(id, data);
         }
 
@@ -553,7 +537,7 @@ namespace NetDaemon.Daemon
         {
             this._cancelToken.ThrowIfCancellationRequested();
 
-            if (_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)) == false)
+            if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
                 throw new ApplicationException("Servicecall queue full!");
         }
 
@@ -624,12 +608,12 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public async Task UnloadAllApps()
         {
-            foreach (var app in _allAppInstances)
+            foreach (var app in InternalAllAppInstances)
             {
                 await app.Value.DisposeAsync().ConfigureAwait(false);
             }
-            _allAppInstances.Clear();
-            _runningAppInstances.Clear();
+            InternalAllAppInstances.Clear();
+            InternalRunningAppInstances.Clear();
         }
 
         /// <summary>
@@ -835,7 +819,7 @@ namespace NetDaemon.Daemon
                     InternalState[stateData.EntityId] = newState;
 
                     var tasks = new List<Task>();
-                    foreach (var app in _runningAppInstances)
+                    foreach (var app in InternalRunningAppInstances)
                     {
                         if (app.Value is NetDaemonApp netDaemonApp)
                         {
@@ -904,7 +888,7 @@ namespace NetDaemon.Daemon
                         throw new NullReferenceException("ServiceData is null! not expected");
                     }
                     var tasks = new List<Task>();
-                    foreach (var app in _runningAppInstances)
+                    foreach (var app in InternalRunningAppInstances)
                     {
                         // Call any service call registered
                         if (app.Value is NetDaemonApp netDaemonApp)
@@ -999,7 +983,7 @@ namespace NetDaemon.Daemon
                         hassEvent.Data = new FluentExpandoObject(true, true, exObject);
                     }
                     var tasks = new List<Task>();
-                    foreach (var app in _runningAppInstances)
+                    foreach (var app in InternalRunningAppInstances)
                     {
                         if (app.Value is NetDaemonApp netDaemonApp)
                         {
@@ -1231,21 +1215,21 @@ namespace NetDaemon.Daemon
             // Get all instances
             var instancedApps = _appInstanceManager.InstanceDaemonApps();
 
-            if (_runningAppInstances.Count() > 0)
+            if (InternalRunningAppInstances.Count() > 0)
                 throw new ApplicationException("Did not expect running instances!");
 
             foreach (INetDaemonAppBase appInstance in instancedApps!)
             {
-                _allAppInstances[appInstance.Id!] = appInstance;
+                InternalAllAppInstances[appInstance.Id!] = appInstance;
                 if (await RestoreAppState(appInstance).ConfigureAwait(false))
                 {
-                    _runningAppInstances[appInstance.Id!] = appInstance;
+                    InternalRunningAppInstances[appInstance.Id!] = appInstance;
                 }
 
             }
 
             // Now run initialize on all sorted by dependencies
-            foreach (var sortedApp in SortByDependency(_runningAppInstances.Values))
+            foreach (var sortedApp in SortByDependency(InternalRunningAppInstances.Values))
             {
                 // Init by calling the InitializeAsync
                 var taskInitAsync = sortedApp.InitializeAsync();
@@ -1264,7 +1248,7 @@ namespace NetDaemon.Daemon
                 Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id, sortedApp.GetType().Name);
             }
 
-            await SetDaemonStateAsync(_appInstanceManager.Count, _runningAppInstances.Count).ConfigureAwait(false);
+            await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count).ConfigureAwait(false);
         }
 
         private void RegisterAppSwitchesAndTheirStates()
@@ -1318,14 +1302,14 @@ namespace NetDaemon.Daemon
 
         private async Task SetDependentState(string entityId, string state)
         {
-            var app = _allAppInstances.Values.Where(n => n.EntityId == entityId).FirstOrDefault();
+            var app = InternalAllAppInstances.Values.Where(n => n.EntityId == entityId).FirstOrDefault();
 
             if (app is not null)
             {
                 if (state == "off")
                 {
                     // We need to turn off any dependent apps
-                    var depApps = _allAppInstances.Values.Where(n => n.Dependencies.Contains(app.Id));
+                    var depApps = InternalAllAppInstances.Values.Where(n => n.Dependencies.Contains(app.Id));
 
                     foreach (var depApp in depApps)
                     {
@@ -1341,7 +1325,7 @@ namespace NetDaemon.Daemon
                     // Enable all apps that this app is dependent on
                     foreach (var depOnId in app.Dependencies)
                     {
-                        var depOnApp = _allAppInstances.Values.Where(n => n.Id == depOnId).FirstOrDefault();
+                        var depOnApp = InternalAllAppInstances.Values.Where(n => n.Id == depOnId).FirstOrDefault();
                         if (depOnApp is not null)
                         {
                             await SetDependentState(depOnApp.EntityId, state).ConfigureAwait(false);

@@ -17,7 +17,7 @@ namespace NetDaemon.Common.Reactive
         private readonly ILogger _logger;
 
         private readonly ConcurrentDictionary<IObserver<T>, IObserver<T>>
-                            _observersTuples = new ConcurrentDictionary<IObserver<T>, IObserver<T>>();
+                            _observersTuples = new();
         /// <summary>
         ///     Constructor
         /// </summary>

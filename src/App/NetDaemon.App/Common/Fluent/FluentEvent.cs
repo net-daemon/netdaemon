@@ -21,10 +21,10 @@ namespace NetDaemon.Common.Fluent
     /// </summary>
     public class FluentEventManager : IFluentEvent, IExecute
     {
-        private IEnumerable<string>? _events;
-        private INetDaemonApp _daemon;
+        private readonly IEnumerable<string>? _events;
+        private readonly INetDaemonApp _daemon;
         private Func<string, dynamic, Task>? _functionToCall;
-        private Func<FluentEventProperty, bool>? _funcSelector;
+        private readonly Func<FluentEventProperty, bool>? _funcSelector;
 
         /// <summary>
         ///     Constructor
@@ -65,10 +65,14 @@ namespace NetDaemon.Common.Fluent
                 throw new NullReferenceException($"Both {nameof(_events)} or {nameof(_events)} cant be null");
 
             if (_events != null)
+            {
                 foreach (var ev in _events)
                     _daemon.ListenEvent(ev, _functionToCall!);
+            }
             else
+            {
                 _daemon.ListenEvent(_funcSelector!, _functionToCall!);
+            }
         }
     }
 
@@ -83,9 +87,8 @@ namespace NetDaemon.Common.Fluent
         public string EventId { get; set; } = "";
 
         /// <summary>
-        ///
+        /// Data of the event
         /// </summary>
-        /// <value></value>
         public dynamic? Data { get; set; } = null;
     }
 }

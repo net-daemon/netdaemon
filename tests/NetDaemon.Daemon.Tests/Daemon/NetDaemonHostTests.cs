@@ -28,7 +28,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await InitializeFakeDaemon().ConfigureAwait(false);
 
 
-            dynamic helloWorldDataObject = GetDynamicDataObject(HelloWorldData);
+            dynamic helloWorldDataObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
 
             DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", helloWorldDataObject);
 
@@ -106,7 +106,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            dynamic dataObject = GetDynamicDataObject();
+            dynamic dataObject = DaemonHostTestBase.GetDynamicDataObject();
 
             DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", dataObject);
 
@@ -153,7 +153,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var eventData = GetDynamicDataObject();
+            var eventData = DaemonHostTestBase.GetDynamicDataObject();
 
 
             // ACT
@@ -350,7 +350,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var dynObject = GetDynamicDataObject(HelloWorldData);
+            var dynObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
 
 
             var isCalled = false;
@@ -378,7 +378,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var dynObject = GetDynamicDataObject(HelloWorldData);
+            var dynObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
 
             DefaultHassClientMock.AddCallServiceEvent("custom_domain", "other_service", dynObject);
 

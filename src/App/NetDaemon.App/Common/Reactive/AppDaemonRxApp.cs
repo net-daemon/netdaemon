@@ -20,7 +20,7 @@ namespace NetDaemon.Common.Reactive
     /// </summary>
     public abstract class NetDaemonRxApp : NetDaemonAppBase, INetDaemonReactive
     {
-        private CancellationTokenSource _cancelTimers = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancelTimers = new();
         private EventObservable? _eventObservables;
         private ReactiveEvent? _reactiveEvent = null;
         private ReactiveState? _reactiveState = null;
@@ -127,9 +127,7 @@ namespace NetDaemon.Common.Reactive
         /// <inheritdoc/>
         public IDisposable RunDaily(string time, Action action)
         {
-            DateTime parsedTime;
-
-            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedTime))
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
@@ -144,8 +142,10 @@ namespace NetDaemon.Common.Reactive
             );
 
             if (now > timeOfDayToTrigger)
+            {
                 // It is not due until tomorrow
                 timeOfDayToTrigger = timeOfDayToTrigger.AddDays(1);
+            }
 
             return CreateObservableTimer(timeOfDayToTrigger, TimeSpan.FromDays(1), action);
         }
@@ -159,10 +159,9 @@ namespace NetDaemon.Common.Reactive
         /// <inheritdoc/>
         public IDisposable RunEveryHour(string time, Action action)
         {
-            DateTime parsedTime;
             time = $"{DateTime.Now.Hour:D2}:{time}";
 
-            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedTime))
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
@@ -178,8 +177,10 @@ namespace NetDaemon.Common.Reactive
             );
 
             if (now > timeOfDayToTrigger)
+            {
                 // It is not due until tomorrow
                 timeOfDayToTrigger = timeOfDayToTrigger.AddHours(1);
+            }
 
             return CreateObservableTimer(timeOfDayToTrigger, TimeSpan.FromHours(1), action);
         }
@@ -199,7 +200,7 @@ namespace NetDaemon.Common.Reactive
             var result = new DisposableTimerResult(_cancelTimers.Token);
             Observable.Timer(timespan, TaskPoolScheduler.Default)
                 .Subscribe(
-                    s =>
+                    _ =>
                     {
                         try
                         {
@@ -252,7 +253,7 @@ namespace NetDaemon.Common.Reactive
         /// <inheritdoc/>
         public async override Task StartUpAsync(INetDaemon daemon)
         {
-            await base.StartUpAsync(daemon);
+            await base.StartUpAsync(daemon).ConfigureAwait(false);
             _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             _ = Logger ?? throw new NullReferenceException("Logger can not be null!");
 
@@ -278,7 +279,7 @@ namespace NetDaemon.Common.Reactive
 
             Observable.Interval(timespan, TaskPoolScheduler.Default)
                 .Subscribe(
-                    s =>
+                    _ =>
                     {
                         try
                         {
@@ -298,10 +299,7 @@ namespace NetDaemon.Common.Reactive
                             LogError(e, "Error, ObservableIntervall APP: {app}", Id ?? "unknown");
                         }
                     },
-                    ex =>
-                    {
-                        LogTrace("Exiting ObservableIntervall for app {app}, {trigger}:{span}", Id!, timespan);
-                    }
+                    ex => LogTrace(ex, "Exiting ObservableIntervall for app {app}, {trigger}:{span}", Id!, timespan)
                     , result.Token);
 
             return result;
@@ -326,7 +324,7 @@ namespace NetDaemon.Common.Reactive
                 interval,
                 TaskPoolScheduler.Default)
                 .Subscribe(
-                    s =>
+                    _ =>
                     {
                         try
                         {
@@ -349,7 +347,7 @@ namespace NetDaemon.Common.Reactive
                     () => Log("Exiting timer for app {app}, {trigger}:{span}",
                             Id!, timeOfDayToTrigger, interval),
                     result.Token
-                     );
+                    );
 
             return result;
         }

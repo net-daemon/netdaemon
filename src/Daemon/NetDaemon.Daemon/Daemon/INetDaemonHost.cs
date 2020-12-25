@@ -8,7 +8,6 @@ using NetDaemon.Common;
 
 namespace NetDaemon.Daemon
 {
-
     /// <summary>
     ///     The interface that interacts with the daemon host main logic
     /// </summary>

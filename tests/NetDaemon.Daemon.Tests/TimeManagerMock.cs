@@ -21,7 +21,7 @@ namespace NetDaemon.Daemon.Tests
         {
             SetupGet(n => n.Current).Returns(_time);
             Setup(n => n.Delay(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
-                .Returns(async (TimeSpan s, CancellationToken c) => await Task.Delay(s, c));
+                .Returns(async (TimeSpan s, CancellationToken c) => await Task.Delay(s, c).ConfigureAwait(false));
         }
     }
 }

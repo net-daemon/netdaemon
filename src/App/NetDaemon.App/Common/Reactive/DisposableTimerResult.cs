@@ -32,5 +32,4 @@ namespace NetDaemon.Common.Reactive
             _internalToken.Cancel();
         }
     }
-
 }

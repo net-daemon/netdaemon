@@ -33,7 +33,7 @@ namespace NetDaemon.Daemon
             var streamTask = httpClient.GetStreamAsync(url)
                 ?? throw new ApplicationException($"Unexpected, nothing returned from {url}");
 
-            return await JsonSerializer.DeserializeAsync<T>(await streamTask.ConfigureAwait(false), options);
+            return await JsonSerializer.DeserializeAsync<T>(await streamTask.ConfigureAwait(false), options).ConfigureAwait(false);
         }
 
         public async Task<T?> PostJson<T>(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers)
@@ -46,12 +46,12 @@ namespace NetDaemon.Daemon
 
             var bytesToPost = JsonSerializer.SerializeToUtf8Bytes(request, request.GetType(), options);
 
-            var response = await httpClient.PostAsync(url, new ByteArrayContent(bytesToPost));
+            var response = await httpClient.PostAsync(url, new ByteArrayContent(bytesToPost)).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
             var streamTask = response.Content.ReadAsStreamAsync();
-            return await JsonSerializer.DeserializeAsync<T>(await streamTask.ConfigureAwait(false));
+            return await JsonSerializer.DeserializeAsync<T>(await streamTask.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         public async Task PostJson(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers)
@@ -64,22 +64,22 @@ namespace NetDaemon.Daemon
 
             var bytesToPost = JsonSerializer.SerializeToUtf8Bytes(request, request.GetType(), options);
 
-            var response = await httpClient.PostAsync(url, new ByteArrayContent(bytesToPost));
+            var response = await httpClient.PostAsync(url, new ByteArrayContent(bytesToPost)).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
         }
 
-        private void AddHeaders(HttpClient httpClient, (string, object)[] headers)
+        private static void AddHeaders(HttpClient httpClient, (string, object)[] headers)
         {
             if (headers is not null && headers.Length > 0)
             {
                 httpClient.DefaultRequestHeaders.Clear();
                 foreach (var (name, header) in headers)
                 {
-                    if (header is string)
-                        httpClient.DefaultRequestHeaders.Add(name, (string)header);
-                    else if (header is IEnumerable<string>)
-                        httpClient.DefaultRequestHeaders.Add(name, (IEnumerable<string>)header);
+                    if (header is string headerStr)
+                        httpClient.DefaultRequestHeaders.Add(name, headerStr);
+                    else if (header is IEnumerable<string> headerStrings)
+                        httpClient.DefaultRequestHeaders.Add(name, headerStrings);
                     else
                         throw new ApplicationException($"Unsupported header, expected string or IEnumerable<string> for {name}");
                 }

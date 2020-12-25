@@ -11,11 +11,11 @@ namespace NetDaemon.Common.Fluent
     public class EntityBase //: EntityState
     {
         internal readonly ConcurrentQueue<FluentAction> _actions =
-            new ConcurrentQueue<FluentAction>();
+            new();
 
         internal FluentAction? _currentAction;
 
-        internal StateChangedInfo _currentState = new StateChangedInfo();
+        internal StateChangedInfo _currentState = new();
 
         /// <summary>
         ///     The daemon used in the API

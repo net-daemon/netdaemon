@@ -15,7 +15,7 @@ namespace NetDaemon.Daemon
     {
         private readonly ILogger _logger;
         private readonly IYamlConfig _yamlConfig;
-        private IEnumerable<Type>? _loadedDaemonApps;
+        private readonly IEnumerable<Type>? _loadedDaemonApps;
 
         /// <summary>
         ///     Constructor
@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon
             var result = new List<INetDaemonAppBase>(50);
 
             // No loaded, just return an empty list
-            if (_loadedDaemonApps is null || _loadedDaemonApps.Count() == 0)
+            if (_loadedDaemonApps?.Any() != true)
                 return result;
 
             // Get all yaml config file paths

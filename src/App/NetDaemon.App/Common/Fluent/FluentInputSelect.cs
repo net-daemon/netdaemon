@@ -41,8 +41,8 @@ namespace NetDaemon.Common.Fluent
     public class InputSelectManager : IFluentInputSelect, IFluentExecuteAsync
     {
         private readonly IEnumerable<string> _entityIds;
-        private INetDaemon _daemon;
-        private INetDaemonApp _app;
+        private readonly INetDaemon _daemon;
+        private readonly INetDaemonApp _app;
         private string? _option;
 
         /// <summary>

@@ -72,7 +72,6 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
@@ -130,11 +129,9 @@ namespace NetDaemon.Common.Fluent
         public override bool TrySetMember(SetMemberBinder binder, object? value)
         {
             UpdateDictionary(binder.Name, value);
-            if (_daemonApp != null)
-            {
-                // It is supposed to persist, this is the only reason _daemon is present
-                _daemonApp.SaveAppState();
-            }
+            // It is supposed to persist, this is the only reason _daemon is present
+            _daemonApp?.SaveAppState();
+
             return true;
         }
 
@@ -250,12 +247,9 @@ namespace NetDaemon.Common.Fluent
 
         private void UpdateDictionary(string name, object? value)
         {
-            _ = value ?? throw new ArgumentNullException("value", "value cannot be null");
+            _ = value ?? throw new ArgumentNullException(nameof(value), "value cannot be null");
             var key = NormalizePropertyName(name);
-            if (_dict.ContainsKey(key))
-                _dict[key] = value;
-            else
-                _dict.Add(key, value);
+            _dict[key] = value;
         }
 
         private string NormalizePropertyName(string propertyName)

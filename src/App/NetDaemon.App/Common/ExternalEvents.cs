@@ -5,13 +5,11 @@ using NetDaemon.Common.Configuration;
 
 namespace NetDaemon.Common
 {
-
     /// <summary>
-    ///     Base class for all external events 
+    ///     Base class for all external events
     /// </summary>
     public class ExternalEventBase
     {
-
     }
 
     /// <summary>
@@ -19,9 +17,7 @@ namespace NetDaemon.Common
     /// </summary>
     public class AppsInformationEvent : ExternalEventBase
     {
-
     }
-
 
     /// <summary>
     ///     Information about the application
@@ -56,7 +52,6 @@ namespace NetDaemon.Common
         ///     Last known error message
         /// </summary>
         public string? LastErrorMessage { get; set; }
-
     }
 
     /// <summary>
@@ -72,6 +67,5 @@ namespace NetDaemon.Common
         ///     Settings Home Assistant related
         /// </summary>
         public HomeAssistantSettings? HomeAssistantSettings { get; set; }
-
     }
 }

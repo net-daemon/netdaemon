@@ -15,23 +15,16 @@ namespace NetDaemon.Common
     /// </summary>
     public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {
-        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
-                                            new List<(string pattern, Func<string, dynamic, Task> action)>();
-
-        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionSelectorCallbacks =
-                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
-        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateCallbacks =
-                                    new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
-
         /// <summary>
         ///     All actions being performed for named events
         /// </summary>
-        public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks => _eventCallbacks;
+        public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks { get; } =
+                                            new List<(string pattern, Func<string, dynamic, Task> action)>();
 
         /// <summary>
         ///     All actions being performed for lambda selected events
         /// </summary>
-        public List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctionCallbacks => _eventFunctionSelectorCallbacks;
+        public List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctionCallbacks { get; } = new();
 
         /// <inheritdoc/>
         public IScheduler Scheduler => _daemon?.Scheduler ??
@@ -42,10 +35,11 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>
-            StateCallbacks => _stateCallbacks;
+            StateCallbacks
+        { get; } = new();
 
         // Used for testing
-        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateCallbacks;
+        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => StateCallbacks;
 
         /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
@@ -79,7 +73,7 @@ namespace NetDaemon.Common
         public void CancelListenState(string id)
         {
             // Remove and ignore if not exist
-            _stateCallbacks.Remove(id, out _);
+            StateCallbacks.Remove(id, out _);
         }
 
         /// <inheritdoc/>
@@ -95,15 +89,19 @@ namespace NetDaemon.Common
 
             foreach (var entityId in entityIds)
             {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                result.StateSubscriptions.Add(ListenState(entityId, (_, newState, oldState) =>
                 {
                     if (to != null)
+                    {
                         if ((dynamic)to != newState?.State)
                             return Task.CompletedTask;
+                    }
 
                     if (from != null)
+                    {
                         if ((dynamic)from != oldState?.State)
                             return Task.CompletedTask;
+                    }
 
                     // If we don´t accept all changes in the state change
                     // and we do not have a state change so return
@@ -131,7 +129,7 @@ namespace NetDaemon.Common
 
             foreach (var entityId in entityIds)
             {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                result.StateSubscriptions.Add(ListenState(entityId, (_, newState, oldState) =>
                 {
                     try
                     {
@@ -161,9 +159,9 @@ namespace NetDaemon.Common
         /// </summary>
         public async override ValueTask DisposeAsync()
         {
-            _stateCallbacks.Clear();
-            _eventCallbacks.Clear();
-            _eventFunctionSelectorCallbacks.Clear();
+            StateCallbacks.Clear();
+            EventCallbacks.Clear();
+            EventFunctionCallbacks.Clear();
             await base.DisposeAsync().ConfigureAwait(false);
         }
 
@@ -198,7 +196,7 @@ namespace NetDaemon.Common
         public IFluentEvent Events(IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
         /// <inheritdoc/>
-        public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
+        public async Task<T?> GetDataAsync<T>(string id) where T : class
         {
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
             return await _daemon!.GetDataAsync<T>(id).ConfigureAwait(false);
@@ -229,10 +227,10 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventCallbacks.Add((ev, action));
+        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => EventCallbacks.Add((ev, action));
 
         /// <inheritdoc/>
-        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionSelectorCallbacks.Add((funcSelector, func));
+        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => EventFunctionCallbacks.Add((funcSelector, func));
 
         /// <inheritdoc/>
         public string? ListenState(string pattern,
@@ -241,7 +239,7 @@ namespace NetDaemon.Common
             // Use guid as unique id but will externally use string so
             // The design can change in-case guid won't cut it.
             var uniqueId = Guid.NewGuid().ToString();
-            _stateCallbacks[uniqueId] = (pattern, action);
+            StateCallbacks[uniqueId] = (pattern, action);
             return uniqueId;
         }
 

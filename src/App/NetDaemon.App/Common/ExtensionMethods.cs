@@ -56,7 +56,7 @@ namespace NetDaemon.Common
         public static string ToSafeHomeAssistantEntityId(this string str)
         {
             string normalizedString = str.Normalize(NormalizationForm.FormD);
-            StringBuilder stringBuilder = new StringBuilder(str.Length);
+            StringBuilder stringBuilder = new(str.Length);
 
             foreach (char c in normalizedString)
             {

@@ -37,6 +37,5 @@ namespace NetDaemon.Common.Reactive
         {
             return observable.Timeout(TimeSpan.FromSeconds(5), Observable.Return((new NetDaemon.Common.EntityState() { State = "TimeOut" }, new NetDaemon.Common.EntityState() { State = "TimeOut" }))).Take(1);
         }
-
     }
 }

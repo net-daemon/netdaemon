@@ -52,6 +52,7 @@ namespace NetDaemon.Common.Fluent
         public void Execute()
         {
             foreach (var entityId in EntityIds)
+            {
                 App.ListenState(entityId, async (entityIdInn, newState, oldState) =>
                 {
                     try
@@ -74,13 +75,13 @@ namespace NetDaemon.Common.Fluent
                         }
                         else
                         {
-                            if (_currentState.To != null)
-                                if (_currentState.To != newState?.State)
-                                    return;
+                            if (_currentState.To != null && _currentState.To != newState?.State)
+                            {
+                                return;
+                            }
 
-                            if (_currentState.From != null)
-                                if (_currentState.From != oldState?.State)
-                                    return;
+                            if (_currentState.From != null && _currentState.From != oldState?.State)
+                                return;
 
                             // If we don´t accept all changes in the state change
                             // and we do not have a state change so return
@@ -104,7 +105,9 @@ namespace NetDaemon.Common.Fluent
                                         "State same {newState} during period of {time}, executing action!", $"{newState?.State}", _currentState.ForTimeSpan);
                                     // The state has not changed during the time we waited
                                     if (_currentState.FuncToCall == null)
+                                    {
                                         await entityManager.ExecuteAsync(true).ConfigureAwait(false);
+                                    }
                                     else
                                     {
                                         try
@@ -121,11 +124,10 @@ namespace NetDaemon.Common.Fluent
                                 }
                                 else
                                 {
-                                    App.LogDebug(
-                                        "State same {newState} but different state changed: {currentLastChanged}, expected {newLastChanged}",
-                                            $"{newState?.State}",
-                                            currentState?.LastChanged!,
-                                            newState?.LastChanged!);
+                                    App.LogDebug("State same {newState} but different state changed: {currentLastChanged}, expected {newLastChanged}",
+                                                $"{newState?.State}",
+                                                currentState?.LastChanged ?? DateTime.MinValue,
+                                                newState?.LastChanged ?? DateTime.MinValue);
                                 }
                             }
                             else
@@ -152,15 +154,23 @@ namespace NetDaemon.Common.Fluent
                                 }
                                 catch (Exception e)
                                 {
-                                    App.LogError(e,
-                                               "Call function error in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}",
-                                                   App.Id!, entityIdInn, $"{newState?.State}", $"{oldState?.State}");
+                                    App.LogError(
+                                        e,
+                                        "Call function error in App {appId}, EntityId: {entityId}, From: {newState} To: {oldState}",
+                                        App.Id!,
+                                        entityIdInn,
+                                        $"{newState?.State}",
+                                        $"{oldState?.State}");
                                 }
                             }
                             else if (_currentState.ScriptToCall != null)
+                            {
                                 await Daemon.RunScript(App, _currentState.ScriptToCall).ExecuteAsync().ConfigureAwait(false);
+                            }
                             else
+                            {
                                 await entityManager.ExecuteAsync(true).ConfigureAwait(false);
+                            }
                         }
                     }
                     catch (OperationCanceledException)
@@ -172,6 +182,7 @@ namespace NetDaemon.Common.Fluent
                         App.LogWarning(e, "Unhandled error in ListenState in App {appId}", App.Id!);
                     }
                 });
+            }
 
             //}
         }
@@ -213,11 +224,15 @@ namespace NetDaemon.Common.Fluent
         public async Task ExecuteAsync(bool keepItems)
         {
             if (keepItems)
+            {
                 foreach (var action in _actions)
                     await HandleAction(action).ConfigureAwait(false);
+            }
             else
+            {
                 while (_actions.TryDequeue(out var fluentAction))
                     await HandleAction(fluentAction).ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc/>
@@ -230,8 +245,10 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         IAction ISetState<IAction>.SetState(dynamic state)
         {
-            _currentAction = new FluentAction(FluentActionType.SetState);
-            _currentAction.State = state;
+            _currentAction = new FluentAction(FluentActionType.SetState)
+            {
+                State = state
+            };
             _actions.Enqueue(_currentAction);
             return this;
         }

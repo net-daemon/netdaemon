@@ -25,13 +25,8 @@ namespace NetDaemon.Daemon.Config
     {
         public static PropertyInfo? GetYamlProperty(this Type type, string propertyName)
         {
-            var prop = type.GetProperty(propertyName);
-
-            if (prop == null)
-            {
-                // Lets try convert from python style to CamelCase
-                prop = type.GetProperty(propertyName.ToCamelCase());
-            }
+            // Lets try convert from python style to CamelCase
+            var prop = type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
             return prop;
         }
 

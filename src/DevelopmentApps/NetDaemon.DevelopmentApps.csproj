@@ -19,4 +19,5 @@
   <ItemGroup>
     <ProjectReference Include="..\App\NetDaemon.App\NetDaemon.App.csproj" />
   </ItemGroup>
+
 </Project>

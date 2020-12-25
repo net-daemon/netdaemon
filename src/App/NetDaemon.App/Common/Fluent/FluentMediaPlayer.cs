@@ -63,8 +63,10 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public IMediaPlayerExecuteAsync Speak(string message)
         {
-            _currentAction = new FluentAction(FluentActionType.Speak);
-            _currentAction.MessageToSpeak = message;
+            _currentAction = new FluentAction(FluentActionType.Speak)
+            {
+                MessageToSpeak = message
+            };
             return this;
         }
 

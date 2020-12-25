@@ -28,25 +28,12 @@ namespace NetDaemon.Common
         private Task? _manageRuntimeInformationUpdatesTask;
 
         /// <summary>
-        ///     Registered callbacks for service calls
-        /// </summary>
-        private readonly List<(string, string, Func<dynamic?, Task>)> _daemonCallBacksForServiceCalls
-            = new List<(string, string, Func<dynamic?, Task>)>();
-
-        /// <summary>
         ///     All actions being performed for service call events
         /// </summary>
-        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls => _daemonCallBacksForServiceCalls;
-
+        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls { get; } = new();
 
         // This is declared as static since it will contain state shared globally
-        private static ConcurrentDictionary<string, object> _global = new();
-
-        private readonly ConcurrentDictionary<string, object> _attributes = new();
-
-        // To handle state saves max once at a time, internal due to tests
-        private readonly Channel<bool> _lazyStoreStateQueue =
-               Channel.CreateBounded<bool>(1);
+        private static readonly ConcurrentDictionary<string, object> _global = new();
 
         private readonly Channel<bool> _updateRuntimeInfoChannel =
                Channel.CreateBounded<bool>(5);
@@ -55,9 +42,8 @@ namespace NetDaemon.Common
         // ///     The last error message logged och catched
         // /// </summary>
         // public string? RuntimeInfo.LastErrorMessage { get; set; } = null;
-        private CancellationTokenSource _cancelSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancelSource = new();
         private Task? _lazyStoreStateTask;
-        private FluentExpandoObject? _storageObject;
 
         /// <summary>
         ///    Dependencies on other applications that will be initialized before this app
@@ -104,15 +90,15 @@ namespace NetDaemon.Common
             }
         }
 
-
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }
 
         /// <inheritdoc/>
-        public dynamic Storage => _storageObject ?? throw new NullReferenceException($"{nameof(_storageObject)} cant be null");
+        public dynamic Storage => InternalStorageObject ?? throw new NullReferenceException($"{nameof(InternalStorageObject)} cant be null");
 
-        internal Channel<bool> InternalLazyStoreStateQueue => _lazyStoreStateQueue;
-        internal FluentExpandoObject? InternalStorageObject { get { return _storageObject; } set { _storageObject = value; } }
+        internal Channel<bool> InternalLazyStoreStateQueue { get; } =
+            Channel.CreateBounded<bool>(1);
+        internal FluentExpandoObject? InternalStorageObject { get; set; }
 
         /// <summary>
         ///     Implements the IEqualit.Equals method
@@ -120,10 +106,7 @@ namespace NetDaemon.Common
         /// <param name="other">The instance to compare</param>
         public bool Equals([AllowNull] INetDaemonAppBase other)
         {
-            if (other is not null && other.Id is not null && this.Id is not null && this.Id == other.Id)
-                return true;
-
-            return false;
+            return other is not null && other.Id is not null && Id is not null && Id == other.Id;
         }
 
         /// <summary>
@@ -189,10 +172,8 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
-        AppRuntimeInfo _runtimeInfo = new AppRuntimeInfo { HasError = false };
-
         /// <inheritdoc/>
-        public AppRuntimeInfo RuntimeInfo => _runtimeInfo;
+        public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo { HasError = false };
 
         /// <inheritdoc/>
         public IEnumerable<string> EntityIds => _daemon?.State.Select(n => n.EntityId) ??
@@ -204,7 +185,7 @@ namespace NetDaemon.Common
             // Intentionally ignores full queue since we know
             // a state change already is in progress wich means
             // this state will be saved
-            var x = _lazyStoreStateQueue.Writer.TryWrite(true);
+            _ = InternalLazyStoreStateQueue.Writer.TryWrite(true);
         }
 
         /// <inheritdoc/>
@@ -220,14 +201,13 @@ namespace NetDaemon.Common
             _daemon = daemon;
             _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
             _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
-            _storageObject = new FluentExpandoObject(false, true, daemon: this);
+            InternalStorageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
             var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
-            var appState = appInfo?.State as string;
-            if (appState == null || (appState != "on" && appState != "off"))
+            if (appInfo?.State is not string appState || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
             }
@@ -246,8 +226,8 @@ namespace NetDaemon.Common
 
         private async Task HandleLazyStorage()
         {
-            _ = _storageObject ??
-                throw new NullReferenceException($"{nameof(_storageObject)} cant be null!");
+            _ = InternalStorageObject ??
+                throw new NullReferenceException($"{nameof(InternalStorageObject)} cant be null!");
             _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
 
             while (!_cancelSource.IsCancellationRequested)
@@ -255,7 +235,7 @@ namespace NetDaemon.Common
                 try
                 {
                     // Dont care about the result, just that it is time to store state
-                    _ = await _lazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token);
+                    _ = await InternalLazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
 
                     await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
                             .ConfigureAwait(false);
@@ -282,13 +262,12 @@ namespace NetDaemon.Common
             if (_manageRuntimeInformationUpdatesTask is not null)
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
-            _daemonCallBacksForServiceCalls.Clear();
+            DaemonCallBacksForServiceCalls.Clear();
 
             this.IsEnabled = false;
             _lazyStoreStateTask = null;
-            _storageObject = null;
+            InternalStorageObject = null;
             _daemon = null;
-
         }
 
         /// <inheritdoc/>
@@ -300,7 +279,7 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
-            => _daemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+            => DaemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
         /// <inheritdoc/>
         public void Log(string message) => Log(LogLevel.Information, message);
@@ -462,7 +441,7 @@ namespace NetDaemon.Common
                 {
                     while (_updateRuntimeInfoChannel.Reader.TryRead(out _)) ;
 
-                    _ = await _updateRuntimeInfoChannel.Reader.ReadAsync(_cancelSource.Token);
+                    _ = await _updateRuntimeInfoChannel.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
                     // do the deed
                     await HandleUpdateRuntimeInformation().ConfigureAwait(false);
                     // make sure we never push more messages that 10 per second
@@ -487,7 +466,5 @@ namespace NetDaemon.Common
 
             await _daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
         }
-
-
     }
 }

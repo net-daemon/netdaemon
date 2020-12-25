@@ -27,7 +27,7 @@ namespace NetDaemon.Daemon
                     {
                         switch (attr)
                         {
-                            case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
+                            case HomeAssistantServiceCallAttribute:
                                 await HandleServiceCallAttribute(_daemon, daemonApp, method, true).ConfigureAwait(false);
                                 break;
 
@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon
                     {
                         switch (attr)
                         {
-                            case HomeAssistantServiceCallAttribute hasstServiceCallAttribute:
+                            case HomeAssistantServiceCallAttribute:
                                 await HandleServiceCallAttribute(_daemon, daemonRxApp, method, false).ConfigureAwait(false);
                                 break;
                         }
@@ -56,13 +56,15 @@ namespace NetDaemon.Daemon
 
             var parameters = method.GetParameters();
 
-            if (parameters == null || (parameters != null && parameters.Length != 1))
+            if (parameters == null || parameters.Length != 1)
                 return (false, $"{method.Name} has not correct number of parameters");
 
             var dynParam = parameters![0];
             if (dynParam.CustomAttributes.Count() == 1 &&
                 dynParam.CustomAttributes.First().AttributeType == typeof(DynamicAttribute))
+            {
                 return (true, string.Empty);
+            }
 
             return (false, $"{method.Name} is not correct signature");
         }
@@ -74,7 +76,7 @@ namespace NetDaemon.Daemon
 
             var parameters = method.GetParameters();
 
-            if (parameters == null || (parameters != null && parameters.Length != 3))
+            if (parameters == null || parameters.Length != 3)
                 return (false, $"{method.Name} has not correct number of parameters");
 
             if (parameters![0].ParameterType != typeof(string))
@@ -89,7 +91,7 @@ namespace NetDaemon.Daemon
             return (true, string.Empty);
         }
 
-        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonAppBase netDaemonApp, MethodInfo method, bool async=true)
+        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonAppBase netDaemonApp, MethodInfo method, bool async = true)
         {
             var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method, async);
             if (!signatureOk)
@@ -118,7 +120,6 @@ namespace NetDaemon.Daemon
                     }
                 });
         }
-        
 
         private static void HandleStateChangedAttribute(
                                     INetDaemon _daemon,
@@ -141,12 +142,16 @@ namespace NetDaemon.Daemon
                 try
                 {
                     if (hassStateChangedAttribute.To != null)
+                    {
                         if ((dynamic)hassStateChangedAttribute.To != to?.State)
                             return;
+                    }
 
                     if (hassStateChangedAttribute.From != null)
+                    {
                         if ((dynamic)hassStateChangedAttribute.From != from?.State)
                             return;
+                    }
 
                     // If we don´t accept all changes in the state change
                     // and we do not have a state change so return

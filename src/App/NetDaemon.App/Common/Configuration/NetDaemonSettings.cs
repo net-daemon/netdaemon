@@ -30,7 +30,7 @@ namespace NetDaemon.Common.Configuration
         public string? AppSource { get; set; } = null;
 
         /// <summary>
-        ///     Returns the directory path of AppSource 
+        ///     Returns the directory path of AppSource
         /// </summary>
         public string GetAppSourceDirectory()
         {

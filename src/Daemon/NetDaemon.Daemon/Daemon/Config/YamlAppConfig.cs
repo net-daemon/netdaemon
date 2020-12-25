@@ -46,12 +46,11 @@ namespace NetDaemon.Daemon.Config
                         // Get the class
 
                         string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
-                        Type? appType = _types.Where(n => n.FullName?.ToLowerInvariant() == appClass)
-                            .FirstOrDefault();
+                        Type? appType = _types.FirstOrDefault(n => n.FullName?.ToLowerInvariant() == appClass);
 
                         if (appType != null)
                         {
-                            var instance = InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value), appId);
+                            var instance = InstanceAndSetPropertyConfig(appType, (YamlMappingNode)app.Value, appId);
                             if (instance != null)
                             {
                                 instance.Id = appId;
@@ -69,7 +68,10 @@ namespace NetDaemon.Daemon.Config
             }
         }
 
-        public INetDaemonAppBase? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
+        public INetDaemonAppBase? InstanceAndSetPropertyConfig(
+            Type netDaemonAppType,
+            YamlMappingNode appNode,
+            string? appId)
         {
             var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
 
@@ -96,7 +98,7 @@ namespace NetDaemon.Daemon.Config
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Failed to set value {scalarPropertyName}", e);
+                    throw new ApplicationException($"Failed to set value {scalarPropertyName} for app {appId}", e);
                 }
             }
 
@@ -105,7 +107,6 @@ namespace NetDaemon.Daemon.Config
 
         private object? InstanceProperty(Object? parent, Type instanceType, YamlNode node)
         {
-
             if (node.NodeType == YamlNodeType.Scalar)
             {
                 var scalarNode = (YamlScalarNode)node;
@@ -120,13 +121,12 @@ namespace NetDaemon.Daemon.Config
                                     throw new NullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
 
                     IList list = listType.CreateListOfPropertyType() ??
-                                 throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
+                                throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
 
                     foreach (YamlNode item in ((YamlSequenceNode)node).Children)
                     {
-
                         var instance = InstanceProperty(null, listType, item) ??
-                                       throw new NotSupportedException($"The class {parent?.GetType().Name} has wrong type in items");
+                                    throw new NotSupportedException($"The class {parent?.GetType().Name} has wrong type in items");
 
                         list.Add(instance);
                     }
@@ -162,7 +162,7 @@ namespace NetDaemon.Daemon.Config
                             break;
 
                         case YamlNodeType.Mapping:
-                            var map = (YamlMappingNode)entry.Value;
+                            // Maps are not currently supported (var map = (YamlMappingNode)entry.Value;)
                             break;
                     }
                     childProp.SetValue(instance, result);
@@ -182,10 +182,10 @@ namespace NetDaemon.Daemon.Config
             scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
         }
 
-        private string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
+        private static string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
         {
-            KeyValuePair<YamlNode, YamlNode> classChild = appNode.Children.Where(n =>
-                ((YamlScalarNode)n.Key)?.Value?.ToLowerInvariant() == "class").FirstOrDefault();
+            KeyValuePair<YamlNode, YamlNode> classChild = appNode.Children.FirstOrDefault(n =>
+                ((YamlScalarNode)n.Key)?.Value?.ToLowerInvariant() == "class");
 
             if (classChild.Key == null || classChild.Value == null)
             {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -60,6 +61,8 @@ namespace NetDaemon.Common
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
+            // Suppress finalization.
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

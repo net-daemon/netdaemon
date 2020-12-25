@@ -5,9 +5,7 @@
     /// </summary>
     public struct RxEvent
     {
-        private readonly dynamic? _data;
         private readonly string? _domain;
-        private readonly string _eventName;
 
         /// <summary>
         ///     Constructor
@@ -17,15 +15,15 @@
         /// <param name="data">Data</param>
         public RxEvent(string eventName, string? domain, dynamic? data)
         {
-            _eventName = eventName;
+            Event = eventName;
             _domain = domain;
-            _data = data;
+            Data = data;
         }
 
         /// <summary>
         ///     Data from event
         /// </summary>
-        public dynamic? Data => _data;
+        public dynamic? Data { get; }
 
         /// <summary>
         ///     Domain (call service event)
@@ -35,6 +33,6 @@
         /// <summary>
         ///     The event being sent
         /// </summary>
-        public string Event => _eventName;
+        public string Event { get; }
     }
 }

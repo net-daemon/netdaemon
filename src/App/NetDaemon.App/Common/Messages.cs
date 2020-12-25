@@ -115,7 +115,7 @@ namespace NetDaemon.Common
                 {
                     if (key is not null)
                     {
-                        attributes = attributes + string.Format("       {0}:{1}", key, attr[key]);
+                        attributes += string.Format("       {0}:{1}", key, attr[key]);
                     }
                 }
             }
@@ -130,7 +130,6 @@ namespace NetDaemon.Common
             ", EntityId, State, Area, LastChanged, LastUpdated, attributes);
         }
     }
-
 
     /// <summary>
     ///     Unit system parameters for Home Assistant

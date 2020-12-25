@@ -18,7 +18,7 @@
         /// </summary>
         public bool Ssl { get; set; } = false;
         /// <summary>
-        ///     Token to authorize 
+        ///     Token to authorize
         /// </summary>
         public string Token { get; set; } = string.Empty;
     }
