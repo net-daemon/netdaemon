@@ -179,12 +179,18 @@ namespace NetDaemon.Service.Api
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "WEBSOCKET PROBLEM");
+                _logger.LogTrace(e, "Websocket problem found");
             }
 
             _sockets.TryRemove(socketId, out _);
 
-            await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct);
+            if (
+                currentSocket.State == WebSocketState.Open ||
+                currentSocket.State == WebSocketState.CloseReceived ||
+                currentSocket.State == WebSocketState.CloseSent)
+            {
+                await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct);
+            }
             currentSocket.Dispose();
         }
 
@@ -223,7 +229,11 @@ namespace NetDaemon.Service.Api
                     ct.ThrowIfCancellationRequested();
 
                     result = await socket.ReceiveAsync(buffer, ct);
-                    ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    if (!result.CloseStatus.HasValue)
+                        ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    else
+                        return null;
+
                 }
                 while (!result.EndOfMessage);
 
