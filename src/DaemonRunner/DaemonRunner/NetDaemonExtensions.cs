@@ -12,6 +12,8 @@ using NetDaemon.Service.App;
 using Serilog;
 using NetDaemon.Infrastructure.Config;
 using NetDaemon.Common.Exceptions;
+using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon
 {
@@ -21,6 +23,9 @@ namespace NetDaemon
 
         public static IHostBuilder UseNetDaemon(this IHostBuilder hostBuilder)
         {
+            _ = hostBuilder ??
+               throw new NetDaemonArgumentNullException(nameof(hostBuilder));
+
             if (File.Exists(HassioConfigPath))
                 ReadHassioConfig();
 
@@ -70,13 +75,14 @@ namespace NetDaemon
             if (string.IsNullOrEmpty(appSource))
                 return true;
 
-            return appSource.EndsWith(".csproj") || appSource.EndsWith(".dll");
+            return appSource.EndsWith(".csproj", true, CultureInfo.InvariantCulture)
+                || appSource.EndsWith(".dll", true, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
         ///     Reads the Home Assistant (hassio) configuration file
         /// </summary>
-        /// <returns></returns>
+        [SuppressMessage("", "CA1031")]
         private static void ReadHassioConfig()
         {
             try
@@ -98,7 +104,7 @@ namespace NetDaemon
                 _ = hassAddOnSettings?.AppSource ??
                     throw new NetDaemonNullReferenceException("AppSource cannot be null");
 
-                if (hassAddOnSettings.AppSource.StartsWith("/") || hassAddOnSettings.AppSource[1] == ':')
+                if (hassAddOnSettings.AppSource.StartsWith("/", true, CultureInfo.InvariantCulture) || hassAddOnSettings.AppSource[1] == ':')
                 {
                     // Hard codede path
                     Environment.SetEnvironmentVariable("NETDAEMON__APPSOURCE", hassAddOnSettings.AppSource);

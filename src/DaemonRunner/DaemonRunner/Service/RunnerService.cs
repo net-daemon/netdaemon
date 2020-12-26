@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -36,9 +37,9 @@ namespace NetDaemon.Service
         private bool _entitiesGenerated;
         private IEnumerable<Type>? _loadedDaemonApps;
 
-        private string? _sourcePath = null;
+        private string? _sourcePath;
 
-        private bool _hasConnectedBefore = false;
+        private bool _hasConnectedBefore;
 
         public RunnerService(
             ILoggerFactory loggerFactory,
@@ -49,6 +50,10 @@ namespace NetDaemon.Service
             IDaemonAppCompiler daemonAppCompiler
             )
         {
+            _ = homeAssistantSettings ??
+               throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
+            _ = netDaemonSettings ??
+               throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _homeAssistantSettings = homeAssistantSettings.Value;
             _netDaemonSettings = netDaemonSettings.Value;
@@ -63,6 +68,7 @@ namespace NetDaemon.Service
             await base.StopAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        [SuppressMessage("", "CA1031")]
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -105,6 +111,7 @@ namespace NetDaemon.Service
             _logger.LogInformation("NetDaemon service exited!");
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task Run(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)

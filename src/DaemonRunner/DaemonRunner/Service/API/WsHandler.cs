@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -42,6 +43,10 @@ namespace NetDaemon.Service.Api
             NetDaemonHost? host = null
             )
         {
+            _ = netDaemonSettings ??
+               throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
+            _ = homeAssistantSettings ??
+               throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
             _logger = loggerFactory.CreateLogger<ApiWebsocketMiddleware>();
             _host = host;
             _netdaemonSettings = netDaemonSettings.Value;
@@ -67,11 +72,15 @@ namespace NetDaemon.Service.Api
                         LastErrorMessage = n.IsEnabled ? n.RuntimeInfo.LastErrorMessage : null
                     })
                 };
-                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions)).ConfigureAwait(false);
+                await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
             }
         }
+
+        [SuppressMessage("", "CA1031")]
         public async Task Invoke(HttpContext context)
         {
+            _ = context ??
+               throw new NetDaemonArgumentNullException(nameof(context));
             if (!context.WebSockets.IsWebSocketRequest && context.Request.Path != "/api/ws")
             {
                 await _next.Invoke(context).ConfigureAwait(false);
@@ -115,7 +124,7 @@ namespace NetDaemon.Service.Api
                                     })
                                 };
 
-                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions)).ConfigureAwait(false);
+                                await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
 
                                 break;
                             case "settings":
@@ -156,7 +165,7 @@ namespace NetDaemon.Service.Api
                                     }
                                     if (command.IsEnabled is not null)
                                     {
-                                        if (command.IsEnabled ?? false)
+                                        if (command.IsEnabled.Value)
                                         {
                                             _host?.CallService("switch", "turn_on", new { entity_id = $"switch.netdaemon_{msg.App.ToSafeHomeAssistantEntityId()}" });
                                         }

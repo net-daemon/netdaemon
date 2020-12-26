@@ -27,7 +27,7 @@ namespace NetDaemon.Service.App
         {
         }
 
-        protected override Assembly? Load(AssemblyName _) => null;
+        protected override Assembly? Load(AssemblyName assemblyName) => null;
     }
 
     /// <summary>
@@ -108,16 +108,12 @@ namespace NetDaemon.Service.App
             var result = new List<SyntaxTree>(50);
 
             // Get the paths for all .cs files recursively in app folder
-            var csFiles = Directory.EnumerateFiles(codeFolder, "*.cs", SearchOption.AllDirectories);
-
-            foreach (var csFile in csFiles)
-            {
-                using var fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                var sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true);
-                var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
-                result.Add(syntaxTree);
-            }
-
+            IEnumerable<string>? csFiles = Directory.EnumerateFiles(codeFolder, "*.cs", SearchOption.AllDirectories);
+            result.AddRange(from csFile in csFiles
+                            let fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                            let sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true)
+                            let syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile)
+                            select syntaxTree);
             return result;
         }
 
@@ -129,7 +125,7 @@ namespace NetDaemon.Service.App
                         MetadataReference.CreateFromFile(typeof(System.Text.RegularExpressions.Regex).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.ComponentModel.INotifyPropertyChanged).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Linq.Expressions.DynamicExpression).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
@@ -143,8 +139,7 @@ namespace NetDaemon.Service.App
                         MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
                     };
 
-            var assembliesFromCurrentAppDomain = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assembliesFromCurrentAppDomain)
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (!assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location))
                     metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
@@ -209,9 +204,7 @@ namespace NetDaemon.Service.App
         {
             var semModel = compilation.GetSemanticModel(syntaxTree);
 
-            var classDeclarationExpressions = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
-
-            foreach (var classDeclaration in classDeclarationExpressions)
+            foreach (var classDeclaration in syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
             {
                 var symbol = semModel?.GetDeclaredSymbol(classDeclaration);
 
@@ -274,8 +267,8 @@ namespace NetDaemon.Service.App
                 if (symbol is null)
                     continue;
 
-                if (string.IsNullOrEmpty(symbol?.Name) ||
-                    !ExecuteWarningOnInvocationNames.Contains(symbol?.Name))
+                if (string.IsNullOrEmpty(symbol.Name) ||
+                    !ExecuteWarningOnInvocationNames.Contains(symbol.Name))
                 {
                     // The invocation name is empty or not in list of invocations
                     // that needs to be closed with Execute or ExecuteAsync
@@ -285,7 +278,7 @@ namespace NetDaemon.Service.App
                 // Now find top invocation to match whole expression
                 InvocationExpressionSyntax topInvocationExpression = invocationExpression;
 
-                if (symbol is not null && symbol.ContainingType.Name == "NetDaemonApp")
+                if (symbol.ContainingType.Name == "NetDaemonApp")
                 {
                     var disableLogging = false;
 
@@ -295,12 +288,9 @@ namespace NetDaemon.Service.App
 
                     while (parentInvocationExpression is not null)
                     {
-                        if (parentInvocationExpression is MethodDeclarationSyntax methodDeclarationSyntax)
+                        if (parentInvocationExpression is MethodDeclarationSyntax methodDeclarationSyntax && ExpressionContainsDisableLogging(methodDeclarationSyntax))
                         {
-                            if (ExpressionContainsDisableLogging(methodDeclarationSyntax))
-                            {
-                                disableLogging = true;
-                            }
+                            disableLogging = true;
                         }
                         if (parentInvocationExpression is InvocationExpressionSyntax invocationExpressionSyntax)
                         {
@@ -330,7 +320,8 @@ namespace NetDaemon.Service.App
         private static bool ExpressionContainsDisableLogging(MethodDeclarationSyntax methodInvocationExpression)
         {
             var invocationString = methodInvocationExpression.ToFullString();
-            return invocationString.Contains("[DisableLog") && invocationString.Contains("SupressLogType.MissingExecute");
+            return invocationString.Contains("[DisableLog", StringComparison.InvariantCultureIgnoreCase)
+                   && invocationString.Contains("SupressLogType.MissingExecute", StringComparison.InvariantCultureIgnoreCase);
         }
 
         // Todo: Refactor using something smarter than string match. In the future use Roslyn
@@ -338,7 +329,8 @@ namespace NetDaemon.Service.App
         {
             var invocationString = invocation.ToFullString();
 
-            return invocationString.Contains("ExecuteAsync()") || invocationString.Contains("Execute()");
+            return invocationString.Contains("ExecuteAsync()", StringComparison.InvariantCultureIgnoreCase)
+                   || invocationString.Contains("Execute()", StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

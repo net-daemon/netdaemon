@@ -1,20 +1,15 @@
-using System.Reflection;
 using JoySoftware.HomeAssistant.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Storage;
-using NetDaemon.Service;
 using Microsoft.Extensions.Options;
 using System.IO;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Common;
 using System;
-using System.Net.WebSockets;
-using Microsoft.AspNetCore.WebSockets;
 using NetDaemon.Service.Api;
 using NetDaemon.Common.Configuration;
 
@@ -22,7 +17,7 @@ namespace NetDaemon.Service
 {
     public class ApiStartup
     {
-        private readonly bool _useAdmin = false;
+        private readonly bool _useAdmin;
 
         public ApiStartup(IConfiguration configuration)
         {
@@ -42,7 +37,7 @@ namespace NetDaemon.Service
                 Path.Combine(
                      n.GetRequiredService<IOptions<NetDaemonSettings>>().Value.GetAppSourceDirectory()
                     , ".storage")));
-            services.AddTransient<IHttpHandler, NetDaemon.Daemon.HttpHandler>();
+            services.AddTransient<IHttpHandler, HttpHandler>();
             services.AddSingleton<NetDaemonHost>();
             services.AddHttpClient();
         }

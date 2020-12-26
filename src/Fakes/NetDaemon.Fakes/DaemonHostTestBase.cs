@@ -18,7 +18,7 @@ namespace NetDaemon.Daemon.Fakes
     /// <summary>
     ///     Base class for test classes
     /// </summary>
-    public partial class DaemonHostTestBase : IAsyncLifetime
+    public class DaemonHostTestBase : IAsyncLifetime
     {
         private Task? _fakeConnectedDaemon;
 
@@ -77,8 +77,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="testData">The object to turn into dynamic</param>
         public static dynamic GetDynamicDataObject(string testData = "testdata")
         {
-            var expandoObject = new ExpandoObject();
-            dynamic dynamicData = expandoObject;
+            dynamic dynamicData = new ExpandoObject();
             dynamicData.Test = testData;
             return dynamicData;
         }
@@ -123,14 +122,12 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="area">Area of entity</param>
         public void SetEntityState(string entityId, dynamic? state = null, string? area = null)
         {
-            var entity = new EntityState
+            DefaultDaemonHost.InternalState[entityId] = new EntityState
             {
                 EntityId = entityId,
                 Area = area,
                 State = state
             };
-
-            DefaultDaemonHost.InternalState[entityId] = entity;
         }
 
         /// <summary>
@@ -355,7 +352,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="timeout">Timeout (ms) of how long fake daemon will stay connected and process events</param>
         /// <param name="overrideDebugNotCancel">True if running debug mode should not cancel on timeout</param>
-        protected async Task InitializeFakeDaemon(short timeout = 300, bool overrideDebugNotCancel = false)
+        protected async Task InitializeFakeDaemon(short timeout = 50, bool overrideDebugNotCancel = false)
         {
             _fakeConnectedDaemon = await GetConnectedNetDaemonTask(timeout, overrideDebugNotCancel).ConfigureAwait(false);
         }
@@ -363,7 +360,6 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Runs the fake daemon service until timed out
         /// </summary>
-        /// <returns></returns>
         protected async Task RunFakeDaemonUntilTimeout()
         {
             _ = _fakeConnectedDaemon ??
@@ -377,7 +373,6 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="milliSeconds">Timeout in milliseconds</param>
         /// <param name="overrideDebugNotCancel">True to use timeout while debugging</param>
-        /// <returns></returns>
         private async Task<Task> GetConnectedNetDaemonTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
             var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel

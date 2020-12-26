@@ -8,22 +8,22 @@ namespace NetDaemon.Infrastructure.Config
     {
         private static SystemConsoleTheme SystemTheme { get; } = new(new Dictionary<ConsoleThemeStyle, SystemConsoleThemeStyle>
         {
-            [ConsoleThemeStyle.Text] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Gray},
-            [ConsoleThemeStyle.SecondaryText] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.DarkGray},
-            [ConsoleThemeStyle.TertiaryText] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.DarkGray},
-            [ConsoleThemeStyle.Invalid] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Yellow},
-            [ConsoleThemeStyle.Null] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Green},
-            [ConsoleThemeStyle.Name] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Green},
-            [ConsoleThemeStyle.String] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Green},
-            [ConsoleThemeStyle.Number] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Green},
-            [ConsoleThemeStyle.Boolean] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Green},
-            [ConsoleThemeStyle.Scalar] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Green},
-            [ConsoleThemeStyle.LevelVerbose] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Gray},
-            [ConsoleThemeStyle.LevelDebug] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.DarkYellow},
-            [ConsoleThemeStyle.LevelInformation] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.DarkGreen},
-            [ConsoleThemeStyle.LevelWarning] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Yellow},
-            [ConsoleThemeStyle.LevelError] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.Red},
-            [ConsoleThemeStyle.LevelFatal] = new SystemConsoleThemeStyle {Foreground = ConsoleColor.DarkRed},
+            [ConsoleThemeStyle.Text] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Gray },
+            [ConsoleThemeStyle.SecondaryText] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.DarkGray },
+            [ConsoleThemeStyle.TertiaryText] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.DarkGray },
+            [ConsoleThemeStyle.Invalid] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Yellow },
+            [ConsoleThemeStyle.Null] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Green },
+            [ConsoleThemeStyle.Name] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Green },
+            [ConsoleThemeStyle.String] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Green },
+            [ConsoleThemeStyle.Number] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Green },
+            [ConsoleThemeStyle.Boolean] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Green },
+            [ConsoleThemeStyle.Scalar] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Green },
+            [ConsoleThemeStyle.LevelVerbose] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Gray },
+            [ConsoleThemeStyle.LevelDebug] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.DarkYellow },
+            [ConsoleThemeStyle.LevelInformation] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.DarkGreen },
+            [ConsoleThemeStyle.LevelWarning] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Yellow },
+            [ConsoleThemeStyle.LevelError] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.Red },
+            [ConsoleThemeStyle.LevelFatal] = new SystemConsoleThemeStyle { Foreground = ConsoleColor.DarkRed },
         });
 
         private static AnsiConsoleTheme AnsiTheme { get; } = new(new Dictionary<ConsoleThemeStyle, string>
@@ -48,7 +48,7 @@ namespace NetDaemon.Infrastructure.Config
 
         public static ConsoleTheme GetThemeByType(string type)
         {
-            return string.Equals(type, "system", StringComparison.InvariantCultureIgnoreCase) ? SystemTheme : AnsiTheme;
+            return string.Equals(type, "system", StringComparison.OrdinalIgnoreCase) ? SystemTheme : AnsiTheme;
         }
     }
 }

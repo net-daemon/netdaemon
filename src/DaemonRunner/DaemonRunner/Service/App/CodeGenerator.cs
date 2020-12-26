@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using JoySoftware.HomeAssistant.Client;
@@ -30,9 +31,6 @@ namespace NetDaemon.Service.App
             ["camera"] = ("Camera", "ICamera"),
             ["media_player"] = ("MediaPlayer", "IMediaPlayer"),
             ["automation"] = ("Entity", "IEntity"),
-            // ["input_boolean"],
-            // ["remote"],
-            // ["climate"],
         };
 
         public static string? GenerateCode(string nameSpace, IEnumerable<string> entities)
@@ -41,7 +39,7 @@ namespace NetDaemon.Service.App
 
             // Add Usings statements
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemon.Common.Fluent.IMediaPlayer).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(Common.Fluent.IMediaPlayer).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -53,9 +51,7 @@ namespace NetDaemon.Service.App
                 SyntaxFactory.Token(SyntaxKind.StaticKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
 
             // Get all available domains, this is used to create the extensionmethods
-            var domains = GetDomainsFromEntities(entities);
-
-            foreach (var domain in domains)
+            foreach (var domain in GetDomainsFromEntities(entities))
             {
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
@@ -85,10 +81,10 @@ namespace NetDaemon.Service.App
     }}";
                     var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
                         ?? throw new NetDaemonNullReferenceException($"Parse class {nameof(NetDaemonApp)} failed");
-                    foreach (var entity in entities.Where(n => n.StartsWith(domain)))
+                    foreach (var entity in entities.Where(n => n.StartsWith(domain, true, CultureInfo.InvariantCulture)))
                     {
                         var (fluent, fluentInterface) = _FluentApiMapper[domain];
-                        var name = entity[(entity.IndexOf(".") + 1)..];
+                        var name = entity[(entity.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
                         // Quick check to make sure the name is a valid C# identifier. Should really check to make
                         // sure it doesn't collide with a reserved keyword as well.
                         if (!char.IsLetter(name[0]) && (name[0] != '_'))
@@ -121,7 +117,7 @@ namespace NetDaemon.Service.App
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonRxApp).Namespace!)));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemon.Common.Fluent.FluentExpandoObject).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(Common.Fluent.FluentExpandoObject).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -183,7 +179,7 @@ namespace NetDaemon.Service.App
                     if (s.Service is null)
                         continue;
 
-                    var name = s.Service[(s.Service.IndexOf(".") + 1)..];
+                    var name = s.Service[(s.Service.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
 
                     if (Array.IndexOf(skipServices, name) >= 0)
                         continue;
@@ -236,9 +232,9 @@ namespace NetDaemon.Service.App
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
                     ?? throw new NetDaemonNullReferenceException("Failed to parse entity class");
-                foreach (var entity in entities.Where(n => n.StartsWith(domain)))
+                foreach (var entity in entities.Where(n => n.StartsWith(domain, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    var name = entity[(entity.IndexOf(".") + 1)..];
+                    var name = entity[(entity.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
                     // Quick check to make sure the name is a valid C# identifier. Should really check to make
                     // sure it doesn't collide with a reserved keyword as well.
                     if (!char.IsLetter(name[0]) && (name[0] != '_'))
@@ -264,6 +260,6 @@ namespace NetDaemon.Service.App
         /// </summary>
         /// <param name="entities">A list of entities</param>
         internal static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) =>
-            entities.Select(n => n[0..n.IndexOf(".")]).Distinct();
+            entities.Select(n => n[0..n.IndexOf(".", StringComparison.InvariantCultureIgnoreCase)]).Distinct();
     }
 }
