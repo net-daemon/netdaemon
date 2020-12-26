@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon
 {
@@ -18,27 +19,27 @@ namespace NetDaemon.Daemon
 
         public HttpClient CreateHttpClient(string? name = null)
         {
-            _ = _httpClientFactory ?? throw new NullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
+            _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
             return _httpClientFactory.CreateClient(name);
         }
 
         public async Task<T?> GetJson<T>(string url, JsonSerializerOptions? options = null, params (string, object)[] headers)
         {
-            _ = _httpClientFactory ?? throw new NullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
+            _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
 
             var httpClient = _httpClientFactory.CreateClient();
 
             AddHeaders(httpClient, headers);
 
             var streamTask = httpClient.GetStreamAsync(url)
-                ?? throw new ApplicationException($"Unexpected, nothing returned from {url}");
+                ?? throw new NetDaemonException($"Unexpected, nothing returned from {url}");
 
             return await JsonSerializer.DeserializeAsync<T>(await streamTask.ConfigureAwait(false), options).ConfigureAwait(false);
         }
 
         public async Task<T?> PostJson<T>(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers)
         {
-            _ = _httpClientFactory ?? throw new NullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
+            _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
 
             var httpClient = _httpClientFactory.CreateClient();
 
@@ -56,7 +57,7 @@ namespace NetDaemon.Daemon
 
         public async Task PostJson(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers)
         {
-            _ = _httpClientFactory ?? throw new NullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
+            _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
 
             var httpClient = _httpClientFactory.CreateClient();
 
@@ -81,7 +82,7 @@ namespace NetDaemon.Daemon
                     else if (header is IEnumerable<string> headerStrings)
                         httpClient.DefaultRequestHeaders.Add(name, headerStrings);
                     else
-                        throw new ApplicationException($"Unsupported header, expected string or IEnumerable<string> for {name}");
+                        throw new NetDaemonException($"Unsupported header, expected string or IEnumerable<string> for {name}");
                 }
             }
         }

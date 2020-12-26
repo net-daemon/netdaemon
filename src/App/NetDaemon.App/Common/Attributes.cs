@@ -21,21 +21,23 @@ namespace NetDaemon.Common
     {
         // See the attribute guidelines at
         //  http://go.microsoft.com/fwlink/?LinkId=85236
-        private readonly SupressLogType[] _logTypesToSupress;
+        private readonly SupressLogType[]? _logTypesToSupress;
 
         /// <summary>
         ///     Default constructor
         /// </summary>
         /// <param name="logTypes">List of logtypes to supress</param>
-        public DisableLogAttribute(params SupressLogType[] logTypes)
-        {
-            _logTypesToSupress = logTypes;
-        }
+        public DisableLogAttribute(params SupressLogType[] logTypes) => _logTypesToSupress = logTypes;
 
         /// <summary>
         ///     Log types to supress
         /// </summary>
-        public IEnumerable<SupressLogType> LogTypesToSupress => _logTypesToSupress;
+        public IEnumerable<SupressLogType>? LogTypesToSupress => _logTypesToSupress;
+
+        /// <summary>
+        ///     Log tupes used
+        /// </summary>
+        public SupressLogType[]? LogTypes { get; }
     }
 
     /// <summary>

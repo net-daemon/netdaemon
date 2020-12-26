@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -30,7 +31,7 @@ namespace NetDaemon.Daemon
             _yamlConfig = yamlConfig;
         }
 
-        public int Count => _loadedDaemonApps?.Count() ?? throw new NullReferenceException("_loadedDaemonApps cannot be null");
+        public int Count => _loadedDaemonApps?.Count() ?? throw new NetDaemonNullReferenceException("_loadedDaemonApps cannot be null");
 
         // Internal for testing
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps!;
@@ -67,7 +68,7 @@ namespace NetDaemon.Daemon
                 {
                     _logger.LogTrace(e, "Error instance the app from the file {file}", file);
                     _logger.LogError("Error instance the app from the file {file}, use trace flag for details", file);
-                    throw new ApplicationException($"Error instance the app from the file {file}", e);
+                    throw new NetDaemonException($"Error instance the app from the file {file}", e);
                 }
             }
             return result;

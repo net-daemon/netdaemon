@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text.Json;
 using NetDaemon.Common.Fluent;
 
@@ -14,52 +16,51 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Components being installed and used
         /// </summary>
-        public List<string>? Components { get; init; } = null;
+        public IList<string>? Components { get; }
 
         /// <summary>
         ///     Local config directory
         /// </summary>
-        public string? ConfigDir { get; init; } = null;
+        public string? ConfigDir { get; }
 
         /// <summary>
         ///     Elevation of Home Assistant instance
         /// </summary>
-        public int? Elevation { get; init; } = null;
+        public int? Elevation { get; }
 
         /// <summary>
         ///     Latitude of Home Assistant instance
         /// </summary>
-        public float? Latitude { get; init; } = null;
+        public float? Latitude { get; }
 
         /// <summary>
         ///     The name of the location
         /// </summary>
-        public string? LocationName { get; init; } = null;
+        public string? LocationName { get; }
 
         /// <summary>
         ///     Longitude of Home Assistant instance
         /// </summary>
-        public float? Longitude { get; init; } = null;
+        public float? Longitude { get; }
 
         /// <summary>
         ///     The timezone
         /// </summary>
-        public string? TimeZone { get; init; } = null;
-
+        public string? TimeZone { get; }
         /// <summary>
         ///     Unity system being configured
         /// </summary>
-        public HassUnitSystem? UnitSystem { get; init; } = null;
+        public HassUnitSystem? UnitSystem { get; init; }
 
         /// <summary>
         ///     Current Home Assistant version
         /// </summary>
-        public string? Version { get; init; } = null;
+        public string? Version { get; init; }
 
         /// <summary>
         ///     Whitelisted external directories
         /// </summary>
-        public List<string>? WhitelistExternalDirs { get; init; } = null;
+        public ReadOnlyCollection<string>? WhitelistExternalDirs { get; }
     }
 
     /// <summary>
@@ -105,7 +106,6 @@ namespace NetDaemon.Common
         /// <summary>
         ///     returns a pretty print of EntityState
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             string attributes = "";
@@ -115,7 +115,7 @@ namespace NetDaemon.Common
                 {
                     if (key is not null)
                     {
-                        attributes += string.Format("       {0}:{1}", key, attr[key]);
+                        attributes += string.Format(CultureInfo.InvariantCulture, "       {0}:{1}", key, attr[key]);
                     }
                 }
             }
@@ -139,22 +139,22 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Lenght unit
         /// </summary>
-        public string? Length { get; init; } = null;
+        public string? Length { get; init; }
 
         /// <summary>
         ///     Mass unit
         /// </summary>
-        public string? Mass { get; init; } = null;
+        public string? Mass { get; init; }
 
         /// <summary>
         ///     Temperature unit
         /// </summary>
-        public string? Temperature { get; init; } = null;
+        public string? Temperature { get; init; }
 
         /// <summary>
         ///     Volume unit
         /// </summary>
-        public string? Volume { get; init; } = null;
+        public string? Volume { get; init; }
     }
 
     /// <summary>
@@ -175,7 +175,6 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Data being sent by the service
         /// </summary>
-        /// <value></value>
-        public JsonElement? ServiceData { get; init; } = null;
+        public JsonElement? ServiceData { get; init; }
     }
 }

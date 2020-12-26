@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using Xunit;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Fakes
 {
@@ -267,7 +268,7 @@ namespace NetDaemon.Daemon.Fakes
             foreach (var attribute in hassState.Attributes!.Keys)
             {
                 var attr = entity.Attribute as IDictionary<string, object> ??
-                    throw new NullReferenceException($"{nameof(entity.Attribute)} cant be null");
+                    throw new NetDaemonNullReferenceException($"{nameof(entity.Attribute)} cant be null");
 
                 Assert.True(attr.ContainsKey(attribute));
                 Assert.Equal(hassState.Attributes[attribute],
@@ -279,7 +280,6 @@ namespace NetDaemon.Daemon.Fakes
         /// Gets a cancellation source that does not timeout if debugger is attached
         /// </summary>
         /// <param name="milliSeconds"></param>
-        /// <returns></returns>
         public static CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
         {
             return (Debugger.IsAttached)

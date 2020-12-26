@@ -11,6 +11,7 @@ using NetDaemon.Service;
 using NetDaemon.Service.App;
 using Serilog;
 using NetDaemon.Infrastructure.Config;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon
 {
@@ -95,7 +96,7 @@ namespace NetDaemon
                     Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
 
                 _ = hassAddOnSettings?.AppSource ??
-                    throw new NullReferenceException("AppSource cannot be null");
+                    throw new NetDaemonNullReferenceException("AppSource cannot be null");
 
                 if (hassAddOnSettings.AppSource.StartsWith("/") || hassAddOnSettings.AppSource[1] == ':')
                 {

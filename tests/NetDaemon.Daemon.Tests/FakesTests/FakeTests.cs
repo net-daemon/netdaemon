@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Moq;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Fakes;
@@ -192,7 +193,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             INetDaemonHost? host = null;
 
             // ARRANGE ACT ASSERT
-            await Assert.ThrowsAsync<NullReferenceException>(() => DefaultDaemonRxApp.StartUpAsync(host!)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<NetDaemonArgumentNullException>(() => DefaultDaemonRxApp.StartUpAsync(host!)).ConfigureAwait(false);
         }
 
         [Fact]

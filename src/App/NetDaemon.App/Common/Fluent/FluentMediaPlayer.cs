@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common.Fluent
 {
@@ -80,7 +81,7 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public async Task ExecuteAsync()
         {
-            _ = _currentAction ?? throw new NullReferenceException("Missing fluent action type!");
+            _ = _currentAction ?? throw new NetDaemonNullReferenceException("Missing fluent action type!");
 
             var executeTask = _currentAction.ActionType switch
             {
@@ -100,7 +101,7 @@ namespace NetDaemon.Common.Fluent
                 foreach (var entityId in EntityIds)
                 {
                     var message = _currentAction?.MessageToSpeak ??
-                        throw new NullReferenceException("Message to speak is null or empty!");
+                        throw new NetDaemonNullReferenceException("Message to speak is null or empty!");
 
                     Daemon.Speak(entityId, message);
                 }

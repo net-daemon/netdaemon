@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon.Fakes;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 {
@@ -147,7 +148,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
         private static async Task<string> ReadString(WebSocket ws)
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
-            _ = buffer.Array ?? throw new NullReferenceException("Failed to allocate memory buffer");
+            _ = buffer.Array ?? throw new NetDaemonNullReferenceException("Failed to allocate memory buffer");
 
             using var ms = new MemoryStream();
             WebSocketReceiveResult result;

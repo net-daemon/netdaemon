@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,7 @@ namespace NetDaemon.Common.Fluent
     /// <summary>
     ///     Implements interface for managing entities in the fluent API
     /// </summary>
-    public class EntityManager : EntityBase, IEntity, IAction,
+    public sealed class EntityManager : EntityBase, IEntity, IAction,
         IStateEntity, IState, IStateAction, IScript
     {
         /// <summary>
@@ -39,16 +40,14 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         IDelayResult IDelayStateChange.DelayUntilStateChange(object? to, object? from, bool allChanges)
         {
-            return App.DelayUntilStateChange(this.EntityIds, to, from, allChanges);
+            return App.DelayUntilStateChange(EntityIds, to, from, allChanges);
         }
 
         /// <inheritdoc/>
-        IDelayResult IDelayStateChange.DelayUntilStateChange(Func<EntityState?, EntityState?, bool> stateFunc)
-        {
-            return App.DelayUntilStateChange(this.EntityIds, stateFunc);
-        }
+        IDelayResult IDelayStateChange.DelayUntilStateChange(Func<EntityState?, EntityState?, bool> stateFunc) => App.DelayUntilStateChange(EntityIds, stateFunc);
 
         /// <inheritdoc/>
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         public void Execute()
         {
             foreach (var entityId in EntityIds)
@@ -200,8 +199,8 @@ namespace NetDaemon.Common.Fluent
             foreach (var scriptName in EntityIds)
             {
                 var name = scriptName;
-                if (scriptName.Contains('.'))
-                    name = scriptName[(scriptName.IndexOf('.') + 1)..];
+                if (scriptName.Contains('.', StringComparison.InvariantCulture))
+                    name = scriptName[(scriptName.IndexOf('.', StringComparison.InvariantCulture) + 1)..];
                 var task = Daemon.CallServiceAsync("script", name);
                 taskList.Add(task);
             }
@@ -220,7 +219,6 @@ namespace NetDaemon.Common.Fluent
         ///     You want to keep the items when using this as part of an automation
         ///     that are kept over time. Not keeping when just doing a command
         /// </remarks>
-        /// <returns></returns>
         public async Task ExecuteAsync(bool keepItems)
         {
             if (keepItems)

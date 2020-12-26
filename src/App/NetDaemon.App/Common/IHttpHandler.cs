@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -7,6 +8,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Implements all Http features of NetDaemon
     /// </summary>
+    [SuppressMessage("", "CA1054")]
     public interface IHttpHandler
     {
         /// <summary>

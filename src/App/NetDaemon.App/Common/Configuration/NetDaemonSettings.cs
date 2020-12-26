@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common.Configuration
 {
@@ -27,7 +29,7 @@ namespace NetDaemon.Common.Configuration
         ///     the apps to be in the file paths and tries to find
         ///     all apps recursivly
         /// </remarks>
-        public string? AppSource { get; set; } = null;
+        public string? AppSource { get; set; }
 
         /// <summary>
         ///     Returns the directory path of AppSource
@@ -36,12 +38,13 @@ namespace NetDaemon.Common.Configuration
         {
             var source = AppSource?.Trim() ?? Directory.GetCurrentDirectory();
 
-            if (source.EndsWith(".csproj") || source.EndsWith(".dll"))
+            if (source.EndsWith(".csproj", true, CultureInfo.InvariantCulture)
+                || source.EndsWith(".dll", true, CultureInfo.InvariantCulture))
             {
                 source = Path.GetDirectoryName(source);
             }
 
-            return source ?? throw new NullReferenceException("Source cannot be null!");
+            return source ?? throw new NetDaemonNullReferenceException("Source cannot be null!");
         }
     }
 }

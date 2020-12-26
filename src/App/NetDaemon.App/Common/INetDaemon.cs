@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Fluent;
@@ -147,6 +148,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base interface that all NetDaemon apps needs to implement
     /// </summary>
+    [SuppressMessage("", "CA1716")]
     public interface INetDaemonApp : INetDaemonAppBase
     {
         /// <summary>
@@ -326,6 +328,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Shared features in both Reactive and async/await models
     /// </summary>
+    [SuppressMessage("", "CA1716")]
     public interface INetDaemonAppBase :
         INetDaemonInitialableApp, IDoLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
     {
@@ -594,6 +597,7 @@ namespace NetDaemon.Common
         ///     exactly when it happens but it should be fine. The SetState function
         ///     updates the state before sending.
         /// </remarks>
+        [SuppressMessage("", "CA1721")]
         IEnumerable<EntityState> State { get; }
 
         /// <summary>

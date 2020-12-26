@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Threading.Tasks;
 using Moq;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Fakes;
 using NetDaemon.Daemon.Storage;
 using Xunit;
@@ -11,7 +12,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
     public class FluentEventTests
     {
         [Fact]
-        public async Task ACustomEventNullValueCallThrowsNullReferenceException()
+        public async Task ACustomEventNullValueCallThrowsNetDaemonNullReferenceException()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
@@ -27,7 +28,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             var cancelSource = HassClientMock.GetSourceWithTimeout();
 
-            Assert.Throws<NullReferenceException>(() => app
+            Assert.Throws<NetDaemonNullReferenceException>(() => app
                 .Event("CUSTOM_EVENT")
                     .Call(null).Execute());
         }

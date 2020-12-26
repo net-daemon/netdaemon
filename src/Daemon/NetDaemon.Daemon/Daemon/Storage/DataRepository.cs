@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Storage
 {
@@ -70,7 +71,7 @@ namespace NetDaemon.Daemon.Storage
             JsonSerializerOptions options)
         {
             var dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(ref reader)
-                ?? throw new ApplicationException("Null result deserializing dictionary");
+                ?? throw new NetDaemonException("Null result deserializing dictionary");
             var returnObject = new Dictionary<string, object?>();
             var returnDict = (IDictionary<string, object?>)returnObject;
             foreach (var x in dict.Keys)

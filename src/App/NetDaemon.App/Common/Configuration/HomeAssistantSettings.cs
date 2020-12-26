@@ -16,7 +16,7 @@
         /// <summary>
         ///     Connect using ssl
         /// </summary>
-        public bool Ssl { get; set; } = false;
+        public bool Ssl { get; set; }
         /// <summary>
         ///     Token to authorize
         /// </summary>

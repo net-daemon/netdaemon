@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon
 {
@@ -267,7 +268,7 @@ namespace NetDaemon.Daemon
             if (_scheduledTasks.Values.Any(n => !n.IsCompleted))
             {
                 // Todo: Some kind of logging have to be done here to tell user which task caused timeout
-                throw new ApplicationException("Failed to cancel all tasks");
+                throw new NetDaemonException("Failed to cancel all tasks");
             }
         }
 

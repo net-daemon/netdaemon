@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Moq;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
@@ -366,7 +367,7 @@ namespace NetDaemon.Daemon.Fakes
         protected async Task RunFakeDaemonUntilTimeout()
         {
             _ = _fakeConnectedDaemon ??
-                throw new NullReferenceException("No task to process, did you forget to run InitFakeDaemon at the beginning of the test?");
+                throw new NetDaemonNullReferenceException("No task to process, did you forget to run InitFakeDaemon at the beginning of the test?");
 
             await WaitUntilCanceled(_fakeConnectedDaemon).ConfigureAwait(false);
         }

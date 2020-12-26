@@ -25,6 +25,7 @@ Just add ruleset file to a solution and open it.
 
     <!-- Specify default action that should be applied to a specified analyzer. -->
     <Rule Id="RCS0044" Action="None" />
+    <Rule Id="CA1014" Action="None" />
 
   </Rules>
 

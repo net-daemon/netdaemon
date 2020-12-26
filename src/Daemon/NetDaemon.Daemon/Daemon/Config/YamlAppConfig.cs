@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using YamlDotNet.RepresentationModel;
 
 namespace NetDaemon.Daemon.Config
@@ -60,7 +61,7 @@ namespace NetDaemon.Daemon.Config
                     }
                     catch (System.Exception e)
                     {
-                        throw new ApplicationException($"Error instancing application {appId}", e);
+                        throw new NetDaemonException($"Error instancing application {appId}", e);
                     }
                 }
 
@@ -98,7 +99,7 @@ namespace NetDaemon.Daemon.Config
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Failed to set value {scalarPropertyName} for app {appId}", e);
+                    throw new NetDaemonException($"Failed to set value {scalarPropertyName} for app {appId}", e);
                 }
             }
 
@@ -118,10 +119,10 @@ namespace NetDaemon.Daemon.Config
                 if (instanceType.IsGenericType && instanceType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 {
                     Type listType = instanceType?.GetGenericArguments()[0] ??
-                                    throw new NullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
+                                    throw new NetDaemonNullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
 
                     IList list = listType.CreateListOfPropertyType() ??
-                                throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
+                                throw new NetDaemonNullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
 
                     foreach (YamlNode item in ((YamlSequenceNode)node).Children)
                     {
@@ -179,7 +180,7 @@ namespace NetDaemon.Daemon.Config
 
             var secretReplacement = _yamlConfig.GetSecretFromPath(scalarNode.Value!, Path.GetDirectoryName(_yamlFilePath)!);
 
-            scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
+            scalarNode.Value = secretReplacement ?? throw new NetDaemonException($"{scalarNode.Value!} not found in secrets.yaml");
         }
 
         private static string? GetTypeNameFromClassConfig(YamlMappingNode appNode)

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
@@ -114,7 +115,7 @@ namespace NetDaemon.Daemon
         {
             get
             {
-                _ = _httpHandler ?? throw new NullReferenceException("HttpHandler can not be null!");
+                _ = _httpHandler ?? throw new NetDaemonNullReferenceException("HttpHandler can not be null!");
                 return _httpHandler;
             }
         }
@@ -153,7 +154,7 @@ namespace NetDaemon.Daemon
             this._cancelToken.ThrowIfCancellationRequested();
 
             if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
-                throw new ApplicationException("Servicecall queue full!");
+                throw new NetDaemonException("Servicecall queue full!");
         }
 
         public async Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
@@ -259,7 +260,7 @@ namespace NetDaemon.Daemon
             this._cancelToken.ThrowIfCancellationRequested();
 
             _ = _repository as IDataRepository ??
-                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+                throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
 
             if (DataCache.ContainsKey(id))
             {
@@ -286,7 +287,7 @@ namespace NetDaemon.Daemon
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
         {
             if (!Connected)
-                throw new ApplicationException("NetDaemon is not connected, no use in initializing");
+                throw new NetDaemonException("NetDaemon is not connected, no use in initializing");
 
             _appInstanceManager = appInstanceManager;
 
@@ -389,7 +390,7 @@ namespace NetDaemon.Daemon
 
             if (_hassClient == null)
             {
-                throw new NullReferenceException("HassClient cant be null when running daemon, check constructor!");
+                throw new NetDaemonNullReferenceException("HassClient cant be null when running daemon, check constructor!");
             }
 
             try
@@ -494,7 +495,7 @@ namespace NetDaemon.Daemon
             this._cancelToken.ThrowIfCancellationRequested();
 
             _ = _repository as IDataRepository ??
-                throw new NullReferenceException($"{nameof(_repository)} can not be null!");
+                throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
 
             if (data == null)
                 throw new ArgumentNullException(nameof(data));
@@ -538,7 +539,7 @@ namespace NetDaemon.Daemon
             this._cancelToken.ThrowIfCancellationRequested();
 
             if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
-                throw new ApplicationException("Servicecall queue full!");
+                throw new NetDaemonException("Servicecall queue full!");
         }
 
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
@@ -755,13 +756,13 @@ namespace NetDaemon.Daemon
                     {
                         var dependentApp = unsortedList.FirstOrDefault(n => n.Id == dependency);
                         if (dependentApp == null)
-                            throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
+                            throw new NetDaemonException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
 
                         edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
                     }
                 }
                 var sortedInstances = TopologicalSort<INetDaemonAppBase>(unsortedList.ToHashSet(), edges) ??
-                    throw new ApplicationException("Application dependencies is wrong, please check dependencies for circular dependencies!");
+                    throw new NetDaemonException("Application dependencies is wrong, please check dependencies for circular dependencies!");
 
                 return sortedInstances;
             }
@@ -780,7 +781,7 @@ namespace NetDaemon.Daemon
 
                     if (stateData is null)
                     {
-                        throw new NullReferenceException("StateData is null!");
+                        throw new NetDaemonNullReferenceException("StateData is null!");
                     }
 
                     if (stateData.NewState is null || stateData.OldState is null)
@@ -879,7 +880,7 @@ namespace NetDaemon.Daemon
 
                     if (serviceCallData == null)
                     {
-                        throw new NullReferenceException("ServiceData is null! not expected");
+                        throw new NetDaemonNullReferenceException("ServiceData is null! not expected");
                     }
                     var tasks = new List<Task>();
                     foreach (var app in InternalRunningAppInstances)
@@ -1190,7 +1191,7 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         private async Task LoadAllApps()
         {
-            _ = _appInstanceManager ?? throw new NullReferenceException(nameof(_appInstanceManager));
+            _ = _appInstanceManager ?? throw new NetDaemonNullReferenceException(nameof(_appInstanceManager));
 
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
@@ -1199,7 +1200,7 @@ namespace NetDaemon.Daemon
             var instancedApps = _appInstanceManager.InstanceDaemonApps();
 
             if (!InternalRunningAppInstances.IsEmpty)
-                throw new ApplicationException("Did not expect running instances!");
+                throw new NetDaemonException("Did not expect running instances!");
 
             foreach (INetDaemonAppBase appInstance in instancedApps!)
             {

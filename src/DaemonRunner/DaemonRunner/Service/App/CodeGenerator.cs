@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Config;
 
@@ -61,7 +62,7 @@ namespace NetDaemon.Service.App
                     var camelCaseDomain = domain.ToCamelCase();
                     var method = $"public static {camelCaseDomain}Entities {camelCaseDomain}Ex(this NetDaemonApp app) => new {camelCaseDomain}Entities(app);";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(method).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException("Method parsing failed");
+                        ?? throw new NetDaemonNullReferenceException("Method parsing failed");
 
                     extensionClass = extensionClass.AddMembers(methodDeclaration);
                 }
@@ -83,7 +84,7 @@ namespace NetDaemon.Service.App
         }}
     }}";
                     var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException($"Parse class {nameof(NetDaemonApp)} failed");
+                        ?? throw new NetDaemonNullReferenceException($"Parse class {nameof(NetDaemonApp)} failed");
                     foreach (var entity in entities.Where(n => n.StartsWith(domain)))
                     {
                         var (fluent, fluentInterface) = _FluentApiMapper[domain];
@@ -97,7 +98,7 @@ namespace NetDaemon.Service.App
 
                         var propertyCode = $@"public {fluentInterface} {name.ToCamelCase()} => _app.{fluent}(""{entity}"");";
                         var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                            ?? throw new NullReferenceException("Property parsing failed!");
+                            ?? throw new NetDaemonNullReferenceException("Property parsing failed!");
                         entityClass = entityClass.AddMembers(propDeclaration);
                     }
                     namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
@@ -147,7 +148,7 @@ namespace NetDaemon.Service.App
                     $@"public {camelCaseDomain}Entity {camelCaseDomain} => new {domain.ToCamelCase()}Entity(this, new string[] {{""""}});";
 
                 var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                    ?? throw new NullReferenceException($"Parse of property {camelCaseDomain} Entities/Entity failed");
+                    ?? throw new NetDaemonNullReferenceException($"Parse of property {camelCaseDomain} Entities/Entity failed");
                 extensionClass = extensionClass.AddMembers(propertyDeclaration);
             }
             namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
@@ -173,7 +174,7 @@ namespace NetDaemon.Service.App
         }}
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                    ?? throw new NullReferenceException("Failed to parse class declaration");
+                    ?? throw new NetDaemonNullReferenceException("Failed to parse class declaration");
 
                 // They allready have default implementation
                 var skipServices = new string[] { "turn_on", "turn_off", "toggle" };
@@ -215,7 +216,7 @@ namespace NetDaemon.Service.App
                     }}
                     ";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException("Failed to parse method");
+                        ?? throw new NetDaemonNullReferenceException("Failed to parse method");
                     entityClass = entityClass.AddMembers(methodDeclaration);
                 }
                 namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
@@ -234,7 +235,7 @@ namespace NetDaemon.Service.App
         }}
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                    ?? throw new NullReferenceException("Failed to parse entity class");
+                    ?? throw new NetDaemonNullReferenceException("Failed to parse entity class");
                 foreach (var entity in entities.Where(n => n.StartsWith(domain)))
                 {
                     var name = entity[(entity.IndexOf(".") + 1)..];
@@ -247,7 +248,7 @@ namespace NetDaemon.Service.App
 
                     var propertyCode = $@"public {domain.ToCamelCase()}Entity {name.ToCamelCase()} => new {domain.ToCamelCase()}Entity(_app, new string[] {{""{entity}""}});";
                     var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException("Failed to parse property");
+                        ?? throw new NetDaemonNullReferenceException("Failed to parse property");
                     entityClass = entityClass.AddMembers(propDeclaration);
                 }
                 namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);

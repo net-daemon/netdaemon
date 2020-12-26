@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common.Configuration;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
@@ -88,7 +89,7 @@ namespace NetDaemon.Service
                 _loadedDaemonApps = null;
 
                 await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>()
-                    ?? throw new ApplicationException("Failed to get service for NetDaemonHost");
+                    ?? throw new NetDaemonException("Failed to get service for NetDaemonHost");
                 {
                     await Run(daemonHost, stoppingToken).ConfigureAwait(false);
                 }

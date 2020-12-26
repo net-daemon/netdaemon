@@ -14,7 +14,7 @@ namespace NetDaemon.Common
     {
         private readonly INetDaemonApp _daemonApp;
         private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
-        private bool _isCanceled = false;
+        private bool _isCanceled;
 
         /// <summary>
         ///     Constructor
@@ -52,7 +52,7 @@ namespace NetDaemon.Common
 
         #region IDisposable Support
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         /// <summary>
         ///     Disposes the object and cancel delay

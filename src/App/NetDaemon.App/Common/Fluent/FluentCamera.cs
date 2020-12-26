@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common.Fluent
 {
@@ -31,6 +33,7 @@ namespace NetDaemon.Common.Fluent
     /// <summary>
     ///     Generic interface for PlayStream
     /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1711")]
     public interface IPlayStream<T>
     {
         /// <summary>
@@ -79,9 +82,9 @@ namespace NetDaemon.Common.Fluent
     /// <summary>
     ///     Implements the fluent camera interface
     /// </summary>
-    public class CameraManager : EntityBase, ICamera, IExecuteAsync
+    public class CameraManager : EntityBase, ICamera
     {
-        private (string, dynamic?)? _serviceCall = null;
+        private (string, dynamic?)? _serviceCall;
 
         /// <summary>
         ///     Constructor
@@ -122,14 +125,14 @@ namespace NetDaemon.Common.Fluent
         }
 
         /// <inheritdoc/>
-        public IExecuteAsync Record(string fileName, int? duration = null, int? lookback = null)
+        public IExecuteAsync Record(string fileName, int? seconds = null, int? lookback = null)
         {
             dynamic serviceData = new FluentExpandoObject();
 
             serviceData.filename = fileName;
 
-            if (duration is not null)
-                serviceData.duration = duration;
+            if (seconds is not null)
+                serviceData.duration = seconds;
             if (lookback is not null)
                 serviceData.lookback = lookback;
 
@@ -165,7 +168,7 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public Task ExecuteAsync()
         {
-            (string service, dynamic? data) = _serviceCall ?? throw new NullReferenceException($"{nameof(_serviceCall)} is Null!");
+            (string service, dynamic? data) = _serviceCall ?? throw new NetDaemonNullReferenceException($"{nameof(_serviceCall)} is Null!");
 
             return CallServiceOnAllEntities(service, data);
         }

@@ -7,18 +7,19 @@ using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class AppTestApp : NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp : Common.NetDaemonApp { }
 
-    public class AppTestApp2 : NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp2 : Common.NetDaemonApp { }
 
     public class NetDaemonApptests
     {
         private const string appTemplate = "  app: ";
         private readonly LoggerMock _logMock;
-        private readonly NetDaemon.Common.NetDaemonApp _app;
+        private readonly Common.NetDaemonApp _app;
         private readonly Mock<INetDaemon> _netDaemonMock;
 
         public NetDaemonApptests()
@@ -159,7 +160,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         {
             // ARRANGE
             const string? message = "message";
-            var exception = new NullReferenceException("Null");
+            var exception = new NetDaemonNullReferenceException("Null");
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string) });
 
@@ -197,7 +198,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         {
             // ARRANGE
             const string? message = "Hello {name}";
-            var exception = new NullReferenceException("Null");
+            var exception = new NetDaemonNullReferenceException("Null");
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string), typeof(object[]) });
 

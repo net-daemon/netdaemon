@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common.Fluent
 {
     /// <summary>
     ///     Handles events in fluent API
     /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1716")]
     public interface IFluentEvent
     {
         /// <summary>
@@ -52,7 +55,7 @@ namespace NetDaemon.Common.Fluent
         public IExecute Call(Func<string, dynamic, Task>? func)
         {
             if (func == null)
-                throw new NullReferenceException("Call function is null listening to event");
+                throw new NetDaemonNullReferenceException("Call function is null listening to event");
 
             _functionToCall = func;
             return this;
@@ -62,7 +65,7 @@ namespace NetDaemon.Common.Fluent
         public void Execute()
         {
             if (_events == null && _funcSelector == null)
-                throw new NullReferenceException($"Both {nameof(_events)} or {nameof(_events)} cant be null");
+                throw new NetDaemonNullReferenceException($"Both {nameof(_events)} or {nameof(_events)} cant be null");
 
             if (_events != null)
             {
@@ -89,6 +92,6 @@ namespace NetDaemon.Common.Fluent
         /// <summary>
         /// Data of the event
         /// </summary>
-        public dynamic? Data { get; set; } = null;
+        public dynamic? Data { get; set; }
     }
 }

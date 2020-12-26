@@ -3,7 +3,7 @@
     /// <summary>
     ///     Represent an event from eventstream
     /// </summary>
-    public struct RxEvent
+    public class RxEvent
     {
         private readonly string? _domain;
 

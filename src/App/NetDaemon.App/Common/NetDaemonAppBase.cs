@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common
@@ -19,29 +20,21 @@ namespace NetDaemon.Common
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
         /// </summary>
-        public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; set; } = new();
+        public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; } = new();
 
-        /// <summary>
-        ///     The NetDaemonHost instance
-        /// </summary>
-        protected INetDaemon? _daemon;
         private Task? _manageRuntimeInformationUpdatesTask;
 
         /// <summary>
         ///     All actions being performed for service call events
         /// </summary>
-        public List<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls { get; } = new();
+        public IList<(string, string, Func<dynamic?, Task>)> DaemonCallBacksForServiceCalls { get; }
+            = new List<(string, string, Func<dynamic?, Task>)>();
 
         // This is declared as static since it will contain state shared globally
         private static readonly ConcurrentDictionary<string, object> _global = new();
 
         private readonly Channel<bool> _updateRuntimeInfoChannel =
                Channel.CreateBounded<bool>(5);
-
-        // /// <summary>
-        // ///     The last error message logged och catched
-        // /// </summary>
-        // public string? RuntimeInfo.LastErrorMessage { get; set; } = null;
         private readonly CancellationTokenSource _cancelSource = new();
         private Task? _lazyStoreStateTask;
 
@@ -54,12 +47,13 @@ namespace NetDaemon.Common
         public ConcurrentDictionary<string, object> Global => _global;
 
         /// <inheritdoc/>
+        [SuppressMessage("", "CA1065")]
         public IHttpHandler Http
         {
             get
             {
-                _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-                return _daemon!.Http;
+                _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+                return Daemon!.Http;
             }
         }
 
@@ -74,17 +68,14 @@ namespace NetDaemon.Common
         {
             get
             {
-                var app_key = this.GetType().FullName;
+                var app_key = GetType().FullName;
 
                 if (app_key is null)
                     return "";
 
-                if (CompileTimeProperties.ContainsKey(app_key))
+                if (CompileTimeProperties.ContainsKey(app_key) && CompileTimeProperties[app_key].ContainsKey("description"))
                 {
-                    if (CompileTimeProperties[app_key].ContainsKey("description"))
-                    {
-                        return CompileTimeProperties[app_key]["description"];
-                    }
+                    return CompileTimeProperties[app_key]["description"];
                 }
                 return "";
             }
@@ -94,7 +85,8 @@ namespace NetDaemon.Common
         public ILogger? Logger { get; set; }
 
         /// <inheritdoc/>
-        public dynamic Storage => InternalStorageObject ?? throw new NullReferenceException($"{nameof(InternalStorageObject)} cant be null");
+        [SuppressMessage("", "CA1065")]
+        public dynamic Storage => InternalStorageObject ?? throw new NetDaemonNullReferenceException($"{nameof(InternalStorageObject)} cant be null");
 
         internal Channel<bool> InternalLazyStoreStateQueue { get; } =
             Channel.CreateBounded<bool>(1);
@@ -129,9 +121,9 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public async Task RestoreAppStateAsync()
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
-            var obj = await _daemon!.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage()).ConfigureAwait(false);
+            var obj = await Daemon!.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage()).ConfigureAwait(false);
 
             if (obj != null)
             {
@@ -139,8 +131,8 @@ namespace NetDaemon.Common
                 expStore.CopyFrom(obj);
             }
 
-            bool isDisabled = this.Storage.__IsDisabled ?? false;
-            var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
+            bool isDisabled = Storage.__IsDisabled ?? false;
+            var appInfo = Daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             var appState = appInfo?.State as string;
 
             if (isDisabled)
@@ -150,8 +142,8 @@ namespace NetDaemon.Common
                 {
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
-                    await _daemon.SetStateAsync(EntityId, "off").ConfigureAwait(false);
-                    await _daemon.CallServiceAsync("switch", "turn_off", serviceData);
+                    await Daemon.SetStateAsync(EntityId, "off").ConfigureAwait(false);
+                    await Daemon.CallServiceAsync("switch", "turn_off", serviceData).ConfigureAwait(false);
                 }
                 return;
             }
@@ -162,8 +154,8 @@ namespace NetDaemon.Common
                 {
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
-                    await _daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
-                    await _daemon.CallServiceAsync("switch", "turn_on", serviceData);
+                    await Daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
+                    await Daemon.CallServiceAsync("switch", "turn_on", serviceData).ConfigureAwait(false);
                 }
                 return;
             }
@@ -176,8 +168,14 @@ namespace NetDaemon.Common
         public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo { HasError = false };
 
         /// <inheritdoc/>
-        public IEnumerable<string> EntityIds => _daemon?.State.Select(n => n.EntityId) ??
-            throw new NullReferenceException("Deamon not expected to be null");
+        [SuppressMessage("", "CA1065")]
+        public IEnumerable<string> EntityIds => Daemon?.State.Select(n => n.EntityId) ??
+            throw new NetDaemonNullReferenceException("Deamon not expected to be null");
+
+        /// <summary>
+        ///     Instance to Daemon service
+        /// </summary>
+        protected INetDaemon? Daemon { get; set; }
 
         /// <inheritdoc/>
         public void SaveAppState()
@@ -191,14 +189,16 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Speak(string entityId, string message)
         {
-            _ = _daemon as INetDaemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            _daemon!.Speak(entityId, message);
+            _ = Daemon as INetDaemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            Daemon!.Speak(entityId, message);
         }
 
         /// <inheritdoc/>
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
-            _daemon = daemon;
+            _ = daemon ?? throw new NetDaemonArgumentNullException(nameof(daemon));
+
+            Daemon = daemon;
             _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
             _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
             InternalStorageObject = new FluentExpandoObject(false, true, daemon: this);
@@ -206,7 +206,7 @@ namespace NetDaemon.Common
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
-            var appInfo = _daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
+            var appInfo = Daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             if (appInfo?.State is not string appState || (appState != "on" && appState != "off"))
             {
                 IsEnabled = true;
@@ -222,13 +222,15 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Returns unique Id for instance
         /// </summary>
-        public string GetUniqueIdForStorage() => $"{this.GetType().Name}_{Id}".ToLowerInvariant();
+        [SuppressMessage("Microsoft.Globalization", "CA1308")]
+        public string GetUniqueIdForStorage() => $"{GetType().Name}_{Id}".ToLowerInvariant();
 
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         private async Task HandleLazyStorage()
         {
             _ = InternalStorageObject ??
-                throw new NullReferenceException($"{nameof(InternalStorageObject)} cant be null!");
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+                throw new NetDaemonNullReferenceException($"{nameof(InternalStorageObject)} cant be null!");
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
             while (!_cancelSource.IsCancellationRequested)
             {
@@ -237,7 +239,7 @@ namespace NetDaemon.Common
                     // Dont care about the result, just that it is time to store state
                     _ = await InternalLazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
 
-                    await _daemon!.SaveDataAsync<IDictionary<string, object>>(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
+                    await Daemon!.SaveDataAsync(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
                             .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -267,17 +269,20 @@ namespace NetDaemon.Common
             this.IsEnabled = false;
             _lazyStoreStateTask = null;
             InternalStorageObject = null;
-            _daemon = null;
+            _cancelSource.Dispose();
+            Daemon = null;
         }
 
         /// <inheritdoc/>
         public INetDaemonAppBase? GetApp(string appInstanceId)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.GetApp(appInstanceId);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.GetApp(appInstanceId);
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("Microsoft.Design", "CA1062")]
+        [SuppressMessage("Microsoft.Design", "CA1308")]
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => DaemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
 
@@ -290,7 +295,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Log(LogLevel level, string message, params object[] param)
         {
-            if (param is not null && param.Length > 0)
+            if (param.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();
                 Logger.Log(level, $"  {{Id}}: {message}", result);
@@ -307,7 +312,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Log(LogLevel level, Exception exception, string message, params object[] param)
         {
-            if (param is not null && param.Length > 0)
+            if (param.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();
                 Logger.Log(level, exception, $"  {{Id}}: {message}", result);
@@ -457,14 +462,14 @@ namespace NetDaemon.Common
 
         private async Task HandleUpdateRuntimeInformation()
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
             if (RuntimeInfo.LastErrorMessage is not null)
             {
                 RuntimeInfo.HasError = true;
             }
 
-            await _daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
+            await Daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
         }
     }
 }

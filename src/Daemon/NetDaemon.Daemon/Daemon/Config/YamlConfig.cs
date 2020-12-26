@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common.Configuration;
+using NetDaemon.Common.Exceptions;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -43,7 +44,7 @@ namespace NetDaemon.Daemon.Config
             }
             if (configPath != _configFolder)
             {
-                var parentPath = Directory.GetParent(configPath)?.FullName ?? throw new ApplicationException("Parent folder of config path does not exist");
+                var parentPath = Directory.GetParent(configPath)?.FullName ?? throw new NetDaemonException("Parent folder of config path does not exist");
 
                 return GetSecretFromPath(secret, parentPath);
             }

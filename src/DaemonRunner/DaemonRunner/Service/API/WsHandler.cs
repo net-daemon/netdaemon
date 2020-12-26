@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
 
 namespace NetDaemon.Service.Api
@@ -212,7 +213,7 @@ namespace NetDaemon.Service.Api
         {
             // System.Text.Json.JsonSerializer.DeserializeAsync(socket.)
             var buffer = new ArraySegment<byte>(new byte[8192]);
-            _ = buffer.Array ?? throw new NullReferenceException("Failed to allocate memory buffer");
+            _ = buffer.Array ?? throw new NetDaemonNullReferenceException("Failed to allocate memory buffer");
 
             using var ms = new MemoryStream();
             WebSocketReceiveResult result;

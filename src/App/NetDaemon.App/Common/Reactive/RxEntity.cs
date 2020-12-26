@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common.Reactive
@@ -68,11 +69,11 @@ namespace NetDaemon.Common.Reactive
         /// <summary>
         ///     The protected daemon app instance
         /// </summary>
-        protected readonly INetDaemonReactive DaemonRxApp;
+        protected INetDaemonReactive DaemonRxApp { get; }
         /// <summary>
         ///     Entity ids being handled by the RxEntity
         /// </summary>
-        protected readonly IEnumerable<string> EntityIds;
+        protected IEnumerable<string> EntityIds { get; }
 
         /// <summary>
         ///     Constructor
@@ -125,7 +126,7 @@ namespace NetDaemon.Common.Reactive
         {
             var entityParts = entity.Split('.');
             if (entityParts.Length != 2)
-                throw new ApplicationException($"entity_id is mal formatted {entity}");
+                throw new NetDaemonException($"entity_id is mal formatted {entity}");
 
             return entityParts[0];
         }
@@ -137,7 +138,7 @@ namespace NetDaemon.Common.Reactive
         /// <param name="data">Data to provide</param>
         public void CallService(string service, dynamic? data = null)
         {
-            if (EntityIds is null || (EntityIds is not null && !EntityIds.Any()))
+            if (EntityIds?.Any() != true)
                 return;
 
             foreach (var entityId in EntityIds!)
@@ -169,7 +170,7 @@ namespace NetDaemon.Common.Reactive
 
         private void CallServiceOnEntity(string service, dynamic? attributes = null)
         {
-            if (EntityIds is null || (EntityIds is not null && !EntityIds.Any()))
+            if (EntityIds?.Any() != true)
                 return;
 
             dynamic? data = null;
