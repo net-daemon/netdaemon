@@ -16,7 +16,7 @@ namespace NetDaemon
 {
     public static class NetDaemonExtensions
     {
-        const string HassioConfigPath = "/data/options.json";
+        private const string HassioConfigPath = "/data/options.json";
 
         public static IHostBuilder UseNetDaemon(this IHostBuilder hostBuilder)
         {
@@ -34,17 +34,14 @@ namespace NetDaemon
                 })
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
-                    webbuilder.UseKestrel(options => { });
+                    webbuilder.UseKestrel(_ => { });
                     webbuilder.UseStartup<ApiStartup>();
                 });
         }
 
         public static IHostBuilder UseDefaultNetDaemonLogging(this IHostBuilder hostBuilder)
         {
-            return hostBuilder.UseSerilog((context, loggerConfiguration) =>
-            {
-                SerilogConfigurator.Configure(loggerConfiguration, context.HostingEnvironment);
-            });
+            return hostBuilder.UseSerilog((context, loggerConfiguration) => SerilogConfigurator.Configure(loggerConfiguration, context.HostingEnvironment));
         }
 
         public static void CleanupNetDaemon()
@@ -61,7 +58,7 @@ namespace NetDaemon
         }
 
         /// <summary>
-        ///     Returns true if local loading of assemblies should be preferred. 
+        ///     Returns true if local loading of assemblies should be preferred.
         ///     This is typically when running in container. When running in dev
         ///     you want the local loading
         /// </summary>
@@ -72,17 +69,14 @@ namespace NetDaemon
             if (string.IsNullOrEmpty(appSource))
                 return true;
 
-            if (appSource.EndsWith(".csproj") || appSource.EndsWith(".dll"))
-                return true;
-            else
-                return false;
+            return appSource.EndsWith(".csproj") || appSource.EndsWith(".dll");
         }
 
         /// <summary>
         ///     Reads the Home Assistant (hassio) configuration file
         /// </summary>
         /// <returns></returns>
-        static void ReadHassioConfig()
+        private static void ReadHassioConfig()
         {
             try
             {

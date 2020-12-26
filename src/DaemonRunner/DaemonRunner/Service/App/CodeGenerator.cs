@@ -14,7 +14,7 @@ using NetDaemon.Daemon.Config;
 
 namespace NetDaemon.Service.App
 {
-    public class CodeGenerator
+    public static class CodeGenerator
     {
         /// <summary>
         ///     Mapps the domain to corresponding implemented Fluent API, will be added as
@@ -165,7 +165,7 @@ namespace NetDaemon.Service.App
         public string? Area => DaemonRxApp?.State(EntityId)?.Area;
 
         public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
-        
+
         public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
 
         public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
@@ -173,7 +173,7 @@ namespace NetDaemon.Service.App
         public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
 
         public {domain.ToCamelCase()}Entity(INetDaemonReactive daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
-        {{          
+        {{
         }}
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
@@ -207,7 +207,7 @@ namespace NetDaemon.Service.App
                         if (data is ExpandoObject)
                         {{
                             serviceData.CopyFrom(data);
-                        }} 
+                        }}
                         else if (data is not null)
                         {{
                             var expObject = ((object)data).ToExpandoObject();

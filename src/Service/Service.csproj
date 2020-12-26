@@ -24,4 +24,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 </Project>

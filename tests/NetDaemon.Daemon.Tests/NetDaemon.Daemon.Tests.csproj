@@ -59,7 +59,8 @@
     <Content Include="DaemonRunner/FaultyApp/**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-
-
   </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 </Project>

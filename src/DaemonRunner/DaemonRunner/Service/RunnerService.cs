@@ -211,7 +211,6 @@ namespace NetDaemon.Service
             _logger.LogTrace("Generating entities from Home Assistant instance ..");
 
             _entitiesGenerated = true;
-            var codeGen = new CodeGenerator();
             var source = CodeGenerator.GenerateCode(
                 "Netdaemon.Generated.Extensions",
                 daemonHost.State.Select(n => n.EntityId).Distinct()

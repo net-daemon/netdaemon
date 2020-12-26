@@ -8,7 +8,8 @@ try
         .UseDefaultNetDaemonLogging()
         .UseNetDaemon()
         .Build()
-        .RunAsync();
+        .RunAsync()
+        .ConfigureAwait(false);
 }
 catch (Exception e)
 {

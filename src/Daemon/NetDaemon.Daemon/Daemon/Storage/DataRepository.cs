@@ -26,7 +26,6 @@ namespace NetDaemon.Daemon.Storage
         {
             try
             {
-
                 var storageJsonFile = Path.Combine(_dataStoragePath, $"{id}_store.json");
 
                 if (!File.Exists(storageJsonFile))

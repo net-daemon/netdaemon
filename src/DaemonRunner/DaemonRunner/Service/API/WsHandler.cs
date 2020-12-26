@@ -67,7 +67,7 @@ namespace NetDaemon.Service.Api
                         LastErrorMessage = n.IsEnabled ? n.RuntimeInfo.LastErrorMessage : null
                     })
                 };
-                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions));
+                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions)).ConfigureAwait(false);
             }
         }
         public async Task Invoke(HttpContext context)

@@ -7,5 +7,11 @@
         "**/obj": true,
         "**/Properties": true,
         "**/TestResults": true
-    }
+    },
+    "omnisharp.enableRoslynAnalyzers": true,
+    "cSpell.words": [
+        "Expando",
+        "Hass",
+        "dayofweek"
+    ]
 }

@@ -19,7 +19,7 @@
     <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
     <tags>Home Assistant</tags>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="JoySoftware.HassClient" Version="20.52.1-beta" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
@@ -34,10 +34,13 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00839" />
     <PackageReference Include="YamlDotNet" Version="9.1.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
     <ProjectReference Include="..\..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
   </ItemGroup>
-  
+
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 </Project>
