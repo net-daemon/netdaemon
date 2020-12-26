@@ -4,11 +4,10 @@ using NetDaemon.Common;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 {
-
     /// <summary>
     ///     Greets (or insults) people when coming home :)
     /// </summary>
-    public class AssmeblyDaemonApp : NetDaemon.Common.NetDaemonApp
+    public class AssemblyDaemonApp : NetDaemon.Common.NetDaemonApp
     {
         #region -- Test config --
 

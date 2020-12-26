@@ -14,18 +14,16 @@ namespace NetDaemon.Service.App
     public class DaemonAppCompiler : IDaemonAppCompiler
     {
         private readonly ILogger<DaemonAppCompiler> _logger;
-        private readonly IOptions<NetDaemonSettings> _netDaemonSettings;
 
         private readonly string? _sourceFolder = null;
         public DaemonAppCompiler(ILogger<DaemonAppCompiler> logger, IOptions<NetDaemonSettings> netDaemonSettings)
         {
             _logger = logger;
-            _netDaemonSettings = netDaemonSettings;
+            NetDaemonSettings = netDaemonSettings;
             _sourceFolder = netDaemonSettings.Value.GetAppSourceDirectory();
-
         }
 
-        public IOptions<NetDaemonSettings> NetDaemonSettings => _netDaemonSettings;
+        public IOptions<NetDaemonSettings> NetDaemonSettings { get; }
 
         public IEnumerable<Type> GetApps()
         {

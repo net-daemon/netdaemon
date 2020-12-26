@@ -17,7 +17,7 @@ namespace NetDaemon.Service.App
     public static class CodeGenerator
     {
         /// <summary>
-        ///     Mapps the domain to corresponding implemented Fluent API, will be added as
+        ///     Maps the domain to corresponding implemented Fluent API, will be added as
         ///     more and more entity types are supported
         /// </summary>
         private static readonly IDictionary<string, (string, string)> _FluentApiMapper = new Dictionary<string, (string, string)>
@@ -59,7 +59,7 @@ namespace NetDaemon.Service.App
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
                     var camelCaseDomain = domain.ToCamelCase();
-                    var method = $@"public static {camelCaseDomain}Entities {camelCaseDomain}Ex(this NetDaemonApp app) => new {camelCaseDomain}Entities(app);";
+                    var method = $"public static {camelCaseDomain}Entities {camelCaseDomain}Ex(this NetDaemonApp app) => new {camelCaseDomain}Entities(app);";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(method).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
                         ?? throw new NullReferenceException("Method parsing failed");
 
@@ -71,7 +71,6 @@ namespace NetDaemon.Service.App
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
                     var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
@@ -100,8 +99,6 @@ namespace NetDaemon.Service.App
                         var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
                             ?? throw new NullReferenceException("Property parsing failed!");
                         entityClass = entityClass.AddMembers(propDeclaration);
-
-
                     }
                     namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
                 }
@@ -146,7 +143,7 @@ namespace NetDaemon.Service.App
                 var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) != 0;
 
                 var property = isSingleServiceDomain ?
-                    $@"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
+                    $"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
                     $@"public {camelCaseDomain}Entity {camelCaseDomain} => new {domain.ToCamelCase()}Entity(this, new string[] {{""""}});";
 
                 var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
@@ -157,7 +154,6 @@ namespace NetDaemon.Service.App
 
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entity : RxEntity
     {{
         public string EntityId => EntityIds.First();
@@ -221,16 +217,13 @@ namespace NetDaemon.Service.App
                     var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
                         ?? throw new NullReferenceException("Failed to parse method");
                     entityClass = entityClass.AddMembers(methodDeclaration);
-
                 }
                 namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
-
             }
 
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
     {{
         private readonly {nameof(NetDaemonRxApp)} _app;
@@ -244,7 +237,6 @@ namespace NetDaemon.Service.App
                     ?? throw new NullReferenceException("Failed to parse entity class");
                 foreach (var entity in entities.Where(n => n.StartsWith(domain)))
                 {
-
                     var name = entity[(entity.IndexOf(".") + 1)..];
                     // Quick check to make sure the name is a valid C# identifier. Should really check to make
                     // sure it doesn't collide with a reserved keyword as well.

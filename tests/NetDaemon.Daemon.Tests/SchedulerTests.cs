@@ -28,21 +28,21 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunIn(200, async () =>
                 {
                     isTaskRun = true;
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                 });
 
                 // ASSERT
                 // Assert not run before time
 
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
                 Assert.False(isTaskRun);
 
-                await Task.Delay(150);
+                await Task.Delay(150).ConfigureAwait(false);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -72,12 +72,12 @@ namespace NetDaemon.Daemon.Tests
                     return Task.CompletedTask;
                 });
 
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -102,21 +102,21 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunIn(200, async () =>
                 {
                     isTaskRun = true;
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                 });
 
                 // ASSERT
                 // Assert not run before time
 
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
                 Assert.False(isTaskRun);
                 scheduledResult.CancelSource.Cancel();
-                await Task.Delay(150);
+                await Task.Delay(150).ConfigureAwait(false);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -184,18 +184,18 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunDaily("10:00:01", async () =>
                {
                    nrOfRuns++;
-                   await Task.Delay(1);
+                   await Task.Delay(1).ConfigureAwait(false);
                });
-                await Task.Delay(600);
+                await Task.Delay(600).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.True(nrOfRuns == 0);
-                await Task.Delay(500);
+                await Task.Delay(500).ConfigureAwait(false);
                 Assert.True(nrOfRuns == 1);
             }
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -221,11 +221,11 @@ namespace NetDaemon.Daemon.Tests
                    int i = int.Parse("Not an integer makes runtime error!");
                    return Task.CompletedTask;
                });
-                await Task.Delay(1500);
+                await Task.Delay(1500).ConfigureAwait(false);
             }
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -254,11 +254,11 @@ namespace NetDaemon.Daemon.Tests
                      int i = int.Parse("Not an integer makes runtime error!");
                      return Task.CompletedTask;
                  });
-                await Task.Delay(1500);
+                await Task.Delay(1500).ConfigureAwait(false);
             }
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -284,19 +284,19 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunDaily("10:00:01", async () =>
                {
                    nrOfRuns++;
-                   await Task.Delay(1);
+                   await Task.Delay(1).ConfigureAwait(false);
                });
-                await Task.Delay(600);
+                await Task.Delay(600).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.True(nrOfRuns == 0);
                 scheduledResult.CancelSource.Cancel();
-                await Task.Delay(500);
+                await Task.Delay(500).ConfigureAwait(false);
                 Assert.True(nrOfRuns == 0);
             }
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -327,19 +327,19 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { dayOfWeek }, async () =>
                    {
                        nrOfRuns++;
-                       await Task.Delay(1);
+                       await Task.Delay(1).ConfigureAwait(false);
                    });
-                await Task.Delay(600);
+                await Task.Delay(600).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.True(nrOfRuns == 0);
-                await Task.Delay(800);
+                await Task.Delay(800).ConfigureAwait(false);
                 Assert.True(nrOfRuns >= 1);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -369,19 +369,19 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { DayOfWeek.Monday }, async () =>
                   {
                       nrOfRuns++;
-                      await Task.Delay(1);
+                      await Task.Delay(1).ConfigureAwait(false);
                   });
-                await Task.Delay(600);
+                await Task.Delay(600).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.True(nrOfRuns == 0);
-                await Task.Delay(500);
+                await Task.Delay(500).ConfigureAwait(false);
                 Assert.False(nrOfRuns == 1);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -405,19 +405,19 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunEveryMinute(0, async () =>
                 {
                     nrOfRuns++;
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                 });
-                await Task.Delay(300);
+                await Task.Delay(300).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.Equal(0, nrOfRuns);
-                await Task.Delay(1500);
+                await Task.Delay(1500).ConfigureAwait(false);
                 Assert.True(nrOfRuns >= 1);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -443,12 +443,12 @@ namespace NetDaemon.Daemon.Tests
                     int i = int.Parse("Not an integer makes runtime error!");
                     return Task.CompletedTask;
                 });
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -474,20 +474,20 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunEveryMinute(0, async () =>
                 {
                     nrOfRuns++;
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                 });
-                await Task.Delay(300);
+                await Task.Delay(300).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.Equal(0, nrOfRuns);
                 scheduledResult.CancelSource.Cancel();
-                await Task.Delay(1500);
+                await Task.Delay(1500).ConfigureAwait(false);
                 Assert.Equal(0, nrOfRuns);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -513,19 +513,19 @@ namespace NetDaemon.Daemon.Tests
                 scheduledResult = scheduler.RunEveryMinute(20, async () =>
                 {
                     nrOfRuns++;
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                 });
-                await Task.Delay(600);
+                await Task.Delay(600).ConfigureAwait(false);
 
                 // ASSERT
                 Assert.True(nrOfRuns == 0);
-                await Task.Delay(500);
+                await Task.Delay(500).ConfigureAwait(false);
                 Assert.True(nrOfRuns == 1);
             }
 
             try
             {
-                await scheduledResult.Task;
+                await scheduledResult.Task.ConfigureAwait(false);
             }
             catch
             {
@@ -542,12 +542,9 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 // ACT
-                var runTask = scheduler.RunEvery(20, async () =>
-                {
-                    await Task.Delay(50);
-                });
+                var runTask = scheduler.RunEvery(20, async () => await Task.Delay(50).ConfigureAwait(false));
 
-                await Task.WhenAny(runTask.Task, Task.Delay(500));
+                await Task.WhenAny(runTask.Task, Task.Delay(500)).ConfigureAwait(false);
             }
             // ASSERT
             mockTimeManager.Verify(n => n.Delay(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -563,12 +560,9 @@ namespace NetDaemon.Daemon.Tests
             await using (IScheduler scheduler = new Scheduler(mockTimeManager.Object))
             {
                 // ACT
-                var runTask = scheduler.RunEvery(20, async () =>
-                {
-                    await Task.Delay(1);
-                });
+                var runTask = scheduler.RunEvery(20, async () => await Task.Delay(1).ConfigureAwait(false));
 
-                await Task.WhenAny(runTask.Task, Task.Delay(100));
+                await Task.WhenAny(runTask.Task, Task.Delay(100)).ConfigureAwait(false);
             }
 
             // ASSERT

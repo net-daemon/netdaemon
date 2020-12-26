@@ -4,14 +4,13 @@ using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
-
-    /// <summary> Use this class as startingpoint for debugging 
+    /// <summary> Use this class as startingpoint for debugging
     /// </summary>
     public class DebugApp : NetDaemonRxApp
     {
         // Use two guids, one when instanced and one when initialized
         // can track errors with instancing
-        Guid _instanceId = Guid.NewGuid();
+        private Guid _instanceId = Guid.NewGuid();
         public DebugApp() : base()
         {
         }
@@ -28,5 +27,4 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
             Log("A call from hass! {data}", data);
         }
     }
-
 }

@@ -47,9 +47,9 @@ namespace NetDaemon.Daemon.Fakes
                 x => x.Log(
                     level,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.Is<It.IsAnyType>((_, __) => true),
                     It.IsAny<Exception>(),
-                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), times);
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), times);
         }
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace NetDaemon.Daemon.Fakes
                 x => x.Log(
                     level,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString() == message),
+                    It.Is<It.IsAnyType>((v, _) => v.ToString() == message),
                     It.IsAny<Exception>(),
-                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), times);
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), times);
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace NetDaemon.Daemon.Fakes
                 x => x.Log(
                     level,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString() == message),
+                    It.Is<It.IsAnyType>((v, _) => v.ToString() == message),
                     exception,
-                    It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)), times);
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), times);
         }
     }
 }

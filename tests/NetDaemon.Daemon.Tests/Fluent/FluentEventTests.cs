@@ -23,7 +23,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             var cancelSource = HassClientMock.GetSourceWithTimeout();
 
@@ -45,7 +45,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
@@ -58,7 +58,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             app
                 .Event("CUSTOM_EVENT")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -71,7 +71,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);
@@ -89,7 +89,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
@@ -102,7 +102,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -115,7 +115,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);
@@ -134,7 +134,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
@@ -147,7 +147,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello World!")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -160,7 +160,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);
@@ -179,7 +179,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
@@ -192,7 +192,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello Test!")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -205,7 +205,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.False(isCalled);
@@ -223,7 +223,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
@@ -235,7 +235,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.NotExist == "Hello Test!")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -248,7 +248,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.False(isCalled);
@@ -266,7 +266,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
@@ -279,7 +279,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             app
                 .Events(new string[] { "CUSTOM_EVENT" })
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -292,7 +292,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);

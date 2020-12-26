@@ -46,7 +46,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void SecretsLoadFaultyYamlThrowsException()
         {
             // ARRANGE
-            var faultyYaml =
+            const string? faultyYaml =
             "yaml: correctLine\n" +
             "yaml_missing: \"missing" +
             "yaml_correct: 10";
@@ -102,7 +102,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingString()
         {
             // ARRANGE
-            var yaml = "yaml: string\n";
+            const string? yaml = "yaml: string\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
@@ -118,7 +118,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingInt()
         {
             // ARRANGE
-            var yaml = "yaml: 1234\n";
+            const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
@@ -134,7 +134,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingBoolean()
         {
             // ARRANGE
-            var yaml = "yaml: true\n";
+            const string? yaml = "yaml: true\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
@@ -150,7 +150,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingLong()
         {
             // ARRANGE
-            var yaml = "yaml: 1234\n";
+            const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
@@ -163,10 +163,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         }
 
         [Fact]
-        public void YamlScalarNodeToObjectUsingDeciaml()
+        public void YamlScalarNodeToObjectUsingDecimal()
         {
             // ARRANGE
-            var yaml = "yaml: 1.5\n";
+            const string? yaml = "yaml: 1.5\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
@@ -183,7 +183,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         [Fact]
         public void YamlAdvancedObjectsShouldReturnCorrectData()
         {
-            var yaml = @"
+            const string? yaml = @"
             a_string: hello world
             an_int: 10
             a_bool: true

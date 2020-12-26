@@ -11,7 +11,22 @@
     "omnisharp.enableRoslynAnalyzers": true,
     "cSpell.words": [
         "Expando",
+        "Finalizers",
         "Hass",
-        "dayofweek"
+        "Usings",
+        "Xunit",
+        "dayofweek",
+        "entityid",
+        "hassio",
+        "idguid",
+        "mulitinstance",
+        "mydomain",
+        "myevent",
+        "mylight",
+        "myscript",
+        "noexist",
+        "noquotes",
+        "parentidguid",
+        "useridguid"
     ]
 }

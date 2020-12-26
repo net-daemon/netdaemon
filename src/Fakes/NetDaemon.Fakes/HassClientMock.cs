@@ -57,13 +57,13 @@ namespace NetDaemon.Daemon.Fakes
             SetupGet(x => x.States).Returns(FakeStates);
 
             Setup(x => x.GetAllStates(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() => { return (IEnumerable<HassState>)FakeStates.Values; });
+                .ReturnsAsync(() => (IEnumerable<HassState>)FakeStates.Values);
 
             Setup(x => x.ReadEventAsync())
-                .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
+                .ReturnsAsync(() => FakeEvents.TryDequeue(out var ev) ? ev : null);
 
             Setup(x => x.ReadEventAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
+                .ReturnsAsync(() => FakeEvents.TryDequeue(out var ev) ? ev : null);
 
             Setup(x => x.GetConfig()).ReturnsAsync(new HassConfig { State = "RUNNING" });
 
@@ -93,7 +93,7 @@ namespace NetDaemon.Daemon.Fakes
             Areas.Add(new HassArea { Name = "Area", Id = "area_idd" });
             Entities.Add(new HassEntity
             {
-                EntityId = "light.ligth_in_area",
+                EntityId = "light.light_in_area",
                 DeviceId = "device_idd"
             });
         }
@@ -126,7 +126,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="data">Data sent by service</param>
         public void AddCallServiceEvent(string domain, string service, dynamic? data = null)
         {
-            // Todo: Refactor to smth smarter
+            // Todo: Refactor to something smarter
             FakeEvents.Enqueue(new HassEvent
             {
                 EventType = "call_service",
@@ -149,7 +149,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="lastChanged">Last changed</param>
         public void AddChangedEvent(string entityId, object fromState, object toState, DateTime lastUpdated, DateTime lastChanged)
         {
-            // Todo: Refactor to smth smarter
+            // Todo: Refactor to something smarter
             FakeEvents.Enqueue(new HassEvent
             {
                 EventType = "state_changed",
@@ -250,7 +250,7 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
-        ///     Assert if the HassClient entity state is equeal to NetDaemon entity state
+        ///     Assert if the HassClient entity state is equals to NetDaemon entity state
         /// </summary>
         /// <param name="hassState">HassClient state instance</param>
         /// <param name="entity">NetDaemon state instance</param>
@@ -267,7 +267,7 @@ namespace NetDaemon.Daemon.Fakes
             foreach (var attribute in hassState.Attributes!.Keys)
             {
                 var attr = entity.Attribute as IDictionary<string, object> ??
-                    throw new NullReferenceException($"{nameof(entity.Attribute)} catn be null");
+                    throw new NullReferenceException($"{nameof(entity.Attribute)} cant be null");
 
                 Assert.True(attr.ContainsKey(attribute));
                 Assert.Equal(hassState.Attributes[attribute],
@@ -317,7 +317,6 @@ namespace NetDaemon.Daemon.Fakes
                 Verify(n => n.CallService(domain, service, data!, waitForResponse), times.Value);
             else
                 Verify(n => n.CallService(domain, service, data!, waitForResponse), Times.AtLeastOnce);
-
         }
 
         /// <summary>
@@ -344,8 +343,6 @@ namespace NetDaemon.Daemon.Fakes
         {
             Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
         }
-
-
 
         /// <summary>
         ///     Verify state if entity

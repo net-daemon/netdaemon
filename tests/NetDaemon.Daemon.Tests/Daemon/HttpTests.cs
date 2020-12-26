@@ -23,7 +23,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task HttpClientShouldReturnCorrectContent()
         {
             // ARRANGE
-            var response = "{\"json_prop\", \"hello world\"}";
+            const string? response = "{\"json_prop\", \"hello world\"}";
             DefaultHttpHandlerMock.SetResponse(response);
 
             // ACT
@@ -38,7 +38,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void HttpClientShouldNotReturnContentOnBadStatusCode()
         {
             // ARRANGE
-            var response = "";
+            const string? response = "";
             DefaultHttpHandlerMock.SetResponse(response, HttpStatusCode.NotFound);
 
             // ACT
@@ -52,7 +52,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task HttpClientShouldReturnCorrectStatusCode()
         {
             // ARRANGE
-            var response = "{\"json_prop\", \"hello world\"}";
+            const string? response = "{\"json_prop\", \"hello world\"}";
             DefaultHttpHandlerMock.SetResponse(response);
 
             // ACT
@@ -67,7 +67,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task HttpClientShouldReturnCorrectStatusCodeError()
         {
             // ARRANGE
-            var response = "{\"json_prop\", \"hello world\"}";
+            const string? response = "{\"json_prop\", \"hello world\"}";
             DefaultHttpHandlerMock.SetResponse(response, HttpStatusCode.Forbidden);
 
             // ACT
@@ -82,7 +82,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task HttpHandlerGetJsonShouldReturnCorrectContent()
         {
             // ARRANGE
-            var response = "{\"json_prop\": \"hello world\"}";
+            const string? response = "{\"json_prop\": \"hello world\"}";
 
             HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
@@ -100,7 +100,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void HttpHandlerGetJsonBadFormatShouldReturnThrowException()
         {
             // ARRANGE
-            var response = "{\"json_prop\": \"hello world\"}";
+            const string? response = "{\"json_prop\": \"hello world\"}";
 
             HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
@@ -115,7 +115,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task HttpHandlerPostJsonShouldReturnCorrectContent()
         {
             // ARRANGE
-            var response = "{\"json_prop\": \"hello world\"}";
+            const string? response = "{\"json_prop\": \"hello world\"}";
 
             HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
@@ -134,7 +134,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task HttpHandlerPostJsonNoReturnShouldReturnCorrectContent()
         {
             // ARRANGE
-            var response = "{\"json_prop\": \"hello world\"}";
+            const string? response = "{\"json_prop\": \"hello world\"}";
 
             HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);

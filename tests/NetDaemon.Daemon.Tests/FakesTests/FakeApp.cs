@@ -5,7 +5,6 @@ using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.Reactive
 {
-
     /// <summary> cool multiple lines </summary>
     public class FakeApp : NetDaemonRxApp
     {
@@ -14,18 +13,12 @@ namespace NetDaemon.Daemon.Tests.Reactive
             Entity("binary_sensor.kitchen")
                 .StateChanges
                 .Where(e => e.New?.State == "on" && e.Old?.State == "off")
-                .Subscribe(s =>
-                {
-                    Entity("light.kitchen").TurnOn();
-                });
+                .Subscribe(_ => Entity("light.kitchen").TurnOn());
 
             Entity("sensor.temperature")
                 .StateAllChanges
                 .Where(e => e.New?.Attribute?.battery_level < 15)
-                .Subscribe(s =>
-                {
-                    this.CallService("notify", "notify", new { title = "Hello from Home Assistant" });
-                });
+                .Subscribe(_ => this.CallService("notify", "notify", new { title = "Hello from Home Assistant" }));
         }
     }
 }

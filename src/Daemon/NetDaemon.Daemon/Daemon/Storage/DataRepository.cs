@@ -94,7 +94,7 @@ namespace NetDaemon.Daemon.Storage
 
     public static class ExpandoExtensions
     {
-        public static object? ParseString(string? strToParse)
+        public static object? ParseString(this string? strToParse)
         {
             if (DateTime.TryParse(strToParse, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
                 return dateTime;

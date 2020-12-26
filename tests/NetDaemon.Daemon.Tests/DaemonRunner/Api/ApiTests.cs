@@ -92,10 +92,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             services.Configure<HomeAssistantSettings>(Configuration.GetSection("HomeAssistant"));
             services.Configure<NetDaemonSettings>(Configuration.GetSection("NetDaemon"));
 
-            services.AddTransient<IHassClient>(n => _defaultHassClientMock.Object);
-            services.AddTransient<IDataRepository>(n => _defaultDataRepositoryMock.Object);
+            services.AddTransient<IHassClient>(_ => _defaultHassClientMock.Object);
+            services.AddTransient<IDataRepository>(_ => _defaultDataRepositoryMock.Object);
             services.AddTransient<IHttpHandler, NetDaemon.Daemon.HttpHandler>();
-            services.AddSingleton<NetDaemonHost>(n => _defaultDaemonHost);
+            services.AddSingleton<NetDaemonHost>(_ => _defaultDaemonHost);
             services.AddHttpClient();
         }
 
@@ -116,18 +116,16 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
         // protected readonly EventQueueManager EventQueueManager;
         private readonly TestServer _server;
 
-        private readonly ArraySegment<byte> _buffer;
-
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public ArraySegment<byte> Buffer => _buffer;
+        public ArraySegment<byte> Buffer { get; }
 
         public ApiTests()
         {
-            _buffer = new ArraySegment<byte>(new byte[8192]);
+            Buffer = new ArraySegment<byte>(new byte[8192]);
 
             var builder = WebHost.CreateDefaultBuilder()
                 .UseEnvironment("Testing")
@@ -155,7 +153,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             WebSocketReceiveResult result;
             do
             {
-                result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                result = await ws.ReceiveAsync(buffer, CancellationToken.None).ConfigureAwait(false);
                 ms.Write(buffer.Array, buffer.Offset, result.Count);
             }
             while (!result.EndOfMessage);
@@ -167,7 +165,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             }
 
             using var reader = new StreamReader(ms, Encoding.UTF8);
-            return await reader.ReadToEndAsync();
+            return await reader.ReadToEndAsync().ConfigureAwait(false);
         }
 
         private async Task<WebSocket> GetWsClient()
@@ -178,21 +176,20 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
         private async Task<object?> ReadObject(WebSocket ws, Type t)
         {
-            var s = await ReadString(ws);
+            var s = await ReadString(ws).ConfigureAwait(false);
             return JsonSerializer.Deserialize(s, t, _jsonOptions);
         }
 
         [Fact]
         public async Task TestGetApps()
         {
+            var websocket = await GetWsClient().ConfigureAwait(false);
 
-            var websocket = await GetWsClient();
+            await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""apps""}"), WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
 
-            await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""apps""}"), WebSocketMessageType.Text, true, CancellationToken.None);
-
-            var res = (WsAppsResult?)await ReadObject(websocket, typeof(WsAppsResult));
+            var res = (WsAppsResult?)await ReadObject(websocket, typeof(WsAppsResult)).ConfigureAwait(false);
             Assert.NotNull(res);
-            var response = res?.Data!;
+            var response = (res?.Data)!;
 
             Assert.Equal(4, response?.Count());
 
@@ -216,18 +213,17 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
         [Fact]
         public async Task TestGetConfig()
         {
-            var websocket = await GetWsClient();
+            var websocket = await GetWsClient().ConfigureAwait(false);
 
-            await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""settings""}"), WebSocketMessageType.Text, true, CancellationToken.None);
+            await websocket.SendAsync(Encoding.UTF8.GetBytes(@"{""type"": ""settings""}"), WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
 
-            var res = (WsConfigResult?)await ReadObject(websocket, typeof(WsConfigResult));
+            var res = (WsConfigResult?)await ReadObject(websocket, typeof(WsConfigResult)).ConfigureAwait(false);
             Assert.NotNull(res);
             var response = res?.Data;
 
             Assert.NotNull(response);
 
             Assert.NotNull(response?.DaemonSettings?.AppSource);
-
         }
     }
 }

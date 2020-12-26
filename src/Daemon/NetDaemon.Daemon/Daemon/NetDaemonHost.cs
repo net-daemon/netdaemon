@@ -425,7 +425,7 @@ namespace NetDaemon.Daemon
                 // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
                 Task handleAsyncServiceCalls = HandleAsyncServiceCalls(cancellationToken);
-                Task hanldeAsyncSetState = HandleAsyncSetState(cancellationToken);
+                Task handleAsyncSetState = HandleAsyncSetState(cancellationToken);
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -527,7 +527,7 @@ namespace NetDaemon.Daemon
 
             await SetStateAsync(
                 "netdaemon.status",
-                "Connected", // State will alawys be connected, otherwise state could not be set.
+                "Connected", // State will always be connected, otherwise state could not be set.
                 ("number_of_loaded_apps", numberOfLoadedApps),
                 ("number_of_running_apps", numberOfRunningApps),
                 ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
@@ -590,9 +590,7 @@ namespace NetDaemon.Daemon
 
                 await _scheduler.Stop().ConfigureAwait(false);
 
-
                 InternalState.Clear();
-
 
                 Connected = false;
                 await _hassClient.CloseAsync().ConfigureAwait(false);
@@ -622,7 +620,7 @@ namespace NetDaemon.Daemon
         /// </summary>
         /// <param name="stateData">The state data to be fixed</param>
         /// <remarks>
-        ///     If a sensor is unavailable that normally has a primtive value
+        ///     If a sensor is unavailable that normally has a primitive value
         ///     it can be a string. The automations might expect a integer.
         ///     Another scenario is that a value of 10 is cast as long and
         ///     next time a value of 11.3 is cast to double. T
@@ -748,14 +746,14 @@ namespace NetDaemon.Daemon
         {
             if (unsortedList.SelectMany(n => n.Dependencies).Any())
             {
-                // There are dependecies defined
+                // There are dependencies defined
                 var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
 
                 foreach (var instance in unsortedList)
                 {
                     foreach (var dependency in instance.Dependencies)
                     {
-                        var dependentApp = unsortedList.Where(n => n.Id == dependency).FirstOrDefault();
+                        var dependentApp = unsortedList.FirstOrDefault(n => n.Id == dependency);
                         if (dependentApp == null)
                             throw new ApplicationException($"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
 
@@ -796,13 +794,13 @@ namespace NetDaemon.Daemon
                         if (stateData?.NewState?.State != stateData?.OldState?.State)
                         {
                             var sb = new StringBuilder();
-                            sb.AppendLine($"Can not fix state typing for {stateData?.NewState?.EntityId}");
-                            sb.AppendLine($"NewStateObject: {stateData?.NewState}");
-                            sb.AppendLine($"OldStateObject: {stateData?.OldState}");
-                            sb.AppendLine($"NewState: {stateData?.NewState?.State}");
-                            sb.AppendLine($"OldState: {stateData?.OldState?.State}");
-                            sb.AppendLine($"NewState type: {stateData?.NewState?.State?.GetType().ToString() ?? "null"}");
-                            sb.AppendLine($"OldState type: {stateData?.OldState?.State?.GetType().ToString() ?? "null"}");
+                            sb.Append("Can not fix state typing for ").AppendLine(stateData?.NewState?.EntityId);
+                            sb.Append("NewStateObject: ").Append(stateData?.NewState).AppendLine();
+                            sb.Append("OldStateObject: ").Append(stateData?.OldState).AppendLine();
+                            sb.Append("NewState: ").AppendLine(stateData?.NewState?.State);
+                            sb.Append("OldState: ").AppendLine(stateData?.OldState?.State);
+                            sb.Append("NewState type: ").AppendLine(stateData?.NewState?.State?.GetType().ToString() ?? "null");
+                            sb.Append("OldState type: ").AppendLine(stateData?.OldState?.State?.GetType().ToString() ?? "null");
                             Logger.LogTrace(sb.ToString());
                         }
                         return;
@@ -863,7 +861,6 @@ namespace NetDaemon.Daemon
                     // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
                     if (tasks.Count > 0)
                     {
-
                         await tasks.WhenAll(token).ConfigureAwait(false);
 
                         await tasks.WhenAll(token).ConfigureAwait(false);
@@ -1032,17 +1029,6 @@ namespace NetDaemon.Daemon
             }
         }
 
-        private static string GetDomainFromEntity(string entity)
-        {
-            string[] entityParts = entity.Split('.');
-            if (entityParts.Length != 2)
-            {
-                throw new ApplicationException($"entity_id is mal formatted {entity}");
-            }
-
-            return entityParts[0];
-        }
-
         /// <summary>
         /// Topological Sorting (Kahn's algorithm)
         /// </summary>
@@ -1057,10 +1043,10 @@ namespace NetDaemon.Daemon
             var L = new List<T>();
 
             // Set of all nodes with no incoming edges
-            var S = new HashSet<T>(nodes.Where(n => edges.All(e => e.Item2.Equals(n) == false)));
+            var S = new HashSet<T>(nodes.Where(n => edges.All(e => !e.Item2.Equals(n))));
 
             // while S is non-empty do
-            while (S.Any())
+            while (S.Count > 0)
             {
                 //  remove a node n from S
                 var n = S.First();
@@ -1078,7 +1064,7 @@ namespace NetDaemon.Daemon
                     edges.Remove(e);
 
                     // if m has no other incoming edges then
-                    if (edges.All(me => me.Item2.Equals(m) == false))
+                    if (edges.All(me => !me.Item2.Equals(m)))
                     {
                         // insert m into S
                         S.Add(m);
@@ -1087,7 +1073,7 @@ namespace NetDaemon.Daemon
             }
 
             // if graph has edges then
-            if (edges.Any())
+            if (edges.Count > 0)
             {
                 // return error (graph has at least one cycle)
                 return null;
@@ -1114,7 +1100,7 @@ namespace NetDaemon.Daemon
                     (string domain, string service, dynamic? data)
                     = await _serviceCallMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                    await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false); ;
+                    await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false);
 
                     hasLoggedError = false;
                 }
@@ -1124,10 +1110,10 @@ namespace NetDaemon.Daemon
                 }
                 catch (Exception e)
                 {
-                    if (hasLoggedError == false)
+                    if (!hasLoggedError)
                         Logger.LogDebug(e, "Failure sending call service");
                     hasLoggedError = true;
-                    await Task.Delay(100, cancellationToken); // Do a delay to avoid loop
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
                 }
             }
         }
@@ -1155,10 +1141,10 @@ namespace NetDaemon.Daemon
                 }
                 catch (Exception e)
                 {
-                    if (hasLoggedError == false)
+                    if (!hasLoggedError)
                         Logger.LogDebug(e, "Failure setting state");
                     hasLoggedError = true;
-                    await Task.Delay(100, cancellationToken); // Do a delay to avoid loop
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
                 }
             }
         }
@@ -1180,7 +1166,7 @@ namespace NetDaemon.Daemon
 
                     EntityState? currentPlayState = GetState(entityId);
 
-                    if (currentPlayState != null && currentPlayState.Attribute?.media_duration != null)
+                    if (currentPlayState?.Attribute?.media_duration != null)
                     {
                         int delayInMilliSeconds = (int)Math.Round(currentPlayState?.Attribute?.media_duration * 1000) - InternalDelayTimeForTts;
 
@@ -1222,7 +1208,6 @@ namespace NetDaemon.Daemon
                 {
                     InternalRunningAppInstances[appInstance.Id!] = appInstance;
                 }
-
             }
 
             // Now run initialize on all sorted by dependencies
@@ -1241,7 +1226,7 @@ namespace NetDaemon.Daemon
                     Logger.LogWarning("Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!", sortedApp.Id);
 
                 // Todo: refactor
-                await sortedApp.HandleAttributeInitialization(this);
+                await sortedApp.HandleAttributeInitialization(this).ConfigureAwait(false);
                 Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id, sortedApp.GetType().Name);
             }
 
@@ -1250,15 +1235,9 @@ namespace NetDaemon.Daemon
 
         private void RegisterAppSwitchesAndTheirStates()
         {
-            ListenServiceCall("switch", "turn_on", async (data) =>
-            {
-                await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
-            });
+            ListenServiceCall("switch", "turn_on", async (data) => await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false));
 
-            ListenServiceCall("switch", "turn_off", async (data) =>
-            {
-                await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false);
-            });
+            ListenServiceCall("switch", "turn_off", async (data) => await SetStateOnDaemonAppSwitch("off", data).ConfigureAwait(false));
 
             ListenServiceCall("switch", "toggle", async (data) =>
             {
@@ -1290,16 +1269,16 @@ namespace NetDaemon.Daemon
                 if (!entityId.StartsWith("switch.netdaemon_"))
                     return; // We only want app switches
 
-                await SetDependentState(entityId, state);
-                await ReloadAllApps();
+                await SetDependentState(entityId, state).ConfigureAwait(false);
+                await ReloadAllApps().ConfigureAwait(false);
 
-                await PostExternalEvent(new AppsInformationEvent());
+                await PostExternalEvent(new AppsInformationEvent()).ConfigureAwait(false);
             }
         }
 
         private async Task SetDependentState(string entityId, string state)
         {
-            var app = InternalAllAppInstances.Values.Where(n => n.EntityId == entityId).FirstOrDefault();
+            var app = InternalAllAppInstances.Values.FirstOrDefault(n => n.EntityId == entityId);
 
             if (app is not null)
             {
@@ -1313,7 +1292,7 @@ namespace NetDaemon.Daemon
                         await SetDependentState(depApp.EntityId, state).ConfigureAwait(false);
                     }
                     app.IsEnabled = false;
-                    await PersistAppStateAsync((NetDaemonAppBase)app);
+                    await PersistAppStateAsync((NetDaemonAppBase)app).ConfigureAwait(false);
                     Logger.LogDebug("SET APP {app} state = disabled", app.Id);
                 }
                 else if (state == "on")
@@ -1322,14 +1301,13 @@ namespace NetDaemon.Daemon
                     // Enable all apps that this app is dependent on
                     foreach (var depOnId in app.Dependencies)
                     {
-                        var depOnApp = InternalAllAppInstances.Values.Where(n => n.Id == depOnId).FirstOrDefault();
+                        var depOnApp = InternalAllAppInstances.Values.FirstOrDefault(n => n.Id == depOnId);
                         if (depOnApp is not null)
                         {
                             await SetDependentState(depOnApp.EntityId, state).ConfigureAwait(false);
-
                         }
                     }
-                    await PersistAppStateAsync((NetDaemonAppBase)app);
+                    await PersistAppStateAsync((NetDaemonAppBase)app).ConfigureAwait(false);
                     Logger.LogDebug("SET APP {app} state = enabled", app.Id);
                 }
             }
@@ -1345,18 +1323,16 @@ namespace NetDaemon.Daemon
                 await SetStateAsync(entityId, state, attributes.ToArray()).ConfigureAwait(false);
             else
                 await SetStateAsync(entityId, state).ConfigureAwait(false);
-
         }
 
         //TODO: Refactor this
         private async Task PersistAppStateAsync(NetDaemonAppBase app)
         {
-
             var obj = await GetDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage()).ConfigureAwait(false) ??
                 new Dictionary<string, object?>();
 
             obj["__IsDisabled"] = !app.IsEnabled;
-            await SaveDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage(), obj);
+            await SaveDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage(), obj).ConfigureAwait(false);
         }
 
         private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
@@ -1403,7 +1379,7 @@ namespace NetDaemon.Daemon
                 callbackTaskList.Add(Task.Run(() => callback(ev)));
             }
 
-            await callbackTaskList.WhenAll(_cancelToken);
+            await callbackTaskList.WhenAll(_cancelToken).ConfigureAwait(false);
         }
     }
 }

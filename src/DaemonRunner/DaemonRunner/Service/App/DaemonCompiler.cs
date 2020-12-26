@@ -44,7 +44,7 @@ namespace NetDaemon.Service.App
 
             if (compiledApps is not null)
                 loadedApps.AddRange(compiledApps);
-            else if (string.IsNullOrEmpty(compileErrorText) == false)
+            else if (!string.IsNullOrEmpty(compileErrorText))
                 logger.LogError(compileErrorText);
             else if (loadedApps.Count == 0)
                 logger.LogWarning("No .cs files files found, please add files to netdaemonfolder {codeFolder}", codeFolder);
@@ -119,7 +119,6 @@ namespace NetDaemon.Service.App
             }
 
             return result;
-
         }
 
         public static IEnumerable<MetadataReference> GetDefaultReferences()
@@ -151,7 +150,7 @@ namespace NetDaemon.Service.App
                     metaDataReference.Add(MetadataReference.CreateFromFile(assembly.Location));
             }
 
-            metaDataReference.Add(MetadataReference.CreateFromFile(Assembly.GetEntryAssembly()?.Location!));
+            metaDataReference.Add(MetadataReference.CreateFromFile((Assembly.GetEntryAssembly()?.Location)!));
 
             return metaDataReference;
         }
@@ -160,7 +159,6 @@ namespace NetDaemon.Service.App
         {
             var syntaxTrees = LoadSyntaxTree(codeFolder);
             var metaDataReference = GetDefaultReferences();
-
 
             return CSharpCompilation.Create(
                 $"net_{Path.GetRandomFileName()}.dll",
@@ -177,7 +175,7 @@ namespace NetDaemon.Service.App
         private static void PrettyPrintCompileError(EmitResult emitResult, ILogger logger)
         {
             var msg = new StringBuilder();
-            msg.AppendLine($"Compiler error!");
+            msg.AppendLine("Compiler error!");
 
             foreach (var emitResultDiagnostic in emitResult.Diagnostics)
             {
@@ -244,7 +242,7 @@ namespace NetDaemon.Service.App
                                     comment += commentRow + "\n";
                             }
 
-                            var app_key = symbol.ContainingNamespace.Name == "" ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;
+                            var app_key = symbol.ContainingNamespace.Name?.Length == 0 ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;
 
                             if (!NetDaemonAppBase.CompileTimeProperties.ContainsKey(app_key))
                             {
@@ -277,10 +275,12 @@ namespace NetDaemon.Service.App
                     continue;
 
                 if (string.IsNullOrEmpty(symbol?.Name) ||
-                    ExecuteWarningOnInvocationNames.Contains(symbol?.Name) == false)
+                    !ExecuteWarningOnInvocationNames.Contains(symbol?.Name))
+                {
                     // The invocation name is empty or not in list of invocations
                     // that needs to be closed with Execute or ExecuteAsync
                     continue;
+                }
 
                 // Now find top invocation to match whole expression
                 InvocationExpressionSyntax topInvocationExpression = invocationExpression;
@@ -313,10 +313,10 @@ namespace NetDaemon.Service.App
 
                     // Now when we have the top InvocationExpression,
                     // lets check for Execute and ExecuteAsync
-                    if (ExpressionContainsExecuteInvocations(topInvocationExpression) == false && disableLogging == false)
+                    if (!ExpressionContainsExecuteInvocations(topInvocationExpression) && !disableLogging)
                     {
                         var x = syntaxTree.GetLineSpan(topInvocationExpression.Span);
-                        if (linesReported.Contains(x.StartLinePosition.Line) == false)
+                        if (!linesReported.Contains(x.StartLinePosition.Line))
                         {
                             logger.LogError($"Missing Execute or ExecuteAsync in {syntaxTree.FilePath} ({x.StartLinePosition.Line + 1},{x.StartLinePosition.Character + 1}) near {topInvocationExpression.ToFullString().Trim()}");
                             linesReported.Add(x.StartLinePosition.Line);
@@ -330,11 +330,7 @@ namespace NetDaemon.Service.App
         private static bool ExpressionContainsDisableLogging(MethodDeclarationSyntax methodInvocationExpression)
         {
             var invocationString = methodInvocationExpression.ToFullString();
-            if (invocationString.Contains("[DisableLog") && invocationString.Contains("SupressLogType.MissingExecute"))
-            {
-                return true;
-            }
-            return false;
+            return invocationString.Contains("[DisableLog") && invocationString.Contains("SupressLogType.MissingExecute");
         }
 
         // Todo: Refactor using something smarter than string match. In the future use Roslyn
@@ -342,12 +338,7 @@ namespace NetDaemon.Service.App
         {
             var invocationString = invocation.ToFullString();
 
-            if (invocationString.Contains("ExecuteAsync()") || invocationString.Contains("Execute()"))
-            {
-                return true;
-            }
-
-            return false;
+            return invocationString.Contains("ExecuteAsync()") || invocationString.Contains("Execute()");
         }
     }
 }

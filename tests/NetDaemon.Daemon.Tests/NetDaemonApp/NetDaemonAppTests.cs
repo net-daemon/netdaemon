@@ -87,7 +87,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         }
 
         [Fact]
-        public void EnitiesShouldCallCorrectDaemonEntity()
+        public void EntitiesShouldCallCorrectDaemonEntity()
         {
             // ARRANGE and  ACT
             _app.Entities(new string[] { "light.somelight" });
@@ -96,7 +96,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         }
 
         [Fact]
-        public void EnityShouldCallCorrectDaemonEntity()
+        public void EntityShouldCallCorrectDaemonEntity()
         {
             // ARRANGE and  ACT
             _app.Entity("light.somelight");
@@ -120,7 +120,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task GlobalShouldReturnCorrectData(string key, object value)
         {
             await using var _app_two = new AppTestApp2();
-            await _app_two.StartUpAsync(_netDaemonMock.Object);
+            await _app_two.StartUpAsync(_netDaemonMock.Object).ConfigureAwait(false);
             _app_two.Id = "app2";
 
             // ARRANGE and  ACT
@@ -139,11 +139,10 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "message";
-            MethodInfo? methodInfo;
+            const string? message = "message";
 
             // ACT
-            methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string) });
+            MethodInfo? methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string) });
 
             methodInfo?.Invoke(_app, new object[] { message });
             // ASSERT
@@ -159,7 +158,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithExceptionAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "message";
+            const string? message = "message";
             var exception = new NullReferenceException("Null");
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string) });
@@ -178,7 +177,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithParamsAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "Hello {name}";
+            const string? message = "Hello {name}";
 
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string), typeof(object[]) });
@@ -197,7 +196,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithParamsExceptionAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "Hello {name}";
+            const string? message = "Hello {name}";
             var exception = new NullReferenceException("Null");
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string), typeof(object[]) });

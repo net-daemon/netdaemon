@@ -22,7 +22,7 @@ namespace NetDaemon.Service
 {
     public class ApiStartup
     {
-        readonly bool _useAdmin = false;
+        private readonly bool _useAdmin = false;
 
         public ApiStartup(IConfiguration configuration)
         {
@@ -49,7 +49,7 @@ namespace NetDaemon.Service
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (_useAdmin == true)
+            if (_useAdmin)
             {
                 if (env.IsDevelopment())
                 {

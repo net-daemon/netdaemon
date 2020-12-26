@@ -18,34 +18,30 @@ namespace NetDaemon.Daemon.Tests
 
     public class CoreDaemonHostTestBase : DaemonHostTestBase, IAsyncLifetime
     {
-        private readonly Common.NetDaemonApp _defaultDaemonApp;
-        private readonly BaseTestRxApp _defaultDaemonRxApp;
-        private readonly Mock<NetDaemonRxApp> _defaultMockedRxApp;
-
         private readonly NetDaemonHost _notConnectedDaemonHost;
 
         public CoreDaemonHostTestBase() : base()
         {
-            _defaultDaemonApp = new BaseTestApp
+            DefaultDaemonApp = new BaseTestApp
             {
                 Id = "app_id",
                 IsEnabled = true
             };
 
-            DefaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
+            DefaultDaemonHost.InternalRunningAppInstances[DefaultDaemonApp.Id!] = DefaultDaemonApp;
 
-            _defaultDaemonRxApp = new BaseTestRxApp
+            DefaultDaemonRxApp = new BaseTestRxApp
             {
                 Id = "app_rx_id",
                 IsEnabled = true
             };
-            DefaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
+            DefaultDaemonHost.InternalRunningAppInstances[DefaultDaemonRxApp.Id!] = DefaultDaemonRxApp;
 
-            _defaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
-            _defaultMockedRxApp.Object.Id = "app_rx_mock_id";
-            _defaultMockedRxApp.Object.IsEnabled = true;
-            _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
-            DefaultDaemonHost.InternalRunningAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
+            DefaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
+            DefaultMockedRxApp.Object.Id = "app_rx_mock_id";
+            DefaultMockedRxApp.Object.IsEnabled = true;
+            DefaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
+            DefaultDaemonHost.InternalRunningAppInstances[DefaultMockedRxApp.Object.Id!] = DefaultMockedRxApp.Object;
 
             _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, DefaultDataRepositoryMock.Object, LoggerMock.LoggerFactory);
 
@@ -74,7 +70,6 @@ namespace NetDaemon.Daemon.Tests
                 },
                 State = "off"
             });
-
 
             SetEntityState(new()
             {
@@ -125,7 +120,7 @@ namespace NetDaemon.Daemon.Tests
 
             SetEntityState(new()
             {
-                EntityId = "light.ligth_in_area",
+                EntityId = "light.light_in_area",
                 State = "off",
                 Attributes = new Dictionary<string, object>
                 {
@@ -141,9 +136,9 @@ namespace NetDaemon.Daemon.Tests
         {
             await base.DisposeAsync().ConfigureAwait(false);
 
-            await _defaultDaemonApp.DisposeAsync().ConfigureAwait(false);
-            await _defaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
-            await _defaultMockedRxApp.Object.DisposeAsync().ConfigureAwait(false);
+            await DefaultDaemonApp.DisposeAsync().ConfigureAwait(false);
+            await DefaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
+            await DefaultMockedRxApp.Object.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -153,14 +148,14 @@ namespace NetDaemon.Daemon.Tests
         {
             await base.InitializeAsync().ConfigureAwait(false);
 
-            await _defaultDaemonApp.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
-            await _defaultDaemonRxApp.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
-            await _defaultMockedRxApp.Object.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
+            await DefaultDaemonApp.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
+            await DefaultDaemonRxApp.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
+            await DefaultMockedRxApp.Object.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
         }
 
-        public BaseTestRxApp DefaultDaemonRxApp => _defaultDaemonRxApp;
-        public Mock<NetDaemonRxApp> DefaultMockedRxApp => _defaultMockedRxApp;
-        public Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
+        public BaseTestRxApp DefaultDaemonRxApp { get; }
+        public Mock<NetDaemonRxApp> DefaultMockedRxApp { get; }
+        public Common.NetDaemonApp DefaultDaemonApp { get; }
         public static string HelloWorldData => "Hello world!";
 
         public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
@@ -170,7 +165,5 @@ namespace NetDaemon.Daemon.Tests
                 : new CancellationTokenSource(milliSeconds);
             return (_notConnectedDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
         }
-
-
     }
 }

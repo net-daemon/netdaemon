@@ -13,7 +13,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 {
     public class DataRepositoryTests : DaemonHostTestBase
     {
-        public static readonly string DataReposityryPath =
+        public static readonly string DataRepositoryPath =
             Path.Combine(AppContext.BaseDirectory, "datarepository");
 
         public DataRepositoryTests() : base()
@@ -27,7 +27,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var daemon = DefaultDaemonHost;
 
             // ACT
-            var data = await daemon.GetDataAsync<string>("not_exists");
+            var data = await daemon.GetDataAsync<string>("not_exists").ConfigureAwait(false);
             // ASSERT
             Assert.Null(data);
         }
@@ -42,7 +42,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACT
             await daemon.SaveDataAsync("data_exists", data);
-            var collectedData = await daemon.GetDataAsync<ExpandoObject>("data_exists");
+            var collectedData = await daemon.GetDataAsync<ExpandoObject>("data_exists").ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(data, collectedData);
@@ -55,9 +55,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var daemon = DefaultDaemonHost;
             // ACT
 
-            await daemon.SaveDataAsync("GetDataShouldReturnCachedValue_id", "saved data");
+            await daemon.SaveDataAsync("GetDataShouldReturnCachedValue_id", "saved data").ConfigureAwait(false);
 
-            await daemon.GetDataAsync<string>("GetDataShouldReturnCachedValue_id");
+            await daemon.GetDataAsync<string>("GetDataShouldReturnCachedValue_id").ConfigureAwait(false);
 
             // ASSERT
             DefaultDataRepositoryMock.Verify(n => n.Get<string>(It.IsAny<string>()), Times.Never);
@@ -68,7 +68,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task RepositoryLoadSavedDataUsingExpando()
         {
             // ARRANGE
-            var dataRepository = new DataRepository(DataReposityryPath);
+            var dataRepository = new DataRepository(DataRepositoryPath);
             dynamic dataBeingSaved = new FluentExpandoObject(false, true);
             dataBeingSaved.SomeString = "this data should be saved!";
             dataBeingSaved.SomeInt = 123456;
@@ -78,7 +78,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ACT
             await dataRepository.Save<IDictionary<string, object>>("RepositoryLoadSavedData_id", dataBeingSaved);
 
-            var dataReturned = await dataRepository.Get<IDictionary<string, object>>("RepositoryLoadSavedData_id");
+            var dataReturned = await dataRepository.Get<IDictionary<string, object>>("RepositoryLoadSavedData_id").ConfigureAwait(false);
             var returnedFluentExpandoObject = new FluentExpandoObject();
             returnedFluentExpandoObject.CopyFrom(dataReturned!);
 
@@ -93,7 +93,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned?.SomeString);
             Assert.Equal(dataBeingSaved.SomeInt, dynamicDataReturned!.SomeInt);
             Assert.Equal(dataBeingSaved.SomeFloat, dynamicDataReturned!.SomeFloat);
-            // There is no way for json serilizer to know this is a datetime
+            // There is no way for json serializer to know this is a datetime
             Assert.NotNull(dynamicDataReturned!.SomeDateTime);
         }
 
@@ -101,7 +101,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task RepositoryShouldLoadSavedDataUsingDto()
         {
             // ARRANGE
-            var dataRepository = new DataRepository(DataReposityryPath);
+            var dataRepository = new DataRepository(DataRepositoryPath);
             var storeData = new TestStorage
             {
                 AString = "Some String",
@@ -109,9 +109,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ADateTime = DateTime.Now
             };
             // ACT
-            await dataRepository.Save<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id", storeData);
+            await dataRepository.Save<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id", storeData).ConfigureAwait(false);
 
-            var dataReturned = await dataRepository.Get<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id");
+            var dataReturned = await dataRepository.Get<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id").ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(storeData.AString, dataReturned!.AString);

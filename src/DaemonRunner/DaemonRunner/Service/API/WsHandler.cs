@@ -17,7 +17,6 @@ using NetDaemon.Daemon;
 
 namespace NetDaemon.Service.Api
 {
-
     public class ApiWebsocketMiddleware
     {
         private static readonly ConcurrentDictionary<string, WebSocket> _sockets = new();
@@ -74,27 +73,21 @@ namespace NetDaemon.Service.Api
         {
             if (!context.WebSockets.IsWebSocketRequest && context.Request.Path != "/api/ws")
             {
-                await _next.Invoke(context);
+                await _next.Invoke(context).ConfigureAwait(false);
                 return;
             }
 
             CancellationToken ct = context.RequestAborted;
-            WebSocket? currentSocket = await context.WebSockets.AcceptWebSocketAsync();
+            WebSocket? currentSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
             var socketId = Guid.NewGuid().ToString();
 
             _sockets.TryAdd(socketId, currentSocket);
             _logger.LogDebug("New websocket client {socketId}", socketId);
             try
             {
-
-                while (true)
+                while (!ct.IsCancellationRequested)
                 {
-                    if (ct.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    var msg = await GetNextMessageAsync(currentSocket, ct);
+                    var msg = await GetNextMessageAsync(currentSocket, ct).ConfigureAwait(false);
 
                     if (currentSocket.State != WebSocketState.Open)
                     {
@@ -121,7 +114,7 @@ namespace NetDaemon.Service.Api
                                     })
                                 };
 
-                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions));
+                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions)).ConfigureAwait(false);
 
                                 break;
                             case "settings":
@@ -142,7 +135,7 @@ namespace NetDaemon.Service.Api
                                     Data = tempResult
                                 };
 
-                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(settingsMessage, _jsonOptions));
+                                await BroadCast(JsonSerializer.Serialize(settingsMessage, _jsonOptions)).ConfigureAwait(false);
                                 break;
 
                             case "app":
@@ -189,7 +182,7 @@ namespace NetDaemon.Service.Api
                 currentSocket.State == WebSocketState.CloseReceived ||
                 currentSocket.State == WebSocketState.CloseSent)
             {
-                await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct);
+                await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct).ConfigureAwait(false);
             }
             currentSocket.Dispose();
         }
@@ -204,7 +197,7 @@ namespace NetDaemon.Service.Api
                     continue;
                 }
 
-                await SendStringAsync(socket.Value, message, ct);
+                await SendStringAsync(socket.Value, message, ct).ConfigureAwait(false);
             }
         }
 
@@ -227,12 +220,11 @@ namespace NetDaemon.Service.Api
             {
                 ct.ThrowIfCancellationRequested();
 
-                result = await socket.ReceiveAsync(buffer, ct);
+                result = await socket.ReceiveAsync(buffer, ct).ConfigureAwait(false);
                 if (!result.CloseStatus.HasValue)
                     ms.Write(buffer.Array, buffer.Offset, result.Count);
                 else
                     return null;
-
             }
             while (!result.EndOfMessage);
 
@@ -243,9 +235,8 @@ namespace NetDaemon.Service.Api
             }
 
             using var reader = new StreamReader(ms, Encoding.UTF8);
-            var msgString = await reader.ReadToEndAsync();
+            var msgString = await reader.ReadToEndAsync().ConfigureAwait(false);
             return JsonSerializer.Deserialize<WsMessage>(msgString);
         }
-
     }
 }

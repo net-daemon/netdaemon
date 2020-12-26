@@ -31,7 +31,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             using var disposable = app.CreateObservableIntervall(TimeSpan.FromMilliseconds(10), () => throw new Exception("hello!"));
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
             LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
         }
@@ -50,7 +50,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             using var disposable = app.CreateObservableIntervall(TimeSpan.FromMilliseconds(10), () => called = true);
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
             Assert.True(called);
         }
@@ -66,7 +66,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             using var disposable = app.CreateObservableTimer(DateTime.Now, TimeSpan.FromMilliseconds(10), () => throw new Exception("Hello!"));
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
             LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
         }
@@ -85,7 +85,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             using var disposable = app.CreateObservableTimer(DateTime.Now, TimeSpan.FromMilliseconds(10), () => called = true);
 
-            await Task.Delay(100);
+            await Task.Delay(100).ConfigureAwait(false);
             // ASSERT
             Assert.True(called);
         }
@@ -168,7 +168,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             // ACT
-            DefaultMockedRxApp.Object.RunEveryMinute(0, () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEveryMinute(0, () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()), Times.Once());
@@ -204,7 +204,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => throw new Exception("RxError"));
 
             // ASSERT
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
@@ -222,7 +222,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ASSERT
             Assert.False(called);
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             Assert.True(called);
