@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NetDaemon.Common;
@@ -26,6 +27,8 @@ namespace NetDaemon.Daemon.Config
             _yamlFilePath = yamlFilePath;
         }
 
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1065")]
         public IEnumerable<INetDaemonAppBase> Instances
         {
             get
@@ -59,7 +62,7 @@ namespace NetDaemon.Daemon.Config
                             }
                         }
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         throw new NetDaemonException($"Error instancing application {appId}", e);
                     }
@@ -74,10 +77,10 @@ namespace NetDaemon.Daemon.Config
             YamlMappingNode appNode,
             string? appId)
         {
-            var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
+            _ = appNode ??
+                throw new NetDaemonArgumentNullException(nameof(appNode));
 
-            if (netDaemonApp == null)
-                return null;
+            var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
@@ -106,7 +109,8 @@ namespace NetDaemon.Daemon.Config
             return netDaemonApp;
         }
 
-        private object? InstanceProperty(Object? parent, Type instanceType, YamlNode node)
+        [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
+        private object? InstanceProperty(object? parent, Type instanceType, YamlNode node)
         {
             if (node.NodeType == YamlNodeType.Scalar)
             {
@@ -197,7 +201,8 @@ namespace NetDaemon.Daemon.Config
             {
                 return null;
             }
-            return ((YamlScalarNode)classChild.Value)?.Value?.ToLowerInvariant();
+            var scalarNode = (YamlScalarNode)classChild.Value;
+            return scalarNode.Value?.ToLowerInvariant();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public static readonly string DataRepositoryPath =
             Path.Combine(AppContext.BaseDirectory, "datarepository");
 
-        public DataRepositoryTests() : base()
+        public DataRepositoryTests()
         {
         }
 

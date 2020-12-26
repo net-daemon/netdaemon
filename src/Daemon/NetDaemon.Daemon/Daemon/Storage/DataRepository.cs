@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -23,6 +24,7 @@ namespace NetDaemon.Daemon.Storage
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("", "CA1031")]
         public async ValueTask<T?> Get<T>(string id) where T : class
         {
             try

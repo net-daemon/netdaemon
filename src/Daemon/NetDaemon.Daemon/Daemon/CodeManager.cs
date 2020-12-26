@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -31,6 +32,7 @@ namespace NetDaemon.Daemon
             _yamlConfig = yamlConfig;
         }
 
+        [SuppressMessage("", "CA1065")]
         public int Count => _loadedDaemonApps?.Count() ?? throw new NetDaemonNullReferenceException("_loadedDaemonApps cannot be null");
 
         // Internal for testing
@@ -57,7 +59,8 @@ namespace NetDaemon.Daemon
             {
                 try
                 {
-                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, File.OpenText(file), _yamlConfig, file);
+                    using var fileReader = File.OpenText(file);
+                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file);
 
                     foreach (var appInstance in yamlAppConfig.Instances)
                     {

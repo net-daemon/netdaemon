@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -6,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Config;
@@ -16,9 +18,15 @@ namespace NetDaemon.Daemon
 {
     public static class DaemonAppExtensions
     {
-        public static async Task HandleAttributeInitialization(this INetDaemonAppBase netDaemonApp, INetDaemon _daemon)
+        public static async Task HandleAttributeInitialization(this INetDaemonAppBase netDaemonApp, INetDaemon daemon)
         {
+            _ = daemon ??
+               throw new NetDaemonArgumentNullException(nameof(daemon));
+            _ = netDaemonApp ??
+               throw new NetDaemonArgumentNullException(nameof(netDaemonApp));
+
             var netDaemonAppType = netDaemonApp.GetType();
+
             foreach (var method in netDaemonAppType.GetMethods())
             {
                 foreach (var attr in method.GetCustomAttributes(false))
@@ -28,11 +36,11 @@ namespace NetDaemon.Daemon
                         switch (attr)
                         {
                             case HomeAssistantServiceCallAttribute:
-                                await HandleServiceCallAttribute(_daemon, daemonApp, method, true).ConfigureAwait(false);
+                                await HandleServiceCallAttribute(daemon, daemonApp, method, true).ConfigureAwait(false);
                                 break;
 
                             case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
-                                HandleStateChangedAttribute(_daemon, hassStateChangedAttribute, daemonApp, method);
+                                HandleStateChangedAttribute(daemon, hassStateChangedAttribute, daemonApp, method);
                                 break;
                         }
                     }
@@ -41,7 +49,7 @@ namespace NetDaemon.Daemon
                         switch (attr)
                         {
                             case HomeAssistantServiceCallAttribute:
-                                await HandleServiceCallAttribute(_daemon, daemonRxApp, method, false).ConfigureAwait(false);
+                                await HandleServiceCallAttribute(daemon, daemonRxApp, method, false).ConfigureAwait(false);
                                 break;
                         }
                     }
@@ -91,6 +99,7 @@ namespace NetDaemon.Daemon
             return (true, string.Empty);
         }
 
+        [SuppressMessage("", "CA1031")]
         private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonAppBase netDaemonApp, MethodInfo method, bool async = true)
         {
             var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method, async);
@@ -121,6 +130,7 @@ namespace NetDaemon.Daemon
                 });
         }
 
+        [SuppressMessage("", "CA1031")]
         private static void HandleStateChangedAttribute(
                                     INetDaemon _daemon,
             HomeAssistantStateChangedAttribute hassStateChangedAttribute,
@@ -141,16 +151,14 @@ namespace NetDaemon.Daemon
             {
                 try
                 {
-                    if (hassStateChangedAttribute.To != null)
+                    if (hassStateChangedAttribute.To != null && (dynamic)hassStateChangedAttribute.To != to?.State)
                     {
-                        if ((dynamic)hassStateChangedAttribute.To != to?.State)
-                            return;
+                        return;
                     }
 
-                    if (hassStateChangedAttribute.From != null)
+                    if (hassStateChangedAttribute.From != null && (dynamic)hassStateChangedAttribute.From != from?.State)
                     {
-                        if ((dynamic)hassStateChangedAttribute.From != from?.State)
-                            return;
+                        return;
                     }
 
                     // If we don´t accept all changes in the state change

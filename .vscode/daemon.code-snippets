@@ -12,6 +12,14 @@
     // 	"description": "Log output to console"
     // }
     {
+        "nullcheck": {
+            "scope": "csharp",
+            "prefix": "nullcheck",
+            "body": [
+                "_ = $1 ??",
+                "   throw new NetDaemonArgumentNullException(nameof($1));"
+            ]
+        },
         "fact": {
             "scope": "csharp",
             "prefix": "fact",

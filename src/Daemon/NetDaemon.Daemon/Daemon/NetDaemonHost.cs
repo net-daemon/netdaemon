@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -128,6 +130,7 @@ namespace NetDaemon.Daemon
 
         public IScheduler Scheduler => _scheduler;
 
+        [SuppressMessage("", "CA1721")]
         public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
 
         // For testing
@@ -144,22 +147,23 @@ namespace NetDaemon.Daemon
 
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             return await _hassClient.GetServices().ConfigureAwait(false);
         }
 
         public void CallService(string domain, string service, dynamic? data = null)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
                 throw new NetDaemonException("Servicecall queue full!");
         }
 
+        [SuppressMessage("", "CA1031")]
         public async Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -174,21 +178,23 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public ICamera Camera(INetDaemonApp app, params string[] entityIds)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             return new CameraManager(entityIds, this, app);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             return new CameraManager(entityIds, this, app);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _ = app ??
+               throw new NetDaemonArgumentNullException(nameof(app));
+            _cancelToken.ThrowIfCancellationRequested();
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
@@ -206,6 +212,9 @@ namespace NetDaemon.Daemon
         {
             _cancelDaemon.Cancel();
             await Stop().ConfigureAwait(false);
+            _cancelDaemon.Dispose();
+            await _scheduler.DisposeAsync().ConfigureAwait(false);
+            _cancelTokenSource?.Dispose();
             Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
@@ -219,7 +228,9 @@ namespace NetDaemon.Daemon
 
         public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _ = app ??
+               throw new NetDaemonArgumentNullException(nameof(app));
+            _cancelToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -234,22 +245,22 @@ namespace NetDaemon.Daemon
             }
         }
 
-        public IEntity Entities(INetDaemonApp app, IEnumerable<string> entityIds)
+        public IEntity Entities(INetDaemonApp app, IEnumerable<string> entityId)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
-            return new EntityManager(entityIds, this, app);
+            _cancelToken.ThrowIfCancellationRequested();
+            return new EntityManager(entityId, this, app);
         }
 
-        public IEntity Entity(INetDaemonApp app, params string[] entityIds)
+        public IEntity Entity(INetDaemonApp app, params string[] entityId)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
-            return new EntityManager(entityIds, this, app);
+            _cancelToken.ThrowIfCancellationRequested();
+            return new EntityManager(entityId, this, app);
         }
 
         /// <inheritdoc/>
         public INetDaemonAppBase? GetApp(string appInstanceId)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             return InternalRunningAppInstances.ContainsKey(appInstanceId) ?
                 InternalRunningAppInstances[appInstanceId] : null;
@@ -257,7 +268,7 @@ namespace NetDaemon.Daemon
 
         public async Task<T?> GetDataAsync<T>(string id) where T : class
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             _ = _repository as IDataRepository ??
                 throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
@@ -274,11 +285,13 @@ namespace NetDaemon.Daemon
             return data;
         }
 
-        public EntityState? GetState(string entity)
+        public EntityState? GetState(string entityId)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _ = entityId ??
+               throw new NetDaemonArgumentNullException(nameof(entityId));
+            _cancelToken.ThrowIfCancellationRequested();
 
-            return InternalState.TryGetValue(entity, out EntityState? returnValue)
+            return InternalState.TryGetValue(entityId, out EntityState? returnValue)
                 ? returnValue
                 : null;
         }
@@ -298,21 +311,21 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             return new InputSelectManager(inputSelectParams, this, app);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             return new InputSelectManager(inputSelectParams, this, app);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
             return new InputSelectManager(x, this, app);
         }
@@ -320,31 +333,41 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _ = service ??
+               throw new NetDaemonArgumentNullException(nameof(service));
+            _cancelToken.ThrowIfCancellationRequested();
             _daemonServiceCallFunctions.Add(("netdaemon", service.ToLowerInvariant(), action));
         }
 
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
-            => _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+        {
+            _ = service ??
+               throw new NetDaemonArgumentNullException(nameof(service));
+            _ = domain ??
+               throw new NetDaemonArgumentNullException(nameof(domain));
+            _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+        }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             return new MediaPlayerManager(entityIds, this, app);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(INetDaemonApp app, IEnumerable<string> entityIds)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             return new MediaPlayerManager(entityIds, this, app);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(INetDaemonApp app, Func<IEntityProperties, bool> func)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _ = app ??
+               throw new NetDaemonArgumentNullException(nameof(app));
+            _cancelToken.ThrowIfCancellationRequested();
             try
             {
                 IEnumerable<IEntityProperties> x = State.Where(func);
@@ -378,6 +401,7 @@ namespace NetDaemon.Daemon
         /// <param name="ssl"></param>
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
+        [SuppressMessage("", "CA1031")]
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
             // Create combine cancellation token
@@ -444,16 +468,13 @@ namespace NetDaemon.Daemon
                     HassEvent changedEvent = await _hassClient.ReadEventAsync(cancellationToken).ConfigureAwait(false);
                     if (changedEvent != null)
                     {
-                        if (changedEvent.Data is HassServiceEventData hseData)
-                        {
-                            if (hseData.Domain == "homeassistant" &&
+                        if (changedEvent.Data is HassServiceEventData hseData && hseData.Domain == "homeassistant" &&
                                (hseData.Service == "stop" || hseData.Service == "restart"))
-                            {
-                                // The user stopped HA so just stop processing messages
-                                Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
-                                    hseData.Service == "stop" ? "stopping" : "restarting");
-                                return;
-                            }
+                        {
+                            // The user stopped HA so just stop processing messages
+                            Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
+                                hseData.Service == "stop" ? "stopping" : "restarting");
+                            return;
                         }
                         // Remove all completed Tasks
                         _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
@@ -484,29 +505,30 @@ namespace NetDaemon.Daemon
             }
         }
 
-        public IScript RunScript(INetDaemonApp app, params string[] entityId)
+        public IScript RunScript(INetDaemonApp app, params string[] entityIds)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
-            return new EntityManager(entityId, this, app);
+            _cancelToken.ThrowIfCancellationRequested();
+            return new EntityManager(entityIds, this, app);
         }
 
         public Task SaveDataAsync<T>(string id, T data)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
-            _ = _repository as IDataRepository ??
+            _ = _repository ??
                 throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
 
             if (data == null)
-                throw new ArgumentNullException(nameof(data));
+                throw new NetDaemonArgumentNullException(nameof(data));
 
             DataCache[id] = data;
             return _repository!.Save(id, data);
         }
 
+        [SuppressMessage("", "CA1031")]
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             if (!Connected)
                 return false;
 
@@ -524,7 +546,7 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             await SetStateAsync(
                 "netdaemon.status",
@@ -536,7 +558,7 @@ namespace NetDaemon.Daemon
 
         public void SetState(string entityId, dynamic state, dynamic? attributes = null)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
                 throw new NetDaemonException("Servicecall queue full!");
@@ -545,7 +567,7 @@ namespace NetDaemon.Daemon
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
                     params (string name, object val)[] attributes)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             try
             {
                 // Use expando object as all other methods
@@ -576,11 +598,12 @@ namespace NetDaemon.Daemon
 
         public void Speak(string entityId, string message)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             _ttsMessageChannel.Writer.TryWrite((entityId, message));
         }
 
+        [SuppressMessage("", "CA1031")]
         public async Task Stop()
         {
             try
@@ -687,21 +710,15 @@ namespace NetDaemon.Daemon
 
         internal string? GetAreaForEntityId(string entityId)
         {
-            if (_hassEntities.TryGetValue(entityId, out HassEntity? entity) && entity is not null)
+            if (_hassEntities.TryGetValue(entityId, out HassEntity? entity) && entity is not null && entity.DeviceId is not null)
             {
-                if (entity.DeviceId is not null)
+                // The entity is on a device
+                if (_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) && device is not null && device.AreaId is not null)
                 {
-                    // The entity is on a device
-                    if (_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) && device is not null)
+                    // This device is in an area
+                    if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area) && area is not null)
                     {
-                        if (device.AreaId is not null)
-                        {
-                            // This device is in an area
-                            if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area) && area is not null)
-                            {
-                                return area.Name;
-                            }
-                        }
+                        return area.Name;
                     }
                 }
             }
@@ -710,7 +727,7 @@ namespace NetDaemon.Daemon
 
         internal async Task RefreshInternalStatesAndSetArea()
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
@@ -769,9 +786,12 @@ namespace NetDaemon.Daemon
             return unsortedList.ToList();
         }
 
+        [SuppressMessage("", "CA1031")]
         protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
         {
             _cancelToken.ThrowIfCancellationRequested();
+            _ = hassEvent ??
+               throw new NetDaemonArgumentNullException(nameof(hassEvent));
 
             if (hassEvent.EventType == "state_changed")
             {
@@ -792,16 +812,16 @@ namespace NetDaemon.Daemon
 
                     if (!FixStateTypes(stateData))
                     {
-                        if (stateData?.NewState?.State != stateData?.OldState?.State)
+                        if (stateData.NewState?.State != stateData.OldState?.State)
                         {
                             var sb = new StringBuilder();
-                            sb.Append("Can not fix state typing for ").AppendLine(stateData?.NewState?.EntityId);
-                            sb.Append("NewStateObject: ").Append(stateData?.NewState).AppendLine();
-                            sb.Append("OldStateObject: ").Append(stateData?.OldState).AppendLine();
-                            sb.Append("NewState: ").AppendLine(stateData?.NewState?.State);
-                            sb.Append("OldState: ").AppendLine(stateData?.OldState?.State);
-                            sb.Append("NewState type: ").AppendLine(stateData?.NewState?.State?.GetType().ToString() ?? "null");
-                            sb.Append("OldState type: ").AppendLine(stateData?.OldState?.State?.GetType().ToString() ?? "null");
+                            sb.Append("Can not fix state typing for ").AppendLine(stateData.NewState?.EntityId);
+                            sb.Append("NewStateObject: ").Append(stateData.NewState).AppendLine();
+                            sb.Append("OldStateObject: ").Append(stateData.OldState).AppendLine();
+                            sb.Append("NewState: ").AppendLine(stateData.NewState?.State);
+                            sb.Append("OldState: ").AppendLine(stateData.OldState?.State);
+                            sb.Append("NewState type: ").AppendLine(stateData.NewState?.State?.GetType().ToString() ?? "null");
+                            sb.Append("OldState type: ").AppendLine(stateData.OldState?.State?.GetType().ToString() ?? "null");
                             Logger.LogTrace(sb.ToString());
                         }
                         return;
@@ -828,7 +848,7 @@ namespace NetDaemon.Daemon
                                         oldState
                                     ));
                                 }
-                                else if (stateData.EntityId.StartsWith(pattern))
+                                else if (stateData.EntityId.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     tasks.Add(func(stateData.EntityId,
                                         newState,
@@ -1086,10 +1106,10 @@ namespace NetDaemon.Daemon
                 return L;
             }
         }
-
+        [SuppressMessage("", "CA1031")]
         private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
 
             bool hasLoggedError = false;
 
@@ -1119,9 +1139,10 @@ namespace NetDaemon.Daemon
             }
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task HandleAsyncSetState(CancellationToken cancellationToken)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             bool hasLoggedError = false;
 
             //_serviceCallMessageQueue
@@ -1150,9 +1171,10 @@ namespace NetDaemon.Daemon
             }
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task HandleTextToSpeechMessages(CancellationToken cancellationToken)
         {
-            this._cancelToken.ThrowIfCancellationRequested();
+            _cancelToken.ThrowIfCancellationRequested();
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -1234,6 +1256,7 @@ namespace NetDaemon.Daemon
             await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count).ConfigureAwait(false);
         }
 
+        [SuppressMessage("", "CA1031")]
         private void RegisterAppSwitchesAndTheirStates()
         {
             ListenServiceCall("switch", "turn_on", async (data) => await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false));
@@ -1267,7 +1290,7 @@ namespace NetDaemon.Daemon
                 if (entityId is null)
                     return;
 
-                if (!entityId.StartsWith("switch.netdaemon_"))
+                if (!entityId.StartsWith("switch.netdaemon_", true, CultureInfo.InvariantCulture))
                     return; // We only want app switches
 
                 await SetDependentState(entityId, state).ConfigureAwait(false);
@@ -1336,6 +1359,7 @@ namespace NetDaemon.Daemon
             await SaveDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage(), obj).ConfigureAwait(false);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
         {
             try

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -62,6 +63,9 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public ISchedulerResult RunEvery(TimeSpan timeSpan, Func<Task> func)
         {
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
+
             var cancelSource = new CancellationTokenSource();
             var task = RunEveryInternalAsync(timeSpan, func, cancelSource.Token);
 
@@ -70,6 +74,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -131,6 +136,9 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public ISchedulerResult RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
         {
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
+
             var cancelSource = new CancellationTokenSource();
 
             if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeOfDayToTrigger))
@@ -144,6 +152,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task RunDailyInternalAsync(DateTime timeOfDayToTrigger, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -193,6 +202,8 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public ISchedulerResult RunEveryMinute(short second, Func<Task> func)
         {
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
             var cancelSource = new CancellationTokenSource();
             var task = RunEveryMinuteInternalAsync(second, func, cancelSource.Token);
 
@@ -201,6 +212,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task RunEveryMinuteInternalAsync(short second, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -223,11 +235,15 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("", "CA1031")]
         public ISchedulerResult RunIn(int millisecondsDelay, Func<Task> func) => RunIn(TimeSpan.FromMilliseconds(millisecondsDelay), func);
 
         /// <inheritdoc/>
         public ISchedulerResult RunIn(TimeSpan timeSpan, Func<Task> func)
         {
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
+
             var cancelSource = new CancellationTokenSource();
             var task = InternalRunInAsync(timeSpan, func, cancelSource.Token);
             ScheduleTask(task);
@@ -235,6 +251,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task InternalRunInAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -264,6 +281,8 @@ namespace NetDaemon.Daemon
 
             var taskResult = await Task.WhenAny(
                 Task.WhenAll(_scheduledTasks.Values.ToArray()), Task.Delay(1000)).ConfigureAwait(false);
+
+            _cancelSource.Dispose();
 
             if (_scheduledTasks.Values.Any(n => !n.IsCompleted))
             {
@@ -316,6 +335,7 @@ namespace NetDaemon.Daemon
             _scheduledTasks[addedTask.Id] = addedTask;
         }
 
+        [SuppressMessage("", "CA1031")]
         public async ValueTask DisposeAsync()
         {
             try
@@ -337,7 +357,6 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Returns current local time
         /// </summary>
-        /// <value></value>
         public DateTime Current => DateTime.Now;
 
         /// <summary>

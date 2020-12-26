@@ -25,7 +25,14 @@ Just add ruleset file to a solution and open it.
 
     <!-- Specify default action that should be applied to a specified analyzer. -->
     <Rule Id="RCS0044" Action="None" />
+    <Rule Id="RCS1308" Action="None" />
     <Rule Id="CA1014" Action="None" />
+    <Rule Id="CA1308" Action="None" />
+    <Rule Id="CA1054" Action="None" />
+    <Rule Id="CA1716" Action="None" />
+    <!-- Lots of catching rare null pointer exceptions in properties. Might refactor those in the future -->
+    <Rule Id="CA1065" Action="None" />
+
 
   </Rules>
 

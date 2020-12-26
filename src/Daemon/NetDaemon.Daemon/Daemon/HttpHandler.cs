@@ -27,11 +27,11 @@ namespace NetDaemon.Daemon
         {
             _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
 
-            var httpClient = _httpClientFactory.CreateClient();
+            using var httpClient = _httpClientFactory.CreateClient();
 
             AddHeaders(httpClient, headers);
 
-            var streamTask = httpClient.GetStreamAsync(url)
+            var streamTask = httpClient.GetStreamAsync(new Uri(url))
                 ?? throw new NetDaemonException($"Unexpected, nothing returned from {url}");
 
             return await JsonSerializer.DeserializeAsync<T>(await streamTask.ConfigureAwait(false), options).ConfigureAwait(false);
@@ -40,14 +40,16 @@ namespace NetDaemon.Daemon
         public async Task<T?> PostJson<T>(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers)
         {
             _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
+            _ = request ?? throw new NetDaemonArgumentNullException(nameof(request));
 
-            var httpClient = _httpClientFactory.CreateClient();
+            using var httpClient = _httpClientFactory.CreateClient();
 
             AddHeaders(httpClient, headers);
 
             var bytesToPost = JsonSerializer.SerializeToUtf8Bytes(request, request.GetType(), options);
+            using var content = new ByteArrayContent(bytesToPost);
 
-            var response = await httpClient.PostAsync(url, new ByteArrayContent(bytesToPost)).ConfigureAwait(false);
+            var response = await httpClient.PostAsync(new Uri(url), content).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
@@ -58,14 +60,16 @@ namespace NetDaemon.Daemon
         public async Task PostJson(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers)
         {
             _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
+            _ = request ?? throw new NetDaemonArgumentNullException(nameof(request));
 
-            var httpClient = _httpClientFactory.CreateClient();
+            using var httpClient = _httpClientFactory.CreateClient();
 
             AddHeaders(httpClient, headers);
 
             var bytesToPost = JsonSerializer.SerializeToUtf8Bytes(request, request.GetType(), options);
+            using var content = new ByteArrayContent(bytesToPost);
 
-            var response = await httpClient.PostAsync(url, new ByteArrayContent(bytesToPost)).ConfigureAwait(false);
+            var response = await httpClient.PostAsync(new Uri(url), content).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
         }

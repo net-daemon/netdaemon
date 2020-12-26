@@ -4,6 +4,7 @@ using System.Text.Json;
 using JoySoftware.HomeAssistant.Client;
 using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Mapping
 {
@@ -13,9 +14,10 @@ namespace NetDaemon.Mapping
         ///     Converts HassState to EntityState
         /// </summary>
         /// <param name="hassState"></param>
-        /// <returns></returns>
         public static EntityState Map(this HassState hassState)
         {
+            _ = hassState ??
+               throw new NetDaemonArgumentNullException(nameof(hassState));
             var entityState = new EntityState
             {
                 EntityId = hassState.EntityId,
