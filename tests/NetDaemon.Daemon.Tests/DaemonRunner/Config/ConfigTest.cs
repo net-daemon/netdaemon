@@ -16,11 +16,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public static readonly string ConfigFixturePath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "Fixtures");
 
-        public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
+        public static string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
 
-        public string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
+        public static string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
 
-        public IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        public static IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
         {
             AppSource = appSource
         });
@@ -109,7 +109,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal("string", scalarValue.ToObject(typeof(string)));
@@ -126,7 +125,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(1234, scalarValue.ToObject(typeof(int)));
@@ -143,7 +141,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(true, scalarValue.ToObject(typeof(bool)));
@@ -160,7 +157,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal((long)1234, scalarValue.ToObject(typeof(long)));
@@ -177,7 +173,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal((decimal)1.5, scalarValue.ToObject(typeof(decimal)));
@@ -223,11 +218,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal(true, instance?.ABool);
             Assert.NotNull(instance?.Devices);
             Assert.Equal(1, instance?.Devices?.Count());
-            Assert.Equal("tv", instance?.Devices?.First().name);
-            Assert.Equal("command1", instance?.Devices?.First()?.commands?.ElementAt(0).name);
-            Assert.Equal("some code", instance?.Devices?.First()?.commands?.ElementAt(0).data);
-            Assert.Equal("command2", instance?.Devices?.First()?.commands?.ElementAt(1).name);
-            Assert.Equal("some code2", instance?.Devices?.First()?.commands?.ElementAt(1).data);
+            Assert.Equal("tv", instance?.Devices?.First().Name);
+            Assert.Equal("command1", instance?.Devices?.First()?.Commands?.ElementAt(0).Name);
+            Assert.Equal("some code", instance?.Devices?.First()?.Commands?.ElementAt(0).Data);
+            Assert.Equal("command2", instance?.Devices?.First()?.Commands?.ElementAt(1).Name);
+            Assert.Equal("some code2", instance?.Devices?.First()?.Commands?.ElementAt(1).Data);
         }
     }
 }

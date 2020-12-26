@@ -23,12 +23,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
     public class Device
     {
-        public string? name { get; set; }
-        public IEnumerable<Command>? commands { get; set; }
+        public string? Name { get; set; }
+        public IEnumerable<Command>? Commands { get; set; }
     }
     public class Command
     {
-        public string? name { get; set; }
-        public string? data { get; set; }
+        public string? Name { get; set; }
+        public string? Data { get; set; }
     }
 }

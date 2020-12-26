@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var (dynObj, expObj) = GetDynamicObject(
+            var (dynObj, _) = GetDynamicObject(
                ("attr", "value"));
 
             // ACT
@@ -139,9 +139,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
-
             // ACT
             DefaultDaemonRxApp.RunScript("myscript");
 
@@ -158,8 +155,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
 
             // ACT
             DefaultDaemonRxApp.RunScript("script.myscript");
@@ -271,7 +266,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.NotNull(entities);
-            Assert.Equal(8, entities.Count());
+            Assert.Equal(8, entities.Count);
         }
 
         [Fact]

@@ -18,8 +18,10 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
         public FaultyRxAppTests() : base()
         {
-            _app = new DaemonRxAppTestApp();
-            _app.Id = "id";
+            _app = new DaemonRxAppTestApp
+            {
+                Id = "id"
+            };
             DefaultDaemonHost.InternalRunningAppInstances[_app.Id] = App;
             _app.StartUpAsync(DefaultDaemonHost).Wait();
         }

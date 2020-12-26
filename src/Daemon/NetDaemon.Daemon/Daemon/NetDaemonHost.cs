@@ -688,20 +688,17 @@ namespace NetDaemon.Daemon
 
         internal string? GetAreaForEntityId(string entityId)
         {
-            HassEntity? entity;
-            if (_hassEntities.TryGetValue(entityId, out entity) && entity is not null)
+            if (_hassEntities.TryGetValue(entityId, out HassEntity? entity) && entity is not null)
             {
                 if (entity.DeviceId is not null)
                 {
                     // The entity is on a device
-                    HassDevice? device;
-                    if (_hassDevices.TryGetValue(entity.DeviceId, out device) && device is not null)
+                    if (_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) && device is not null)
                     {
                         if (device.AreaId is not null)
                         {
                             // This device is in an area
-                            HassArea? area;
-                            if (_hassAreas.TryGetValue(device.AreaId, out area) && area is not null)
+                            if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area) && area is not null)
                             {
                                 return area.Name;
                             }
@@ -747,9 +744,9 @@ namespace NetDaemon.Daemon
             }
         }
 
-        internal IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
+        internal static IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
         {
-            if (unsortedList.SelectMany(n => n.Dependencies).Count() > 0)
+            if (unsortedList.SelectMany(n => n.Dependencies).Any())
             {
                 // There are dependecies defined
                 var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
@@ -857,7 +854,7 @@ namespace NetDaemon.Daemon
                                         observer.OnError(e);
                                         netDaemonRxApp.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
                                     }
-                                }));
+                                }, token));
                             }
                         }
                     }
@@ -936,7 +933,7 @@ namespace NetDaemon.Daemon
                                         }
                                         Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
                                     }
-                                }));
+                                }, token));
                             }
                         }
                     }
@@ -1019,7 +1016,7 @@ namespace NetDaemon.Daemon
                                         observer.OnError(e);
                                         Logger.LogError(e, "Fail to OnNext on event observer (event)");
                                     }
-                                }));
+                                }, token));
                             }
                         }
                     }
@@ -1130,7 +1127,7 @@ namespace NetDaemon.Daemon
                     if (hasLoggedError == false)
                         Logger.LogDebug(e, "Failure sending call service");
                     hasLoggedError = true;
-                    await Task.Delay(100); // Do a delay to avoid loop
+                    await Task.Delay(100, cancellationToken); // Do a delay to avoid loop
                 }
             }
         }
@@ -1161,7 +1158,7 @@ namespace NetDaemon.Daemon
                     if (hasLoggedError == false)
                         Logger.LogDebug(e, "Failure setting state");
                     hasLoggedError = true;
-                    await Task.Delay(100); // Do a delay to avoid loop
+                    await Task.Delay(100, cancellationToken); // Do a delay to avoid loop
                 }
             }
         }
@@ -1179,7 +1176,7 @@ namespace NetDaemon.Daemon
                     attributes.entity_id = entityId;
                     attributes.message = message;
                     await _hassClient.CallService("tts", "google_cloud_say", attributes, true).ConfigureAwait(false);
-                    await Task.Delay(InternalDelayTimeForTts).ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
+                    await Task.Delay(InternalDelayTimeForTts, cancellationToken).ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
 
                     EntityState? currentPlayState = GetState(entityId);
 
@@ -1189,7 +1186,7 @@ namespace NetDaemon.Daemon
 
                         if (delayInMilliSeconds > 0)
                         {
-                            await Task.Delay(delayInMilliSeconds).ConfigureAwait(false); // Wait remainder of text message
+                            await Task.Delay(delayInMilliSeconds, cancellationToken).ConfigureAwait(false); // Wait remainder of text message
                         }
                     }
                 }
@@ -1215,7 +1212,7 @@ namespace NetDaemon.Daemon
             // Get all instances
             var instancedApps = _appInstanceManager.InstanceDaemonApps();
 
-            if (InternalRunningAppInstances.Count() > 0)
+            if (!InternalRunningAppInstances.IsEmpty)
                 throw new ApplicationException("Did not expect running instances!");
 
             foreach (INetDaemonAppBase appInstance in instancedApps!)
@@ -1396,7 +1393,7 @@ namespace NetDaemon.Daemon
 
         private async Task PostExternalEvent(ExternalEventBase ev)
         {
-            if (_externalEventCallSubscribers.Count == 0)
+            if (_externalEventCallSubscribers.IsEmpty)
                 return;
 
             var callbackTaskList = new List<Task>(_externalEventCallSubscribers.Count);

@@ -70,7 +70,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var dataRepository = new DataRepository(DataReposityryPath);
             dynamic dataBeingSaved = new FluentExpandoObject(false, true);
-            var now = DateTime.Now;
             dataBeingSaved.SomeString = "this data should be saved!";
             dataBeingSaved.SomeInt = 123456;
             dataBeingSaved.SomeFloat = 1.23456;
@@ -84,8 +83,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             returnedFluentExpandoObject.CopyFrom(dataReturned!);
 
             dynamic dynamicDataReturned = returnedFluentExpandoObject;
-            var x = dataBeingSaved.SomeString;
-            var y = dynamicDataReturned!.SomeString;
 
             if (dataBeingSaved.SomeString == dynamicDataReturned?.SomeString)
             {

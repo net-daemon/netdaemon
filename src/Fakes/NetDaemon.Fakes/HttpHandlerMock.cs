@@ -110,7 +110,7 @@ namespace NetDaemon.Daemon.Fakes
             var responseMessage = new HttpResponseMessage(_StatusCode);
 
             if (request is not null && request.Content is not null)
-                _requestContent = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+                _requestContent = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             responseMessage.Content = new ByteArrayContent(Encoding.ASCII.GetBytes(_response));
             return responseMessage;

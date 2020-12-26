@@ -39,9 +39,8 @@ namespace NetDaemon.Service.App
         {
             var loadedApps = new List<Type>(50);
 
-            CollectibleAssemblyLoadContext alc;
             // Load the compiled apps
-            var (compiledApps, compileErrorText) = GetCompiledApps(out alc, codeFolder, logger);
+            var (compiledApps, compileErrorText) = GetCompiledApps(out CollectibleAssemblyLoadContext alc, codeFolder, logger);
 
             if (compiledApps is not null)
                 loadedApps.AddRange(compiledApps);
@@ -79,22 +78,20 @@ namespace NetDaemon.Service.App
                     InterceptAppInfo(syntaxTree, compilation);
                 }
 
-                using (var peStream = new MemoryStream())
+                using var peStream = new MemoryStream();
+                var emitResult = compilation.Emit(peStream: peStream);
+
+                if (emitResult.Success)
                 {
-                    var emitResult = compilation.Emit(peStream: peStream);
+                    peStream.Seek(0, SeekOrigin.Begin);
 
-                    if (emitResult.Success)
-                    {
-                        peStream.Seek(0, SeekOrigin.Begin);
+                    return alc!.LoadFromStream(peStream);
+                }
+                else
+                {
+                    PrettyPrintCompileError(emitResult, logger);
 
-                        return alc!.LoadFromStream(peStream);
-                    }
-                    else
-                    {
-                        PrettyPrintCompileError(emitResult, logger);
-
-                        return null!;
-                    }
+                    return null!;
                 }
             }
             finally
@@ -115,12 +112,10 @@ namespace NetDaemon.Service.App
 
             foreach (var csFile in csFiles)
             {
-                using (var fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    var sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true);
-                    var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
-                    result.Add(syntaxTree);
-                }
+                using var fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                var sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true);
+                var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile);
+                result.Add(syntaxTree);
             }
 
             return result;
@@ -300,18 +295,18 @@ namespace NetDaemon.Service.App
 
                     while (parentInvocationExpression is not null)
                     {
-                        if (parentInvocationExpression is MethodDeclarationSyntax)
+                        if (parentInvocationExpression is MethodDeclarationSyntax methodDeclarationSyntax)
                         {
-                            if (ExpressionContainsDisableLogging((MethodDeclarationSyntax)parentInvocationExpression))
+                            if (ExpressionContainsDisableLogging(methodDeclarationSyntax))
                             {
                                 disableLogging = true;
                             }
                         }
-                        if (parentInvocationExpression is InvocationExpressionSyntax)
+                        if (parentInvocationExpression is InvocationExpressionSyntax invocationExpressionSyntax)
                         {
                             var parentSymbol = (IMethodSymbol?)semModel?.GetSymbolInfo(invocationExpression).Symbol;
                             if (parentSymbol?.Name == symbolName)
-                                topInvocationExpression = (InvocationExpressionSyntax)parentInvocationExpression;
+                                topInvocationExpression = invocationExpressionSyntax;
                         }
                         parentInvocationExpression = parentInvocationExpression.Parent;
                     }

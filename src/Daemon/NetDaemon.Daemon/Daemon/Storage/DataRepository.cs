@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon.Storage
             {
             }
 #pragma warning disable CS8603, CS8653
-            return default(T);
+            return default;
 #pragma warning restore CS8603, CS8653
         }
 

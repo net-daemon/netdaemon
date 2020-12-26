@@ -24,11 +24,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public static readonly string FaultyAppPath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "FaultyApp");
 
-        public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(AppTests.ConfigFixturePath, filename));
+        public static string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(AppTests.ConfigFixturePath, filename));
 
-        public string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
+        public static string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
 
-        public IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        public static IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
         {
             AppSource = appSource
         });
@@ -44,7 +44,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var netDaemonSettings = CreateSettings(path);
 
             // ACT
-            var cm = new CodeManager(daemonApps, loggerMock.Logger, new YamlConfig(netDaemonSettings));
+            _ = new CodeManager(daemonApps, loggerMock.Logger, new YamlConfig(netDaemonSettings));
 
             // ASSERT
             loggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
@@ -91,7 +91,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
 
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
-            var yamlConfig = "app:\n  class: AssmeblyDaemonApp";
+            var yamlConfig = "app:\n  class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssmeblyDaemonApp";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
             // ASSERT
@@ -130,7 +130,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
         app:
-            class: AssmeblyDaemonApp
+            class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssmeblyDaemonApp
             StringConfig: a string
             IntConfig: 10
             EnumerableConfig:
@@ -155,7 +155,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
         app:
-            class: AssmeblyDaemonApp
+            class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssmeblyDaemonApp
             test_secret_string: !secret a_secret_string
             test_secret_int: !secret a_secret_int
             test_normal_string: not a secret string
@@ -186,7 +186,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
         app:
-            class: AssmeblyDaemonApp
+            class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssmeblyDaemonApp
             string_config: a string
             int_config: 10
             enumerable_config:
@@ -247,7 +247,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
                 app:
-                    class: AssmeblyDaemonApp
+                    class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssmeblyDaemonApp
                 ";
 
             var daemonMock = new Mock<INetDaemon>();
@@ -282,15 +282,17 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             IEnumerable<Type> types = new List<Type>() { typeof(AssmeblyDaemonApp) };
             var yamlConfig = @"
                 app:
-                    class: AssmeblyDaemonApp
+                    class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssmeblyDaemonApp
                 ";
 
             await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssmeblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
-            var storageItem = new FluentExpandoObject();
-            storageItem["Data"] = "SomeData";
+            var storageItem = new FluentExpandoObject
+            {
+                ["Data"] = "SomeData"
+            };
 
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
             daemonMock.Setup(n => n.GetDataAsync<IDictionary<string, object>>(It.IsAny<string>()))
@@ -359,13 +361,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         {
             // ARRANGE
             var path = Path.Combine(FaultyAppPath, "ExecuteWarnings");
-            var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
             var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
             var configMock = new Mock<IYamlConfig>();
 
             // ACT
-            var codeManager = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
+            _ = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(13));
@@ -376,19 +377,18 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         {
             // ARRANGE
             var path = Path.Combine(FaultyAppPath, "SupressLogs");
-            var moqDaemon = new Mock<INetDaemonHost>();
             var moqLogger = new LoggerMock();
             var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
             var configMock = new Mock<IYamlConfig>();
 
             // ACT
-            var codeManager = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
+            _ = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
 
             // ASSERT
             moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(1));
         }
 
-        public CodeManager CM(string path)
+        public static CodeManager CM(string path)
         {
             var loggerMock = new LoggerMock().Logger;
             var config = new YamlConfig(CreateSettings(path));

@@ -9,7 +9,7 @@ namespace NetDaemon.Infrastructure.Config
 {
     public static class SerilogConfigurator
     {
-        private static readonly LoggingLevelSwitch LevelSwitch = new LoggingLevelSwitch();
+        private static readonly LoggingLevelSwitch LevelSwitch = new();
 
         public static LoggerConfiguration Configure(LoggerConfiguration loggerConfiguration, IHostEnvironment hostingEnvironment)
         {

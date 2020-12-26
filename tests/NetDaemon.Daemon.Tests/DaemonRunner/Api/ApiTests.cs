@@ -54,22 +54,28 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
                 _loggerMock.LoggerFactory,
                 _defaultHttpHandlerMock.Object);
 
-            _defaultDaemonApp = new BaseTestApp();
-            _defaultDaemonApp.Id = "app_id";
-            _defaultDaemonApp.IsEnabled = true;
+            _defaultDaemonApp = new BaseTestApp
+            {
+                Id = "app_id",
+                IsEnabled = true
+            };
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
             _defaultDaemonHost.InternalAllAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
 
-            _defaultDaemonApp2 = new BaseTestApp();
-            _defaultDaemonApp2.Id = "app_id2";
+            _defaultDaemonApp2 = new BaseTestApp
+            {
+                Id = "app_id2"
+            };
             _defaultDaemonApp2.RuntimeInfo.NextScheduledEvent = DateTime.Now;
             _defaultDaemonApp2.IsEnabled = false;
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp2.Id!] = _defaultDaemonApp2;
             _defaultDaemonHost.InternalAllAppInstances[_defaultDaemonApp2.Id!] = _defaultDaemonApp2;
 
-            _defaultDaemonRxApp = new BaseTestRxApp();
-            _defaultDaemonRxApp.Id = "app_rx_id";
-            _defaultDaemonRxApp.IsEnabled = true;
+            _defaultDaemonRxApp = new BaseTestRxApp
+            {
+                Id = "app_rx_id",
+                IsEnabled = true
+            };
             _defaultDaemonRxApp.RuntimeInfo.NextScheduledEvent = DateTime.Now;
             _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
             _defaultDaemonHost.InternalAllAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
@@ -93,9 +99,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             services.AddHttpClient();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment _)
         {
-
             var webSocketOptions = new WebSocketOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120)
@@ -113,10 +118,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 
         private readonly ArraySegment<byte> _buffer;
 
-        private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        private readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+
+        public ArraySegment<byte> Buffer => _buffer;
 
         public ApiTests()
         {
@@ -139,32 +146,28 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             return Task.CompletedTask;
         }
 
-        private async Task<string> ReadString(WebSocket ws)
+        private static async Task<string> ReadString(WebSocket ws)
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
             _ = buffer.Array ?? throw new NullReferenceException("Failed to allocate memory buffer");
 
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            WebSocketReceiveResult result;
+            do
             {
-                WebSocketReceiveResult result;
-                do
-                {
-                    result = await ws.ReceiveAsync(buffer, CancellationToken.None);
-                    ms.Write(buffer.Array, buffer.Offset, result.Count);
-                }
-                while (!result.EndOfMessage);
-
-                ms.Seek(0, SeekOrigin.Begin);
-                if (result.MessageType != WebSocketMessageType.Text)
-                {
-                    throw new Exception("Unexpected type");
-                }
-
-                using (var reader = new StreamReader(ms, Encoding.UTF8))
-                {
-                    return await reader.ReadToEndAsync();
-                }
+                result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                ms.Write(buffer.Array, buffer.Offset, result.Count);
             }
+            while (!result.EndOfMessage);
+
+            ms.Seek(0, SeekOrigin.Begin);
+            if (result.MessageType != WebSocketMessageType.Text)
+            {
+                throw new Exception("Unexpected type");
+            }
+
+            using var reader = new StreamReader(ms, Encoding.UTF8);
+            return await reader.ReadToEndAsync();
         }
 
         private async Task<WebSocket> GetWsClient()

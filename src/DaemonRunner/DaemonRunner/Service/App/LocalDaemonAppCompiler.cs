@@ -29,7 +29,7 @@ namespace NetDaemon.Service.App
             if (!apps.Any())
                 _logger.LogWarning("No local daemon apps found.");
             else
-                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count());
+                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count);
 
             return apps;
         }

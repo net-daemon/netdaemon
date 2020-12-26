@@ -28,19 +28,19 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Used to cancel all running tasks
         /// </summary>
-        private CancellationTokenSource _cancelSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancelSource = new();
 
         private readonly ConcurrentDictionary<int, Task> _scheduledTasks
-                    = new ConcurrentDictionary<int, Task>();
+                = new();
 
         private readonly IManageTime? _timeManager;
         private readonly ILogger<Scheduler> _logger;
-        private Task _schedulerTask;
+        private readonly Task _schedulerTask;
 
         public Scheduler(IManageTime? timerManager = null, ILoggerFactory? loggerFactory = null)
         {
             _timeManager = timerManager ?? new TimeManager();
-            loggerFactory = loggerFactory ?? DefaultLoggerFactory;
+            loggerFactory ??= DefaultLoggerFactory;
             _logger = loggerFactory.CreateLogger<Scheduler>();
             _schedulerTask = Task.Run(SchedulerLoop, _cancelSource.Token);
         }
@@ -144,9 +144,8 @@ namespace NetDaemon.Daemon
         public ISchedulerResult RunDailyAsync(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
         {
             var cancelSource = new CancellationTokenSource();
-            DateTime timeOfDayToTrigger;
 
-            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeOfDayToTrigger))
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
@@ -222,7 +221,6 @@ namespace NetDaemon.Daemon
 
             while (!linkedCts.IsCancellationRequested)
             {
-                var now = _timeManager?.Current;
                 var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                 _logger.LogTrace("RunEveryMinute, Delay {diff}", diff);
                 await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
@@ -289,7 +287,7 @@ namespace NetDaemon.Daemon
             var taskResult = await Task.WhenAny(
                 Task.WhenAll(_scheduledTasks.Values.ToArray()), Task.Delay(1000)).ConfigureAwait(false);
 
-            if (_scheduledTasks.Values.Count(n => n.IsCompleted == false) > 0)
+            if (_scheduledTasks.Values.Any(n => n.IsCompleted == false))
                 // Todo: Some kind of logging have to be done here to tell user which task caused timeout
                 throw new ApplicationException("Failed to cancel all tasks");
         }
@@ -309,7 +307,7 @@ namespace NetDaemon.Daemon
             try
             {
                 while (!_cancelSource.Token.IsCancellationRequested)
-                    if (_scheduledTasks.Count > 0)
+                    if (!_scheduledTasks.IsEmpty)
                     {
                         // Make sure we do cleaning and handle new task every 100 ms
                         ScheduleTask(Task.Delay(DefaultSchedulerTimeout,

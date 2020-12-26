@@ -40,8 +40,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task CreateObservableIntervallShouldCallFunction()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
-            app.IsEnabled = true;
+            var app = new BaseTestRxApp
+            {
+                IsEnabled = true
+            };
 
             var called = false;
 
@@ -73,8 +75,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task CreateObservableTimerShouldCallFunction()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
-            app.IsEnabled = true;
+            var app = new BaseTestRxApp
+            {
+                IsEnabled = true
+            };
 
             var called = false;
 

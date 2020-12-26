@@ -20,7 +20,7 @@ namespace NetDaemon.Service.App
         ///     Mapps the domain to corresponding implemented Fluent API, will be added as
         ///     more and more entity types are supported
         /// </summary>
-        private static IDictionary<string, (string, string)> _FluentApiMapper = new Dictionary<string, (string, string)>
+        private static readonly IDictionary<string, (string, string)> _FluentApiMapper = new Dictionary<string, (string, string)>
         {
             ["light"] = ("Entity", "IEntity"),
             ["script"] = ("Entity", "IEntity"),
@@ -34,7 +34,7 @@ namespace NetDaemon.Service.App
             // ["climate"],
         };
 
-        public string? GenerateCode(string nameSpace, IEnumerable<string> entities)
+        public static string? GenerateCode(string nameSpace, IEnumerable<string> entities)
         {
             var code = SyntaxFactory.CompilationUnit();
 
@@ -112,7 +112,7 @@ namespace NetDaemon.Service.App
             return code.NormalizeWhitespace(indentation: "    ", eol: "\n").ToFullString();
         }
 
-        public string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities, IEnumerable<HassServiceDomain> services)
+        public static string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities, IEnumerable<HassServiceDomain> services)
         {
             var code = SyntaxFactory.CompilationUnit();
 
@@ -143,7 +143,7 @@ namespace NetDaemon.Service.App
             {
                 var camelCaseDomain = domain.ToCamelCase();
 
-                var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) == 0 ? false : true;
+                var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) != 0;
 
                 var property = isSingleServiceDomain ?
                     $@"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
@@ -197,7 +197,7 @@ namespace NetDaemon.Service.App
                     {
                         name = "s_" + name;
                     }
-                    var hasEntityId = (s.Fields is not null && s.Fields.Count(c => c.Field == "entity_id") > 0) ? true : false;
+                    var hasEntityId = s.Fields is not null && s.Fields.Any(c => c.Field == "entity_id");
                     var entityAssignmentStatement = hasEntityId ? @"serviceData[""entity_id""] = EntityId;" : "";
 
                     var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)

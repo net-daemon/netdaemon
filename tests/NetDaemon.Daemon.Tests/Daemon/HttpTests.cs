@@ -84,7 +84,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new HttpClientFactoryMock();
+            HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -102,7 +102,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new HttpClientFactoryMock();
+            HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -117,7 +117,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new HttpClientFactoryMock();
+            HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -136,7 +136,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             var response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new HttpClientFactoryMock();
+            HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);

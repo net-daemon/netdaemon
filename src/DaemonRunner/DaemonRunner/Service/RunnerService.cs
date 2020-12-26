@@ -212,7 +212,7 @@ namespace NetDaemon.Service
 
             _entitiesGenerated = true;
             var codeGen = new CodeGenerator();
-            var source = codeGen.GenerateCode(
+            var source = CodeGenerator.GenerateCode(
                 "Netdaemon.Generated.Extensions",
                 daemonHost.State.Select(n => n.EntityId).Distinct()
             );
@@ -220,7 +220,7 @@ namespace NetDaemon.Service
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensions.cs.gen"), source).ConfigureAwait(false);
 
             var services = await daemonHost.GetAllServices().ConfigureAwait(false);
-            var sourceRx = codeGen.GenerateCodeRx(
+            var sourceRx = CodeGenerator.GenerateCodeRx(
                 "Netdaemon.Generated.Reactive",
                 daemonHost.State.Select(n => n.EntityId).Distinct(),
                 services

@@ -18,8 +18,8 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
     {
         private const string appTemplate = "  app: ";
         private readonly LoggerMock _logMock;
-        private NetDaemon.Common.NetDaemonApp _app;
-        private Mock<INetDaemon> _netDaemonMock;
+        private readonly NetDaemon.Common.NetDaemonApp _app;
+        private readonly Mock<INetDaemon> _netDaemonMock;
 
         public NetDaemonApptests()
         {
@@ -27,13 +27,13 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _netDaemonMock = new Mock<INetDaemon>();
             _netDaemonMock.SetupGet(n => n.Logger).Returns(_logMock.Logger);
 
-            _appMock = new Mock<INetDaemonApp>();
+            AppMock = new Mock<INetDaemonApp>();
             _app = new AppTestApp();
             _app.StartUpAsync(_netDaemonMock.Object);
             _app.Id = "app";
         }
 
-        public Mock<INetDaemonApp> _appMock { get; }
+        public Mock<INetDaemonApp> AppMock { get; }
 
         [Fact]
         public void CallServiceShouldCallCorrectDaemonCallService()

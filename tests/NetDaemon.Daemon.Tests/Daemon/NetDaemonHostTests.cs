@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
+using NetDaemon.Daemon.Tests.DaemonRunner.App;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
@@ -55,9 +56,10 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var app = new AssmeblyDaemonApp();
-            app.Id = "id";
-
+            var app = new AssmeblyDaemonApp
+            {
+                Id = "id"
+            };
 
             DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
 
@@ -224,7 +226,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await InitializeFakeDaemon(500).ConfigureAwait(false);
 
             // Expected data call service
-            var (expectedAttruibutes, expectedAttributesExpObject) = GetDynamicObject(
+            var (_, expectedAttributesExpObject) = GetDynamicObject(
                 ("entity_id", "media_player.fakeplayer"),
                 ("message", "Hello test!")
             );
@@ -634,7 +636,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void FixStateTypesShouldReturnCorrectValues(
             bool result, dynamic? newState, dynamic? oldState, dynamic? expectedNewState, dynamic? expectedOldState)
         {
-            HassStateChangedEventData state = new HassStateChangedEventData
+            HassStateChangedEventData state = new()
             {
                 NewState = new HassState
                 {

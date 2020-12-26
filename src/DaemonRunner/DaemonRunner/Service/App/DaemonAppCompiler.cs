@@ -16,7 +16,7 @@ namespace NetDaemon.Service.App
         private readonly ILogger<DaemonAppCompiler> _logger;
         private readonly IOptions<NetDaemonSettings> _netDaemonSettings;
 
-        private string? _sourceFolder = null;
+        private readonly string? _sourceFolder = null;
         public DaemonAppCompiler(ILogger<DaemonAppCompiler> logger, IOptions<NetDaemonSettings> netDaemonSettings)
         {
             _logger = logger;
@@ -24,6 +24,8 @@ namespace NetDaemon.Service.App
             _sourceFolder = netDaemonSettings.Value.GetAppSourceDirectory();
 
         }
+
+        public IOptions<NetDaemonSettings> NetDaemonSettings => _netDaemonSettings;
 
         public IEnumerable<Type> GetApps()
         {
@@ -41,8 +43,7 @@ namespace NetDaemon.Service.App
 
         public Assembly Load()
         {
-            CollectibleAssemblyLoadContext alc;
-            return DaemonCompiler.GetCompiledAppAssembly(out alc, _sourceFolder!, _logger);
+            return DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
         }
     }
 }

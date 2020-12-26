@@ -26,15 +26,19 @@ namespace NetDaemon.Daemon.Tests
 
         public CoreDaemonHostTestBase() : base()
         {
-            _defaultDaemonApp = new BaseTestApp();
-            _defaultDaemonApp.Id = "app_id";
-            _defaultDaemonApp.IsEnabled = true;
+            _defaultDaemonApp = new BaseTestApp
+            {
+                Id = "app_id",
+                IsEnabled = true
+            };
 
             DefaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
 
-            _defaultDaemonRxApp = new BaseTestRxApp();
-            _defaultDaemonRxApp.Id = "app_rx_id";
-            _defaultDaemonRxApp.IsEnabled = true;
+            _defaultDaemonRxApp = new BaseTestRxApp
+            {
+                Id = "app_rx_id",
+                IsEnabled = true
+            };
             DefaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
 
             _defaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
@@ -119,7 +123,7 @@ namespace NetDaemon.Daemon.Tests
                 }
             });
 
-            SetEntityState( new()
+            SetEntityState(new()
             {
                 EntityId = "light.ligth_in_area",
                 State = "off",
@@ -157,7 +161,7 @@ namespace NetDaemon.Daemon.Tests
         public BaseTestRxApp DefaultDaemonRxApp => _defaultDaemonRxApp;
         public Mock<NetDaemonRxApp> DefaultMockedRxApp => _defaultMockedRxApp;
         public Common.NetDaemonApp DefaultDaemonApp => _defaultDaemonApp;
-        public string HelloWorldData => "Hello world!";
+        public static string HelloWorldData => "Hello world!";
 
         public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {

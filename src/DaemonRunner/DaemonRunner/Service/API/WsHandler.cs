@@ -20,7 +20,7 @@ namespace NetDaemon.Service.Api
 
     public class ApiWebsocketMiddleware
     {
-        private static ConcurrentDictionary<string, WebSocket> _sockets = new();
+        private static readonly ConcurrentDictionary<string, WebSocket> _sockets = new();
 
         private readonly RequestDelegate _next;
 
@@ -30,7 +30,7 @@ namespace NetDaemon.Service.Api
 
         private readonly NetDaemonHost? _host;
 
-        private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        private readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
@@ -194,7 +194,7 @@ namespace NetDaemon.Service.Api
             currentSocket.Dispose();
         }
 
-        public async Task BroadCast(string message, CancellationToken ct = default(CancellationToken))
+        public async Task BroadCast(string message, CancellationToken ct = default)
         {
             _logger.LogTrace("Broadcasting to {count} clients", _sockets.Count);
             foreach (var socket in _sockets)
@@ -208,47 +208,43 @@ namespace NetDaemon.Service.Api
             }
         }
 
-        private static Task SendStringAsync(WebSocket socket, string data, CancellationToken ct = default(CancellationToken))
+        private static Task SendStringAsync(WebSocket socket, string data, CancellationToken ct = default)
         {
             var buffer = Encoding.UTF8.GetBytes(data);
             var segment = new ArraySegment<byte>(buffer);
             return socket.SendAsync(segment, WebSocketMessageType.Text, true, ct);
         }
 
-        private static async Task<WsMessage?> GetNextMessageAsync(WebSocket socket, CancellationToken ct = default(CancellationToken))
+        private static async Task<WsMessage?> GetNextMessageAsync(WebSocket socket, CancellationToken ct = default)
         {
             // System.Text.Json.JsonSerializer.DeserializeAsync(socket.)
             var buffer = new ArraySegment<byte>(new byte[8192]);
             _ = buffer.Array ?? throw new NullReferenceException("Failed to allocate memory buffer");
 
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            WebSocketReceiveResult result;
+            do
             {
-                WebSocketReceiveResult result;
-                do
-                {
-                    ct.ThrowIfCancellationRequested();
+                ct.ThrowIfCancellationRequested();
 
-                    result = await socket.ReceiveAsync(buffer, ct);
-                    if (!result.CloseStatus.HasValue)
-                        ms.Write(buffer.Array, buffer.Offset, result.Count);
-                    else
-                        return null;
-
-                }
-                while (!result.EndOfMessage);
-
-                ms.Seek(0, SeekOrigin.Begin);
-                if (result.MessageType != WebSocketMessageType.Text)
-                {
+                result = await socket.ReceiveAsync(buffer, ct);
+                if (!result.CloseStatus.HasValue)
+                    ms.Write(buffer.Array, buffer.Offset, result.Count);
+                else
                     return null;
-                }
 
-                using (var reader = new StreamReader(ms, Encoding.UTF8))
-                {
-                    var msgString = await reader.ReadToEndAsync();
-                    return JsonSerializer.Deserialize<WsMessage>(msgString);
-                }
             }
+            while (!result.EndOfMessage);
+
+            ms.Seek(0, SeekOrigin.Begin);
+            if (result.MessageType != WebSocketMessageType.Text)
+            {
+                return null;
+            }
+
+            using var reader = new StreamReader(ms, Encoding.UTF8);
+            var msgString = await reader.ReadToEndAsync();
+            return JsonSerializer.Deserialize<WsMessage>(msgString);
         }
 
     }

@@ -37,9 +37,7 @@ namespace NetDaemon.Mapping
                 return;
 
             // Cast so we can work with the expando object
-            var dict = entityState.Attribute as IDictionary<string, object>;
-
-            if (dict == null)
+            if (entityState.Attribute is not IDictionary<string, object> dict)
                 throw new ArgumentNullException(nameof(dict), "Expando object should always be dictionary!");
 
             foreach (var (key, value) in hassState.Attributes)

@@ -17,13 +17,15 @@ namespace NetDaemon.Daemon.Tests.Fluent
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
 
             Assert.Throws<NullReferenceException>(() => app
                 .Event("CUSTOM_EVENT")
@@ -37,8 +39,10 @@ namespace NetDaemon.Daemon.Tests.Fluent
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
@@ -48,7 +52,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
@@ -79,8 +83,10 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
@@ -90,7 +96,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
@@ -122,8 +128,10 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
@@ -133,7 +141,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
@@ -165,8 +173,10 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
@@ -176,7 +186,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
@@ -207,8 +217,10 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
@@ -217,7 +229,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
@@ -248,8 +260,10 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
             await app.StartUpAsync(daemonHost);
@@ -259,7 +273,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 

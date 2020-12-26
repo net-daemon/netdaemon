@@ -22,22 +22,20 @@ namespace NetDaemon.Service
 {
     public class ApiStartup
     {
-        bool _useAdmin = false;
+        readonly bool _useAdmin = false;
 
         public ApiStartup(IConfiguration configuration)
         {
             Configuration = configuration;
 
             var enableAdminValue = Configuration.GetSection("NetDaemon").GetSection("Admin").Value;
-            bool.TryParse(enableAdminValue, out _useAdmin);
+            _ = bool.TryParse(enableAdminValue, out _useAdmin);
         }
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services)
         {
-            // services.Configure<HomeAssistantSettings>(Context.Configuration.GetSection("HomeAssistant"));
-            // services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
             services.AddHostedService<RunnerService>();
             services.AddTransient<IHassClient, HassClient>();
             services.AddTransient<IDataRepository>(n => new DataRepository(

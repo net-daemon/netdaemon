@@ -21,18 +21,18 @@ namespace NetDaemon.Daemon.Fakes
         ///     Fake areas in HassClient
         /// </summary>
         /// <returns></returns>
-        public HassAreas Areas = new HassAreas();
+        public HassAreas Areas = new();
 
         /// <summary>
         ///     Fake devices in HassClient
         /// </summary>
         /// <returns></returns>
-        public HassDevices Devices = new HassDevices();
+        public HassDevices Devices = new();
 
         /// <summary>
         ///     Fake entities in HassClient
         /// </summary>
-        public HassEntities Entities = new HassEntities();
+        public HassEntities Entities = new();
 
         /// <summary>
         ///     Fake events in HassClient
@@ -101,7 +101,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Default instance of mock
         /// </summary>
-        public static HassClientMock DefaultMock => new HassClientMock();
+        public static HassClientMock DefaultMock => new();
 
         /// <summary>
         ///     Returns a mock that will always return false when connect to Home Assistant
@@ -254,7 +254,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="hassState">HassClient state instance</param>
         /// <param name="entity">NetDaemon state instance</param>
-        public void AssertEqual(HassState hassState, EntityState entity)
+        public static void AssertEqual(HassState hassState, EntityState entity)
         {
             Assert.Equal(hassState.EntityId, entity.EntityId);
             Assert.Equal(hassState.State, entity.State);
@@ -280,7 +280,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="milliSeconds"></param>
         /// <returns></returns>
-        public CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
+        public static CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
         {
             return (Debugger.IsAttached)
                 ? new CancellationTokenSource()
@@ -297,8 +297,8 @@ namespace NetDaemon.Daemon.Fakes
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
-            foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+            foreach (var (attribute, value) in attributesTuples)
+                ((IDictionary<string, object>)attributes)[attribute] = value;
 
             Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
         }
@@ -357,8 +357,8 @@ namespace NetDaemon.Daemon.Fakes
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
-            foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+            foreach (var (attribute, value) in attributesTuples)
+                ((IDictionary<string, object>)attributes)[attribute] = value;
 
             Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);
         }

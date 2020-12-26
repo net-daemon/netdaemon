@@ -136,7 +136,7 @@ namespace NetDaemon.Daemon.Tests
         {
             // ARRANGE
             DateTime timePart = DateTime.ParseExact(nowTime, "HH:mm:ss", CultureInfo.InvariantCulture);
-            DateTime fakeTimeNow = new DateTime(2001, 01, 01, timePart.Hour, timePart.Minute, timePart.Second);
+            DateTime fakeTimeNow = new(2001, 01, 01, timePart.Hour, timePart.Minute, timePart.Second);
             DateTime timeTarget = DateTime.ParseExact(targetTime, "HH:mm:ss", CultureInfo.InvariantCulture);
 
             var mockTimeManager = new TimeManagerMock(fakeTimeNow);
