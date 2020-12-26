@@ -14,6 +14,7 @@ try
 catch (Exception e)
 {
     Console.WriteLine($"Failed to start host... {e}");
+    throw;
 }
 finally
 {

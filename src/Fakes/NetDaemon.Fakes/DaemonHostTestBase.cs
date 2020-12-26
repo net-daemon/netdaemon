@@ -21,6 +21,7 @@ namespace NetDaemon.Daemon.Fakes
     public class DaemonHostTestBase : IAsyncLifetime
     {
         private Task? _fakeConnectedDaemon;
+        private CancellationTokenSource? _cancelSource;
 
         /// <summary>
         ///     Default contructor
@@ -68,6 +69,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public Task DisposeAsync()
         {
+            _cancelSource?.Dispose();
             return Task.CompletedTask;
         }
 
@@ -111,6 +113,8 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="state">The state to sett</param>
         public void SetEntityState(HassState state)
         {
+            _ = state ??
+               throw new NetDaemonArgumentNullException(nameof(state));
             DefaultHassClientMock.FakeStates[state.EntityId] = state;
         }
 
@@ -136,6 +140,8 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="app">The instance of the app to add</param>
         public async Task AddAppInstance(INetDaemonAppBase app)
         {
+            _ = app ??
+               throw new NetDaemonArgumentNullException(nameof(app));
             if (string.IsNullOrEmpty(app.Id))
                 app.Id = Guid.NewGuid().ToString();
             DefaultDaemonHost.InternalAllAppInstances[app.Id] = app;
@@ -241,7 +247,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="data">Data sent by service</param>
         /// <param name="waitForResponse">If service was waiting for response</param>
         /// <param name="times">Number of times called</param>
-        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Moq.Times? times = null)
+        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Times? times = null)
         {
             DefaultHassClientMock.VerifyCallService(domain, service, data, waitForResponse, times);
         }
@@ -255,7 +261,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="waitForResponse">If service was waiting for response</param>
         /// <param name="times">Number of times called</param>
         /// <param name="attributesTuples">Attributes to verify</param>
-        public void VerifyCallService(string domain, string service, string entityId, bool waitForResponse = false, Moq.Times? times = null,
+        public void VerifyCallService(string domain, string service, string entityId, bool waitForResponse = false, Times? times = null,
                 params (string attribute, object value)[] attributesTuples)
         {
             var serviceObject = new FluentExpandoObject
@@ -295,7 +301,6 @@ namespace NetDaemon.Daemon.Fakes
         ///     Wait for task until canceled
         /// </summary>
         /// <param name="task">Task to wait for</param>
-        /// <returns></returns>
         private static async Task WaitUntilCanceled(Task task)
         {
             try
@@ -375,14 +380,14 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="overrideDebugNotCancel">True to use timeout while debugging</param>
         private async Task<Task> GetConnectedNetDaemonTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
-            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+            _cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                     ? new CancellationTokenSource()
                     : new CancellationTokenSource(milliSeconds);
 
             await InitApps().ConfigureAwait(false);
 
-            var daemonTask = DefaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
-            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, cancelSource.Token).ConfigureAwait(false);
+            var daemonTask = DefaultDaemonHost.Run("host", 8123, false, "token", _cancelSource.Token);
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, _cancelSource.Token).ConfigureAwait(false);
             return daemonTask;
         }
 

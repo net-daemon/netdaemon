@@ -7,13 +7,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
     /// <summary>
     ///     Greets (or insults) people when coming home :)
     /// </summary>
-    public class AssemblyDaemonApp : NetDaemon.Common.NetDaemonApp
+    public class AssemblyDaemonApp : Common.NetDaemonApp
     {
         #region -- Test config --
 
-        public string? StringConfig { get; set; } = null;
-        public int? IntConfig { get; set; } = null;
-        public IEnumerable<string>? EnumerableConfig { get; set; } = null;
+        public string? StringConfig { get; set; }
+        public int? IntConfig { get; set; }
+        public IEnumerable<string>? EnumerableConfig { get; set; }
 
         #endregion -- Test config --
 
@@ -28,7 +28,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         #endregion -- Test secrets --
 
         // For testing
-        public bool HandleServiceCallIsCalled { get; set; } = false;
+        public bool HandleServiceCallIsCalled { get; set; }
 
         public override Task InitializeAsync()
         {
