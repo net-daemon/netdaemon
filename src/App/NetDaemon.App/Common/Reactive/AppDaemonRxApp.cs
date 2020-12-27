@@ -22,17 +22,20 @@ namespace NetDaemon.Common.Reactive
     /// </summary>
     public abstract class NetDaemonRxApp : NetDaemonAppBase, INetDaemonReactive
     {
-        private readonly CancellationTokenSource _cancelTimers = new();
+        private readonly CancellationTokenSource _cancelTimers;
         private EventObservable? _eventObservables;
         private StateChangeObservable? _stateObservables;
+        private bool _isDisposed;
 
         /// <summary>
         ///     Default constructor
         /// </summary>
         protected NetDaemonRxApp()
         {
+            _cancelTimers = new();
             StateAllChanges = new ReactiveState(this);
             EventChanges = new ReactiveEvent(this);
+            _isDisposed = false;
         }
 
         /// <inheritdoc/>
@@ -70,8 +73,16 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         public async override ValueTask DisposeAsync()
         {
+            lock (_cancelTimers)
+            {
+                if (_isDisposed)
+                    return;
+                _isDisposed = true;
+            }
+
+            LogDebug("RxApp {app} is being Disposes", Id!);
             // To end timers
-            _cancelTimers.Cancel();
+            _cancelTimers?.Cancel();
 
             if (_eventObservables is not null)
                 _eventObservables!.Clear();
@@ -79,8 +90,9 @@ namespace NetDaemon.Common.Reactive
             if (_stateObservables is not null)
                 _stateObservables!.Clear();
 
+            _cancelTimers?.Dispose();
+
             await base.DisposeAsync().ConfigureAwait(false);
-            _cancelTimers.Dispose();
             LogDebug("RxApp {app} is Disposed", Id!);
         }
 

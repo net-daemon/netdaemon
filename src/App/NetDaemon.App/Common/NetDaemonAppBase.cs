@@ -35,8 +35,18 @@ namespace NetDaemon.Common
 
         private readonly Channel<bool> _updateRuntimeInfoChannel =
                Channel.CreateBounded<bool>(5);
-        private readonly CancellationTokenSource _cancelSource = new();
+        private readonly CancellationTokenSource _cancelSource;
+        private bool _isDisposed;
         private Task? _lazyStoreStateTask;
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        protected NetDaemonAppBase()
+        {
+            _cancelSource = new();
+            _isDisposed = false;
+        }
 
         /// <summary>
         ///    Dependencies on other applications that will be initialized before this app
@@ -123,7 +133,7 @@ namespace NetDaemon.Common
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
-            var obj = await Daemon!.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage()).ConfigureAwait(false);
+            var obj = await Daemon.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage()).ConfigureAwait(false);
 
             if (obj != null)
             {
@@ -143,7 +153,6 @@ namespace NetDaemon.Common
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
                     await Daemon.SetStateAsync(EntityId, "off").ConfigureAwait(false);
-                    await Daemon.CallServiceAsync("switch", "turn_off", serviceData).ConfigureAwait(false);
                 }
                 return;
             }
@@ -155,7 +164,6 @@ namespace NetDaemon.Common
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
                     await Daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
-                    await Daemon.CallServiceAsync("switch", "turn_on", serviceData).ConfigureAwait(false);
                 }
                 return;
             }
@@ -189,7 +197,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Speak(string entityId, string message)
         {
-            _ = Daemon as INetDaemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
             Daemon!.Speak(entityId, message);
         }
 
@@ -260,13 +268,19 @@ namespace NetDaemon.Common
         /// </summary>
         public async virtual ValueTask DisposeAsync()
         {
+            lock (_cancelSource)
+            {
+                if (_isDisposed)
+                    return;
+                _isDisposed = true;
+            }
             _cancelSource.Cancel();
             if (_manageRuntimeInformationUpdatesTask is not null)
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
             DaemonCallBacksForServiceCalls.Clear();
 
-            this.IsEnabled = false;
+            IsEnabled = false;
             _lazyStoreStateTask = null;
             InternalStorageObject = null;
             _cancelSource.Dispose();

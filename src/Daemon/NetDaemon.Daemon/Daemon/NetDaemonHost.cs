@@ -80,6 +80,7 @@ namespace NetDaemon.Daemon
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances { get; } = new();
 
         private readonly Scheduler _scheduler;
+        private bool _isDisposed;
 
         // Following token source and token are set at RUN
         private CancellationToken _cancelToken;
@@ -93,7 +94,6 @@ namespace NetDaemon.Daemon
         /// <param name="repository">Repository to use</param>
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
-        /// <param name="appInstanceManager">Handles instances of apps</param>
         public NetDaemonHost(
             IHassClient? hassClient,
             IDataRepository? repository,
@@ -108,6 +108,7 @@ namespace NetDaemon.Daemon
                         ?? throw new ArgumentNullException(nameof(hassClient));
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             _repository = repository;
+            _isDisposed = false;
             Logger.LogTrace("Instance NetDaemonHost");
         }
 
@@ -210,11 +211,19 @@ namespace NetDaemon.Daemon
 
         public async ValueTask DisposeAsync()
         {
+            lock (_cancelDaemon)
+            {
+                if (_isDisposed)
+                    return;
+                _isDisposed = true;
+            }
+
             _cancelDaemon.Cancel();
             await Stop().ConfigureAwait(false);
-            _cancelDaemon.Dispose();
             await _scheduler.DisposeAsync().ConfigureAwait(false);
+            _cancelDaemon.Dispose();
             _cancelTokenSource?.Dispose();
+
             Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
@@ -269,8 +278,7 @@ namespace NetDaemon.Daemon
         public async Task<T?> GetDataAsync<T>(string id) where T : class
         {
             _cancelToken.ThrowIfCancellationRequested();
-
-            _ = _repository as IDataRepository ??
+            _ = _repository ??
                 throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
 
             if (DataCache.ContainsKey(id))
@@ -615,6 +623,14 @@ namespace NetDaemon.Daemon
                 await _scheduler.Stop().ConfigureAwait(false);
 
                 InternalState.Clear();
+                InternalAllAppInstances.Clear();
+                InternalRunningAppInstances.Clear();
+                _hassAreas.Clear();
+                _hassDevices.Clear();
+                _hassEntities.Clear();
+                _daemonServiceCallFunctions.Clear();
+                _externalEventCallSubscribers.Clear();
+                _eventHandlerTasks.Clear();
 
                 Connected = false;
                 await _hassClient.CloseAsync().ConfigureAwait(false);
@@ -628,11 +644,20 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("", "1031")]
         public async Task UnloadAllApps()
         {
+            Logger.LogTrace("Unloading all apps ({instances}, {running})", InternalAllAppInstances.Count, InternalRunningAppInstances.Count);
             foreach (var app in InternalAllAppInstances)
             {
-                await app.Value.DisposeAsync().ConfigureAwait(false);
+                try
+                {
+                    await app.Value.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Failed to unload apps, {app_id}", app.Value.Id);
+                }
             }
             InternalAllAppInstances.Clear();
             InternalRunningAppInstances.Clear();
@@ -1214,7 +1239,7 @@ namespace NetDaemon.Daemon
         private async Task LoadAllApps()
         {
             _ = _appInstanceManager ?? throw new NetDaemonNullReferenceException(nameof(_appInstanceManager));
-
+            Logger.LogTrace("Loading all apps ({instances}, {running})", InternalAllAppInstances.Count, InternalRunningAppInstances.Count);
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
 
@@ -1222,7 +1247,10 @@ namespace NetDaemon.Daemon
             var instancedApps = _appInstanceManager.InstanceDaemonApps();
 
             if (!InternalRunningAppInstances.IsEmpty)
-                throw new NetDaemonException("Did not expect running instances!");
+            {
+                Logger.LogWarning("Old apps not unloaded correctly. {nr} apps still loaded.", InternalRunningAppInstances.Count);
+                InternalRunningAppInstances.Clear();
+            }
 
             foreach (INetDaemonAppBase appInstance in instancedApps!)
             {
@@ -1278,7 +1306,7 @@ namespace NetDaemon.Daemon
                     else
                         await SetStateOnDaemonAppSwitch("on", data).ConfigureAwait(false);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Logger.LogWarning(e, "Failed to set state from netdaemon switch");
                 }
@@ -1309,9 +1337,7 @@ namespace NetDaemon.Daemon
                 if (state == "off")
                 {
                     // We need to turn off any dependent apps
-                    var depApps = InternalAllAppInstances.Values.Where(n => n.Dependencies.Contains(app.Id));
-
-                    foreach (var depApp in depApps)
+                    foreach (var depApp in InternalAllAppInstances.Values.Where(n => n.Dependencies.Contains(app.Id)))
                     {
                         await SetDependentState(depApp.EntityId, state).ConfigureAwait(false);
                     }
@@ -1356,7 +1382,7 @@ namespace NetDaemon.Daemon
                 new Dictionary<string, object?>();
 
             obj["__IsDisabled"] = !app.IsEnabled;
-            await SaveDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage(), obj).ConfigureAwait(false);
+            await SaveDataAsync(app.GetUniqueIdForStorage(), obj).ConfigureAwait(false);
         }
 
         [SuppressMessage("", "CA1031")]

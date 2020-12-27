@@ -31,7 +31,7 @@ namespace NetDaemon.Daemon
         ///     Used to cancel all running tasks
         /// </summary>
         private CancellationTokenSource _cancelSource = new();
-
+        private bool _isStopped;
         private readonly ConcurrentDictionary<int, Task> _scheduledTasks
                 = new();
 
@@ -274,6 +274,11 @@ namespace NetDaemon.Daemon
         /// </summary>
         public async Task Stop()
         {
+            if (_isStopped)
+                return;
+
+            _isStopped = true;
+
             _cancelSource.Cancel();
 
             // Make sure we are waiting for the scheduler task as well
@@ -298,6 +303,7 @@ namespace NetDaemon.Daemon
         public async Task Restart()
         {
             await Stop().ConfigureAwait(false);
+            _isStopped = false;
             _cancelSource = new CancellationTokenSource();
         }
 
