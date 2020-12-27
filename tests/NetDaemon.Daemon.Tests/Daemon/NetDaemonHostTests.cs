@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
+using NetDaemon.Daemon.Tests.DaemonRunner.App;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
@@ -27,8 +29,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-
-            dynamic helloWorldDataObject = GetDynamicDataObject(HelloWorldData);
+            dynamic helloWorldDataObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
 
             DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", helloWorldDataObject);
 
@@ -36,7 +37,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var message = "";
 
             // ACT
-            DefaultDaemonApp.ListenEvent("CUSTOM_EVENT", (ev, data) =>
+            DefaultDaemonApp.ListenEvent("CUSTOM_EVENT", (_, data) =>
             {
                 isCalled = true;
                 message = data.Test;
@@ -55,9 +56,10 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var app = new AssmeblyDaemonApp();
-            app.Id = "id";
-
+            var app = new AssemblyDaemonApp
+            {
+                Id = "id"
+            };
 
             DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
 
@@ -106,14 +108,14 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            dynamic dataObject = GetDynamicDataObject();
+            dynamic dataObject = DaemonHostTestBase.GetDynamicDataObject();
 
             DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", dataObject);
 
             var isCalled = false;
 
             // ACT
-            DefaultDaemonApp.ListenEvent("OTHER_EVENT", (ev, data) =>
+            DefaultDaemonApp.ListenEvent("OTHER_EVENT", (_, _) =>
             {
                 isCalled = true;
                 return Task.CompletedTask;
@@ -132,7 +134,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACTION
             var (runTask, _) = ReturnRunningNotConnectedDaemonHostTask();
-            await runTask;
+            await runTask.ConfigureAwait(false);
 
             // ASSERT
             Assert.True(runTask.IsCompleted);
@@ -153,11 +155,10 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var eventData = GetDynamicDataObject();
-
+            var eventData = DaemonHostTestBase.GetDynamicDataObject();
 
             // ACT
-            await DefaultDaemonHost.SendEvent("test_event", eventData);
+            await DefaultDaemonHost.SendEvent("test_event", eventData).ConfigureAwait(false);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -172,7 +173,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
-            await DefaultDaemonHost.SendEvent("test_event");
+            await DefaultDaemonHost.SendEvent("test_event").ConfigureAwait(false);
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
@@ -224,7 +225,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await InitializeFakeDaemon(500).ConfigureAwait(false);
 
             // Expected data call service
-            var (expectedAttruibutes, expectedAttributesExpObject) = GetDynamicObject(
+            var (_, expectedAttributesExpObject) = GetDynamicObject(
                 ("entity_id", "media_player.fakeplayer"),
                 ("message", "Hello test!")
             );
@@ -235,20 +236,19 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ASSERT
 
-            await Task.Delay(50);
+            await Task.Delay(50).ConfigureAwait(false);
 
             VerifyCallService("tts", "google_cloud_say", expectedAttributesExpObject, true, Times.Once());
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // Called twice
             VerifyCallService("tts", "google_cloud_say", expectedAttributesExpObject, true, Times.Exactly(2));
-
         }
 
         [Fact]
         public async Task StopCallsCloseClient()
         {
-            await DefaultDaemonHost.Stop();
+            await DefaultDaemonHost.Stop().ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CloseAsync(), Times.Once);
         }
@@ -262,7 +262,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             string? reportedState = "";
 
             // ACT
-            DefaultDaemonApp.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
+            DefaultDaemonApp.ListenState("binary_sensor.pir", (_, newState, _) =>
             {
                 reportedState = newState?.State;
 
@@ -285,7 +285,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             int nrOfTimesCalled = 0;
 
             // ACT
-            DefaultDaemonApp.ListenState("", (entityId, newState, oldState) =>
+            DefaultDaemonApp.ListenState("", (_, _, _) =>
             {
                 nrOfTimesCalled++;
 
@@ -295,7 +295,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
             AddChangedEvent("light.mylight", fromState: "on", toState: "off");
 
-            await RunFakeDaemonUntilTimeout();
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(2, nrOfTimesCalled);
@@ -327,7 +327,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             bool isCalled = false;
 
             // ACT
-            var id = DefaultDaemonApp.ListenState("binary_sensor.pir", (entityId, newState, oldState) =>
+            var id = DefaultDaemonApp.ListenState("binary_sensor.pir", (_, _, _) =>
             {
                 isCalled = true;
 
@@ -350,8 +350,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var dynObject = GetDynamicDataObject(HelloWorldData);
-
+            var dynObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
 
             var isCalled = false;
             string? message = "";
@@ -374,16 +373,17 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
+        [SuppressMessage("", "CA1508")]
         public async Task CallServiceEventOtherShouldNotCallFunction()
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var dynObject = GetDynamicDataObject(HelloWorldData);
+            var dynObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
 
             DefaultHassClientMock.AddCallServiceEvent("custom_domain", "other_service", dynObject);
 
             var isCalled = false;
-            string? message = "";
+            string? message = null;
 
             DefaultDaemonHost.ListenServiceCall("custom_domain", "any_service", data =>
             {
@@ -401,7 +401,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateShouldCallCorrectFunction()
         {
-            await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value"));
+            await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value")).ConfigureAwait(false);
 
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
@@ -412,7 +412,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateShouldReturnCorrectData()
         {
-            await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value"));
+            await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value")).ConfigureAwait(false);
 
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
@@ -457,7 +457,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task DelayStateChangeWithToAndFromWrongShouldNotComplete()
         {
-            // ARRANGE  
+            // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
@@ -478,7 +478,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, _) => n?.State == "on");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
 
@@ -495,7 +495,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, o) => n?.State == "on");
+            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, _) => n?.State == "on");
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "on", toState: "off");
 
@@ -551,7 +551,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
-        public void EntityShouldReturCorrectValueForArea()
+        public void EntityShouldReturnCorrectValueForArea()
         {
             // ARRANGE
             DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
@@ -569,7 +569,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
-        public void EntityShouldReturNullForAreaNotExist()
+        public void EntityShouldReturnNullForAreaNotExist()
         {
             // ARRANGE
             DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
@@ -615,7 +615,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
-            var state = await DefaultDaemonHost.SetStateAsync("light.ligth_in_area", "on", ("attr", "value"));
+            var state = await DefaultDaemonHost.SetStateAsync("light.light_in_area", "on", ("attr", "value")).ConfigureAwait(false);
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             /// ASSERT
             Assert.Equal("Area", state?.Area);
@@ -634,7 +634,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void FixStateTypesShouldReturnCorrectValues(
             bool result, dynamic? newState, dynamic? oldState, dynamic? expectedNewState, dynamic? expectedOldState)
         {
-            HassStateChangedEventData state = new HassStateChangedEventData
+            HassStateChangedEventData state = new()
             {
                 NewState = new HassState
                 {

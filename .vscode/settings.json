@@ -7,5 +7,26 @@
         "**/obj": true,
         "**/Properties": true,
         "**/TestResults": true
-    }
+    },
+    "omnisharp.enableRoslynAnalyzers": true,
+    "cSpell.words": [
+        "Expando",
+        "Finalizers",
+        "Hass",
+        "Usings",
+        "Xunit",
+        "dayofweek",
+        "entityid",
+        "hassio",
+        "idguid",
+        "mulitinstance",
+        "mydomain",
+        "myevent",
+        "mylight",
+        "myscript",
+        "noexist",
+        "noquotes",
+        "parentidguid",
+        "useridguid"
+    ]
 }

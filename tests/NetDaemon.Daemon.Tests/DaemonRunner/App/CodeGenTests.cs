@@ -10,9 +10,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public void TestGenerateCode()
         {
             // ARRANGE
-            var x = new CodeGenerator();
             // ACT
-            var code = x.GenerateCode("Netdaemon.Generated.Extensions", new string[] { "light.koket_fonster", "media_player.my_player" });
+            var code = CodeGenerator.GenerateCode("Netdaemon.Generated.Extensions", new string[] { "light.koket_fonster", "media_player.my_player" });
 
             // ASSERT
 

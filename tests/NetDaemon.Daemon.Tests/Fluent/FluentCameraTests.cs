@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -25,14 +26,15 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraDisableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "disable_motion_detection";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "disable_motion_detection";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .DisableMotionDetection()
-                .ExecuteAsync();
+                .ExecuteAsync()
+                .ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
@@ -43,14 +45,15 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CamerasDisableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "disable_motion_detection";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "disable_motion_detection";
 
             // ACT
             await DefaultDaemonApp
                 .Cameras(new string[] { entityId })
                 .DisableMotionDetection()
-                .ExecuteAsync();
+                .ExecuteAsync()
+                .ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
@@ -61,8 +64,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CamerasFuncDisableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "disable_motion_detection";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "disable_motion_detection";
 
             DefaultDaemonHost.InternalState["camera.camera1"] = new EntityState
             {
@@ -74,7 +77,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                     .Cameras(n => n.EntityId == entityId)
                     .DisableMotionDetection()
-                    .ExecuteAsync();
+                    .ExecuteAsync()
+                    .ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
@@ -85,14 +89,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraEnableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "enable_motion_detection";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "enable_motion_detection";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .EnableMotionDetection()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
@@ -103,14 +107,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraPlayStreamCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "play_stream";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "play_stream";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .PlayStream("media_player.player", "anyformat")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes(service_call, Times.Once());
@@ -125,14 +129,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraRecordCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "record";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "record";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .Record("filename", 1, 2)
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes(service_call, Times.Once());
@@ -148,14 +152,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraSnapshotCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "snapshot";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "snapshot";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .Snapshot("filename")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes(service_call, Times.Once());
@@ -169,14 +173,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraTurnOnCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "turn_on";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "turn_on";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .TurnOn()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
@@ -187,14 +191,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraTurnOffCallsCorrectServiceCall()
         {
             // ARRANGE
-            var entityId = "camera.camera1";
-            var service_call = "turn_off";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "turn_off";
 
             // ACT
             await DefaultDaemonApp
                 .Camera(entityId)
                 .TurnOff()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes(service_call, Times.Once());
@@ -202,16 +206,17 @@ namespace NetDaemon.Daemon.Tests.Fluent
         }
 
         [Fact]
-        public async Task CamerassFuncExceptionLogsError()
+        [SuppressMessage("", "CA2201")]
+        public async Task CamerasFuncExceptionLogsError()
         {
             // ARRANGE
             DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
 
             // ACT
             var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonApp
-               .Cameras(n => throw new Exception("Some error"))
+               .Cameras(_ => throw new Exception("Some error"))
                .TurnOn()
-               .ExecuteAsync());
+               .ExecuteAsync()).ConfigureAwait(false);
 
             // ASSERT
             DefaultHassClientMock.VerifyCallServiceTimes("turn_on", Times.Never());

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace NetDaemon.Common.Reactive
@@ -17,7 +18,7 @@ namespace NetDaemon.Common.Reactive
         private readonly ILogger _logger;
 
         private readonly ConcurrentDictionary<IObserver<T>, IObserver<T>>
-                            _observersTuples = new ConcurrentDictionary<IObserver<T>, IObserver<T>>();
+                            _observersTuples = new();
         /// <summary>
         ///     Constructor
         /// </summary>
@@ -36,6 +37,8 @@ namespace NetDaemon.Common.Reactive
         /// <summary>
         ///     Clear all observers
         /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1031")]
+
         public void Clear()
         {
             foreach (var eventObservable in _observersTuples)
@@ -75,8 +78,8 @@ namespace NetDaemon.Common.Reactive
             public UnsubscriberObservable(
                 ConcurrentDictionary<IObserver<X>, IObserver<X>> observers, IObserver<X> observer)
             {
-                this._observers = observers;
-                this._observer = observer;
+                _observer = observer;
+                _observers = observers;
             }
 
             public void Dispose()
@@ -86,7 +89,6 @@ namespace NetDaemon.Common.Reactive
                     _observers.TryRemove(_observer, out _);
                     _observer.OnCompleted();
                 }
-                // System.Console.WriteLine($"Subscribers:{_observers.Count}");
             }
         }
     }

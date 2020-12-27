@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common.Configuration;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
@@ -35,9 +37,9 @@ namespace NetDaemon.Service
         private bool _entitiesGenerated;
         private IEnumerable<Type>? _loadedDaemonApps;
 
-        private string? _sourcePath = null;
+        private string? _sourcePath;
 
-        private bool _hasConnectedBefore = false;
+        private bool _hasConnectedBefore;
 
         public RunnerService(
             ILoggerFactory loggerFactory,
@@ -48,6 +50,10 @@ namespace NetDaemon.Service
             IDaemonAppCompiler daemonAppCompiler
             )
         {
+            _ = homeAssistantSettings ??
+               throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
+            _ = netDaemonSettings ??
+               throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
             _logger = loggerFactory.CreateLogger<RunnerService>();
             _homeAssistantSettings = homeAssistantSettings.Value;
             _netDaemonSettings = netDaemonSettings.Value;
@@ -62,6 +68,7 @@ namespace NetDaemon.Service
             await base.StopAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        [SuppressMessage("", "CA1031")]
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -88,9 +95,9 @@ namespace NetDaemon.Service
                 _loadedDaemonApps = null;
 
                 await using var daemonHost = _serviceProvider.GetService<NetDaemonHost>()
-                    ?? throw new ApplicationException("Failed to get service for NetDaemonHost");
+                    ?? throw new NetDaemonException("Failed to get service for NetDaemonHost");
                 {
-                    await Run(daemonHost, stoppingToken);
+                    await Run(daemonHost, stoppingToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -104,6 +111,7 @@ namespace NetDaemon.Service
             _logger.LogInformation("NetDaemon service exited!");
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task Run(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -126,7 +134,7 @@ namespace NetDaemon.Service
                         stoppingToken
                     );
 
-                    if (await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false) == false)
+                    if (!await WaitForDaemonToConnect(daemonHost, stoppingToken).ConfigureAwait(false))
                     {
                         continue;
                     }
@@ -139,12 +147,12 @@ namespace NetDaemon.Service
                             {
                                 // Generate code if requested
                                 if (_sourcePath is string)
-                                    await GenerateEntities(daemonHost, _sourcePath);
+                                    await GenerateEntities(daemonHost, _sourcePath).ConfigureAwait(false);
 
                                 if (_loadedDaemonApps is null)
                                     _loadedDaemonApps = _daemonAppCompiler.GetApps();
 
-                                if (_loadedDaemonApps is null || !_loadedDaemonApps.Any())
+                                if (_loadedDaemonApps?.Any() != true)
                                 {
                                     _logger.LogError("No NetDaemon apps could be found, exiting...");
                                     return;
@@ -155,7 +163,6 @@ namespace NetDaemon.Service
 
                                 // Wait until daemon stops
                                 await daemonHostTask.ConfigureAwait(false);
-
                             }
                             catch (TaskCanceledException)
                             {
@@ -199,7 +206,6 @@ namespace NetDaemon.Service
 
                 // If we reached here it could be a re-connect
                 _hasConnectedBefore = true;
-
             }
         }
         private async Task GenerateEntities(NetDaemonHost daemonHost, string sourceFolder)
@@ -213,16 +219,15 @@ namespace NetDaemon.Service
             _logger.LogTrace("Generating entities from Home Assistant instance ..");
 
             _entitiesGenerated = true;
-            var codeGen = new CodeGenerator();
-            var source = codeGen.GenerateCode(
+            var source = CodeGenerator.GenerateCode(
                 "Netdaemon.Generated.Extensions",
                 daemonHost.State.Select(n => n.EntityId).Distinct()
             );
 
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensions.cs.gen"), source).ConfigureAwait(false);
 
-            var services = await daemonHost.GetAllServices();
-            var sourceRx = codeGen.GenerateCodeRx(
+            var services = await daemonHost.GetAllServices().ConfigureAwait(false);
+            var sourceRx = CodeGenerator.GenerateCodeRx(
                 "Netdaemon.Generated.Reactive",
                 daemonHost.State.Select(n => n.EntityId).Distinct(),
                 services
@@ -231,7 +236,7 @@ namespace NetDaemon.Service
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
         }
 
-        private async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
+        private static async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
         {
             var nrOfTimesCheckForConnectedState = 0;
 

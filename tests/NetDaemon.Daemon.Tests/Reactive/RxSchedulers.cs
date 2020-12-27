@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,22 +18,19 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class RxSchedulerTest : CoreDaemonHostTestBase
     {
-        public RxSchedulerTest() : base()
-        {
-        }
-
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task CreateObservableIntervallFailureShouldLogError()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
+            await using var app = new BaseTestRxApp();
             await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             app.IsEnabled = true;
 
             // ACT
             using var disposable = app.CreateObservableIntervall(TimeSpan.FromMilliseconds(10), () => throw new Exception("hello!"));
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
             LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
         }
@@ -40,31 +39,34 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task CreateObservableIntervallShouldCallFunction()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
-            app.IsEnabled = true;
+            await using var app = new BaseTestRxApp
+            {
+                IsEnabled = true
+            };
 
             var called = false;
 
             // ACT
             using var disposable = app.CreateObservableIntervall(TimeSpan.FromMilliseconds(10), () => called = true);
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
             Assert.True(called);
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task CreateObservableTimerFailureShouldLogError()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
+            await using var app = new BaseTestRxApp();
             await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             app.IsEnabled = true;
 
             // ACT
             using var disposable = app.CreateObservableTimer(DateTime.Now, TimeSpan.FromMilliseconds(10), () => throw new Exception("Hello!"));
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
             LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
         }
@@ -73,15 +75,17 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task CreateObservableTimerShouldCallFunction()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
-            app.IsEnabled = true;
+            await using var app = new BaseTestRxApp
+            {
+                IsEnabled = true
+            };
 
             var called = false;
 
             // ACT
             using var disposable = app.CreateObservableTimer(DateTime.Now, TimeSpan.FromMilliseconds(10), () => called = true);
 
-            await Task.Delay(100);
+            await Task.Delay(100).ConfigureAwait(false);
             // ASSERT
             Assert.True(called);
         }
@@ -92,10 +96,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             var time = DateTime.Now;
             var timeOneHourBack = time.AddHours(1);
-            var timeFormat = timeOneHourBack.ToString("HH:mm:ss");
+            var timeFormat = timeOneHourBack.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
             // ACT
-            DefaultMockedRxApp.Object.RunDaily(timeFormat, () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunDaily(timeFormat, () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), TimeSpan.FromDays(1), It.IsAny<Action>()), Times.Once());
@@ -107,7 +111,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             var time = DateTime.Now;
             var timeOneHourBack = time.Subtract(TimeSpan.FromHours(1));
-            var timeFormat = timeOneHourBack.ToString("HH:mm:ss");
+            var timeFormat = timeOneHourBack.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
             // ACT
             DefaultMockedRxApp.Object.RunDaily(timeFormat, () => System.Console.WriteLine("Test"));
@@ -122,7 +126,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
 
             // ACT
-            DefaultMockedRxApp.Object.RunDaily("10:00:00", () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunDaily("10:00:00", () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), TimeSpan.FromDays(1), It.IsAny<Action>()), Times.Once());
@@ -135,7 +139,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<FormatException>(() =>
-             DefaultMockedRxApp.Object.RunDaily("no good input", () => System.Console.WriteLine("Test")));
+             DefaultMockedRxApp.Object.RunDaily("no good input", () => Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -143,7 +147,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             // ACT
-            DefaultMockedRxApp.Object.RunEveryHour("10:00", () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEveryHour("10:00", () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()), Times.Once());
@@ -156,7 +160,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<FormatException>(() =>
-            DefaultMockedRxApp.Object.RunEveryHour("no good input", () => System.Console.WriteLine("Test")));
+            DefaultMockedRxApp.Object.RunEveryHour("no good input", () => Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -164,7 +168,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             // ACT
-            DefaultMockedRxApp.Object.RunEveryMinute(0, () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEveryMinute(0, () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()), Times.Once());
@@ -177,7 +181,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<ArgumentOutOfRangeException>(() =>
-            DefaultMockedRxApp.Object.RunEveryMinute(-1, () => System.Console.WriteLine("Test")));
+            DefaultMockedRxApp.Object.RunEveryMinute(-1, () => Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -186,12 +190,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
 
             // ACT
-            DefaultMockedRxApp.Object.RunEvery(TimeSpan.FromSeconds(5), () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEvery(TimeSpan.FromSeconds(5), () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableIntervall(TimeSpan.FromSeconds(5), It.IsAny<Action>()), Times.Once());
         }
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task RunInFailureShouldLogError()
         {
             // ARRANGE
@@ -200,7 +205,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultDaemonRxApp.RunIn(TimeSpan.FromMilliseconds(100), () => throw new Exception("RxError"));
 
             // ASSERT
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
         }
@@ -218,7 +223,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ASSERT
             Assert.False(called);
 
-            await Task.Delay(150);
+            await Task.Delay(150).ConfigureAwait(false);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             Assert.True(called);

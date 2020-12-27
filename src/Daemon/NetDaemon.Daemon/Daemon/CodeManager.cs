@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -15,7 +17,7 @@ namespace NetDaemon.Daemon
     {
         private readonly ILogger _logger;
         private readonly IYamlConfig _yamlConfig;
-        private IEnumerable<Type>? _loadedDaemonApps;
+        private readonly IEnumerable<Type>? _loadedDaemonApps;
 
         /// <summary>
         ///     Constructor
@@ -30,7 +32,8 @@ namespace NetDaemon.Daemon
             _yamlConfig = yamlConfig;
         }
 
-        public int Count => _loadedDaemonApps?.Count() ?? throw new NullReferenceException("_loadedDaemonApps cannot be null");
+        [SuppressMessage("", "CA1065")]
+        public int Count => _loadedDaemonApps?.Count() ?? throw new NetDaemonNullReferenceException("_loadedDaemonApps cannot be null");
 
         // Internal for testing
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps!;
@@ -40,7 +43,7 @@ namespace NetDaemon.Daemon
             var result = new List<INetDaemonAppBase>(50);
 
             // No loaded, just return an empty list
-            if (_loadedDaemonApps is null || _loadedDaemonApps.Count() == 0)
+            if (_loadedDaemonApps?.Any() != true)
                 return result;
 
             // Get all yaml config file paths
@@ -56,7 +59,8 @@ namespace NetDaemon.Daemon
             {
                 try
                 {
-                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, File.OpenText(file), _yamlConfig, file);
+                    using var fileReader = File.OpenText(file);
+                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file);
 
                     foreach (var appInstance in yamlAppConfig.Instances)
                     {
@@ -67,7 +71,7 @@ namespace NetDaemon.Daemon
                 {
                     _logger.LogTrace(e, "Error instance the app from the file {file}", file);
                     _logger.LogError("Error instance the app from the file {file}, use trace flag for details", file);
-                    throw new ApplicationException($"Error instance the app from the file {file}", e);
+                    throw new NetDaemonException($"Error instance the app from the file {file}", e);
                 }
             }
             return result;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace NetDaemon.Common
     {
         private readonly INetDaemonApp _daemonApp;
         private readonly TaskCompletionSource<bool> _delayTaskCompletionSource;
-        private bool _isCanceled = false;
+        private bool _isCanceled;
 
         /// <summary>
         ///     Constructor
@@ -51,7 +52,7 @@ namespace NetDaemon.Common
 
         #region IDisposable Support
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         /// <summary>
         ///     Disposes the object and cancel delay
@@ -60,6 +61,8 @@ namespace NetDaemon.Common
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
+            // Suppress finalization.
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

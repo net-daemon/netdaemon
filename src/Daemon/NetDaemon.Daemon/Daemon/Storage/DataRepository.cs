@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Storage
 {
@@ -22,11 +24,11 @@ namespace NetDaemon.Daemon.Storage
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("", "CA1031")]
         public async ValueTask<T?> Get<T>(string id) where T : class
         {
             try
             {
-
                 var storageJsonFile = Path.Combine(_dataStoragePath, $"{id}_store.json");
 
                 if (!File.Exists(storageJsonFile))
@@ -40,7 +42,7 @@ namespace NetDaemon.Daemon.Storage
             {
             }
 #pragma warning disable CS8603, CS8653
-            return default(T);
+            return default;
 #pragma warning restore CS8603, CS8653
         }
 
@@ -71,7 +73,7 @@ namespace NetDaemon.Daemon.Storage
             JsonSerializerOptions options)
         {
             var dict = JsonSerializer.Deserialize<Dictionary<string, object?>>(ref reader)
-                ?? throw new ApplicationException("Null result deserializing dictionary");
+                ?? throw new NetDaemonException("Null result deserializing dictionary");
             var returnObject = new Dictionary<string, object?>();
             var returnDict = (IDictionary<string, object?>)returnObject;
             foreach (var x in dict.Keys)
@@ -95,7 +97,7 @@ namespace NetDaemon.Daemon.Storage
 
     public static class ExpandoExtensions
     {
-        public static object? ParseString(string? strToParse)
+        public static object? ParseString(this string? strToParse)
         {
             if (DateTime.TryParse(strToParse, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
                 return dateTime;

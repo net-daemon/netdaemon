@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Fluent;
@@ -103,8 +104,8 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Selects the input selects to do actions on using lambda
         /// </summary>
-        /// <param name="func">The lambda expression selecting input select</param>
         /// <param name="app">The Daemon App calling fluent API</param>
+        /// <param name="func">The lambda expression selecting input select</param>
         IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func);
 
         /// <summary>
@@ -147,6 +148,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base interface that all NetDaemon apps needs to implement
     /// </summary>
+    [SuppressMessage("", "CA1716")]
     public interface INetDaemonApp : INetDaemonAppBase
     {
         /// <summary>
@@ -326,6 +328,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Shared features in both Reactive and async/await models
     /// </summary>
+    [SuppressMessage("", "CA1716")]
     public interface INetDaemonAppBase :
         INetDaemonInitialableApp, IDoLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
     {
@@ -361,7 +364,7 @@ namespace NetDaemon.Common
 
         /// <summary>
         ///     Gets or sets a flag indicating whether this app is enabled.
-        ///     This property property can be controlled from Home Assistant.
+        ///     This property can be controlled from Home Assistant.
         /// </summary>
         /// <remarks>
         ///     A disabled app will not be initialized during the discovery.
@@ -404,7 +407,6 @@ namespace NetDaemon.Common
         /// <param name="action">The action to perform when service is called</param>
         void ListenServiceCall(string domain, string service,
             Func<dynamic?, Task> action);
-
 
         /// <summary>
         ///     Returns different runtime information about an app
@@ -595,6 +597,7 @@ namespace NetDaemon.Common
         ///     exactly when it happens but it should be fine. The SetState function
         ///     updates the state before sending.
         /// </remarks>
+        [SuppressMessage("", "CA1721")]
         IEnumerable<EntityState> State { get; }
 
         /// <summary>
@@ -602,7 +605,7 @@ namespace NetDaemon.Common
         /// </summary>
         /// <param name="id">Unique Id of the data</param>
         /// <returns>The data persistent or null if not exists</returns>
-        ValueTask<T?> GetDataAsync<T>(string id) where T : class;
+        Task<T?> GetDataAsync<T>(string id) where T : class;
 
         /// <summary>
         ///     Gets current state for the entity
@@ -661,10 +664,11 @@ namespace NetDaemon.Common
         /// </summary>
         /// <returns></returns>
         /// <remarks>
+        /// <para>
         ///     Restores the state of the storage object.!--
         ///     Todo: in the future also the state of tagged properties
-        ///
-        ///     It is implemented async so state will be lazy saved
+        /// </para>
+        /// <para>    It is implemented async so state will be lazy saved</para>
         /// </remarks>
         Task RestoreAppStateAsync();
 
@@ -672,10 +676,11 @@ namespace NetDaemon.Common
         ///     Saves the app state
         /// </summary>
         /// <remarks>
+        /// <para>
         ///     Saves the state of the storage object.!--
         ///     Todo: in the future also the state of tagged properties
-        ///
-        ///     It is implemented async so state will be lazy saved
+        /// </para>
+        /// <para>    It is implemented async so state will be lazy saved</para>
         /// </remarks>
         void SaveAppState();
 

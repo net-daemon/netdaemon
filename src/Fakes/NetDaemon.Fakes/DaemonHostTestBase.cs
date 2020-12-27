@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Moq;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
@@ -14,64 +15,61 @@ using Xunit;
 
 namespace NetDaemon.Daemon.Fakes
 {
-
     /// <summary>
     ///     Base class for test classes
     /// </summary>
-    public partial class DaemonHostTestBase : IAsyncLifetime
+    public class DaemonHostTestBase : IAsyncLifetime
     {
-        private readonly NetDaemonHost _defaultDaemonHost;
-        private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
-        private readonly HassClientMock _defaultHassClientMock;
-        private readonly HttpHandlerMock _defaultHttpHandlerMock;
-        private readonly LoggerMock _loggerMock;
         private Task? _fakeConnectedDaemon;
+        private CancellationTokenSource? _cancelSource;
 
         /// <summary>
         ///     Default contructor
         /// </summary>
         public DaemonHostTestBase()
         {
-            _loggerMock = new LoggerMock();
-            _defaultHassClientMock = HassClientMock.DefaultMock;
-            _defaultDataRepositoryMock = new Mock<IDataRepository>();
+            LoggerMock = new LoggerMock();
+            DefaultHassClientMock = HassClientMock.DefaultMock;
+            DefaultDataRepositoryMock = new Mock<IDataRepository>();
 
-            _defaultHttpHandlerMock = new HttpHandlerMock();
-            _defaultDaemonHost = new NetDaemonHost(
-                _defaultHassClientMock.Object,
-                _defaultDataRepositoryMock.Object,
-                _loggerMock.LoggerFactory,
-                _defaultHttpHandlerMock.Object);
-
-            _defaultDaemonHost.InternalDelayTimeForTts = 0; // Allow no extra waittime
+            DefaultHttpHandlerMock = new HttpHandlerMock();
+            DefaultDaemonHost = new NetDaemonHost(
+                DefaultHassClientMock.Object,
+                DefaultDataRepositoryMock.Object,
+                LoggerMock.LoggerFactory,
+                DefaultHttpHandlerMock.Object)
+            {
+                InternalDelayTimeForTts = 0 // Allow no extra waittime
+            };
         }
 
         /// <summary>
         ///     Returns default DaemonHost mock
         /// </summary>
-        public NetDaemonHost DefaultDaemonHost => _defaultDaemonHost;
+        public NetDaemonHost DefaultDaemonHost { get; }
         /// <summary>
         ///     Returns default data repository mock
         /// </summary>
-        public Mock<IDataRepository> DefaultDataRepositoryMock => _defaultDataRepositoryMock;
+        public Mock<IDataRepository> DefaultDataRepositoryMock { get; }
         /// <summary>
         ///     Returns default HassClient mock
         /// </summary>
-        public HassClientMock DefaultHassClientMock => _defaultHassClientMock;
+        public HassClientMock DefaultHassClientMock { get; }
         /// <summary>
         ///     Returns default HttpHandler mock
         /// </summary>
-        public HttpHandlerMock DefaultHttpHandlerMock => _defaultHttpHandlerMock;
+        public HttpHandlerMock DefaultHttpHandlerMock { get; }
         /// <summary>
         ///     Returns default logger mock
         /// </summary>
-        public LoggerMock LoggerMock => _loggerMock;
+        public LoggerMock LoggerMock { get; }
 
         /// <summary>
         ///     Cleans up test
         /// </summary>
         public Task DisposeAsync()
         {
+            _cancelSource?.Dispose();
             return Task.CompletedTask;
         }
 
@@ -79,10 +77,9 @@ namespace NetDaemon.Daemon.Fakes
         ///     Gets a object as dynamic
         /// </summary>
         /// <param name="testData">The object to turn into dynamic</param>
-        public dynamic GetDynamicDataObject(string testData = "testdata")
+        public static dynamic GetDynamicDataObject(string testData = "testdata")
         {
-            var expandoObject = new ExpandoObject();
-            dynamic dynamicData = expandoObject;
+            dynamic dynamicData = new ExpandoObject();
             dynamicData.Test = testData;
             return dynamicData;
         }
@@ -90,7 +87,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Converts parameters to dynamics
         /// </summary>
-        public (dynamic, FluentExpandoObject) GetDynamicObject(params (string, object)[] dynamicParameters)
+        public static (dynamic, FluentExpandoObject) GetDynamicObject(params (string, object)[] dynamicParameters)
         {
             var expandoObject = new FluentExpandoObject();
             var dict = expandoObject as IDictionary<string, object>;
@@ -116,6 +113,8 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="state">The state to sett</param>
         public void SetEntityState(HassState state)
         {
+            _ = state ??
+               throw new NetDaemonArgumentNullException(nameof(state));
             DefaultHassClientMock.FakeStates[state.EntityId] = state;
         }
 
@@ -127,14 +126,12 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="area">Area of entity</param>
         public void SetEntityState(string entityId, dynamic? state = null, string? area = null)
         {
-            var entity = new EntityState
+            DefaultDaemonHost.InternalState[entityId] = new EntityState
             {
                 EntityId = entityId,
                 Area = area,
                 State = state
             };
-
-            DefaultDaemonHost.InternalState[entityId] = entity;
         }
 
         /// <summary>
@@ -143,11 +140,13 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="app">The instance of the app to add</param>
         public async Task AddAppInstance(INetDaemonAppBase app)
         {
+            _ = app ??
+               throw new NetDaemonArgumentNullException(nameof(app));
             if (string.IsNullOrEmpty(app.Id))
                 app.Id = Guid.NewGuid().ToString();
             DefaultDaemonHost.InternalAllAppInstances[app.Id] = app;
             DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(DefaultDaemonHost);
+            await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -248,7 +247,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="data">Data sent by service</param>
         /// <param name="waitForResponse">If service was waiting for response</param>
         /// <param name="times">Number of times called</param>
-        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Moq.Times? times = null)
+        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Times? times = null)
         {
             DefaultHassClientMock.VerifyCallService(domain, service, data, waitForResponse, times);
         }
@@ -259,15 +258,16 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="domain">Service domain</param>
         /// <param name="service">Service to verify</param>
         /// <param name="entityId">EntityId to verify</param>
-        /// <param name="data">Data sent by service</param>
         /// <param name="waitForResponse">If service was waiting for response</param>
         /// <param name="times">Number of times called</param>
         /// <param name="attributesTuples">Attributes to verify</param>
-        public void VerifyCallService(string domain, string service, string entityId, object? data = null, bool waitForResponse = false, Moq.Times? times = null,
+        public void VerifyCallService(string domain, string service, string entityId, bool waitForResponse = false, Times? times = null,
                 params (string attribute, object value)[] attributesTuples)
         {
-            var serviceObject = new FluentExpandoObject();
-            serviceObject["entity_id"] = entityId;
+            var serviceObject = new FluentExpandoObject
+            {
+                ["entity_id"] = entityId
+            };
             foreach (var (attr, val) in attributesTuples)
             {
                 serviceObject[attr] = val;
@@ -301,8 +301,7 @@ namespace NetDaemon.Daemon.Fakes
         ///     Wait for task until canceled
         /// </summary>
         /// <param name="task">Task to wait for</param>
-        /// <returns></returns>
-        private async Task WaitUntilCanceled(Task task)
+        private static async Task WaitUntilCanceled(Task task)
         {
             try
             {
@@ -321,12 +320,12 @@ namespace NetDaemon.Daemon.Fakes
         {
             foreach (var inst in DefaultDaemonHost.InternalAllAppInstances)
             {
-                await inst.Value.StartUpAsync(_defaultDaemonHost);
+                await inst.Value.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             }
 
             foreach (var inst in DefaultDaemonHost.InternalRunningAppInstances)
             {
-                await inst.Value.InitializeAsync();
+                await inst.Value.InitializeAsync().ConfigureAwait(false);
                 inst.Value.Initialize();
             }
         }
@@ -344,7 +343,7 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
-        ///     Verifies that state being set 
+        ///     Verifies that state being set
         /// </summary>
         /// <param name="entityId">Unique identifier of the entity</param>
         /// <param name="times">How many times it being set</param>
@@ -360,17 +359,16 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="overrideDebugNotCancel">True if running debug mode should not cancel on timeout</param>
         protected async Task InitializeFakeDaemon(short timeout = 300, bool overrideDebugNotCancel = false)
         {
-            _fakeConnectedDaemon = await GetConnectedNetDaemonTask(timeout, overrideDebugNotCancel);
+            _fakeConnectedDaemon = await GetConnectedNetDaemonTask(timeout, overrideDebugNotCancel).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// 
+        ///     Runs the fake daemon service until timed out
         /// </summary>
-        /// <returns></returns>
         protected async Task RunFakeDaemonUntilTimeout()
         {
             _ = _fakeConnectedDaemon ??
-                throw new NullReferenceException("No task to process, did you forget to run InitFakeDaemon at the beginning of the test?");
+                throw new NetDaemonNullReferenceException("No task to process, did you forget to run InitFakeDaemon at the beginning of the test?");
 
             await WaitUntilCanceled(_fakeConnectedDaemon).ConfigureAwait(false);
         }
@@ -380,21 +378,20 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="milliSeconds">Timeout in milliseconds</param>
         /// <param name="overrideDebugNotCancel">True to use timeout while debugging</param>
-        /// <returns></returns>
         private async Task<Task> GetConnectedNetDaemonTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
         {
-            var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
+            _cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                     ? new CancellationTokenSource()
                     : new CancellationTokenSource(milliSeconds);
 
-            await InitApps();
+            await InitApps().ConfigureAwait(false);
 
-            var daemonTask = _defaultDaemonHost.Run("host", 8123, false, "token", cancelSource.Token);
-            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, cancelSource.Token);
+            var daemonTask = DefaultDaemonHost.Run("host", 8123, false, "token", _cancelSource.Token);
+            await WaitForDefaultDaemonToConnect(DefaultDaemonHost, _cancelSource.Token).ConfigureAwait(false);
             return daemonTask;
         }
 
-        private async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken cancellationToken)
+        private static async Task WaitForDefaultDaemonToConnect(NetDaemonHost daemonHost, CancellationToken cancellationToken)
         {
             var nrOfTimesCheckForConnectedState = 0;
 

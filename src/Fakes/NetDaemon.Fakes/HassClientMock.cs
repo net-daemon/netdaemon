@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using Xunit;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Fakes
 {
@@ -20,28 +21,27 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Fake areas in HassClient
         /// </summary>
-        /// <returns></returns>
-        public HassAreas Areas = new HassAreas();
+        public HassAreas Areas { get; } = new();
 
         /// <summary>
         ///     Fake devices in HassClient
         /// </summary>
         /// <returns></returns>
-        public HassDevices Devices = new HassDevices();
+        public HassDevices Devices { get; } = new();
 
         /// <summary>
         ///     Fake entities in HassClient
         /// </summary>
-        public HassEntities Entities = new HassEntities();
+        public HassEntities Entities { get; } = new();
 
         /// <summary>
         ///     Fake events in HassClient
         /// </summary>
-        public ConcurrentQueue<HassEvent> FakeEvents = new();
+        public ConcurrentQueue<HassEvent> FakeEvents { get; } = new();
         /// <summary>
         ///     All current fake entities and it's states
         /// </summary>
-        public ConcurrentDictionary<string, HassState> FakeStates = new();
+        public ConcurrentDictionary<string, HassState> FakeStates { get; } = new();
 
         /// <summary>
         ///     Default constructor
@@ -57,13 +57,13 @@ namespace NetDaemon.Daemon.Fakes
             SetupGet(x => x.States).Returns(FakeStates);
 
             Setup(x => x.GetAllStates(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() => { return (IEnumerable<HassState>)FakeStates.Values; });
+                .ReturnsAsync(() => FakeStates.Values);
 
             Setup(x => x.ReadEventAsync())
-                .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
+                .ReturnsAsync(() => FakeEvents.TryDequeue(out var ev) ? ev : null);
 
             Setup(x => x.ReadEventAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() => { return FakeEvents.TryDequeue(out var ev) ? ev : null; });
+                .ReturnsAsync(() => FakeEvents.TryDequeue(out var ev) ? ev : null);
 
             Setup(x => x.GetConfig()).ReturnsAsync(new HassConfig { State = "RUNNING" });
 
@@ -93,7 +93,7 @@ namespace NetDaemon.Daemon.Fakes
             Areas.Add(new HassArea { Name = "Area", Id = "area_idd" });
             Entities.Add(new HassEntity
             {
-                EntityId = "light.ligth_in_area",
+                EntityId = "light.light_in_area",
                 DeviceId = "device_idd"
             });
         }
@@ -101,7 +101,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Default instance of mock
         /// </summary>
-        public static HassClientMock DefaultMock => new HassClientMock();
+        public static HassClientMock DefaultMock => new();
 
         /// <summary>
         ///     Returns a mock that will always return false when connect to Home Assistant
@@ -126,7 +126,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="data">Data sent by service</param>
         public void AddCallServiceEvent(string domain, string service, dynamic? data = null)
         {
-            // Todo: Refactor to smth smarter
+            // Todo: Refactor to something smarter
             FakeEvents.Enqueue(new HassEvent
             {
                 EventType = "call_service",
@@ -149,7 +149,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="lastChanged">Last changed</param>
         public void AddChangedEvent(string entityId, object fromState, object toState, DateTime lastUpdated, DateTime lastChanged)
         {
-            // Todo: Refactor to smth smarter
+            // Todo: Refactor to something smarter
             FakeEvents.Enqueue(new HassEvent
             {
                 EventType = "state_changed",
@@ -250,12 +250,16 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
-        ///     Assert if the HassClient entity state is equeal to NetDaemon entity state
+        ///     Assert if the HassClient entity state is equals to NetDaemon entity state
         /// </summary>
         /// <param name="hassState">HassClient state instance</param>
         /// <param name="entity">NetDaemon state instance</param>
-        public void AssertEqual(HassState hassState, EntityState entity)
+        public static void AssertEqual(HassState hassState, EntityState entity)
         {
+            _ = hassState ??
+               throw new NetDaemonArgumentNullException(nameof(hassState));
+            _ = entity ??
+               throw new NetDaemonArgumentNullException(nameof(entity));
             Assert.Equal(hassState.EntityId, entity.EntityId);
             Assert.Equal(hassState.State, entity.State);
             Assert.Equal(hassState.LastChanged, entity.LastChanged);
@@ -267,7 +271,7 @@ namespace NetDaemon.Daemon.Fakes
             foreach (var attribute in hassState.Attributes!.Keys)
             {
                 var attr = entity.Attribute as IDictionary<string, object> ??
-                    throw new NullReferenceException($"{nameof(entity.Attribute)} catn be null");
+                    throw new NetDaemonNullReferenceException($"{nameof(entity.Attribute)} cant be null");
 
                 Assert.True(attr.ContainsKey(attribute));
                 Assert.Equal(hassState.Attributes[attribute],
@@ -279,10 +283,9 @@ namespace NetDaemon.Daemon.Fakes
         /// Gets a cancellation source that does not timeout if debugger is attached
         /// </summary>
         /// <param name="milliSeconds"></param>
-        /// <returns></returns>
-        public CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
+        public static CancellationTokenSource GetSourceWithTimeout(int milliSeconds = 100)
         {
-            return (Debugger.IsAttached)
+            return Debugger.IsAttached
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
         }
@@ -297,8 +300,8 @@ namespace NetDaemon.Daemon.Fakes
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
-            foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+            foreach (var (attribute, value) in attributesTuples)
+                attributes[attribute] = value;
 
             Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
         }
@@ -311,13 +314,12 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="data">Data sent by service</param>
         /// <param name="waitForResponse">If service was waiting for response</param>
         /// <param name="times">Number of times called</param>
-        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Moq.Times? times = null)
+        public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Times? times = null)
         {
             if (times is not null)
                 Verify(n => n.CallService(domain, service, data!, waitForResponse), times.Value);
             else
                 Verify(n => n.CallService(domain, service, data!, waitForResponse), Times.AtLeastOnce);
-
         }
 
         /// <summary>
@@ -327,7 +329,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="service">Service to verify</param>
         /// <param name="waitForResponse">If service was waiting for response</param>
         /// <param name="times">Number of times called</param>
-        public void VerifyCallService(string domain, string service, bool waitForResponse = false, Moq.Times? times = null)
+        public void VerifyCallService(string domain, string service, bool waitForResponse = false, Times? times = null)
         {
             if (times is not null)
                 Verify(n => n.CallService(domain, service, It.IsAny<object>(), waitForResponse), times.Value);
@@ -345,8 +347,6 @@ namespace NetDaemon.Daemon.Fakes
             Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
         }
 
-
-
         /// <summary>
         ///     Verify state if entity
         /// </summary>
@@ -357,8 +357,8 @@ namespace NetDaemon.Daemon.Fakes
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
-            foreach (var attributesTuple in attributesTuples)
-                ((IDictionary<string, object>)attributes)[attributesTuple.attribute] = attributesTuple.value;
+            foreach (var (attribute, value) in attributesTuples)
+                attributes[attribute] = value;
 
             Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);
         }

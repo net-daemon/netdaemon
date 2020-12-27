@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Threading.Tasks;
 using Moq;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Fakes;
 using NetDaemon.Daemon.Storage;
 using Xunit;
@@ -11,21 +12,23 @@ namespace NetDaemon.Daemon.Tests.Fluent
     public class FluentEventTests
     {
         [Fact]
-        public async Task ACustomEventNullValueCallThrowsNullReferenceException()
+        public async Task ACustomEventNullValueCallThrowsNetDaemonNullReferenceException()
         {
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
 
-            Assert.Throws<NullReferenceException>(() => app
+            Assert.Throws<NetDaemonNullReferenceException>(() => app
                 .Event("CUSTOM_EVENT")
                     .Call(null).Execute());
         }
@@ -37,24 +40,26 @@ namespace NetDaemon.Daemon.Tests.Fluent
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
 
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
             app
                 .Event("CUSTOM_EVENT")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -67,7 +72,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);
@@ -79,24 +84,26 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -109,7 +116,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);
@@ -122,24 +129,26 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello World!")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -152,7 +161,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);
@@ -165,24 +174,26 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.Test == "Hello Test!")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -195,7 +206,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.False(isCalled);
@@ -207,23 +218,25 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
             app
                 .Events(n => n.EventId == "CUSTOM_EVENT" && n?.Data?.NotExist == "Hello Test!")
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -236,7 +249,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.False(isCalled);
@@ -248,24 +261,26 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             var hcMock = HassClientMock.DefaultMock;
             await using var daemonHost = new NetDaemonHost(hcMock.Object, new Mock<IDataRepository>().Object);
-            var app = new FluentTestApp();
-            app.Id = "id";
+            var app = new FluentTestApp
+            {
+                Id = "id"
+            };
 
             daemonHost.InternalRunningAppInstances[app.Id] = app;
-            await app.StartUpAsync(daemonHost);
+            await app.StartUpAsync(daemonHost).ConfigureAwait(false);
 
             dynamic dynObject = new ExpandoObject();
             dynObject.Test = "Hello World!";
 
             hcMock.AddCustomEvent("CUSTOM_EVENT", dynObject);
 
-            var cancelSource = hcMock.GetSourceWithTimeout();
+            var cancelSource = HassClientMock.GetSourceWithTimeout();
             var isCalled = false;
             string? message = "";
 
             app
                 .Events(new string[] { "CUSTOM_EVENT" })
-                    .Call((ev, data) =>
+                    .Call((_, data) =>
                     {
                         isCalled = true;
                         message = data?.Test;
@@ -278,7 +293,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             }
             catch (TaskCanceledException)
             {
-                // Expected behaviour
+                // Expected behavior
             }
 
             Assert.True(isCalled);

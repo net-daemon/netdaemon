@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using JoySoftware.HomeAssistant.Client;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common.Fluent
 {
@@ -15,6 +18,7 @@ namespace NetDaemon.Common.Fluent
     ///     Thanks to @lukevendediger for original code and inspiration
     ///     https://gist.github.com/lukevenediger/6327599
     /// </remarks>
+    [SuppressMessage("Microsoft.Naming", "CA1710")]
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
         private readonly Dictionary<string, object> _dict = new();
@@ -72,7 +76,6 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
@@ -129,18 +132,22 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public override bool TrySetMember(SetMemberBinder binder, object? value)
         {
+            if (binder is null)
+                throw new NetDaemonNullReferenceException(nameof(binder));
+
             UpdateDictionary(binder.Name, value);
-            if (_daemonApp != null)
-            {
-                // It is supposed to persist, this is the only reason _daemon is present
-                _daemonApp.SaveAppState();
-            }
+            // It is supposed to persist, this is the only reason _daemon is present
+            _daemonApp?.SaveAppState();
+
             return true;
         }
 
         /// <inheritdoc/>
         public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object? value)
         {
+            if (indexes is null)
+                throw new NetDaemonNullReferenceException(nameof(indexes));
+
             if (!(indexes[0] is string)) return base.TrySetIndex(binder, indexes, value);
 
             if (indexes[0] is string key) UpdateDictionary(NormalizePropertyName(key), value);
@@ -150,6 +157,9 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public override bool TryGetMember(GetMemberBinder binder, out object? result)
         {
+            if (binder is null)
+                throw new NetDaemonNullReferenceException(nameof(binder));
+
             var key = NormalizePropertyName(binder.Name);
 
             if (_dict.ContainsKey(key))
@@ -173,6 +183,9 @@ namespace NetDaemon.Common.Fluent
         /// <remarks>Existing properties are not overwritten.</remarks>
         public dynamic Augment(FluentExpandoObject obj)
         {
+            if (obj is null)
+                throw new NetDaemonNullReferenceException(nameof(obj));
+
             obj._dict
                 .Where(pair => !_dict.ContainsKey(NormalizePropertyName(pair.Key)))
                 .ToList()
@@ -186,6 +199,9 @@ namespace NetDaemon.Common.Fluent
         /// <param name="obj">The object to copy from</param>
         public dynamic CopyFrom(IDictionary<string, object?> obj)
         {
+            if (obj is null)
+                throw new NetDaemonNullReferenceException(nameof(obj));
+
             // Clear any items before copy
             Clear();
 
@@ -212,7 +228,6 @@ namespace NetDaemon.Common.Fluent
         ///     Combine two instances together to get a union.
         /// </summary>
         /// <param name="obj">the object to combine</param>
-        /// <returns></returns>
         public dynamic Augment(ExpandoObject obj)
         {
             obj
@@ -225,6 +240,9 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         public T ValueOrDefault<T>(string propertyName, T defaultValue)
         {
+            if (propertyName is null)
+                throw new NetDaemonNullReferenceException(nameof(propertyName));
+
             propertyName = NormalizePropertyName(propertyName);
             return _dict.ContainsKey(propertyName)
                 ? (T)_dict[propertyName]
@@ -237,6 +255,9 @@ namespace NetDaemon.Common.Fluent
         /// <remarks>Respects the case sensitivity setting</remarks>
         public bool HasProperty(string name)
         {
+            if (name is null)
+                throw new NetDaemonNullReferenceException(nameof(name));
+
             return _dict.ContainsKey(NormalizePropertyName(name));
         }
 
@@ -250,17 +271,15 @@ namespace NetDaemon.Common.Fluent
 
         private void UpdateDictionary(string name, object? value)
         {
-            _ = value ?? throw new ArgumentNullException("value", "value cannot be null");
+            _ = value ?? throw new ArgumentNullException(nameof(value), "value cannot be null");
             var key = NormalizePropertyName(name);
-            if (_dict.ContainsKey(key))
-                _dict[key] = value;
-            else
-                _dict.Add(key, value);
+            _dict[key] = value;
         }
 
+        [SuppressMessage("", "CA1308")]
         private string NormalizePropertyName(string propertyName)
         {
-            return _ignoreCase ? propertyName.ToLower() : propertyName;
+            return _ignoreCase ? propertyName.ToLower(CultureInfo.InvariantCulture) : propertyName;
         }
     }
 }

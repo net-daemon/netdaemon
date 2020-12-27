@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace NetDaemon.Common.Fluent
@@ -42,6 +43,7 @@ namespace NetDaemon.Common.Fluent
         /// <param name="to">The state change to, or null if any state</param>
         /// <param name="from">The state changed from or null if any state</param>
         /// <param name="allChanges">Get all changed, even only attribute changes</param>
+        [SuppressMessage("Microsoft.Naming", "CA1716")]
         IDelayResult DelayUntilStateChange(object? to = null, object? from = null, bool allChanges = false);
 
         /// <summary>
@@ -95,6 +97,8 @@ namespace NetDaemon.Common.Fluent
     /// <summary>
     ///     Represent state change actions
     /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1716")]
+
     public interface IState
     {
         /// <summary>
@@ -150,6 +154,7 @@ namespace NetDaemon.Common.Fluent
     /// <summary>
     ///     When state change
     /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1716")]
     public interface IStateChanged
     {
         /// <summary>
@@ -229,6 +234,7 @@ namespace NetDaemon.Common.Fluent
     ///     Generic interface for stop
     /// </summary>
     /// <typeparam name="T">Return type of stop operation</typeparam>
+    [SuppressMessage("Microsoft.Naming", "CA1716")]
     public interface IStop<T>
     {
         /// <summary>

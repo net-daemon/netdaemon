@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using YamlDotNet.RepresentationModel;
 
 namespace NetDaemon.Daemon.Config
@@ -25,6 +27,8 @@ namespace NetDaemon.Daemon.Config
             _yamlFilePath = yamlFilePath;
         }
 
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1065")]
         public IEnumerable<INetDaemonAppBase> Instances
         {
             get
@@ -46,12 +50,11 @@ namespace NetDaemon.Daemon.Config
                         // Get the class
 
                         string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
-                        Type? appType = _types.Where(n => n.FullName?.ToLowerInvariant() == appClass)
-                            .FirstOrDefault();
+                        Type? appType = _types.FirstOrDefault(n => n.FullName?.ToLowerInvariant() == appClass);
 
                         if (appType != null)
                         {
-                            var instance = InstanceAndSetPropertyConfig(appType, ((YamlMappingNode)app.Value), appId);
+                            var instance = InstanceAndSetPropertyConfig(appType, (YamlMappingNode)app.Value, appId);
                             if (instance != null)
                             {
                                 instance.Id = appId;
@@ -59,9 +62,9 @@ namespace NetDaemon.Daemon.Config
                             }
                         }
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
-                        throw new ApplicationException($"Error instancing application {appId}", e);
+                        throw new NetDaemonException($"Error instancing application {appId}", e);
                     }
                 }
 
@@ -69,12 +72,15 @@ namespace NetDaemon.Daemon.Config
             }
         }
 
-        public INetDaemonAppBase? InstanceAndSetPropertyConfig(Type netDaemonAppType, YamlMappingNode appNode, string? appId)
+        public INetDaemonAppBase? InstanceAndSetPropertyConfig(
+            Type netDaemonAppType,
+            YamlMappingNode appNode,
+            string? appId)
         {
-            var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
+            _ = appNode ??
+                throw new NetDaemonArgumentNullException(nameof(appNode));
 
-            if (netDaemonApp == null)
-                return null;
+            var netDaemonApp = (INetDaemonAppBase?)Activator.CreateInstance(netDaemonAppType);
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
@@ -96,16 +102,16 @@ namespace NetDaemon.Daemon.Config
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Failed to set value {scalarPropertyName}", e);
+                    throw new NetDaemonException($"Failed to set value {scalarPropertyName} for app {appId}", e);
                 }
             }
 
             return netDaemonApp;
         }
 
-        private object? InstanceProperty(Object? parent, Type instanceType, YamlNode node)
+        [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
+        private object? InstanceProperty(object? parent, Type instanceType, YamlNode node)
         {
-
             if (node.NodeType == YamlNodeType.Scalar)
             {
                 var scalarNode = (YamlScalarNode)node;
@@ -117,16 +123,15 @@ namespace NetDaemon.Daemon.Config
                 if (instanceType.IsGenericType && instanceType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 {
                     Type listType = instanceType?.GetGenericArguments()[0] ??
-                                    throw new NullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
+                                    throw new NetDaemonNullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
 
                     IList list = listType.CreateListOfPropertyType() ??
-                                 throw new NullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
+                                throw new NetDaemonNullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
 
                     foreach (YamlNode item in ((YamlSequenceNode)node).Children)
                     {
-
                         var instance = InstanceProperty(null, listType, item) ??
-                                       throw new NotSupportedException($"The class {parent?.GetType().Name} has wrong type in items");
+                                    throw new NotSupportedException($"The class {parent?.GetType().Name} has wrong type in items");
 
                         list.Add(instance);
                     }
@@ -162,7 +167,7 @@ namespace NetDaemon.Daemon.Config
                             break;
 
                         case YamlNodeType.Mapping:
-                            var map = (YamlMappingNode)entry.Value;
+                            // Maps are not currently supported (var map = (YamlMappingNode)entry.Value;)
                             break;
                     }
                     childProp.SetValue(instance, result);
@@ -179,13 +184,13 @@ namespace NetDaemon.Daemon.Config
 
             var secretReplacement = _yamlConfig.GetSecretFromPath(scalarNode.Value!, Path.GetDirectoryName(_yamlFilePath)!);
 
-            scalarNode.Value = secretReplacement ?? throw new ApplicationException($"{scalarNode.Value!} not found in secrets.yaml");
+            scalarNode.Value = secretReplacement ?? throw new NetDaemonException($"{scalarNode.Value!} not found in secrets.yaml");
         }
 
-        private string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
+        private static string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
         {
-            KeyValuePair<YamlNode, YamlNode> classChild = appNode.Children.Where(n =>
-                ((YamlScalarNode)n.Key)?.Value?.ToLowerInvariant() == "class").FirstOrDefault();
+            KeyValuePair<YamlNode, YamlNode> classChild = appNode.Children.FirstOrDefault(n =>
+                ((YamlScalarNode)n.Key)?.Value?.ToLowerInvariant() == "class");
 
             if (classChild.Key == null || classChild.Value == null)
             {
@@ -196,7 +201,8 @@ namespace NetDaemon.Daemon.Config
             {
                 return null;
             }
-            return ((YamlScalarNode)classChild.Value)?.Value?.ToLowerInvariant();
+            var scalarNode = (YamlScalarNode)classChild.Value;
+            return scalarNode.Value?.ToLowerInvariant();
         }
     }
 }

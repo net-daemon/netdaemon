@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace NetDaemon.Service.App
 {
@@ -10,7 +9,6 @@ namespace NetDaemon.Service.App
         /// Temporary
         /// </summary>
         /// <returns></returns>
-        [Obsolete("Only exists while migrating the world to IOC.")]
         IEnumerable<Type> GetApps();
     }
 }

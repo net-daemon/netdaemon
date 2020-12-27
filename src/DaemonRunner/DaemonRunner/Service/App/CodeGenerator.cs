@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using JoySoftware.HomeAssistant.Client;
@@ -7,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Config;
 
@@ -14,13 +16,13 @@ using NetDaemon.Daemon.Config;
 
 namespace NetDaemon.Service.App
 {
-    public class CodeGenerator
+    public static class CodeGenerator
     {
         /// <summary>
-        ///     Mapps the domain to corresponding implemented Fluent API, will be added as
+        ///     Maps the domain to corresponding implemented Fluent API, will be added as
         ///     more and more entity types are supported
         /// </summary>
-        private static IDictionary<string, (string, string)> _FluentApiMapper = new Dictionary<string, (string, string)>
+        private static readonly IDictionary<string, (string, string)> _FluentApiMapper = new Dictionary<string, (string, string)>
         {
             ["light"] = ("Entity", "IEntity"),
             ["script"] = ("Entity", "IEntity"),
@@ -29,18 +31,15 @@ namespace NetDaemon.Service.App
             ["camera"] = ("Camera", "ICamera"),
             ["media_player"] = ("MediaPlayer", "IMediaPlayer"),
             ["automation"] = ("Entity", "IEntity"),
-            // ["input_boolean"],
-            // ["remote"],
-            // ["climate"],
         };
 
-        public string? GenerateCode(string nameSpace, IEnumerable<string> entities)
+        public static string? GenerateCode(string nameSpace, IEnumerable<string> entities)
         {
             var code = SyntaxFactory.CompilationUnit();
 
             // Add Usings statements
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemon.Common.Fluent.IMediaPlayer).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(Common.Fluent.IMediaPlayer).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -52,16 +51,14 @@ namespace NetDaemon.Service.App
                 SyntaxFactory.Token(SyntaxKind.StaticKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
 
             // Get all available domains, this is used to create the extensionmethods
-            var domains = GetDomainsFromEntities(entities);
-
-            foreach (var domain in domains)
+            foreach (var domain in GetDomainsFromEntities(entities))
             {
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
                     var camelCaseDomain = domain.ToCamelCase();
-                    var method = $@"public static {camelCaseDomain}Entities {camelCaseDomain}Ex(this NetDaemonApp app) => new {camelCaseDomain}Entities(app);";
+                    var method = $"public static {camelCaseDomain}Entities {camelCaseDomain}Ex(this NetDaemonApp app) => new {camelCaseDomain}Entities(app);";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(method).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException("Method parsing failed");
+                        ?? throw new NetDaemonNullReferenceException("Method parsing failed");
 
                     extensionClass = extensionClass.AddMembers(methodDeclaration);
                 }
@@ -71,7 +68,6 @@ namespace NetDaemon.Service.App
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
                     var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
@@ -84,11 +80,11 @@ namespace NetDaemon.Service.App
         }}
     }}";
                     var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException($"Parse class {nameof(NetDaemonApp)} failed");
-                    foreach (var entity in entities.Where(n => n.StartsWith(domain)))
+                        ?? throw new NetDaemonNullReferenceException($"Parse class {nameof(NetDaemonApp)} failed");
+                    foreach (var entity in entities.Where(n => n.StartsWith(domain, true, CultureInfo.InvariantCulture)))
                     {
                         var (fluent, fluentInterface) = _FluentApiMapper[domain];
-                        var name = entity[(entity.IndexOf(".") + 1)..];
+                        var name = entity[(entity.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
                         // Quick check to make sure the name is a valid C# identifier. Should really check to make
                         // sure it doesn't collide with a reserved keyword as well.
                         if (!char.IsLetter(name[0]) && (name[0] != '_'))
@@ -98,10 +94,8 @@ namespace NetDaemon.Service.App
 
                         var propertyCode = $@"public {fluentInterface} {name.ToCamelCase()} => _app.{fluent}(""{entity}"");";
                         var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                            ?? throw new NullReferenceException("Property parsing failed!");
+                            ?? throw new NetDaemonNullReferenceException("Property parsing failed!");
                         entityClass = entityClass.AddMembers(propDeclaration);
-
-
                     }
                     namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
                 }
@@ -112,7 +106,7 @@ namespace NetDaemon.Service.App
             return code.NormalizeWhitespace(indentation: "    ", eol: "\n").ToFullString();
         }
 
-        public string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities, IEnumerable<HassServiceDomain> services)
+        public static string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities, IEnumerable<HassServiceDomain> services)
         {
             var code = SyntaxFactory.CompilationUnit();
 
@@ -123,7 +117,7 @@ namespace NetDaemon.Service.App
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonRxApp).Namespace!)));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemon.Common.Fluent.FluentExpandoObject).Namespace!)));
+            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(Common.Fluent.FluentExpandoObject).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace)).NormalizeWhitespace();
@@ -143,21 +137,20 @@ namespace NetDaemon.Service.App
             {
                 var camelCaseDomain = domain.ToCamelCase();
 
-                var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) == 0 ? false : true;
+                var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) != 0;
 
                 var property = isSingleServiceDomain ?
-                    $@"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
+                    $"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
                     $@"public {camelCaseDomain}Entity {camelCaseDomain} => new {domain.ToCamelCase()}Entity(this, new string[] {{""""}});";
 
                 var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                    ?? throw new NullReferenceException($"Parse of property {camelCaseDomain} Entities/Entity failed");
+                    ?? throw new NetDaemonNullReferenceException($"Parse of property {camelCaseDomain} Entities/Entity failed");
                 extensionClass = extensionClass.AddMembers(propertyDeclaration);
             }
             namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
 
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entity : RxEntity
     {{
         public string EntityId => EntityIds.First();
@@ -165,7 +158,7 @@ namespace NetDaemon.Service.App
         public string? Area => DaemonRxApp?.State(EntityId)?.Area;
 
         public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
-        
+
         public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
 
         public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
@@ -173,11 +166,11 @@ namespace NetDaemon.Service.App
         public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
 
         public {domain.ToCamelCase()}Entity(INetDaemonReactive daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
-        {{          
+        {{
         }}
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                    ?? throw new NullReferenceException("Failed to parse class declaration");
+                    ?? throw new NetDaemonNullReferenceException("Failed to parse class declaration");
 
                 // They allready have default implementation
                 var skipServices = new string[] { "turn_on", "turn_off", "toggle" };
@@ -186,7 +179,7 @@ namespace NetDaemon.Service.App
                     if (s.Service is null)
                         continue;
 
-                    var name = s.Service[(s.Service.IndexOf(".") + 1)..];
+                    var name = s.Service[(s.Service.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
 
                     if (Array.IndexOf(skipServices, name) >= 0)
                         continue;
@@ -197,7 +190,7 @@ namespace NetDaemon.Service.App
                     {
                         name = "s_" + name;
                     }
-                    var hasEntityId = (s.Fields is not null && s.Fields.Count(c => c.Field == "entity_id") > 0) ? true : false;
+                    var hasEntityId = s.Fields is not null && s.Fields.Any(c => c.Field == "entity_id");
                     var entityAssignmentStatement = hasEntityId ? @"serviceData[""entity_id""] = EntityId;" : "";
 
                     var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)
@@ -207,7 +200,7 @@ namespace NetDaemon.Service.App
                         if (data is ExpandoObject)
                         {{
                             serviceData.CopyFrom(data);
-                        }} 
+                        }}
                         else if (data is not null)
                         {{
                             var expObject = ((object)data).ToExpandoObject();
@@ -219,18 +212,15 @@ namespace NetDaemon.Service.App
                     }}
                     ";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException("Failed to parse method");
+                        ?? throw new NetDaemonNullReferenceException("Failed to parse method");
                     entityClass = entityClass.AddMembers(methodDeclaration);
-
                 }
                 namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
-
             }
 
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
     {{
         private readonly {nameof(NetDaemonRxApp)} _app;
@@ -241,11 +231,10 @@ namespace NetDaemon.Service.App
         }}
     }}";
                 var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                    ?? throw new NullReferenceException("Failed to parse entity class");
-                foreach (var entity in entities.Where(n => n.StartsWith(domain)))
+                    ?? throw new NetDaemonNullReferenceException("Failed to parse entity class");
+                foreach (var entity in entities.Where(n => n.StartsWith(domain, StringComparison.InvariantCultureIgnoreCase)))
                 {
-
-                    var name = entity[(entity.IndexOf(".") + 1)..];
+                    var name = entity[(entity.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
                     // Quick check to make sure the name is a valid C# identifier. Should really check to make
                     // sure it doesn't collide with a reserved keyword as well.
                     if (!char.IsLetter(name[0]) && (name[0] != '_'))
@@ -255,7 +244,7 @@ namespace NetDaemon.Service.App
 
                     var propertyCode = $@"public {domain.ToCamelCase()}Entity {name.ToCamelCase()} => new {domain.ToCamelCase()}Entity(_app, new string[] {{""{entity}""}});";
                     var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                        ?? throw new NullReferenceException("Failed to parse property");
+                        ?? throw new NetDaemonNullReferenceException("Failed to parse property");
                     entityClass = entityClass.AddMembers(propDeclaration);
                 }
                 namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
@@ -271,6 +260,6 @@ namespace NetDaemon.Service.App
         /// </summary>
         /// <param name="entities">A list of entities</param>
         internal static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) =>
-            entities.Select(n => n[0..n.IndexOf(".")]).Distinct();
+            entities.Select(n => n[0..n.IndexOf(".", StringComparison.InvariantCultureIgnoreCase)]).Distinct();
     }
 }

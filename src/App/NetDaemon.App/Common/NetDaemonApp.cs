@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -13,73 +15,70 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base class för all NetDaemon apps
     /// </summary>
+    [SuppressMessage("", "CA1065"),
+     SuppressMessage("", "CA1721")
+    ]
     public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {
-        private readonly IList<(string pattern, Func<string, dynamic, Task> action)> _eventCallbacks =
-                                            new List<(string pattern, Func<string, dynamic, Task> action)>();
-
-        private readonly List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> _eventFunctionSelectorCallbacks =
-                    new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
-        private readonly ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> _stateCallbacks =
-                                    new ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>();
-
         /// <summary>
         ///     All actions being performed for named events
         /// </summary>
-        public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks => _eventCallbacks;
+        public IList<(string pattern, Func<string, dynamic, Task> action)> EventCallbacks { get; } =
+                                            new List<(string pattern, Func<string, dynamic, Task> action)>();
 
         /// <summary>
         ///     All actions being performed for lambda selected events
         /// </summary>
-        public List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctionCallbacks => _eventFunctionSelectorCallbacks;
+        public IList<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)> EventFunctionCallbacks { get; } = new List<(Func<FluentEventProperty, bool>, Func<string, dynamic, Task>)>();
 
         /// <inheritdoc/>
-        public IScheduler Scheduler => _daemon?.Scheduler ??
-            throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+        public IScheduler Scheduler => Daemon?.Scheduler ??
+            throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
         /// <inheritdoc/>
-        public IEnumerable<EntityState> State => _daemon?.State ??
-            throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
+        public IEnumerable<EntityState> State => Daemon?.State ??
+            throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
         /// <inheritdoc/>
         public ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)>
-            StateCallbacks => _stateCallbacks;
+            StateCallbacks
+        { get; } = new();
 
         // Used for testing
-        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => _stateCallbacks;
+        internal ConcurrentDictionary<string, (string pattern, Func<string, EntityState?, EntityState?, Task> action)> InternalStateActions => StateCallbacks;
 
         /// <inheritdoc/>
         public Task CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.CallServiceAsync(domain, service, data, waitForResponse);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.CallServiceAsync(domain, service, data, waitForResponse);
         }
 
         /// <inheritdoc/>
         public ICamera Camera(params string[] entityIds)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Camera(this, entityIds);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.Camera(this, entityIds);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(IEnumerable<string> entityIds)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Cameras(this, entityIds);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.Cameras(this, entityIds);
         }
 
         /// <inheritdoc/>
         public ICamera Cameras(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Cameras(this, func);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.Cameras(this, func);
         }
 
         /// <inheritdoc/>
         public void CancelListenState(string id)
         {
             // Remove and ignore if not exist
-            _stateCallbacks.Remove(id, out _);
+            StateCallbacks.Remove(id, out _);
         }
 
         /// <inheritdoc/>
@@ -89,21 +88,26 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, object? to = null, object? from = null, bool allChanges = false)
         {
+            _ = entityIds ??
+                throw new NetDaemonArgumentNullException(nameof(entityIds));
+
             // Use TaskCompletionSource to simulate a task that we can control
             var taskCompletionSource = new TaskCompletionSource<bool>();
             var result = new DelayResult(taskCompletionSource, this);
 
             foreach (var entityId in entityIds)
             {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                result.StateSubscriptions.Add(ListenState(entityId, (_, newState, oldState) =>
                 {
-                    if (to != null)
-                        if ((dynamic)to != newState?.State)
-                            return Task.CompletedTask;
+                    if (to != null && (dynamic)to != newState?.State)
+                    {
+                        return Task.CompletedTask;
+                    }
 
-                    if (from != null)
-                        if ((dynamic)from != oldState?.State)
-                            return Task.CompletedTask;
+                    if (from != null && (dynamic)from != oldState?.State)
+                    {
+                        return Task.CompletedTask;
+                    }
 
                     // If we don´t accept all changes in the state change
                     // and we do not have a state change so return
@@ -123,15 +127,19 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("", "CA1031")]
         public IDelayResult DelayUntilStateChange(IEnumerable<string> entityIds, Func<EntityState?, EntityState?, bool> stateFunc)
         {
+            _ = entityIds ??
+                throw new NetDaemonArgumentNullException(nameof(entityIds));
+
             // Use TaskCompletionSource to simulate a task that we can control
             var taskCompletionSource = new TaskCompletionSource<bool>();
             var result = new DelayResult(taskCompletionSource, this);
 
             foreach (var entityId in entityIds)
             {
-                result.StateSubscriptions.Add(ListenState(entityId, (entityIdInn, newState, oldState) =>
+                result.StateSubscriptions.Add(ListenState(entityId, (_, newState, oldState) =>
                 {
                     try
                     {
@@ -161,31 +169,31 @@ namespace NetDaemon.Common
         /// </summary>
         public async override ValueTask DisposeAsync()
         {
-            _stateCallbacks.Clear();
-            _eventCallbacks.Clear();
-            _eventFunctionSelectorCallbacks.Clear();
+            StateCallbacks.Clear();
+            EventCallbacks.Clear();
+            EventFunctionCallbacks.Clear();
             await base.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public IEntity Entities(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Entities(this, func);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.Entities(this, func);
         }
 
         /// <inheritdoc/>
-        public IEntity Entities(IEnumerable<string> entityIds)
+        public IEntity Entities(IEnumerable<string> entityId)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Entities(this, entityIds);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.Entities(this, entityId);
         }
 
         /// <inheritdoc/>
         public IEntity Entity(params string[] entityId)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.Entity(this, entityId);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.Entity(this, entityId);
         }
 
         /// <inheritdoc/>
@@ -198,41 +206,41 @@ namespace NetDaemon.Common
         public IFluentEvent Events(IEnumerable<string> eventParams) => new FluentEventManager(eventParams, this);
 
         /// <inheritdoc/>
-        public async ValueTask<T?> GetDataAsync<T>(string id) where T : class
+        public async Task<T?> GetDataAsync<T>(string id) where T : class
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.GetDataAsync<T>(id).ConfigureAwait(false);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return await Daemon!.GetDataAsync<T>(id).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public EntityState? GetState(string entityId) => _daemon?.GetState(entityId);
+        public EntityState? GetState(string entityId) => Daemon?.GetState(entityId);
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelect(params string[] inputSelectParams)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.InputSelect(this, inputSelectParams);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.InputSelect(this, inputSelectParams);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(IEnumerable<string> inputSelectParams)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.InputSelects(this, inputSelectParams);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.InputSelects(this, inputSelectParams);
         }
 
         /// <inheritdoc/>
         public IFluentInputSelect InputSelects(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.InputSelects(this, func);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.InputSelects(this, func);
         }
 
         /// <inheritdoc/>
-        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => _eventCallbacks.Add((ev, action));
+        public void ListenEvent(string ev, Func<string, dynamic, Task> action) => EventCallbacks.Add((ev, action));
 
         /// <inheritdoc/>
-        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> func) => _eventFunctionSelectorCallbacks.Add((funcSelector, func));
+        public void ListenEvent(Func<FluentEventProperty, bool> funcSelector, Func<string, dynamic, Task> action) => EventFunctionCallbacks.Add((funcSelector, action));
 
         /// <inheritdoc/>
         public string? ListenState(string pattern,
@@ -241,57 +249,57 @@ namespace NetDaemon.Common
             // Use guid as unique id but will externally use string so
             // The design can change in-case guid won't cut it.
             var uniqueId = Guid.NewGuid().ToString();
-            _stateCallbacks[uniqueId] = (pattern, action);
+            StateCallbacks[uniqueId] = (pattern, action);
             return uniqueId;
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayer(params string[] entityIds)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.MediaPlayer(this, entityIds);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.MediaPlayer(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(IEnumerable<string> entityIds)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.MediaPlayers(this, entityIds);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.MediaPlayers(this, entityIds);
         }
 
         /// <inheritdoc/>
         public IMediaPlayer MediaPlayers(Func<IEntityProperties, bool> func)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.MediaPlayers(this, func);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.MediaPlayers(this, func);
         }
 
         /// <inheritdoc/>
         public IScript RunScript(params string[] entityIds)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.RunScript(this, entityIds);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.RunScript(this, entityIds);
         }
 
         /// <inheritdoc/>
         public Task SaveDataAsync<T>(string id, T data)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return _daemon!.SaveDataAsync<T>(id, data);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return Daemon!.SaveDataAsync<T>(id, data);
         }
 
         /// <inheritdoc/>
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.SendEvent(eventId, data).ConfigureAwait(false);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return await Daemon!.SendEvent(eventId, data).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state, params (string name, object val)[] attributes)
         {
-            _ = _daemon ?? throw new NullReferenceException($"{nameof(_daemon)} cant be null!");
-            return await _daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            return await Daemon!.SetStateAsync(entityId, state, attributes).ConfigureAwait(false);
         }
     }
 }

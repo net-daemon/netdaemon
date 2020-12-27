@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NetDaemon.Common;
+using System;
 
 namespace NetDaemon.Daemon.Fakes
 {
     /// <summary>
     ///     HttpClient Mock
     /// </summary>
-    public class HttpClientFactoryMock : Mock<IHttpClientFactory>
+    public class HttpClientFactoryMock : Mock<IHttpClientFactory>, IDisposable
     {
         private HttpClient? _httpClient;
         private MockHttpMessageHandler? _handler;
@@ -38,12 +39,34 @@ namespace NetDaemon.Daemon.Fakes
             _httpClient = new HttpClient(_handler);
             Setup(x => x.CreateClient(It.IsAny<string>())).Returns(_httpClient!);
         }
+
+        /// <summary>
+        ///     Dispose
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        ///     Disposes the object and cancel delay
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Make sure any subscriptions are canceled
+                _httpClient?.Dispose();
+                _handler?.Dispose();
+            }
+        }
     }
 
     /// <summary>
     ///     Mock of HttpHandler
     /// </summary>
-    public class HttpHandlerMock : Mock<IHttpHandler>
+    public class HttpHandlerMock : Mock<IHttpHandler>, IDisposable
     {
         private HttpClient? _httpClient;
         private MockHttpMessageHandler? _handler;
@@ -70,6 +93,28 @@ namespace NetDaemon.Daemon.Fakes
             _handler = new MockHttpMessageHandler(response, statusCode);
             _httpClient = new HttpClient(_handler);
             Setup(x => x.CreateHttpClient(It.IsAny<string>())).Returns(_httpClient!);
+        }
+
+        /// <summary>
+        ///     Dispose
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        ///     Disposes the object and cancel delay
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Make sure any subscriptions are canceled
+                _handler?.Dispose();
+                _httpClient?.Dispose();
+            }
         }
     }
 
@@ -110,7 +155,7 @@ namespace NetDaemon.Daemon.Fakes
             var responseMessage = new HttpResponseMessage(_StatusCode);
 
             if (request is not null && request.Content is not null)
-                _requestContent = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+                _requestContent = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             responseMessage.Content = new ByteArrayContent(Encoding.ASCII.GetBytes(_response));
             return responseMessage;

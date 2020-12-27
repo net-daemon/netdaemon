@@ -5,6 +5,8 @@ using NetDaemon.Common;
 /// <summary>
 ///     Greets (or insults) people when coming home :)
 /// </summary>
+[SuppressMessage("", "CS1002")]
+[SuppressMessage("", "CS1038")]
 public class AssmeblyFaultyCompileErrorDaemonApp : NetDaemonApp
 {
     #region -- Test config --

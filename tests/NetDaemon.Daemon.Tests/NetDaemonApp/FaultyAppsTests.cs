@@ -1,29 +1,27 @@
-using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NetDaemon.Daemon.Fakes;
-using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class DaemonAppTestApp : NetDaemon.Common.NetDaemonApp { }
+    public class DaemonAppTestApp : Common.NetDaemonApp { }
 
     public class FaultyAppTests : DaemonHostTestBase
     {
-        private readonly NetDaemon.Common.NetDaemonApp _app;
-
-        public FaultyAppTests() : base()
+        public FaultyAppTests()
         {
-            _app = new DaemonAppTestApp();
-            _app.Id = "id";
-            DefaultDaemonHost.InternalRunningAppInstances[_app.Id] = App;
-            _app.StartUpAsync(DefaultDaemonHost).Wait();
+            App = new DaemonAppTestApp
+            {
+                Id = "id"
+            };
+            DefaultDaemonHost.InternalRunningAppInstances[App.Id] = App;
+            App.StartUpAsync(DefaultDaemonHost).Wait();
         }
 
-        public NetDaemon.Common.NetDaemonApp App => _app;
+        public Common.NetDaemonApp App { get; }
 
         [Fact]
         public async Task ARunTimeErrorShouldLogError()
@@ -34,10 +32,10 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 }).Execute();
 
@@ -57,17 +55,17 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 }).Execute();
 
             App
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
                     eventRun = true;
@@ -80,7 +78,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
-
         }
 
         [Fact]
@@ -92,17 +89,17 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entities(e => e.Attribute!.does_not_exist == "yay")
                 .WhenStateChange()
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 }).Execute();
 
             App
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
                     eventRun = true;
@@ -113,9 +110,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
-            // LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
-
         }
 
         [Fact]
@@ -127,7 +122,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .WhenStateChange()
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
                     App.Entity("does_not_exist").TurnOn();
@@ -137,7 +132,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .WhenStateChange("on")
-                .Call((entity, from, to) =>
+                .Call((_, _, _) =>
                 {
                     // Do conversion error
                     eventRun = true;
@@ -149,37 +144,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             Assert.True(eventRun);
-
-        }
-
-        private void AddDefaultEvent()
-        {
-            DefaultHassClientMock.FakeEvents.Enqueue(new HassEvent
-            {
-                EventType = "state_changed",
-                Data = new HassStateChangedEventData
-                {
-                    EntityId = "binary_sensor.pir",
-                    NewState = new HassState
-                    {
-                        State = "on",
-                        Attributes = new Dictionary<string, object>
-                        {
-                            ["device_class"] = "motion"
-                        },
-                        LastChanged = DateTime.Now,
-                        LastUpdated = DateTime.Now
-                    },
-                    OldState = new HassState
-                    {
-                        State = "off",
-                        Attributes = new Dictionary<string, object>
-                        {
-                            ["device_class"] = "motion"
-                        }
-                    }
-                }
-            });
         }
     }
 }

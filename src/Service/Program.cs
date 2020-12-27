@@ -8,11 +8,13 @@ try
         .UseDefaultNetDaemonLogging()
         .UseNetDaemon()
         .Build()
-        .RunAsync();
+        .RunAsync()
+        .ConfigureAwait(false);
 }
 catch (Exception e)
 {
     Console.WriteLine($"Failed to start host... {e}");
+    throw;
 }
 finally
 {

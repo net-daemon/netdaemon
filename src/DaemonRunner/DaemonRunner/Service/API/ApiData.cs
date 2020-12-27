@@ -4,7 +4,6 @@ using NetDaemon.Common.Configuration;
 
 namespace NetDaemon.Service.Api
 {
-
     public class ApiApplication
     {
         public string? Id { get; set; }
@@ -24,5 +23,4 @@ namespace NetDaemon.Service.Api
         public NetDaemonSettings? DaemonSettings { get; set; }
         public HomeAssistantSettings? HomeAssistantSettings { get; set; }
     }
-
 }

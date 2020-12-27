@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using NetDaemon.Common.Exceptions;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -9,10 +11,15 @@ namespace NetDaemon.Infrastructure.Config
 {
     public static class SerilogConfigurator
     {
-        private static readonly LoggingLevelSwitch LevelSwitch = new LoggingLevelSwitch();
+        private static readonly LoggingLevelSwitch LevelSwitch = new();
 
         public static LoggerConfiguration Configure(LoggerConfiguration loggerConfiguration, IHostEnvironment hostingEnvironment)
         {
+            _ = loggerConfiguration ??
+               throw new NetDaemonArgumentNullException(nameof(loggerConfiguration));
+            _ = hostingEnvironment ??
+               throw new NetDaemonArgumentNullException(nameof(hostingEnvironment));
+
             var loggingConfiguration = GetLoggingConfiguration(hostingEnvironment);
 
             SetMinimumLogLevel(loggingConfiguration.MinimumLevel);
@@ -40,7 +47,9 @@ namespace NetDaemon.Infrastructure.Config
 
         public static void SetMinimumLogLevel(string level)
         {
-            LevelSwitch.MinimumLevel = level.ToLower() switch
+            _ = level ??
+               throw new NetDaemonArgumentNullException(nameof(level));
+            LevelSwitch.MinimumLevel = level.ToLower(CultureInfo.InvariantCulture) switch
             {
                 "info" => LogEventLevel.Information,
                 "debug" => LogEventLevel.Debug,

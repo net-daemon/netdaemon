@@ -26,10 +26,10 @@ namespace NetDaemon.Service.App
             var assemblies = LoadAll();
             var apps = assemblies.SelectMany(x => x.GetTypesWhereSubclassOf<NetDaemonAppBase>()).ToList();
 
-            if (!apps.Any())
+            if (apps.Count == 0)
                 _logger.LogWarning("No local daemon apps found.");
             else
-                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count());
+                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count);
 
             return apps;
         }

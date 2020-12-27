@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -46,9 +48,9 @@ namespace NetDaemon.Daemon.Tests.Fluent
             lastUpdated, lastChanged);
 
             // ASSERT
-            await Task.Delay(10); // After 10ms we should not have call
+            await Task.Delay(10).ConfigureAwait(false); // After 10ms we should not have call
             VerifyCallServiceTimes("turn_off", Times.Never());
-            await Task.Delay(300); // After 30ms we should have call
+            await Task.Delay(300).ConfigureAwait(false); // After 30ms we should have call
             VerifyCallServiceTimes("turn_off", Times.Once());
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
         }
@@ -79,7 +81,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            var MotionEnabled = true;
+            const bool MotionEnabled = true;
 
             DefaultDaemonApp
                 .Entities(new string[] { "binary_sensor.pir", "binary_sensor-pir2" })
@@ -127,7 +129,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
            .UseEntity("light.correct_entity")
            .TurnOn()
            .Execute();
-
 
             AddChangedEvent("binary_sensor.pir", "off", "on");
             AddChangedEvent("binary_sensor.pir", "off", "on");
@@ -184,8 +185,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-
-
             // Fake the
             DefaultDaemonHost.InternalState["light.correct_entity"] = new EntityState
             {
@@ -211,7 +210,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-
 
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
@@ -272,7 +270,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange()
-                .Call((e, n, o) =>
+                .Call((_, _, _) =>
                 {
                     triggered = true;
                     return Task.CompletedTask;
@@ -298,7 +296,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange()
-                .Call((e, n, o) =>
+                .Call((_, _, _) =>
                 {
                     triggered = true;
                     return Task.CompletedTask;
@@ -325,7 +323,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .WhenStateChange(allChanges: true)
-                .Call((e, n, o) =>
+                .Call((_, _, _) =>
                 {
                     triggered = true;
                     return Task.CompletedTask;
@@ -347,7 +345,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .Toggle()
-                .ExecuteAsync();
+                .ExecuteAsync()
+                .ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("toggle", Times.Once());
@@ -363,7 +362,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .TurnOff()
-                .ExecuteAsync();
+                .ExecuteAsync()
+                .ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_off", Times.Once());
@@ -371,6 +371,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task EntityFuncExceptionLogsError()
         {
             // ARRANGE
@@ -378,9 +379,9 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ACT
             var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonApp
-               .Entities(n => throw new Exception("Some error"))
+               .Entities(_ => throw new Exception("Some error"))
                .TurnOff()
-               .ExecuteAsync());
+               .ExecuteAsync()).ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_off", Times.Never());
@@ -398,7 +399,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entities(n => n?.Attribute?.test >= 100)
                 .TurnOff()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
 
@@ -418,7 +419,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entities(n => n?.Attribute?.not_exists == "test")
                 .TurnOff()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
 
@@ -432,9 +433,9 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
-                .Entities(n => n.EntityId.StartsWith("light.correct_entity"))
+                .Entities(n => n.EntityId.StartsWith("light.correct_entity", true, CultureInfo.InvariantCulture))
                 .TurnOff()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
 
@@ -454,7 +455,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entity("light.correct_entity", "light.correct_entity2")
                 .TurnOff()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_off", Times.Exactly(2));
@@ -471,7 +472,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .TurnOn()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -487,7 +488,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Entity("light.correct_entity")
                 .TurnOn()
                 .WithAttribute("brightness", 100)
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -506,7 +507,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .TurnOn()
                 .WithAttribute("brightness", 100)
                 .WithAttribute("color_temp", 230)
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_on", Times.Once());
@@ -524,7 +525,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
                 .SetState(50)
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifySetStateTimes("light.correct_entity", Times.Once());
@@ -540,7 +541,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Entity("light.correct_entity")
                 .SetState(50)
                 .WithAttribute("attr1", "str_value")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifySetStateTimes("light.correct_entity", Times.Once());
@@ -605,14 +606,14 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .MediaPlayer("media_player.correct_player")
                 .Speak("a message")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
-            await Task.Delay(20);
+            await Task.Delay(20).ConfigureAwait(false);
 
             var expObject = new FluentExpandoObject();
-            dynamic expectedAttruibutes = expObject;
-            expectedAttruibutes.entity_id = "media_player.correct_player";
-            expectedAttruibutes.message = "a message";
+            dynamic expectedAttributes = expObject;
+            expectedAttributes.entity_id = "media_player.correct_player";
+            expectedAttributes.message = "a message";
 
             // ASSERT
             VerifyCallService("tts", "google_cloud_say", expObject, true);
@@ -629,7 +630,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .Play()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("media_play", Times.Once());
@@ -650,7 +651,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                     .MediaPlayers(n => n.EntityId == "media_player.player")
                     .Play()
-                    .ExecuteAsync();
+                    .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("media_play", Times.Once());
@@ -658,6 +659,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task MediaPlayersFuncExceptionLogsError()
         {
             // ARRANGE
@@ -665,9 +667,9 @@ namespace NetDaemon.Daemon.Tests.Fluent
 
             // ACT
             var x = await Assert.ThrowsAsync<Exception>(() => DefaultDaemonApp
-               .MediaPlayers(n => throw new Exception("Some error"))
+               .MediaPlayers(_ => throw new Exception("Some error"))
                .Play()
-               .ExecuteAsync());
+               .ExecuteAsync()).ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("turn_off", Times.Never());
@@ -683,7 +685,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .MediaPlayers(new string[] { "media_player.player" })
                 .Play()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("media_play", Times.Once());
@@ -698,7 +700,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .Pause()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("media_pause", Times.Once());
@@ -713,7 +715,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .PlayPause()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("media_play_pause", Times.Once());
@@ -728,7 +730,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
                 .Stop()
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("media_stop", Times.Once());
@@ -743,7 +745,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .InputSelect("input_select.myselect")
                 .SetOption("option1")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("select_option", Times.Once());
@@ -760,7 +762,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .InputSelects(new string[] { "input_select.myselect" })
                 .SetOption("option1")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("select_option", Times.Once());
@@ -778,7 +780,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await DefaultDaemonApp
                 .InputSelects(n => n.EntityId == "input_select.myselect")
                 .SetOption("option1")
-                .ExecuteAsync();
+                .ExecuteAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallServiceTimes("select_option", Times.Once());
@@ -810,7 +812,6 @@ namespace NetDaemon.Daemon.Tests.Fluent
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-
             var delayResult = DefaultDaemonApp
                 .Entity("binary_sensor.pir")
                 .DelayUntilStateChange((to, _) => to?.State == "on");
@@ -829,7 +830,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await InitializeFakeDaemon().ConfigureAwait(false);
 
             // Fake the state
-            SetEntityState("light.ligth_in_area", area: "Area");
+            SetEntityState("light.light_in_area", area: "Area");
 
             // ACT
             DefaultDaemonApp
@@ -840,7 +841,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
                 .Execute();
 
             // light.light_in_area is setup so it has area = Area
-            AddChangedEvent("light.ligth_in_area", "off", "on");
+            AddChangedEvent("light.light_in_area", "off", "on");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -857,7 +858,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await InitializeFakeDaemon().ConfigureAwait(false);
 
             // Fake the state
-            SetEntityState("light.ligth_in_area", area: "Area");
+            SetEntityState("light.light_in_area", area: "Area");
 
             // ACT
             DefaultDaemonApp
@@ -873,7 +874,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             VerifyCallServiceTimes("turn_on", Times.Once());
-            VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.ligth_in_area"));
+            VerifyCallServiceTuple("light", "turn_on", ("entity_id", "light.light_in_area"));
         }
 
         [Fact]
@@ -883,8 +884,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
-            await DefaultDaemonApp.RunScript("testscript").ExecuteAsync();
-            await DefaultDaemonApp.RunScript("script.testscript").ExecuteAsync();
+            await DefaultDaemonApp.RunScript("testscript").ExecuteAsync().ConfigureAwait(false);
+            await DefaultDaemonApp.RunScript("script.testscript").ExecuteAsync().ConfigureAwait(false);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
@@ -898,12 +899,11 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
-            await DefaultDaemonApp.SendEvent("myevent");
+            await DefaultDaemonApp.SendEvent("myevent").ConfigureAwait(false);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             VerifyEventSent("myevent");
         }
     }
-
 }

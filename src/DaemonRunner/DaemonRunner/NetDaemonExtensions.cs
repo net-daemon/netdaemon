@@ -11,15 +11,21 @@ using NetDaemon.Service;
 using NetDaemon.Service.App;
 using Serilog;
 using NetDaemon.Infrastructure.Config;
+using NetDaemon.Common.Exceptions;
+using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon
 {
     public static class NetDaemonExtensions
     {
-        const string HassioConfigPath = "/data/options.json";
+        private const string HassioConfigPath = "/data/options.json";
 
         public static IHostBuilder UseNetDaemon(this IHostBuilder hostBuilder)
         {
+            _ = hostBuilder ??
+               throw new NetDaemonArgumentNullException(nameof(hostBuilder));
+
             if (File.Exists(HassioConfigPath))
                 ReadHassioConfig();
 
@@ -34,17 +40,14 @@ namespace NetDaemon
                 })
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
-                    webbuilder.UseKestrel(options => { });
+                    webbuilder.UseKestrel(_ => { });
                     webbuilder.UseStartup<ApiStartup>();
                 });
         }
 
         public static IHostBuilder UseDefaultNetDaemonLogging(this IHostBuilder hostBuilder)
         {
-            return hostBuilder.UseSerilog((context, loggerConfiguration) =>
-            {
-                SerilogConfigurator.Configure(loggerConfiguration, context.HostingEnvironment);
-            });
+            return hostBuilder.UseSerilog((context, loggerConfiguration) => SerilogConfigurator.Configure(loggerConfiguration, context.HostingEnvironment));
         }
 
         public static void CleanupNetDaemon()
@@ -61,7 +64,7 @@ namespace NetDaemon
         }
 
         /// <summary>
-        ///     Returns true if local loading of assemblies should be preferred. 
+        ///     Returns true if local loading of assemblies should be preferred.
         ///     This is typically when running in container. When running in dev
         ///     you want the local loading
         /// </summary>
@@ -72,17 +75,15 @@ namespace NetDaemon
             if (string.IsNullOrEmpty(appSource))
                 return true;
 
-            if (appSource.EndsWith(".csproj") || appSource.EndsWith(".dll"))
-                return true;
-            else
-                return false;
+            return appSource.EndsWith(".csproj", true, CultureInfo.InvariantCulture)
+                || appSource.EndsWith(".dll", true, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
         ///     Reads the Home Assistant (hassio) configuration file
         /// </summary>
-        /// <returns></returns>
-        static void ReadHassioConfig()
+        [SuppressMessage("", "CA1031")]
+        private static void ReadHassioConfig()
         {
             try
             {
@@ -101,9 +102,9 @@ namespace NetDaemon
                     Environment.SetEnvironmentVariable("HASSCLIENT_MSGLOGLEVEL", "Default");
 
                 _ = hassAddOnSettings?.AppSource ??
-                    throw new NullReferenceException("AppSource cannot be null");
+                    throw new NetDaemonNullReferenceException("AppSource cannot be null");
 
-                if (hassAddOnSettings.AppSource.StartsWith("/") || hassAddOnSettings.AppSource[1] == ':')
+                if (hassAddOnSettings.AppSource.StartsWith("/", true, CultureInfo.InvariantCulture) || hassAddOnSettings.AppSource[1] == ':')
                 {
                     // Hard codede path
                     Environment.SetEnvironmentVariable("NETDAEMON__APPSOURCE", hassAddOnSettings.AppSource);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -13,14 +14,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
 
 namespace NetDaemon.Service.Api
 {
-
     public class ApiWebsocketMiddleware
     {
-        private static ConcurrentDictionary<string, WebSocket> _sockets = new();
+        private static readonly ConcurrentDictionary<string, WebSocket> _sockets = new();
 
         private readonly RequestDelegate _next;
 
@@ -30,7 +31,7 @@ namespace NetDaemon.Service.Api
 
         private readonly NetDaemonHost? _host;
 
-        private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        private readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
@@ -42,6 +43,10 @@ namespace NetDaemon.Service.Api
             NetDaemonHost? host = null
             )
         {
+            _ = netDaemonSettings ??
+               throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
+            _ = homeAssistantSettings ??
+               throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
             _logger = loggerFactory.CreateLogger<ApiWebsocketMiddleware>();
             _host = host;
             _netdaemonSettings = netDaemonSettings.Value;
@@ -67,34 +72,32 @@ namespace NetDaemon.Service.Api
                         LastErrorMessage = n.IsEnabled ? n.RuntimeInfo.LastErrorMessage : null
                     })
                 };
-                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions));
+                await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
             }
         }
+
+        [SuppressMessage("", "CA1031")]
         public async Task Invoke(HttpContext context)
         {
+            _ = context ??
+               throw new NetDaemonArgumentNullException(nameof(context));
             if (!context.WebSockets.IsWebSocketRequest && context.Request.Path != "/api/ws")
             {
-                await _next.Invoke(context);
+                await _next.Invoke(context).ConfigureAwait(false);
                 return;
             }
 
             CancellationToken ct = context.RequestAborted;
-            WebSocket? currentSocket = await context.WebSockets.AcceptWebSocketAsync();
+            WebSocket? currentSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
             var socketId = Guid.NewGuid().ToString();
 
             _sockets.TryAdd(socketId, currentSocket);
             _logger.LogDebug("New websocket client {socketId}", socketId);
             try
             {
-
-                while (true)
+                while (!ct.IsCancellationRequested)
                 {
-                    if (ct.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    var msg = await GetNextMessageAsync(currentSocket, ct);
+                    var msg = await GetNextMessageAsync(currentSocket, ct).ConfigureAwait(false);
 
                     if (currentSocket.State != WebSocketState.Open)
                     {
@@ -121,7 +124,7 @@ namespace NetDaemon.Service.Api
                                     })
                                 };
 
-                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(eventMessage, _jsonOptions));
+                                await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
 
                                 break;
                             case "settings":
@@ -142,7 +145,7 @@ namespace NetDaemon.Service.Api
                                     Data = tempResult
                                 };
 
-                                await BroadCast(JsonSerializer.Serialize<WsExternalEvent>(settingsMessage, _jsonOptions));
+                                await BroadCast(JsonSerializer.Serialize(settingsMessage, _jsonOptions)).ConfigureAwait(false);
                                 break;
 
                             case "app":
@@ -162,7 +165,7 @@ namespace NetDaemon.Service.Api
                                     }
                                     if (command.IsEnabled is not null)
                                     {
-                                        if (command.IsEnabled ?? false)
+                                        if (command.IsEnabled.Value)
                                         {
                                             _host?.CallService("switch", "turn_on", new { entity_id = $"switch.netdaemon_{msg.App.ToSafeHomeAssistantEntityId()}" });
                                         }
@@ -189,12 +192,12 @@ namespace NetDaemon.Service.Api
                 currentSocket.State == WebSocketState.CloseReceived ||
                 currentSocket.State == WebSocketState.CloseSent)
             {
-                await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct);
+                await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", ct).ConfigureAwait(false);
             }
             currentSocket.Dispose();
         }
 
-        public async Task BroadCast(string message, CancellationToken ct = default(CancellationToken))
+        public async Task BroadCast(string message, CancellationToken ct = default)
         {
             _logger.LogTrace("Broadcasting to {count} clients", _sockets.Count);
             foreach (var socket in _sockets)
@@ -204,52 +207,46 @@ namespace NetDaemon.Service.Api
                     continue;
                 }
 
-                await SendStringAsync(socket.Value, message, ct);
+                await SendStringAsync(socket.Value, message, ct).ConfigureAwait(false);
             }
         }
 
-        private static Task SendStringAsync(WebSocket socket, string data, CancellationToken ct = default(CancellationToken))
+        private static Task SendStringAsync(WebSocket socket, string data, CancellationToken ct = default)
         {
             var buffer = Encoding.UTF8.GetBytes(data);
             var segment = new ArraySegment<byte>(buffer);
             return socket.SendAsync(segment, WebSocketMessageType.Text, true, ct);
         }
 
-        private static async Task<WsMessage?> GetNextMessageAsync(WebSocket socket, CancellationToken ct = default(CancellationToken))
+        private static async Task<WsMessage?> GetNextMessageAsync(WebSocket socket, CancellationToken ct = default)
         {
             // System.Text.Json.JsonSerializer.DeserializeAsync(socket.)
             var buffer = new ArraySegment<byte>(new byte[8192]);
-            _ = buffer.Array ?? throw new NullReferenceException("Failed to allocate memory buffer");
+            _ = buffer.Array ?? throw new NetDaemonNullReferenceException("Failed to allocate memory buffer");
 
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            WebSocketReceiveResult result;
+            do
             {
-                WebSocketReceiveResult result;
-                do
-                {
-                    ct.ThrowIfCancellationRequested();
+                ct.ThrowIfCancellationRequested();
 
-                    result = await socket.ReceiveAsync(buffer, ct);
-                    if (!result.CloseStatus.HasValue)
-                        ms.Write(buffer.Array, buffer.Offset, result.Count);
-                    else
-                        return null;
-
-                }
-                while (!result.EndOfMessage);
-
-                ms.Seek(0, SeekOrigin.Begin);
-                if (result.MessageType != WebSocketMessageType.Text)
-                {
+                result = await socket.ReceiveAsync(buffer, ct).ConfigureAwait(false);
+                if (!result.CloseStatus.HasValue)
+                    ms.Write(buffer.Array, buffer.Offset, result.Count);
+                else
                     return null;
-                }
-
-                using (var reader = new StreamReader(ms, Encoding.UTF8))
-                {
-                    var msgString = await reader.ReadToEndAsync();
-                    return JsonSerializer.Deserialize<WsMessage>(msgString);
-                }
             }
-        }
+            while (!result.EndOfMessage);
 
+            ms.Seek(0, SeekOrigin.Begin);
+            if (result.MessageType != WebSocketMessageType.Text)
+            {
+                return null;
+            }
+
+            using var reader = new StreamReader(ms, Encoding.UTF8);
+            var msgString = await reader.ReadToEndAsync().ConfigureAwait(false);
+            return JsonSerializer.Deserialize<WsMessage>(msgString);
+        }
     }
 }

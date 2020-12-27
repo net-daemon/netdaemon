@@ -1,10 +1,12 @@
 using System;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Moq;
+using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Fakes;
@@ -30,7 +32,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var (dynObj, expObj) = GetDynamicObject(
+            var (dynObj, _) = GetDynamicObject(
                ("attr", "value"));
 
             // ACT
@@ -50,10 +52,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ACT
             DefaultDaemonRxApp.StateAllChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "on", "on");
 
@@ -72,10 +71,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ACT
             DefaultDaemonRxApp.EventChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddCustomEvent("AN_EVENT", new { somedata = "hello" });
 
@@ -94,10 +90,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ACT
             DefaultDaemonRxApp.EventChanges
-                .Subscribe(s =>
-                {
-                    missingAttribute = s.Data?.missing_data;
-                });
+                .Subscribe(s => missingAttribute = s.Data?.missing_data);
 
             var expandoObj = new ExpandoObject();
             dynamic dynExpObject = expandoObj;
@@ -120,10 +113,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ACT
             DefaultDaemonRxApp.StateChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -139,16 +129,12 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
-
             // ACT
             DefaultDaemonRxApp.RunScript("myscript");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
-
 
             DefaultHassClientMock.VerifyCallServiceTimes("myscript", Times.Once());
         }
@@ -158,8 +144,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var (dynObj, expObj) = GetDynamicObject(
-               ("attr", "value"));
 
             // ACT
             DefaultDaemonRxApp.RunScript("script.myscript");
@@ -178,10 +162,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ACT
             DefaultDaemonRxApp.StateChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "on", "on");
 
@@ -213,7 +194,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             INetDaemonHost? host = null;
 
             // ARRANGE ACT ASSERT
-            await Assert.ThrowsAsync<NullReferenceException>(() => DefaultDaemonRxApp.StartUpAsync(host!));
+            await Assert.ThrowsAsync<NetDaemonArgumentNullException>(() => DefaultDaemonRxApp.StartUpAsync(host!)).ConfigureAwait(false);
         }
 
         [Fact]
@@ -271,7 +252,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.NotNull(entities);
-            Assert.Equal(8, entities.Count());
+            Assert.Equal(8, entities.Count);
         }
 
         [Fact]
@@ -282,12 +263,9 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var called = false;
 
             // ACT
-            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir", true, CultureInfo.InvariantCulture))
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir_2", "off", "on");
 
@@ -306,12 +284,9 @@ namespace NetDaemon.Daemon.Tests.Reactive
             string? missingString = "has initial value";
 
             // ACT
-            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir", true, CultureInfo.InvariantCulture))
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    missingString = s.New.Attribute?.missing_attribute;
-                });
+                .Subscribe(s => missingString = s.New.Attribute?.missing_attribute);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir_2", "off", "on");
 
@@ -331,10 +306,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.Entities("binary_sensor.pir", "binary_sensor.pir_2")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir_2", "off", "on");
 
@@ -354,10 +326,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -377,10 +346,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.Entity("binary_sensor.other_pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    called = true;
-                });
+                .Subscribe(_ => called = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -392,16 +358,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
         [Fact]
         public async Task WhenStateStaysSameForTimeItShouldCallFunction()
         {
-            await InitializeFakeDaemon().ConfigureAwait(false);
+            await InitializeFakeDaemon(100).ConfigureAwait(false);
 
             bool isRun = false;
             using var ctx = DefaultDaemonRxApp.StateChanges
                 .Where(t => t.New.EntityId == "binary_sensor.pir")
                 .NDSameStateFor(TimeSpan.FromMilliseconds(50))
-                .Subscribe(e =>
-                {
-                    isRun = true;
-                });
+                .Subscribe(_ => isRun = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -449,7 +412,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task TestFakeAppTurnOnCorrectLight()
         {
             // Add the app to test
-            await AddAppInstance(new FakeApp());
+            await using var fakeApp = new FakeApp();
+            await AddAppInstance(fakeApp).ConfigureAwait(false);
 
             // Init NetDaemon core runtime
             await InitializeFakeDaemon().ConfigureAwait(false);
@@ -460,16 +424,16 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // Run the NetDemon Core to process the messages
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
-            // Verify that netdaemon called light.turn_on 
+            // Verify that netdaemon called light.turn_on
             VerifyCallService("light", "turn_on", "light.kitchen");
         }
-
 
         [Fact]
         public async Task TestFakeAppCallNoteWhenBatteryLevelBelowValue()
         {
             // Add the app to test
-            await AddAppInstance(new FakeApp());
+            await using var fakeApp = new FakeApp();
+            await AddAppInstance(fakeApp).ConfigureAwait(false);
 
             // Init NetDaemon core runtime
             await InitializeFakeDaemon().ConfigureAwait(false);
@@ -497,7 +461,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // Run the NetDemon Core to process the messages
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
-            // Verify that netdaemon called light.turn_on 
+            // Verify that netdaemon called light.turn_on
             VerifyCallService("notify", "notify", new { title = "Hello from Home Assistant" });
         }
     }

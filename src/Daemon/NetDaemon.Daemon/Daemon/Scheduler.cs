@@ -2,12 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon
 {
@@ -28,19 +30,19 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Used to cancel all running tasks
         /// </summary>
-        private CancellationTokenSource _cancelSource = new CancellationTokenSource();
-
+        private CancellationTokenSource _cancelSource = new();
+        private bool _isStopped;
         private readonly ConcurrentDictionary<int, Task> _scheduledTasks
-                    = new ConcurrentDictionary<int, Task>();
+                = new();
 
         private readonly IManageTime? _timeManager;
         private readonly ILogger<Scheduler> _logger;
-        private Task _schedulerTask;
+        private readonly Task _schedulerTask;
 
         public Scheduler(IManageTime? timerManager = null, ILoggerFactory? loggerFactory = null)
         {
             _timeManager = timerManager ?? new TimeManager();
-            loggerFactory = loggerFactory ?? DefaultLoggerFactory;
+            loggerFactory ??= DefaultLoggerFactory;
             _logger = loggerFactory.CreateLogger<Scheduler>();
             _schedulerTask = Task.Run(SchedulerLoop, _cancelSource.Token);
         }
@@ -53,20 +55,17 @@ namespace NetDaemon.Daemon
                                 });
 
         /// <inheritdoc/>
-        public ISchedulerResult RunEvery(int millisecondsDelay, Func<Task> func) => RunEveryAsync(millisecondsDelay, func);
-
-        /// <inheritdoc/>
-        public ISchedulerResult RunEveryAsync(int millisecondsDelay, Func<Task> func)
+        public ISchedulerResult RunEvery(int millisecondsDelay, Func<Task> func)
         {
-            return RunEveryAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
+            return RunEvery(TimeSpan.FromMilliseconds(millisecondsDelay), func);
         }
 
         /// <inheritdoc/>
-        public ISchedulerResult RunEvery(TimeSpan timeSpan, Func<Task> func) => RunEveryAsync(timeSpan, func);
-
-        /// <inheritdoc/>
-        public ISchedulerResult RunEveryAsync(TimeSpan timeSpan, Func<Task> func)
+        public ISchedulerResult RunEvery(TimeSpan timeSpan, Func<Task> func)
         {
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
+
             var cancelSource = new CancellationTokenSource();
             var task = RunEveryInternalAsync(timeSpan, func, cancelSource.Token);
 
@@ -75,6 +74,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task RunEveryInternalAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -131,22 +131,17 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public ISchedulerResult RunDaily(string time, Func<Task> func) => RunDailyAsync(time, func);
+        public ISchedulerResult RunDaily(string time, Func<Task> func) => RunDaily(time, null, func);
 
         /// <inheritdoc/>
-        public ISchedulerResult RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func) =>
-            RunDailyAsync(time, runOnDays, func);
-
-        /// <inheritdoc/>
-        public ISchedulerResult RunDailyAsync(string time, Func<Task> func) => RunDailyAsync(time, null, func);
-
-        /// <inheritdoc/>
-        public ISchedulerResult RunDailyAsync(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
+        public ISchedulerResult RunDaily(string time, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func)
         {
-            var cancelSource = new CancellationTokenSource();
-            DateTime timeOfDayToTrigger;
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
 
-            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timeOfDayToTrigger))
+            var cancelSource = new CancellationTokenSource();
+
+            if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeOfDayToTrigger))
             {
                 throw new FormatException($"{time} is not a valid time for the current locale");
             }
@@ -157,6 +152,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task RunDailyInternalAsync(DateTime timeOfDayToTrigger, IEnumerable<DayOfWeek>? runOnDays, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -183,7 +179,9 @@ namespace NetDaemon.Daemon
                         }
                     }
                     else
+                    {
                         _logger.LogTrace("RunDaily, Time: {time}, parsed time: {timeOfDayToTrigger}, Not run, due to dayofweek", _timeManager!.Current, timeOfDayToTrigger);
+                    }
                 }
                 else
                 {
@@ -202,11 +200,10 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public ISchedulerResult RunEveryMinute(short second, Func<Task> func) => RunEveryMinuteAsync(second, func);
-
-        /// <inheritdoc/>
-        public ISchedulerResult RunEveryMinuteAsync(short second, Func<Task> func)
+        public ISchedulerResult RunEveryMinute(short second, Func<Task> func)
         {
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
             var cancelSource = new CancellationTokenSource();
             var task = RunEveryMinuteInternalAsync(second, func, cancelSource.Token);
 
@@ -215,6 +212,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task RunEveryMinuteInternalAsync(short second, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -222,7 +220,6 @@ namespace NetDaemon.Daemon
 
             while (!linkedCts.IsCancellationRequested)
             {
-                var now = _timeManager?.Current;
                 var diff = CalculateEveryMinuteTimeBetweenNowAndTargetTime(second);
                 _logger.LogTrace("RunEveryMinute, Delay {diff}", diff);
                 await _timeManager!.Delay(diff, linkedCts.Token).ConfigureAwait(false);
@@ -238,20 +235,15 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public ISchedulerResult RunIn(int millisecondsDelay, Func<Task> func) => RunInAsync(millisecondsDelay, func);
+        [SuppressMessage("", "CA1031")]
+        public ISchedulerResult RunIn(int millisecondsDelay, Func<Task> func) => RunIn(TimeSpan.FromMilliseconds(millisecondsDelay), func);
 
         /// <inheritdoc/>
-        public ISchedulerResult RunInAsync(int millisecondsDelay, Func<Task> func)
+        public ISchedulerResult RunIn(TimeSpan timeSpan, Func<Task> func)
         {
-            return RunInAsync(TimeSpan.FromMilliseconds(millisecondsDelay), func);
-        }
+            _ = func ??
+               throw new NetDaemonArgumentNullException(nameof(func));
 
-        /// <inheritdoc/>
-        public ISchedulerResult RunIn(TimeSpan timeSpan, Func<Task> func) => RunInAsync(timeSpan, func);
-
-        /// <inheritdoc/>
-        public ISchedulerResult RunInAsync(TimeSpan timeSpan, Func<Task> func)
-        {
             var cancelSource = new CancellationTokenSource();
             var task = InternalRunInAsync(timeSpan, func, cancelSource.Token);
             ScheduleTask(task);
@@ -259,6 +251,7 @@ namespace NetDaemon.Daemon
             return new SchedulerResult(task, cancelSource);
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task InternalRunInAsync(TimeSpan timeSpan, Func<Task> func, CancellationToken token)
         {
             using CancellationTokenSource linkedCts =
@@ -281,6 +274,11 @@ namespace NetDaemon.Daemon
         /// </summary>
         public async Task Stop()
         {
+            if (_isStopped)
+                return;
+
+            _isStopped = true;
+
             _cancelSource.Cancel();
 
             // Make sure we are waiting for the scheduler task as well
@@ -289,9 +287,13 @@ namespace NetDaemon.Daemon
             var taskResult = await Task.WhenAny(
                 Task.WhenAll(_scheduledTasks.Values.ToArray()), Task.Delay(1000)).ConfigureAwait(false);
 
-            if (_scheduledTasks.Values.Count(n => n.IsCompleted == false) > 0)
+            _cancelSource.Dispose();
+
+            if (_scheduledTasks.Values.Any(n => !n.IsCompleted))
+            {
                 // Todo: Some kind of logging have to be done here to tell user which task caused timeout
-                throw new ApplicationException("Failed to cancel all tasks");
+                throw new NetDaemonException("Failed to cancel all tasks");
+            }
         }
 
         /// <summary>
@@ -301,6 +303,7 @@ namespace NetDaemon.Daemon
         public async Task Restart()
         {
             await Stop().ConfigureAwait(false);
+            _isStopped = false;
             _cancelSource = new CancellationTokenSource();
         }
 
@@ -309,7 +312,8 @@ namespace NetDaemon.Daemon
             try
             {
                 while (!_cancelSource.Token.IsCancellationRequested)
-                    if (_scheduledTasks.Count > 0)
+                {
+                    if (!_scheduledTasks.IsEmpty)
                     {
                         // Make sure we do cleaning and handle new task every 100 ms
                         ScheduleTask(Task.Delay(DefaultSchedulerTimeout,
@@ -325,6 +329,7 @@ namespace NetDaemon.Daemon
                     {
                         await Task.Delay(DefaultSchedulerTimeout, _cancelSource.Token).ConfigureAwait(false);
                     }
+                }
             }
             catch (OperationCanceledException)
             {// Normal, just ignore
@@ -336,6 +341,7 @@ namespace NetDaemon.Daemon
             _scheduledTasks[addedTask.Id] = addedTask;
         }
 
+        [SuppressMessage("", "CA1031")]
         public async ValueTask DisposeAsync()
         {
             try
@@ -357,7 +363,6 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Returns current local time
         /// </summary>
-        /// <value></value>
         public DateTime Current => DateTime.Now;
 
         /// <summary>
@@ -386,16 +391,13 @@ namespace NetDaemon.Daemon
 
     public class SchedulerResult : ISchedulerResult
     {
-        private readonly Task _scheduledTask;
-        private readonly CancellationTokenSource _cancelSource;
-
         public SchedulerResult(Task scheduledTask, CancellationTokenSource cancelSource)
         {
-            _scheduledTask = scheduledTask;
-            _cancelSource = cancelSource;
+            Task = scheduledTask;
+            CancelSource = cancelSource;
         }
 
-        public Task Task => _scheduledTask;
-        public CancellationTokenSource CancelSource => _cancelSource;
+        public Task Task { get; }
+        public CancellationTokenSource CancelSource { get; }
     }
 }

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common.Fluent
 {
@@ -11,26 +11,26 @@ namespace NetDaemon.Common.Fluent
     public class EntityBase //: EntityState
     {
         internal readonly ConcurrentQueue<FluentAction> _actions =
-            new ConcurrentQueue<FluentAction>();
+            new();
 
         internal FluentAction? _currentAction;
 
-        internal StateChangedInfo _currentState = new StateChangedInfo();
+        internal StateChangedInfo _currentState = new();
 
         /// <summary>
         ///     The daemon used in the API
         /// </summary>
-        protected readonly INetDaemonApp App;
+        protected INetDaemonApp App { get; }
 
         /// <summary>
         ///     The daemon used in the API
         /// </summary>
-        protected readonly INetDaemon Daemon;
+        protected INetDaemon Daemon { get; }
 
         /// <summary>
         ///     The EntityIds used
         /// </summary>
-        protected readonly IEnumerable<string> EntityIds;
+        protected IEnumerable<string> EntityIds { get; }
 
         /// <summary>
         ///     Constructor
@@ -48,9 +48,12 @@ namespace NetDaemon.Common.Fluent
         /// <inheritdoc/>
         protected static string GetDomainFromEntity(string entity)
         {
+            if (string.IsNullOrEmpty(entity))
+                throw new NetDaemonNullReferenceException(nameof(entity));
+
             var entityParts = entity.Split('.');
             if (entityParts.Length != 2)
-                throw new ApplicationException($"entity_id is mal formatted {entity}");
+                throw new NetDaemonException($"entity_id is mal formatted {entity}");
 
             return entityParts[0];
         }

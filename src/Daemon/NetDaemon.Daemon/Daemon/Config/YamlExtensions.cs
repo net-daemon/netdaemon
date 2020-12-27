@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using NetDaemon.Common.Exceptions;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -25,19 +26,24 @@ namespace NetDaemon.Daemon.Config
     {
         public static PropertyInfo? GetYamlProperty(this Type type, string propertyName)
         {
-            var prop = type.GetProperty(propertyName);
+            _ = type ??
+               throw new NetDaemonArgumentNullException(nameof(type));
 
-            if (prop == null)
-            {
-                // Lets try convert from python style to CamelCase
-                prop = type.GetProperty(propertyName.ToCamelCase());
-            }
+            // Lets try convert from python style to CamelCase
+
+            var prop = type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
             return prop;
         }
 
         public static object? ToObject(this YamlScalarNode node, Type valueType)
         {
+            _ = valueType ??
+               throw new NetDaemonArgumentNullException(nameof(valueType));
+            _ = node ??
+               throw new NetDaemonArgumentNullException(nameof(node));
+
             Type? underlyingNullableType = Nullable.GetUnderlyingType(valueType);
+
             if (underlyingNullableType != null)
             {
                 // It is nullable type

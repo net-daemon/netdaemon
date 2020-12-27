@@ -19,7 +19,6 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Returns a list of instanced daemonapps
         /// </summary>
-        /// <returns></returns>
         IEnumerable<INetDaemonAppBase> InstanceDaemonApps();
     }
 }

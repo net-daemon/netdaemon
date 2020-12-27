@@ -16,11 +16,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public static readonly string ConfigFixturePath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "Fixtures");
 
-        public string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
+        public static string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
 
-        public string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
+        public static string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
 
-        public IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+        public static IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
         {
             AppSource = appSource
         });
@@ -46,7 +46,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void SecretsLoadFaultyYamlThrowsException()
         {
             // ARRANGE
-            var faultyYaml =
+            const string? faultyYaml =
             "yaml: correctLine\n" +
             "yaml_missing: \"missing" +
             "yaml_correct: 10";
@@ -102,14 +102,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingString()
         {
             // ARRANGE
-            var yaml = "yaml: string\n";
+            const string? yaml = "yaml: string\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal("string", scalarValue.ToObject(typeof(string)));
@@ -119,14 +118,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingInt()
         {
             // ARRANGE
-            var yaml = "yaml: 1234\n";
+            const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(1234, scalarValue.ToObject(typeof(int)));
@@ -136,14 +134,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingBoolean()
         {
             // ARRANGE
-            var yaml = "yaml: true\n";
+            const string? yaml = "yaml: true\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(true, scalarValue.ToObject(typeof(bool)));
@@ -153,31 +150,29 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlScalarNodeToObjectUsingLong()
         {
             // ARRANGE
-            var yaml = "yaml: 1234\n";
+            const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal((long)1234, scalarValue.ToObject(typeof(long)));
         }
 
         [Fact]
-        public void YamlScalarNodeToObjectUsingDeciaml()
+        public void YamlScalarNodeToObjectUsingDecimal()
         {
             // ARRANGE
-            var yaml = "yaml: 1.5\n";
+            const string? yaml = "yaml: 1.5\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            string? map = ((YamlScalarNode)scalar.Key).Value;
             var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal((decimal)1.5, scalarValue.ToObject(typeof(decimal)));
@@ -188,7 +183,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         [Fact]
         public void YamlAdvancedObjectsShouldReturnCorrectData()
         {
-            var yaml = @"
+            const string? yaml = @"
             a_string: hello world
             an_int: 10
             a_bool: true
@@ -223,11 +218,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal(true, instance?.ABool);
             Assert.NotNull(instance?.Devices);
             Assert.Equal(1, instance?.Devices?.Count());
-            Assert.Equal("tv", instance?.Devices?.First().name);
-            Assert.Equal("command1", instance?.Devices?.First()?.commands?.ElementAt(0).name);
-            Assert.Equal("some code", instance?.Devices?.First()?.commands?.ElementAt(0).data);
-            Assert.Equal("command2", instance?.Devices?.First()?.commands?.ElementAt(1).name);
-            Assert.Equal("some code2", instance?.Devices?.First()?.commands?.ElementAt(1).data);
+            Assert.Equal("tv", instance?.Devices?.First().Name);
+            Assert.Equal("command1", instance?.Devices?.First()?.Commands?.ElementAt(0).Name);
+            Assert.Equal("some code", instance?.Devices?.First()?.Commands?.ElementAt(0).Data);
+            Assert.Equal("command2", instance?.Devices?.First()?.Commands?.ElementAt(1).Name);
+            Assert.Equal("some code2", instance?.Devices?.First()?.Commands?.ElementAt(1).Data);
         }
     }
 }

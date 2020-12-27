@@ -30,7 +30,8 @@ namespace NetDaemon.Common.Reactive
         public void Dispose()
         {
             _internalToken.Cancel();
+            _combinedToken.Dispose();
+            _internalToken.Dispose();
         }
     }
-
 }

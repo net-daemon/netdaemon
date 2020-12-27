@@ -4,6 +4,7 @@ using System.Text.Json;
 using JoySoftware.HomeAssistant.Client;
 using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Common;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Mapping
 {
@@ -13,9 +14,10 @@ namespace NetDaemon.Mapping
         ///     Converts HassState to EntityState
         /// </summary>
         /// <param name="hassState"></param>
-        /// <returns></returns>
         public static EntityState Map(this HassState hassState)
         {
+            _ = hassState ??
+               throw new NetDaemonArgumentNullException(nameof(hassState));
             var entityState = new EntityState
             {
                 EntityId = hassState.EntityId,
@@ -37,9 +39,7 @@ namespace NetDaemon.Mapping
                 return;
 
             // Cast so we can work with the expando object
-            var dict = entityState.Attribute as IDictionary<string, object>;
-
-            if (dict == null)
+            if (entityState.Attribute is not IDictionary<string, object> dict)
                 throw new ArgumentNullException(nameof(dict), "Expando object should always be dictionary!");
 
             foreach (var (key, value) in hassState.Attributes)

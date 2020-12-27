@@ -7,19 +7,21 @@ using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
+using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class AppTestApp : NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp : Common.NetDaemonApp { }
 
-    public class AppTestApp2 : NetDaemon.Common.NetDaemonApp { }
+    public class AppTestApp2 : Common.NetDaemonApp { }
 
-    public class NetDaemonApptests
+    public class NetDaemonApptests : IAsyncLifetime, IDisposable
     {
         private const string appTemplate = "  app: ";
         private readonly LoggerMock _logMock;
-        private NetDaemon.Common.NetDaemonApp _app;
-        private Mock<INetDaemon> _netDaemonMock;
+        private readonly Common.NetDaemonApp _app;
+        private readonly Mock<INetDaemon> _netDaemonMock;
+        private bool disposedValue;
 
         public NetDaemonApptests()
         {
@@ -27,13 +29,13 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _netDaemonMock = new Mock<INetDaemon>();
             _netDaemonMock.SetupGet(n => n.Logger).Returns(_logMock.Logger);
 
-            _appMock = new Mock<INetDaemonApp>();
+            AppMock = new Mock<INetDaemonApp>();
             _app = new AppTestApp();
             _app.StartUpAsync(_netDaemonMock.Object);
             _app.Id = "app";
         }
 
-        public Mock<INetDaemonApp> _appMock { get; }
+        public Mock<INetDaemonApp> AppMock { get; }
 
         [Fact]
         public void CallServiceShouldCallCorrectDaemonCallService()
@@ -87,7 +89,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         }
 
         [Fact]
-        public void EnitiesShouldCallCorrectDaemonEntity()
+        public void EntitiesShouldCallCorrectDaemonEntity()
         {
             // ARRANGE and  ACT
             _app.Entities(new string[] { "light.somelight" });
@@ -96,7 +98,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         }
 
         [Fact]
-        public void EnityShouldCallCorrectDaemonEntity()
+        public void EntityShouldCallCorrectDaemonEntity()
         {
             // ARRANGE and  ACT
             _app.Entity("light.somelight");
@@ -120,7 +122,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public async Task GlobalShouldReturnCorrectData(string key, object value)
         {
             await using var _app_two = new AppTestApp2();
-            await _app_two.StartUpAsync(_netDaemonMock.Object);
+            await _app_two.StartUpAsync(_netDaemonMock.Object).ConfigureAwait(false);
             _app_two.Id = "app2";
 
             // ARRANGE and  ACT
@@ -139,11 +141,10 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "message";
-            MethodInfo? methodInfo;
+            const string? message = "message";
 
             // ACT
-            methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string) });
+            MethodInfo? methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string) });
 
             methodInfo?.Invoke(_app, new object[] { message });
             // ASSERT
@@ -159,8 +160,8 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithExceptionAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "message";
-            var exception = new NullReferenceException("Null");
+            const string? message = "message";
+            var exception = new NetDaemonNullReferenceException("Null");
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string) });
 
@@ -178,7 +179,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithParamsAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "Hello {name}";
+            const string? message = "Hello {name}";
 
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(string), typeof(object[]) });
@@ -197,14 +198,43 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
         public void LogMessageWithParamsExceptionAndDifferentLogLevelsShoulCallCorrectLogger(LogLevel level, string methodName)
         {
             // ARRANGE
-            var message = "Hello {name}";
-            var exception = new NullReferenceException("Null");
+            const string? message = "Hello {name}";
+            var exception = new NetDaemonNullReferenceException("Null");
             // ACT
             var methodInfo = _app.GetType().GetMethod(methodName, new Type[] { typeof(Exception), typeof(string), typeof(object[]) });
 
             methodInfo?.Invoke(_app, new object[] { exception, message, new object[] { "Bob" } });
             // ASSERT
             _logMock.AssertLogged(level, exception, appTemplate + "Hello Bob", Times.Once());
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _app.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

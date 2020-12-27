@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Reactive.Linq;
 using NetDaemon.Daemon.Fakes;
+using System.Globalization;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
@@ -14,17 +15,17 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
     public class FaultyRxAppTests : DaemonHostTestBase
     {
-        private readonly NetDaemon.Common.Reactive.NetDaemonRxApp _app;
-
         public FaultyRxAppTests() : base()
         {
-            _app = new DaemonRxAppTestApp();
-            _app.Id = "id";
-            DefaultDaemonHost.InternalRunningAppInstances[_app.Id] = App;
-            _app.StartUpAsync(DefaultDaemonHost).Wait();
+            App = new DaemonRxAppTestApp
+            {
+                Id = "id"
+            };
+            DefaultDaemonHost.InternalRunningAppInstances[App.Id] = App;
+            App.StartUpAsync(DefaultDaemonHost).Wait();
         }
 
-        public NetDaemon.Common.Reactive.NetDaemonRxApp App => _app;
+        public NetDaemon.Common.Reactive.NetDaemonRxApp App { get; }
 
         [Fact]
         public async Task ARunTimeErrorShouldLogError()
@@ -35,9 +36,9 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
+                .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
@@ -56,10 +57,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    App.Entity("light.do_not_exist").TurnOn();
-                });
+                .Subscribe(_ => App.Entity("light.do_not_exist").TurnOn());
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -79,26 +77,17 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    eventRun = true;
-                });
+                .Subscribe(_ => eventRun = true);
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    App.Entity("light.do_not_exist").TurnOn();
-                });
+                .Subscribe(_ => App.Entity("light.do_not_exist").TurnOn());
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    event2Run = true;
-                });
+                .Subscribe(_ => event2Run = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -107,7 +96,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
             Assert.True(eventRun);
             Assert.True(event2Run);
-
         }
 
         [Fact]
@@ -121,26 +109,20 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
+                .Subscribe(_ => eventRun = true);
+
+            App
+                .Entity("binary_sensor.pir")
+                .StateChanges
+                .Subscribe(_ =>
                 {
-                    eventRun = true;
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    int x = int.Parse("ss");
-                });
-
-            App
-                .Entity("binary_sensor.pir")
-                .StateChanges
-                .Subscribe(s =>
-                {
-                    event2Run = true;
-                });
+                .Subscribe(_ => event2Run = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
@@ -149,7 +131,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
             Assert.True(event2Run);
-
         }
 
         [Fact]
@@ -163,27 +144,21 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    eventRun = true;
-                });
+                .Subscribe(_ => eventRun = true);
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
                 .Where(e => e.New.Attribute!.an_int == "WTF this is not an int!!")
-                .Subscribe(s =>
+                .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    event2Run = true;
-                });
+                .Subscribe(_ => event2Run = true);
 
             AddDefaultEvent();
 
@@ -192,9 +167,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
             Assert.True(eventRun);
             Assert.True(event2Run);
-
         }
-
 
         [Fact]
         public async Task ToUnavailableShouldNotBreak()
@@ -207,27 +180,21 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    eventRun = true;
-                });
+                .Subscribe(_ => eventRun = true);
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
                 .Where(e => e.New.State == "on")
-                .Subscribe(s =>
+                .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    event2Run = true;
-                });
+                .Subscribe(_ => event2Run = true);
 
             AddEventFakeGoingUnavailable();
 
@@ -236,7 +203,6 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
             Assert.False(eventRun);
             Assert.False(event2Run);
-
         }
 
         [Fact]
@@ -250,27 +216,21 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    eventRun = true;
-                });
+                .Subscribe(_ => eventRun = true);
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
                 .Where(e => e.New.State == "on")
-                .Subscribe(s =>
+                .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
                 .Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(s =>
-                {
-                    event2Run = true;
-                });
+                .Subscribe(_ => event2Run = true);
 
             AddEventFakeFromUnavailable();
 
@@ -279,75 +239,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             LoggerMock.AssertLogged(LogLevel.Error, Times.Never());
             Assert.False(eventRun);
             Assert.False(event2Run);
-
         }
-
-        // [Fact]
-        // public async Task MissingAttributeShouldNotBreakOtherApps()
-        // {
-        //     // ARRANGE
-        //     bool eventRun = false;
-        //     App
-        //         .Entities(e => e.Attribute.does_not_exist == "yay")
-        //         .WhenStateChange()
-        //         .Call((entity, from, to) =>
-        //         {
-        //             // Do conversion error
-        //             int x = int.Parse("ss");
-        //             return Task.CompletedTask;
-        //         }).Execute();
-
-        //     App
-        //         .Entity("binary_sensor.pir")
-        //         .WhenStateChange("on")
-        //         .Call((entity, from, to) =>
-        //         {
-        //             // Do conversion error
-        //             eventRun = true;
-        //             return Task.CompletedTask;
-        //         }).Execute();
-
-        //     DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
-
-        //     await RunDefauldDaemonUntilCanceled();
-
-        //     // LoggerMock.AssertLogged(LogLevel.Error, Times.Once());
-        //     Assert.True(eventRun);
-
-        // }
-
-        // [Fact]
-        // public async Task MissingEntityShouldNotBreakOtherApps()
-        // {
-        //     // ARRANGE
-        //     bool eventRun = false;
-        //     App
-        //         .Entity("binary_sensor.pir")
-        //         .WhenStateChange()
-        //         .Call((entity, from, to) =>
-        //         {
-        //             // Do conversion error
-        //             App.Entity("does_not_exist").TurnOn();
-        //             return Task.CompletedTask;
-        //         }).Execute();
-
-        //     App
-        //         .Entity("binary_sensor.pir")
-        //         .WhenStateChange("on")
-        //         .Call((entity, from, to) =>
-        //         {
-        //             // Do conversion error
-        //             eventRun = true;
-        //             return Task.CompletedTask;
-        //         }).Execute();
-
-        //     DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
-
-        //     await RunDefauldDaemonUntilCanceled();
-
-        //     Assert.True(eventRun);
-
-        // }
 
         private void AddDefaultEvent()
         {

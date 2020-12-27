@@ -30,9 +30,8 @@ namespace NetDaemon.Common.Fluent
         /// <summary>
         ///     Set option value of the selected input selects
         /// </summary>
-        /// <param name="option"></param>
-        /// <returns></returns>
-        T SetOption(string option);
+        /// <param name="selectOption"></param>
+        T SetOption(string selectOption);
     }
 
     /// <summary>
@@ -41,8 +40,8 @@ namespace NetDaemon.Common.Fluent
     public class InputSelectManager : IFluentInputSelect, IFluentExecuteAsync
     {
         private readonly IEnumerable<string> _entityIds;
-        private INetDaemon _daemon;
-        private INetDaemonApp _app;
+        private readonly INetDaemon _daemon;
+        private readonly INetDaemonApp _app;
         private string? _option;
 
         /// <summary>
@@ -75,9 +74,9 @@ namespace NetDaemon.Common.Fluent
         }
 
         /// <inheritdoc/>
-        public IFluentExecuteAsync SetOption(string option)
+        public IFluentExecuteAsync SetOption(string selectOption)
         {
-            _option = option;
+            _option = selectOption;
             return this;
         }
     }
