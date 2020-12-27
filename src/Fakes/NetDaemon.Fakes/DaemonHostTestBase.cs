@@ -357,7 +357,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="timeout">Timeout (ms) of how long fake daemon will stay connected and process events</param>
         /// <param name="overrideDebugNotCancel">True if running debug mode should not cancel on timeout</param>
-        protected async Task InitializeFakeDaemon(short timeout = 50, bool overrideDebugNotCancel = false)
+        protected async Task InitializeFakeDaemon(short timeout = 300, bool overrideDebugNotCancel = false)
         {
             _fakeConnectedDaemon = await GetConnectedNetDaemonTask(timeout, overrideDebugNotCancel).ConfigureAwait(false);
         }
