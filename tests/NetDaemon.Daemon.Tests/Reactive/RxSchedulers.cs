@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,15 +18,12 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class RxSchedulerTest : CoreDaemonHostTestBase
     {
-        public RxSchedulerTest() : base()
-        {
-        }
-
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task CreateObservableIntervallFailureShouldLogError()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
+            await using var app = new BaseTestRxApp();
             await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             app.IsEnabled = true;
 
@@ -40,7 +39,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task CreateObservableIntervallShouldCallFunction()
         {
             // ARRANGE
-            var app = new BaseTestRxApp
+            await using var app = new BaseTestRxApp
             {
                 IsEnabled = true
             };
@@ -56,10 +55,11 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task CreateObservableTimerFailureShouldLogError()
         {
             // ARRANGE
-            var app = new BaseTestRxApp();
+            await using var app = new BaseTestRxApp();
             await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             app.IsEnabled = true;
 
@@ -75,7 +75,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task CreateObservableTimerShouldCallFunction()
         {
             // ARRANGE
-            var app = new BaseTestRxApp
+            await using var app = new BaseTestRxApp
             {
                 IsEnabled = true
             };
@@ -96,10 +96,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             var time = DateTime.Now;
             var timeOneHourBack = time.AddHours(1);
-            var timeFormat = timeOneHourBack.ToString("HH:mm:ss");
+            var timeFormat = timeOneHourBack.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
             // ACT
-            DefaultMockedRxApp.Object.RunDaily(timeFormat, () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunDaily(timeFormat, () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), TimeSpan.FromDays(1), It.IsAny<Action>()), Times.Once());
@@ -111,7 +111,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             var time = DateTime.Now;
             var timeOneHourBack = time.Subtract(TimeSpan.FromHours(1));
-            var timeFormat = timeOneHourBack.ToString("HH:mm:ss");
+            var timeFormat = timeOneHourBack.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
             // ACT
             DefaultMockedRxApp.Object.RunDaily(timeFormat, () => System.Console.WriteLine("Test"));
@@ -126,7 +126,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
 
             // ACT
-            DefaultMockedRxApp.Object.RunDaily("10:00:00", () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunDaily("10:00:00", () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), TimeSpan.FromDays(1), It.IsAny<Action>()), Times.Once());
@@ -139,7 +139,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<FormatException>(() =>
-             DefaultMockedRxApp.Object.RunDaily("no good input", () => System.Console.WriteLine("Test")));
+             DefaultMockedRxApp.Object.RunDaily("no good input", () => Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             // ACT
-            DefaultMockedRxApp.Object.RunEveryHour("10:00", () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEveryHour("10:00", () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()), Times.Once());
@@ -160,7 +160,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<FormatException>(() =>
-            DefaultMockedRxApp.Object.RunEveryHour("no good input", () => System.Console.WriteLine("Test")));
+            DefaultMockedRxApp.Object.RunEveryHour("no good input", () => Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -181,7 +181,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             // ASSERT
             Assert.Throws<ArgumentOutOfRangeException>(() =>
-            DefaultMockedRxApp.Object.RunEveryMinute(-1, () => System.Console.WriteLine("Test")));
+            DefaultMockedRxApp.Object.RunEveryMinute(-1, () => Console.WriteLine("Test")));
         }
 
         [Fact]
@@ -190,12 +190,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
 
             // ACT
-            DefaultMockedRxApp.Object.RunEvery(TimeSpan.FromSeconds(5), () => System.Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEvery(TimeSpan.FromSeconds(5), () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableIntervall(TimeSpan.FromSeconds(5), It.IsAny<Action>()), Times.Once());
         }
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task RunInFailureShouldLogError()
         {
             // ARRANGE

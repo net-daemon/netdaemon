@@ -15,10 +15,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
     public class HttpTests : DaemonHostTestBase
     {
-        public HttpTests() : base()
-        {
-        }
-
         [Fact]
         public async Task HttpClientShouldReturnCorrectContent()
         {
@@ -84,7 +80,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             const string? response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new();
+            using HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -102,7 +98,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             const string? response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new();
+            using HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -117,7 +113,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             const string? response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new();
+            using HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -127,7 +123,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ASSERT
 
             Assert.Equal("hello world", result?.Property);
-            Assert.Equal("{\"posted\":\"some value\"}", factoryMock?.MessageHandler?.RequestContent);
+            Assert.Equal("{\"posted\":\"some value\"}", factoryMock.MessageHandler?.RequestContent);
         }
 
         [Fact]
@@ -136,7 +132,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             const string? response = "{\"json_prop\": \"hello world\"}";
 
-            HttpClientFactoryMock factoryMock = new();
+            using HttpClientFactoryMock factoryMock = new();
             factoryMock.SetResponse(response);
 
             var httpHandler = new HttpHandler(factoryMock.Object);
@@ -145,7 +141,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await httpHandler.PostJson("http://fake.com", new { posted = "some value" }).ConfigureAwait(false);
             // ASSERT
 
-            Assert.Equal("{\"posted\":\"some value\"}", factoryMock?.MessageHandler?.RequestContent);
+            Assert.Equal("{\"posted\":\"some value\"}", factoryMock.MessageHandler?.RequestContent);
         }
     }
 }

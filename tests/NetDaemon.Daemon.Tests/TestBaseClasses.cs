@@ -16,9 +16,10 @@ namespace NetDaemon.Daemon.Tests
 
     public class BaseTestRxApp : NetDaemonRxApp { }
 
-    public class CoreDaemonHostTestBase : DaemonHostTestBase, IAsyncLifetime
+    public class CoreDaemonHostTestBase : DaemonHostTestBase, IAsyncLifetime, IDisposable
     {
         private readonly NetDaemonHost _notConnectedDaemonHost;
+        private bool disposedValue;
 
         public CoreDaemonHostTestBase() : base()
         {
@@ -136,9 +137,11 @@ namespace NetDaemon.Daemon.Tests
         {
             await base.DisposeAsync().ConfigureAwait(false);
 
+            await _notConnectedDaemonHost.DisposeAsync().ConfigureAwait(false);
             await DefaultDaemonApp.DisposeAsync().ConfigureAwait(false);
             await DefaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
             await DefaultMockedRxApp.Object.DisposeAsync().ConfigureAwait(false);
+            await DefaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -164,6 +167,24 @@ namespace NetDaemon.Daemon.Tests
                 ? new CancellationTokenSource()
                 : new CancellationTokenSource(milliSeconds);
             return (_notConnectedDaemonHost.Run("host", 8123, false, "token", cancelSource.Token), cancelSource);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -9,6 +9,7 @@ using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
 using NetDaemon.Daemon.Tests.DaemonRunner.App;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
@@ -157,7 +158,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var eventData = DaemonHostTestBase.GetDynamicDataObject();
 
             // ACT
-            await DefaultDaemonHost.SendEvent("test_event", eventData);
+            await DefaultDaemonHost.SendEvent("test_event", eventData).ConfigureAwait(false);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -372,6 +373,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
+        [SuppressMessage("", "CA1508")]
         public async Task CallServiceEventOtherShouldNotCallFunction()
         {
             // ARRANGE
@@ -381,7 +383,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             DefaultHassClientMock.AddCallServiceEvent("custom_domain", "other_service", dynObject);
 
             var isCalled = false;
-            string? message = "";
+            string? message = null;
 
             DefaultDaemonHost.ListenServiceCall("custom_domain", "any_service", data =>
             {

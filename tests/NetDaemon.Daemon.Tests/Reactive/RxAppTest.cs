@@ -1,5 +1,6 @@
 using System;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -258,7 +259,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var called = false;
 
             // ACT
-            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir", true, CultureInfo.InvariantCulture))
                 .StateChanges
                 .Subscribe(_ => called = true);
 
@@ -278,7 +279,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             string? missingString = "has initial value";
 
             // ACT
-            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir", true, CultureInfo.InvariantCulture))
                 .StateChanges
                 .Subscribe(s => missingString = s.New.Attribute?.missing_attribute);
 

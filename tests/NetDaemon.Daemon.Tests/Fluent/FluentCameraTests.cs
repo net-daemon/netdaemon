@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -106,8 +107,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraPlayStreamCallsCorrectServiceCall()
         {
             // ARRANGE
-            const string?  entityId = "camera.camera1";
-            const string?  service_call = "play_stream";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "play_stream";
 
             // ACT
             await DefaultDaemonApp
@@ -128,8 +129,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraRecordCallsCorrectServiceCall()
         {
             // ARRANGE
-            const string?  entityId = "camera.camera1";
-            const string?  service_call = "record";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "record";
 
             // ACT
             await DefaultDaemonApp
@@ -151,8 +152,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraSnapshotCallsCorrectServiceCall()
         {
             // ARRANGE
-            const string?  entityId = "camera.camera1";
-            const string?  service_call = "snapshot";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "snapshot";
 
             // ACT
             await DefaultDaemonApp
@@ -172,8 +173,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraTurnOnCallsCorrectServiceCall()
         {
             // ARRANGE
-            const string?  entityId = "camera.camera1";
-            const string?  service_call = "turn_on";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "turn_on";
 
             // ACT
             await DefaultDaemonApp
@@ -190,8 +191,8 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraTurnOffCallsCorrectServiceCall()
         {
             // ARRANGE
-            const string?  entityId = "camera.camera1";
-            const string?  service_call = "turn_off";
+            const string? entityId = "camera.camera1";
+            const string? service_call = "turn_off";
 
             // ACT
             await DefaultDaemonApp
@@ -205,6 +206,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task CamerasFuncExceptionLogsError()
         {
             // ARRANGE

@@ -644,7 +644,7 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        [SuppressMessage("", "1031")]
+        [SuppressMessage("", "CA1031")]
         public async Task UnloadAllApps()
         {
             Logger.LogTrace("Unloading all apps ({instances}, {running})", InternalAllAppInstances.Count, InternalRunningAppInstances.Count);

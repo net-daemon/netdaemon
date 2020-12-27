@@ -309,6 +309,11 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Log(LogLevel level, string message, params object[] param)
         {
+            if (Logger is null)
+            {
+                return;
+            }
+
             if (param.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();

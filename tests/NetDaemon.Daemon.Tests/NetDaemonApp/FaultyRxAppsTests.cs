@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Reactive.Linq;
 using NetDaemon.Daemon.Fakes;
+using System.Globalization;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
@@ -37,7 +38,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .StateChanges
                 .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
@@ -115,7 +116,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .StateChanges
                 .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
@@ -151,7 +152,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Where(e => e.New.Attribute!.an_int == "WTF this is not an int!!")
                 .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
@@ -187,7 +188,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Where(e => e.New.State == "on")
                 .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App
@@ -223,7 +224,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Where(e => e.New.State == "on")
                 .Subscribe(_ =>
                 {
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                 });
 
             App

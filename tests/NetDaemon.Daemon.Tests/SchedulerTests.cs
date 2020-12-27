@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.Daemon.Tests
 {
     public class SchedulerTests
     {
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunInShouldStartAndCompleteCorrectly()
         {
             // ARRANGE
@@ -53,6 +55,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void RunInShouldLogWarningForFaultyRun()
         {
             // ARRANGE
@@ -68,7 +71,7 @@ namespace NetDaemon.Daemon.Tests
                 // ACT
                 scheduledResult = scheduler.RunIn(20, () =>
                 {
-                    int i = int.Parse("Not an integer makes runtime error!");
+                    int i = int.Parse("Not an integer makes runtime error!", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 });
 
@@ -87,6 +90,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunInShouldStartAndAncCancelCorrectly()
         {
             // ARRANGE
@@ -132,7 +136,7 @@ namespace NetDaemon.Daemon.Tests
         [InlineData("00:00:00", "00:00:00", 0)]
         [InlineData("23:59:59", "00:00:00", 1)]
         [InlineData("00:00:01", "00:00:00", (24 * 60 * 60) - 1)]
-        public void DailyTimeBetweenNowAndTargetTime(string nowTime, string targetTime, int nrOfSecondsRemaining)
+        public async Task DailyTimeBetweenNowAndTargetTime(string nowTime, string targetTime, int nrOfSecondsRemaining)
         {
             // ARRANGE
             DateTime timePart = DateTime.ParseExact(nowTime, "HH:mm:ss", CultureInfo.InvariantCulture);
@@ -141,7 +145,7 @@ namespace NetDaemon.Daemon.Tests
 
             var mockTimeManager = new TimeManagerMock(fakeTimeNow);
 
-            var scheduler = new Scheduler(mockTimeManager.Object);
+            await using var scheduler = new Scheduler(mockTimeManager.Object);
 
             var timeToWait = scheduler.CalculateDailyTimeBetweenNowAndTargetTime(timeTarget);
 
@@ -153,7 +157,7 @@ namespace NetDaemon.Daemon.Tests
         [InlineData(59, 0, 1)]
         [InlineData(0, 59, 59)]
         [InlineData(31, 30, 59)]
-        public void EveryMinuteCalcTimeCorrectTargetDelay(short nowSeconds, short targetSeconds, short expectedDelaySeconds)
+        public async Task EveryMinuteCalcTimeCorrectTargetDelay(short nowSeconds, short targetSeconds, short expectedDelaySeconds)
         {
             // ARRANGE
             var startTime =
@@ -161,7 +165,7 @@ namespace NetDaemon.Daemon.Tests
 
             var mockTimeManager = new TimeManagerMock(startTime);
 
-            var scheduler = new Scheduler(mockTimeManager.Object);
+            await using var scheduler = new Scheduler(mockTimeManager.Object);
 
             var calculatedDelay = scheduler.CalculateEveryMinuteTimeBetweenNowAndTargetTime(targetSeconds);
 
@@ -169,6 +173,8 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunDailyUsingStartTimeCallsFuncCorrectly()
         {
             // ARRANGE
@@ -203,6 +209,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void RunDailyFaultShouldLogWarning()
         {
             // ARRANGE
@@ -218,7 +225,7 @@ namespace NetDaemon.Daemon.Tests
                 // ACT
                 scheduledResult = scheduler.RunDaily("10:00:01", () =>
                {
-                   int i = int.Parse("Not an integer makes runtime error!");
+                   int i = int.Parse("Not an integer makes runtime error!", CultureInfo.InvariantCulture);
                    return Task.CompletedTask;
                });
                 await Task.Delay(1500).ConfigureAwait(false);
@@ -236,6 +243,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void RunDailyOnDaysFaultShouldLogWarning()
         {
             // ARRANGE
@@ -251,7 +259,7 @@ namespace NetDaemon.Daemon.Tests
                 // ACT
                 scheduledResult = scheduler.RunDaily("10:00:01", new DayOfWeek[] { DayOfWeek.Saturday }, () =>
                  {
-                     int i = int.Parse("Not an integer makes runtime error!");
+                     int i = int.Parse("Not an integer makes runtime error!", CultureInfo.InvariantCulture);
                      return Task.CompletedTask;
                  });
                 await Task.Delay(1500).ConfigureAwait(false);
@@ -269,6 +277,8 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunDailyUsingStartTimeCancelsCorrectly()
         {
             // ARRANGE
@@ -312,6 +322,8 @@ namespace NetDaemon.Daemon.Tests
         [InlineData("2001-02-07 10:00:00", DayOfWeek.Wednesday)]
         [InlineData("2001-02-08 10:00:00", DayOfWeek.Thursday)]
         [InlineData("2001-02-09 10:00:00", DayOfWeek.Friday)]
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunDailyUsingStartTimeOnWeekdayCallsFuncCorrectly(string time, DayOfWeek dayOfWeek)
         {
             // ARRANGE
@@ -353,6 +365,8 @@ namespace NetDaemon.Daemon.Tests
         [InlineData("2001-02-07 10:00:00")]
         [InlineData("2001-02-08 10:00:00")]
         [InlineData("2001-02-09 10:00:00")]
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunDailyUsingStartTimeOnWeekdayNotCalled(string time)
         {
             // ARRANGE
@@ -389,6 +403,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunEveryMinuteStartTimeCallsFuncCorrectly()
         {
             // ARRANGE
@@ -425,6 +440,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void RunEveryMinuteFaultyShouldLogWarning()
         {
             // ARRANGE
@@ -440,7 +456,7 @@ namespace NetDaemon.Daemon.Tests
                 // ACT
                 scheduledResult = scheduler.RunEveryMinute(0, () =>
                 {
-                    int i = int.Parse("Not an integer makes runtime error!");
+                    int i = int.Parse("Not an integer makes runtime error!", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 });
                 await Task.Delay(1000).ConfigureAwait(false);
@@ -458,6 +474,7 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunEveryMinuteStartTimeCanceledCorrectly()
         {
             // ARRANGE
@@ -496,6 +513,8 @@ namespace NetDaemon.Daemon.Tests
         }
 
         [Fact]
+        [SuppressMessage("", "CA1508")]
+        [SuppressMessage("", "CA1031")]
         public async void TestRunEveryMinuteStartTimeNotZeroCallsFuncCorrectly()
         {
             // ARRANGE

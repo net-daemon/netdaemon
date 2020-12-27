@@ -1,5 +1,6 @@
 using System;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -262,7 +263,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var called = false;
 
             // ACT
-            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir", true, CultureInfo.InvariantCulture))
                 .StateChanges
                 .Subscribe(_ => called = true);
 
@@ -283,7 +284,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             string? missingString = "has initial value";
 
             // ACT
-            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir"))
+            DefaultDaemonRxApp.Entities(n => n.EntityId.StartsWith("binary_sensor.pir", true, CultureInfo.InvariantCulture))
                 .StateChanges
                 .Subscribe(s => missingString = s.New.Attribute?.missing_attribute);
 
@@ -411,7 +412,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task TestFakeAppTurnOnCorrectLight()
         {
             // Add the app to test
-            await AddAppInstance(new FakeApp()).ConfigureAwait(false);
+            await using var fakeApp = new FakeApp();
+            await AddAppInstance(fakeApp).ConfigureAwait(false);
 
             // Init NetDaemon core runtime
             await InitializeFakeDaemon().ConfigureAwait(false);
@@ -430,7 +432,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task TestFakeAppCallNoteWhenBatteryLevelBelowValue()
         {
             // Add the app to test
-            await AddAppInstance(new FakeApp()).ConfigureAwait(false);
+            await using var fakeApp = new FakeApp();
+            await AddAppInstance(fakeApp).ConfigureAwait(false);
 
             // Init NetDaemon core runtime
             await InitializeFakeDaemon().ConfigureAwait(false);

@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,35 +10,35 @@ using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
-using NetDaemon.Daemon.Tests.Daemon;
 using NetDaemon.Service.Api;
 using Xunit;
 using System.Threading;
-using System.Text.Unicode;
 using System.Text;
 using System.Net.WebSockets;
 using System.IO;
 using System.Text.Json;
-using System.Collections.Generic;
 using System.Linq;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon.Fakes;
 using NetDaemon.Common.Exceptions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
 {
-    public class ApiFakeStartup
+    public class ApiFakeStartup : IAsyncLifetime, IDisposable
     {
+        private readonly Mock<NetDaemonRxApp> _defaultMockedRxApp;
         private readonly Common.NetDaemonApp _defaultDaemonApp;
         private readonly Common.NetDaemonApp _defaultDaemonApp2;
         private readonly BaseTestRxApp _defaultDaemonRxApp;
-        private readonly Mock<NetDaemonRxApp> _defaultMockedRxApp;
         private readonly NetDaemonHost _defaultDaemonHost;
+        private readonly HttpHandlerMock _defaultHttpHandlerMock;
         private readonly LoggerMock _loggerMock;
 
         private readonly Mock<IDataRepository> _defaultDataRepositoryMock;
         private readonly HassClientMock _defaultHassClientMock;
-        private readonly HttpHandlerMock _defaultHttpHandlerMock;
+        private bool disposedValue;
+
         public IConfiguration Configuration { get; }
 
         public ApiFakeStartup(IConfiguration configuration)
@@ -93,10 +92,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             services.Configure<HomeAssistantSettings>(Configuration.GetSection("HomeAssistant"));
             services.Configure<NetDaemonSettings>(Configuration.GetSection("NetDaemon"));
 
-            services.AddTransient<IHassClient>(_ => _defaultHassClientMock.Object);
-            services.AddTransient<IDataRepository>(_ => _defaultDataRepositoryMock.Object);
-            services.AddTransient<IHttpHandler, NetDaemon.Daemon.HttpHandler>();
-            services.AddSingleton<NetDaemonHost>(_ => _defaultDaemonHost);
+            services.AddTransient(_ => _defaultHassClientMock.Object);
+            services.AddTransient(_ => _defaultDataRepositoryMock.Object);
+            services.AddTransient<IHttpHandler, HttpHandler>();
+            services.AddSingleton(_ => _defaultDaemonHost);
             services.AddHttpClient();
         }
 
@@ -111,8 +110,42 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             app.UseWebSockets(webSocketOptions);
             app.UseMiddleware<ApiWebsocketMiddleware>();
         }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _defaultHttpHandlerMock.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _defaultDaemonApp.DisposeAsync().ConfigureAwait(false);
+            await _defaultDaemonApp2.DisposeAsync().ConfigureAwait(false);
+            await _defaultDaemonRxApp.DisposeAsync().ConfigureAwait(false);
+            await _defaultDaemonHost.DisposeAsync().ConfigureAwait(false);
+        }
     }
-    public class ApiTests : IAsyncLifetime
+
+    public class ApiTests : IAsyncLifetime, IDisposable
     {
         // protected readonly EventQueueManager EventQueueManager;
         private readonly TestServer _server;
@@ -121,6 +154,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+        private bool disposedValue;
 
         public ArraySegment<byte> Buffer { get; }
 
@@ -145,6 +179,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             return Task.CompletedTask;
         }
 
+        [SuppressMessage("", "CA2201")]
         private static async Task<string> ReadString(WebSocket ws)
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
@@ -225,6 +260,26 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             Assert.NotNull(response);
 
             Assert.NotNull(response?.DaemonSettings?.AppSource);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _server.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

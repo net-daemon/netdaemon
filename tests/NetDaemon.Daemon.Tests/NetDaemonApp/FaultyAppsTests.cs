@@ -1,19 +1,17 @@
-using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NetDaemon.Daemon.Fakes;
-using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class DaemonAppTestApp : NetDaemon.Common.NetDaemonApp { }
+    public class DaemonAppTestApp : Common.NetDaemonApp { }
 
     public class FaultyAppTests : DaemonHostTestBase
     {
-        public FaultyAppTests() : base()
+        public FaultyAppTests()
         {
             App = new DaemonAppTestApp
             {
@@ -23,7 +21,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             App.StartUpAsync(DefaultDaemonHost).Wait();
         }
 
-        public NetDaemon.Common.NetDaemonApp App { get; }
+        public Common.NetDaemonApp App { get; }
 
         [Fact]
         public async Task ARunTimeErrorShouldLogError()
@@ -37,7 +35,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Call((_, _, _) =>
                 {
                     // Do conversion error
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 }).Execute();
 
@@ -60,7 +58,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Call((_, _, _) =>
                 {
                     // Do conversion error
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 }).Execute();
 
@@ -94,7 +92,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
                 .Call((_, _, _) =>
                 {
                     // Do conversion error
-                    int x = int.Parse("ss");
+                    int x = int.Parse("ss", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 }).Execute();
 

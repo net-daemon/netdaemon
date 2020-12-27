@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -369,6 +371,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task EntityFuncExceptionLogsError()
         {
             // ARRANGE
@@ -430,7 +433,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
-                .Entities(n => n.EntityId.StartsWith("light.correct_entity"))
+                .Entities(n => n.EntityId.StartsWith("light.correct_entity", true, CultureInfo.InvariantCulture))
                 .TurnOff()
                 .ExecuteAsync().ConfigureAwait(false);
 
@@ -656,6 +659,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         }
 
         [Fact]
+        [SuppressMessage("", "CA2201")]
         public async Task MediaPlayersFuncExceptionLogsError()
         {
             // ARRANGE

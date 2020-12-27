@@ -15,12 +15,13 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
 
     public class AppTestApp2 : Common.NetDaemonApp { }
 
-    public class NetDaemonApptests
+    public class NetDaemonApptests : IAsyncLifetime, IDisposable
     {
         private const string appTemplate = "  app: ";
         private readonly LoggerMock _logMock;
         private readonly Common.NetDaemonApp _app;
         private readonly Mock<INetDaemon> _netDaemonMock;
+        private bool disposedValue;
 
         public NetDaemonApptests()
         {
@@ -205,6 +206,35 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             methodInfo?.Invoke(_app, new object[] { exception, message, new object[] { "Bob" } });
             // ASSERT
             _logMock.AssertLogged(level, exception, appTemplate + "Hello Bob", Times.Once());
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _app.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

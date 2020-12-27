@@ -41,7 +41,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             data.Item = "Some data";
 
             // ACT
-            await daemon.SaveDataAsync("data_exists", data);
+            await daemon.SaveDataAsync("data_exists", data).ConfigureAwait(false);
             var collectedData = await daemon.GetDataAsync<ExpandoObject>("data_exists").ConfigureAwait(false);
 
             // ASSERT
@@ -76,7 +76,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             dataBeingSaved.SomeDateTime = DateTime.Now;
 
             // ACT
-            await dataRepository.Save<IDictionary<string, object>>("RepositoryLoadSavedData_id", dataBeingSaved);
+            await dataRepository.Save<IDictionary<string, object>>("RepositoryLoadSavedData_id", dataBeingSaved).ConfigureAwait(false);
 
             var dataReturned = await dataRepository.Get<IDictionary<string, object>>("RepositoryLoadSavedData_id").ConfigureAwait(false);
             var returnedFluentExpandoObject = new FluentExpandoObject();
@@ -84,13 +84,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             dynamic dynamicDataReturned = returnedFluentExpandoObject;
 
-            if (dataBeingSaved.SomeString == dynamicDataReturned?.SomeString)
-            {
-                System.Console.WriteLine("hello");
-            }
-
             // ASSERT
-            Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned?.SomeString);
+            Assert.Equal(dataBeingSaved.SomeString, dynamicDataReturned.SomeString);
             Assert.Equal(dataBeingSaved.SomeInt, dynamicDataReturned!.SomeInt);
             Assert.Equal(dataBeingSaved.SomeFloat, dynamicDataReturned!.SomeFloat);
             // There is no way for json serializer to know this is a datetime

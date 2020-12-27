@@ -16,7 +16,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             //ACT
             string converted = convert.ToSafeHomeAssistantEntityId();
 
-            Assert.Equal(expected.Length, converted.Length);
+            Assert.Equal(expected?.Length, converted.Length);
             Assert.Equal(expected, converted);
         }
     }
