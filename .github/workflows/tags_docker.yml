@@ -11,23 +11,24 @@ jobs:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
-      - name: "Set version number"
+      - name: 📤 Checkout the repository 
+        uses: actions/checkout@main
+      - name: 📆 Set version number
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       -
-        name: Set up QEMU
+        name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
       -
-        name: Set up Docker Buildx
+        name: 🔧 Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
       -
-        name: Available platforms
+        name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
-      - name: Login to docker hub
+      - name: 🔓 Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-      - name: Run Buildx
+      - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
             --platform linux/arm,linux/arm64,linux/amd64 \
