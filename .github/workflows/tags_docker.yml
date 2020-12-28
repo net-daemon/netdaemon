@@ -1,10 +1,10 @@
-#### Publish tags to docker hub
+#### Publish on release or pre-release
 
 name: Deploy to Docker Hub on release
 on:
-   push:
-     branches:
-      - '*'
+  release:
+    types: 
+      - released
 
 jobs:
   deploy:
@@ -15,31 +15,6 @@ jobs:
         uses: actions/checkout@main
         with:
           fetch-depth: 0
-      - name: 📆 Set version number
-        run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-      # -
-      #   name: 📎 Set up QEMU
-      #   uses: docker/setup-qemu-action@v1
-      # -
-      #   name: 🔧 Set up Docker Buildx
-      #   id: buildx
-      #   uses: docker/setup-buildx-action@v1
-      # -
-      #   name: 🧰 Available platforms
-      #   run: echo ${{ steps.buildx.outputs.platforms }}
-      # - name: 🔓 Login to docker hub
-      #   run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-      # - name: 🛠️ Run Buildx
-      #   run: |
-      #     docker buildx build \
-      #       --platform linux/arm,linux/arm64,linux/amd64 \
-      #       --output "type=image,push=true" \
-      #       --no-cache \
-      #       --file ./Dockerfile . \
-      #       --compress \
-      #       --tag netdaemon/netdaemon:latest \
-      #       --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
 
       - name: 🎈 Initialize git
         uses: home-assistant/actions/helpers/git-init@master
@@ -47,12 +22,40 @@ jobs:
           name: GitHub
           email: noreply@github.com
           token: ${{ secrets.HELTO_PAT }}
+
       - name: ⏭️ Get next version
         id: version
         run: |
           latest=$(git describe --tags $(git rev-list --tags --max-count=1))
           echo Current version:    $latest
           echo "::set-output name=version::$latest"
+
+      - name: 📆 Set version number
+        run: |
+          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+      -
+        name: 📎 Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: 🔧 Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: 🧰 Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: 🔓 Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+      - name: 🛠️ Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/arm,linux/arm64,linux/amd64 \
+            --output "type=image,push=true" \
+            --no-cache \
+            --file ./Dockerfile . \
+            --compress \
+            --tag netdaemon/netdaemon:latest \
+            --tag netdaemon/netdaemon:${{ steps.version.outputs.version }}
+
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
