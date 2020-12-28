@@ -1,6 +1,7 @@
 #### Build and tests all pushes, also code coverage
 name: CI build
-on: [push, pull_request]
+on: [pull_request]
+#on: [push, pull_request]
 jobs:
     build:
         name: 🔨 Build sources
