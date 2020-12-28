@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: 📤 Checkout the repository 
         uses: actions/checkout@main
+        with:
+          fetch-depth: 0
       - name: 📆 Set version number
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
