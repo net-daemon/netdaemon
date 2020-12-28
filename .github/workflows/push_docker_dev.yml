@@ -3,7 +3,7 @@ name: Deploy dev builds to Docker Hub
 on:
    push:
      branches:
-      - dev
+      - no_dev
 
 jobs:
   deploy:

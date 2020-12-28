@@ -3,8 +3,8 @@ name: publish nuget
 on:
   release:
     types: 
-      - prereleased
       - released
+#      - prereleased
 jobs:
   deploy_nuget:
     name: publish nuget packages
