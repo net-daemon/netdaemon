@@ -1,4 +1,38 @@
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+change-template: '- #$NUMBER $TITLE @$AUTHOR'
+sort-direction: ascending
+categories:
+  - title: ':boom: Breaking changes'
+    label: 'Breaking Change'
+
+  - title: ':sparkles: New features'
+    label: 'pr: new-feature'
+
+  - title: ':zap: Enhancements'
+    label: 'pr: enhancement'
+
+  - title: ':bug: Bug Fixes'
+    label: 'pr: bugfix'
+
+  - title: ':arrow_up: Dependency Updates'
+    labels:
+      - 'pr: dependency-update'
+      - 'dependencies'
+
+include-labels:
+  - 'Breaking Change'
+  - 'pr: enhancement'
+  - 'pr: dependency-update'
+  - 'pr: new-feature'
+  - 'pr: bugfix'
+
 template: |
-  ## What’s Changed
 
   $CHANGES
+
+  ## Links
+  - [Discord server for NetDaemon](https://discord.gg/GFzBYpuCG3)
+  - [NetDaemon Documentation](https://netdaemon.xyz)
+  - [If you like what I (@helto4real) do please consider sponsoring me on GitHub](https://github.com/sponsors/helto4real)
+  - [Or buy me a ☕️ / 🍺](https://www.buymeacoffee.com/ij1qXRM6E)
