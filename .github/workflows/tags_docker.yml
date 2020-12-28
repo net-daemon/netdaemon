@@ -39,19 +39,18 @@ jobs:
       #       --tag netdaemon/netdaemon:latest \
       #       --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
 
-      - name: ⏭️ Get next version
-        id: version
-        run: |
-          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
-          echo Current version:    $latest
-          echo "::set-output name=version::$latest"
-
       - name: 🎈 Initialize git
         uses: home-assistant/actions/helpers/git-init@master
         with:
           name: GitHub
           email: noreply@github.com
           token: ${{ secrets.HELTO_PAT }}
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
