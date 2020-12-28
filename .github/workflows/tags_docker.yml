@@ -46,9 +46,10 @@ jobs:
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
-          VERSION: "20.52.10"   
+          VERSION: "20.52.10"
+          TEST: ${GITHUB_REF#refs/tags/}
         run: |
-          echo "TOKEN: $"
+          echo "VERSION: $TEST"
           branch=$(date +%s)
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
