@@ -10,22 +10,24 @@ jobs:
     name: publish nuget packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
-      - uses: actions/setup-dotnet@v1
+      - name: 📤 Checkout the repository 
+        uses: actions/checkout@main
+      - name: 🥅 Install .Net 5
+        uses: actions/setup-dotnet@v1
         with:
             dotnet-version: '5.0.100' # SDK Version
       # - uses: olegtarasov/get-tag@v2
       #   name: Set tag envronment variable
-      - name: "Set version number"
+      - name: 🔖 Set version number
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-      - name: pack DaemonRunner
+      - name: 🎁 Pack DaemonRunner
         run: dotnet pack src/DaemonRunner/DaemonRunner/DaemonRunner.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
-      - name: pack App
+      - name: 🎁 Pack App
         run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
-      - name: pack Daemon
+      - name: 🎁 Pack Daemon
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
-      - name: pack Test
+      - name: 🎁 Pack Test
         run: dotnet pack src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj --configuration Release -p:PackageVersion=${GITHUB_REF#refs/tags/}-beta
-      - name: push to nuget
+      - name: 📨 Push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true
