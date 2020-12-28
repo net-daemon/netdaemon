@@ -1,4 +1,4 @@
-name-template: '$RESOLVED_VERSION'
+name-template: 'Release $RESOLVED_VERSION'
 tag-template: '$RESOLVED_VERSION'
 change-template: '- #$NUMBER $TITLE @$AUTHOR'
 sort-direction: ascending
@@ -28,7 +28,8 @@ include-labels:
   - 'pr: bugfix'
 
 template: |
-
+  ## Summary
+  
   $CHANGES
 
   ## Links
