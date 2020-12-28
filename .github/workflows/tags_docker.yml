@@ -49,8 +49,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
           VERSION: ${GITHUB_REF#refs/tags/}   
         run: |
-          git config --global user.email "tomas.hellstrom@yahoo.se"
-          git config --global user.name "Tomas Hellström"
           branch=$(date +%s)
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
