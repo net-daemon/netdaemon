@@ -1,10 +1,10 @@
 #### Build and tests all pushes, also code coverage
 name: publish nuget
 on:
-  push:
-    tags:
-      - '*'
-
+  release:
+    types: 
+      - prereleased
+      - released
 jobs:
   deploy_nuget:
     name: publish nuget packages

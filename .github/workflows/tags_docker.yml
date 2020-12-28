@@ -1,10 +1,11 @@
 #### Publish tags to docker hub
 
-name: Deploy to Docker Hub for tags
+name: Deploy to Docker Hub on release
 on:
-   push:
-     tags:
-       - '*'
+  release:
+    types: 
+      - prereleased
+      - released
 
 jobs:
   deploy:
