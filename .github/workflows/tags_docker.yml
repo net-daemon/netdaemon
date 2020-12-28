@@ -38,6 +38,14 @@ jobs:
       #       --compress \
       #       --tag netdaemon/netdaemon:latest \
       #       --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
+
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
+
       - name: 🎈 Initialize git
         uses: home-assistant/actions/helpers/git-init@master
         with:
@@ -47,15 +55,14 @@ jobs:
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
-          VERSION: "20.52.10"
-          TEST: ${GITHUB_REF#refs/tags/}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          echo "VERSION: ${TEST}"
+          echo "VERSION: ${VERSION}"
           branch=$(date +%s)
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
           cd "$tempdir"
-          git clone https://${GITHUB_TOKEN}@github.com/net-daemon/homeassistant-addon.git --depth=1
+          git clone https://github.com/net-daemon/homeassistant-addon.git --depth=1
           cd homeassistant-addon
           git checkout -b "$branch"
           sed -i "/  \"version\": /c\  \"version\": \"${VERSION}\"," "$tempdir/homeassistant-addon/netdaemon/config.json"
