@@ -29,20 +29,20 @@ jobs:
         run: echo ${{ steps.buildx.outputs.platforms }}
       - name: 🔓 Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-      - name: 🛠️ Run Buildx
-        run: |
-          docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
-            --output "type=image,push=true" \
-            --no-cache \
-            --file ./Dockerfile . \
-            --compress \
-            --tag netdaemon/netdaemon:latest \
-            --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
+      # - name: 🛠️ Run Buildx
+      #   run: |
+      #     docker buildx build \
+      #       --platform linux/arm,linux/arm64,linux/amd64 \
+      #       --output "type=image,push=true" \
+      #       --no-cache \
+      #       --file ./Dockerfile . \
+      #       --compress \
+      #       --tag netdaemon/netdaemon:latest \
+      #       --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
       - name: 🎈 Initialize git
         uses: home-assistant/actions/helpers/git-init@master
         with:
-          name: GitHub
+          name: helto4real
           email: noreply@github.com
       - name: 🗄️ Make PR in depdendent repos
         env:
