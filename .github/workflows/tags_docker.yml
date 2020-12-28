@@ -43,6 +43,7 @@ jobs:
         with:
           name: GitHub
           email: noreply@github.com
+          token: ${{ secrets.HELTO_PAT }}
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
@@ -57,7 +58,7 @@ jobs:
           git clone https://${GITHUB_TOKEN}@github.com/net-daemon/homeassistant-addon.git --depth=1
           cd homeassistant-addon
           git checkout -b "$branch"
-          sed -i '/  "version": /c\  "version": "${VERSION}",' "$tempdir/homeassistant-addon/netdaemon/config.json"
+          sed -i "/  \"version\": /c\  \"version\": \"${VERSION}\"," "$tempdir/homeassistant-addon/netdaemon/config.json"
           git add "$tempdir/homeassistant-addon/netdaemon/config.json"
           git commit -m "Release ${VERSION}"
           git push --set-upstream origin "$branch"
