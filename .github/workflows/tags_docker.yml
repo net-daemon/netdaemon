@@ -53,7 +53,7 @@ jobs:
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
           cd "$tempdir"
-          git clone https://github.com/net-daemon/homeassistant-addon.git -- --depth=1
+          git clone https://github.com/net-daemon/homeassistant-addon.git --depth=1
           cd homeassistant-addon
           git checkout -b "$branch"
           sed -i '/  "version": /c\  "version": "${VERSION}",' "$tempdir/homeassistant-addon/netdaemon/config.json"
