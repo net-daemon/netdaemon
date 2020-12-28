@@ -39,23 +39,21 @@ jobs:
       #       --compress \
       #       --tag netdaemon/netdaemon:latest \
       #       --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
-      # - name: 🎈 Initialize git
-      #   uses: home-assistant/actions/helpers/git-init@master
-      #   with:
-      #     name: helto4real
-      #     email: noreply@github.com
+      - name: 🎈 Initialize git
+        uses: home-assistant/actions/helpers/git-init@master
+        with:
+          name: GitHub
+          email: noreply@github.com
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
           VERSION: ${GITHUB_REF#refs/tags/}   
         run: |
-          git config --global user.email "tomas.hellstrom@yahoo.se"
-          git config --global user.name "helto4real"
           branch=$(date +%s)
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
           cd "$tempdir"
-          git clone git@github.com:net-daemon/homeassistant-addon.git --depth=1
+          git clone https://github.com/net-daemon/homeassistant-addon.git --depth=1
           cd homeassistant-addon
           git checkout -b "$branch"
           sed -i '/  "version": /c\  "version": "${VERSION}",' "$tempdir/homeassistant-addon/netdaemon/config.json"
