@@ -28,8 +28,8 @@ include-labels:
   - 'pr: bugfix'
 
 template: |
-  ## Summary
-  
+  ## 👀 Summary
+
   $CHANGES
 
   ## Links
