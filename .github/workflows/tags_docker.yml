@@ -2,10 +2,9 @@
 
 name: Deploy to Docker Hub on release
 on:
-  release:
-    types: 
-      - prereleased
-      - released
+   push:
+     branches:
+      - '*'
 
 jobs:
   deploy:
@@ -17,18 +16,18 @@ jobs:
       - name: 📆 Set version number
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-      -
-        name: 📎 Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      -
-        name: 🔧 Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-      -
-        name: 🧰 Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
-      - name: 🔓 Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+      # -
+      #   name: 📎 Set up QEMU
+      #   uses: docker/setup-qemu-action@v1
+      # -
+      #   name: 🔧 Set up Docker Buildx
+      #   id: buildx
+      #   uses: docker/setup-buildx-action@v1
+      # -
+      #   name: 🧰 Available platforms
+      #   run: echo ${{ steps.buildx.outputs.platforms }}
+      # - name: 🔓 Login to docker hub
+      #   run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
       # - name: 🛠️ Run Buildx
       #   run: |
       #     docker buildx build \
@@ -47,8 +46,9 @@ jobs:
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
-          VERSION: ${GITHUB_REF#refs/tags/}   
+          VERSION: "20.52.10"   
         run: |
+          echo "TOKEN: $"
           branch=$(date +%s)
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
