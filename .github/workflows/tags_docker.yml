@@ -1,10 +1,9 @@
-#### Publish tags to docker hub
+#### Publish on release or pre-release
 
 name: Deploy to Docker Hub on release
 on:
   release:
     types: 
-      - prereleased
       - released
 
 jobs:
@@ -14,9 +13,26 @@ jobs:
     steps:
       - name: 📤 Checkout the repository 
         uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+
+      - name: 🎈 Initialize git
+        uses: home-assistant/actions/helpers/git-init@master
+        with:
+          name: GitHub
+          email: noreply@github.com
+          token: ${{ secrets.HELTO_PAT }}
+
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
+
       - name: 📆 Set version number
         run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "${GITHUB_REF#refs/tags/}";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       -
         name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -29,26 +45,23 @@ jobs:
         run: echo ${{ steps.buildx.outputs.platforms }}
       - name: 🔓 Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-      # - name: 🛠️ Run Buildx
-      #   run: |
-      #     docker buildx build \
-      #       --platform linux/arm,linux/arm64,linux/amd64 \
-      #       --output "type=image,push=true" \
-      #       --no-cache \
-      #       --file ./Dockerfile . \
-      #       --compress \
-      #       --tag netdaemon/netdaemon:latest \
-      #       --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
-      - name: 🎈 Initialize git
-        uses: home-assistant/actions/helpers/git-init@master
-        with:
-          name: GitHub
-          email: noreply@github.com
+      - name: 🛠️ Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/arm,linux/arm64,linux/amd64 \
+            --output "type=image,push=true" \
+            --no-cache \
+            --file ./Dockerfile . \
+            --compress \
+            --tag netdaemon/netdaemon:latest \
+            --tag netdaemon/netdaemon:${{ steps.version.outputs.version }}
+
       - name: 🗄️ Make PR in depdendent repos
         env:
           GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
-          VERSION: ${GITHUB_REF#refs/tags/}   
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
+          echo "VERSION: ${VERSION}"
           branch=$(date +%s)
           tempdir="/tmp/a_$branch"
           mkdir "$tempdir"
@@ -56,7 +69,7 @@ jobs:
           git clone https://github.com/net-daemon/homeassistant-addon.git --depth=1
           cd homeassistant-addon
           git checkout -b "$branch"
-          sed -i '/  "version": /c\  "version": "${VERSION}",' "$tempdir/homeassistant-addon/netdaemon/config.json"
+          sed -i "/  \"version\": /c\  \"version\": \"${VERSION}\"," "$tempdir/homeassistant-addon/netdaemon/config.json"
           git add "$tempdir/homeassistant-addon/netdaemon/config.json"
           git commit -m "Release ${VERSION}"
           git push --set-upstream origin "$branch"
