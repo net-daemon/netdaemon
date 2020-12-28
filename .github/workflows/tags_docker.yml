@@ -38,5 +38,20 @@ jobs:
             --compress \
             --tag netdaemon/netdaemon:latest \
             --tag netdaemon/netdaemon:${GITHUB_REF#refs/tags/}
-
-            
+      - name: 🗄️ Make PR in depdendent repos
+        env:
+          GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
+          VERSION: ${GITHUB_REF#refs/tags/}   
+        run: |
+          branch=$(date +%s)
+          tempdir="/tmp/a_$branch"
+          mkdir "$tempdir"
+          cd "$tempdir"
+          gh repo clone net-daemon/homeassistant-addon -- --depth=1
+          cd homeassistant-addon
+          git checkout -b "$branch"
+          sed -i '/  "version": /c\  "version": "${VERSION}",' "$tempdir/homeassistant-addon/netdaemon/config.json"
+          git add "$tempdir/homeassistant-addon/netdaemon/config.json"
+          git commit -m "Release ${VERSION}"
+          git push --set-upstream origin "$branch"
+          gh pr create --fill --title "Release ${VERSION}" --head "$branch"
