@@ -3,7 +3,7 @@ name: CI build
 on: [push, pull_request]
 jobs:
     build:
-        name: 🔨 Build sources
+        name: 🔨 Build sources (CI)
         runs-on: ubuntu-latest
         steps:
             - name: 📤 Checkout the repository 

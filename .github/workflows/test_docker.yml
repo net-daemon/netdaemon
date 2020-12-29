@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    name: Test image build
+    name: 👀 Test image build (CI)
     runs-on: ubuntu-latest
     steps:
       - name: 📤 Checkout the repository  
