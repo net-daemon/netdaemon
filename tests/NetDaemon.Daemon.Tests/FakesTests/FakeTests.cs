@@ -247,12 +247,16 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
+            DefaultDaemonHost.InternalState.Clear();
+            DefaultDaemonHost.InternalState["light.mylight"] = new();
+            DefaultDaemonHost.InternalState["light.mylight2"] = new();
+
             var entities = DefaultDaemonRxApp.EntityIds.ToList();
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.NotNull(entities);
-            Assert.Equal(11, entities.Count);
+            Assert.Equal(2, entities.Count);
         }
 
         [Fact]
