@@ -244,7 +244,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.NotNull(entities);
-            Assert.Equal(8, entities.Count);
+            Assert.Equal(11, entities.Count);
         }
 
         [Fact]
