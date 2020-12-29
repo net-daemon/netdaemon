@@ -20,9 +20,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class RxAppTest : CoreDaemonHostTestBase
     {
-        public RxAppTest() : base()
-        {
-        }
 
         [Fact]
         public async Task CallServiceShouldCallCorrectFunction()
@@ -90,8 +87,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultDaemonRxApp.EventChanges
                 .Subscribe(s => missingAttribute = s.Data?.missing_data);
 
-            var expandoObj = new ExpandoObject();
-            dynamic dynExpObject = expandoObj;
+            dynamic dynExpObject = new ExpandoObject();
             dynExpObject.a_parameter = "hello";
 
             DefaultHassClientMock.AddCustomEvent("AN_EVENT", dynExpObject);
@@ -243,12 +239,15 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
+            DefaultDaemonHost.InternalState.Clear();
+            DefaultDaemonHost.InternalState["light.mylight"] = new();
+            DefaultDaemonHost.InternalState["light.mylight2"] = new();
             var entities = DefaultDaemonRxApp.EntityIds.ToList();
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             // ASSERT
             Assert.NotNull(entities);
-            Assert.Equal(8, entities.Count);
+            Assert.Equal(2, entities.Count);
         }
 
         [Fact]
@@ -401,7 +400,28 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ASSERT
             DefaultDataRepositoryMock.Verify(n => n.Get<string>(It.IsAny<string>()), Times.Never);
-            DefaultDataRepositoryMock.Verify(n => n.Save<string>(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            DefaultDataRepositoryMock.Verify(n => n.Save(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        private interface ITestGetService
+        {
+            string TestString { get; }
+        }
+        private class TestGetService : ITestGetService
+        {
+            public string TestString => "Test";
+        }
+
+        [Fact]
+        public void ServiceProviderShouldReturnCorrectService()
+        {
+            // ARRANGE
+            DefaultServiceProviderMock.Services[typeof(ITestGetService)] = new TestGetService();
+            // ACT
+            var service = DefaultDaemonRxApp.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;
+            // ASSERT
+            Assert.NotNull(service);
+            Assert.Equal("Test", service?.TestString);
         }
     }
 }

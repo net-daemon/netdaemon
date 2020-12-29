@@ -143,6 +143,11 @@ namespace NetDaemon.Common
         /// <param name="state">The state that being set, only primitives are supported</param>
         /// <param name="attributes">Attributes, use anonomous types and lowercase letters</param>
         void SetState(string entityId, dynamic state, dynamic? attributes = null);
+
+        /// <summary>
+        ///     Access the underlying service provider for IOT access to services
+        /// </summary>
+        public IServiceProvider? ServiceProvider { get; }
     }
 
     /// <summary>
@@ -417,6 +422,11 @@ namespace NetDaemon.Common
         ///     Returns all entities (EntityId) that are currently registered
         /// </summary>
         public IEnumerable<string> EntityIds { get; }
+
+        /// <summary>
+        ///     Returns the underlying ServiceProvider to use IOC instancing
+        /// </summary>
+        public IServiceProvider? ServiceProvider { get; }
     }
 
     /// <summary>
@@ -662,7 +672,6 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Restores the app state
         /// </summary>
-        /// <returns></returns>
         /// <remarks>
         /// <para>
         ///     Restores the state of the storage object.!--

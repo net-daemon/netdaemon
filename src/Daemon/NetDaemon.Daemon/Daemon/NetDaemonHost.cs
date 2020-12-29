@@ -87,6 +87,8 @@ namespace NetDaemon.Daemon
 
         private CancellationTokenSource? _cancelTokenSource;
 
+        public IServiceProvider? ServiceProvider { get; }
+
         /// <summary>
         ///     Constructor
         /// </summary>
@@ -98,7 +100,8 @@ namespace NetDaemon.Daemon
             IHassClient? hassClient,
             IDataRepository? repository,
             ILoggerFactory? loggerFactory = null,
-            IHttpHandler? httpHandler = null
+            IHttpHandler? httpHandler = null,
+            IServiceProvider? serviceProvider = null
             )
         {
             loggerFactory ??= DefaultLoggerFactory;
@@ -107,6 +110,7 @@ namespace NetDaemon.Daemon
             _hassClient = hassClient
                         ?? throw new ArgumentNullException(nameof(hassClient));
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
+            ServiceProvider = serviceProvider;
             _repository = repository;
             _isDisposed = false;
             Logger.LogTrace("Instance NetDaemonHost");

@@ -550,6 +550,27 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Null(theApp);
         }
 
+        private interface ITestGetService
+        {
+            string TestString { get; }
+        }
+        private class TestGetService : ITestGetService
+        {
+            public string TestString => "Test";
+        }
+
+        [Fact]
+        public void ServiceProviderShouldReturnCorrectService()
+        {
+            // ARRANGE
+            DefaultServiceProviderMock.Services[typeof(ITestGetService)] = new TestGetService();
+            // ACT
+            var service = DefaultDaemonHost.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;
+            // ASSERT
+            Assert.NotNull(service);
+            Assert.Equal("Test", service?.TestString);
+        }
+
         [Fact]
         public void EntityShouldReturnCorrectValueForArea()
         {
