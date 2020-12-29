@@ -186,6 +186,9 @@ namespace NetDaemon.Common
         protected INetDaemon? Daemon { get; set; }
 
         /// <inheritdoc/>
+        public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
+
+        /// <inheritdoc/>
         public void SaveAppState()
         {
             // Intentionally ignores full queue since we know

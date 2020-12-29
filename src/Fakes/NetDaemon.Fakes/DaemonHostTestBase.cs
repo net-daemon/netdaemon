@@ -9,7 +9,6 @@ using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Fluent;
-using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
 using Xunit;
 
@@ -31,13 +30,14 @@ namespace NetDaemon.Daemon.Fakes
             LoggerMock = new LoggerMock();
             DefaultHassClientMock = HassClientMock.DefaultMock;
             DefaultDataRepositoryMock = new Mock<IDataRepository>();
-
             DefaultHttpHandlerMock = new HttpHandlerMock();
             DefaultDaemonHost = new NetDaemonHost(
                 DefaultHassClientMock.Object,
                 DefaultDataRepositoryMock.Object,
                 LoggerMock.LoggerFactory,
-                DefaultHttpHandlerMock.Object)
+                DefaultHttpHandlerMock.Object,
+                DefaultServiceProviderMock.Object
+            )
             {
                 InternalDelayTimeForTts = 0 // Allow no extra waittime
             };
@@ -59,6 +59,12 @@ namespace NetDaemon.Daemon.Fakes
         ///     Returns default HttpHandler mock
         /// </summary>
         public HttpHandlerMock DefaultHttpHandlerMock { get; }
+
+        /// <summary>
+        ///     Default mock for the IServiceProvider
+        /// </summary>
+        public ServiceProviderMock DefaultServiceProviderMock { get; } = new();
+
         /// <summary>
         ///     Returns default logger mock
         /// </summary>
