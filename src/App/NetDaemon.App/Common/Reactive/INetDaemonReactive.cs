@@ -5,23 +5,9 @@ using NetDaemon.Common.Fluent;
 namespace NetDaemon.Common.Reactive
 {
     /// <summary>
-    ///     Interface for objects that implements CallService
-    /// </summary>
-    public interface ICallService
-    {
-        /// <summary>
-        ///     Calls service in Home Assistant
-        /// </summary>
-        /// <param name="domain">Domain of sevice</param>
-        /// <param name="service">Service name</param>
-        /// <param name="data">Data provided to service. Use anonomous type</param>
-        void CallService(string domain, string service, dynamic? data);
-    }
-
-    /// <summary>
     ///     Implements the System.Reactive pattern for NetDaemon Apps
     /// </summary>
-    public interface INetDaemonReactive : INetDaemonAppBase, ICallService, IRxEntity, IRunScript
+    public interface INetDaemonRxApp : INetDaemonAppBase, IRxEntity
     {
         /// <summary>
         ///     The observable events
@@ -73,13 +59,15 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="entityId"></param>
         EntityState? State(string entityId);
-    }
 
-    /// <summary>
-    ///     Interface for objects that implements CallService
-    /// </summary>
-    public interface IRunScript
-    {
+        /// <summary>
+        ///     Calls service in Home Assistant
+        /// </summary>
+        /// <param name="domain">Domain of sevice</param>
+        /// <param name="service">Service name</param>
+        /// <param name="data">Data provided to service. Use anonomous type</param>
+        void CallService(string domain, string service, dynamic? data);
+
         /// <summary>
         ///     Calls service in Home Assistant
         /// </summary>
@@ -96,25 +84,25 @@ namespace NetDaemon.Common.Reactive
         ///     Select entities to perform actions on
         /// </summary>
         /// <param name="func">Lambda expression</param>
-        RxEntity Entities(Func<IEntityProperties, bool> func);
+        IRxEntityBase Entities(Func<IEntityProperties, bool> func);
 
         /// <summary>
         ///     Entities to perform actions on
         /// </summary>
         /// <param name="entityIds">List of entities</param>
-        RxEntity Entities(IEnumerable<string> entityIds);
+        IRxEntityBase Entities(IEnumerable<string> entityIds);
 
         /// <summary>
         ///     Entities to perform actions on
         /// </summary>
         /// <param name="entityIds">List of entities</param>
-        RxEntity Entities(params string[] entityIds);
+        IRxEntityBase Entities(params string[] entityIds);
 
         /// <summary>
         ///     Entity to perform actions on
         /// </summary>
         /// <param name="entityId">EntityId</param>
-        RxEntity Entity(string entityId);
+        IRxEntityBase Entity(string entityId);
     }
 
     /// <summary>

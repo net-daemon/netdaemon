@@ -9,10 +9,18 @@ using NetDaemon.Common.Fluent;
 namespace NetDaemon.Common.Reactive
 {
     /// <summary>
-    ///     Interface for objects implements Toggle
+    ///     IRxEntityBase interface represents what you can do on
+    ///     Entity("").WhatYouCanDo(); and Entities(n=> n.Xyz).WhatYouCanDo();
     /// </summary>
-    public interface ICanTurnOnAndOff
+    public interface IRxEntityBase
     {
+        /// <summary>
+        ///     Set entity state
+        /// </summary>
+        /// <param name="state">The state to set, primitives only</param>
+        /// <param name="attributes">The attributes to set. Use anonomous type</param>
+        void SetState(dynamic state, dynamic? attributes = null);
+
         /// <summary>
         ///     Toggles state on/off on entity
         /// </summary>
@@ -30,13 +38,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="attributes">The attributes to set. Use anonomous type.</param>
         void TurnOn(dynamic? attributes = null);
-    }
 
-    /// <summary>
-    ///     Interface for objects exposing observable state changes
-    /// </summary>
-    public interface IObserve
-    {
         /// <summary>
         ///     Observable, All state changes inkluding attributes
         /// </summary>
@@ -49,27 +51,14 @@ namespace NetDaemon.Common.Reactive
     }
 
     /// <summary>
-    ///     Interface for objects implements SetState
-    /// </summary>
-    public interface ISetState
-    {
-        /// <summary>
-        ///     Set entity state
-        /// </summary>
-        /// <param name="state">The state to set, primitives only</param>
-        /// <param name="attributes">The attributes to set. Use anonomous type</param>
-        void SetState(dynamic state, dynamic? attributes = null);
-    }
-
-    /// <summary>
     ///     Implements the entity of Rx API
     /// </summary>
-    public class RxEntity : ICanTurnOnAndOff, ISetState, IObserve
+    public class RxEntity : IRxEntityBase
     {
         /// <summary>
         ///     The protected daemon app instance
         /// </summary>
-        protected INetDaemonReactive DaemonRxApp { get; }
+        protected INetDaemonRxApp DaemonRxApp { get; }
         /// <summary>
         ///     Entity ids being handled by the RxEntity
         /// </summary>
@@ -80,7 +69,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="daemon">The NetDaemon host object</param>
         /// <param name="entityIds">Unique entity id:s</param>
-        public RxEntity(INetDaemonReactive daemon, IEnumerable<string> entityIds)
+        public RxEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds)
         {
             DaemonRxApp = daemon;
             EntityIds = entityIds;

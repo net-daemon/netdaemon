@@ -20,7 +20,7 @@ namespace NetDaemon.Common.Reactive
     /// <summary>
     ///     Base class for using the Reactive paradigm for apps
     /// </summary>
-    public abstract class NetDaemonRxApp : NetDaemonAppBase, INetDaemonReactive
+    public abstract class NetDaemonRxApp : NetDaemonAppBase, INetDaemonRxApp
     {
         private readonly CancellationTokenSource _cancelTimers;
         private EventObservable? _eventObservables;
@@ -97,7 +97,7 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public RxEntity Entities(Func<IEntityProperties, bool> func)
+        public IRxEntityBase Entities(Func<IEntityProperties, bool> func)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
@@ -115,17 +115,17 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public RxEntity Entities(params string[] entityIds) => Entities((IEnumerable<string>)entityIds);
+        public IRxEntityBase Entities(params string[] entityIds) => Entities((IEnumerable<string>)entityIds);
 
         /// <inheritdoc/>
-        public RxEntity Entities(IEnumerable<string> entityIds)
+        public IRxEntityBase Entities(IEnumerable<string> entityIds)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
             return new RxEntity(this, entityIds);
         }
 
         /// <inheritdoc/>
-        public RxEntity Entity(string entityId)
+        public IRxEntityBase Entity(string entityId)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
             return new RxEntity(this, new string[] { entityId });
