@@ -37,7 +37,12 @@ namespace NetDaemon.Daemon.Tests.Reactive
             _app.Entity("binary_sensor.kitchen")
             .StateChanges
             .Where(e => e.New?.State == "on" && e.Old?.State == "off")
-            .Subscribe(_ => _app.Entity("light.kitchen").TurnOn());
+            .Subscribe(_ => _app.Entity("light.kitchen").TurnOn(new { brightness = 100 }));
+
+            _app.Entity("binary_sensor.livingroom")
+            .StateChanges
+            .Where(e => e.New?.State == "on" && e.Old?.State == "off")
+            .Subscribe(_ => _app.Entity("sensor.mysensor").SetState(20));
 
             _app.Entity("sensor.temperature")
                 .StateAllChanges

@@ -1,14 +1,7 @@
 using System;
-using System.Dynamic;
-using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using Moq;
-using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
-using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Fakes;
 using Xunit;
 
@@ -73,7 +66,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             TriggerStateChange("binary_sensor.kitchen", "off", "on");
 
             // ASSERT
-            Verify(x => x.Entity("light.kitchen").TurnOn(It.IsAny<object>()), Times.Once);
+            VerifyEntityTurnOn("light.kitchen");
+            VerifyEntityTurnOn("light.kitchen", new { brightness = 100 });
         }
 
         [Fact]
@@ -88,6 +82,19 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ASSERT
             Verify(x => x.Entity("light.livingroom").TurnOn(It.IsAny<object>()), Times.Once);
+        }
+
+        [Fact]
+        public void TestFakeEventTurnsSetState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+
+            // ACT
+            TriggerStateChange("binary_sensor.livingroom", "off", "on");
+            // ASSERT
+            VerifyEntitySetState("sensor.mysensor", 20);
         }
 
         [Fact]
@@ -107,7 +114,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             );
 
             // ASSERT
-            Verify(x => x.CallService("notify", "notify", It.IsAny<object>()), Times.Once);
+            VerifyCallService(Times.Once(), "notify", "notify");
         }
     }
 }

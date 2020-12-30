@@ -167,6 +167,185 @@ namespace NetDaemon.Daemon.Fakes
             }
             return returnValue;
         }
+
+        /// <summary>
+        ///     Verify CallService been called using Moq.Times.
+        /// </summary>
+        /// <param name="times">Times checking</param>
+        /// <param name="domain">Domain of service call</param>
+        /// <param name="service">Service to bee called</param>
+        /// <param name="data">Data sent by service</param>
+        public void VerifyCallService(Times times, string? domain = null, string? service = null, dynamic? data = null)
+        {
+            domain ??= It.IsAny<string>();
+            service ??= It.IsAny<string>();
+            data ??= It.IsAny<object>();
+            Verify(x => x.CallService(domain, service, It.IsAny<object>()), times);
+        }
+
+        /// <summary>
+        ///     Verifies that the Entity turned on
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="attributes"></param>
+        public void VerifyEntityTurnOn(string entityId, dynamic? attributes = null)
+        {
+            if (attributes is not null && attributes is not object)
+                throw new NotSupportedException("attributes needs to be an object");
+
+            if (attributes is null)
+            {
+                Verify(x => x.Entity(entityId).TurnOn(It.IsAny<object>()), Times.Once);
+            }
+            else
+            {
+                Verify(x => x.Entity(entityId).TurnOn((object)attributes), Times.Once);
+            }
+        }
+
+        /// <summary>
+        ///     Verifies that the Entity turned off
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="attributes"></param>
+        public void VerifyEntityTurnOff(string entityId, dynamic? attributes = null)
+        {
+            if (attributes is not null && attributes is not object)
+                throw new NotSupportedException("attributes needs to be an object");
+
+            if (attributes is null)
+            {
+                Verify(x => x.Entity(entityId).TurnOff(It.IsAny<object>()), Times.Once);
+            }
+            else
+            {
+                Verify(x => x.Entity(entityId).TurnOff((object)attributes), Times.Once);
+            }
+        }
+
+        /// <summary>
+        ///     Verifies that the Entity toggles
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="attributes"></param>
+        public void VerifyEntityToggle(string entityId, dynamic? attributes = null)
+        {
+            if (attributes is not null && attributes is not object)
+                throw new NotSupportedException("attributes needs to be an object");
+
+            if (attributes is null)
+            {
+                Verify(x => x.Entity(entityId).Toggle(It.IsAny<object>()), Times.Once);
+            }
+            else
+            {
+                Verify(x => x.Entity(entityId).Toggle((object)attributes), Times.Once);
+            }
+        }
+
+        /// <summary>
+        ///     Verifies that the Entity set state
+        /// </summary>
+        /// <param name="entityId">Unique id of entity</param>
+        /// <param name="state">State to set</param>
+        /// <param name="attributes">Attributes provided</param>
+        public void VerifyEntitySetState(string entityId, dynamic? state, dynamic? attributes = null)
+        {
+            if (attributes is not null && attributes is not object)
+                throw new NotSupportedException("attributes needs to be an object");
+
+            if (state is not null && state is not object)
+                throw new NotSupportedException("state needs to be an object");
+
+            if (state is not null)
+            {
+                if (attributes is not null)
+                {
+                    Verify(x => x.Entity(entityId).SetState(
+                        (object)state,
+                        (object)attributes),
+                        Times.Once);
+                }
+                else
+                {
+                    Verify(x => x.Entity(entityId).SetState(
+                        (object)state,
+                        It.IsAny<object>()),
+                        Times.Once);
+                }
+            }
+            else
+            {
+                if (attributes is not null)
+                {
+                    Verify(x => x.Entity(entityId).SetState(
+                        It.IsAny<object>(),
+                        (object)attributes),
+                        Times.Once);
+                }
+                else
+                {
+                    Verify(x => x.Entity(entityId).SetState(
+                        It.IsAny<object>(),
+                        It.IsAny<object>()),
+                        Times.Once);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Verifies SetState been called
+        /// </summary>
+        /// <param name="entityId">Unique id of entity</param>
+        /// <param name="state">State to set</param>
+        /// <param name="attributes">Attributes provided</param>
+        public void VerifySetState(string entityId, dynamic? state, dynamic? attributes = null)
+        {
+            if (attributes is not null && attributes is not object)
+                throw new NotSupportedException("attributes needs to be an object");
+
+            if (state is not null && state is not object)
+                throw new NotSupportedException("state needs to be an object");
+
+            if (state is not null)
+            {
+                if (attributes is not null)
+                {
+                    Verify(x => x.SetState(
+                        entityId,
+                        (object)state,
+                        (object)attributes),
+                        Times.Once);
+                }
+                else
+                {
+                    Verify(x => x.SetState(
+                        entityId,
+                        (object)state,
+                        It.IsAny<object>()),
+                        Times.Once);
+                }
+            }
+            else
+            {
+                if (attributes is not null)
+                {
+                    Verify(x => x.SetState(
+                        entityId,
+                        It.IsAny<object>(),
+                        (object)attributes),
+                        Times.Once);
+                }
+                else
+                {
+                    Verify(x => x.SetState(
+                        entityId,
+                        It.IsAny<object>(),
+                        It.IsAny<object>()),
+                        Times.Once);
+                }
+            }
+        }
     }
 
     /// <summary>
