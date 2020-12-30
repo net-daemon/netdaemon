@@ -21,7 +21,6 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Observalbe fake events
         /// </summary>
-        /// <value></value>
         public ObservableBase<RxEvent> EventChangesObservable { get; }
 
         /// <summary>
@@ -34,11 +33,15 @@ namespace NetDaemon.Daemon.Fakes
             EventChangesObservable = new EventObservable(loggerMock.Object, Object);
 
             ReactiveEventMock r = new(this);//new EventObservable(loggerMock.Object, Object);
-            var m = new Mock<IRxEntityBase>();
-            m.Setup(n => n.StateChanges).Returns(StateChangesObservable);
-            m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable);
+
             Setup(n => n.EventChanges).Returns(r);
-            Setup(n => n.Entity(It.IsAny<string>())).Returns<string>(_ => m.Object);
+            Setup(n => n.Entity(It.IsAny<string>())).Returns<string>(_ =>
+            {
+                var m = new Mock<IRxEntityBase>();
+                m.Setup(n => n.StateChanges).Returns(StateChangesObservable);
+                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable);
+                return m.Object;
+            });
         }
 
         /// <summary>
@@ -171,16 +174,17 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Verify CallService been called using Moq.Times.
         /// </summary>
-        /// <param name="times">Times checking</param>
         /// <param name="domain">Domain of service call</param>
         /// <param name="service">Service to bee called</param>
         /// <param name="data">Data sent by service</param>
-        public void VerifyCallService(Times times, string? domain = null, string? service = null, dynamic? data = null)
+        /// <param name="times">Times checking</param>
+        public void VerifyCallService(string? domain = null, string? service = null, dynamic? data = null, Times? times = null)
         {
+            var t = times ?? Times.Once();
             domain ??= It.IsAny<string>();
             service ??= It.IsAny<string>();
             data ??= It.IsAny<object>();
-            Verify(x => x.CallService(domain, service, It.IsAny<object>()), times);
+            Verify(x => x.CallService(domain, service, It.IsAny<object>()), t);
         }
 
         /// <summary>
@@ -188,18 +192,21 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="entityId"></param>
         /// <param name="attributes"></param>
-        public void VerifyEntityTurnOn(string entityId, dynamic? attributes = null)
+        /// <param name="times">Nr of times called</param>
+        public void VerifyEntityTurnOn(string entityId, dynamic? attributes = null, Times? times = null)
         {
             if (attributes is not null && attributes is not object)
                 throw new NotSupportedException("attributes needs to be an object");
 
+            var t = times ?? Times.Once();
+
             if (attributes is null)
             {
-                Verify(x => x.Entity(entityId).TurnOn(It.IsAny<object>()), Times.Once);
+                Verify(x => x.Entity(entityId).TurnOn(It.IsAny<object>()), t);
             }
             else
             {
-                Verify(x => x.Entity(entityId).TurnOn((object)attributes), Times.Once);
+                Verify(x => x.Entity(entityId).TurnOn((object)attributes), t);
             }
         }
 
@@ -208,18 +215,19 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="entityId"></param>
         /// <param name="attributes"></param>
-        public void VerifyEntityTurnOff(string entityId, dynamic? attributes = null)
+        /// <param name="times">Nr of times called</param>
+        public void VerifyEntityTurnOff(string entityId, dynamic? attributes = null, Times? times = null)
         {
             if (attributes is not null && attributes is not object)
                 throw new NotSupportedException("attributes needs to be an object");
-
+            var t = times ?? Times.Once();
             if (attributes is null)
             {
-                Verify(x => x.Entity(entityId).TurnOff(It.IsAny<object>()), Times.Once);
+                Verify(x => x.Entity(entityId).TurnOff(It.IsAny<object>()), t);
             }
             else
             {
-                Verify(x => x.Entity(entityId).TurnOff((object)attributes), Times.Once);
+                Verify(x => x.Entity(entityId).TurnOff((object)attributes), t);
             }
         }
 
@@ -228,18 +236,21 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         /// <param name="entityId"></param>
         /// <param name="attributes"></param>
-        public void VerifyEntityToggle(string entityId, dynamic? attributes = null)
+        /// <param name="times">Nr of times called</param>
+        public void VerifyEntityToggle(string entityId, dynamic? attributes = null, Times? times = null)
         {
             if (attributes is not null && attributes is not object)
                 throw new NotSupportedException("attributes needs to be an object");
 
+            var t = times ?? Times.Once();
+
             if (attributes is null)
             {
-                Verify(x => x.Entity(entityId).Toggle(It.IsAny<object>()), Times.Once);
+                Verify(x => x.Entity(entityId).Toggle(It.IsAny<object>()), t);
             }
             else
             {
-                Verify(x => x.Entity(entityId).Toggle((object)attributes), Times.Once);
+                Verify(x => x.Entity(entityId).Toggle((object)attributes), t);
             }
         }
 
@@ -249,14 +260,16 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="entityId">Unique id of entity</param>
         /// <param name="state">State to set</param>
         /// <param name="attributes">Attributes provided</param>
-        public void VerifyEntitySetState(string entityId, dynamic? state, dynamic? attributes = null)
+        /// <param name="times">Nr of times called</param>
+        public void VerifyEntitySetState(string entityId, dynamic? state = null
+        , dynamic? attributes = null, Times? times = null)
         {
             if (attributes is not null && attributes is not object)
                 throw new NotSupportedException("attributes needs to be an object");
 
             if (state is not null && state is not object)
                 throw new NotSupportedException("state needs to be an object");
-
+            var t = times ?? Times.Once();
             if (state is not null)
             {
                 if (attributes is not null)
@@ -264,14 +277,14 @@ namespace NetDaemon.Daemon.Fakes
                     Verify(x => x.Entity(entityId).SetState(
                         (object)state,
                         (object)attributes),
-                        Times.Once);
+                        t);
                 }
                 else
                 {
                     Verify(x => x.Entity(entityId).SetState(
                         (object)state,
                         It.IsAny<object>()),
-                        Times.Once);
+                        t);
                 }
             }
             else
@@ -281,14 +294,14 @@ namespace NetDaemon.Daemon.Fakes
                     Verify(x => x.Entity(entityId).SetState(
                         It.IsAny<object>(),
                         (object)attributes),
-                        Times.Once);
+                        t);
                 }
                 else
                 {
                     Verify(x => x.Entity(entityId).SetState(
                         It.IsAny<object>(),
                         It.IsAny<object>()),
-                        Times.Once);
+                        t);
                 }
             }
         }
@@ -299,13 +312,15 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="entityId">Unique id of entity</param>
         /// <param name="state">State to set</param>
         /// <param name="attributes">Attributes provided</param>
-        public void VerifySetState(string entityId, dynamic? state, dynamic? attributes = null)
+        public void VerifySetState(string entityId, dynamic? state = null, dynamic? attributes = null, Times? times = null)
         {
             if (attributes is not null && attributes is not object)
                 throw new NotSupportedException("attributes needs to be an object");
 
             if (state is not null && state is not object)
                 throw new NotSupportedException("state needs to be an object");
+
+            var t = times ?? Times.Once();
 
             if (state is not null)
             {
@@ -315,7 +330,7 @@ namespace NetDaemon.Daemon.Fakes
                         entityId,
                         (object)state,
                         (object)attributes),
-                        Times.Once);
+                        t);
                 }
                 else
                 {
@@ -323,7 +338,7 @@ namespace NetDaemon.Daemon.Fakes
                         entityId,
                         (object)state,
                         It.IsAny<object>()),
-                        Times.Once);
+                        t);
                 }
             }
             else
@@ -334,7 +349,7 @@ namespace NetDaemon.Daemon.Fakes
                         entityId,
                         It.IsAny<object>(),
                         (object)attributes),
-                        Times.Once);
+                        t);
                 }
                 else
                 {
@@ -342,7 +357,7 @@ namespace NetDaemon.Daemon.Fakes
                         entityId,
                         It.IsAny<object>(),
                         It.IsAny<object>()),
-                        Times.Once);
+                        t);
                 }
             }
         }

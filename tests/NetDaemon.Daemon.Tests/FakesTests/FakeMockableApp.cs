@@ -37,12 +37,19 @@ namespace NetDaemon.Daemon.Tests.Reactive
             _app.Entity("binary_sensor.kitchen")
             .StateChanges
             .Where(e => e.New?.State == "on" && e.Old?.State == "off")
-            .Subscribe(_ => _app.Entity("light.kitchen").TurnOn(new { brightness = 100 }));
+            .Subscribe(_ =>
+                {
+                    // Just for the testing of all these
+                    _app.Entity("light.kitchen").TurnOn(new { brightness = 100 });
+                    _app.Entity("light.kitchen").TurnOff(new { brightness = 100 });
+                    _app.Entity("light.kitchen").Toggle(new { brightness = 100 });
+                }
+            );
 
             _app.Entity("binary_sensor.livingroom")
             .StateChanges
             .Where(e => e.New?.State == "on" && e.Old?.State == "off")
-            .Subscribe(_ => _app.Entity("sensor.mysensor").SetState(20));
+            .Subscribe(_ => _app.Entity("sensor.mysensor").SetState(20, new { battery_level = 90 }));
 
             _app.Entity("sensor.temperature")
                 .StateAllChanges
@@ -52,6 +59,9 @@ namespace NetDaemon.Daemon.Tests.Reactive
             _app.EventChanges
                 .Where(e => e.Event == "hello_event")
                 .Subscribe(_ => _app.Entity("light.livingroom").TurnOn());
+
+            _app.SetState("sensor.any_sensor", 20, new { battery_level = 70 });
+            _app.SetState("sensor.any_sensor2", 20, new { battery_level = 70 });
         }
     }
 }

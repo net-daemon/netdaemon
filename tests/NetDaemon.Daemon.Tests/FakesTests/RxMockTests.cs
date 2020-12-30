@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using Moq;
 using NetDaemon.Daemon.Fakes;
 using Xunit;
+using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.Reactive
 {
@@ -67,7 +68,11 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ASSERT
             VerifyEntityTurnOn("light.kitchen");
+            VerifyEntityTurnOff("light.kitchen");
+            VerifyEntityToggle("light.kitchen");
             VerifyEntityTurnOn("light.kitchen", new { brightness = 100 });
+            VerifyEntityTurnOff("light.kitchen", new { brightness = 100 });
+            VerifyEntityToggle("light.kitchen", new { brightness = 100 });
         }
 
         [Fact]
@@ -85,16 +90,49 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
-        public void TestFakeEventTurnsSetState()
+        public void TestFakeEvent2TurnsOnLight()
         {
             // ARRANGE
             FakeMockableAppImplementation app = new(Object);
             app.Initialize();
 
             // ACT
+            TriggerEvent(new RxEvent("hello_event", "some_domain", null));
+
+            // ASSERT
+            Verify(x => x.Entity("light.livingroom").TurnOn(It.IsAny<object>()), Times.Once);
+        }
+
+        [Fact]
+        public void TestFakeEventEntitySetState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+            // ACT
             TriggerStateChange("binary_sensor.livingroom", "off", "on");
             // ASSERT
             VerifyEntitySetState("sensor.mysensor", 20);
+            VerifyEntitySetState("sensor.mysensor", 20, new { battery_level = 90 });
+            VerifyEntitySetState("sensor.mysensor", attributes: new { battery_level = 90 });
+            VerifyEntitySetState("sensor.mysensor");
+            VerifyEntitySetState("sensor.not_exist", times: Times.Never());
+        }
+
+        [Fact]
+        public void TestSetState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            // ACT
+            app.Initialize();
+
+            // ASSERT
+            VerifySetState("sensor.any_sensor", 20);
+            VerifySetState("sensor.any_sensor", 20, new { battery_level = 70 });
+            VerifySetState("sensor.any_sensor", attributes: new { battery_level = 70 });
+            VerifySetState("sensor.any_sensor");
+            VerifySetState("sensor.not_exist", times: Times.Never());
         }
 
         [Fact]
@@ -114,7 +152,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             );
 
             // ASSERT
-            VerifyCallService(Times.Once(), "notify", "notify");
+            VerifyCallService("notify", "notify", Times.Once());
         }
     }
 }
