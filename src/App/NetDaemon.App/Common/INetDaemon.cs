@@ -335,7 +335,7 @@ namespace NetDaemon.Common
     /// </summary>
     [SuppressMessage("", "CA1716")]
     public interface INetDaemonAppBase :
-        INetDaemonInitialableApp, IDoLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
+        INetDaemonInitialableApp, INetDaemonAppLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
     {
         /// <summary>
         ///     The dependencies that needs to be initialized before this app
@@ -432,7 +432,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Interface for logging capabilities in NetDaemon Apps
     /// </summary>
-    public interface IDoLogging
+    public interface INetDaemonAppLogging
     {
         /// <summary>
         ///     Logs an informational message

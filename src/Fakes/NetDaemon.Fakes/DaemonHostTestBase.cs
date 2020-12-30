@@ -44,6 +44,11 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
+        ///     Default RxAppMock
+        /// </summary>
+        public RxAppMock DefaultRxAppMock { get; } = new();
+
+        /// <summary>
         ///     Returns default DaemonHost mock
         /// </summary>
         public NetDaemonHost DefaultDaemonHost { get; }

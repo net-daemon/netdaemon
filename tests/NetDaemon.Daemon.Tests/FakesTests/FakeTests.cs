@@ -468,5 +468,15 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // Verify that netdaemon called light.turn_on
             VerifyCallService("notify", "notify", new { title = "Hello from Home Assistant" });
         }
+
+        [Fact]
+        public void TestIfRxAppMockWorks()
+        {
+            // ARRANGE
+            // ACT
+            DefaultRxAppMock.Object.Entity("light.test").TurnOn();
+            // ASSERT
+            DefaultRxAppMock.Verify(x => x.Entity("light.test"), Times.Once);
+        }
     }
 }

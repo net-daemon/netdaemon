@@ -459,7 +459,7 @@ namespace NetDaemon.Daemon.Tests
                     int i = int.Parse("Not an integer makes runtime error!", CultureInfo.InvariantCulture);
                     return Task.CompletedTask;
                 });
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1200).ConfigureAwait(false);
             }
 
             try

@@ -20,7 +20,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class RxAppTest : CoreDaemonHostTestBase
     {
-
         [Fact]
         public async Task CallServiceShouldCallCorrectFunction()
         {
