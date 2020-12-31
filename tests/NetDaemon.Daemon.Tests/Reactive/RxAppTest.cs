@@ -414,7 +414,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(100), tokenSource.Token);
             // ASSERT
-            bool isAfterTimeout = DateTime.Now.Subtract(startTime).TotalMilliseconds >= 90;
+            // Compensate that windows resolution is 15ms for system clock
+            bool isAfterTimeout = DateTime.Now.Subtract(startTime).TotalMilliseconds >= 84;
             Assert.True(isAfterTimeout);
         }
 
@@ -425,7 +426,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var startTime = DateTime.Now;
             // ACT
             DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(100));
-            bool isAfterTimeout = DateTime.Now.Subtract(startTime).TotalMilliseconds >= 90;
+            // Compensate that windows resolution is 15ms for system clock
+            bool isAfterTimeout = DateTime.Now.Subtract(startTime).TotalMilliseconds >= 84;
             // ASSERT
             Assert.True(isAfterTimeout);
         }
