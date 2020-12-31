@@ -442,10 +442,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ACT
             DefaultDaemonRxApp.Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(_ => result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(100)));
+                .Subscribe(_ => result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(200)));
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
-            await Task.Delay(50).ConfigureAwait(false);
+            await Task.Delay(100).ConfigureAwait(false);
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir2", "on", "off");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
