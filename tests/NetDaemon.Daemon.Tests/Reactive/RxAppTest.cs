@@ -414,10 +414,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             s.Start();
             // ACT
-            DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(50), tokenSource.Token);
+            DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(100), tokenSource.Token);
             s.Stop();
             // ASSERT
-            Assert.NotInRange(s.ElapsedMilliseconds, 0, 49);
+            Assert.NotInRange(s.ElapsedMilliseconds, 0, 99);
         }
 
         [Fact]
@@ -427,10 +427,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
             Stopwatch s = new();
             s.Start();
             // ACT
-            DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(50));
+            DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(100));
             s.Stop();
             // ASSERT
-            Assert.NotInRange(s.ElapsedMilliseconds, 0, 49);
+            Assert.NotInRange(s.ElapsedMilliseconds, 0, 99);
         }
 
         [Fact]
