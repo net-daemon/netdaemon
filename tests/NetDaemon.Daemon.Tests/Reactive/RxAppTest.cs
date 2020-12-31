@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
@@ -436,22 +437,38 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public async Task NDFirstOrTimeOutShouldReturnCorrectStateChange()
         {
             // ARRANGE
+            using var waitFor = new CancellationTokenSource(300);
+
             await InitializeFakeDaemon().ConfigureAwait(false);
             (EntityState Old, EntityState New)? result = null;
 
             // ACT
             DefaultDaemonRxApp.Entity("binary_sensor.pir")
                 .StateChanges
-                .Subscribe(_ => result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(200)));
+                .Subscribe(_ =>
+                {
+                    waitFor.CancelAfter(20);
+                    result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(300));
+                });
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
-            await Task.Delay(100).ConfigureAwait(false);
+            await WaitForTimeout(300, waitFor.Token).ConfigureAwait(false);
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir2", "on", "off");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
             Assert.NotNull(result);
+        }
+
+        [SuppressMessage("", "CA1031")]
+        private static async Task WaitForTimeout(int ms, CancellationToken token)
+        {
+            try
+            {
+                await Task.Delay(ms, token).ConfigureAwait(false);
+            }
+            catch { } // Ignor error
         }
 
         [Fact]
