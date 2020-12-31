@@ -447,7 +447,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 .StateChanges
                 .Subscribe(_ =>
                 {
-                    waitFor.CancelAfter(20);
+                    waitFor.CancelAfter(100);
                     result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(300));
                 });
 
