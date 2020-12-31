@@ -409,28 +409,25 @@ namespace NetDaemon.Daemon.Tests.Reactive
         public void DelayShouldDelaySyncronyslyWithToken()
         {
             // ARRANGE
-            Stopwatch s = new();
+            var startTime = DateTime.Now;
             using var tokenSource = new CancellationTokenSource();
-            // ARRANGE
-            s.Start();
             // ACT
             DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(100), tokenSource.Token);
-            s.Stop();
             // ASSERT
-            Assert.NotInRange(s.ElapsedMilliseconds, 0, 99);
+            bool isAfterTimeout = DateTime.Now.Subtract(startTime).TotalMilliseconds >= 90;
+            Assert.True(isAfterTimeout);
         }
 
         [Fact]
         public void DelayShouldDelaySyncronysly()
         {
             // ARRANGE
-            Stopwatch s = new();
-            s.Start();
+            var startTime = DateTime.Now;
             // ACT
             DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(100));
-            s.Stop();
+            bool isAfterTimeout = DateTime.Now.Subtract(startTime).TotalMilliseconds >= 90;
             // ASSERT
-            Assert.NotInRange(s.ElapsedMilliseconds, 0, 99);
+            Assert.True(isAfterTimeout);
         }
 
         [Fact]
