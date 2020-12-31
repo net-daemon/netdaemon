@@ -37,5 +37,23 @@ namespace NetDaemon.Common.Reactive
         public static IObservable<(EntityState Old, EntityState New)> NDWaitForState(this IObservable<(EntityState Old, EntityState New)> observable) => observable
             .Timeout(TimeSpan.FromSeconds(5),
             Observable.Return((new EntityState() { State = "TimeOut" }, new EntityState() { State = "TimeOut" }))).Take(1);
+
+
+        /// <summary>
+        ///     Returns first occurence or null if timedout
+        /// </summary>
+        /// <param name="observable">Extended object</param>
+        /// <param name="timeout">The time to wait before timeout.</param>
+        public static (EntityState Old, EntityState New)? NDFirstOrTimeout(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan timeout)
+        {
+            try
+            {
+                return observable.Timeout(timeout).Take(1).Wait();
+            }
+            catch (TimeoutException)
+            {
+                return null;
+            }
+        }
     }
 }

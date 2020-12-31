@@ -68,6 +68,24 @@ namespace NetDaemon.Common.Reactive
             Daemon.CallService(domain, service, data);
         }
 
+        /// <inheritdoc/>
+        public void Delay(TimeSpan timeout)
+        {
+            // We use Task.Delay instead of Thread.Sleep so we can stop timers on cancellation tokens
+            Task.Delay(timeout, _cancelTimers.Token).Wait(_cancelTimers.Token);
+            Logger.LogError("WE REACHED END OF DELAY!");
+        }
+
+        /// <inheritdoc/>
+        public void Delay(TimeSpan timeout, CancellationToken token)
+        {
+            // We combine timer with provided token so we cancel when app is stopped
+            using var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_cancelTimers.Token, token);
+            // We use Task.Delay instead of Thread.Sleep so we can stop timers on cancellation tokens
+            Task.Delay(timeout, combinedToken.Token).Wait(combinedToken.Token);
+            Logger.LogError("WE REACHED END OF DELAY2!");
+        }
+
         /// <summary>
         ///     Implements the async dispose pattern
         /// </summary>
@@ -225,6 +243,11 @@ namespace NetDaemon.Common.Reactive
                         catch (OperationCanceledException)
                         {
                             // Do nothing
+                        }
+                        catch (TimeoutException)
+                        {
+                            // Ignore
+                            LogWarning("Timeout Exception thrown in RunIn APP: {app}, please catch it in your code", Id ?? "unknown");
                         }
                         catch (Exception e)
                         {
