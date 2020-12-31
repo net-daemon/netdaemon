@@ -440,21 +440,12 @@ namespace NetDaemon.Daemon.Tests.Reactive
             using var waitFor = new CancellationTokenSource(300);
 
             await InitializeFakeDaemon().ConfigureAwait(false);
-            (EntityState Old, EntityState New)? result = null;
-
-            // ACT
-            DefaultDaemonRxApp.Entity("binary_sensor.pir")
-                .StateChanges
-                .Subscribe(_ =>
-                {
-                    waitFor.CancelAfter(100);
-                    result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(300));
-                });
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
-            await WaitForTimeout(300, waitFor.Token).ConfigureAwait(false);
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir2", "on", "off");
-
+            var task = Task.Run(async () =>
+            {
+                await Task.Delay(20).ConfigureAwait(false);
+                DefaultHassClientMock.AddChangedEvent("binary_sensor.pir2", "on", "off");
+            });
+            var result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(300));
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
