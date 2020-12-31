@@ -345,7 +345,7 @@ namespace NetDaemon.Daemon.Tests
 
                 // ASSERT
                 Assert.True(nrOfRuns == 0);
-                await Task.Delay(800).ConfigureAwait(false);
+                await Task.Delay(1000).ConfigureAwait(false);
                 Assert.True(nrOfRuns >= 1);
             }
 
