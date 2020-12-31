@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common.Reactive
@@ -73,6 +74,25 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="script">Script to call</param>
         void RunScript(params string[] script);
+
+        /// <summary>
+        ///     Delays timeout time
+        /// </summary>
+        /// <remarks>
+        ///     When the app stops it will cancel wait with OperationanceledException
+        /// </remarks>
+        /// <param name="timeout">Time to delay execution</param>
+        void Delay(TimeSpan timeout);
+
+        /// <summary>
+        ///     Delays timeout time
+        /// </summary>
+        /// <remarks>
+        ///     When the app stops it will cancel wait with OperationanceledException
+        /// </remarks>
+        /// <param name="timeout">Time to delay execution</param>
+        /// <param name="token">Token to cancel any delays</param>
+        void Delay(TimeSpan timeout, CancellationToken token);
     }
 
     /// <summary>

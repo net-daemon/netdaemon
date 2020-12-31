@@ -1,10 +1,13 @@
 using System;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using Xunit;
@@ -400,6 +403,85 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ASSERT
             DefaultDataRepositoryMock.Verify(n => n.Get<string>(It.IsAny<string>()), Times.Never);
             DefaultDataRepositoryMock.Verify(n => n.Save(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public void DelayShouldDelaySyncronyslyWithToken()
+        {
+            // ARRANGE
+            Stopwatch s = new();
+            using var tokenSource = new CancellationTokenSource();
+            // ARRANGE
+            s.Start();
+            // ACT
+            DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(50), tokenSource.Token);
+            s.Stop();
+            // ASSERT
+            Assert.NotInRange(s.ElapsedMilliseconds, 0, 49);
+        }
+
+        [Fact]
+        public void DelayShouldDelaySyncronysly()
+        {
+            // ARRANGE
+            Stopwatch s = new();
+            s.Start();
+            // ACT
+            DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(50));
+            s.Stop();
+            // ASSERT
+            Assert.NotInRange(s.ElapsedMilliseconds, 0, 49);
+        }
+
+        [Fact]
+        public async Task NDFirstOrTimeOutShouldReturnCorrectStateChange()
+        {
+            // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
+            (EntityState Old, EntityState New)? result = null;
+
+            // ACT
+            DefaultDaemonRxApp.Entity("binary_sensor.pir")
+                .StateChanges
+                .Subscribe(_ => result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(100)));
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+            await Task.Delay(50).ConfigureAwait(false);
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir2", "on", "off");
+
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
+            // ASSERT
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task NDFirstOrTimeOutShouldReturnCorrectNullOnTimeout()
+        {
+            // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
+            (EntityState Old, EntityState New)? result = null;
+
+            // ACT
+            DefaultDaemonRxApp.Entity("binary_sensor.pir")
+                .StateChanges
+                .Subscribe(_ => result = DefaultDaemonRxApp.Entity("binary_sensor.pir2").StateChanges.NDFirstOrTimeout(TimeSpan.FromMilliseconds(100)));
+
+            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void DelayShouldCancelWithToken()
+        {
+            // ARRANGE
+            using var tokenSource = new CancellationTokenSource(50);
+            // ACT & ASSERT
+            Assert.Throws<OperationCanceledException>(() => DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(300), tokenSource.Token));
         }
 
         private interface ITestGetService
