@@ -1,5 +1,5 @@
 #### Build and tests all pushes, also code coverage
-name: publish nuget
+name: 📦 Publish nuget
 on:
   release:
     types: 
@@ -7,7 +7,7 @@ on:
       - prereleased
 jobs:
   deploy_nuget:
-    name: publish nuget packages
+    name: 📦 publish nuget packages
     runs-on: ubuntu-latest
     steps:
       - name: 📤 Checkout the repository 

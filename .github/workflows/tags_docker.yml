@@ -1,6 +1,6 @@
 #### Publish on release or pre-release
 
-name: Deploy to Docker Hub on release
+name: 📦 Deploy to Docker rel
 on:
   release:
     types: 
@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Docker Hub
+    name: 📦 Deploy to Docker Hub
     runs-on: ubuntu-latest
     steps:
       - name: 📤 Checkout the repository 

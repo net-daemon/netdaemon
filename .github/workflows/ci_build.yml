@@ -1,5 +1,5 @@
 #### Build and tests all pushes, also code coverage
-name: CI build
+name: 🛠️ CI build check
 on: [push, pull_request]
 jobs:
     build:
