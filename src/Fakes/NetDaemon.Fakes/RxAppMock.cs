@@ -312,6 +312,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="entityId">Unique id of entity</param>
         /// <param name="state">State to set</param>
         /// <param name="attributes">Attributes provided</param>
+        /// <param name="times">Times called</param>
         public void VerifySetState(string entityId, dynamic? state = null, dynamic? attributes = null, Times? times = null)
         {
             if (attributes is not null && attributes is not object)
