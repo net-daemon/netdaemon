@@ -341,12 +341,12 @@ namespace NetDaemon.Daemon.Tests
                        nrOfRuns++;
                        await Task.Delay(1).ConfigureAwait(false);
                    });
-                await Task.Delay(600).ConfigureAwait(false);
+                await Task.Delay(200).ConfigureAwait(false);
 
                 // ASSERT
-                Assert.True(nrOfRuns == 0);
-                await Task.Delay(1000).ConfigureAwait(false);
-                Assert.True(nrOfRuns >= 1);
+                Assert.Equal(0, nrOfRuns);
+                await Task.Delay(1200).ConfigureAwait(false);
+                Assert.Equal(1, nrOfRuns);
             }
 
             try
