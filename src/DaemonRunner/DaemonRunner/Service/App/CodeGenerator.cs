@@ -155,17 +155,17 @@ namespace NetDaemon.Service.App
     {{
         public string EntityId => EntityIds.First();
 
-        public EntityState? EntityState => State(EntityId);
+        public EntityState? EntityState => DaemonRxApp?.State(EntityId);
 
-        public string? Area => State(EntityId)?.Area;
+        public string? Area => DaemonRxApp?.State(EntityId)?.Area;
 
-        public dynamic? Attribute => State(EntityId)?.Attribute;
+        public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
 
-        public DateTime? LastChanged => State(EntityId)?.LastChanged;
+        public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
 
-        public DateTime? LastUpdated => State(EntityId)?.LastUpdated;
+        public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
 
-        public dynamic? State => State(EntityId)?.State;
+        public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
 
         public {domain.ToCamelCase()}Entity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {{
