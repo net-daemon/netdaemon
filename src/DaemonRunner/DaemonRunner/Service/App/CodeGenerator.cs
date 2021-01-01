@@ -56,7 +56,7 @@ namespace NetDaemon.Service.App
                 if (_FluentApiMapper.ContainsKey(domain))
                 {
                     var camelCaseDomain = domain.ToCamelCase();
-                    var method = $"public static {camelCaseDomain}Entities {camelCaseDomain}Ex(this NetDaemonApp app) => new {camelCaseDomain}Entities(app);";
+                    var method = $"public static {camelCaseDomain}Entities {camelCaseDomain}Entities(this NetDaemonApp app) => new(app);";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(method).GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().FirstOrDefault()
                         ?? throw new NetDaemonNullReferenceException("Method parsing failed");
 
@@ -140,8 +140,8 @@ namespace NetDaemon.Service.App
                 var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) != 0;
 
                 var property = isSingleServiceDomain ?
-                    $"public {camelCaseDomain}Entities {camelCaseDomain} => new {camelCaseDomain}Entities(this);" :
-                    $@"public {camelCaseDomain}Entity {camelCaseDomain} => new {domain.ToCamelCase()}Entity(this, new string[] {{""""}});";
+                    $"public {camelCaseDomain}Entities {camelCaseDomain} => new(this);" :
+                    $@"public {camelCaseDomain}Entity {camelCaseDomain} => new(this, new string[] {{""""}});";
 
                 var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
                     ?? throw new NetDaemonNullReferenceException($"Parse of property {camelCaseDomain} Entities/Entity failed");
@@ -155,17 +155,19 @@ namespace NetDaemon.Service.App
     {{
         public string EntityId => EntityIds.First();
 
-        public string? Area => DaemonRxApp?.State(EntityId)?.Area;
+        public EntityState? EntityState => State(EntityId);
 
-        public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
+        public string? Area => State(EntityId)?.Area;
 
-        public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
+        public dynamic? Attribute => State(EntityId)?.Attribute;
 
-        public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
+        public DateTime? LastChanged => State(EntityId)?.LastChanged;
 
-        public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
+        public DateTime? LastUpdated => State(EntityId)?.LastUpdated;
 
-        public {domain.ToCamelCase()}Entity(INetDaemonReactive daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
+        public dynamic? State => State(EntityId)?.State;
+
+        public {domain.ToCamelCase()}Entity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {{
         }}
     }}";
@@ -242,7 +244,7 @@ namespace NetDaemon.Service.App
                         name = "e_" + name;
                     }
 
-                    var propertyCode = $@"public {domain.ToCamelCase()}Entity {name.ToCamelCase()} => new {domain.ToCamelCase()}Entity(_app, new string[] {{""{entity}""}});";
+                    var propertyCode = $@"public {domain.ToCamelCase()}Entity {name.ToCamelCase()} => new(_app, new string[] {{""{entity}""}});";
                     var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes().OfType<PropertyDeclarationSyntax>().FirstOrDefault()
                         ?? throw new NetDaemonNullReferenceException("Failed to parse property");
                     entityClass = entityClass.AddMembers(propDeclaration);

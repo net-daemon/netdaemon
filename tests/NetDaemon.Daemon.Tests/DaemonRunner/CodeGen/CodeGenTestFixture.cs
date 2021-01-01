@@ -5,8 +5,8 @@ namespace Netdaemon.Generated.Extensions
 {
     public static partial class EntityExtension
     {
-        public static LightEntities LightEx(this NetDaemonApp app) => new LightEntities(app);
-        public static MediaPlayerEntities MediaPlayerEx(this NetDaemonApp app) => new MediaPlayerEntities(app);
+        public static LightEntities LightEntities(this NetDaemonApp app) => new(app);
+        public static MediaPlayerEntities MediaPlayerEntities(this NetDaemonApp app) => new(app);
     }
 
     public partial class LightEntities

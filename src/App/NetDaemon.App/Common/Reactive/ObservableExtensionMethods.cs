@@ -38,7 +38,6 @@ namespace NetDaemon.Common.Reactive
             .Timeout(TimeSpan.FromSeconds(5),
             Observable.Return((new EntityState() { State = "TimeOut" }, new EntityState() { State = "TimeOut" }))).Take(1);
 
-
         /// <summary>
         ///     Returns first occurence or null if timedout
         /// </summary>
