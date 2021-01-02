@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using System.Threading;
 
 namespace NetDaemon.Common.Reactive
 {
@@ -43,13 +44,21 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="observable">Extended object</param>
         /// <param name="timeout">The time to wait before timeout.</param>
-        public static (EntityState Old, EntityState New)? NDFirstOrTimeout(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan timeout)
+        /// <param name="token">Provide token to cancel early</param>
+        public static (EntityState Old, EntityState New)? NDFirstOrTimeout(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan timeout, CancellationToken? token = null)
         {
             try
             {
-                return observable.Timeout(timeout).Take(1).Wait();
+                if (token is null)
+                    return observable.Timeout(timeout).Take(1).Wait();
+                else
+                    return observable.Timeout(timeout).Take(1).RunAsync(token.Value).Wait();
             }
             catch (TimeoutException)
+            {
+                return null;
+            }
+            catch (OperationCanceledException)
             {
                 return null;
             }
