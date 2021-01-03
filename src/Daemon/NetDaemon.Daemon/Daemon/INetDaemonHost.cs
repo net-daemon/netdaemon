@@ -48,7 +48,6 @@ namespace NetDaemon.Daemon
         /// </summary>
         /// <param name="numberOfLoadedApps"> The number of loaded apps. </param>
         /// <param name="numberOfRunningApps"> The number of running apps. </param>
-        /// <returns></returns>
         Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps);
 
         /// <summary>
@@ -66,5 +65,10 @@ namespace NetDaemon.Daemon
         /// </summary>
         /// <param name="func">callback function</param>
         void SubscribeToExternalEvents(Func<ExternalEventBase, Task> func);
+
+        /// <summary>
+        ///     Returns true of the NetDaemon custom component is installed
+        /// </summary>
+        bool HomeAssistantHasNetDaemonIntegration();
     }
 }

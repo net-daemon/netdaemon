@@ -86,6 +86,7 @@ namespace NetDaemon.Daemon
         private CancellationToken _cancelToken;
 
         private CancellationTokenSource? _cancelTokenSource;
+        private bool _hasNetDaemonIntegration;
 
         public IServiceProvider? ServiceProvider { get; }
 
@@ -172,7 +173,7 @@ namespace NetDaemon.Daemon
 
             try
             {
-                await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false);
+                await _hassClient.CallService(domain, service, data, waitForResponse).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -468,6 +469,8 @@ namespace NetDaemon.Daemon
 
                 await _hassClient.SubscribeToEvents().ConfigureAwait(false);
 
+                await ConnectToHAIntegration().ConfigureAwait(false);
+
                 Connected = true;
 
                 Logger.LogInformation(
@@ -515,6 +518,29 @@ namespace NetDaemon.Daemon
                 Connected = false;
                 _cancelTokenSource.Cancel();
             }
+        }
+
+        [SuppressMessage("", "IDE1006")]
+        private record NetDaemonInfo(string version);
+
+        [SuppressMessage("", "CA1031")]
+        internal async Task ConnectToHAIntegration()
+        {
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
+            try
+            {
+                var x = await _hassClient.GetApiCall<NetDaemonInfo>("netdaemon/info").ConfigureAwait(false);
+                if (x is not null)
+                {
+                    _hasNetDaemonIntegration = true;
+                    return;
+                }
+            }
+            catch
+            {
+                // for now just ignore
+            }
+            Logger.LogWarning("No NetDaemon integration found, please consider installing the companion integration for more features. See https://netdaemon.xyz/docs/started/integration for details.");
         }
 
         public IScript RunScript(INetDaemonApp app, params string[] entityIds)
@@ -568,38 +594,131 @@ namespace NetDaemon.Daemon
                 ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
         }
 
-        public void SetState(string entityId, dynamic state, dynamic? attributes = null)
+        public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false)
         {
             _cancelToken.ThrowIfCancellationRequested();
 
-            if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
-                throw new NetDaemonException("Servicecall queue full!");
+            if (!waitForResponse)
+            {
+                if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
+                    throw new NetDaemonException("Servicecall queue full!");
+                return null;
+            }
+            else
+            {
+                return SetStateDynamicAsync(entityId, state, attributes, true).Result;
+            }
+        }
+
+        private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
+        public async Task<EntityState?> SetStateDynamicAsync(string entityId, dynamic state,
+                    dynamic? attributes, bool waitForResponse)
+        {
+            _cancelToken.ThrowIfCancellationRequested();
+            _ = entityId ?? throw new NetDaemonArgumentNullException(nameof(entityId));
+
+            if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
+                throw new NetDaemonException($"Wrong entity id {entityId} provided");
+
+            try
+            {
+                // Use expando object as all other methods
+                if (_hasNetDaemonIntegration &&
+                    _supportedDomains.Contains(entityId.Split('.')[0]))
+                {
+                    // We have an integration that will help persist 
+                    await CallServiceAsync("netdaemon", "entity_create",
+                            new
+                            {
+                                entity_id = entityId,
+                                state = state.ToString(),
+                                attributes
+                            }, waitForResponse).ConfigureAwait(false);
+
+                    if (waitForResponse)
+                    {
+                        var result = await _hassClient.GetState(entityId).ConfigureAwait(false);
+                        if (result != null)
+                        {
+                            EntityState entityState = result.Map();
+                            // InternalState[entityState.EntityId] = entityState;
+                            return entityState with
+                            {
+                                State = state,
+                                Area = GetAreaForEntityId(entityState.EntityId)
+                            };
+                        }
+                    }
+                    return null;
+                }
+                else
+                {
+                    HassState result = await _hassClient.SetState(entityId, state.ToString(), attributes).ConfigureAwait(false);
+
+                    if (result != null)
+                    {
+                        EntityState entityState = result.Map();
+                        // InternalState[entityState.EntityId] = entityState;
+                        return entityState with
+                        {
+                            State = state,
+                            Area = GetAreaForEntityId(entityState.EntityId)
+                        };
+                    }
+
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Failed to set state for entity {entityId}", entityId);
+                throw;
+            }
         }
 
         public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
                     params (string name, object val)[] attributes)
         {
             _cancelToken.ThrowIfCancellationRequested();
+            _ = entityId ?? throw new NetDaemonArgumentNullException(nameof(entityId));
+
+            if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
+                throw new NetDaemonException($"Wrong entity id {entityId} provided");
+
             try
             {
                 // Use expando object as all other methods
                 dynamic dynAttributes = attributes.ToDynamic();
-
-                HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes).ConfigureAwait(false);
-
-                if (result != null)
+                if (_hasNetDaemonIntegration)
                 {
-                    EntityState entityState = result.Map();
-                    entityState = entityState with
-                    {
-                        State = state,
-                        Area = GetAreaForEntityId(entityState.EntityId)
-                    };
-                    InternalState[entityState.EntityId] = entityState;
-                    return entityState;
+                    // We have an integration that will help persist 
+                    await CallServiceAsync("netdaemon", "entity_create",
+                            new
+                            {
+                                entity_id = entityId,
+                                state = state.ToString(),
+                                attributes = dynAttributes
+                            }, true).ConfigureAwait(false);
+                    return null;
                 }
+                else
+                {
+                    HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes).ConfigureAwait(false);
 
-                return null;
+                    if (result != null)
+                    {
+                        EntityState entityState = result.Map();
+                        entityState = entityState with
+                        {
+                            State = state,
+                            Area = GetAreaForEntityId(entityState.EntityId)
+                        };
+                        InternalState[entityState.EntityId] = entityState;
+                        return entityState;
+                    }
+
+                    return null;
+                }
             }
             catch (Exception e)
             {
@@ -863,7 +982,7 @@ namespace NetDaemon.Daemon
                     newState = newState with { Area = GetAreaForEntityId(newState.EntityId) };
                     InternalState[stateData.EntityId] = newState;
 
-                    var tasks = new List<Task>();
+                    // var tasks = new List<Task>();
                     foreach (var app in InternalRunningAppInstances)
                     {
                         if (app.Value is NetDaemonApp netDaemonApp)
@@ -872,14 +991,14 @@ namespace NetDaemon.Daemon
                             {
                                 if (string.IsNullOrEmpty(pattern))
                                 {
-                                    tasks.Add(func(stateData.EntityId,
+                                    _eventHandlerTasks.Add(func(stateData.EntityId,
                                         newState,
                                         oldState
                                     ));
                                 }
                                 else if (stateData.EntityId.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    tasks.Add(func(stateData.EntityId,
+                                    _eventHandlerTasks.Add(func(stateData.EntityId,
                                         newState,
                                         oldState
                                     ));
@@ -891,7 +1010,7 @@ namespace NetDaemon.Daemon
                             // Call the observable with no blocking
                             foreach (var observer in ((StateChangeObservable)netDaemonRxApp.StateChangesObservable).Observers)
                             {
-                                tasks.Add(Task.Run(() =>
+                                _eventHandlerTasks.Add(Task.Run(() =>
                                 {
                                     try
                                     {
@@ -905,15 +1024,6 @@ namespace NetDaemon.Daemon
                                 }, token));
                             }
                         }
-                    }
-
-                    // No hit
-                    // Todo: Make it timeout! Maybe it should be handling in it's own task like scheduler
-                    if (tasks.Count > 0)
-                    {
-                        await tasks.WhenAll(token).ConfigureAwait(false);
-
-                        await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -931,7 +1041,6 @@ namespace NetDaemon.Daemon
                     {
                         throw new NetDaemonNullReferenceException("ServiceData is null! not expected");
                     }
-                    var tasks = new List<Task>();
                     foreach (var app in InternalRunningAppInstances)
                     {
                         // Call any service call registered
@@ -942,7 +1051,7 @@ namespace NetDaemon.Daemon
                                 if (domain == serviceCallData.Domain &&
                                     service == serviceCallData.Service)
                                 {
-                                    tasks.Add(func(serviceCallData.Data));
+                                    _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
                                 }
                             }
                         }
@@ -954,13 +1063,13 @@ namespace NetDaemon.Daemon
                                 if (domain == serviceCallData.Domain &&
                                     service == serviceCallData.Service)
                                 {
-                                    tasks.Add(func(serviceCallData.Data));
+                                    _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
                                 }
                             }
                             // Call the observable with no blocking
                             foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
                             {
-                                tasks.Add(Task.Run(() =>
+                                _eventHandlerTasks.Add(Task.Run(() =>
                                 {
                                     try
                                     {
@@ -990,13 +1099,8 @@ namespace NetDaemon.Daemon
                         if (domain == serviceCallData.Domain &&
                             service == serviceCallData.Service)
                         {
-                            tasks.Add(func(serviceCallData.Data));
+                            _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
                         }
-                    }
-
-                    if (tasks.Count > 0)
-                    {
-                        await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -1026,7 +1130,6 @@ namespace NetDaemon.Daemon
                     {
                         hassEvent.Data = new FluentExpandoObject(true, true, exObject);
                     }
-                    var tasks = new List<Task>();
                     foreach (var app in InternalRunningAppInstances)
                     {
                         if (app.Value is NetDaemonApp netDaemonApp)
@@ -1035,14 +1138,14 @@ namespace NetDaemon.Daemon
                             {
                                 if (ev == hassEvent.EventType)
                                 {
-                                    tasks.Add(func(ev, hassEvent.Data));
+                                    _eventHandlerTasks.Add(func(ev, hassEvent.Data));
                                 }
                             }
                             foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in netDaemonApp.EventFunctionCallbacks)
                             {
                                 if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
                                 {
-                                    tasks.Add(func(hassEvent.EventType, hassEvent.Data));
+                                    _eventHandlerTasks.Add(func(hassEvent.EventType, hassEvent.Data));
                                 }
                             }
                         }
@@ -1051,7 +1154,7 @@ namespace NetDaemon.Daemon
                             // Call the observable with no blocking
                             foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
                             {
-                                tasks.Add(Task.Run(() =>
+                                _eventHandlerTasks.Add(Task.Run(() =>
                                 {
                                     try
                                     {
@@ -1066,10 +1169,6 @@ namespace NetDaemon.Daemon
                                 }, token));
                             }
                         }
-                    }
-                    if (tasks.Count > 0)
-                    {
-                        await tasks.WhenAll(token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
@@ -1182,7 +1281,7 @@ namespace NetDaemon.Daemon
                     (string entityId, dynamic state, dynamic? attributes)
                     = await _setStateMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                    await _hassClient.SetState(entityId, state, attributes).ConfigureAwait(false);
+                    await SetStateDynamicAsync(entityId, state, attributes, false).ConfigureAwait(false);
 
                     hasLoggedError = false;
                 }
@@ -1436,5 +1535,7 @@ namespace NetDaemon.Daemon
 
             await callbackTaskList.WhenAll(_cancelToken).ConfigureAwait(false);
         }
+
+        public bool HomeAssistantHasNetDaemonIntegration() => _hasNetDaemonIntegration;
     }
 }

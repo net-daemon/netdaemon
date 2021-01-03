@@ -642,6 +642,20 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal("Area", state?.Area);
         }
 
+        [Fact]
+        public async Task ConnectToHAIntegrationShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
+            await DefaultDaemonHost.ConnectToHAIntegration().ConfigureAwait(false);
+
+            // ACT
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
+            // ASSERT
+            DefaultHassClientMock.Verify(n => n.GetApiCall<object>("netdaemon/info"));
+        }
+
         [Theory]
         [InlineData(false, null, null, null, null)]
         [InlineData(true, null, 10, null, 10)]
