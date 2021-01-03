@@ -142,7 +142,9 @@ namespace NetDaemon.Common
         /// <param name="entityId">Entity unique id</param>
         /// <param name="state">The state that being set, only primitives are supported</param>
         /// <param name="attributes">Attributes, use anonomous types and lowercase letters</param>
-        void SetState(string entityId, dynamic state, dynamic? attributes = null);
+        /// <param name="waitForResponse">If true, waits for object to set and returns the new EntityState else returns null</param>
+        /// <returns>Returns entitystate if waitForResponse is true</returns>
+        EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Access the underlying service provider for IOT access to services

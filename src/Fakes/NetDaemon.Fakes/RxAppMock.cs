@@ -330,7 +330,7 @@ namespace NetDaemon.Daemon.Fakes
                     Verify(x => x.SetState(
                         entityId,
                         (object)state,
-                        (object)attributes),
+                        (object)attributes, false),
                         t);
                 }
                 else
@@ -338,7 +338,7 @@ namespace NetDaemon.Daemon.Fakes
                     Verify(x => x.SetState(
                         entityId,
                         (object)state,
-                        It.IsAny<object>()),
+                        It.IsAny<object>(), false),
                         t);
                 }
             }
@@ -349,7 +349,7 @@ namespace NetDaemon.Daemon.Fakes
                     Verify(x => x.SetState(
                         entityId,
                         It.IsAny<object>(),
-                        (object)attributes),
+                        (object)attributes, false),
                         t);
                 }
                 else
@@ -357,7 +357,7 @@ namespace NetDaemon.Daemon.Fakes
                     Verify(x => x.SetState(
                         entityId,
                         It.IsAny<object>(),
-                        It.IsAny<object>()),
+                        It.IsAny<object>(), false),
                         t);
                 }
             }
