@@ -178,7 +178,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
         public IEnumerable<string> EntityIds => Daemon?.State.Select(n => n.EntityId) ??
-            throw new NetDaemonNullReferenceException("Deamon not expected to be null");
+            throw new NetDaemonNullReferenceException("Daemon not expected to be null");
 
         /// <summary>
         ///     Instance to Daemon service

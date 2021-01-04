@@ -3,13 +3,14 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Dynamic;
-using System.Threading;
 using System.Threading.Tasks;
 using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
 using NetDaemon.Daemon.Tests.DaemonRunner.App;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
+using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
@@ -410,6 +411,92 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
+        public async Task SetStateWaitForResultShouldCallCorrectFunction()
+        {
+            var (dynObj, expObj) = GetDynamicObject(
+                ("attr", "value")
+            );
+            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", dynObj, true).ConfigureAwait(false);
+
+            DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
+        }
+
+        [Fact]
+        public async Task SetStateDynamicNullReturnOfGetStateShouldCallCorrectFunction()
+        {
+            var (dynObj, expObj) = GetDynamicObject(
+                ("attr", "value")
+            );
+            DefaultDaemonHost.HasNetDaemonIntegration = true;
+            DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(Task.FromResult<HassState?>(null));
+            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
+
+            DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
+            It.IsAny<object>(), true), Times.Once);
+
+            DefaultHassClientMock.Verify(n => n.GetState("sensor.any_sensor"));
+            Assert.Null(entity);
+        }
+
+        [Fact]
+        public async Task SetStateDynamicShouldCallCorrectFunction()
+        {
+            var (dynObj, expObj) = GetDynamicObject(
+                ("attr", "value")
+            );
+            DefaultDaemonHost.HasNetDaemonIntegration = true;
+            DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(Task.FromResult<HassState?>(new HassState()));
+            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
+
+            DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
+            It.IsAny<object>(), true), Times.Once);
+
+            DefaultHassClientMock.Verify(n => n.GetState("sensor.any_sensor"));
+            Assert.NotNull(entity);
+        }
+
+        private class MyTestApp : NetDaemonRxApp { }
+        [Fact]
+        public void SortByDependecyTest()
+        {
+            // ARRANGE
+            var apps = new List<INetDaemonAppBase>
+            {
+                new MyTestApp()
+                {
+                    Id = "test",
+                    Dependencies = new List<string> { "dependent_app" },
+                },
+                new MyTestApp()
+                {
+                    Id = "dependent_app",
+                    Dependencies = new List<string>(),
+                }
+            };
+            // ACT
+            var sorted = NetDaemonHost.SortByDependency(apps);
+
+            // ASSERT
+            Assert.Equal(2, sorted.Count);
+            Assert.Equal("dependent_app", sorted[0].Id);
+        }
+        [Fact]
+        public async Task SetStateDynamicWithNoWaitShouldCallCorrectFunction()
+        {
+            var (dynObj, expObj) = GetDynamicObject(
+                ("attr", "value")
+            );
+            DefaultDaemonHost.HasNetDaemonIntegration = true;
+            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", new { attr = "value" }, false).ConfigureAwait(false);
+
+            DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
+            It.IsAny<object>(), false), Times.Once);
+
+            DefaultHassClientMock.Verify(n => n.GetState("sensor.any_sensor"), Times.Never);
+            Assert.Null(entity);
+        }
+
+        [Fact]
         public async Task SetStateShouldReturnCorrectData()
         {
             await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value")).ConfigureAwait(false);
@@ -418,6 +505,21 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
+        }
+
+        [Fact]
+        public async Task GetServicesShouldCallCorrectFunctions()
+        {
+            var services = await DefaultDaemonHost.GetAllServices().ConfigureAwait(false);
+
+            DefaultHassClientMock.Verify(n => n.GetServices(), Times.Once);
+        }
+        [Fact]
+        public async Task SetDaemonStateAsyncShouldCallCorrectFunctions()
+        {
+            await DefaultDaemonHost.SetDaemonStateAsync(5, 2).ConfigureAwait(false);
+
+            DefaultHassClientMock.Verify(n => n.SetState("netdaemon.status", "Connected", It.IsAny<object>()), Times.Once);
         }
 
         [Fact]

@@ -7,12 +7,12 @@ using NetDaemon.Common;
 namespace NetDaemon.Daemon
 {
     /// <summary>
-    ///     Interface for objects implementing the InstanceDeamonApps features
+    ///     Interface for objects implementing the InstanceDaemonApps features
     /// </summary>
     public interface IInstanceDaemonApp
     {
         /// <summary>
-        ///     Number of instanced deamonapps
+        ///     Number of instanced daemonapps
         /// </summary>
         int Count { get; }
 

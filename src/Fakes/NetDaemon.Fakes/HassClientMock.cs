@@ -70,7 +70,8 @@ namespace NetDaemon.Daemon.Fakes
             Setup(x => x.SetState(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object?>())).Returns<string, string, object>(
                 (entityId, state, attributes) =>
                 {
-                    var fluentAttr = (FluentExpandoObject)attributes;
+
+                    var fluentAttr = attributes.ToExpandoObject();
                     var attrib = new Dictionary<string, object>();
                     foreach (var attr in (IDictionary<string, object>)fluentAttr)
                         attrib[attr.Key] = attr.Value;

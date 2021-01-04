@@ -86,7 +86,8 @@ namespace NetDaemon.Daemon
         private CancellationToken _cancelToken;
 
         private CancellationTokenSource? _cancelTokenSource;
-        private bool _hasNetDaemonIntegration;
+
+        internal bool HasNetDaemonIntegration;
 
         public IServiceProvider? ServiceProvider { get; }
 
@@ -232,7 +233,7 @@ namespace NetDaemon.Daemon
             Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
-        public void EnableApplicationDiscoveryService()
+        private void EnableApplicationDiscoveryService()
         {
             // For service call reload_apps we do just that... reload the fucking apps yay :)
             ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps().ConfigureAwait(false));
@@ -532,7 +533,7 @@ namespace NetDaemon.Daemon
                 var x = await _hassClient.GetApiCall<NetDaemonInfo>("netdaemon/info").ConfigureAwait(false);
                 if (x is not null)
                 {
-                    _hasNetDaemonIntegration = true;
+                    HasNetDaemonIntegration = true;
                     return;
                 }
             }
@@ -586,12 +587,15 @@ namespace NetDaemon.Daemon
         {
             _cancelToken.ThrowIfCancellationRequested();
 
-            await SetStateAsync(
+            await SetStateDynamicAsync(
                 "netdaemon.status",
                 "Connected", // State will always be connected, otherwise state could not be set.
-                ("number_of_loaded_apps", numberOfLoadedApps),
-                ("number_of_running_apps", numberOfRunningApps),
-                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
+                new
+                {
+                    number_of_loaded_apps = numberOfLoadedApps,
+                    number_of_running_apps = numberOfRunningApps,
+                    version = GetType().Assembly.GetName().Version?.ToString() ?? "N/A",
+                }, false).ConfigureAwait(false);
         }
 
         public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false)
@@ -623,7 +627,7 @@ namespace NetDaemon.Daemon
             try
             {
                 // Use expando object as all other methods
-                if (_hasNetDaemonIntegration &&
+                if (HasNetDaemonIntegration &&
                     _supportedDomains.Contains(entityId.Split('.')[0]))
                 {
                     // We have an integration that will help persist 
@@ -689,7 +693,7 @@ namespace NetDaemon.Daemon
             {
                 // Use expando object as all other methods
                 dynamic dynAttributes = attributes.ToDynamic();
-                if (_hasNetDaemonIntegration)
+                if (HasNetDaemonIntegration)
                 {
                     // We have an integration that will help persist 
                     await CallServiceAsync("netdaemon", "entity_create",
@@ -1536,6 +1540,6 @@ namespace NetDaemon.Daemon
             await callbackTaskList.WhenAll(_cancelToken).ConfigureAwait(false);
         }
 
-        public bool HomeAssistantHasNetDaemonIntegration() => _hasNetDaemonIntegration;
+        public bool HomeAssistantHasNetDaemonIntegration() => HasNetDaemonIntegration;
     }
 }
