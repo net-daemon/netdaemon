@@ -144,26 +144,25 @@ namespace NetDaemon.Common
             bool isDisabled = Storage.__IsDisabled ?? false;
             var appInfo = Daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             var appState = appInfo?.State as string;
-
             if (isDisabled)
             {
                 IsEnabled = false;
-                if (appState == "on")
+                if (appState == "on" || appInfo is null)
                 {
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
-                    await Daemon.SetStateAsync(EntityId, "off").ConfigureAwait(false);
+                    await Daemon!.SetStateAsync(EntityId, "off").ConfigureAwait(false);
                 }
                 return;
             }
             else
             {
                 IsEnabled = true;
-                if (appState == "off")
+                if (appState == "off" || appInfo is null)
                 {
                     dynamic serviceData = new FluentExpandoObject();
                     serviceData.entity_id = EntityId;
-                    await Daemon.SetStateAsync(EntityId, "on").ConfigureAwait(false);
+                    await Daemon!.SetStateAsync(EntityId, "on").ConfigureAwait(false);
                 }
                 return;
             }
@@ -178,7 +177,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
         public IEnumerable<string> EntityIds => Daemon?.State.Select(n => n.EntityId) ??
-            throw new NetDaemonNullReferenceException("Deamon not expected to be null");
+            throw new NetDaemonNullReferenceException("Daemon not expected to be null");
 
         /// <summary>
         ///     Instance to Daemon service

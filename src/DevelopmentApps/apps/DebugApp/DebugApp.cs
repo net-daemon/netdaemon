@@ -1,4 +1,6 @@
 using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 
@@ -25,6 +27,22 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         public void CallMeFromHass(dynamic data)
         {
             Log("A call from hass! {data}", data);
+        }
+
+        [HomeAssistantServiceCall]
+        public async Task Testing(dynamic data)
+        {
+            Log("Wait for a update");
+            try
+            {
+                Entity("input_select.who_cooks").StateChanges.Timeout(TimeSpan.FromSeconds(20)).Take(1).Wait();
+                Log("State changed as expected");
+            }
+            catch (System.Exception)
+            {
+                Log("We had timeout");
+            }
+            await Task.Delay(10);
         }
     }
 }

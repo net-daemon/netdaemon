@@ -86,7 +86,8 @@ namespace NetDaemon.Daemon
         private CancellationToken _cancelToken;
 
         private CancellationTokenSource? _cancelTokenSource;
-        private bool _hasNetDaemonIntegration;
+
+        internal bool HasNetDaemonIntegration;
 
         public IServiceProvider? ServiceProvider { get; }
 
@@ -232,7 +233,7 @@ namespace NetDaemon.Daemon
             Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
-        public void EnableApplicationDiscoveryService()
+        private void EnableApplicationDiscoveryService()
         {
             // For service call reload_apps we do just that... reload the fucking apps yay :)
             ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps().ConfigureAwait(false));
@@ -532,7 +533,7 @@ namespace NetDaemon.Daemon
                 var x = await _hassClient.GetApiCall<NetDaemonInfo>("netdaemon/info").ConfigureAwait(false);
                 if (x is not null)
                 {
-                    _hasNetDaemonIntegration = true;
+                    HasNetDaemonIntegration = true;
                     return;
                 }
             }
@@ -586,12 +587,15 @@ namespace NetDaemon.Daemon
         {
             _cancelToken.ThrowIfCancellationRequested();
 
-            await SetStateAsync(
-                "netdaemon.status",
+            await SetStateAndWaitForResponseAsync(
+                "sensor.netdaemon_status",
                 "Connected", // State will always be connected, otherwise state could not be set.
-                ("number_of_loaded_apps", numberOfLoadedApps),
-                ("number_of_running_apps", numberOfRunningApps),
-                ("version", GetType().Assembly.GetName().Version?.ToString() ?? "N/A")).ConfigureAwait(false);
+                new
+                {
+                    number_of_loaded_apps = numberOfLoadedApps,
+                    number_of_running_apps = numberOfRunningApps,
+                    version = GetType().Assembly.GetName().Version?.ToString() ?? "N/A",
+                }, false).ConfigureAwait(false);
         }
 
         public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false)
@@ -606,12 +610,12 @@ namespace NetDaemon.Daemon
             }
             else
             {
-                return SetStateDynamicAsync(entityId, state, attributes, true).Result;
+                return SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
             }
         }
 
         private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
-        public async Task<EntityState?> SetStateDynamicAsync(string entityId, dynamic state,
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
                     dynamic? attributes, bool waitForResponse)
         {
             _cancelToken.ThrowIfCancellationRequested();
@@ -623,11 +627,12 @@ namespace NetDaemon.Daemon
             try
             {
                 // Use expando object as all other methods
-                if (_hasNetDaemonIntegration &&
+                if (HasNetDaemonIntegration &&
                     _supportedDomains.Contains(entityId.Split('.')[0]))
                 {
+                    var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
                     // We have an integration that will help persist 
-                    await CallServiceAsync("netdaemon", "entity_create",
+                    await CallServiceAsync("netdaemon", service,
                             new
                             {
                                 entity_id = entityId,
@@ -689,10 +694,11 @@ namespace NetDaemon.Daemon
             {
                 // Use expando object as all other methods
                 dynamic dynAttributes = attributes.ToDynamic();
-                if (_hasNetDaemonIntegration)
+                if (HasNetDaemonIntegration)
                 {
+                    var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
                     // We have an integration that will help persist 
-                    await CallServiceAsync("netdaemon", "entity_create",
+                    await CallServiceAsync("netdaemon", service,
                             new
                             {
                                 entity_id = entityId,
@@ -1281,7 +1287,7 @@ namespace NetDaemon.Daemon
                     (string entityId, dynamic state, dynamic? attributes)
                     = await _setStateMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                    await SetStateDynamicAsync(entityId, state, attributes, false).ConfigureAwait(false);
+                    await SetStateAndWaitForResponseAsync(entityId, state, attributes, false).ConfigureAwait(false);
 
                     hasLoggedError = false;
                 }
@@ -1536,6 +1542,6 @@ namespace NetDaemon.Daemon
             await callbackTaskList.WhenAll(_cancelToken).ConfigureAwait(false);
         }
 
-        public bool HomeAssistantHasNetDaemonIntegration() => _hasNetDaemonIntegration;
+        public bool HomeAssistantHasNetDaemonIntegration() => HasNetDaemonIntegration;
     }
 }
