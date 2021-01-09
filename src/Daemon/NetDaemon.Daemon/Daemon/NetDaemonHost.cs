@@ -587,8 +587,8 @@ namespace NetDaemon.Daemon
         {
             _cancelToken.ThrowIfCancellationRequested();
 
-            await SetStateDynamicAsync(
-                "netdaemon.status",
+            await SetStateAndWaitForResponseAsync(
+                "sensor.netdaemon_status",
                 "Connected", // State will always be connected, otherwise state could not be set.
                 new
                 {
@@ -610,12 +610,12 @@ namespace NetDaemon.Daemon
             }
             else
             {
-                return SetStateDynamicAsync(entityId, state, attributes, true).Result;
+                return SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
             }
         }
 
         private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
-        public async Task<EntityState?> SetStateDynamicAsync(string entityId, dynamic state,
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
                     dynamic? attributes, bool waitForResponse)
         {
             _cancelToken.ThrowIfCancellationRequested();
@@ -630,8 +630,9 @@ namespace NetDaemon.Daemon
                 if (HasNetDaemonIntegration &&
                     _supportedDomains.Contains(entityId.Split('.')[0]))
                 {
+                    var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
                     // We have an integration that will help persist 
-                    await CallServiceAsync("netdaemon", "entity_create",
+                    await CallServiceAsync("netdaemon", service,
                             new
                             {
                                 entity_id = entityId,
@@ -695,8 +696,9 @@ namespace NetDaemon.Daemon
                 dynamic dynAttributes = attributes.ToDynamic();
                 if (HasNetDaemonIntegration)
                 {
+                    var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
                     // We have an integration that will help persist 
-                    await CallServiceAsync("netdaemon", "entity_create",
+                    await CallServiceAsync("netdaemon", service,
                             new
                             {
                                 entity_id = entityId,
@@ -1285,7 +1287,7 @@ namespace NetDaemon.Daemon
                     (string entityId, dynamic state, dynamic? attributes)
                     = await _setStateMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                    await SetStateDynamicAsync(entityId, state, attributes, false).ConfigureAwait(false);
+                    await SetStateAndWaitForResponseAsync(entityId, state, attributes, false).ConfigureAwait(false);
 
                     hasLoggedError = false;
                 }

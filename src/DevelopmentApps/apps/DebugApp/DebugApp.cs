@@ -21,15 +21,6 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         {
             var uid = Guid.NewGuid();
             RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello developer! from instance {instanceId} - {id}", _instanceId, uid));
-            // RunIn(TimeSpan.FromSeconds(1), () => SetState("sensor.awesome", 15, new { display_name = "kalle" }, waitForResponse: false));
-            var x = SetState("sensor.awesome", 15, new { display_name = "kalle" }, waitForResponse: true);
-            // Log($"State: {x?.State}");
-            // RunIn(TimeSpan.FromSeconds(1), () =>
-            // {
-            //     Log("Wait for a update2");
-            //     Entity("input_select.who_cooks").StateChanges.Timeout(TimeSpan.FromSeconds(20)).Take(1).Wait();
-            //     Log("State changed as expected2");
-            // });
         }
 
         [HomeAssistantServiceCall]

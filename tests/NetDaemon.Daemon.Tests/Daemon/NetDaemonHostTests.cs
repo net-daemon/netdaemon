@@ -416,7 +416,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
             );
-            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", dynObj, true).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", dynObj, true).ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
         }
@@ -429,7 +429,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             );
             DefaultDaemonHost.HasNetDaemonIntegration = true;
             DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(Task.FromResult<HassState?>(null));
-            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
             It.IsAny<object>(), true), Times.Once);
@@ -446,7 +446,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             );
             DefaultDaemonHost.HasNetDaemonIntegration = true;
             DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(Task.FromResult<HassState?>(new HassState()));
-            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
             It.IsAny<object>(), true), Times.Once);
@@ -487,7 +487,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultDaemonHost.HasNetDaemonIntegration = true;
-            var entity = await DefaultDaemonHost.SetStateDynamicAsync("sensor.any_sensor", "on", new { attr = "value" }, false).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new { attr = "value" }, false).ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
             It.IsAny<object>(), false), Times.Once);
@@ -519,7 +519,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             await DefaultDaemonHost.SetDaemonStateAsync(5, 2).ConfigureAwait(false);
 
-            DefaultHassClientMock.Verify(n => n.SetState("netdaemon.status", "Connected", It.IsAny<object>()), Times.Once);
+            DefaultHassClientMock.Verify(n => n.SetState("sensor.netdaemon_status", "Connected", It.IsAny<object>()), Times.Once);
         }
 
         [Fact]
