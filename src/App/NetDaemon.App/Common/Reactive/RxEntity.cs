@@ -19,7 +19,8 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="state">The state to set, primitives only</param>
         /// <param name="attributes">The attributes to set. Use anonomous type</param>
-        void SetState(dynamic state, dynamic? attributes = null);
+        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
+        void SetState(dynamic state, dynamic? attributes = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Toggles state on/off on entity
@@ -94,11 +95,11 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public void SetState(dynamic state, dynamic? attributes = null)
+        public void SetState(dynamic state, dynamic? attributes = null, bool waitForResponse = false)
         {
             foreach (var entityId in EntityIds)
             {
-                DaemonRxApp.SetState(entityId, state, attributes);
+                DaemonRxApp.SetState(entityId, state, attributes, waitForResponse);
             }
         }
 
@@ -125,7 +126,8 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="service">Name of the service to call</param>
         /// <param name="data">Data to provide</param>
-        public void CallService(string service, dynamic? data = null)
+        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
+        public void CallService(string service, dynamic? data = null, bool waitForResponse = false)
         {
             if (EntityIds?.Any() != true)
                 return;
@@ -153,7 +155,7 @@ namespace NetDaemon.Common.Reactive
 
                 serviceData["entity_id"] = entityId;
 
-                DaemonRxApp.CallService(domain, service, serviceData);
+                DaemonRxApp.CallService(domain, service, serviceData, waitForResponse);
             }
         }
 

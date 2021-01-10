@@ -62,10 +62,10 @@ namespace NetDaemon.Common.Reactive
             Daemon?.State ?? new List<EntityState>();
 
         /// <inheritdoc/>
-        public void CallService(string domain, string service, dynamic? data)
+        public void CallService(string domain, string service, dynamic? data, bool waitForResponse = false)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
-            Daemon.CallService(domain, service, data);
+            Daemon.CallService(domain, service, data, waitForResponse);
         }
 
         /// <inheritdoc/>
@@ -73,7 +73,6 @@ namespace NetDaemon.Common.Reactive
         {
             // We use Task.Delay instead of Thread.Sleep so we can stop timers on cancellation tokens
             Task.Delay(timeout, _cancelTimers.Token).Wait(_cancelTimers.Token);
-            Logger.LogError("WE REACHED END OF DELAY!");
         }
 
         /// <inheritdoc/>
@@ -83,7 +82,6 @@ namespace NetDaemon.Common.Reactive
             using var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_cancelTimers.Token, token);
             // We use Task.Delay instead of Thread.Sleep so we can stop timers on cancellation tokens
             Task.Delay(timeout, combinedToken.Token).Wait(combinedToken.Token);
-            Logger.LogError("WE REACHED END OF DELAY2!");
         }
 
         /// <summary>
