@@ -29,7 +29,8 @@ namespace NetDaemon.Common
         /// <param name="domain">The domain of the service</param>
         /// <param name="service">The service being called</param>
         /// <param name="data">Any data that the service requires</param>
-        void CallService(string domain, string service, dynamic? data = null);
+        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
+        void CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Calls a service

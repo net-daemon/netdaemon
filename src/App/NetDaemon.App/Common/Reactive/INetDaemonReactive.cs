@@ -68,7 +68,8 @@ namespace NetDaemon.Common.Reactive
         /// <param name="domain">Domain of sevice</param>
         /// <param name="service">Service name</param>
         /// <param name="data">Data provided to service. Use anonomous type</param>
-        void CallService(string domain, string service, dynamic? data);
+        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
+        void CallService(string domain, string service, dynamic? data, bool waitForResponse = false);
 
         /// <summary>
         ///     Calls service in Home Assistant

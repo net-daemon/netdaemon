@@ -184,7 +184,7 @@ namespace NetDaemon.Daemon.Fakes
             domain ??= It.IsAny<string>();
             service ??= It.IsAny<string>();
             data ??= It.IsAny<object>();
-            Verify(x => x.CallService(domain, service, It.IsAny<object>()), t);
+            Verify(x => x.CallService(domain, service, It.IsAny<object>(), It.IsAny<bool>()), t);
         }
 
         /// <summary>
@@ -276,14 +276,16 @@ namespace NetDaemon.Daemon.Fakes
                 {
                     Verify(x => x.Entity(entityId).SetState(
                         (object)state,
-                        (object)attributes),
+                        (object)attributes,
+                        It.IsAny<bool>()),
                         t);
                 }
                 else
                 {
                     Verify(x => x.Entity(entityId).SetState(
                         (object)state,
-                        It.IsAny<object>()),
+                        It.IsAny<object>(),
+                        It.IsAny<bool>()),
                         t);
                 }
             }
@@ -293,14 +295,16 @@ namespace NetDaemon.Daemon.Fakes
                 {
                     Verify(x => x.Entity(entityId).SetState(
                         It.IsAny<object>(),
-                        (object)attributes),
+                        (object)attributes,
+                        It.IsAny<bool>()),
                         t);
                 }
                 else
                 {
                     Verify(x => x.Entity(entityId).SetState(
                         It.IsAny<object>(),
-                        It.IsAny<object>()),
+                        It.IsAny<object>(),
+                        It.IsAny<bool>()),
                         t);
                 }
             }

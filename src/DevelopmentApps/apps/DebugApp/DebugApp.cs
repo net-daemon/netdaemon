@@ -21,6 +21,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         {
             var uid = Guid.NewGuid();
             RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello developer! from instance {instanceId} - {id}", _instanceId, uid));
+            CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works!" }, true);
         }
 
         [HomeAssistantServiceCall]

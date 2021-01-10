@@ -159,12 +159,19 @@ namespace NetDaemon.Daemon
             return await _hassClient.GetServices().ConfigureAwait(false);
         }
 
-        public void CallService(string domain, string service, dynamic? data = null)
+        public void CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
             _cancelToken.ThrowIfCancellationRequested();
 
-            if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
-                throw new NetDaemonException("Servicecall queue full!");
+            if (!waitForResponse)
+            {
+                if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
+                    throw new NetDaemonException("Servicecall queue full!");
+            }
+            else
+            {
+                CallServiceAsync(domain, service, data, true).Result();
+            }
         }
 
         [SuppressMessage("", "CA1031")]
