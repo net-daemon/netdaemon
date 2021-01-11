@@ -51,6 +51,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             .Where(e => e.New?.State == "on" && e.Old?.State == "off")
             .Subscribe(_ => _app.Entity("sensor.mysensor").SetState(20, new { battery_level = 90 }));
 
+            _app.Entities(n => n.EntityId!.EndsWith("entities", StringComparison.InvariantCultureIgnoreCase)).StateChanges.Subscribe(_ => _app.Entity("light.kitchen").TurnOn());
+
             _app.Entity("sensor.temperature")
                 .StateAllChanges
                 .Where(e => e.New?.Attribute?.battery_level < 15)
