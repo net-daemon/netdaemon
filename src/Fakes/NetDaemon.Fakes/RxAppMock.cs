@@ -4,6 +4,9 @@ using NetDaemon.Common;
 using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 
 namespace NetDaemon.Daemon.Fakes
 {
@@ -14,9 +17,14 @@ namespace NetDaemon.Daemon.Fakes
     public class RxAppMock : Mock<INetDaemonRxApp>
     {
         /// <summary>
+        ///     Current entities and states
+        /// </summary>
+        public IList<EntityState> MockState { get; } = new List<EntityState>();
+
+        /// <summary>
         ///     Observable fake states
         /// </summary>
-        public ObservableBase<(EntityState, EntityState)> StateChangesObservable { get; }
+        public ObservableBase<(EntityState Old, EntityState New)> StateChangesObservable { get; }
 
         /// <summary>
         ///     Observalbe fake events
@@ -35,12 +43,29 @@ namespace NetDaemon.Daemon.Fakes
             ReactiveEventMock r = new(this);//new EventObservable(loggerMock.Object, Object);
 
             Setup(n => n.EventChanges).Returns(r);
-            Setup(n => n.Entity(It.IsAny<string>())).Returns<string>(_ =>
+            Setup(n => n.Entity(It.IsAny<string>())).Returns<string>(entityId =>
             {
                 var m = new Mock<IRxEntityBase>();
-                m.Setup(n => n.StateChanges).Returns(StateChangesObservable);
-                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable);
+                m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => f.New?.EntityId == entityId && f.New?.State != f.Old?.State));
+                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => f.New?.EntityId == entityId));
                 return m.Object;
+            });
+
+            Setup(n => n.Entities(It.IsAny<string[]>())).Returns<string[]>(entityIds =>
+            {
+                var m = new Mock<IRxEntityBase>();
+                m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => entityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State));
+                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => entityIds.Contains(f.New.EntityId)));
+                return m.Object;
+            });
+
+            Setup(n => n.Entities(It.IsAny<Func<IEntityProperties, bool>>())).Returns<Func<IEntityProperties, bool>>(func =>
+            {
+                var x = MockState.Where(func);
+                var y = x.Select(n => n.EntityId).ToArray();
+                var m = new Mock<IRxEntityBase>();
+                m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId) && f.New?.State != f.Old?.State));
+                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId))); return m.Object;
             });
         }
 
