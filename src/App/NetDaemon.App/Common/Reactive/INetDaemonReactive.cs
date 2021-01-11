@@ -8,7 +8,7 @@ namespace NetDaemon.Common.Reactive
     /// <summary>
     ///     Implements the System.Reactive pattern for NetDaemon Apps
     /// </summary>
-    public interface INetDaemonRxApp : INetDaemonAppBase, IRxEntity
+    public interface INetDaemonRxApp : INetDaemonAppBase, IRxSchedule, IRxEntity
     {
         /// <summary>
         ///     The observable events
@@ -143,30 +143,35 @@ namespace NetDaemon.Common.Reactive
         ///     Run daily at a specific time
         /// </summary>
         /// <param name="time">The time in "hh:mm:ss" format</param>
-        IObservable<long> RunDaily(string time);
+        /// <param name="action">Action to run</param>
+        IDisposable RunDaily(string time, Action action);
 
         /// <summary>
         ///     Shedules an action every (timespan)
         /// </summary>
         /// <param name="timespan">The timespan to schedule</param>
-        IObservable<long> RunEvery(TimeSpan timespan);
+        /// <param name="action">Action to run</param>
+        IDisposable RunEvery(TimeSpan timespan, Action action);
 
         /// <summary>
         ///     Shedules an action every (timespan)
         /// </summary>
         /// <param name="time">The time in "mm:ss" format</param>
-        IObservable<long> RunEveryHour(string time);
+        /// <param name="action">Action to run</param>
+        IDisposable RunEveryHour(string time, Action action);
 
         /// <summary>
         ///     Shedules an action every (timespan)
         /// </summary>
         /// <param name="second">The timespan to schedule</param>
-        IObservable<long> RunEveryMinute(short second);
+        /// <param name="action">Action to run</param>
+        IDisposable RunEveryMinute(short second, Action action);
 
         /// <summary>
         ///     Delays excecution of an action (timespan) time
         /// </summary>
         /// <param name="timespan">Timespan to delay</param>
-        IObservable<long> RunIn(TimeSpan timespan);
+        /// <param name="action">Action to run</param>
+        IDisposable RunIn(TimeSpan timespan, Action action);
     }
 }
