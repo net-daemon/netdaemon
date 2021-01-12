@@ -93,6 +93,25 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        public void TestFakeMockableGetStateForEntity()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            // Have to add the entity before initialize to support lambda selections
+            MockState.Add(new() { EntityId = "sensor.some_other_entity" });
+            MockState.Add(new() { EntityId = "binary_sensor.test_state_entity" });
+
+            app.Initialize();
+
+            // ACT
+            TriggerStateChange("sensor.some_other_entity", "off", "on");
+            TriggerStateChange("binary_sensor.test_state_entity", "off", "on");
+
+            // ASSERT
+            VerifyEntityTurnOn("light.state_light");
+        }
+
+        [Fact]
         public void TestFakeMockableBinarySensorAppEntitiesFalse()
         {
             // ARRANGE

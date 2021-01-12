@@ -51,6 +51,8 @@ namespace NetDaemon.Daemon.Fakes
                 return m.Object;
             });
 
+            Setup(n => n.State(It.IsAny<string>())).Returns<string>(entityId => MockState.First(state => state.EntityId == entityId));
+
             Setup(n => n.Entities(It.IsAny<string[]>())).Returns<string[]>(entityIds =>
             {
                 var m = new Mock<IRxEntityBase>();
@@ -118,6 +120,12 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="newState">New state</param>
         public void TriggerStateChange(EntityState oldState, EntityState newState)
         {
+            var state = MockState.FirstOrDefault(entity => entity.EntityId == newState.EntityId);
+            var index = MockState.IndexOf(state!);
+
+            if (index != -1)
+                MockState[index] = newState;
+
             // Call the observable with no blocking
             foreach (var observer in ((StateChangeObservable)StateChangesObservable).Observers)
             {
@@ -131,6 +139,7 @@ namespace NetDaemon.Daemon.Fakes
                     throw;
                 }
             }
+            
         }
 
         /// <summary>

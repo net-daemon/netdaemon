@@ -64,6 +64,14 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             _app.SetState("sensor.any_sensor", 20, new { battery_level = 70 });
             _app.SetState("sensor.any_sensor2", 20, new { battery_level = 70 });
+
+            _app.Entity("binary_sensor.test_state_entity")
+                .StateChanges
+                .Subscribe(_ => {
+                    if (_app.State("sensor.some_other_entity")?.State == "on")
+                        _app.Entity("light.state_light").TurnOn();
+                });
         }
+
     }
 }
