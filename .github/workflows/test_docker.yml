@@ -23,8 +23,7 @@ jobs:
       -
         name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
-      - name: 🔓 Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
