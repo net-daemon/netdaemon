@@ -71,6 +71,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
                     if (_app.State("sensor.some_other_entity")?.State == "on")
                         _app.Entity("light.state_light").TurnOn();
                 });
+
+            _app.RunIn(TimeSpan.FromMilliseconds(100), () => _app.Entity("binary_sensor.fake_run_in_happened").TurnOn());
         }
 
     }
