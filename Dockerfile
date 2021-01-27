@@ -13,7 +13,7 @@ RUN \
     && rm -fr /tmp/* /var/{cache,log}/*  
 
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:5.0.101-buster-slim-amd64 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:5.0.102-1-focal-amd64 as netbuilder
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -27,7 +27,7 @@ COPY ./src /usr/src
 RUN dotnet publish /usr/src/Service/Service.csproj -o "/daemon"
 
 # Final stage, create the runtime container
-FROM mcr.microsoft.com/dotnet/sdk:5.0.100
+FROM mcr.microsoft.com/dotnet/sdk:5.0.102-1-focal-amd64
 
 # Install S6 and the Admin site
 RUN apt update && apt install -y \
