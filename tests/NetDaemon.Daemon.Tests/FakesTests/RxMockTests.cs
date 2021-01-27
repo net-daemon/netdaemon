@@ -143,6 +143,72 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        public void TestFakeEntityTurnOnStoresState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            MockState.Add(new() { EntityId = "light.livingroom" });
+
+            app.Initialize();
+
+            // ACT
+            TriggerEvent("hello_event", "some_domain", null);
+
+            // ASSERT
+            VerifyState("light.livingroom", "on");
+        }
+
+        [Fact]
+        public void TestFakeEntityTurnOffStoresState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            MockState.Add(new() { EntityId = "light.livingroom" });
+
+            app.Initialize();
+
+            // ACT
+            TriggerEvent("bye_event", "some_domain", null);
+
+            // ASSERT
+            VerifyState("light.livingroom", "off");
+        }
+
+        [Fact]
+        public void TestFakeEntitiesTurnOnStoresState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            MockState.Add(new() { EntityId = "light.kitchen" });
+            MockState.Add(new() { EntityId = "binary_sensor.test_entities" });
+
+            app.Initialize();
+
+            // ACT
+            TriggerStateChange("binary_sensor.test_entities", "off", "on");
+
+            // ASSERT
+            VerifyState("light.kitchen", "on");
+        }
+
+        [Fact]
+        public void TestFakeEntitiesTurnOffStoresState()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            MockState.Add(new() { EntityId = "light.kitchen" });
+            MockState.Add(new() { EntityId = "binary_sensor.test_entities" });
+
+            app.Initialize();
+
+            // ACT
+            TriggerStateChange("binary_sensor.test_entities", "on", "off");
+
+            // ASSERT
+            VerifyState("light.kitchen", "off");
+        }
+
+        [Fact]
         public void TestFakeEvent2TurnsOnLight()
         {
             // ARRANGE

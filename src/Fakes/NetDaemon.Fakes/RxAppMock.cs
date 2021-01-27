@@ -48,6 +48,8 @@ namespace NetDaemon.Daemon.Fakes
                 var m = new Mock<IRxEntityBase>();
                 m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => f.New?.EntityId == entityId && f.New?.State != f.Old?.State));
                 m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => f.New?.EntityId == entityId));
+                m.Setup(e => e.TurnOn(It.IsAny<object?>())).Callback<object?>(attributes => UpdateMockState(entityId, "on", attributes));
+                m.Setup(e => e.TurnOff(It.IsAny<object?>())).Callback<object?>(attributes => UpdateMockState(entityId, "off", attributes));
                 return m.Object;
             });
 
@@ -58,6 +60,8 @@ namespace NetDaemon.Daemon.Fakes
                 var m = new Mock<IRxEntityBase>();
                 m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => entityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State));
                 m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => entityIds.Contains(f.New.EntityId)));
+                m.Setup(e => e.TurnOn(It.IsAny<object?>())).Callback<object?>(attributes => UpdateMockState(entityIds, "on", attributes));
+                m.Setup(e => e.TurnOff(It.IsAny<object?>())).Callback<object?>(attributes => UpdateMockState(entityIds, "off", attributes));
                 return m.Object;
             });
 
@@ -67,9 +71,27 @@ namespace NetDaemon.Daemon.Fakes
                 var y = x.Select(n => n.EntityId).ToArray();
                 var m = new Mock<IRxEntityBase>();
                 m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId) && f.New?.State != f.Old?.State));
-                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId))); return m.Object;
+                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId))); 
+                m.Setup(e => e.TurnOn(It.IsAny<object?>())).Throws(new NotImplementedException());
+                m.Setup(e => e.TurnOff(It.IsAny<object?>())).Throws(new NotImplementedException());
+                return m.Object;
             });
         }
+
+        private void UpdateMockState(string[] entityIds, string newState, object? attributes)
+        {
+            foreach (var entityId in entityIds) UpdateMockState(entityId, newState, attributes);
+        }
+
+        private void UpdateMockState(string entityId, string newState, object? attributes)
+        {
+            
+            var state = MockState.FirstOrDefault(e => e.EntityId == entityId);
+            if (state == null) return;
+            MockState.Remove(state);
+            MockState.Add(new EntityState() { EntityId = entityId, State = newState, Attribute = attributes });
+        }
+
 
         /// <summary>
         ///     Triggers an general Home Assistant event
@@ -139,7 +161,7 @@ namespace NetDaemon.Daemon.Fakes
                     throw;
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -342,6 +364,31 @@ namespace NetDaemon.Daemon.Fakes
                         t);
                 }
             }
+        }
+
+        public void VerifyState(string entityId, dynamic? state = null, dynamic? attributes = null)
+        {
+            var stateResult = false;
+            if (attributes is not null && attributes is not object)
+                throw new NotSupportedException("attributes needs to be an object");
+
+            if (state is not null && state is not object)
+                throw new NotSupportedException("state needs to be an object");
+
+            var mockState = MockState.First(e => e.EntityId == entityId);
+            
+            if (state is not null)
+            {
+                if (attributes is not null)
+                    stateResult = mockState.State == state && mockState.Attribute == attributes;
+                else
+                    stateResult = mockState.State == state;
+            }
+
+            if (attributes is not null)
+                stateResult = mockState.Attribute == attributes;
+
+            if (!stateResult) throw new ArgumentOutOfRangeException(nameof(state), "State does not match");
         }
 
         /// <summary>

@@ -51,7 +51,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             .Where(e => e.New?.State == "on" && e.Old?.State == "off")
             .Subscribe(_ => _app.Entity("sensor.mysensor").SetState(20, new { battery_level = 90 }));
 
-            _app.Entities(n => n.EntityId!.EndsWith("entities", StringComparison.InvariantCultureIgnoreCase)).StateChanges.Subscribe(_ => _app.Entity("light.kitchen").TurnOn());
+            _app.Entities(n => n.EntityId!.EndsWith("entities", StringComparison.InvariantCultureIgnoreCase)).StateChanges.Where(s => s.New.State == "on").Subscribe(_ => _app.Entity("light.kitchen").TurnOn());
+            _app.Entities(n => n.EntityId!.EndsWith("entities", StringComparison.InvariantCultureIgnoreCase)).StateChanges.Where(s => s.New.State == "off").Subscribe(_ => _app.Entity("light.kitchen").TurnOff());
 
             _app.Entity("sensor.temperature")
                 .StateAllChanges
@@ -61,6 +62,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
             _app.EventChanges
                 .Where(e => e.Event == "hello_event")
                 .Subscribe(_ => _app.Entity("light.livingroom").TurnOn());
+
+            _app.EventChanges
+                .Where(e => e.Event == "bye_event")
+                .Subscribe(_ => _app.Entity("light.livingroom").TurnOff());
 
             _app.SetState("sensor.any_sensor", 20, new { battery_level = 70 });
             _app.SetState("sensor.any_sensor2", 20, new { battery_level = 70 });
