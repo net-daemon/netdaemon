@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using Microsoft.Reactive.Testing;
 
 namespace NetDaemon.Daemon.Fakes
 {
@@ -27,9 +28,14 @@ namespace NetDaemon.Daemon.Fakes
         public ObservableBase<(EntityState Old, EntityState New)> StateChangesObservable { get; }
 
         /// <summary>
-        ///     Observalbe fake events
+        ///     Observable fake events
         /// </summary>
         public ObservableBase<RxEvent> EventChangesObservable { get; }
+
+        /// <summary>
+        /// This is a Scheduler to support time travel for Observable Timer and Interval 
+        /// </summary>
+        public TestScheduler TestScheduler { get; } = new();
 
         /// <summary>
         ///     Default constructor
@@ -76,6 +82,13 @@ namespace NetDaemon.Daemon.Fakes
                 m.Setup(e => e.TurnOff(It.IsAny<object?>())).Throws(new NotImplementedException());
                 return m.Object;
             });
+
+            Setup(s => s.RunIn(It.IsAny<TimeSpan>(), It.IsAny<Action>()))
+                .Callback<TimeSpan, Action>((span, action) =>
+                {
+                    Observable.Timer(span, TestScheduler)
+                        .Subscribe(_ => action());
+                });
         }
 
         private void UpdateMockState(string[] entityIds, string newState, object? attributes)
