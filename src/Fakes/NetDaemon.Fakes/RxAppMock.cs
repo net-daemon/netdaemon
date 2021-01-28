@@ -89,6 +89,15 @@ namespace NetDaemon.Daemon.Fakes
                     Observable.Timer(span, TestScheduler)
                         .Subscribe(_ => action());
                 });
+
+            Setup(s => s.RunEveryMinute(It.IsAny<short>(), It.IsAny<Action>()))
+                .Callback<short, Action>((second, action) =>
+                {
+                    var now = DateTime.Now;
+                    var startTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, second);
+                    Observable.Timer(startTime, TimeSpan.FromMinutes(1), TestScheduler)
+                        .Subscribe(_ => action());
+                });
         }
 
         private void UpdateMockState(string[] entityIds, string newState, object? attributes)

@@ -143,6 +143,21 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        public void TestFakeRunEveryMinute()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+
+            // ACT
+            TestScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+            TestScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+
+            // ASSERT
+            VerifyEntityTurnOn("binary_sensor.fake_run_every_minute_happened", times: Times.Exactly(2));
+        }
+
+        [Fact]
         public void TestFakeEventTurnsOnLight()
         {
             // ARRANGE

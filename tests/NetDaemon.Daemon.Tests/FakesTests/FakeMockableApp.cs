@@ -78,6 +78,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 });
 
             _app.RunIn(TimeSpan.FromMilliseconds(100), () => _app.Entity("binary_sensor.fake_run_in_happened").TurnOn());
+            _app.RunEveryMinute(0, () => _app.Entity("binary_sensor.fake_run_every_minute_happened").TurnOn());
         }
 
     }
