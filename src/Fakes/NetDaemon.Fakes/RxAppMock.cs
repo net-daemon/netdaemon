@@ -379,6 +379,12 @@ namespace NetDaemon.Daemon.Fakes
             }
         }
 
+        /// <summary>
+        ///     Verify state
+        /// </summary>
+        /// <param name="entityId">Unique id</param>
+        /// <param name="state">State to verify</param>
+        /// <param name="attributes">Attributes to verify</param>
         public void VerifyState(string entityId, dynamic? state = null, dynamic? attributes = null)
         {
             var stateResult = false;
