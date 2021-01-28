@@ -157,6 +157,13 @@ namespace NetDaemon.Daemon.Fakes
                 return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1), TestScheduler)
                     .Subscribe(_ => action());
             });
+
+            Setup(s => s.RunIn(It.IsAny<TimeSpan>(), It.IsAny<Action>()))
+                .Callback<TimeSpan, Action>((span, action) =>
+                {
+                    Observable.Timer(span, TestScheduler)
+                        .Subscribe(_ => action());
+                });
         }
 
         private void UpdateMockState(string[] entityIds, string newState, object? attributes)
