@@ -208,7 +208,7 @@ namespace NetDaemon.Common.Reactive
 
             if (now > timeOfDayToTrigger)
             {
-                // It is not due until tomorrow
+                // It is not due until the next hour
                 timeOfDayToTrigger = timeOfDayToTrigger.AddHours(1);
             }
 

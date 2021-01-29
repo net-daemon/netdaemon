@@ -23,6 +23,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
     public class FakeMockableAppImplementation
     {
         private readonly INetDaemonRxApp _app;
+        private IDisposable? _timer;
 
         public FakeMockableAppImplementation(INetDaemonRxApp app)
         {
@@ -78,7 +79,16 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 });
 
             _app.RunIn(TimeSpan.FromMilliseconds(100), () => _app.Entity("binary_sensor.fake_run_in_happened").TurnOn());
+            _app.RunEveryMinute(0, () => _app.Entity("binary_sensor.fake_run_every_minute_happened").TurnOn());
+            _app.RunEveryHour("15:00", () => _app.Entity("binary_sensor.fake_run_every_hour_happened").TurnOn());
+            _app.RunDaily("23:00:00", () => _app.Entity("binary_sensor.fake_run_daily_happened").TurnOn());
+            _timer = _app.RunEveryMinute(0, TestTimerDisposal);
         }
 
+        private void TestTimerDisposal()
+        {
+            _app.Entity("binary_sensor.fake_run_stops_when_disposed").TurnOn();
+            _timer!.Dispose();
+        }
     }
 }

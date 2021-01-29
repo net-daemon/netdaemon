@@ -5,6 +5,7 @@ using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
@@ -81,6 +82,80 @@ namespace NetDaemon.Daemon.Fakes
                 m.Setup(e => e.TurnOn(It.IsAny<object?>())).Throws(new NotImplementedException());
                 m.Setup(e => e.TurnOff(It.IsAny<object?>())).Throws(new NotImplementedException());
                 return m.Object;
+            });
+
+            // Scheduler Setups
+            Setup(s => s.RunIn(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns<TimeSpan, Action>((span, action) =>
+            {
+                return Observable.Timer(span, TestScheduler)
+                    .Subscribe(_ => action());
+            });
+
+            Setup(s => s.RunEveryMinute(It.IsAny<short>(), It.IsAny<Action>())).Returns<short, Action>((second, action) =>
+            {
+                var now = TestScheduler.Now;
+                var startTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, second);
+                return Observable.Timer(startTime, TimeSpan.FromMinutes(1), TestScheduler)
+                    .Subscribe(_ => action());
+            });
+
+
+            
+            Setup(s => s.RunEveryHour(It.IsAny<string>(), It.IsAny<Action>())).Returns<string, Action>((time, action) =>
+            {
+                time = $"{TestScheduler.Now.Hour:D2}:{time}";
+
+                if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
+                {
+                    throw new FormatException($"{time} is not a valid time for the current locale");
+                }
+
+
+                var now = TestScheduler.Now;
+                var timeOfDayToTrigger = new DateTime(
+                    now.Year,
+                    now.Month,
+                    now.Day,
+                    now.Hour,
+                    parsedTime.Minute,
+                    parsedTime.Second
+                );
+
+                if (now > timeOfDayToTrigger)
+                {
+                    // It is not due until the next hour
+                    timeOfDayToTrigger = timeOfDayToTrigger.AddHours(1);
+                }
+
+                return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromHours(1), TestScheduler)
+                    .Subscribe(_ => action());
+            });
+
+            Setup(s => s.RunDaily(It.IsAny<string>(), It.IsAny<Action>())).Returns<string, Action>((time, action) =>
+            {
+                if (!DateTime.TryParseExact(time, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
+                {
+                    throw new FormatException($"{time} is not a valid time for the current locale");
+                }
+
+                var now = TestScheduler.Now;
+                var timeOfDayToTrigger = new DateTime(
+                    now.Year,
+                    now.Month,
+                    now.Day,
+                    now.Hour,
+                    parsedTime.Minute,
+                    parsedTime.Second
+                );
+
+                if (now > timeOfDayToTrigger)
+                {
+                    // It is not due until the next hour
+                    timeOfDayToTrigger = timeOfDayToTrigger.AddDays(1);
+                }
+
+                return Observable.Timer(timeOfDayToTrigger, TimeSpan.FromDays(1), TestScheduler)
+                    .Subscribe(_ => action());
             });
 
             Setup(s => s.RunIn(It.IsAny<TimeSpan>(), It.IsAny<Action>()))

@@ -129,6 +129,21 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        public void TestFakeRunEveryStopsTimerWhenDisposed()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+
+            // ACT
+            TestScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+            TestScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+
+            // ASSERT
+            VerifyEntityTurnOn("binary_sensor.fake_run_stops_when_disposed", times: Times.Exactly(1));
+        }
+
+        [Fact]
         public void TestFakeRunIn()
         {
             // ARRANGE
@@ -140,6 +155,62 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // ASSERT
             VerifyEntityTurnOn("binary_sensor.fake_run_in_happened", times: Times.Once());
+        }
+
+        [Fact]
+        public void TestFakeRunEveryMinute()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+
+            // ACT
+            TestScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+            TestScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+
+            // ASSERT
+            VerifyEntityTurnOn("binary_sensor.fake_run_every_minute_happened", times: Times.Exactly(2));
+        }
+        
+        [Fact]
+        public void TestFakeRunEveryHour()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+
+            // ACT
+            TestScheduler.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+
+            var now = TestScheduler.Now;
+            var timeOfDayToTrigger = new DateTime(
+                now.Year,
+                now.Month,
+                now.Day,
+                2,
+                0,
+                0
+            );           
+
+            TestScheduler.AdvanceTo(timeOfDayToTrigger.Ticks);
+
+            // ASSERT
+            VerifyEntityTurnOn("binary_sensor.fake_run_every_hour_happened", times: Times.Exactly(2));
+        }
+
+        [Fact]
+        public void TestFakeRunDaily()
+        {
+            // ARRANGE
+            FakeMockableAppImplementation app = new(Object);
+            app.Initialize();
+
+            // ACT
+            TestScheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
+            TestScheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
+
+            // ASSERT
+            VerifyEntityTurnOn("binary_sensor.fake_run_daily_happened", times: Times.Exactly(2));
         }
 
         [Fact]
