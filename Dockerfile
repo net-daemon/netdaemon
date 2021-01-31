@@ -27,7 +27,7 @@ COPY ./src /usr/src
 RUN dotnet publish /usr/src/Service/Service.csproj -o "/daemon"
 
 # Final stage, create the runtime container
-FROM mcr.microsoft.com/dotnet/sdk:5.0.102-1-focal-amd64
+FROM mcr.microsoft.com/dotnet/sdk:5.0.102-1-focal
 
 # Install S6 and the Admin site
 RUN apt update && apt install -y \
