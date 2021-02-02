@@ -116,7 +116,7 @@ namespace NetDaemon.Daemon.Config
             {
                 var scalarNode = (YamlScalarNode)node;
                 ReplaceSecretIfExists(scalarNode);
-                return ((YamlScalarNode)node).ToObject(instanceType);
+                return ((YamlScalarNode)node).ToObject(instanceType,parent);
             }
             else if (node.NodeType == YamlNodeType.Sequence)
             {
