@@ -7,16 +7,9 @@ using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Common.Services
 {
-    public partial class PersonEntity : RxEntity
+    public class PersonEntity : RxEntityBase
     {
-        public string EntityId => EntityIds.First();
-        public EntityState? EntityState => DaemonRxApp?.State(EntityId);
-        public string? Area => DaemonRxApp?.State(EntityId)?.Area;
-        public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
-        public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
-        public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
-        public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
-        public PersonEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds): base(daemon, entityIds)
+        public PersonEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {
         }
 
@@ -29,7 +22,7 @@ namespace NetDaemon.Common.Services
             }
             else if (data is not null)
             {
-                var expObject = ((object)data).ToExpandoObject();
+                var expObject = ((object) data).ToExpandoObject();
                 if (expObject is not null)
                     serviceData.CopyFrom(expObject);
             }

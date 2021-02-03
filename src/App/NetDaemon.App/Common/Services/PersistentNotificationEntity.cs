@@ -7,14 +7,14 @@ using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Common.Services
 {
-    public  class GroupEntity : RxEntityBase
+    public  class PersistentNotificationEntity : RxEntityBase
     {
 
-        public GroupEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds): base(daemon, entityIds)
+        public PersistentNotificationEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds): base(daemon, entityIds)
         {
         }
 
-        public void Reload(dynamic? data = null)
+        public void Create(dynamic? data = null)
         {
             var serviceData = new FluentExpandoObject();
             if (data is ExpandoObject)
@@ -28,10 +28,10 @@ namespace NetDaemon.Common.Services
                     serviceData.CopyFrom(expObject);
             }
 
-            DaemonRxApp.CallService("group", "reload", serviceData);
+            DaemonRxApp.CallService("persistent_notification", "create", serviceData);
         }
 
-        public void Set(dynamic? data = null)
+        public void Dismiss(dynamic? data = null)
         {
             var serviceData = new FluentExpandoObject();
             if (data is ExpandoObject)
@@ -45,10 +45,10 @@ namespace NetDaemon.Common.Services
                     serviceData.CopyFrom(expObject);
             }
 
-            DaemonRxApp.CallService("group", "set", serviceData);
+            DaemonRxApp.CallService("persistent_notification", "dismiss", serviceData);
         }
 
-        public void Remove(dynamic? data = null)
+        public void MarkRead(dynamic? data = null)
         {
             var serviceData = new FluentExpandoObject();
             if (data is ExpandoObject)
@@ -62,7 +62,7 @@ namespace NetDaemon.Common.Services
                     serviceData.CopyFrom(expObject);
             }
 
-            DaemonRxApp.CallService("group", "remove", serviceData);
+            DaemonRxApp.CallService("persistent_notification", "mark_read", serviceData);
         }
     }
 }

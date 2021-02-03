@@ -1,3 +1,4 @@
+using System;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Services;
 
@@ -15,7 +16,9 @@ namespace NetDaemon.DevelopmentApps.apps.HelloWorld
 
         public override void Initialize()
         {
-            MyEntity.TurnOn();
+            MyEntity.TurnOn(new{brightness=255});
+            Delay(TimeSpan.FromSeconds(3));
+            MyEntity.TurnOff();
             
             Log("{@entity}", MyEntity);
         }
