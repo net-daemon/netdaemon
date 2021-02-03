@@ -32,6 +32,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
+
             var (dynObj, _) = GetDynamicObject(
                ("attr", "value"));
 

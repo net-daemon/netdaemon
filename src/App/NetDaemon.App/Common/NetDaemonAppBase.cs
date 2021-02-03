@@ -489,8 +489,10 @@ namespace NetDaemon.Common
             {
                 RuntimeInfo.HasError = true;
             }
-
-            await Daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
+            if (Daemon!.IsConnected)
+            {
+                await Daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
+            }
         }
     }
 }

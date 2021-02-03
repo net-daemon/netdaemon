@@ -249,6 +249,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task StopCallsCloseClient()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             await DefaultDaemonHost.Stop().ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CloseAsync(), Times.Once);
@@ -402,6 +403,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateShouldCallCorrectFunction()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value")).ConfigureAwait(false);
 
             var (dynObj, expObj) = GetDynamicObject(
@@ -413,6 +415,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateWaitForResultShouldCallCorrectFunction()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
             );
@@ -424,6 +427,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateDynamicNullReturnOfGetStateShouldCallCorrectFunction()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
             );
@@ -441,6 +445,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateDynamicShouldCallCorrectFunction()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
             );
@@ -483,6 +488,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateDynamicWithNoWaitShouldCallCorrectFunction()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
             );
@@ -499,6 +505,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetStateShouldReturnCorrectData()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             await DefaultDaemonHost.SetStateAsync("sensor.any_sensor", "on", ("attr", "value")).ConfigureAwait(false);
 
             var (dynObj, expObj) = GetDynamicObject(
@@ -510,6 +517,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task GetServicesShouldCallCorrectFunctions()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             var services = await DefaultDaemonHost.GetAllServices().ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.GetServices(), Times.Once);
@@ -517,6 +525,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public async Task SetDaemonStateAsyncShouldCallCorrectFunctions()
         {
+            await InitializeFakeDaemon().ConfigureAwait(false);
             await DefaultDaemonHost.SetDaemonStateAsync(5, 2).ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.SetState("sensor.netdaemon_status", "Connected", It.IsAny<object>()), Times.Once);

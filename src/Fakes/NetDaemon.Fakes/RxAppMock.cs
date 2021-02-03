@@ -34,7 +34,7 @@ namespace NetDaemon.Daemon.Fakes
         public ObservableBase<RxEvent> EventChangesObservable { get; }
 
         /// <summary>
-        /// This is a Scheduler to support time travel for Observable Timer and Interval 
+        /// This is a Scheduler to support time travel for Observable Timer and Interval
         /// </summary>
         public TestScheduler TestScheduler { get; } = new();
 
@@ -43,6 +43,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public RxAppMock()
         {
+            TestScheduler.AdvanceBy(TestScheduler.Now.AddYears(1).Ticks);
             var loggerMock = new Mock<ILogger>();
             StateChangesObservable = new StateChangeObservable(loggerMock.Object, Object);
             EventChangesObservable = new EventObservable(loggerMock.Object, Object);
@@ -78,7 +79,7 @@ namespace NetDaemon.Daemon.Fakes
                 var y = x.Select(n => n.EntityId).ToArray();
                 var m = new Mock<IRxEntityBase>();
                 m.Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId) && f.New?.State != f.Old?.State));
-                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId))); 
+                m.Setup(n => n.StateAllChanges).Returns(StateChangesObservable.Where(f => y.Contains(f.New.EntityId)));
                 m.Setup(e => e.TurnOn(It.IsAny<object?>())).Throws(new NotImplementedException());
                 m.Setup(e => e.TurnOff(It.IsAny<object?>())).Throws(new NotImplementedException());
                 return m.Object;
@@ -99,8 +100,6 @@ namespace NetDaemon.Daemon.Fakes
                     .Subscribe(_ => action());
             });
 
-
-            
             Setup(s => s.RunEveryHour(It.IsAny<string>(), It.IsAny<Action>())).Returns<string, Action>((time, action) =>
             {
                 time = $"{TestScheduler.Now.Hour:D2}:{time}";
@@ -109,7 +108,6 @@ namespace NetDaemon.Daemon.Fakes
                 {
                     throw new FormatException($"{time} is not a valid time for the current locale");
                 }
-
 
                 var now = TestScheduler.Now;
                 var timeOfDayToTrigger = new DateTime(
@@ -173,13 +171,11 @@ namespace NetDaemon.Daemon.Fakes
 
         private void UpdateMockState(string entityId, string newState, object? attributes)
         {
-            
             var state = MockState.FirstOrDefault(e => e.EntityId == entityId);
             if (state == null) return;
             MockState.Remove(state);
             MockState.Add(new EntityState() { EntityId = entityId, State = newState, Attribute = attributes });
         }
-
 
         /// <summary>
         ///     Triggers an general Home Assistant event
@@ -470,7 +466,7 @@ namespace NetDaemon.Daemon.Fakes
                 throw new NotSupportedException("state needs to be an object");
 
             var mockState = MockState.First(e => e.EntityId == entityId);
-            
+
             if (state is not null)
             {
                 if (attributes is not null)

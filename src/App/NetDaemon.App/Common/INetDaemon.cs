@@ -14,6 +14,11 @@ namespace NetDaemon.Common
     public interface INetDaemon : INetDaemonCommon
     {
         /// <summary>
+        ///     Returns true if NetDaemon is connected to Home Assistant
+        /// </summary>
+        bool IsConnected { get; }
+
+        /// <summary>
         ///     Http features of NetDaemon is exposed through the Http property
         /// </summary>
         IHttpHandler Http { get; }

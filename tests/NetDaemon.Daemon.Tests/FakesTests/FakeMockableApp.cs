@@ -73,7 +73,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             _app.Entity("binary_sensor.test_state_entity")
                 .StateChanges
-                .Subscribe(_ => {
+                .Subscribe(_ =>
+                {
                     if (_app.State("sensor.some_other_entity")?.State == "on")
                         _app.Entity("light.state_light").TurnOn();
                 });

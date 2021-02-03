@@ -340,7 +340,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task ToggleEntityCallsCorrectServiceCall()
         {
             // ARRANGE
-
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -357,7 +357,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOffEntityCallsCorrectServiceCall()
         {
             // ARRANGE
-
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -450,7 +450,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOffMultipleEntityCallsCorrectServiceCall()
         {
             // ARRANGE
-
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity", "light.correct_entity2")
@@ -468,6 +468,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOnEntityCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -483,6 +484,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOnEntityWithAttributeCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -501,6 +503,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task TurnOnEntityWithMultipleAttributeCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -521,6 +524,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task SetStateEntityCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -536,6 +540,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task SetStateWithAttributesEntityCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .Entity("light.correct_entity")
@@ -626,6 +631,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayerPlayCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
@@ -641,6 +647,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayersFuncPlayCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             DefaultDaemonHost.InternalState["media_player.player"] = new EntityState
             {
                 EntityId = "media_player.player",
@@ -663,6 +670,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayersFuncExceptionLogsError()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             DefaultDaemonHost.InternalState["id"] = new EntityState { EntityId = "id" };
 
             // ACT
@@ -681,6 +689,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayersPlayCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .MediaPlayers(new string[] { "media_player.player" })
@@ -696,6 +705,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayerPauseCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
@@ -711,6 +721,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayerPlayPauseCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
@@ -726,6 +737,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task MediaPlayerStopCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .MediaPlayer("media_player.player")
@@ -741,6 +753,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task InputSelectSetOptionShouldCallCorrectCallService()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .InputSelect("input_select.myselect")
@@ -758,6 +771,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task InputSelectSetOptionIEnumerableShouldCallCorrectCallService()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             await DefaultDaemonApp
                 .InputSelects(new string[] { "input_select.myselect" })
@@ -775,6 +789,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task InputSelectSetOptionFuncShouldCallCorrectCallService()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             DefaultDaemonHost.InternalState["input_select.myselect"] = new EntityState { EntityId = "input_select.myselect" };
             // ACT
             await DefaultDaemonApp

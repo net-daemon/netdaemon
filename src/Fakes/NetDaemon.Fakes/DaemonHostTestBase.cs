@@ -31,8 +31,10 @@ namespace NetDaemon.Daemon.Fakes
             DefaultHassClientMock = HassClientMock.DefaultMock;
             DefaultDataRepositoryMock = new Mock<IDataRepository>();
             DefaultHttpHandlerMock = new HttpHandlerMock();
+            var hassClientFactoryMock = new HassClientFactoryMock(DefaultHassClientMock);
+
             DefaultDaemonHost = new NetDaemonHost(
-                DefaultHassClientMock.Object,
+                hassClientFactoryMock.Object,
                 DefaultDataRepositoryMock.Object,
                 LoggerMock.LoggerFactory,
                 DefaultHttpHandlerMock.Object,
@@ -406,7 +408,7 @@ namespace NetDaemon.Daemon.Fakes
         {
             var nrOfTimesCheckForConnectedState = 0;
 
-            while (!daemonHost.Connected && !cancellationToken.IsCancellationRequested)
+            while (!daemonHost.IsConnected && !cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                 if (nrOfTimesCheckForConnectedState++ > 100)

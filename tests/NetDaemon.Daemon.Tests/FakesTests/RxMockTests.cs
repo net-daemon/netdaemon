@@ -171,7 +171,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ASSERT
             VerifyEntityTurnOn("binary_sensor.fake_run_every_minute_happened", times: Times.Exactly(2));
         }
-        
+
         [Fact]
         public void TestFakeRunEveryHour()
         {
@@ -190,7 +190,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 2,
                 0,
                 0
-            );           
+            );
 
             TestScheduler.AdvanceTo(timeOfDayToTrigger.Ticks);
 
