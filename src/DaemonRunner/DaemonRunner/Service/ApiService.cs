@@ -33,6 +33,7 @@ namespace NetDaemon.Service
         {
             services.AddHostedService<RunnerService>();
             services.AddTransient<IHassClient, HassClient>();
+            services.AddTransient<IHassClientFactory, HassClientFactory>();
             services.AddTransient<IDataRepository>(n => new DataRepository(
                 Path.Combine(
                      n.GetRequiredService<IOptions<NetDaemonSettings>>().Value.GetAppSourceDirectory()

@@ -50,3 +50,5 @@ codecover
 # User-specific files
 .idea/
 appsettings.Development.json
+
+**/core

@@ -26,6 +26,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraDisableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "disable_motion_detection";
 
@@ -45,6 +46,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CamerasDisableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "disable_motion_detection";
 
@@ -64,6 +66,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CamerasFuncDisableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "disable_motion_detection";
 
@@ -89,6 +92,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraEnableMotionDetectionCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "enable_motion_detection";
 
@@ -107,6 +111,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraPlayStreamCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "play_stream";
 
@@ -129,6 +134,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraRecordCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "record";
 
@@ -152,6 +158,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraSnapshotCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "snapshot";
 
@@ -173,6 +180,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraTurnOnCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "turn_on";
 
@@ -191,6 +199,7 @@ namespace NetDaemon.Daemon.Tests.Fluent
         public async Task CameraTurnOffCallsCorrectServiceCall()
         {
             // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
             const string? entityId = "camera.camera1";
             const string? service_call = "turn_off";
 

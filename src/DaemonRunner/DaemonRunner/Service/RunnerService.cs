@@ -141,7 +141,7 @@ namespace NetDaemon.Service
 
                     if (!stoppingToken.IsCancellationRequested)
                     {
-                        if (daemonHost.Connected)
+                        if (daemonHost.IsConnected)
                         {
                             try
                             {
@@ -240,13 +240,13 @@ namespace NetDaemon.Service
         {
             var nrOfTimesCheckForConnectedState = 0;
 
-            while (!daemonHost.Connected && !stoppingToken.IsCancellationRequested)
+            while (!daemonHost.IsConnected && !stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(500, stoppingToken).ConfigureAwait(false);
                 if (nrOfTimesCheckForConnectedState++ > 5)
                     break;
             }
-            return daemonHost.Connected;
+            return daemonHost.IsConnected;
         }
     }
 }

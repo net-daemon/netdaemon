@@ -44,7 +44,8 @@ namespace NetDaemon.Daemon.Tests
             DefaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
             DefaultDaemonHost.InternalRunningAppInstances[DefaultMockedRxApp.Object.Id!] = DefaultMockedRxApp.Object;
 
-            _notConnectedDaemonHost = new NetDaemonHost(HassClientMock.MockConnectFalse.Object, DefaultDataRepositoryMock.Object, LoggerMock.LoggerFactory);
+            var notConnectedHassClientFactoryMock = new HassClientFactoryMock(HassClientMock.MockConnectFalse);
+            _notConnectedDaemonHost = new NetDaemonHost(notConnectedHassClientFactoryMock.Object, DefaultDataRepositoryMock.Object, LoggerMock.LoggerFactory);
 
             SetupFakeData();
         }

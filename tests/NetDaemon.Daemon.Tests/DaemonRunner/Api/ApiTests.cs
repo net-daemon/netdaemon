@@ -48,8 +48,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             _defaultHassClientMock = HassClientMock.DefaultMock;
             _defaultDataRepositoryMock = new Mock<IDataRepository>();
             _defaultHttpHandlerMock = new HttpHandlerMock();
+            var hassClientFactoryMock = new HassClientFactoryMock(_defaultHassClientMock );
             _defaultDaemonHost = new NetDaemonHost(
-                _defaultHassClientMock.Object,
+                hassClientFactoryMock.Object,
                 _defaultDataRepositoryMock.Object,
                 _loggerMock.LoggerFactory,
                 _defaultHttpHandlerMock.Object);

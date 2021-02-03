@@ -19,6 +19,10 @@ namespace NetDaemon.Daemon.Fakes
     public class HassClientMock : Mock<IHassClient>
     {
         /// <summary>
+        ///     Default HassClientFactory mock 
+        /// </summary>
+        public HassClientFactoryMock DefaultHassClientFactoryMock { get; }
+        /// <summary>
         ///     Fake areas in HassClient
         /// </summary>
         public HassAreas Areas { get; } = new();
@@ -104,6 +108,7 @@ namespace NetDaemon.Daemon.Fakes
                 EntityId = "light.light_in_area",
                 DeviceId = "device_idd"
             });
+            DefaultHassClientFactoryMock = new HassClientFactoryMock(this);
         }
 
         /// <summary>

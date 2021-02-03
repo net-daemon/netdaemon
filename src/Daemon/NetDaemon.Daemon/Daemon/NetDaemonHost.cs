@@ -68,8 +68,8 @@ namespace NetDaemon.Daemon
         /// </summary>
         private readonly List<Task> _eventHandlerTasks = new();
 
-        private readonly IHassClient _hassClient;
-
+        private IHassClient? _hassClient;
+        private readonly IHassClientFactory _hassClientFactory;
         private readonly IHttpHandler? _httpHandler;
 
         private readonly IDataRepository? _repository;
@@ -99,8 +99,8 @@ namespace NetDaemon.Daemon
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
         public NetDaemonHost(
-            IHassClient? hassClient,
-            IDataRepository? repository,
+            IHassClientFactory? hassClientFactory = null,
+            IDataRepository? repository = null,
             ILoggerFactory? loggerFactory = null,
             IHttpHandler? httpHandler = null,
             IServiceProvider? serviceProvider = null
@@ -109,8 +109,8 @@ namespace NetDaemon.Daemon
             loggerFactory ??= DefaultLoggerFactory;
             _httpHandler = httpHandler;
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
-            _hassClient = hassClient
-                        ?? throw new ArgumentNullException(nameof(hassClient));
+            _hassClientFactory = hassClientFactory
+                        ?? throw new ArgumentNullException(nameof(hassClientFactory));
             _scheduler = new Scheduler(loggerFactory: loggerFactory);
             ServiceProvider = serviceProvider;
             _repository = repository;
@@ -118,7 +118,7 @@ namespace NetDaemon.Daemon
             Logger.LogTrace("Instance NetDaemonHost");
         }
 
-        public bool Connected { get; private set; }
+        public bool IsConnected { get; private set; }
 
         public IHttpHandler Http
         {
@@ -154,6 +154,7 @@ namespace NetDaemon.Daemon
 
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
             _cancelToken.ThrowIfCancellationRequested();
 
             return await _hassClient.GetServices().ConfigureAwait(false);
@@ -177,6 +178,7 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public async Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
             _cancelToken.ThrowIfCancellationRequested();
 
             try
@@ -320,7 +322,7 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
         {
-            if (!Connected)
+            if (!IsConnected)
                 throw new NetDaemonException("NetDaemon is not connected, no use in initializing");
 
             _appInstanceManager = appInstanceManager;
@@ -433,9 +435,10 @@ namespace NetDaemon.Daemon
 
             string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
 
+            _hassClient = _hassClientFactory.New();
             if (_hassClient == null)
             {
-                throw new NetDaemonNullReferenceException("HassClient cant be null when running daemon, check constructor!");
+                throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
             }
 
             try
@@ -455,7 +458,7 @@ namespace NetDaemon.Daemon
 
                 if (!connectResult)
                 {
-                    Connected = false;
+                    IsConnected = false;
                     await _hassClient.CloseAsync().ConfigureAwait(false);
                     return;
                 }
@@ -479,7 +482,7 @@ namespace NetDaemon.Daemon
 
                 await ConnectToHAIntegration().ConfigureAwait(false);
 
-                Connected = true;
+                IsConnected = true;
 
                 Logger.LogInformation(
                     hassioToken != null
@@ -516,14 +519,14 @@ namespace NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                Connected = false;
+                IsConnected = false;
                 Logger.LogError(e, "Error, during operation");
             }
             finally
             {
                 // Set cancel token to avoid background processes
                 // to access disconnected Home Assistant
-                Connected = false;
+                IsConnected = false;
                 _cancelTokenSource.Cancel();
             }
         }
@@ -574,8 +577,9 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
             _cancelToken.ThrowIfCancellationRequested();
-            if (!Connected)
+            if (!IsConnected)
                 return false;
 
             try
@@ -627,6 +631,7 @@ namespace NetDaemon.Daemon
         {
             _cancelToken.ThrowIfCancellationRequested();
             _ = entityId ?? throw new NetDaemonArgumentNullException(nameof(entityId));
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
                 throw new NetDaemonException($"Wrong entity id {entityId} provided");
@@ -693,6 +698,7 @@ namespace NetDaemon.Daemon
         {
             _cancelToken.ThrowIfCancellationRequested();
             _ = entityId ?? throw new NetDaemonArgumentNullException(nameof(entityId));
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
                 throw new NetDaemonException($"Wrong entity id {entityId} provided");
@@ -768,8 +774,13 @@ namespace NetDaemon.Daemon
                 _externalEventCallSubscribers.Clear();
                 _eventHandlerTasks.Clear();
 
-                Connected = false;
-                await _hassClient.CloseAsync().ConfigureAwait(false);
+                IsConnected = false;
+                if (_hassClient is not null)
+                {
+                    await _hassClient.CloseAsync().ConfigureAwait(false);
+                    await _hassClient.DisposeAsync().ConfigureAwait(false);
+                    _hassClient = null;
+                }
                 Logger.LogTrace("Stopped Instance NetDaemonHost");
             }
             catch (Exception e)
@@ -889,6 +900,7 @@ namespace NetDaemon.Daemon
         internal async Task RefreshInternalStatesAndSetArea()
         {
             _cancelToken.ThrowIfCancellationRequested();
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
@@ -1251,6 +1263,7 @@ namespace NetDaemon.Daemon
         private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
         {
             _cancelToken.ThrowIfCancellationRequested();
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             bool hasLoggedError = false;
 
@@ -1316,6 +1329,8 @@ namespace NetDaemon.Daemon
         private async Task HandleTextToSpeechMessages(CancellationToken cancellationToken)
         {
             _cancelToken.ThrowIfCancellationRequested();
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
+
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
