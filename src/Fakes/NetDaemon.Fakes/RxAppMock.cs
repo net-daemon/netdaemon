@@ -43,6 +43,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public RxAppMock()
         {
+            TestScheduler.AdvanceBy(TestScheduler.Now.AddYears(1).Ticks);
             var loggerMock = new Mock<ILogger>();
             StateChangesObservable = new StateChangeObservable(loggerMock.Object, Object);
             EventChangesObservable = new EventObservable(loggerMock.Object, Object);
