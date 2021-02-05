@@ -161,7 +161,8 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base interface that all NetDaemon apps needs to implement
     /// </summary>
-    [SuppressMessage("", "CA1716")]
+    [SuppressMessage("", "CA1716"), Obsolete("You are using V1 of API and it is deprecated, next release it will be moved. Please replace it wiht V2 NetDaemonRxApp", false)
+    ]
     public interface INetDaemonApp : INetDaemonAppBase
     {
         /// <summary>

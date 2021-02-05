@@ -16,7 +16,8 @@ namespace NetDaemon.Common
     ///     Base class för all NetDaemon apps
     /// </summary>
     [SuppressMessage("", "CA1065"),
-     SuppressMessage("", "CA1721")
+     SuppressMessage("", "CA1721"),
+     Obsolete("You are using V1 of API and it is deprecated, next release it will be moved. Please replace it wiht V2 NetDaemonRxApp", false)
     ]
     public abstract class NetDaemonApp : NetDaemonAppBase, INetDaemonApp, INetDaemonCommon
     {

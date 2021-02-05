@@ -8,6 +8,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Interface for scheduler actions
     /// </summary>
+    [Obsolete("You are using V1 of API and it is deprecated, next release it will be moved.Please replace it wiht V2 NetDaemonRxApp", false)]
     public interface IScheduler : IAsyncDisposable
     {
         /// <summary>
