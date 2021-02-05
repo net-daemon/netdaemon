@@ -2,8 +2,10 @@
 
 namespace NetDaemon.Common.Reactive.Services
 {
+    /// <inheritdoc />
     public class ClimateEntity : RxEntityBase
     {
+        /// <inheritdoc />
         public ClimateEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {
         }

@@ -2,9 +2,10 @@
 
 namespace NetDaemon.Common.Reactive.Services
 {
-    public partial class LightEntity : RxEntityBase
+    /// <inheritdoc />
+    public class LightEntity : RxEntityBase
     {
-
+        /// <inheritdoc />
         public LightEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds): base(daemon, entityIds)
         {
         }
