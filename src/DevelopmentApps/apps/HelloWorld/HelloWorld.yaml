@@ -1,3 +1,2 @@
 hello_world_app:
   class: NetDaemon.DevelopmentApps.apps.HelloWorld.HelloWorldApp
-  my_entity: light.hue_computer_led

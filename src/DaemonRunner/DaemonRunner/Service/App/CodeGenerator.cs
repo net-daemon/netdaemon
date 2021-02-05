@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
-using NetDaemon.Common.Services;
+using NetDaemon.Common.Reactive.Services;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -202,7 +202,7 @@ namespace NetDaemon.Service.App
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Dynamic")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
             code = code.AddUsings(
-                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(LightEntity).Namespace!)));
+                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(RxEntityBase).Namespace!)));
             code = code.AddUsings(
                 SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
             code = code.AddUsings(
@@ -249,8 +249,8 @@ namespace NetDaemon.Service.App
             {
                 if (!ShouldGenerateDomainEntity(domain, services)) continue;
                 var baseClass = _skipDomainServices.ContainsKey(domain)
-                    ? $"{typeof(LightEntity).Namespace}.{domain.ToCamelCase()}Entity"
-                    : $"{typeof(LightEntity).Namespace}.RxEntityBase";
+                    ? $"{typeof(RxEntityBase).Namespace}.{domain.ToCamelCase()}Entity"
+                    : $"{typeof(RxEntityBase).Namespace}.RxEntityBase";
 
                 var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entity : {baseClass}
 {{
@@ -287,24 +287,10 @@ namespace NetDaemon.Service.App
                     }
 
                     var hasEntityId = s.Fields is not null && s.Fields.Any(c => c.Field == "entity_id");
-                    var entityAssignmentStatement = hasEntityId ? @"serviceData[""entity_id""] = EntityId;" : "";
 
                     var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)
                     {{
-                        var serviceData = new FluentExpandoObject();
-
-                        if (data is ExpandoObject)
-                        {{
-                            serviceData.CopyFrom(data);
-                        }}
-                        else if (data is not null)
-                        {{
-                            var expObject = ((object)data).ToExpandoObject();
-                            if (expObject is not null)
-                                serviceData.CopyFrom(expObject);
-                        }}
-                        {entityAssignmentStatement}
-                        DaemonRxApp.CallService(""{domain}"", ""{s.Service}"", serviceData);
+                        CallService(""{domain}"", ""{s.Service}"", serviceData,{hasEntityId});
                     }}
                     ";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes()

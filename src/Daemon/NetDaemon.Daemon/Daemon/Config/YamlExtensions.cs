@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
+using NetDaemon.Common.Reactive.Services;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -111,8 +112,11 @@ namespace NetDaemon.Daemon.Config
                     break;
             }
 
-            if (valueType.IsAssignableTo(typeof(RxEntity)))
-                return Activator.CreateInstance(valueType,parent , new[] {node.Value});
+            if (valueType.IsAssignableTo(typeof(RxEntityBase)))
+            {
+                var instance =  Activator.CreateInstance(valueType,parent , new[] {node.Value});
+                return instance;
+            }
             return null;
         }
     }

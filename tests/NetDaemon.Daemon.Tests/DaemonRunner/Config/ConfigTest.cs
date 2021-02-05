@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using Moq;
+using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
+using NetDaemon.Common.Reactive;
+using NetDaemon.Common.Reactive.Services;
 using NetDaemon.Daemon.Config;
 using Xunit;
 using YamlDotNet.Core;
@@ -16,20 +20,23 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public static readonly string ConfigFixturePath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "Fixtures");
 
-        public static string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
+        public static string GetFixtureContent(string filename) =>
+            File.ReadAllText(Path.Combine(YamlTests.ConfigFixturePath, filename));
 
         public static string GetFixturePath(string filename) => Path.Combine(YamlTests.ConfigFixturePath, filename);
 
-        public static IOptions<NetDaemonSettings> CreateSettings(string appSource) => new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
-        {
-            AppSource = appSource
-        });
+        public static IOptions<NetDaemonSettings> CreateSettings(string appSource) =>
+            new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
+            {
+                AppSource = appSource
+            });
 
         [Fact]
         public void NormalLoadSecretsShouldGetCorrectValues()
         {
             // ARRANGE AND ACT
-            IDictionary<string, string> secrets = YamlConfig.GetSecretsFromSecretsYaml(GetFixturePath("secrets_normal.yaml"));
+            IDictionary<string, string> secrets =
+                YamlConfig.GetSecretsFromSecretsYaml(GetFixturePath("secrets_normal.yaml"));
 
             // ASSERT
             Assert.True(secrets.ContainsKey("secret_int"));
@@ -47,12 +54,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         {
             // ARRANGE
             const string? faultyYaml =
-            "yaml: correctLine\n" +
-            "yaml_missing: \"missing" +
-            "yaml_correct: 10";
+                "yaml: correctLine\n" +
+                "yaml_missing: \"missing" +
+                "yaml_correct: 10";
 
             // ACT & ASSERT
-            Assert.Throws<SyntaxErrorException>(() => YamlConfig.GetSecretsFromSecretsYaml(new StringReader(faultyYaml)));
+            Assert.Throws<SyntaxErrorException>(
+                () => YamlConfig.GetSecretsFromSecretsYaml(new StringReader(faultyYaml)));
         }
 
         [Fact]
@@ -105,13 +113,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: string\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode)scalar.Value;
+            var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal("string", scalarValue.ToObject(typeof(string)));
+            Assert.Equal("string", scalarValue.ToObject(typeof(string), null));
         }
 
         [Fact]
@@ -121,13 +129,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode)scalar.Value;
+            var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(1234, scalarValue.ToObject(typeof(int)));
+            Assert.Equal(1234, scalarValue.ToObject(typeof(int), null));
         }
 
         [Fact]
@@ -137,13 +145,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: true\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode)scalar.Value;
+            var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(true, scalarValue.ToObject(typeof(bool)));
+            Assert.Equal(true, scalarValue.ToObject(typeof(bool), null));
         }
 
         [Fact]
@@ -153,14 +161,56 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode)scalar.Value;
+            var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((long)1234, scalarValue.ToObject(typeof(long)));
+            Assert.Equal((long) 1234, scalarValue.ToObject(typeof(long), null));
         }
+
+        [Theory]
+        [InlineData(typeof(AlarmControlPanelEntity))]
+        [InlineData(typeof(AutomationEntity))]
+        [InlineData(typeof(BinarySensorEntity))]
+        [InlineData(typeof(CameraEntity))]
+        [InlineData(typeof(ClimateEntity))]
+        [InlineData(typeof(CoverEntity))]
+        [InlineData(typeof(DeviceTrackerEntity))]
+        [InlineData(typeof(GroupEntity))]
+        [InlineData(typeof(ImageProcessingEntity))]
+        [InlineData(typeof(InputBooleanEntity))]
+        [InlineData(typeof(LightEntity))]
+        [InlineData(typeof(LockEntity))]
+        [InlineData(typeof(MediaPlayerEntity))]
+        [InlineData(typeof(PersistentNotificationEntity))]
+        [InlineData(typeof(PersonEntity))]
+        [InlineData(typeof(SceneEntity))]
+        [InlineData(typeof(ScriptEntity))]
+        [InlineData(typeof(SensorEntity))]
+        [InlineData(typeof(SunEntity))]
+        [InlineData(typeof(SwitchEntity))]
+        [InlineData(typeof(VacuumEntity))]
+        [InlineData(typeof(ZoneEntity))]
+        public void YamlScalarNotToObjectUsingEntityType(Type entityType)
+        {
+            // ARRANGE
+            const string? yaml = "yaml: 1234\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var appMock = new Mock<INetDaemonRxApp>();
+            var scalar = root.Children.First();
+
+            var scalarValue = (YamlScalarNode) scalar.Value;
+            // ACT & ASSERT
+            var instance = scalarValue.ToObject(entityType, appMock.Object) as RxEntityBase;
+            Assert.NotNull(instance);
+            Assert.Equal(entityType,instance.GetType());
+            Assert.Equal("1234", instance.EntityId);
+        }
+
 
         [Fact]
         public void YamlScalarNodeToObjectUsingDecimal()
@@ -169,15 +219,15 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: 1.5\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode)scalar.Value;
+            var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((decimal)1.5, scalarValue.ToObject(typeof(decimal)));
-            Assert.Equal((float)1.5f, scalarValue.ToObject(typeof(float)));
-            Assert.Equal((double)1.5, scalarValue.ToObject(typeof(double)));
+            Assert.Equal((decimal) 1.5, scalarValue.ToObject(typeof(decimal), null));
+            Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), null));
+            Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), null));
         }
 
         [Fact]
@@ -209,9 +259,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
-            var instance = (AppComplexConfig?)yamlConfig.InstanceAndSetPropertyConfig(typeof(AppComplexConfig), root, "id");
+            var instance =
+                (AppComplexConfig?) yamlConfig.InstanceAndSetPropertyConfig(typeof(AppComplexConfig), root, "id");
 
             Assert.Equal("hello world", instance?.AString);
             Assert.Equal(10, instance?.AnInt);

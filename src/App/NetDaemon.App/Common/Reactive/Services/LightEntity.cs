@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using NetDaemon.Common.Reactive;
+﻿using System.Collections.Generic;
 
-namespace NetDaemon.Common.Services
+namespace NetDaemon.Common.Reactive.Services
 {
     public partial class LightEntity : RxEntityBase
     {
