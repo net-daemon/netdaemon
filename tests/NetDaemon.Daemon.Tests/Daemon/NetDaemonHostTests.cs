@@ -14,7 +14,7 @@ using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
-    public class HostTestApp : NetDaemon.Common.NetDaemonApp
+    public class HostTestApp : NetDaemonRxApp
     {
     }
 
@@ -22,34 +22,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
     {
         public NetDaemonTests() : base()
         {
-        }
-
-        [Fact]
-        public async Task EventShouldCallCorrectFunction()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-
-            dynamic helloWorldDataObject = DaemonHostTestBase.GetDynamicDataObject(HelloWorldData);
-
-            DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", helloWorldDataObject);
-
-            var isCalled = false;
-            var message = "";
-
-            // ACT
-            DefaultDaemonApp.ListenEvent("CUSTOM_EVENT", (_, data) =>
-            {
-                isCalled = true;
-                message = data.Test;
-                return Task.CompletedTask;
-            });
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.True(isCalled);
-            Assert.Equal(HelloWorldData, message);
         }
 
         [Fact]
@@ -103,30 +75,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         // Todo: Add tests to test objects and arrays from the dynamic conversion
-
-        [Fact]
-        public async Task OtherEventShouldNotCallCorrectFunction()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-            dynamic dataObject = DaemonHostTestBase.GetDynamicDataObject();
-
-            DefaultHassClientMock.AddCustomEvent("CUSTOM_EVENT", dataObject);
-
-            var isCalled = false;
-
-            // ACT
-            DefaultDaemonApp.ListenEvent("OTHER_EVENT", (_, _) =>
-            {
-                isCalled = true;
-                return Task.CompletedTask;
-            });
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.False(isCalled);
-        }
 
         [Fact]
         public async Task RunNotConnectedCompletesTask()
@@ -256,54 +204,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
-        public async Task SubscribeChangedStateForEntityWillMakeCorrectCallback()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-
-            string? reportedState = "";
-
-            // ACT
-            DefaultDaemonApp.ListenState("binary_sensor.pir", (_, newState, _) =>
-            {
-                reportedState = newState?.State;
-
-                return Task.CompletedTask;
-            });
-
-            AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.Equal("on", reportedState);
-        }
-
-        [Fact]
-        public async Task SubscribeChangedStateForAllChangesWillMakeCorrectCallbacks()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-
-            int nrOfTimesCalled = 0;
-
-            // ACT
-            DefaultDaemonApp.ListenState("", (_, _, _) =>
-            {
-                nrOfTimesCalled++;
-
-                return Task.CompletedTask;
-            });
-
-            AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-            AddChangedEvent("light.mylight", fromState: "on", toState: "off");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.Equal(2, nrOfTimesCalled);
-        }
-
-        [Fact]
         public async Task ChangedEventHaveNullDataShouldThrowException()
         {
             // ARRANGE
@@ -319,32 +219,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             //ASSERT
             LoggerMock.AssertLogged(LogLevel.Error, Times.AtLeastOnce());
-        }
-
-        [Fact]
-        public async Task CancelChangedStateForSubscriptionWillNotMakeCallback()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-            bool isCalled = false;
-
-            // ACT
-            var id = DefaultDaemonApp.ListenState("binary_sensor.pir", (_, _, _) =>
-            {
-                isCalled = true;
-
-                return Task.CompletedTask;
-            });
-
-            DefaultDaemonApp.CancelListenState(id!);
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.False(isCalled);
-            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]
@@ -529,110 +403,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await DefaultDaemonHost.SetDaemonStateAsync(5, 2).ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.SetState("sensor.netdaemon_status", "Connected", It.IsAny<object>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task DelayStateChangeShouldReturnTrue()
-        {
-            // ARRANGE
-
-            // ACT
-            await InitializeFakeDaemon().ConfigureAwait(false);
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-            // ASSERT
-            Assert.True(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonApp.InternalStateActions);
-        }
-
-        [Fact]
-        public async Task DelayStateChangeWithToAndFromShouldReturnTrue()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-            // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "off");
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.True(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonApp.InternalStateActions);
-        }
-
-        [Fact]
-        public async Task DelayStateChangeWithToAndFromWrongShouldNotComplete()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-
-            // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on", from: "unknown");
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.False(delayResult.Task.IsCompleted);
-            Assert.Single(DefaultDaemonApp.InternalStateActions);
-        }
-
-        [Fact]
-        public async Task DelayStateLambdaChangeShouldReturnTrue()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-            // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, _) => n?.State == "on");
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "off", toState: "on");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.True(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonApp.InternalStateActions);
-        }
-
-        [Fact]
-        public async Task DelayStateLambdaChangeShouldNotComplete()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-            // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, (n, _) => n?.State == "on");
-
-            DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", fromState: "on", toState: "off");
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.False(delayResult.Task.IsCompleted);
-            Assert.Single(DefaultDaemonApp.InternalStateActions);
-        }
-
-        [Fact]
-        public async Task DelayStateChangeCancelShouldReturnFalse()
-        {
-            // ARRANGE
-            await InitializeFakeDaemon().ConfigureAwait(false);
-
-            // ACT
-            using var delayResult = DefaultDaemonApp.DelayUntilStateChange(new string[] { "binary_sensor.pir" }, to: "on");
-
-            delayResult.Cancel();
-
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
-
-            // ASSERT
-            Assert.False(delayResult.Task.Result);
-            Assert.Empty(DefaultDaemonApp.InternalStateActions);
         }
 
         [Fact]

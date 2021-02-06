@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using JoySoftware.HomeAssistant.Client;
@@ -19,22 +18,6 @@ namespace NetDaemon.Service.App
 {
     public static class CodeGenerator
     {
-        /// <summary>
-        ///     Maps the domain to corresponding implemented Fluent API, will be added as
-        ///     more and more entity types are supported
-        /// </summary>
-        private static readonly IDictionary<string, (string, string)> _FluentApiMapper =
-            new Dictionary<string, (string, string)>
-            {
-                ["light"] = ("Entity", "IEntity"),
-                ["script"] = ("Entity", "IEntity"),
-                ["scene"] = ("Entity", "IEntity"),
-                ["switch"] = ("Entity", "IEntity"),
-                ["camera"] = ("Camera", "ICamera"),
-                ["media_player"] = ("MediaPlayer", "IMediaPlayer"),
-                ["automation"] = ("Entity", "IEntity"),
-            };
-
         private static readonly Dictionary<string, string[]> _skipDomainServices = new Dictionary<string, string[]>()
         {
             {"lock", new[] {"lock", "unlock", "open"}},
@@ -106,91 +89,6 @@ namespace NetDaemon.Service.App
             }
         };
 
-        public static string? GenerateCode(string nameSpace, IEnumerable<string> entities)
-        {
-            var code = SyntaxFactory.CompilationUnit();
-
-            // Add Usings statements
-            code = code.AddUsings(
-                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
-            code = code.AddUsings(
-                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(Common.Fluent.IMediaPlayer).Namespace!)));
-
-            // Add namespace
-            var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace))
-                .NormalizeWhitespace();
-
-            // Add support for extensions for entities
-            var extensionClass = SyntaxFactory.ClassDeclaration("EntityExtension");
-
-            extensionClass = extensionClass.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword),
-                SyntaxFactory.Token(SyntaxKind.StaticKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
-
-            // Get all available domains, this is used to create the extensionmethods
-            foreach (var domain in GetDomainsFromEntities(entities))
-            {
-                if (_FluentApiMapper.ContainsKey(domain))
-                {
-                    var camelCaseDomain = domain.ToCamelCase();
-                    var method =
-                        $"public static {camelCaseDomain}Entities {camelCaseDomain}Entities(this NetDaemonApp app) => new(app);";
-                    var methodDeclaration = CSharpSyntaxTree.ParseText(method).GetRoot().ChildNodes()
-                                                .OfType<GlobalStatementSyntax>().FirstOrDefault()
-                                            ?? throw new NetDaemonNullReferenceException("Method parsing failed");
-
-                    extensionClass = extensionClass.AddMembers(methodDeclaration);
-                }
-            }
-
-            namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
-
-            // Add the classes implementing the specific entities
-            foreach (var domain in GetDomainsFromEntities(entities))
-            {
-                if (_FluentApiMapper.ContainsKey(domain))
-                {
-                    var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
-    {{
-        private readonly {nameof(NetDaemonApp)} _app;
-
-        public {domain.ToCamelCase()}Entities({nameof(NetDaemonApp)} app)
-        {{
-            _app = app;
-        }}
-    }}";
-                    var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes()
-                                          .OfType<ClassDeclarationSyntax>().FirstOrDefault()
-                                      ?? throw new NetDaemonNullReferenceException(
-                                          $"Parse class {nameof(NetDaemonApp)} failed");
-                    foreach (var entity in entities.Where(n =>
-                        n.StartsWith(domain, true, CultureInfo.InvariantCulture)))
-                    {
-                        var (fluent, fluentInterface) = _FluentApiMapper[domain];
-                        var name = entity[(entity.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
-                        // Quick check to make sure the name is a valid C# identifier. Should really check to make
-                        // sure it doesn't collide with a reserved keyword as well.
-                        if (!char.IsLetter(name[0]) && (name[0] != '_'))
-                        {
-                            name = "e_" + name;
-                        }
-
-                        var propertyCode =
-                            $@"public {fluentInterface} {name.ToCamelCase()} => _app.{fluent}(""{entity}"");";
-                        var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes()
-                                                  .OfType<PropertyDeclarationSyntax>().FirstOrDefault()
-                                              ?? throw new NetDaemonNullReferenceException("Property parsing failed!");
-                        entityClass = entityClass.AddMembers(propDeclaration);
-                    }
-
-                    namespaceDeclaration = namespaceDeclaration.AddMembers(entityClass);
-                }
-            }
-
-            code = code.AddMembers(namespaceDeclaration);
-
-            return code.NormalizeWhitespace(indentation: "    ", eol: "\n").ToFullString();
-        }
-
         public static string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities,
             IEnumerable<HassServiceDomain> services)
         {
@@ -204,12 +102,10 @@ namespace NetDaemon.Service.App
             code = code.AddUsings(
                 SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(RxEntityBase).Namespace!)));
             code = code.AddUsings(
-                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonApp).Namespace!)));
-            code = code.AddUsings(
                 SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonRxApp).Namespace!)));
             code = code.AddUsings(
                 SyntaxFactory.UsingDirective(
-                    SyntaxFactory.ParseName(typeof(Common.Fluent.FluentExpandoObject).Namespace!)));
+                    SyntaxFactory.ParseName(typeof(FluentExpandoObject).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace))

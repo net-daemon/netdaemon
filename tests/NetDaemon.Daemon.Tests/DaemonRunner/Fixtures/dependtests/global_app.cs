@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
 
 namespace DependNs
 {
-    public class DependOnGlobalApp : NetDaemonApp
+    public class DependOnGlobalApp : NetDaemonRxApp
     {
         public override Task InitializeAsync()
         {
@@ -15,7 +15,7 @@ namespace DependNs
         }
     }
 
-    public class DependOnGlobalAndOtherApp : NetDaemonApp
+    public class DependOnGlobalAndOtherApp : NetDaemonRxApp
     {
         public override Task InitializeAsync()
         {
@@ -25,7 +25,7 @@ namespace DependNs
         }
     }
 
-    public class DependOnGlobalOtherApp : NetDaemonApp
+    public class DependOnGlobalOtherApp : NetDaemonRxApp
     {
         public override Task InitializeAsync()
         {
@@ -35,7 +35,7 @@ namespace DependNs
         }
     }
 
-    public class GlobalApp : NetDaemonApp
+    public class GlobalApp : NetDaemonRxApp
     {
         public override Task InitializeAsync()
         {

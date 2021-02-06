@@ -8,7 +8,6 @@ namespace NetDaemon.Service.App
         /// <summary>
         /// Temporary
         /// </summary>
-        /// <returns></returns>
         IEnumerable<Type> GetApps();
     }
 }

@@ -4,22 +4,20 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using NetDaemon.Common;
-using NetDaemon.Common.Fluent;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    public class AppTestApp : Common.NetDaemonApp { }
-
-    public class AppTestApp2 : Common.NetDaemonApp { }
+    class TestRxApp : NetDaemonRxApp { }
 
     public class NetDaemonApptests : IAsyncLifetime, IDisposable
     {
         private const string appTemplate = "  app: ";
         private readonly LoggerMock _logMock;
-        private readonly Common.NetDaemonApp _app;
+        private readonly Common.NetDaemonAppBase _app = new TestRxApp();
         private readonly Mock<INetDaemon> _netDaemonMock;
         private bool disposedValue;
 
@@ -29,107 +27,8 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             _netDaemonMock = new Mock<INetDaemon>();
             _netDaemonMock.SetupGet(n => n.Logger).Returns(_logMock.Logger);
 
-            AppMock = new Mock<INetDaemonApp>();
-            _app = new AppTestApp();
             _app.StartUpAsync(_netDaemonMock.Object);
             _app.Id = "app";
-        }
-
-        public Mock<INetDaemonApp> AppMock { get; }
-
-        [Fact]
-        public void CallServiceShouldCallCorrectDaemonCallService()
-        {
-            // ARRANGE and  ACT
-            var expandoData = new FluentExpandoObject();
-            dynamic data = expandoData;
-            data.AnyData = "data";
-
-            // ACT
-            _app.CallService("domain", "service", data, false);
-
-            // ASSERT
-            _netDaemonMock.Verify(n => n.CallServiceAsync("domain", "service", expandoData, false));
-        }
-
-        [Fact]
-        public void CamerasFuncShouldCallCorrectDaemonEntity()
-        {
-            // ARRANGE and  ACT
-            _app.Cameras(n => n.EntityId == "camera.cam1");
-            // ASSERT
-            _netDaemonMock.Verify(n => n.Cameras(_app, It.IsAny<Func<IEntityProperties, bool>>()));
-        }
-
-        [Fact]
-        public void CameraShouldCallCorrectDaemonEntity()
-        {
-            // ARRANGE and  ACT
-            _app.Camera("camera.cam1");
-            // ASSERT
-            _netDaemonMock.Verify(n => n.Camera(_app, "camera.cam1"));
-        }
-
-        [Fact]
-        public void CamerasShouldCallCorrectDaemonEntity()
-        {
-            // ARRANGE and  ACT
-            _app.Cameras(new string[] { "camera.cam1" });
-            // ASSERT
-            _netDaemonMock.Verify(n => n.Cameras(_app, new string[] { "camera.cam1" }));
-        }
-
-        [Fact]
-        public void EnitiesFuncShouldCallCorrectDaemonEntity()
-        {
-            // ARRANGE and  ACT
-            _app.Entities(n => n.EntityId == "light.somelight");
-            // ASSERT
-            _netDaemonMock.Verify(n => n.Entities(_app, It.IsAny<Func<IEntityProperties, bool>>()));
-        }
-
-        [Fact]
-        public void EntitiesShouldCallCorrectDaemonEntity()
-        {
-            // ARRANGE and  ACT
-            _app.Entities(new string[] { "light.somelight" });
-            // ASSERT
-            _netDaemonMock.Verify(n => n.Entities(_app, new string[] { "light.somelight" }));
-        }
-
-        [Fact]
-        public void EntityShouldCallCorrectDaemonEntity()
-        {
-            // ARRANGE and  ACT
-            _app.Entity("light.somelight");
-            // ASSERT
-            _netDaemonMock.Verify(n => n.Entity(_app, "light.somelight"));
-        }
-
-        [Fact]
-        public void GetStateShouldCallCorrectDaemonGetState()
-        {
-            // ARRANGE and  ACT
-            _app.GetState("entityid");
-
-            // ASSERT
-            _netDaemonMock.Verify(n => n.GetState("entityid"));
-        }
-
-        [Theory]
-        [InlineData("int", 10)]
-        [InlineData("str", "hello")]
-        public async Task GlobalShouldReturnCorrectData(string key, object value)
-        {
-            await using var _app_two = new AppTestApp2();
-            await _app_two.StartUpAsync(_netDaemonMock.Object).ConfigureAwait(false);
-            _app_two.Id = "app2";
-
-            // ARRANGE and  ACT
-            _app.Global[key] = value;
-
-            // ASSERT
-            Assert.Equal(_app_two.Global[key], value);
         }
 
         [Theory]

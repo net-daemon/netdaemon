@@ -61,7 +61,7 @@ namespace NetDaemon.Daemon.Storage
 
             using var jsonStream = File.Open(storageJsonFile, FileMode.Create, FileAccess.Write);
 
-            await JsonSerializer.SerializeAsync<T>(jsonStream, data).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(jsonStream, data).ConfigureAwait(false);
         }
     }
 
@@ -91,7 +91,7 @@ namespace NetDaemon.Daemon.Storage
             Dictionary<string, object?> value,
             JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize<Dictionary<string, object?>>(writer, value, options);
+            JsonSerializer.Serialize(writer, value, options);
         }
     }
 
@@ -113,7 +113,7 @@ namespace NetDaemon.Daemon.Storage
                 JsonValueKind.String => ParseString(elem.GetString()),
                 JsonValueKind.False => false,
                 JsonValueKind.True => true,
-                JsonValueKind.Number => elem.TryGetInt64(out Int64 intValue) ? intValue : elem.GetDouble(),
+                JsonValueKind.Number => elem.TryGetInt64(out long intValue) ? intValue : elem.GetDouble(),
                 _ => null
             };
         }

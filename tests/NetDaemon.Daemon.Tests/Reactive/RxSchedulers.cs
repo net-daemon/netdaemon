@@ -168,7 +168,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         {
             // ARRANGE
             // ACT
-            DefaultMockedRxApp.Object.RunEveryMinute(0, () => Console.WriteLine("Test"));
+            DefaultMockedRxApp.Object.RunEveryMinute(1, () => Console.WriteLine("Test"));
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()), Times.Once());

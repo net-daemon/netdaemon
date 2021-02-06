@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Threading.Tasks;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Daemon.Storage;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
+using NetDaemon.Common;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
@@ -104,7 +104,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ADateTime = DateTime.Now
             };
             // ACT
-            await dataRepository.Save<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id", storeData).ConfigureAwait(false);
+            await dataRepository.Save("RepositoryShouldLoadSavedDataUsingDto_id", storeData).ConfigureAwait(false);
 
             var dataReturned = await dataRepository.Get<TestStorage>("RepositoryShouldLoadSavedDataUsingDto_id").ConfigureAwait(false);
 

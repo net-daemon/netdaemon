@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,7 +10,7 @@ namespace NetDaemon.Service.Api
     {
         [JsonPropertyName("type")] public string Type { get; set; } = "unknown";
         [JsonPropertyName("app")] public string? App { get; set; }
-        [JsonPropertyName("data")] public JsonElement? ServiceData { get; set; } = null;
+        [JsonPropertyName("data")] public JsonElement? ServiceData { get; set; }
     }
 
     public class WsAppCommand
@@ -23,6 +21,6 @@ namespace NetDaemon.Service.Api
     public class WsExternalEvent
     {
         [JsonPropertyName("type")] public string Type { get; set; } = "unknown";
-        [JsonPropertyName("data")] public object? Data { get; set; } = null;
+        [JsonPropertyName("data")] public object? Data { get; set; }
     }
 }

@@ -7,19 +7,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
     public class CodeGenerationTests
     {
         [Fact]
-        public void TestGenerateCode()
-        {
-            // ARRANGE
-            // ACT
-            var code = CodeGenerator.GenerateCode("Netdaemon.Generated.Extensions", new string[] { "light.koket_fonster", "media_player.my_player" });
-
-            // ASSERT
-
-            Assert.Equal(System.IO.File.ReadAllText("DaemonRunner/CodeGen/CodeGenTestFixture.cs"), code);
-            // System.IO.File.WriteAllText("/root/src/tests/NetDaemon.Daemon.Tests/DaemonRunner/CodeGen/CodeGenTestFixture.cs", code);
-        }
-
-        [Fact]
         public void WhenGivenAnArrayOfEntitiesTheDomainShouldReturnCorrectDomains()
         {
             // ARRANGE

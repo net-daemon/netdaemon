@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common.Reactive.Services
 {
@@ -12,32 +11,32 @@ namespace NetDaemon.Common.Reactive.Services
         /// Gets the id of the entity
         /// </summary>
         public string EntityId => EntityIds.First();
-        
+
         /// <summary>
         /// Gets the entity state
         /// </summary>
         public EntityState? EntityState => DaemonRxApp?.State(EntityId);
-        
+
         /// <summary>
         /// Gets the Area to which an entity is assigned
         /// </summary>
         public string? Area => DaemonRxApp?.State(EntityId)?.Area;
-        
+
         /// <summary>
         /// Gets the entity attribute
         /// </summary>
         public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
-        
+
         /// <summary>
         /// Gets a <see cref="DateTime"/> that indicates the last time the entity's state changed
         /// </summary>
         public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
-        
+
         /// <summary>
         ///  Gets a <see cref="DateTime"/> that indicates the last time the entity's state updated
         /// </summary>
         public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
-        
+
         /// <summary>
         /// Gets the entity's state
         /// </summary>
@@ -68,7 +67,7 @@ namespace NetDaemon.Common.Reactive.Services
             }
             else if (data is not null)
             {
-                var expObject = ((object) data).ToExpandoObject();
+                var expObject = ((object)data).ToExpandoObject();
                 if (expObject is not null)
                     serviceData.CopyFrom(expObject);
             }

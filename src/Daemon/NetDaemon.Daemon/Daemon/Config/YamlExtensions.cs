@@ -34,8 +34,7 @@ namespace NetDaemon.Daemon.Config
 
             // Lets try convert from python style to CamelCase
 
-            var prop = type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
-            return prop;
+            return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
         }
 
         public static object? ToObject(this YamlScalarNode node, Type valueType, object? parent)

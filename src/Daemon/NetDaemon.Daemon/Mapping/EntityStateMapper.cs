@@ -13,7 +13,7 @@ namespace NetDaemon.Mapping
         /// <summary>
         ///     Converts HassState to EntityState
         /// </summary>
-        /// <param name="hassState"></param>
+        /// <param name="hassState">HassState object to map</param>
         public static EntityState Map(this HassState hassState)
         {
             _ = hassState ??

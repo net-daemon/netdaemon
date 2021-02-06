@@ -14,7 +14,6 @@ using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
 using NetDaemon.Infrastructure.Extensions;
@@ -78,8 +77,6 @@ namespace NetDaemon.Daemon
         ///     Used for testing
         /// </summary>
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances { get; } = new();
-
-        private readonly Scheduler _scheduler;
         private bool _isDisposed;
 
         // Following token source and token are set at RUN
@@ -94,7 +91,7 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Constructor
         /// </summary>
-        /// <param name="hassClient">Client to use</param>
+        /// <param name="hassClientFactory">Factory to use for instance HassClients</param>
         /// <param name="repository">Repository to use</param>
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
@@ -111,7 +108,6 @@ namespace NetDaemon.Daemon
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClientFactory = hassClientFactory
                         ?? throw new ArgumentNullException(nameof(hassClientFactory));
-            _scheduler = new Scheduler(loggerFactory: loggerFactory);
             ServiceProvider = serviceProvider;
             _repository = repository;
             _isDisposed = false;
@@ -131,11 +127,7 @@ namespace NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
-        public IEnumerable<INetDaemonAppBase> RunningAppInstances => InternalRunningAppInstances.Values;
-
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
-
-        public IScheduler Scheduler => _scheduler;
 
         [SuppressMessage("", "CA1721")]
         public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
@@ -191,39 +183,6 @@ namespace NetDaemon.Daemon
             }
         }
 
-        /// <inheritdoc/>
-        public ICamera Camera(INetDaemonApp app, params string[] entityIds)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new CameraManager(entityIds, this, app);
-        }
-
-        /// <inheritdoc/>
-        public ICamera Cameras(INetDaemonApp app, IEnumerable<string> entityIds)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new CameraManager(entityIds, this, app);
-        }
-
-        /// <inheritdoc/>
-        public ICamera Cameras(INetDaemonApp app, Func<IEntityProperties, bool> func)
-        {
-            _ = app ??
-               throw new NetDaemonArgumentNullException(nameof(app));
-            _cancelToken.ThrowIfCancellationRequested();
-            try
-            {
-                IEnumerable<IEntityProperties> x = State.Where(func);
-
-                return new CameraManager(x.Select(n => n.EntityId).ToArray(), this, app);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to select camera func in app {appId}", app.Id);
-                throw;
-            }
-        }
-
         public async ValueTask DisposeAsync()
         {
             lock (_cancelDaemon)
@@ -235,7 +194,6 @@ namespace NetDaemon.Daemon
 
             _cancelDaemon.Cancel();
             await Stop().ConfigureAwait(false);
-            await _scheduler.DisposeAsync().ConfigureAwait(false);
             _cancelDaemon.Dispose();
             _cancelTokenSource?.Dispose();
 
@@ -248,37 +206,6 @@ namespace NetDaemon.Daemon
             ListenCompanionServiceCall("reload_apps", async (_) => await ReloadAllApps().ConfigureAwait(false));
 
             RegisterAppSwitchesAndTheirStates();
-        }
-
-        public IEntity Entities(INetDaemonApp app, Func<IEntityProperties, bool> func)
-        {
-            _ = app ??
-               throw new NetDaemonArgumentNullException(nameof(app));
-            _cancelToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                IEnumerable<IEntityProperties> x = State.Where(func);
-                var selectedEntities = x.Select(n => n.EntityId).ToArray();
-                return new EntityManager(selectedEntities, this, app);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to select entities using func in app {appId}", app.Id);
-                throw;
-            }
-        }
-
-        public IEntity Entities(INetDaemonApp app, IEnumerable<string> entityId)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new EntityManager(entityId, this, app);
-        }
-
-        public IEntity Entity(INetDaemonApp app, params string[] entityId)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new EntityManager(entityId, this, app);
         }
 
         /// <inheritdoc/>
@@ -332,28 +259,6 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public IFluentInputSelect InputSelect(INetDaemonApp app, params string[] inputSelectParams)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new InputSelectManager(inputSelectParams, this, app);
-        }
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(INetDaemonApp app, IEnumerable<string> inputSelectParams)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new InputSelectManager(inputSelectParams, this, app);
-        }
-
-        /// <inheritdoc/>
-        public IFluentInputSelect InputSelects(INetDaemonApp app, Func<IEntityProperties, bool> func)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            IEnumerable<string> x = State.Where(func).Select(n => n.EntityId);
-            return new InputSelectManager(x, this, app);
-        }
-
-        /// <inheritdoc/>
         public void ListenCompanionServiceCall(string service, Func<dynamic?, Task> action)
         {
             _ = service ??
@@ -372,43 +277,9 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public IMediaPlayer MediaPlayer(INetDaemonApp app, params string[] entityIds)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new MediaPlayerManager(entityIds, this, app);
-        }
-
-        /// <inheritdoc/>
-        public IMediaPlayer MediaPlayers(INetDaemonApp app, IEnumerable<string> entityIds)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new MediaPlayerManager(entityIds, this, app);
-        }
-
-        /// <inheritdoc/>
-        public IMediaPlayer MediaPlayers(INetDaemonApp app, Func<IEntityProperties, bool> func)
-        {
-            _ = app ??
-               throw new NetDaemonArgumentNullException(nameof(app));
-            _cancelToken.ThrowIfCancellationRequested();
-            try
-            {
-                IEnumerable<IEntityProperties> x = State.Where(func);
-
-                return new MediaPlayerManager(x.Select(n => n.EntityId).ToArray(), this, app);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to select mediaplayers func in app {appId}", app.Id);
-                throw;
-            }
-        }
-
-        /// <inheritdoc/>
         public async Task ReloadAllApps()
         {
             await UnloadAllApps().ConfigureAwait(false);
-            await _scheduler.Restart().ConfigureAwait(false);
             await LoadAllApps().ConfigureAwait(false);
         }
 
@@ -552,12 +423,6 @@ namespace NetDaemon.Daemon
                 // for now just ignore
             }
             Logger.LogWarning("No NetDaemon integration found, please consider installing the companion integration for more features. See https://netdaemon.xyz/docs/started/integration for details.");
-        }
-
-        public IScript RunScript(INetDaemonApp app, params string[] entityIds)
-        {
-            _cancelToken.ThrowIfCancellationRequested();
-            return new EntityManager(entityIds, this, app);
         }
 
         public Task SaveDataAsync<T>(string id, T data)
@@ -762,8 +627,6 @@ namespace NetDaemon.Daemon
 
                 await UnloadAllApps().ConfigureAwait(false);
 
-                await _scheduler.Stop().ConfigureAwait(false);
-
                 InternalState.Clear();
                 InternalAllAppInstances.Clear();
                 InternalRunningAppInstances.Clear();
@@ -951,10 +814,8 @@ namespace NetDaemon.Daemon
                         edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
                     }
                 }
-                var sortedInstances = TopologicalSort<INetDaemonAppBase>(unsortedList.ToHashSet(), edges) ??
+                return TopologicalSort(unsortedList.ToHashSet(), edges) ??
                     throw new NetDaemonException("Application dependencies is wrong, please check dependencies for circular dependencies!");
-
-                return sortedInstances;
             }
             return unsortedList.ToList();
         }
@@ -1010,27 +871,7 @@ namespace NetDaemon.Daemon
                     // var tasks = new List<Task>();
                     foreach (var app in InternalRunningAppInstances)
                     {
-                        if (app.Value is NetDaemonApp netDaemonApp)
-                        {
-                            foreach ((string pattern, Func<string, EntityState?, EntityState?, Task> func) in netDaemonApp.StateCallbacks.Values)
-                            {
-                                if (string.IsNullOrEmpty(pattern))
-                                {
-                                    _eventHandlerTasks.Add(func(stateData.EntityId,
-                                        newState,
-                                        oldState
-                                    ));
-                                }
-                                else if (stateData.EntityId.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    _eventHandlerTasks.Add(func(stateData.EntityId,
-                                        newState,
-                                        oldState
-                                    ));
-                                }
-                            }
-                        }
-                        else if (app.Value is NetDaemonRxApp netDaemonRxApp)
+                        if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
                             // Call the observable with no blocking
                             foreach (var observer in ((StateChangeObservable)netDaemonRxApp.StateChangesObservable).Observers)
@@ -1069,18 +910,7 @@ namespace NetDaemon.Daemon
                     foreach (var app in InternalRunningAppInstances)
                     {
                         // Call any service call registered
-                        if (app.Value is NetDaemonApp netDaemonApp)
-                        {
-                            foreach (var (domain, service, func) in netDaemonApp.DaemonCallBacksForServiceCalls)
-                            {
-                                if (domain == serviceCallData.Domain &&
-                                    service == serviceCallData.Service)
-                                {
-                                    _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
-                                }
-                            }
-                        }
-                        else if (app.Value is NetDaemonRxApp netDaemonRxApp)
+                        if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
                             // Call any service call registered
                             foreach (var (domain, service, func) in netDaemonRxApp.DaemonCallBacksForServiceCalls)
@@ -1157,24 +987,7 @@ namespace NetDaemon.Daemon
                     }
                     foreach (var app in InternalRunningAppInstances)
                     {
-                        if (app.Value is NetDaemonApp netDaemonApp)
-                        {
-                            foreach ((string ev, Func<string, dynamic, Task> func) in netDaemonApp.EventCallbacks)
-                            {
-                                if (ev == hassEvent.EventType)
-                                {
-                                    _eventHandlerTasks.Add(func(ev, hassEvent.Data));
-                                }
-                            }
-                            foreach ((Func<FluentEventProperty, bool> selectFunc, Func<string, dynamic, Task> func) in netDaemonApp.EventFunctionCallbacks)
-                            {
-                                if (selectFunc(new FluentEventProperty { EventId = hassEvent.EventType, Data = hassEvent.Data }))
-                                {
-                                    _eventHandlerTasks.Add(func(hassEvent.EventType, hassEvent.Data));
-                                }
-                            }
-                        }
-                        else if (app.Value is NetDaemonRxApp netDaemonRxApp)
+                        if (app.Value is NetDaemonRxApp netDaemonRxApp)
                         {
                             // Call the observable with no blocking
                             foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
@@ -1563,7 +1376,7 @@ namespace NetDaemon.Daemon
 
             await callbackTaskList.WhenAll(_cancelToken).ConfigureAwait(false);
         }
-
+        /// <inheritdoc/>
         public bool HomeAssistantHasNetDaemonIntegration() => HasNetDaemonIntegration;
     }
 }

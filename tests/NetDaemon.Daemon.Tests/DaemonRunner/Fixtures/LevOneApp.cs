@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
 /// <summary>
 ///     Greets (or insults) people when coming home :)
 /// </summary>
-public class LevOneApp : NetDaemonApp
+public class LevOneApp : NetDaemonRxApp
 {
     public override Task InitializeAsync()
     {

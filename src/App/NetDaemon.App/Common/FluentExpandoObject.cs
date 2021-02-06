@@ -9,7 +9,7 @@ using System.Text.Json;
 using JoySoftware.HomeAssistant.Client;
 using NetDaemon.Common.Exceptions;
 
-namespace NetDaemon.Common.Fluent
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     A custom expando object to alow to return null values if properties does not exist

@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
 
 /// <summary>
 ///     Greets (or insults) people when coming home :)
 /// </summary>
 [SuppressMessage("", "CS1002")]
 [SuppressMessage("", "CS1038")]
-public class AssmeblyFaultyCompileErrorDaemonApp : NetDaemonApp
+public class AssmeblyFaultyCompileErrorDaemonApp : NetDaemonRxApp
 {
     #region -- Test config --
 

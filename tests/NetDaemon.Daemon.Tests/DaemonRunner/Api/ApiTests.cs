@@ -28,8 +28,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
     public class ApiFakeStartup : IAsyncLifetime, IDisposable
     {
         private readonly Mock<NetDaemonRxApp> _defaultMockedRxApp;
-        private readonly Common.NetDaemonApp _defaultDaemonApp;
-        private readonly Common.NetDaemonApp _defaultDaemonApp2;
+        private readonly NetDaemonRxApp _defaultDaemonApp;
+        private readonly NetDaemonRxApp _defaultDaemonApp2;
         private readonly BaseTestRxApp _defaultDaemonRxApp;
         private readonly NetDaemonHost _defaultDaemonHost;
         private readonly HttpHandlerMock _defaultHttpHandlerMock;

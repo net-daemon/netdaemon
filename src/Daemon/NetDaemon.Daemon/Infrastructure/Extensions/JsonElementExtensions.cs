@@ -33,7 +33,7 @@ namespace NetDaemon.Infrastructure.Extensions
                     {
                         list.Add(val.ConvertToDynamicValue());
                     }
-                    return (IEnumerable<object?>)list;
+                    return list;
 
                 case JsonValueKind.Object:
                     var obj = new Dictionary<string, object?>();
@@ -42,7 +42,7 @@ namespace NetDaemon.Infrastructure.Extensions
                     {
                         obj[prop.Name] = prop.Value.ConvertToDynamicValue();
                     }
-                    return (IDictionary<string, object?>)obj;
+                    return obj;
             }
 
             return null;

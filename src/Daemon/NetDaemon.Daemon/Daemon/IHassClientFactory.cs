@@ -18,7 +18,7 @@ namespace NetDaemon.Daemon
 
     public class HassClientFactory : IHassClientFactory
     {
-        readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
         public HassClientFactory(IServiceProvider? serviceProvider = null)
         {
             _serviceProvider = serviceProvider ?? throw new NetDaemonArgumentNullException(nameof(serviceProvider));

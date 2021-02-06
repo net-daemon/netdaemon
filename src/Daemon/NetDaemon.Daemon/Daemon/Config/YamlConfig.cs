@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -40,12 +39,9 @@ namespace NetDaemon.Daemon.Config
 
         public string? GetSecretFromPath(string secret, string configPath)
         {
-            if (_secrets.ContainsKey(configPath))
+            if (_secrets.ContainsKey(configPath) && _secrets[configPath].ContainsKey(secret))
             {
-                if (_secrets[configPath].ContainsKey(secret))
-                {
-                    return _secrets[configPath][secret];
-                }
+                return _secrets[configPath][secret];
             }
             if (configPath != _configFolder)
             {
@@ -101,7 +97,7 @@ namespace NetDaemon.Daemon.Config
 
                 if (!result.ContainsKey(fileDirectory))
                 {
-                    result[fileDirectory] = (Dictionary<string, string>?)GetSecretsFromSecretsYaml(file) ??
+                    result[fileDirectory] = GetSecretsFromSecretsYaml(file) ??
                         new Dictionary<string, string>();
                 }
             }

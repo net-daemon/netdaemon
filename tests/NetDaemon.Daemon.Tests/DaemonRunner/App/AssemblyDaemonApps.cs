@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetDaemon.Common;
-
+using NetDaemon.Common.Reactive;
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 {
     /// <summary>
     ///     Greets (or insults) people when coming home :)
     /// </summary>
-    public class AssemblyDaemonApp : Common.NetDaemonApp
+    public class AssemblyDaemonApp : NetDaemonRxApp
     {
         #region -- Test config --
 

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using NetDaemon.Common;
-using NetDaemon.Common.Fluent;
 using Xunit;
 using NetDaemon.Common.Exceptions;
 

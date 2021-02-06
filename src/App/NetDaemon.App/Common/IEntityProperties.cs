@@ -1,6 +1,5 @@
 ﻿using System;
-
-namespace NetDaemon.Common.Fluent
+namespace NetDaemon.Common
 {
     /// <summary>
     ///     Properties on entities that can be filtered in lambda expression

@@ -8,7 +8,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common
 {
@@ -436,12 +435,9 @@ namespace NetDaemon.Common
             {
                 RuntimeInfo.AppAttributes[attribute] = value;
             }
-            else
+            else if (RuntimeInfo.AppAttributes.ContainsKey(attribute))
             {
-                if (RuntimeInfo.AppAttributes.ContainsKey(attribute))
-                {
-                    RuntimeInfo.AppAttributes.Remove(attribute);
-                }
+                RuntimeInfo.AppAttributes.Remove(attribute);
             }
             UpdateRuntimeInformation();
         }
