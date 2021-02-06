@@ -131,7 +131,6 @@ namespace NetDaemon.Service.App
                         MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
-                        MetadataReference.CreateFromFile(typeof(NetDaemonApp).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(NetDaemonRxApp).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(RunnerService).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly.Location),

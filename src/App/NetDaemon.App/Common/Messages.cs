@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
-using NetDaemon.Common.Fluent;
+using NetDaemon.Common;
 
 namespace NetDaemon.Common
 {

@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Common.Fluent
+﻿namespace NetDaemon.Common
 {
     /// <summary>
     ///     Context

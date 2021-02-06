@@ -5,14 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using Moq;
-using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests
 {
-    public class BaseTestApp : Common.NetDaemonApp { }
+    public class BaseTestApp : NetDaemonRxApp { }
 
     public class BaseTestRxApp : NetDaemonRxApp { }
 
@@ -159,7 +158,7 @@ namespace NetDaemon.Daemon.Tests
 
         public BaseTestRxApp DefaultDaemonRxApp { get; }
         public Mock<NetDaemonRxApp> DefaultMockedRxApp { get; }
-        public Common.NetDaemonApp DefaultDaemonApp { get; }
+        public NetDaemonRxApp DefaultDaemonApp { get; }
         public static string HelloWorldData => "Hello world!";
 
         public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)

@@ -8,7 +8,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common
 {

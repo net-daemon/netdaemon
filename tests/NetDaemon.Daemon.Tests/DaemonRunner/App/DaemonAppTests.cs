@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
 using Xunit;
@@ -79,24 +78,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ACT
             // ASSERT
             Assert.Equal(11, codeManager.DaemonAppTypes.Count());
-        }
-
-        [Fact]
-        public void InstanceAppFromConfigShouldReturnCorrectType()
-        {
-            // ARRANGE
-            var yamlConfigMock = new Mock<IYamlConfig>();
-            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
-                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
-
-            IEnumerable<Type> types = new List<Type>() { typeof(AssemblyDaemonApp) };
-            const string? yamlConfig = "app:\n  class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssemblyDaemonApp";
-            // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
-            // ASSERT
-            Assert.Single(instances);
-            // Assert.Equal(1, instances.Count());
-            Assert.NotNull(instances.FirstOrDefault() as INetDaemonApp);
         }
 
         [Fact]
@@ -231,42 +212,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             Assert.Equal(2, codeManager.InstanceDaemonApps().Count());
         }
 
-        [Theory]
-        [InlineData("Some string")] //string
-        [InlineData(10)]            //integer
-        [InlineData(100.5)]         //float
-        public async Task StorageShouldReturnSameValueAsSet(object data)
-        {
-            // ARRANGE
-            var yamlConfigMock = new Mock<IYamlConfig>();
-
-            yamlConfigMock.Setup(x => x.GetAllConfigFilePaths())
-                .Returns(new[] { Path.Combine(ConfigFixturePath, "level2", "level3") });
-
-            IEnumerable<Type> types = new List<Type>() { typeof(AssemblyDaemonApp) };
-            const string? yamlConfig = @"
-                app:
-                    class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssemblyDaemonApp
-                ";
-
-            var daemonMock = new Mock<INetDaemon>();
-            daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
-
-            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssemblyDaemonApp;
-
-            instance!.Id = "somefake_id";
-            instance.InternalStorageObject = new FluentExpandoObject(false, true, daemon: instance);
-            instance.Logger = new Mock<ILogger>().Object;
-
-            // ACT
-            instance!.Storage.Data = data;
-
-            // ASSERT
-            Assert.Equal(data, instance.Storage.Data);
-            var stateQueueResult = await instance.InternalLazyStoreStateQueue.Reader.WaitToReadAsync().ConfigureAwait(false);
-            Assert.True(stateQueueResult);
-        }
-
         [Fact]
         public async Task StorageShouldRestoreWithCorrectValues()
         {
@@ -302,38 +247,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
             // ASSERT
             Assert.Equal("SomeData", instance.Storage.Data);
-        }
-
-        [Fact]
-        public void InsanceAppsThatHasMissingExecuteShouldLogError()
-        {
-            // ARRANGE
-            var path = Path.Combine(FaultyAppPath, "ExecuteWarnings");
-            var moqLogger = new LoggerMock();
-            var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
-            var configMock = new Mock<IYamlConfig>();
-
-            // ACT
-            _ = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
-
-            // ASSERT
-            moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(13));
-        }
-
-        [Fact]
-        public void InsanceAppsThatHasMissingExecuteAndSupressLogsShouldNotLogError()
-        {
-            // ARRANGE
-            var path = Path.Combine(FaultyAppPath, "SupressLogs");
-            var moqLogger = new LoggerMock();
-            var (daemonApps, _) = DaemonCompiler.GetDaemonApps(path, moqLogger.Logger);
-            var configMock = new Mock<IYamlConfig>();
-
-            // ACT
-            _ = new CodeManager(daemonApps, moqLogger.Logger, configMock.Object);
-
-            // ASSERT
-            moqLogger.AssertLogged(LogLevel.Error, Times.Exactly(1));
         }
 
         public static CodeManager CM(string path)

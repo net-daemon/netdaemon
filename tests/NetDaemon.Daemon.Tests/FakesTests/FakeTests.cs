@@ -4,12 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using Moq;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
-using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Reactive

@@ -1,5 +1,5 @@
 ﻿using JoySoftware.HomeAssistant.Client;
-using NetDaemon.Common.Fluent;
+using NetDaemon.Common;
 
 namespace NetDaemon.Mapping
 {

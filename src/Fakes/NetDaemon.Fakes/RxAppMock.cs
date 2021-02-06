@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using NetDaemon.Common;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using System;
 using System.Collections.Generic;

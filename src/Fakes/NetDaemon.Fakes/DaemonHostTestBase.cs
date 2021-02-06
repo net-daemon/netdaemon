@@ -8,7 +8,6 @@ using JoySoftware.HomeAssistant.Client;
 using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Daemon.Storage;
 using Xunit;
 

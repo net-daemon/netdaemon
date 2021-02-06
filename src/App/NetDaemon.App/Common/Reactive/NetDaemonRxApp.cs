@@ -10,10 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 
 // For mocking
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
 namespace NetDaemon.Common.Reactive
 {

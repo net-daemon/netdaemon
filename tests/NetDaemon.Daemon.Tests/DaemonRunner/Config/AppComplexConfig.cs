@@ -6,7 +6,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
     /// <summary>
     ///     Greets (or insults) people when coming home :)
     /// </summary>
-    public class AppComplexConfig : Common.NetDaemonApp
+    public class AppComplexConfig : Common.Reactive.NetDaemonRxApp
     {
         public string? AString { get; set; }
         public int? AnInt { get; set; }

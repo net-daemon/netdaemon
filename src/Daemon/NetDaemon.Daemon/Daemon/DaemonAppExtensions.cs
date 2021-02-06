@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Config;
 
@@ -31,20 +30,7 @@ namespace NetDaemon.Daemon
             {
                 foreach (var attr in method.GetCustomAttributes(false))
                 {
-                    if (netDaemonApp is NetDaemonApp daemonApp)
-                    {
-                        switch (attr)
-                        {
-                            case HomeAssistantServiceCallAttribute:
-                                await HandleServiceCallAttribute(daemon, daemonApp, method, true).ConfigureAwait(false);
-                                break;
-
-                            case HomeAssistantStateChangedAttribute hassStateChangedAttribute:
-                                HandleStateChangedAttribute(daemon, hassStateChangedAttribute, daemonApp, method);
-                                break;
-                        }
-                    }
-                    else if (netDaemonApp is NetDaemonRxApp daemonRxApp)
+                    if (netDaemonApp is NetDaemonRxApp daemonRxApp)
                     {
                         switch (attr)
                         {
@@ -130,49 +116,49 @@ namespace NetDaemon.Daemon
                 });
         }
 
-        [SuppressMessage("", "CA1031")]
-        private static void HandleStateChangedAttribute(
-                                    INetDaemon _daemon,
-            HomeAssistantStateChangedAttribute hassStateChangedAttribute,
-            NetDaemonApp netDaemonApp,
-            MethodInfo method
-            )
-        {
-            var (signatureOk, err) = CheckIfStateChangedSignatureIsOk(method);
+        // [SuppressMessage("", "CA1031")]
+        // private static void HandleStateChangedAttribute(
+        //                             INetDaemon _daemon,
+        //     HomeAssistantStateChangedAttribute hassStateChangedAttribute,
+        //     NetDaemonAppBase netDaemonApp,
+        //     MethodInfo method
+        //     )
+        // {
+        //     var (signatureOk, err) = CheckIfStateChangedSignatureIsOk(method);
 
-            if (!signatureOk)
-            {
-                _daemon.Logger.LogWarning(err);
-                return;
-            }
+        //     if (!signatureOk)
+        //     {
+        //         _daemon.Logger.LogWarning(err);
+        //         return;
+        //     }
 
-            netDaemonApp.ListenState(hassStateChangedAttribute.EntityId,
-            async (entityId, to, from) =>
-            {
-                try
-                {
-                    if (hassStateChangedAttribute.To != null && (dynamic)hassStateChangedAttribute.To != to?.State)
-                    {
-                        return;
-                    }
+        //     netDaemonApp..ListenState(hassStateChangedAttribute.EntityId,
+        //     async (entityId, to, from) =>
+        //     {
+        //         try
+        //         {
+        //             if (hassStateChangedAttribute.To != null && (dynamic)hassStateChangedAttribute.To != to?.State)
+        //             {
+        //                 return;
+        //             }
 
-                    if (hassStateChangedAttribute.From != null && (dynamic)hassStateChangedAttribute.From != from?.State)
-                    {
-                        return;
-                    }
+        //             if (hassStateChangedAttribute.From != null && (dynamic)hassStateChangedAttribute.From != from?.State)
+        //             {
+        //                 return;
+        //             }
 
-                    // If we don´t accept all changes in the state change
-                    // and we do not have a state change so return
-                    if (to?.State == from?.State && !hassStateChangedAttribute.AllChanges)
-                        return;
+        //             // If we don´t accept all changes in the state change
+        //             // and we do not have a state change so return
+        //             if (to?.State == from?.State && !hassStateChangedAttribute.AllChanges)
+        //                 return;
 
-                    await method.InvokeAsync(netDaemonApp, entityId, to!, from!).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp.Id);
-                }
-            });
-        }
+        //             await method.InvokeAsync(netDaemonApp, entityId, to!, from!).ConfigureAwait(false);
+        //         }
+        //         catch (Exception e)
+        //         {
+        //             _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp.Id);
+        //         }
+        //     });
+        // }
     }
 }

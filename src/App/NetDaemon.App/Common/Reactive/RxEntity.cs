@@ -4,7 +4,6 @@ using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Fluent;
 
 namespace NetDaemon.Common.Reactive
 {
