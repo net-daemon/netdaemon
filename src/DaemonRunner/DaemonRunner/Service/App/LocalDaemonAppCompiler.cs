@@ -44,9 +44,7 @@ namespace NetDaemon.Service.App
                 .Select(x => x.Location)
                 .ToList();
 
-            var netDaemonDllsToLoadDynamically = netDaemonDlls.Except(alreadyLoadedAssemblies);
-
-            foreach (var netDaemonDllToLoadDynamically in netDaemonDllsToLoadDynamically)
+            foreach (var netDaemonDllToLoadDynamically in netDaemonDlls.Except(alreadyLoadedAssemblies))
             {
                 _logger.LogTrace("Loading {dll} into AssemblyLoadContext", netDaemonDllToLoadDynamically);
                 AssemblyLoadContext.Default.LoadFromAssemblyPath(netDaemonDllToLoadDynamically);

@@ -91,7 +91,7 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Constructor
         /// </summary>
-        /// <param name="hassClient">Client to use</param>
+        /// <param name="hassClientFactory">Factory to use for instance HassClients</param>
         /// <param name="repository">Repository to use</param>
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
@@ -814,10 +814,8 @@ namespace NetDaemon.Daemon
                         edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
                     }
                 }
-                var sortedInstances = TopologicalSort<INetDaemonAppBase>(unsortedList.ToHashSet(), edges) ??
+                return TopologicalSort(unsortedList.ToHashSet(), edges) ??
                     throw new NetDaemonException("Application dependencies is wrong, please check dependencies for circular dependencies!");
-
-                return sortedInstances;
             }
             return unsortedList.ToList();
         }
@@ -1378,7 +1376,7 @@ namespace NetDaemon.Daemon
 
             await callbackTaskList.WhenAll(_cancelToken).ConfigureAwait(false);
         }
-
+        /// <inheritdoc/>
         public bool HomeAssistantHasNetDaemonIntegration() => HasNetDaemonIntegration;
     }
 }

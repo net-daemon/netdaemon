@@ -8,7 +8,7 @@ namespace NetDaemon.Infrastructure.Config
         public string? LogLevel { get; set; }
 
         [JsonPropertyName("app_source")]
-        public string? AppSource { get; set; } = null;
+        public string? AppSource { get; set; }
 
         [JsonPropertyName("log_messages")]
         public bool? LogMessages { get; set; }

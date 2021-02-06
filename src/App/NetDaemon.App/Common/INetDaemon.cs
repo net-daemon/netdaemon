@@ -40,7 +40,6 @@ namespace NetDaemon.Common
         /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
         Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
-
         /// <summary>
         ///     Get application instance by application instance id
         /// </summary>

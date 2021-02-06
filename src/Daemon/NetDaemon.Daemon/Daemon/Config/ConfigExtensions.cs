@@ -9,10 +9,6 @@ using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Config
 {
-    // public interface IDaemonAppConfig
-    // {
-    //     Task InstanceFromDaemonAppConfigs(IEnumerable<Type> netDaemonApps, string codeFolder);
-    // }
     public static class TaskExtensions
     {
         public static async Task InvokeAsync(this MethodInfo mi, object? obj, params object?[]? parameters)
@@ -28,24 +24,6 @@ namespace NetDaemon.Daemon.Config
 
     public static class ConfigStringExtensions
     {
-        public static string ToPythonStyle(this string str)
-        {
-            _ = str ??
-                throw new NetDaemonArgumentNullException(nameof(str));
-
-            var build = new StringBuilder(str.Length);
-            bool isStart = true;
-            foreach (char c in str)
-            {
-                if (char.IsUpper(c) && !isStart)
-                    build.Append('_');
-                else
-                    isStart = false;
-                build.Append(char.ToLower(c, CultureInfo.InvariantCulture));
-            }
-            return build.ToString();
-        }
-
         public static string ToCamelCase(this string str)
         {
             _ = str ??

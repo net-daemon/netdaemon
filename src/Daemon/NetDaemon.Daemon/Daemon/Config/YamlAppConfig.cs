@@ -153,7 +153,7 @@ namespace NetDaemon.Daemon.Config
                                     throw new MissingMemberException($"{scalarPropertyName} is missing from the type {instanceType}");
 
                     var valueType = entry.Value.NodeType;
-                    Object? result = null;
+                    object? result = null;
 
                     switch (valueType)
                     {
