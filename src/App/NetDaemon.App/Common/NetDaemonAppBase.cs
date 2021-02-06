@@ -435,12 +435,9 @@ namespace NetDaemon.Common
             {
                 RuntimeInfo.AppAttributes[attribute] = value;
             }
-            else
+            else if (RuntimeInfo.AppAttributes.ContainsKey(attribute))
             {
-                if (RuntimeInfo.AppAttributes.ContainsKey(attribute))
-                {
-                    RuntimeInfo.AppAttributes.Remove(attribute);
-                }
+                RuntimeInfo.AppAttributes.Remove(attribute);
             }
             UpdateRuntimeInformation();
         }

@@ -127,8 +127,6 @@ namespace NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
-        public IEnumerable<INetDaemonAppBase> RunningAppInstances => InternalRunningAppInstances.Values;
-
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
 
         [SuppressMessage("", "CA1721")]
@@ -628,7 +626,6 @@ namespace NetDaemon.Daemon
                 Logger.LogTrace("Try stopping Instance NetDaemonHost");
 
                 await UnloadAllApps().ConfigureAwait(false);
-
 
                 InternalState.Clear();
                 InternalAllAppInstances.Clear();
