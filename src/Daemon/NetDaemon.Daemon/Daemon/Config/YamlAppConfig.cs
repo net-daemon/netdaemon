@@ -116,7 +116,7 @@ namespace NetDaemon.Daemon.Config
             {
                 var scalarNode = (YamlScalarNode)node;
                 ReplaceSecretIfExists(scalarNode);
-                return ((YamlScalarNode)node).ToObject(instanceType);
+                return ((YamlScalarNode)node).ToObject(instanceType,parent);
             }
             else if (node.NodeType == YamlNodeType.Sequence)
             {
@@ -126,7 +126,7 @@ namespace NetDaemon.Daemon.Config
                                     throw new NetDaemonNullReferenceException($"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
 
                     IList list = listType.CreateListOfPropertyType() ??
-                                throw new NetDaemonNullReferenceException("Failed to create listtype, plese check {prop.Name} of Class {app.GetType().Name}");
+                                throw new NetDaemonNullReferenceException("Failed to create listtype, please check {prop.Name} of Class {app.GetType().Name}");
 
                     foreach (YamlNode item in ((YamlSequenceNode)node).Children)
                     {

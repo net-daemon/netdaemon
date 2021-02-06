@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Common.Reactive;
+using NetDaemon.Common.Reactive.Services;
 using YamlDotNet.RepresentationModel;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -27,7 +30,7 @@ namespace NetDaemon.Daemon.Config
         public static PropertyInfo? GetYamlProperty(this Type type, string propertyName)
         {
             _ = type ??
-               throw new NetDaemonArgumentNullException(nameof(type));
+                throw new NetDaemonArgumentNullException(nameof(type));
 
             // Lets try convert from python style to CamelCase
 
@@ -35,12 +38,12 @@ namespace NetDaemon.Daemon.Config
             return prop;
         }
 
-        public static object? ToObject(this YamlScalarNode node, Type valueType)
+        public static object? ToObject(this YamlScalarNode node, Type valueType, object? parent)
         {
             _ = valueType ??
-               throw new NetDaemonArgumentNullException(nameof(valueType));
+                throw new NetDaemonArgumentNullException(nameof(valueType));
             _ = node ??
-               throw new NetDaemonArgumentNullException(nameof(node));
+                throw new NetDaemonArgumentNullException(nameof(node));
 
             Type? underlyingNullableType = Nullable.GetUnderlyingType(valueType);
 
@@ -49,6 +52,7 @@ namespace NetDaemon.Daemon.Config
                 // It is nullable type
                 valueType = underlyingNullableType;
             }
+
             switch (valueType.Name)
             {
                 case "String":
@@ -60,6 +64,7 @@ namespace NetDaemon.Daemon.Config
                     {
                         return i32Value;
                     }
+
                     break;
 
                 case "Int64":
@@ -68,6 +73,7 @@ namespace NetDaemon.Daemon.Config
                     {
                         return i64Value;
                     }
+
                     break;
 
                 case "Decimal":
@@ -76,6 +82,7 @@ namespace NetDaemon.Daemon.Config
                     {
                         return decimalValue;
                     }
+
                     break;
 
                 case "Single":
@@ -84,6 +91,7 @@ namespace NetDaemon.Daemon.Config
                     {
                         return floatValue;
                     }
+
                     break;
 
                 case "Double":
@@ -92,6 +100,7 @@ namespace NetDaemon.Daemon.Config
                     {
                         return doubleValue;
                     }
+
                     break;
 
                 case "Boolean":
@@ -99,7 +108,14 @@ namespace NetDaemon.Daemon.Config
                     {
                         return boolValue;
                     }
+
                     break;
+            }
+
+            if (valueType.IsAssignableTo(typeof(RxEntityBase)))
+            {
+                var instance =  Activator.CreateInstance(valueType,parent , new[] {node.Value});
+                return instance;
             }
             return null;
         }
