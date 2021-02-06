@@ -63,7 +63,12 @@ if  [[ $is_custom_app_source == false ]]; then
         export NETDAEMON__APPSOURCE="/data/apps"
         echo -e "\\033[32mFound apps folder, using ${NETDAEMON__APPSOURCE}...\\033[0m" >&2
     fi
-
+    if [ -f "${NETDAEMON__APPSOURCE}/_EntityExtensionsRx.cs" ]; then
+        # Not to break with removal of V1 API, remove the fluent namespace
+        # TODO: remove this after a few releases
+        sed -i "/using NetDaemon\.Common\.Fluent\;/d" "${NETDAEMON__APPSOURCE}/_EntityExtensionsRx.cs"
+    fi
+    
     cd "${daemondir}"
     exec dotnet Service.dll
 else 
