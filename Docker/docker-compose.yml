@@ -1,0 +1,17 @@
+# This is an example of docker-compose for NetDaemon. Copy this file and change settings as needed
+version: "3"
+services:
+  netdaemon:
+    image: "netdaemon/netdaemon"
+    ports:
+      - "1337:1337"
+    environment:
+      HOMEASSISTANT__HOST: ip_to_hass
+      HOMEASSISTANT__PORT: 8123
+      # Use environment varable at host or paste token here
+      HOMEASSISTANT__TOKEN: ${HOMEASSISTANT__TOKEN}
+      NETDAEMON__GENERATEENTITIES: "False"
+      LOGGING__MINIMUMLEVEL: info
+      TZ: Europe/Stockholm
+    volumes:
+      - ~/netdaemon_apps/apps:/data
