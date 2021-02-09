@@ -48,6 +48,14 @@ namespace NetDaemon.Common.Reactive
         ///     Observable, All state changes. New.State!=Old.State
         /// </summary>
         IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
+
+        /// <summary>
+        ///     Calls a service using current entity id/s and the entity domain
+        /// </summary>
+        /// <param name="service">Name of the service to call</param>
+        /// <param name="data">Data to provide</param>
+        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
+        void CallService(string service, dynamic? data = null, bool waitForResponse = false)
     }
 
     /// <summary>
