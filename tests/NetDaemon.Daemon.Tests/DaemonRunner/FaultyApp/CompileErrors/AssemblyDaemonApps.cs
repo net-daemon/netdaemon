@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 
 /// <summary>
@@ -7,10 +10,9 @@ using NetDaemon.Common.Reactive;
 /// </summary>
 [SuppressMessage("", "CS1002")]
 [SuppressMessage("", "CS1038")]
+[SuppressMessage("", "CA1050")]
 public class AssmeblyFaultyCompileErrorDaemonApp : NetDaemonRxApp
 {
-    #region -- Test config --
-
     public override Task InitializeAsync()
     {
         // Do nothing

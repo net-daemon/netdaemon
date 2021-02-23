@@ -3,13 +3,17 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public class ClimateEntity : RxEntityBase
+    public partial class ClimateEntity : RxEntityBase
     {
         /// <inheritdoc />
         public ClimateEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {
         }
 
+        /// <summary>
+        ///     Sets Hvac mode for climate entity
+        /// </summary>
+        /// <param name="data">Data provided</param>
         public void SetHvacMode(dynamic? data = null)
         {
             CallService("climate", "set_hvac_mode", data, true);
@@ -42,7 +46,7 @@ namespace NetDaemon.Common.Reactive.Services
 
         public void SetSwingMode(dynamic? data = null)
         {
-            CallService("climate", "set_swing_mode", true);
+            CallService("climate", "set_swing_mode", data, true);
         }
     }
 }

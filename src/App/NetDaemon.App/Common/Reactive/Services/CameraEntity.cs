@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public class CameraEntity : RxEntityBase
+    public partial class CameraEntity : RxEntityBase
     {
         /// <inheritdoc />
         public CameraEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
@@ -52,7 +52,7 @@ namespace NetDaemon.Common.Reactive.Services
         /// <param name="data">Additional data to pass to the service call.</param>
         public void Record(dynamic? data = null)
         {
-            CallService("camera", "record", true);
+            CallService("camera", "record", data, true);
         }
     }
 }

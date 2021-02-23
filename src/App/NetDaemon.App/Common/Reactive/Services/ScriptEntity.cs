@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public class ScriptEntity : RxEntityBase
+    public partial class ScriptEntity : RxEntityBase
     {
         /// <inheritdoc />
         public ScriptEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
