@@ -5,7 +5,7 @@ namespace NetDaemon.Common.Reactive.Services
     /// <summary>
     /// 
     /// </summary>
-    public class CoverEntity : RxEntityBase
+    public partial class CoverEntity : RxEntityBase
     {
         /// <inheritdoc />
         public CoverEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

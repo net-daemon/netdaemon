@@ -121,7 +121,7 @@ namespace NetDaemon.Service.App
             // Get all available domains, this is used to create the extensionmethods
             var domains = GetDomainsFromEntities(entities);
 
-            var singleServiceDomains = new string[] {"script"};
+            var singleServiceDomains = new string[] { "script" };
             foreach (var domain in domains)
             {
                 var camelCaseDomain = domain.ToCamelCase();
@@ -159,7 +159,7 @@ namespace NetDaemon.Service.App
                                   ?? throw new NetDaemonNullReferenceException("Failed to parse class declaration");
 
                 // They already have default implementation
-                var skipServices = new string[] {"turn_on", "turn_off", "toggle"};
+                var skipServices = new string[] { "turn_on", "turn_off", "toggle" };
 
                 foreach (var s in services.Where(n => n.Domain == domain)
                     .SelectMany(n => n.Services ?? new List<HassService>()))
@@ -252,7 +252,7 @@ namespace NetDaemon.Service.App
             if (!_skipDomainServices.ContainsKey(domain)) return true;
             var domainServiceNames = services.Where(n => n.Domain == domain)
                 .SelectMany(n => n.Services ?? new List<HassService>()).Select(s =>
-                    s.Service[(s.Service.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..]);
+                    s.Service![(s.Service.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..]);
             return domainServiceNames.Except(_skipDomainServices[domain]).Any();
         }
     }
