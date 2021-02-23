@@ -95,17 +95,11 @@ namespace NetDaemon.Service.App
             var code = SyntaxFactory.CompilationUnit();
 
             // Add Usings statements
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")));
             code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections.Generic")));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Dynamic")));
-            code = code.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Linq")));
             code = code.AddUsings(
                 SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(RxEntityBase).Namespace!)));
             code = code.AddUsings(
                 SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(typeof(NetDaemonRxApp).Namespace!)));
-            code = code.AddUsings(
-                SyntaxFactory.UsingDirective(
-                    SyntaxFactory.ParseName(typeof(FluentExpandoObject).Namespace!)));
 
             // Add namespace
             var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpace))
@@ -183,10 +177,10 @@ namespace NetDaemon.Service.App
                     }
 
                     var hasEntityId = s.Fields is not null && s.Fields.Any(c => c.Field == "entity_id");
-
+                    var hasEntityIdString = hasEntityId ? "true" : "false";
                     var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)
                     {{
-                        CallService(""{domain}"", ""{s.Service}"", serviceData,{hasEntityId});
+                        CallService(""{domain}"", ""{s.Service}"", data,{hasEntityIdString});
                     }}
                     ";
                     var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes()
