@@ -784,9 +784,9 @@ namespace NetDaemon.Daemon
             var initialStates = hassStates.Select(n => n.Map())
                 .ToDictionary(n => n.EntityId);
 
-            foreach (var entityId in initialStates.Keys.Where(k => !initialStates.ContainsKey(k)))
+            foreach (var entityId in initialStates.Keys.Where(k =>!initialStates.ContainsKey(k)))
             {
-                initialStates.Remove(entityId);
+                InternalState.TryRemove(entityId, out _);
             }
 
             foreach (var key in initialStates.Keys)
