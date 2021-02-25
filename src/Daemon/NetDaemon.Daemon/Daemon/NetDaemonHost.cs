@@ -781,22 +781,15 @@ namespace NetDaemon.Daemon
                     _hassEntities[entity.EntityId] = entity;
             }
             var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
-            var initialStates = hassStates.Select(n => n.Map())
-                .ToDictionary(n => n.EntityId);
 
-            foreach (var entityId in initialStates.Keys.Where(k => !initialStates.ContainsKey(k)))
+            foreach (var hassState in hassStates)
             {
-                InternalState.TryRemove(entityId, out _);
-            }
-
-            foreach (var key in initialStates.Keys)
-            {
-                var state = initialStates[key];
+                var state = hassState.Map();
                 state = state with
                 {
                     Area = GetAreaForEntityId(state.EntityId)
                 };
-                InternalState[key] = state;
+                InternalState[state.EntityId] = state;
             }
         }
 
