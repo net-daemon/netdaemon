@@ -96,7 +96,7 @@ namespace NetDaemon.Daemon.Config
 
                     var valueType = entry.Value.NodeType;
 
-                    var instance = InstanceProperty(netDaemonApp, prop.PropertyType, entry.Value);
+                    var instance = InstanceProperty(netDaemonApp, netDaemonApp, prop.PropertyType, entry.Value);
 
                     prop.SetValue(netDaemonApp, instance);
                 }
@@ -110,13 +110,13 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
-        private object? InstanceProperty(object? parent, Type instanceType, YamlNode node)
+        private object? InstanceProperty(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
         {
             if (node.NodeType == YamlNodeType.Scalar)
             {
                 var scalarNode = (YamlScalarNode)node;
                 ReplaceSecretIfExists(scalarNode);
-                return ((YamlScalarNode)node).ToObject(instanceType,parent);
+                return ((YamlScalarNode)node).ToObject(instanceType, deamonApp);
             }
             else if (node.NodeType == YamlNodeType.Sequence)
             {
@@ -130,7 +130,7 @@ namespace NetDaemon.Daemon.Config
 
                     foreach (YamlNode item in ((YamlSequenceNode)node).Children)
                     {
-                        var instance = InstanceProperty(null, listType, item) ??
+                        var instance = InstanceProperty(deamonApp, null, listType, item) ??
                                     throw new NotSupportedException($"The class {parent?.GetType().Name} has wrong type in items");
 
                         list.Add(instance);
@@ -158,12 +158,12 @@ namespace NetDaemon.Daemon.Config
                     switch (valueType)
                     {
                         case YamlNodeType.Sequence:
-                            result = InstanceProperty(instance, childProp.PropertyType, (YamlSequenceNode)entry.Value);
+                            result = InstanceProperty(deamonApp, instance, childProp.PropertyType, (YamlSequenceNode)entry.Value);
 
                             break;
 
                         case YamlNodeType.Scalar:
-                            result = InstanceProperty(instance, childProp.PropertyType, (YamlScalarNode)entry.Value);
+                            result = InstanceProperty(deamonApp, instance, childProp.PropertyType, (YamlScalarNode)entry.Value);
                             break;
 
                         case YamlNodeType.Mapping:
