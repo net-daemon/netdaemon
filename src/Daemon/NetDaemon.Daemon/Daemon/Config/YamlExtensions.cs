@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Reactive.Services;
@@ -37,7 +38,7 @@ namespace NetDaemon.Daemon.Config
             return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
         }
 
-        public static object? ToObject(this YamlScalarNode node, Type valueType, object? parent)
+        public static object? ToObject(this YamlScalarNode node, Type valueType, INetDaemonAppBase deamonApp)
         {
             _ = valueType ??
                 throw new NetDaemonArgumentNullException(nameof(valueType));
@@ -113,8 +114,7 @@ namespace NetDaemon.Daemon.Config
 
             if (valueType.IsAssignableTo(typeof(RxEntityBase)))
             {
-                var instance =  Activator.CreateInstance(valueType,parent , new[] {node.Value});
-                return instance;
+                return Activator.CreateInstance(valueType, deamonApp, new[] {node.Value});
             }
             return null;
         }
