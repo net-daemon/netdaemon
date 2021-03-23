@@ -54,42 +54,29 @@ namespace NetDaemon.Common.Reactive.Services
         /// Check if all entities are on
         /// </summary>
         /// <param name="entities">List of entities</param>
-        public static bool AreAllOn(this List<SwitchEntity> entities)
-        {
-            if (entities != null)
-            {
-                foreach (SwitchEntity entity in entities)
-                {
-                    if (entity.IsOff)
-                    {
-                        return false;
-                    }
-
-                }
-            }
-            return true;
-        }
+        public static bool AreAllOn(this List<SwitchEntity> entities) => entities.All(e => e.IsOn);
 
 
         /// <summary>
         /// Check if all entities are off
         /// </summary>
         /// <param name="entities">List of entities</param>
-        public static bool AreAllOff(this List<SwitchEntity> entities)
-        {
-            if (entities != null)
-            {
-                foreach (SwitchEntity entity in entities)
-                {
-                    if (entity.IsOn)
-                    {
-                        return false;
-                    }
+        public static bool AreAllOff(this List<SwitchEntity> entities)  => entities.All(e => e.IsOn);
 
-                }
-            }
-            return true;
-        }
+
+        /// <summary>
+        /// Check if all entities are on
+        /// </summary>
+        /// <param name="entities">List of entities</param>
+        public static bool AreAllOn(this List<BinarySensorEntity> entities) => entities.All(e => e.IsOn);
+
+
+        /// <summary>
+        /// Check if all entities are off
+        /// </summary>
+        /// <param name="entities">List of entities</param>
+        public static bool AreAllOff(this List<BinarySensorEntity> entities)  => entities.All(e => e.IsOn);
+
         /// <summary>
         /// Subscribe to all changes in list
         /// </summary>
