@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class ImageProcessingEntity : RxEntityBase
+    public class ImageProcessingEntity : RxEntityBase
     {
         /// <inheritdoc />
         public ImageProcessingEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

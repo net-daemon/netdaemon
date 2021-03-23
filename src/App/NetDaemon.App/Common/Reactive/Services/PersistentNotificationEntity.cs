@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class PersistentNotificationEntity : RxEntityBase
+    public class PersistentNotificationEntity : RxEntityBase
     {
         /// <inheritdoc />
         public PersistentNotificationEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon,

@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class PersonEntity : RxEntityBase
+    public class PersonEntity : RxEntityBase
     {
         /// <inheritdoc />
         public PersonEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

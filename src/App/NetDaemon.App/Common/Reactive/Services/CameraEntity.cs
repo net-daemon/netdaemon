@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class CameraEntity : RxEntityBase
+    public class CameraEntity : RxEntityBase
     {
         /// <inheritdoc />
         public CameraEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

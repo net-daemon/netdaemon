@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class InputBooleanEntity : RxEntityBase
+    public class InputBooleanEntity : RxEntityBase
     {
         /// <inheritdoc />
         public InputBooleanEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

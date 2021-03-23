@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class DeviceTrackerEntity : RxEntityBase
+    public class DeviceTrackerEntity : RxEntityBase
     {
         /// <inheritdoc />
         public DeviceTrackerEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class AlarmControlPanelEntity : RxEntityBase
+    public class AlarmControlPanelEntity : RxEntityBase
     {
         /// <inheritdoc />
         public AlarmControlPanelEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

@@ -3,9 +3,9 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <summary>
-    /// 
+    ///  Basic Cover Entity
     /// </summary>
-    public partial class CoverEntity : RxEntityBase
+    public class CoverEntity : RxEntityBase
     {
         /// <inheritdoc />
         public CoverEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

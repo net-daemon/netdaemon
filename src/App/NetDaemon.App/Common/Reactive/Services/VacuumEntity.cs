@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class VacuumEntity : RxEntityBase
+    public class VacuumEntity : RxEntityBase
     {
         /// <inheritdoc />
         public VacuumEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)

@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <inheritdoc />
-    public partial class MediaPlayerEntity : RxEntityBase
+    public class MediaPlayerEntity : RxEntityBase
     {
         /// <inheritdoc />
         public MediaPlayerEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
