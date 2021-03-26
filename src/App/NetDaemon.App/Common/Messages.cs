@@ -69,6 +69,24 @@ namespace NetDaemon.Common
     public record EntityState : IEntityProperties
     {
         /// <summary>
+        /// Create a new EntityState from an ExistingEntityState
+        /// </summary>
+        /// <param name="objectToCopy"></param>
+        public EntityState(EntityState objectToCopy)
+        {
+            if (objectToCopy != null)
+            {
+                Area = objectToCopy.Area;
+                Attribute = objectToCopy.Attribute;
+                EntityId = objectToCopy.EntityId;
+                LastChanged = objectToCopy.LastChanged;
+                LastUpdated = objectToCopy.LastUpdated;
+                State = objectToCopy.State;
+                Context = objectToCopy.Context;
+            }
+
+        }
+        /// <summary>
         ///     The name of the Area in home assistant
         /// </summary>
         public string? Area { get; init; }
@@ -102,6 +120,7 @@ namespace NetDaemon.Common
         /// Context
         /// </summary>
         public Context? Context { get; init; }
+
 
         /// <summary>
         ///     returns a pretty print of EntityState

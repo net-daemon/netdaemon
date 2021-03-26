@@ -15,7 +15,7 @@ namespace NetDaemon.Common.Reactive.Services
         /// <summary>
         /// Gets the entity state
         /// </summary>
-        public EntityState? EntityState => DaemonRxApp?.State(EntityId);
+        public virtual EntityState? EntityState => DaemonRxApp?.State(EntityId);
 
         /// <summary>
         /// Gets the Area to which an entity is assigned

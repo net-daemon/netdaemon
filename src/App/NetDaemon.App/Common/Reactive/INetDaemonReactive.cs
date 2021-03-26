@@ -15,7 +15,7 @@ namespace NetDaemon.Common.Reactive
         public IRxEvent EventChanges { get; }
 
         /// <summary>
-        ///     The observable statestream, all changes inkluding attributes
+        ///     The observable statestream, all changes including attributes
         /// </summary>
         public IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
 
