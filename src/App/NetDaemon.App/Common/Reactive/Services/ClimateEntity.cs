@@ -2,8 +2,20 @@
 
 namespace NetDaemon.Common.Reactive.Services
 {
+    public record ClimateEntityState : EntityState
+    {
+        public ClimateEntityState(EntityState toCopy)
+        {
+            // todo
+        }
+
+        public bool IsHeating => Attribute?.hvac_action == "heating";
+        public double? Temperarure => Attribute?.temperature as double?;
+        public double? Current_temperature => Attribute?.current_temperature as double?;
+    }
+
     /// <inheritdoc />
-    public partial class ClimateEntity : RxEntityBase
+    public partial class ClimateEntity : RxEntityBase<ClimateEntityState>
     {
         /// <inheritdoc />
         public ClimateEntity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
@@ -47,6 +59,11 @@ namespace NetDaemon.Common.Reactive.Services
         public void SetSwingMode(dynamic? data = null)
         {
             CallService("climate", "set_swing_mode", data, true);
+        }
+
+        protected override ClimateEntityState MapEntityState(EntityState state)
+        {
+            return new ClimateEntityState(state);
         }
     }
 }

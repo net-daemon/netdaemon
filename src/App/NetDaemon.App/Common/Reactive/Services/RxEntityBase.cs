@@ -2,20 +2,38 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Reactive.Linq;
 
 namespace NetDaemon.Common.Reactive.Services
 {
-    public abstract class RxEntityBase : RxEntity
+    public abstract class RxEntityBase : RxEntityBase<EntityState>
+    {
+        protected RxEntityBase(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
+        {
+        }
+
+        protected override EntityState MapEntityState(EntityState state) => state;
+    }
+
+    public abstract class RxEntityBase<TEntityState> : RxEntity where TEntityState : EntityState
     {
         /// <summary>
         /// Gets the id of the entity
         /// </summary>
         public string EntityId => EntityIds.First();
 
+        public IObservable<(TEntityState Old, TEntityState New)> TypedStateChanges
+            => StateChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
+
+        public IObservable<(TEntityState Old, TEntityState New)> TypedStateAllChanges
+            => StateAllChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
+
         /// <summary>
         /// Gets the entity state
         /// </summary>
-        public EntityState? EntityState => DaemonRxApp?.State(EntityId);
+        public TEntityState? EntityState => MapEntityState(DaemonRxApp?.State(EntityId));
+
+        protected abstract TEntityState MapEntityState(EntityState state);
 
         /// <summary>
         /// Gets the Area to which an entity is assigned
