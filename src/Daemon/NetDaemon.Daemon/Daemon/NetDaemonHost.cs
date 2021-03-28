@@ -77,6 +77,7 @@ namespace NetDaemon.Daemon
         ///     Used for testing
         /// </summary>
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances { get; } = new();
+
         private bool _isDisposed;
 
         // Following token source and token are set at RUN
@@ -128,6 +129,12 @@ namespace NetDaemon.Daemon
         public ILogger Logger { get; }
 
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
+
+        private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
+            InternalAllAppInstances.OfType<NetDaemonRxApp>();
+
+        private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
+            NetDaemonRxApps.SelectMany(app => ((EventObservable)app.EventChangesObservable).Observers);
 
         [SuppressMessage("", "CA1721")]
         public IEnumerable<EntityState> State => InternalState.Select(n => n.Value);
@@ -782,7 +789,7 @@ namespace NetDaemon.Daemon
             }
             var hassStates = await _hassClient.GetAllStates(_cancelToken).ConfigureAwait(false);
 
-            foreach (var state in hassStates.Select(s=>s.Map()))
+            foreach (var state in hassStates.Select(s => s.Map()))
             {
                 InternalState[state.EntityId] = state with
                 {
@@ -821,193 +828,177 @@ namespace NetDaemon.Daemon
             _cancelToken.ThrowIfCancellationRequested();
             _ = hassEvent ??
                throw new NetDaemonArgumentNullException(nameof(hassEvent));
-
-            if (hassEvent.EventType == "state_changed")
+            try
             {
-                try
+                switch (hassEvent.EventType)
                 {
-                    var stateData = (HassStateChangedEventData?)hassEvent.Data;
-
-                    if (stateData is null)
-                    {
-                        throw new NetDaemonNullReferenceException("StateData is null!");
-                    }
-
-                    if (stateData.NewState is null || stateData.OldState is null)
-                    {
-                        // This is an entity that is removed and have no new state so just return;
-                        return;
-                    }
-
-                    if (!FixStateTypes(stateData))
-                    {
-                        if (stateData.NewState?.State != stateData.OldState?.State)
-                        {
-                            var sb = new StringBuilder();
-                            sb.Append("Can not fix state typing for ").AppendLine(stateData.NewState?.EntityId);
-                            sb.Append("NewStateObject: ").Append(stateData.NewState).AppendLine();
-                            sb.Append("OldStateObject: ").Append(stateData.OldState).AppendLine();
-                            sb.Append("NewState: ").AppendLine(stateData.NewState?.State);
-                            sb.Append("OldState: ").AppendLine(stateData.OldState?.State);
-                            sb.Append("NewState type: ").AppendLine(stateData.NewState?.State?.GetType().ToString() ?? "null");
-                            sb.Append("OldState type: ").AppendLine(stateData.OldState?.State?.GetType().ToString() ?? "null");
-                            Logger.LogTrace(sb.ToString());
-                        }
-                        return;
-                    }
-
-                    // Make sure we get the area name with the new state
-                    var newState = stateData!.NewState!.Map();
-                    var oldState = stateData!.OldState!.Map();
-                    // TODO: refactor map to take area as input to avoid the copy
-                    newState = newState with { Area = GetAreaForEntityId(newState.EntityId) };
-                    InternalState[stateData.EntityId] = newState;
-
-                    // var tasks = new List<Task>();
-                    foreach (var app in InternalRunningAppInstances)
-                    {
-                        if (app.Value is NetDaemonRxApp netDaemonRxApp)
-                        {
-                            // Call the observable with no blocking
-                            foreach (var observer in ((StateChangeObservable)netDaemonRxApp.StateChangesObservable).Observers)
-                            {
-                                _eventHandlerTasks.Add(Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        observer.OnNext((oldState, newState));
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        observer.OnError(e);
-                                        netDaemonRxApp.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
-                                    }
-                                }, token));
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError(e, "Failed to handle new event (state_changed)");
+                    case "state_changed":
+                        HandleStateChangeEvent(hassEvent, token);
+                        break;
+                    case "call_service":
+                        HandleCallServiceEvent(hassEvent, token);
+                        break;
+                    case "device_registry_updated":
+                    case "area_registry_updated":
+                        await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
+                        break;
+                    default:
+                        HandleCustomEvent(hassEvent, token);
+                        break;
                 }
             }
-            else if (hassEvent.EventType == "call_service")
+            catch (Exception e)
             {
-                try
+                Logger.LogError(e, $"Failed to handle new event ({hassEvent.EventType})");
+            }
+        }
+
+        private void HandleStateChangeEvent(HassEvent hassEvent, CancellationToken token)
+        {
+            var stateData = (HassStateChangedEventData?)hassEvent.Data;
+
+            if (stateData is null)
+            {
+                throw new NetDaemonNullReferenceException("StateData is null!");
+            }
+
+            if (stateData.NewState is null || stateData.OldState is null)
+            {
+                // This is an entity that is removed and have no new state so just return;
+                return;
+            }
+
+            if (!FixStateTypes(stateData))
+            {
+                if (stateData.NewState?.State != stateData.OldState?.State)
                 {
-                    var serviceCallData = (HassServiceEventData?)hassEvent.Data;
-
-                    if (serviceCallData == null)
-                    {
-                        throw new NetDaemonNullReferenceException("ServiceData is null! not expected");
-                    }
-                    foreach (var app in InternalRunningAppInstances)
-                    {
-                        // Call any service call registered
-                        if (app.Value is NetDaemonRxApp netDaemonRxApp)
-                        {
-                            // Call any service call registered
-                            foreach (var (domain, service, func) in netDaemonRxApp.DaemonCallBacksForServiceCalls)
-                            {
-                                if (domain == serviceCallData.Domain &&
-                                    service == serviceCallData.Service)
-                                {
-                                    _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
-                                }
-                            }
-                            // Call the observable with no blocking
-                            foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
-                            {
-                                _eventHandlerTasks.Add(Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        var rxEvent = new RxEvent(serviceCallData.Service, serviceCallData.Domain,
-                                                                 serviceCallData.ServiceData);
-                                        observer.OnNext(rxEvent);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        try
-                                        {
-                                            observer.OnError(e);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Logger.LogError(ex, "Fail to OnError on event observer (service_call)");
-                                        }
-                                        Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
-                                    }
-                                }, token));
-                            }
-                        }
-                    }
-
-                    foreach (var (domain, service, func) in _daemonServiceCallFunctions)
-                    {
-                        if (domain == serviceCallData.Domain &&
-                            service == serviceCallData.Service)
-                        {
-                            _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
-                        }
-                    }
+                    var sb = new StringBuilder();
+                    sb.Append("Can not fix state typing for ").AppendLine(stateData.NewState?.EntityId);
+                    sb.Append("NewStateObject: ").Append(stateData.NewState).AppendLine();
+                    sb.Append("OldStateObject: ").Append(stateData.OldState).AppendLine();
+                    sb.Append("NewState: ").AppendLine(stateData.NewState?.State);
+                    sb.Append("OldState: ").AppendLine(stateData.OldState?.State);
+                    sb.Append("NewState type: ").AppendLine(stateData.NewState?.State?.GetType().ToString() ?? "null");
+                    sb.Append("OldState type: ").AppendLine(stateData.OldState?.State?.GetType().ToString() ?? "null");
+                    Logger.LogTrace(sb.ToString());
                 }
-                catch (Exception e)
+
+                return;
+            }
+
+            // Make sure we get the area name with the new state
+            var newState = stateData!.NewState!.Map();
+            var oldState = stateData!.OldState!.Map();
+            // TODO: refactor map to take area as input to avoid the copy
+            newState = newState with { Area = GetAreaForEntityId(newState.EntityId) };
+            InternalState[stateData.EntityId] = newState;
+
+            foreach (var netDaemonRxApp in NetDaemonRxApps)
+            {
+                // Call the observable with no blocking
+                foreach (var observer in ((StateChangeObservable)netDaemonRxApp.StateChangesObservable).Observers)
                 {
-                    Logger.LogError(e, "Failed to handle new event (service_call)");
+                    _eventHandlerTasks.Add(Task.Run(() =>
+                    {
+                        try
+                        {
+                            observer.OnNext((oldState, newState));
+                        }
+                        catch (Exception e)
+                        {
+                            observer.OnError(e);
+                            netDaemonRxApp.LogError(e, $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
+                        }
+                    }, token));
                 }
             }
-            else if (hassEvent.EventType == "device_registry_updated" || hassEvent.EventType == "area_registry_updated")
+        }
+
+        private void HandleCallServiceEvent(HassEvent hassEvent, CancellationToken token)
+        {
+            var serviceCallData = (HassServiceEventData?)hassEvent.Data;
+
+            if (serviceCallData == null)
             {
-                try
+                throw new NetDaemonNullReferenceException("ServiceData is null! not expected");
+            }
+
+            foreach (var netDaemonRxApp in NetDaemonRxApps)
+            {
+                // Call any service call registered
+                foreach (var (domain, service, func) in netDaemonRxApp.DaemonCallBacksForServiceCalls)
                 {
-                    await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError(e, "Failed to RefreshInternalStatesAndSetArea");
+                    if (domain == serviceCallData.Domain &&
+                        service == serviceCallData.Service)
+                    {
+                        _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
+                    }
                 }
             }
-            else
+
+            // Call the observable with no blocking
+            foreach (var observer in EventChangeObservers)
             {
-                try
+                _eventHandlerTasks.Add(Task.Run(() =>
                 {
-                    // Convert ExpandoObject to FluentExpandoObject
-                    // We need to do this so not existing attributes
-                    // is returning null
-                    if (hassEvent.Data is ExpandoObject exObject)
+                    try
                     {
-                        hassEvent.Data = new FluentExpandoObject(true, true, exObject);
+                        var rxEvent = new RxEvent(serviceCallData.Service, serviceCallData.Domain, serviceCallData.ServiceData);
+                        observer.OnNext(rxEvent);
                     }
-                    foreach (var app in InternalRunningAppInstances)
+                    catch (Exception e)
                     {
-                        if (app.Value is NetDaemonRxApp netDaemonRxApp)
+                        try
                         {
-                            // Call the observable with no blocking
-                            foreach (var observer in ((EventObservable)netDaemonRxApp.EventChangesObservable).Observers)
-                            {
-                                _eventHandlerTasks.Add(Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        var rxEvent = new RxEvent(hassEvent.EventType, null, hassEvent.Data);
-                                        observer.OnNext(rxEvent);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        observer.OnError(e);
-                                        Logger.LogError(e, "Fail to OnNext on event observer (event)");
-                                    }
-                                }, token));
-                            }
+                            observer.OnError(e);
                         }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, "Fail to OnError on event observer (service_call)");
+                        }
+
+                        Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
                     }
-                }
-                catch (Exception e)
+                }, token));
+            }
+
+            foreach (var (domain, service, func) in _daemonServiceCallFunctions)
+            {
+                if (domain == serviceCallData.Domain &&
+                    service == serviceCallData.Service)
                 {
-                    Logger.LogError(e, "Failed to handle new event (custom_event)");
+                    _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
                 }
+            }
+        }
+
+
+        private void HandleCustomEvent(HassEvent hassEvent, CancellationToken token)
+        {
+            // Convert ExpandoObject to FluentExpandoObject
+            // We need to do this so not existing attributes
+            // is returning null
+            if (hassEvent.Data is ExpandoObject exObject)
+            {
+                hassEvent.Data = new FluentExpandoObject(true, true, exObject);
+            }
+
+            // Call the observable with no blocking
+            foreach (var observer in EventChangeObservers)
+            {
+                _eventHandlerTasks.Add(Task.Run(() =>
+                {
+                    try
+                    {
+                        var rxEvent = new RxEvent(hassEvent.EventType, null, hassEvent.Data);
+                        observer.OnNext(rxEvent);
+                    }
+                    catch (Exception e)
+                    {
+                        observer.OnError(e);
+                        Logger.LogError(e, "Fail to OnNext on event observer (event)");
+                    }
+                }, token));
             }
         }
 
