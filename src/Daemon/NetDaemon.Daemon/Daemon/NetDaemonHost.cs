@@ -131,7 +131,7 @@ namespace NetDaemon.Daemon
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
 
         private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
-            InternalAllAppInstances.OfType<NetDaemonRxApp>();
+            InternalRunningAppInstances.Values.OfType<NetDaemonRxApp>();
 
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable)app.EventChangesObservable).Observers);
