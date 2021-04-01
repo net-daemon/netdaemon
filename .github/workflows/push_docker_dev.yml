@@ -15,6 +15,7 @@ jobs:
       - name: 📆 Set version number
         run: |
           sed -i '/        private const string Version = /c\        private const string Version =  "dev build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="dev" \\' ${{github.workspace}}/Dockerfile
       -
         name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1

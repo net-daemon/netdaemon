@@ -61,4 +61,8 @@ ENV \
     NETDAEMON__ADMIN=true \
     ASPNETCORE_URLS=http://+:5000 
 
+LABEL \
+    io.hass.version="VERSION" \
+    io.hass.type="addon" \
+    io.hass.arch="armhf|aarch64|amd64"
 ENTRYPOINT ["/init"] 
