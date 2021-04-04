@@ -166,11 +166,11 @@ namespace NetDaemon.Daemon
             if (!waitForResponse)
             {
                 if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
-                    throw new NetDaemonException("Servicecall queue full!");
+                    throw new NetDaemonException("Service call queue full!");
             }
             else
             {
-                CallServiceAsync(domain, service, data, true).Result();
+                CallServiceAsync(domain, service, (object?)data, true).Wait(_cancelToken);
             }
         }
 
@@ -887,10 +887,10 @@ namespace NetDaemon.Daemon
             }
 
             // Make sure we get the area name with the new state
-            var newState = stateData!.NewState!.Map();
-            var oldState = stateData!.OldState!.Map();
-            // TODO: refactor map to take area as input to avoid the copy
-            newState = newState with { Area = GetAreaForEntityId(newState.EntityId) };
+            var area = GetAreaForEntityId(stateData.EntityId);
+            var newState = stateData!.NewState!.Map(area);
+            var oldState = stateData!.OldState!.Map(area);
+
             InternalState[stateData.EntityId] = newState;
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
