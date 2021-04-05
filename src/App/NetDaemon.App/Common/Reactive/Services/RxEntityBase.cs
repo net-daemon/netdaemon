@@ -2,9 +2,28 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Reactive.Linq;
+using NetDaemon.Common;
+using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Common.Reactive.Services
 {
+    public abstract class RxEntityBase<TEntityState> : RxEntityBase where TEntityState : IEntityProperties
+    {
+        protected RxEntityBase(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
+        { }
+
+        public new IObservable<(TEntityState Old, TEntityState New)> StateChanges
+            => base.StateChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
+
+        public new IObservable<(TEntityState Old, TEntityState New)> StateAllChanges
+            => base.StateAllChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
+
+        public TEntityState? EntityState => MapEntityState(DaemonRxApp?.State(EntityId));
+
+        protected abstract TEntityState MapEntityState(EntityState state);
+    }
+
     public abstract class RxEntityBase : RxEntity
     {
         /// <summary>
