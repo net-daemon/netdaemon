@@ -166,11 +166,11 @@ namespace NetDaemon.Daemon
             if (!waitForResponse)
             {
                 if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
-                    throw new NetDaemonException("Servicecall queue full!");
+                    throw new NetDaemonException("Service call queue full!");
             }
             else
             {
-                CallServiceAsync(domain, service, data, true).Result();
+                CallServiceAsync(domain, service, (object?)data, true).Wait(_cancelToken);
             }
         }
 
