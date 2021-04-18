@@ -37,6 +37,8 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public TestScheduler TestScheduler { get; } = new();
 
+        private readonly IDictionary<string, object> _mockDataRepository = new Dictionary<string, object>();
+
         /// <summary>
         ///     Default constructor
         /// </summary>
@@ -161,6 +163,12 @@ namespace NetDaemon.Daemon.Fakes
                     Observable.Timer(span, TestScheduler)
                         .Subscribe(_ => action());
                 });
+
+            Setup(s => s.SaveData(It.IsAny<string>(), It.IsAny<object>()))
+                    .Callback<string, object>((id, data) => _mockDataRepository.Add(id, data));
+
+            Setup(s => s.GetData<object>(It.IsAny<string>()))
+                    .Returns<string>(id => _mockDataRepository.TryGetValue(id, out var value) ? value : null);
         }
 
         private void UpdateMockState(string[] entityIds, string newState, object? attributes)
