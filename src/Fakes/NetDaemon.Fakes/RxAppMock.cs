@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
+using Newtonsoft.Json;
 
 namespace NetDaemon.Daemon.Fakes
 {
@@ -37,7 +38,7 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public TestScheduler TestScheduler { get; } = new();
 
-        private readonly IDictionary<string, object> _mockDataRepository = new Dictionary<string, object>();
+        private readonly IDictionary<string, string> _mockDataRepository = new Dictionary<string, string>();
 
         /// <summary>
         ///     Default constructor
@@ -165,10 +166,24 @@ namespace NetDaemon.Daemon.Fakes
                 });
 
             Setup(s => s.SaveData(It.IsAny<string>(), It.IsAny<object>()))
-                    .Callback<string, object>((id, data) => _mockDataRepository.Add(id, data));
+                    .Callback<string, object>((id, data) =>
+                    {
+                        if (_mockDataRepository.ContainsKey(id))
+                        {
+                            _mockDataRepository.Remove(id);
+                        }
+
+                        _mockDataRepository.Add(id, JsonConvert.SerializeObject(data));
+                    });
 
             Setup(s => s.GetData<object>(It.IsAny<string>()))
-                    .Returns<string>(id => _mockDataRepository.TryGetValue(id, out var value) ? value : null);
+                    .Returns(new InvocationFunc(invocation =>
+                    {
+                        var id = (string)invocation.Arguments[0];
+                        var returnType = invocation.Method.GetGenericArguments()[0];
+
+                        return _mockDataRepository.TryGetValue(id, out var value) ? JsonConvert.DeserializeObject(value, returnType) : null;
+                    }));
         }
 
         private void UpdateMockState(string[] entityIds, string newState, object? attributes)
