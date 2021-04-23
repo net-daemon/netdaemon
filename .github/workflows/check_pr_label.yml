@@ -3,7 +3,7 @@ on:
   pull_request_target:
     types: [opened, labeled, unlabeled, synchronize]
 jobs:
-    build:
+    chech_labels:
         name: 🔨 Check valid labels
         runs-on: ubuntu-latest
         steps:
@@ -12,5 +12,4 @@ jobs:
               with:
                 github-token: '${{ secrets.GITHUB_TOKEN }}'
                 valid-labels: 'pr:bugfix, pr: enhancement, pr: dependency-update, pr: new feature'
-                invalid-labels: 'help wanted, invalid'
                 pull-request-number: '${{ github.event.pull_request.number }}'
