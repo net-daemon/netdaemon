@@ -3,9 +3,11 @@ on:
     types: [opened, labeled, unlabeled, synchronize]
 jobs:
   check_pullrequest_label:
-    uses: jesusvasquez333/verify-pr-label-action@v1.4.0
-    with:
-      github-token: '${{ secrets.GITHUB_TOKEN }}'
-      valid-labels: 'pr:bugfix, pr: enhancement, pr: dependency-update, pr: new feature'
-      invalid-labels: 'help wanted, invalid'
-      pull-request-number: '${{ github.event.pull_request.number }}'
+    steps:
+      uses: jesusvasquez333/verify-pr-label-action@v1.4.0
+      name: Check valid labels
+      with:
+        github-token: '${{ secrets.GITHUB_TOKEN }}'
+        valid-labels: 'pr:bugfix, pr: enhancement, pr: dependency-update, pr: new feature'
+        invalid-labels: 'help wanted, invalid'
+        pull-request-number: '${{ github.event.pull_request.number }}'
