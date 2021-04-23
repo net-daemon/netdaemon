@@ -358,5 +358,31 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ASSERT
             VerifyCallService("notify", "notify", Times.Once());
         }
+
+        [Fact]
+        public void TestSaveAndGetData()
+        {
+            // ARRANGE
+            const string id = "id";
+
+            var testData = new TestData()
+            {
+                Value = "test_value"
+            };
+
+                // ACT
+            Object.SaveData(id, testData);
+
+            var savedObject = Object.GetData<TestData>(id);
+
+            // ASSERT
+            Assert.NotNull(savedObject);
+            Assert.Equal(testData.Value, savedObject!.Value);
+        }
+
+        private class TestData
+        {
+            public string? Value { get; init; }
+        }
     }
 }
