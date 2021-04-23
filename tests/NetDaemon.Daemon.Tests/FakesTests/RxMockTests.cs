@@ -380,6 +380,33 @@ namespace NetDaemon.Daemon.Tests.Reactive
             Assert.Equal(testData.Value, savedObject!.Value);
         }
 
+        [Fact]
+        public void TestSaveOverridesExistingData()
+        {
+            // ARRANGE
+            const string id = "id";
+
+            var testData = new TestData()
+            {
+                Value = "test_value"
+            };
+
+            var updatedTestData = new TestData()
+            {
+                Value = "updated_test_value"
+            };
+
+            // ACT
+            Object.SaveData(id, testData);
+            Object.SaveData(id, updatedTestData);
+
+            var savedObject = Object.GetData<TestData>(id);
+
+            // ASSERT
+            Assert.NotNull(updatedTestData);
+            Assert.Equal(updatedTestData.Value, savedObject!.Value);
+        }
+
         private class TestData
         {
             public string? Value { get; init; }
