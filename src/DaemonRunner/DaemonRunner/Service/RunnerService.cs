@@ -222,7 +222,7 @@ namespace NetDaemon.Service
 
             var services = await daemonHost.GetAllServices().ConfigureAwait(false);
             var sourceRx = CodeGenerator.GenerateCodeRx(
-                "Netdaemon.Generated.Reactive",
+                "NetDaemon.Generated.Reactive",
                 daemonHost.State.Select(n => n.EntityId).Distinct().ToList(),
                 services.ToList()
             );
