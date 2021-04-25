@@ -222,9 +222,9 @@ namespace NetDaemon.Service
 
             var services = await daemonHost.GetAllServices().ConfigureAwait(false);
             var sourceRx = CodeGenerator.GenerateCodeRx(
-                "NetDaemon.Generated.Reactive",
-                daemonHost.State.Select(n => n.EntityId).Distinct(),
-                services
+                "Netdaemon.Generated.Reactive",
+                daemonHost.State.Select(n => n.EntityId).Distinct().ToList(),
+                services.ToList()
             );
 
             await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
