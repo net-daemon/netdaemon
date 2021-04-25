@@ -321,8 +321,9 @@ namespace NetDaemon.Service.App
 
             foreach (var field in s.Fields)
             {
+                // TODO: make the prop camel case but serialize with original name
                 var propCode = //$"[JsonProperty(propertyName:{name})]" +
-                               $"public string {field.Field.ToCamelCase()} {{ get; init; }}";
+                               $"public string {field.Field} {{ get; init; }}";
                 var prop = CSharpSyntaxTree.ParseText(propCode);
                 var p = prop.GetRoot().ChildNodes().OfType<MemberDeclarationSyntax>().FirstOrDefault();
                 record = record.AddMembers(p);
