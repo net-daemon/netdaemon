@@ -18,77 +18,15 @@ namespace NetDaemon.Service.App
 {
     public static class CodeGenerator
     {
-        private static readonly Dictionary<string, string[]> _skipDomainServices = new()
+        // todo: skip these methods that are allready on the base class
+        private static readonly Dictionary<string, string[]> _skipDomainServices = GetExisitingServices();
+
+        public static Dictionary<string, string[]> GetExisitingServices()
         {
-            {"lock", new[] {"lock", "unlock", "open"}},
-            {"light", new[] {"turn_on", "turn_off", "toggle"}},
-            {"script", new[] {"reload"}},
-            {"automation", new[] {"turn_on", "turn_off", "toggle", "trigger", "reload"}},
-            {"binary_sensor", new[] {"turn_on", "turn_off", "toggle"}},
-            {
-                "camera",
-                new[]
-                {
-                    "turn_on", "turn_off", "toggle", "enable_motion_detection", "disable_motion_detection",
-                    "play_stream", "record", "snapshot"
-                }
-            },
-            {
-                "climate",
-                new[]
-                {
-                    "turn_on", "turn_off", "toggle",
-                    "set_aux_heat", "set_preset_mode", "set_temperature",
-                    "set_humidity", "set_fan_mode", "set_hvac_mode", "set_swing_mode"
-                }
-            },
-            {
-                "cover",
-                new[]
-                {
-                    "open_cover", "close_cover", "stop_cover", "toggle", "open_cover_tilt", "close_cover_tilt",
-                    "stop_cover_tilt", "set_cover_position", "set_cover_tilt_position", "toggle_cover_tilt"
-                }
-            },
-            {"device_tracker", new[] {"see"}},
-            {"group", new[] {"reload", "set", "remove"}},
-            {"image_processing", new[] {"scan"}},
-            {"input_boolean", new[] {"turn_on", "turn_off", "toggle", "reload"}},
-            {
-                "media_player",
-                new[]
-                {
-                    "turn_on", "turn_off", "toggle", "volume_up", "volume_down", "volume_set", "volume_mute",
-                    "media_play_pause", "media_play", "media_pause", "media_stop", "media_next_track",
-                    "media_previous_track", "clear_playlist", "shuffle_set", "repeat_set", "play_media",
-                    "select_source", "select_sound_mode", "media_seek"
-                }
-            },
-            {"person", new[] {"reload"}},
-            {"zone", new[] {"reload"}},
-            {"scene", new[] {"reload", "apply", "create", "turn_on"}},
-            {"sensor", new[] {"turn_on", "turn_off", "toggle"}},
-            {"persistent_notification", new[] {"create", "dismiss", "mark_read"}},
-            {"sun", new string[0]},
-            {"weather", new string[0]},
-            {"switch", new[] {"turn_on", "turn_off", "toggle"}},
-            {
-                "vacuum",
-                new[]
-                {
-                    "turn_on", "turn_off", "start_pause", "start", "pause", "stop", "return_to_base", "locate",
-                    "clean_spot", "set_fan_speed", "send_command", "toggle"
-                }
-            },
-            {
-                "alarm_control_panel",
-                new[]
-                {
-                    "alarm_arm_home", "alarm_disarm", "alarm_arm_away", "alarm_arm_night", "alarm_arm_custom_bypass",
-                    "alarm_trigger"
-                }
-            }
-        };
+            var rxEntityBaseTypeInfo = typeof(RxEntityBase);
+            var derived = rxEntityBaseTypeInfo.Assembly.DefinedTypes.Where(t => t.IsAssignableTo(rxEntityBaseTypeInfo));
+            return derived.ToDictionary(d => d.Name, d => d.GetMethods().Select(m => m.Name).ToArray());
+        }
 
         public static string GenerateCodeRx(string nameSpace, IReadOnlyCollection<string> entities,
             IReadOnlyCollection<HassServiceDomain> serviceDomains)
