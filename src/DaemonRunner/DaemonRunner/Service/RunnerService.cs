@@ -33,6 +33,7 @@ namespace NetDaemon.Service
         private readonly IServiceProvider _serviceProvider;
         private readonly IYamlConfig _yamlConfig;
         private readonly IDaemonAppCompiler _daemonAppCompiler;
+        private readonly ICodeGenerationHandler _codeGenerationHandler;
 
         private bool _entitiesGenerated;
         private IEnumerable<Type>? _loadedDaemonApps;
@@ -47,8 +48,8 @@ namespace NetDaemon.Service
             IOptions<HomeAssistantSettings> homeAssistantSettings,
             IServiceProvider serviceProvider,
             IYamlConfig yamlConfig,
-            IDaemonAppCompiler daemonAppCompiler
-            )
+            IDaemonAppCompiler daemonAppCompiler,
+            ICodeGenerationHandler codeGenerationHandler)
         {
             _ = homeAssistantSettings ??
                throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
@@ -60,6 +61,7 @@ namespace NetDaemon.Service
             _serviceProvider = serviceProvider;
             _yamlConfig = yamlConfig;
             _daemonAppCompiler = daemonAppCompiler;
+            _codeGenerationHandler = codeGenerationHandler;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -147,7 +149,7 @@ namespace NetDaemon.Service
                             {
                                 // Generate code if requested
                                 if (_sourcePath is string)
-                                    await GenerateEntities(daemonHost, _sourcePath).ConfigureAwait(false);
+                                    await GenerateEntitiesAsync(daemonHost, _sourcePath).ConfigureAwait(false);
 
                                 if (_loadedDaemonApps is null)
                                     _loadedDaemonApps = _daemonAppCompiler.GetApps();
@@ -208,7 +210,8 @@ namespace NetDaemon.Service
                 _hasConnectedBefore = true;
             }
         }
-        private async Task GenerateEntities(NetDaemonHost daemonHost, string sourceFolder)
+
+        public async Task GenerateEntitiesAsync(NetDaemonHost daemonHost, string sourceFolder)
         {
             if (!_netDaemonSettings.GenerateEntities.GetValueOrDefault())
                 return;
@@ -220,14 +223,7 @@ namespace NetDaemon.Service
 
             _entitiesGenerated = true;
 
-            var services = await daemonHost.GetAllServices().ConfigureAwait(false);
-            var sourceRx = CodeGenerator.GenerateCodeRx(
-                "NetDaemon.Generated.Reactive",
-                daemonHost.State.Select(n => n.EntityId).Distinct(),
-                services
-            );
-
-            await File.WriteAllTextAsync(Path.Combine(sourceFolder!, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
+            await _codeGenerationHandler.GenerateEntitiesAsync(daemonHost, sourceFolder).ConfigureAwait(false);
         }
 
         private static async Task<bool> WaitForDaemonToConnect(NetDaemonHost daemonHost, CancellationToken stoppingToken)
