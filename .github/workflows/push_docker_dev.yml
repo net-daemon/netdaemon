@@ -9,6 +9,7 @@ jobs:
   deploy:
     name: 📦 Deploy to Docker dev
     runs-on: ubuntu-latest
+    environment: CI - release environment
     steps:
       - name: 📤 Checkout the repository 
         uses: actions/checkout@main

@@ -8,9 +8,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Check valid labels
-              uses: jesusvasquez333/verify-pr-label-action@v1.4.0
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  valid-labels: 'pr:bugfix, pr: enhancement, pr: dependency-update, pr: new feature'
-                  pull-request-number: ${{ github.event.pull_request.number }}
-                  disable-reviews: true
+              run: |
+                  labels=$(jq -r '.pull_request.labels[] | .name' ${{github.event_path }}  | grep 'pr:') 
+                  if [[ ! $labels ]]; then
+                    echo "You need to provide one or more labels that starts with 'pr:'"
+                    exit 1
+                  fi
+                  exit 0
+
+

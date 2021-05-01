@@ -9,6 +9,7 @@ jobs:
   deploy_nuget:
     name: 📦 publish nuget packages
     runs-on: ubuntu-latest
+    environment: CI - release environment
     steps:
       - name: 📤 Checkout the repository 
         uses: actions/checkout@main
