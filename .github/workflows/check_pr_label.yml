@@ -11,9 +11,8 @@ jobs:
               run: |
                   labels=$(jq -r '.pull_request.labels[] | .name' ${{github.event_path }}  | grep 'pr:') 
                   if [[ ! $labels ]]; then
-                    echo "You need to provide one or more labels that starts with 'pr:'"
+                    echo "::error::You need to provide one or more labels that starts with 'pr:'"
                     exit 1
                   fi
                   exit 0
-
 
