@@ -12,7 +12,7 @@ jobs:
             - name: 🥅 Install .Net 5
               uses: actions/setup-dotnet@v1
               with:
-                dotnet-version: '5.0.202' # SDK Version
+                dotnet-version: '5.0.x' # SDK Version
 
             - name: 🔍 Enable problem matchers
               run: echo "::add-matcher::.github/matchers/dotnet.json"
