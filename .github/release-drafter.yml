@@ -4,7 +4,7 @@ change-template: '- #$NUMBER $TITLE @$AUTHOR'
 sort-direction: ascending
 categories:
   - title: ':boom: Breaking changes'
-    label: 'Breaking Change'
+    label: 'pr: breaking change'
 
   - title: ':sparkles: New features'
     label: 'pr: new-feature'
@@ -21,7 +21,7 @@ categories:
       - 'dependencies'
 
 include-labels:
-  - 'Breaking Change'
+  - 'pr: breaking change'
   - 'pr: enhancement'
   - 'pr: dependency-update'
   - 'pr: new-feature'
