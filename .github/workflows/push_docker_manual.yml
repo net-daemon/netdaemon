@@ -1,11 +1,12 @@
 #### Publish tags to docker hub
 name: 📦 Deploy to Docker with tag
 on:
-  inputs:
-    tag:
-      description: 'Enter docker image tag'     
-      required: true
-      default: 'warning'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Enter docker image tag'     
+        required: true
+        default: 'branch'
 
 jobs:
   deploy:
