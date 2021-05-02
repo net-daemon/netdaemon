@@ -1,0 +1,44 @@
+#### Publish tags to docker hub
+name: 📦 Deploy dev docker
+on:
+  inputs:
+    tag:
+      description: 'Enter docker image tag'     
+      required: true
+      default: 'warning'
+
+jobs:
+  deploy:
+    name: 📦 Deploy to Docker with tag
+    runs-on: ubuntu-latest
+    environment: CI - release environment
+    steps:
+      - name: 📤 Checkout the repository 
+        uses: actions/checkout@main
+      - name: 📆 Set version number
+        run: |
+          sed -i '/        private const string Version = /c\        private const string Version =  "dev build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="dev" \\' ${{github.workspace}}/Dockerfile
+      -
+        name: 📎 Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: 🔧 Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: 🧰 Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: 🔓 Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+
+      - name: 🛠️ Run Buildx
+        run: |
+          docker buildx build \
+            --platform linux/arm,linux/arm64,linux/amd64 \
+            --output "type=image,push=true" \
+            --no-cache \
+            --file ./Dockerfile . \
+            --compress \
+            --tag "netdaemon/netdaemon:feature-${{ github.event.inputs.tag }}"
