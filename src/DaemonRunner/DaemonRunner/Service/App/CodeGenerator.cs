@@ -16,7 +16,7 @@ using NetDaemon.Daemon.Config;
 
 namespace NetDaemon.Service.App
 {
-    public static class CodeGenerator
+    public class CodeGenerator : ICodeGenerator
     {
         private static readonly Dictionary<string, string[]> _skipDomainServices = new Dictionary<string, string[]>()
         {
@@ -89,7 +89,7 @@ namespace NetDaemon.Service.App
             }
         };
 
-        public static string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities,
+        public string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities,
             IEnumerable<HassServiceDomain> services)
         {
             var code = SyntaxFactory.CompilationUnit();
