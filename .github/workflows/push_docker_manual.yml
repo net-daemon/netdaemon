@@ -1,5 +1,5 @@
 #### Publish tags to docker hub
-name: 📦 Deploy dev docker
+name: 📦 Deploy to Docker with tag
 on:
   inputs:
     tag:
