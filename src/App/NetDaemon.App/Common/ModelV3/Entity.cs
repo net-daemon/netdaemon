@@ -10,23 +10,7 @@ using NetDaemon.Common.Reactive;
 namespace NetDaemon.Common.Model
 {
 
-    public abstract class Entity<TEntityState> : Entity where TEntityState : IEntityProperties
-    {
-        protected Entity(IHaContext context, IEnumerable<string> entityIds) : base(context, entityIds)
-        { }
-
-        public new IObservable<(TEntityState Old, TEntityState New)> StateChanges
-            => base.StateChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
-
-        public new IObservable<(TEntityState Old, TEntityState New)> StateAllChanges
-            => base.StateAllChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
-
-        public new TEntityState? EntityState => MapEntityState(HaContext.GetState<TEntityState>(EntityIds.FirstOrDefault()));
-
-        protected abstract TEntityState MapEntityState(IEntityProperties state);
-    }
-
-    public class Entity : IEntity
+    public abstract class Entity<TEntityState> : IEntity<TEntityState> where TEntityState : IEntityProperties
     {
         /// <summary>
         ///     The IHAContext
@@ -55,7 +39,7 @@ namespace NetDaemon.Common.Model
             EntityIds = new [] { entityId };
         }
 
-        public EntityState? EntityState => HaContext.GetState<EntityState>(EntityIds.FirstOrDefault());
+        public TEntityState? EntityState => HaContext.GetState<TEntityState>(EntityIds.FirstOrDefault());
 
 
         public void SetState(dynamic state, dynamic? attributes = null, bool waitForResponse = false)
@@ -66,11 +50,16 @@ namespace NetDaemon.Common.Model
             }
         }
 
-        public IObservable<(IEntityProperties Old, IEntityProperties New)> StateAllChanges =>
-            HaContext.StateAllChanges.Where(e => EntityIds.Contains(e.New.EntityId)).Select(e => (e.Old as IEntityProperties, e.New as IEntityProperties));
+        protected abstract TEntityState MapState(IEntityProperties state);
 
-        public IObservable<(IEntityProperties Old, IEntityProperties New)> StateChanges =>
-            HaContext.StateChanges.Where(e => EntityIds.Contains(e.New.EntityId)).Select(e => (e.Old as IEntityProperties, e.New as IEntityProperties));
+        public IObservable<(TEntityState Old, TEntityState New)> StateAllChanges =>
+            HaContext.StateAllChanges.Where(e => EntityIds.Contains(e.New.EntityId))
+                .Select(e => (MapState(e.Old), MapState(e.New)));
+
+        public IObservable<(TEntityState Old, TEntityState New)> StateChanges =>
+            HaContext.StateChanges.Where(e => EntityIds.Contains(e.New.EntityId))
+                .Select(e => (MapState(e.Old), MapState(e.New)));
+
 
         public void CallService(string service, object? data = null, bool waitForResponse = false)
         {
@@ -101,4 +90,18 @@ namespace NetDaemon.Common.Model
             }
         }
     }
+
+    public class Entity : Entity<IEntityProperties>
+    {
+        public Entity(IHaContext daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
+        {
+        }
+
+        public Entity(IHaContext daemon, string entityId) : base(daemon, entityId)
+        {
+        }
+
+        protected override IEntityProperties MapState(IEntityProperties state) => state;
+    }
+
 }

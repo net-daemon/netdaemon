@@ -15,7 +15,7 @@ namespace NetDaemon.Common.Model
         /// <summary>
         ///     The observable statestream, all changes inkluding attributes
         /// </summary>
-        IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
+        IObservable<(IEntityProperties Old, IEntityProperties New)> StateAllChanges { get; }
 
         /// <summary>
         ///     The observable statestream state change
@@ -23,7 +23,7 @@ namespace NetDaemon.Common.Model
         /// <remarks>
         ///     Old state != New state
         /// </remarks>
-        IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
+        IObservable<(IEntityProperties Old, IEntityProperties New)> StateChanges { get; }
 
         /// <summary>
         ///     Sets a state for entity
