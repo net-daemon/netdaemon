@@ -2,10 +2,6 @@
 
 namespace NetDaemon.Common.Model
 {
-    /// <summary>
-    ///     IRxEntityBase interface represents what you can do on
-    ///     Entity("").WhatYouCanDo(); and Entities(n=> n.Xyz).WhatYouCanDo();
-    /// </summary>
     public interface IEntity
     {
         /// <summary>
@@ -26,6 +22,8 @@ namespace NetDaemon.Common.Model
         /// </summary>
         IObservable<(IEntityProperties Old, IEntityProperties New)> StateChanges { get; }
 
+        EntityState? EntityState { get; }
+
         /// <summary>
         ///     Calls a service using current entity id/s and the entity domain
         /// </summary>
@@ -40,19 +38,19 @@ namespace NetDaemon.Common.Model
         /// <summary>
         ///     Toggles state on/off on entity
         /// </summary>
-        /// <param name="attributes">The attributes to set. Use anonomous type</param>
-        void Toggle(object? attributes = null);
-
+        /// <param name="attributes">The attributes to set.</param>
+        void Toggle(object? attributes = null) => CallService("toggle", attributes);
+        
         /// <summary>
         ///     Turn off entity
         /// </summary>
-        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
-        void TurnOff(object? attributes = null);
+        /// <param name="attributes">The attributes to set.</param>
+        void TurnOff(object? attributes = null) => CallService("turn_off", attributes);
 
         /// <summary>
         ///     Turn on entity
         /// </summary>
-        /// <param name="attributes">The attributes to set. Use anonomous type.</param>
-        void TurnOn(object? attributes = null);
+        /// <param name="attributes">The attributes to set.</param>
+        void TurnOn(object? attributes = null) => CallService("turn_on", attributes);
     }
 }

@@ -26,11 +26,6 @@ namespace NetDaemon.Common.Model
         IObservable<(EntityState Old, EntityState New)> StateChanges { get; }
 
         /// <summary>
-        ///     Enuberable of current states
-        /// </summary>
-        IEnumerable<EntityState> States { get; }
-
-        /// <summary>
         ///     Sets a state for entity
         /// </summary>
         /// <param name="entityId">EntityId</param>

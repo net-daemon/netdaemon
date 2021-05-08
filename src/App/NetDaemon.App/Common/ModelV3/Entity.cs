@@ -12,7 +12,7 @@ namespace NetDaemon.Common.Model
 
     public abstract class Entity<TEntityState> : Entity where TEntityState : IEntityProperties
     {
-        protected Entity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
+        protected Entity(IHaContext context, IEnumerable<string> entityIds) : base(context, entityIds)
         { }
 
         public new IObservable<(TEntityState Old, TEntityState New)> StateChanges
@@ -21,7 +21,7 @@ namespace NetDaemon.Common.Model
         public new IObservable<(TEntityState Old, TEntityState New)> StateAllChanges
             => base.StateAllChanges.Select(e => (MapEntityState(e.Old), MapEntityState(e.New)));
 
-        public TEntityState? EntityState => MapEntityState(HaContext.GetState<TEntityState>(EntityIds.FirstOrDefault()));
+        public new TEntityState? EntityState => MapEntityState(HaContext.GetState<TEntityState>(EntityIds.FirstOrDefault()));
 
         protected abstract TEntityState MapEntityState(IEntityProperties state);
     }
@@ -54,6 +54,9 @@ namespace NetDaemon.Common.Model
             HaContext = daemon;
             EntityIds = new [] { entityId };
         }
+
+        public EntityState? EntityState => HaContext.GetState<EntityState>(EntityIds.FirstOrDefault());
+
 
         public void SetState(dynamic state, dynamic? attributes = null, bool waitForResponse = false)
         {
