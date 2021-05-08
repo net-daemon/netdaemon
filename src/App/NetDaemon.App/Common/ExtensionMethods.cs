@@ -89,5 +89,11 @@ namespace NetDaemon.Common
             }
             return stringBuilder.ToString().ToLowerInvariant();
         }
+
+        public static (string Domain, string Entity) SplitEntityId(this string entityId)
+        {
+            var firstDot = entityId.IndexOf('.');
+            return (entityId[.. firstDot ], entityId[ firstDot .. ]);
+        }
     }
 }
