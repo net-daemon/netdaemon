@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Model;
 using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;

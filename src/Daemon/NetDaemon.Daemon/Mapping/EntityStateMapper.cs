@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;

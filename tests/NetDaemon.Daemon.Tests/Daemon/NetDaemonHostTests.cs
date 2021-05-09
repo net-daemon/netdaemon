@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -10,6 +9,7 @@ using NetDaemon.Daemon.Fakes;
 using NetDaemon.Daemon.Tests.DaemonRunner.App;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.Daemon
@@ -161,7 +161,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             SetEntityState(new()
             {
                 EntityId = "media_player.fakeplayer",
-                Attributes = new()
+                Attributes = new Dictionary<string, object>()
                 {
                     ["entity_id"] = "media_player.fakeplayer",
                     ["message"] = "Hello test!",

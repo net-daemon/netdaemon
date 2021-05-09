@@ -1,4 +1,3 @@
-using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -8,6 +7,7 @@ using Xunit;
 using System.Reactive.Linq;
 using NetDaemon.Daemon.Fakes;
 using System.Globalization;
+using JoySoftware.HomeAssistant.Model;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {

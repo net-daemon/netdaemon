@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
@@ -445,7 +446,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             {
                 EntityId = "sensor.temperature",
                 State = 10.0,
-                Attributes = new()
+                Attributes = new Dictionary<string, object>()
                 {
                     ["battery_level"] = 18.2
                 }
@@ -454,7 +455,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             {
                 EntityId = "sensor.temperature",
                 State = 10.0,
-                Attributes = new()
+                Attributes = new Dictionary<string, object>()
                 {
                     ["battery_level"] = 12.0
                 }

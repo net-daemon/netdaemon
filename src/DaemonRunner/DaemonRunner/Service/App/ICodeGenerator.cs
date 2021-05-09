@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Model;
 
 namespace NetDaemon.Service.App
 {

@@ -6,7 +6,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
-using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Helpers.Json;
 using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common

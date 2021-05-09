@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Mapping;
 using Xunit;
