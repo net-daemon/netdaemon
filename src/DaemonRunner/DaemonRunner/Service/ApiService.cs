@@ -10,6 +10,7 @@ using System.IO;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Common;
 using System;
+using JoySoftware.HomeAssistant.Extensions;
 using NetDaemon.Service.Api;
 using NetDaemon.Common.Configuration;
 
@@ -32,7 +33,7 @@ namespace NetDaemon.Service
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddHostedService<RunnerService>();
-            services.AddTransient<IHassClient, HassClient>();
+            services.AddHassClient();
             services.AddTransient<IHassClientFactory, HassClientFactory>();
             services.AddTransient<IDataRepository>(n => new DataRepository(
                 Path.Combine(
