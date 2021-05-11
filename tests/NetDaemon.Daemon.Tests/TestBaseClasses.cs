@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Model;
 using Moq;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Fakes;

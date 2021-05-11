@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
+using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;

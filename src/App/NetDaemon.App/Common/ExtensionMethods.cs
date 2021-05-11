@@ -4,6 +4,8 @@ using System.Dynamic;
 using System.Globalization;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+
 namespace NetDaemon.Common
 {
     /// <summary>
@@ -55,6 +57,32 @@ namespace NetDaemon.Common
             }
 
             return (ExpandoObject)expando;
+        }
+
+        internal static object? ToDynamicValue(this JsonElement elem)
+        {
+            return elem.ValueKind switch
+            {
+                JsonValueKind.String => ParseDataType(elem.GetString()),
+                JsonValueKind.False => false,
+                JsonValueKind.True => true,
+                JsonValueKind.Number => elem.TryGetInt64(out long intValue) ? intValue : elem.GetDouble(),
+                _ => null,
+            };
+        }
+
+        internal static object? ParseDataType(string? state)
+        {
+            if (long.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out long intValue))
+                return intValue;
+
+            if (double.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out double doubleValue))
+                return doubleValue;
+
+            if (state == "unavailable")
+                return null;
+
+            return state;
         }
 
         /// <summary>

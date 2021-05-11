@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Common.Exceptions;

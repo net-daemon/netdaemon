@@ -1,4 +1,4 @@
-﻿using JoySoftware.HomeAssistant.Client;
+﻿using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Common;
 
 namespace NetDaemon.Mapping
