@@ -41,6 +41,34 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        public async Task TriggerWebhookShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
+
+            // ACT
+            DefaultDaemonRxApp.TriggerWebhook("some-id", new {data = 1});
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
+            // ASSERT
+            VerifyTriggerWebhook("some-id", new {data = 1});
+        }
+
+        [Fact]
+        public async Task TriggerWebhookWithNullDataShouldCallCorrectFunction()
+        {
+            // ARRANGE
+            await InitializeFakeDaemon().ConfigureAwait(false);
+
+            // ACT
+            DefaultDaemonRxApp.TriggerWebhook("some-id", null);
+            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
+            // ASSERT
+            VerifyTriggerWebhook("some-id", null);
+        }
+
+        [Fact]
         public async Task NewAllEventDataShouldCallFunction()
         {
             // ARRANGE

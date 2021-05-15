@@ -43,6 +43,9 @@ namespace NetDaemon.Daemon
         internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageChannel =
                 Channel.CreateBounded<(string, string, dynamic?)>(200);
 
+        internal readonly Channel<(string, object?)> _webhookTriggerMessageChannel =
+                Channel.CreateBounded<(string, object?)>(200);
+
         internal readonly Channel<(string, dynamic, dynamic?)> _setStateMessageChannel =
                 Channel.CreateBounded<(string, dynamic, dynamic?)>(200);
 
@@ -159,7 +162,26 @@ namespace NetDaemon.Daemon
 
             return await _hassClient.GetServices().ConfigureAwait(false);
         }
-
+        public void TriggerWebhook(string id, object? data, bool waitForResponse = false)
+        {
+            _cancelToken.ThrowIfCancellationRequested();
+            if (!waitForResponse)
+            {
+                if (!_webhookTriggerMessageChannel.Writer.TryWrite((id, data)))
+                    throw new NetDaemonException("Service call queue full!");
+            }
+            else
+            {
+                try
+                {
+                    _hassClient.TriggerWebhook(id, data).Wait(_cancelToken);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Failed call service");
+                }
+            }
+        }
         public void CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
             _cancelToken.ThrowIfCancellationRequested();
@@ -350,9 +372,9 @@ namespace NetDaemon.Daemon
                     return;
                 }
 
-                // Setup TTS
                 Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
                 Task handleAsyncServiceCalls = HandleAsyncServiceCalls(cancellationToken);
+                Task handleAsyncWebhookTriggers = HandleAsyncWebhookTriggers(cancellationToken);
                 Task handleAsyncSetState = HandleAsyncSetState(cancellationToken);
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
@@ -1059,6 +1081,10 @@ namespace NetDaemon.Daemon
                 return L;
             }
         }
+
+        // TODO: Refactor the sync to async queue system to allow
+        //       all kinds of types instead of different queues
+
         [SuppressMessage("", "CA1031")]
         private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
         {
@@ -1087,6 +1113,39 @@ namespace NetDaemon.Daemon
                 {
                     if (!hasLoggedError)
                         Logger.LogDebug(e, "Failure sending call service");
+                    hasLoggedError = true;
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
+                }
+            }
+        }
+
+        [SuppressMessage("", "CA1031")]
+        private async Task HandleAsyncWebhookTriggers(CancellationToken cancellationToken)
+        {
+            _cancelToken.ThrowIfCancellationRequested();
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
+
+            bool hasLoggedError = false;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    (string id, object? data)
+                    = await _webhookTriggerMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+
+                    await _hassClient.TriggerWebhook(id, data).ConfigureAwait(false);
+
+                    hasLoggedError = false;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore we are leaving
+                }
+                catch (Exception e)
+                {
+                    if (!hasLoggedError)
+                        Logger.LogDebug(e, "Failure sending trigger webhook");
                     hasLoggedError = true;
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
                 }

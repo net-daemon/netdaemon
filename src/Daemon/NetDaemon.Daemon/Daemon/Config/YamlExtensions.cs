@@ -38,7 +38,7 @@ namespace NetDaemon.Daemon.Config
             return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
         }
 
-        public static object? ToObject(this YamlScalarNode node, Type valueType, INetDaemonAppBase deamonApp)
+        public static object? ToObject(this YamlScalarNode node, Type valueType, INetDaemonAppBase? deamonApp)
         {
             _ = valueType ??
                 throw new NetDaemonArgumentNullException(nameof(valueType));
@@ -112,7 +112,7 @@ namespace NetDaemon.Daemon.Config
                     break;
             }
 
-            if (valueType.IsAssignableTo(typeof(RxEntityBase)))
+            if (deamonApp != null && valueType.IsAssignableTo(typeof(RxEntityBase)))
             {
                 return Activator.CreateInstance(valueType, deamonApp, new[] {node.Value});
             }

@@ -252,6 +252,17 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
+        ///     Verifies that TriggerWebhook is called
+        /// </summary>
+        /// <param name="id">Id of webbhook</param>
+        /// <param name="data">data sent with webhook</param>
+        /// <param name="times">Number of times called</param>
+        public void VerifyTriggerWebhook(string id, object? data = null, Times? times = null)
+        {
+            DefaultHassClientMock.VerifyTriggerWebhook(id, data, times);
+        }
+
+        /// <summary>
         ///     Verifies that call_service is called
         /// </summary>
         /// <param name="domain">Service domain</param>

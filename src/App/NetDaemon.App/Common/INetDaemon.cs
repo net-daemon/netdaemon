@@ -41,6 +41,14 @@ namespace NetDaemon.Common
         Task CallServiceAsync(string domain, string service, dynamic? data = null, bool waitForResponse = false);
 
         /// <summary>
+        ///     Trigger a state change using trigger templates
+        /// </summary>
+        /// <param name="id">webhook id</param>
+        /// <param name="data">data being sent</param>
+        /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
+        void TriggerWebhook(string id, object? data, bool waitForResponse);
+
+        /// <summary>
         ///     Get application instance by application instance id
         /// </summary>
         /// <param name="appInstanceId">The identity of the app instance</param>
