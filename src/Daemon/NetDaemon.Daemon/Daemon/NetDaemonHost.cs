@@ -693,7 +693,7 @@ namespace NetDaemon.Daemon
                     _hassEntities[entity.EntityId] = entity;
             }
 
-            await StateManager.RefreshAsync();
+            await StateManager.RefreshAsync().ConfigureAwait(false);
         }
 
         internal static IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
