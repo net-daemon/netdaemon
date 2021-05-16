@@ -138,12 +138,12 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="area">Area of entity</param>
         public void SetEntityState(string entityId, dynamic? state = null, string? area = null)
         {
-            DefaultDaemonHost.InternalState[entityId] = new EntityState
+            DefaultDaemonHost.StateManager.Store(new EntityState
             {
                 EntityId = entityId,
                 Area = area,
                 State = state
-            };
+            });
         }
 
         /// <summary>

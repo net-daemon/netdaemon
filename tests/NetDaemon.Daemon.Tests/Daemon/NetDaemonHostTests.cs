@@ -508,7 +508,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal("Correct name", DefaultDaemonHost.InternalState["binary_sensor.pir"].Area);
+            Assert.Equal("Correct name", DefaultDaemonHost.StateManager.GetState("binary_sensor.pir").Area);
         }
 
         [Fact]
