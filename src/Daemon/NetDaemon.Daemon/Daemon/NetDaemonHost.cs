@@ -55,7 +55,7 @@ namespace NetDaemon.Daemon
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
         
-        internal EntityStateManager StateManager { get; }
+        internal EntityStateManager StateManager { get; private set; }
 
         // internal so we can use for unittest
         //        internal ConcurrentDictionary<string, EntityState> InternalState = new();
@@ -119,6 +119,8 @@ namespace NetDaemon.Daemon
             _repository = repository;
             _isDisposed = false;
             Logger.LogTrace("Instance NetDaemonHost");
+
+            _hassClient = _hassClientFactory.New();
             StateManager = new EntityStateManager(_hassClient, this, _cancelToken);
         }
 
@@ -329,7 +331,6 @@ namespace NetDaemon.Daemon
 
             string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
 
-            _hassClient = _hassClientFactory.New();
             if (_hassClient == null)
             {
                 throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
@@ -514,11 +515,11 @@ namespace NetDaemon.Daemon
         }
 
         //private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
-        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
+        public Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
             dynamic? attributes, bool waitForResponse) =>
             StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes, waitForResponse);
 
-        public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
+        public Task<EntityState?> SetStateAsync(string entityId, dynamic state,
             params (string name, object val)[] attributes)
             => StateManager.SetStateAsync(entityId, state, attributes);
 

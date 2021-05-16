@@ -15,6 +15,7 @@ namespace NetDaemon.Daemon
 {
     internal class EntityStateManager
     {
+        // TODO: wo only need some methods of NetDaemonHost try to reduce the dependency
         private NetDaemonHost _netDaemonHost;
 
         private readonly IHassClient _hassClient;
@@ -37,7 +38,7 @@ namespace NetDaemon.Daemon
             _ = entityId ??
                 throw new NetDaemonArgumentNullException(nameof(entityId));
 
-            return InternalState.TryGetValue(entityId, out EntityState? returnValue)
+            return InternalState.TryGetValue(entityId, out var returnValue)
                 ? returnValue
                 : null;
         }
