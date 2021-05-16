@@ -207,10 +207,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             // ACT & ASSERT
             var instance = scalarValue.ToObject(entityType, appMock.Object) as RxEntityBase;
             Assert.NotNull(instance);
-            Assert.Equal(entityType,instance.GetType());
+            Assert.Equal(entityType,instance!.GetType());
             Assert.Equal("1234", instance.EntityId);
         }
-
 
         [Fact]
         public void YamlScalarNodeToObjectUsingDecimal()

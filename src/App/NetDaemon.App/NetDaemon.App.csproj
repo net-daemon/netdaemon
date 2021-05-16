@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JoySoftware.HassClient" Version="21.18.2-beta" />
+    <PackageReference Include="JoySoftware.HassClient" Version="21.19.1-beta" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Roslynator.Analyzers" Version="3.1.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

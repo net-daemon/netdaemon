@@ -77,6 +77,14 @@ namespace NetDaemon.Common.Reactive
         void RunScript(params string[] script);
 
         /// <summary>
+        ///     Trigger a state change using trigger templates
+        /// </summary>
+        /// <param name="id">webhook id</param>
+        /// <param name="data">data being sent</param>
+        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
+        void TriggerWebhook(string id, object? data, bool waitForResponse = false);
+
+        /// <summary>
         ///     Delays timeout time
         /// </summary>
         /// <remarks>

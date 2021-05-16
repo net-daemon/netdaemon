@@ -271,6 +271,12 @@ namespace NetDaemon.Common.Reactive
                 Daemon.CallService("script", name);
             }
         }
+        /// <inheritdoc/>
+        public void TriggerWebhook(string id, object? data, bool waitForResponse = false)
+        {
+            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+            Daemon.TriggerWebhook(id, data, waitForResponse);
+        }
 
         /// <inheritdoc/>
         public void SaveData<T>(string id, T data)
