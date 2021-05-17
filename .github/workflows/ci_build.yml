@@ -36,3 +36,25 @@ jobs:
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
                 path-to-lcov: ${{github.workspace}}/codecover/lcov.info
+
+    analyze:
+        name: 🔍 Analyze sources (CI)
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📤 Checkout the repository 
+              uses: actions/checkout@main
+              with:  
+                # Shallow clones should be disabled for a better relevancy of analysis
+                fetch-depth: 0
+
+            - name: 🔍 Analyze code
+              uses: highbyte/sonarscan-dotnet@v2.1-beta
+              env:
+                SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
+                GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+              with:
+                sonarOrganization: net-daemon
+                sonarProjectKey: net-daemon_netdaemon
+                sonarProjectName:  netdaemon
+
+                dotnetDisableTests: true
