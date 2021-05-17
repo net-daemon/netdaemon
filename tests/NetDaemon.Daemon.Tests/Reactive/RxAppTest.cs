@@ -270,9 +270,9 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
-            DefaultDaemonHost.InternalState.Clear();
-            DefaultDaemonHost.InternalState["light.mylight"] = new();
-            DefaultDaemonHost.InternalState["light.mylight2"] = new();
+            DefaultDaemonHost.StateManager.Clear();
+            DefaultDaemonHost.StateManager.Store(new EntityState() { EntityId = "light.mylight" });
+            DefaultDaemonHost.StateManager.Store(new EntityState() { EntityId = "light.mylight2" });
             var entities = DefaultDaemonRxApp.EntityIds.ToList();
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
