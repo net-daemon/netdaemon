@@ -56,5 +56,6 @@ jobs:
                 sonarOrganization: net-daemon
                 sonarProjectKey: net-daemon_netdaemon
                 sonarProjectName:  netdaemon
-
+                
+                sonarBeginArguments: /d:sonar.inclusions="./src/**" /d:sonar.test.inclusions="./tests/**"
                 dotnetDisableTests: true
