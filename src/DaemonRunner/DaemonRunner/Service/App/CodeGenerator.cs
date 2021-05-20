@@ -68,8 +68,8 @@ namespace NetDaemon.Service.App
             {"scene", new[] {"reload", "apply", "create", "turn_on"}},
             {"sensor", new[] {"turn_on", "turn_off", "toggle"}},
             {"persistent_notification", new[] {"create", "dismiss", "mark_read"}},
-            {"sun", new string[0]},
-            {"weather", new string[0]},
+            {"sun", Array.Empty<string>()},
+            {"weather", Array.Empty<string>()},
             {"switch", new[] {"turn_on", "turn_off", "toggle"}},
             {
                 "vacuum",
@@ -115,7 +115,7 @@ namespace NetDaemon.Service.App
             // Get all available domains, this is used to create the extensionmethods
             var domains = GetDomainsFromEntities(entities);
 
-            var singleServiceDomains = new string[] { "script" };
+            var singleServiceDomains = new string[] {"script"};
             foreach (var domain in domains)
             {
                 var camelCaseDomain = domain.ToCamelCase();
@@ -126,8 +126,11 @@ namespace NetDaemon.Service.App
                     ? $"public {camelCaseDomain}Entities {camelCaseDomain} => new(this);"
                     : $@"public {camelCaseDomain}Entity {camelCaseDomain} => new(this, new string[] {{""""}});";
 
-                var propertyDeclaration = CSharpSyntaxTree.ParseText(property).GetRoot().ChildNodes()
-                                              .OfType<PropertyDeclarationSyntax>().FirstOrDefault()
+                var propertyDeclaration = CSharpSyntaxTree.ParseText(property)
+                                              .GetRoot()
+                                              .ChildNodes()
+                                              .OfType<PropertyDeclarationSyntax>()
+                                              .FirstOrDefault()
                                           ?? throw new NetDaemonNullReferenceException(
                                               $"Parse of property {camelCaseDomain} Entities/Entity failed");
                 extensionClass = extensionClass.AddMembers(propertyDeclaration);
@@ -148,12 +151,15 @@ namespace NetDaemon.Service.App
         {{
         }}
     }}";
-                var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes()
-                                      .OfType<ClassDeclarationSyntax>().FirstOrDefault()
+                var entityClass = CSharpSyntaxTree.ParseText(classDeclaration)
+                                      .GetRoot()
+                                      .ChildNodes()
+                                      .OfType<ClassDeclarationSyntax>()
+                                      .FirstOrDefault()
                                   ?? throw new NetDaemonNullReferenceException("Failed to parse class declaration");
 
                 // They already have default implementation
-                var skipServices = new string[] { "turn_on", "turn_off", "toggle" };
+                var skipServices = new string[] {"turn_on", "turn_off", "toggle"};
 
                 foreach (var s in services.Where(n => n.Domain == domain)
                     .SelectMany(n => n.Services ?? new List<HassService>()))
@@ -183,8 +189,11 @@ namespace NetDaemon.Service.App
                         CallService(""{domain}"", ""{s.Service}"", data,{hasEntityIdString});
                     }}
                     ";
-                    var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode).GetRoot().ChildNodes()
-                                                .OfType<GlobalStatementSyntax>().FirstOrDefault()
+                    var methodDeclaration = CSharpSyntaxTree.ParseText(methodCode)
+                                                .GetRoot()
+                                                .ChildNodes()
+                                                .OfType<GlobalStatementSyntax>()
+                                                .FirstOrDefault()
                                             ?? throw new NetDaemonNullReferenceException("Failed to parse method");
                     entityClass = entityClass.AddMembers(methodDeclaration);
                 }
@@ -204,8 +213,11 @@ namespace NetDaemon.Service.App
             _app = app;
         }}
     }}";
-                var entityClass = CSharpSyntaxTree.ParseText(classDeclaration).GetRoot().ChildNodes()
-                                      .OfType<ClassDeclarationSyntax>().FirstOrDefault()
+                var entityClass = CSharpSyntaxTree.ParseText(classDeclaration)
+                                      .GetRoot()
+                                      .ChildNodes()
+                                      .OfType<ClassDeclarationSyntax>()
+                                      .FirstOrDefault()
                                   ?? throw new NetDaemonNullReferenceException("Failed to parse entity class");
                 foreach (var entity in entities.Where(n =>
                     n.StartsWith(domain, StringComparison.InvariantCultureIgnoreCase)))
@@ -220,8 +232,11 @@ namespace NetDaemon.Service.App
 
                     var propertyCode =
                         $@"public {domain.ToCamelCase()}Entity {name.ToCamelCase()} => new(_app, new string[] {{""{entity}""}});";
-                    var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode).GetRoot().ChildNodes()
-                                              .OfType<PropertyDeclarationSyntax>().FirstOrDefault()
+                    var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode)
+                                              .GetRoot()
+                                              .ChildNodes()
+                                              .OfType<PropertyDeclarationSyntax>()
+                                              .FirstOrDefault()
                                           ?? throw new NetDaemonNullReferenceException("Failed to parse property");
                     entityClass = entityClass.AddMembers(propDeclaration);
                 }
@@ -245,7 +260,8 @@ namespace NetDaemon.Service.App
         {
             if (!_skipDomainServices.ContainsKey(domain)) return true;
             var domainServiceNames = services.Where(n => n.Domain == domain)
-                .SelectMany(n => n.Services ?? new List<HassService>()).Select(s =>
+                .SelectMany(n => n.Services ?? new List<HassService>())
+                .Select(s =>
                     s.Service![(s.Service.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..]);
             return domainServiceNames.Except(_skipDomainServices[domain]).Any();
         }

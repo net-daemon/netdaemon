@@ -31,7 +31,7 @@ namespace NetDaemon.Common
         /// <param name="options">Serialization options to use when serializing</param>
         /// <param name="headers">name and value tuple of request headers, allowed values are string and IEnumerable of string</param>
         /// <typeparam name="T">The type to use when deserializing</typeparam>
-        Task<T> GetJson<T>(string url, JsonSerializerOptions? options = null, params (string, object)[] headers);
+        Task<T?> GetJson<T>(string url, JsonSerializerOptions? options = null, params (string, object)[] headers);
 
         /// <summary>
         ///     Post a object that are serialized to a json request and returns a deserializes json response
@@ -41,7 +41,8 @@ namespace NetDaemon.Common
         /// <param name="options">Serialization options to use when serializing</param>
         /// <param name="headers">name and value tuple of request headers, allowed values are string and IEnumerable of string</param>
         /// <typeparam name="T">The type to use when deserializing</typeparam>
-        Task<T> PostJson<T>(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers);
+        Task<T?> PostJson<T>(string url, object request, JsonSerializerOptions? options = null,
+            params (string, object)[] headers);
 
         /// <summary>
         ///     Post a object that are serialized to a json request
@@ -50,6 +51,7 @@ namespace NetDaemon.Common
         /// <param name="request">The object to use as request</param>
         /// <param name="options">Serialization options to use when serializing</param>
         /// <param name="headers">name and value tuple of request headers, allowed values are string and IEnumerable of string</param>
-        Task PostJson(string url, object request, JsonSerializerOptions? options = null, params (string, object)[] headers);
+        Task PostJson(string url, object request, JsonSerializerOptions? options = null,
+            params (string, object)[] headers);
     }
 }
