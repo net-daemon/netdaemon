@@ -681,19 +681,14 @@ namespace NetDaemon.Daemon
 
         internal string? GetAreaForEntityId(string entityId)
         {
-            if (_hassEntities.TryGetValue(entityId, out HassEntity? entity) && entity is not null &&
-                entity.DeviceId is not null)
+            if (!_hassEntities.TryGetValue(entityId, out HassEntity? entity) || entity.DeviceId is null) return null;
+            // The entity is on a device
+            if (!_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) || device.AreaId is null)
+                return null;
+            // This device is in an area
+            if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area))
             {
-                // The entity is on a device
-                if (_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) && device is not null &&
-                    device.AreaId is not null)
-                {
-                    // This device is in an area
-                    if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area) && area is not null)
-                    {
-                        return area.Name;
-                    }
-                }
+                return area.Name;
             }
 
             return null;
@@ -738,8 +733,10 @@ namespace NetDaemon.Daemon
                     {
                         var dependentApp = unsortedList.FirstOrDefault(n => n.Id == dependency);
                         if (dependentApp == null)
+                        {
                             throw new NetDaemonException(
                                 $"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
+                        }
 
                         edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
                     }
@@ -1182,17 +1179,21 @@ namespace NetDaemon.Daemon
                 var taskInitAsync = sortedApp.InitializeAsync();
                 var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
                 if (taskAwaitedAsyncTask != taskInitAsync)
+                {
                     Logger.LogWarning(
                         "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
                         sortedApp.Id);
+                }
 
                 // Init by calling the Initialize
                 var taskInit = Task.Run(sortedApp.Initialize);
                 var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
                 if (taskAwaitedTask != taskInit)
+                {
                     Logger.LogWarning(
                         "Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!",
                         sortedApp.Id);
+                }
 
                 // Todo: refactor
                 await sortedApp.HandleAttributeInitialization(this).ConfigureAwait(false);
