@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace NetDaemon.Common.Reactive.Services
 {
+    /// <summary>
+    ///     Base class for reactive entity management
+    /// </summary>
     public abstract class RxEntityBase : RxEntity
     {
         /// <summary>

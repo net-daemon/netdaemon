@@ -3,7 +3,7 @@
 namespace NetDaemon.Common.Reactive.Services
 {
     /// <summary>
-    /// 
+    ///     Manage the cover entity
     /// </summary>
     public partial class CoverEntity : RxEntityBase
     {

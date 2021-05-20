@@ -2,7 +2,9 @@
 
 namespace NetDaemon.Common.Reactive.Services
 {
-    /// <inheritdoc />
+    /// <summary>
+    ///     Manage image processing entity
+    /// </summary>
     public partial class ImageProcessingEntity : RxEntityBase
     {
         /// <inheritdoc />
@@ -10,6 +12,10 @@ namespace NetDaemon.Common.Reactive.Services
         {
         }
 
+        /// <summary>
+        ///     Scan image
+        /// </summary>
+        /// <param name="data">Provided data</param>
         public void Scan(dynamic? data = null)
         {
             CallService("image_processing", "scan", data, true);

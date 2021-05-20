@@ -2,7 +2,9 @@
 
 namespace NetDaemon.Common.Reactive.Services
 {
-    /// <inheritdoc />
+    /// <summary>
+    ///     Manage input boolean entity
+    /// </summary>
     public partial class InputBooleanEntity : RxEntityBase
     {
         /// <inheritdoc />
@@ -10,6 +12,10 @@ namespace NetDaemon.Common.Reactive.Services
         {
         }
 
+        /// <summary>
+        ///     Reloads input boolean
+        /// </summary>
+        /// <param name="data">Provided data</param>
         public void Reload(dynamic? data = null)
         {
             CallService("input_boolean", "reload", data, false);
