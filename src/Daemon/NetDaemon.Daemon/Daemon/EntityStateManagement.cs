@@ -60,19 +60,17 @@ namespace NetDaemon.Daemon
 
         private readonly string[] _supportedDomains = { "binary_sensor", "sensor", "switch" };
 
-        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
-            dynamic? attributes, bool waitForResponse)
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
+            object? attributes, bool waitForResponse)
         {
-            _cancellationToken.ThrowIfCancellationRequested();
             _ = entityId ?? throw new NetDaemonArgumentNullException(nameof(entityId));
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
                 throw new NetDaemonException($"Wrong entity id {entityId} provided");
 
             try
             {
-                // Use expando object as all other methods
+                HassState? result;
                 if (_netDaemonHost.HasNetDaemonIntegration &&
                     _supportedDomains.Contains(entityId.Split('.')[0]))
                 {
@@ -86,95 +84,27 @@ namespace NetDaemon.Daemon
                             attributes
                         }, waitForResponse).ConfigureAwait(false);
 
-                    if (waitForResponse)
-                    {
-                        var result = await _hassClient.GetState(entityId).ConfigureAwait(false);
-                        if (result != null)
-                        {
-                            EntityState entityState = result.Map();
-                            // InternalState[entityState.EntityId] = entityState;
-                            return entityState with
-                            {
-                                State = state,
-                                Area = _netDaemonHost.GetAreaForEntityId(entityState.EntityId)
-                            };
-                        }
-                    }
+                    if (!waitForResponse) return null;
 
-                    return null;
+                    result = await _hassClient.GetState(entityId).ConfigureAwait(false);
+ 
                 }
                 else
                 {
-                    HassState result = await _hassClient.SetState(entityId, state.ToString(), attributes)
+                    result = await _hassClient.SetState(entityId, state.ToString(), attributes)
                         .ConfigureAwait(false);
-
-                    if (result != null)
-                    {
-                        EntityState entityState = result.Map();
-                        // InternalState[entityState.EntityId] = entityState;
-                        return entityState with
-                        {
-                            State = state,
-                            Area = _netDaemonHost.GetAreaForEntityId(entityState.EntityId)
-                        };
-                    }
-
-                    return null;
                 }
-            }
-            catch (Exception e)
-            {
-                _netDaemonHost.Logger.LogError(e, "Failed to set state for entity {entityId}", entityId);
-                throw;
-            }
-        }
 
-        public async Task<EntityState?> SetStateAsync(string entityId, dynamic state,
-            params (string name, object val)[] attributes)
-        {
-             _cancellationToken.ThrowIfCancellationRequested();
-            _ = entityId ?? throw new NetDaemonArgumentNullException(nameof(entityId));
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
+                if (result == null) return null;
 
-            if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
-                throw new NetDaemonException($"Wrong entity id {entityId} provided");
-
-            try
-            {
-                // Use expando object as all other methods
-                dynamic dynAttributes = attributes.ToDynamic();
-                if (_netDaemonHost.HasNetDaemonIntegration)
+                EntityState entityState = result.Map();
+                entityState = entityState with
                 {
-                    var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
-                    // We have an integration that will help persist 
-                    await _netDaemonHost.CallServiceAsync("netdaemon", service,
-                        new
-                        {
-                            entity_id = entityId,
-                            state = state.ToString(),
-                            attributes = dynAttributes
-                        }, true).ConfigureAwait(false);
-                    return null;
-                }
-                else
-                {
-                    HassState result = await _hassClient.SetState(entityId, state.ToString(), dynAttributes)
-                        .ConfigureAwait(false);
-
-                    if (result != null)
-                    {
-                        EntityState entityState = result.Map();
-                        entityState = entityState with
-                        {
-                            State = state,
-                            Area = _netDaemonHost.GetAreaForEntityId(entityState.EntityId)
-                        };
-                        InternalState[entityState.EntityId] = entityState;
-                        return entityState;
-                    }
-
-                    return null;
-                }
+                    State = state,
+                    Area = _netDaemonHost.GetAreaForEntityId(entityState.EntityId)
+                };
+                InternalState[entityState.EntityId] = entityState;
+                return entityState;
             }
             catch (Exception e)
             {

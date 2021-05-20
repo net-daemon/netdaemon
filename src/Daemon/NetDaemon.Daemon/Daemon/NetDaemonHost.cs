@@ -530,7 +530,7 @@ namespace NetDaemon.Daemon
             }
             else
             {
-                return SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
+                return  SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
             }
         }
 
@@ -541,7 +541,7 @@ namespace NetDaemon.Daemon
 
         public Task<EntityState?> SetStateAsync(string entityId, dynamic state,
             params (string name, object val)[] attributes)
-            => StateManager.SetStateAsync(entityId, state, attributes);
+            => StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
 
         public void Speak(string entityId, string message)
         {
