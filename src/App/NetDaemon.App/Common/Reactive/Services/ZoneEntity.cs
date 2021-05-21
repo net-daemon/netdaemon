@@ -10,6 +10,10 @@ namespace NetDaemon.Common.Reactive.Services
         {
         }
 
+        /// <summary>
+        ///     Reload zone
+        /// </summary>
+        /// <param name="data">Provided data</param>
         public void Reload(dynamic? data = null)
         {
             CallService("zone", "reload", data, false);

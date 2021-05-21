@@ -2,7 +2,9 @@
 
 namespace NetDaemon.Common.Reactive.Services
 {
-    /// <inheritdoc />
+    /// <summary>
+    ///     Manage device tracker entity
+    /// </summary>
     public partial class DeviceTrackerEntity : RxEntityBase
     {
         /// <inheritdoc />
@@ -10,6 +12,10 @@ namespace NetDaemon.Common.Reactive.Services
         {
         }
 
+        /// <summary>
+        ///     Calls see service
+        /// </summary>
+        /// <param name="data">Data provided to see service</param>
         public void See(dynamic? data = null)
         {
             CallService("device_tracker", "see", data, false);

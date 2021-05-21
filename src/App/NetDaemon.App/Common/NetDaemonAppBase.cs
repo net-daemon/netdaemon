@@ -33,10 +33,10 @@ namespace NetDaemon.Common
         private static readonly ConcurrentDictionary<string, object> _global = new();
 
         private readonly Channel<bool> _updateRuntimeInfoChannel =
-               Channel.CreateBounded<bool>(5);
+            Channel.CreateBounded<bool>(5);
+
         private readonly CancellationTokenSource _cancelSource;
         private bool _isDisposed;
-        private Task? _lazyStoreStateTask;
 
         /// <summary>
         ///     Constructor
@@ -77,15 +77,17 @@ namespace NetDaemon.Common
         {
             get
             {
-                var app_key = GetType().FullName;
+                var appKey = GetType().FullName;
 
-                if (app_key is null)
+                if (appKey is null)
                     return "";
 
-                if (CompileTimeProperties.ContainsKey(app_key) && CompileTimeProperties[app_key].ContainsKey("description"))
+                if (CompileTimeProperties.ContainsKey(appKey) &&
+                    CompileTimeProperties[appKey].ContainsKey("description"))
                 {
-                    return CompileTimeProperties[app_key]["description"];
+                    return CompileTimeProperties[appKey]["description"];
                 }
+
                 return "";
             }
         }
@@ -95,10 +97,13 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
-        public dynamic Storage => InternalStorageObject ?? throw new NetDaemonNullReferenceException($"{nameof(InternalStorageObject)} cant be null");
+        public dynamic Storage => InternalStorageObject ??
+                                  throw new NetDaemonNullReferenceException(
+                                      $"{nameof(InternalStorageObject)} cant be null");
 
         internal Channel<bool> InternalLazyStoreStateQueue { get; } =
             Channel.CreateBounded<bool>(1);
+
         internal FluentExpandoObject? InternalStorageObject { get; set; }
 
         /// <summary>
@@ -132,11 +137,12 @@ namespace NetDaemon.Common
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
-            var obj = await Daemon.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage()).ConfigureAwait(false);
+            var obj = await Daemon.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage())
+                .ConfigureAwait(false);
 
             if (obj != null)
             {
-                var expStore = (FluentExpandoObject)Storage;
+                var expStore = (FluentExpandoObject) Storage;
                 expStore.CopyFrom(obj);
             }
 
@@ -152,6 +158,7 @@ namespace NetDaemon.Common
                     serviceData.entity_id = EntityId;
                     await Daemon!.SetStateAsync(EntityId, "off").ConfigureAwait(false);
                 }
+
                 return;
             }
             else
@@ -163,6 +170,7 @@ namespace NetDaemon.Common
                     serviceData.entity_id = EntityId;
                     await Daemon!.SetStateAsync(EntityId, "on").ConfigureAwait(false);
                 }
+
                 return;
             }
         }
@@ -171,12 +179,13 @@ namespace NetDaemon.Common
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
         /// <inheritdoc/>
-        public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo { HasError = false };
+        public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo {HasError = false};
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
         public IEnumerable<string> EntityIds => Daemon?.State.Select(n => n.EntityId) ??
-            throw new NetDaemonNullReferenceException("Daemon not expected to be null");
+                                                throw new NetDaemonNullReferenceException(
+                                                    "Daemon not expected to be null");
 
         /// <summary>
         ///     Instance to Daemon service
@@ -209,7 +218,7 @@ namespace NetDaemon.Common
 
             Daemon = daemon;
             _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
-            _lazyStoreStateTask = Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
+            Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
             InternalStorageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
 
@@ -224,6 +233,7 @@ namespace NetDaemon.Common
             {
                 IsEnabled = appState == "on";
             }
+
             UpdateRuntimeInformation();
             return Task.CompletedTask;
         }
@@ -248,8 +258,8 @@ namespace NetDaemon.Common
                     // Dont care about the result, just that it is time to store state
                     _ = await InternalLazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
 
-                    await Daemon!.SaveDataAsync(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
-                            .ConfigureAwait(false);
+                    await Daemon!.SaveDataAsync(GetUniqueIdForStorage(), (IDictionary<string, object>) Storage)
+                        .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -258,7 +268,7 @@ namespace NetDaemon.Common
                 catch (Exception e)
                 {
                     Logger.LogError("Error in storage queue {e}", e);
-                }   // Ignore errors in thread
+                } // Ignore errors in thread
             }
         }
 
@@ -275,6 +285,7 @@ namespace NetDaemon.Common
                     return;
                 _isDisposed = true;
             }
+
             _cancelSource.Cancel();
             if (_manageRuntimeInformationUpdatesTask is not null)
                 await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
@@ -282,7 +293,6 @@ namespace NetDaemon.Common
             DaemonCallBacksForServiceCalls.Clear();
 
             IsEnabled = false;
-            _lazyStoreStateTask = null;
             InternalStorageObject = null;
             _cancelSource.Dispose();
             Daemon = null;
@@ -322,7 +332,7 @@ namespace NetDaemon.Common
             }
             else
             {
-                Logger.Log(level, $"  {{Id}}: {message}", new object[] { Id ?? "" });
+                Logger.Log(level, $"  {{Id}}: {message}", new object[] {Id ?? ""});
             }
         }
 
@@ -339,24 +349,27 @@ namespace NetDaemon.Common
             }
             else
             {
-                Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] { Id ?? "" });
+                Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] {Id ?? ""});
             }
         }
 
         /// <inheritdoc/>
-        public void Log(Exception exception, string message, params object[] param) => LogInformation(exception, message, param);
+        public void Log(Exception exception, string message, params object[] param) =>
+            LogInformation(exception, message, param);
 
         /// <inheritdoc/>
         public void LogInformation(string message) => Log(LogLevel.Information, message);
 
         /// <inheritdoc/>
-        public void LogInformation(Exception exception, string message) => Log(LogLevel.Information, exception, message);
+        public void LogInformation(Exception exception, string message) =>
+            Log(LogLevel.Information, exception, message);
 
         /// <inheritdoc/>
         public void LogInformation(string message, params object[] param) => Log(LogLevel.Information, message, param);
 
         /// <inheritdoc/>
-        public void LogInformation(Exception exception, string message, params object[] param) => Log(LogLevel.Information, exception, message, param);
+        public void LogInformation(Exception exception, string message, params object[] param) =>
+            Log(LogLevel.Information, exception, message, param);
 
         /// <inheritdoc/>
         public void LogDebug(string message) => Log(LogLevel.Debug, message);
@@ -368,7 +381,8 @@ namespace NetDaemon.Common
         public void LogDebug(string message, params object[] param) => Log(LogLevel.Debug, message, param);
 
         /// <inheritdoc/>
-        public void LogDebug(Exception exception, string message, params object[] param) => Log(LogLevel.Debug, exception, message, param);
+        public void LogDebug(Exception exception, string message, params object[] param) =>
+            Log(LogLevel.Debug, exception, message, param);
 
         /// <inheritdoc/>
         public void LogError(string message)
@@ -412,7 +426,8 @@ namespace NetDaemon.Common
         public void LogTrace(string message, params object[] param) => Log(LogLevel.Trace, message, param);
 
         /// <inheritdoc/>
-        public void LogTrace(Exception exception, string message, params object[] param) => Log(LogLevel.Trace, exception, message, param);
+        public void LogTrace(Exception exception, string message, params object[] param) =>
+            Log(LogLevel.Trace, exception, message, param);
 
         /// <inheritdoc/>
         public void LogWarning(string message) => Log(LogLevel.Warning, message);
@@ -424,7 +439,8 @@ namespace NetDaemon.Common
         public void LogWarning(string message, params object[] param) => Log(LogLevel.Warning, message, param);
 
         /// <inheritdoc/>
-        public void LogWarning(Exception exception, string message, params object[] param) => Log(LogLevel.Warning, exception, message, param);
+        public void LogWarning(Exception exception, string message, params object[] param) =>
+            Log(LogLevel.Warning, exception, message, param);
 
         #endregion -- Logger helpers --
 
@@ -439,6 +455,7 @@ namespace NetDaemon.Common
             {
                 RuntimeInfo.AppAttributes.Remove(attribute);
             }
+
             UpdateRuntimeInformation();
         }
 
@@ -485,9 +502,11 @@ namespace NetDaemon.Common
             {
                 RuntimeInfo.HasError = true;
             }
+
             if (Daemon!.IsConnected)
             {
-                await Daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo)).ConfigureAwait(false);
+                await Daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo))
+                    .ConfigureAwait(false);
             }
         }
     }

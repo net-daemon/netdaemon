@@ -76,6 +76,7 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
+            // Is not used so no use in implementing it
         }
 
         /// <inheritdoc/>

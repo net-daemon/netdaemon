@@ -96,7 +96,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             // ACT and ASSERT
             Assert.Throws<ArgumentNullException>(() =>
-                { var DefaultDaemonHost = new NetDaemonHost(null, null); });
+            {
+                var DefaultDaemonHost = new NetDaemonHost(null, null);
+            });
         }
 
         [Fact]
@@ -112,7 +114,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
-            var expandoObject = (ExpandoObject)eventData;
+            var expandoObject = (ExpandoObject) eventData;
             VerifyEventSent("test_event", expandoObject);
         }
 
@@ -159,15 +161,15 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             SetEntityState(new()
-            {
-                EntityId = "media_player.fakeplayer",
-                Attributes = new Dictionary<string, object>()
                 {
-                    ["entity_id"] = "media_player.fakeplayer",
-                    ["message"] = "Hello test!",
-                    ["media_duration"] = 0.2
+                    EntityId = "media_player.fakeplayer",
+                    Attributes = new Dictionary<string, object>()
+                    {
+                        ["entity_id"] = "media_player.fakeplayer",
+                        ["message"] = "Hello test!",
+                        ["media_duration"] = 0.2
+                    }
                 }
-            }
             );
 
             // Get a running default Daemon
@@ -293,7 +295,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
             var (dynObj, expObj) = GetDynamicObject(
                 ("attr", "value")
             );
-            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", dynObj, true).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost
+                .SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", dynObj, true)
+                .ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
         }
@@ -307,10 +311,12 @@ namespace NetDaemon.Daemon.Tests.Daemon
             );
             DefaultDaemonHost.HasNetDaemonIntegration = true;
             DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(Task.FromResult<HassState?>(null));
-            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost
+                .SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new {attr = "value"}, true)
+                .ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
-            It.IsAny<object>(), true), Times.Once);
+                It.IsAny<object>(), true), Times.Once);
 
             DefaultHassClientMock.Verify(n => n.GetState("sensor.any_sensor"));
             Assert.Null(entity);
@@ -324,17 +330,23 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultDaemonHost.HasNetDaemonIntegration = true;
-            DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(Task.FromResult<HassState?>(new HassState()));
-            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new { attr = "value" }, true).ConfigureAwait(false);
+            DefaultHassClientMock.Setup(n => n.GetState(It.IsAny<string>()))
+                .Returns(Task.FromResult<HassState?>(new HassState()));
+            var entity = await DefaultDaemonHost
+                .SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new {attr = "value"}, true)
+                .ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
-            It.IsAny<object>(), true), Times.Once);
+                It.IsAny<object>(), true), Times.Once);
 
             DefaultHassClientMock.Verify(n => n.GetState("sensor.any_sensor"));
             Assert.NotNull(entity);
         }
 
-        private class MyTestApp : NetDaemonRxApp { }
+        private class MyTestApp : NetDaemonRxApp
+        {
+        }
+
         [Fact]
         public void SortByDependecyTest()
         {
@@ -344,7 +356,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 new MyTestApp()
                 {
                     Id = "test",
-                    Dependencies = new List<string> { "dependent_app" },
+                    Dependencies = new List<string> {"dependent_app"},
                 },
                 new MyTestApp()
                 {
@@ -359,6 +371,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal(2, sorted.Count);
             Assert.Equal("dependent_app", sorted[0].Id);
         }
+
         [Fact]
         public async Task SetStateDynamicWithNoWaitShouldCallCorrectFunction()
         {
@@ -367,10 +380,12 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("attr", "value")
             );
             DefaultDaemonHost.HasNetDaemonIntegration = true;
-            var entity = await DefaultDaemonHost.SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new { attr = "value" }, false).ConfigureAwait(false);
+            var entity = await DefaultDaemonHost
+                .SetStateAndWaitForResponseAsync("sensor.any_sensor", "on", new {attr = "value"}, false)
+                .ConfigureAwait(false);
 
             DefaultHassClientMock.Verify(n => n.CallService("netdaemon", "entity_create",
-            It.IsAny<object>(), false), Times.Once);
+                It.IsAny<object>(), false), Times.Once);
 
             DefaultHassClientMock.Verify(n => n.GetState("sensor.any_sensor"), Times.Never);
             Assert.Null(entity);
@@ -396,13 +411,15 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             DefaultHassClientMock.Verify(n => n.GetServices(), Times.Once);
         }
+
         [Fact]
         public async Task SetDaemonStateAsyncShouldCallCorrectFunctions()
         {
             await InitializeFakeDaemon().ConfigureAwait(false);
             await DefaultDaemonHost.SetDaemonStateAsync(5, 2).ConfigureAwait(false);
 
-            DefaultHassClientMock.Verify(n => n.SetState("sensor.netdaemon_status", "Connected", It.IsAny<object>()), Times.Once);
+            DefaultHassClientMock.Verify(n => n.SetState("sensor.netdaemon_status", "Connected", It.IsAny<object>()),
+                Times.Once);
         }
 
         [Fact]
@@ -435,6 +452,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             string TestString { get; }
         }
+
         private class TestGetService : ITestGetService
         {
             public string TestString => "Test";
@@ -456,8 +474,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void EntityShouldReturnCorrectValueForArea()
         {
             // ARRANGE
-            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
-            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
+            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice {AreaId = "area_id"};
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea {Name = "Correct name", Id = "area_id"};
             DefaultDaemonHost._hassEntities["light.lamp"] = new HassEntity
             {
                 EntityId = "light.lamp",
@@ -474,8 +492,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void EntityShouldReturnNullForAreaNotExist()
         {
             // ARRANGE
-            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
-            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
+            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice {AreaId = "area_id"};
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea {Name = "Correct name", Id = "area_id"};
             DefaultDaemonHost._hassEntities["light.lamp"] = new HassEntity
             {
                 EntityId = "light.lamp",
@@ -492,8 +510,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public async Task StateChangeHasAreaInformation()
         {
             // ARRANGE
-            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice { AreaId = "area_id" };
-            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
+            DefaultDaemonHost._hassDevices["device_id"] = new HassDevice {AreaId = "area_id"};
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea {Name = "Correct name", Id = "area_id"};
             DefaultDaemonHost._hassEntities["binary_sensor.pir"] = new HassEntity
             {
                 EntityId = "binary_sensor.pir",
@@ -508,7 +526,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal("Correct name", DefaultDaemonHost.StateManager.GetState("binary_sensor.pir").Area);
+            Assert.Equal("Correct name", DefaultDaemonHost.StateManager.GetState("binary_sensor.pir")?.Area);
         }
 
         [Fact]
@@ -517,7 +535,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
-            var state = await DefaultDaemonHost.SetStateAsync("light.light_in_area", "on", ("attr", "value")).ConfigureAwait(false);
+            var state = await DefaultDaemonHost.SetStateAsync("light.light_in_area", "on", ("attr", "value"))
+                .ConfigureAwait(false);
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             /// ASSERT
             Assert.Equal("Area", state?.Area);
@@ -545,8 +564,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [InlineData(true, 10, "unavailable", 10, null)]
         [InlineData(true, 10, 11, 10, 11)]
         [InlineData(true, "hello", "world", "hello", "world")]
-        [InlineData(true, (long)10, 10.0d, 10.0d, 10.0d)]
-        [InlineData(true, 10.0d, (long)10, 10.0d, 10.0d)]
+        [InlineData(true, (long) 10, 10.0d, 10.0d, 10.0d)]
+        [InlineData(true, 10.0d, (long) 10, 10.0d, 10.0d)]
         public void FixStateTypesShouldReturnCorrectValues(
             bool result, dynamic? newState, dynamic? oldState, dynamic? expectedNewState, dynamic? expectedOldState)
         {
