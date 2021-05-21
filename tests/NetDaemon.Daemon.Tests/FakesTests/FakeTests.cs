@@ -190,6 +190,17 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
         }
 
+
+        [Fact]
+        public async Task SetStateWithAreaShouldReturnCorrectArea()
+        {
+            // ACT
+            SetEntityState("sensor.any_sensor", "SomeState", "LivingRoom");
+
+            // ASSERT
+            Assert.Equal("LivingRoom", DefaultDaemonHost.GetState("sensor.any_sensor")?.Area);
+        }
+
         [Fact]
         public async Task StartupAsyncShouldThrowIfDaemonIsNull()
         {
