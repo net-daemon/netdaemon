@@ -57,10 +57,7 @@ namespace NetDaemon.Daemon
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
 
-        internal EntityStateManager StateManager { get; private set; }
-
-        // internal so we can use for unittest
-        //        internal ConcurrentDictionary<string, EntityState> InternalState = new();
+        internal EntityStateManager StateManager { get; }
 
         private IInstanceDaemonApp? _appInstanceManager;
 
@@ -149,7 +146,8 @@ namespace NetDaemon.Daemon
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
 
-        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => StateManager.States;
+        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => 
+            StateManager.States.Select(s => s.MapWithArea(GetAreaForEntityId(s.EntityId)));
 
         // For testing
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
@@ -281,7 +279,7 @@ namespace NetDaemon.Daemon
             return data;
         }
 
-        public EntityState? GetState(string entityId) => StateManager.GetState(entityId);
+        public EntityState? GetState(string entityId) => StateManager.GetState(entityId)?.MapWithArea(GetAreaForEntityId(entityId));
 
         /// <inheritdoc/>
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
@@ -534,14 +532,17 @@ namespace NetDaemon.Daemon
             }
         }
 
-        //private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
-        public Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
-            dynamic? attributes, bool waitForResponse) =>
-            StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes, waitForResponse);
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
+            dynamic? attributes, bool waitForResponse)
+        {
+            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, (object)state, (object?)attributes,
+                waitForResponse).ConfigureAwait(false);
+            return hassState?.MapWithArea(GetAreaForEntityId(entityId));
+        }
 
         public Task<EntityState?> SetStateAsync(string entityId, dynamic state,
             params (string name, object val)[] attributes)
-            => StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
+            => SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
 
         public void Speak(string entityId, string message)
         {
@@ -815,12 +816,11 @@ namespace NetDaemon.Daemon
                 return;
             }
 
+            StateManager.Store(stateData!.NewState);
+
             // Make sure we get the area name with the new state
             var newState = stateData!.NewState!.Map();
-            var oldState = stateData!.OldState!.Map();
-            // TODO: refactor map to take area as input to avoid the copy
-            newState = newState with {Area = GetAreaForEntityId(newState.EntityId)};
-            StateManager.Store(newState);
+            var oldState = stateData!.OldState!.MapWithArea(GetAreaForEntityId(newState.EntityId));
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Model;
@@ -138,10 +139,10 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="area">Area of entity</param>
         public void SetEntityState(string entityId, dynamic? state = null, string? area = null)
         {
-            DefaultDaemonHost.StateManager.Store(new EntityState
+            DefaultDaemonHost.StateManager.Store(new HassState()
             {
                 EntityId = entityId,
-                Area = area,
+                // Area = area,  TODO: Is this needed? Maybe we should actually create the enitiy / device / area objects
                 State = state
             });
         }
