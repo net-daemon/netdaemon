@@ -532,15 +532,15 @@ namespace NetDaemon.Daemon
             }
         }
 
-        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
-            dynamic? attributes, bool waitForResponse)
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
+            object? attributes, bool waitForResponse)
         {
-            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, (object)state, (object?)attributes,
+            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes,
                 waitForResponse).ConfigureAwait(false);
             return hassState?.MapWithArea(GetAreaForEntityId(entityId));
         }
 
-        public Task<EntityState?> SetStateAsync(string entityId, dynamic state,
+        public Task<EntityState?> SetStateAsync(string entityId, object state,
             params (string name, object val)[] attributes)
             => SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
 
