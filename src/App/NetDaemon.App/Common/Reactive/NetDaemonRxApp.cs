@@ -286,7 +286,8 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false)
+        public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null,
+            bool waitForResponse = false)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
             return Daemon.SetState(entityId, state, attributes, waitForResponse);

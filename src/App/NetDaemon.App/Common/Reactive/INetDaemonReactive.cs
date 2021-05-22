@@ -53,7 +53,7 @@ namespace NetDaemon.Common.Reactive
         /// <param name="state">The state to set</param>
         /// <param name="attributes">The attributes, use anonomous type like new {attr="someattr", attr2=25}</param>
         /// <param name="waitForResponse">If true it waits for response and returns new state</param>
-        EntityState? SetState(string entityId, dynamic state, dynamic? attributes, bool waitForResponse = false);
+        EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false);
 
         /// <summary>
         ///     Get state for a single entity
