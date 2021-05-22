@@ -57,10 +57,7 @@ namespace NetDaemon.Daemon
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
 
-        internal EntityStateManager StateManager { get; private set; }
-
-        // internal so we can use for unittest
-        //        internal ConcurrentDictionary<string, EntityState> InternalState = new();
+        internal EntityStateManager StateManager { get; }
 
         private IInstanceDaemonApp? _appInstanceManager;
 
@@ -104,6 +101,7 @@ namespace NetDaemon.Daemon
         /// <param name="repository">Repository to use</param>
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
+        /// <param name="serviceProvider">The service provider</param>
         public NetDaemonHost(
             IHassClientFactory? hassClientFactory = null,
             IDataRepository? repository = null,
@@ -149,7 +147,8 @@ namespace NetDaemon.Daemon
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
 
-        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => StateManager.States;
+        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => 
+            StateManager.States.Select(s => s.MapWithArea(GetAreaForEntityId(s.EntityId)));
 
         // For testing
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
@@ -281,7 +280,7 @@ namespace NetDaemon.Daemon
             return data;
         }
 
-        public EntityState? GetState(string entityId) => StateManager.GetState(entityId);
+        public EntityState? GetState(string entityId) => StateManager.GetState(entityId)?.MapWithArea(GetAreaForEntityId(entityId));
 
         /// <inheritdoc/>
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
@@ -530,18 +529,24 @@ namespace NetDaemon.Daemon
             }
             else
             {
-                return SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
+                return  SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
             }
         }
 
-        //private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
-        public Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
-            dynamic? attributes, bool waitForResponse) =>
-            StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes, waitForResponse);
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
+            object? attributes, bool waitForResponse)
+        {
+            _ = entityId ?? throw new ArgumentNullException(nameof(entityId));
+            _ = state ?? throw new ArgumentNullException(nameof(state));
 
-        public Task<EntityState?> SetStateAsync(string entityId, dynamic state,
+            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes,
+                waitForResponse).ConfigureAwait(false);
+            return hassState?.MapWithArea(GetAreaForEntityId(entityId));
+        }
+
+        public Task<EntityState?> SetStateAsync(string entityId, object state,
             params (string name, object val)[] attributes)
-            => StateManager.SetStateAsync(entityId, state, attributes);
+            => SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
 
         public void Speak(string entityId, string message)
         {
@@ -701,19 +706,19 @@ namespace NetDaemon.Daemon
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
-                if (device is not null && device.Id is not null)
+                if (device?.Id != null)
                     _hassDevices[device.Id] = device;
             }
 
             foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
             {
-                if (area is not null && area.Id is not null)
+                if (area?.Id != null)
                     _hassAreas[area.Id] = area;
             }
 
             foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
             {
-                if (entity is not null && entity.EntityId is not null)
+                if (entity?.EntityId != null)
                     _hassEntities[entity.EntityId] = entity;
             }
 
@@ -815,12 +820,11 @@ namespace NetDaemon.Daemon
                 return;
             }
 
+            StateManager.Store(stateData!.NewState);
+
             // Make sure we get the area name with the new state
             var newState = stateData!.NewState!.Map();
-            var oldState = stateData!.OldState!.Map();
-            // TODO: refactor map to take area as input to avoid the copy
-            newState = newState with {Area = GetAreaForEntityId(newState.EntityId)};
-            StateManager.Store(newState);
+            var oldState = stateData!.OldState!.MapWithArea(GetAreaForEntityId(newState.EntityId));
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {
