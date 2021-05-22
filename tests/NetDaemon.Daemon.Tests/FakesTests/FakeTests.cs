@@ -7,7 +7,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Model;
 using Moq;
-using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using Xunit;
@@ -23,10 +22,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class FakeTests : CoreDaemonHostTestBase
     {
-        public FakeTests() : base()
-        {
-        }
-
         [Fact]
         public async Task CallServiceShouldCallCorrectFunction()
         {
@@ -192,7 +187,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
 
         [Fact]
-        public async Task SetStateWithAreaShouldReturnCorrectArea()
+        public void SetStateWithAreaShouldReturnCorrectArea()
         {
             // ACT
             SetEntityState("sensor.any_sensor", "SomeState", "LivingRoom");

@@ -101,6 +101,7 @@ namespace NetDaemon.Daemon
         /// <param name="repository">Repository to use</param>
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
+        /// <param name="serviceProvider">The service provider</param>
         public NetDaemonHost(
             IHassClientFactory? hassClientFactory = null,
             IDataRepository? repository = null,
@@ -535,6 +536,9 @@ namespace NetDaemon.Daemon
         public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
             object? attributes, bool waitForResponse)
         {
+            _ = entityId ?? throw new ArgumentNullException(nameof(entityId));
+            _ = state ?? throw new ArgumentNullException(nameof(state));
+
             var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes,
                 waitForResponse).ConfigureAwait(false);
             return hassState?.MapWithArea(GetAreaForEntityId(entityId));
@@ -702,19 +706,19 @@ namespace NetDaemon.Daemon
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
-                if (device is not null && device.Id is not null)
+                if (device?.Id != null)
                     _hassDevices[device.Id] = device;
             }
 
             foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
             {
-                if (area is not null && area.Id is not null)
+                if (area?.Id != null)
                     _hassAreas[area.Id] = area;
             }
 
             foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
             {
-                if (entity is not null && entity.EntityId is not null)
+                if (entity?.EntityId != null)
                     _hassEntities[entity.EntityId] = entity;
             }
 
