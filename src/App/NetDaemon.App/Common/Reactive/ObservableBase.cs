@@ -70,13 +70,13 @@ namespace NetDaemon.Common.Reactive
             return new UnsubscriberObservable<T>(_observersTuples, observer);
         }
 
-        private class UnsubscriberObservable<X> : IDisposable
+        private class UnsubscriberObservable<TX> : IDisposable
         {
-            private readonly IObserver<X> _observer;
-            private readonly ConcurrentDictionary<IObserver<X>, IObserver<X>> _observers;
+            private readonly IObserver<TX> _observer;
+            private readonly ConcurrentDictionary<IObserver<TX>, IObserver<TX>> _observers;
 
             public UnsubscriberObservable(
-                ConcurrentDictionary<IObserver<X>, IObserver<X>> observers, IObserver<X> observer)
+                ConcurrentDictionary<IObserver<TX>, IObserver<TX>> observers, IObserver<TX> observer)
             {
                 _observer = observer;
                 _observers = observers;
@@ -84,11 +84,8 @@ namespace NetDaemon.Common.Reactive
 
             public void Dispose()
             {
-                if (_observer is not null)
-                {
-                    _observers.TryRemove(_observer, out _);
-                    _observer.OnCompleted();
-                }
+                _observers.TryRemove(_observer, out _);
+                _observer.OnCompleted();
             }
         }
     }

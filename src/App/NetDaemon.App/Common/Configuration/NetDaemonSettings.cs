@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using NetDaemon.Common.Exceptions;
 
@@ -11,7 +10,7 @@ namespace NetDaemon.Common.Configuration
     public class NetDaemonSettings
     {
         /// <summary>
-        ///     Set true to generate entieies from Home Assistant
+        ///     Set true to generate entities from Home Assistant
         /// </summary>
         public bool? GenerateEntities { get; set; } = false;
         /// <summary>
@@ -27,9 +26,9 @@ namespace NetDaemon.Common.Configuration
         ///     point to a csproj file or a dll precompiled daemon.
         ///     In the case it is not a folder, NetDaemon expects
         ///     the apps to be in the file paths and tries to find
-        ///     all apps recursivly
+        ///     all apps recursively
         /// </remarks>
-        public string? AppSource { get; set; }
+        public string? AppSource { get; init; }
 
         /// <summary>
         ///     Returns the directory path of AppSource

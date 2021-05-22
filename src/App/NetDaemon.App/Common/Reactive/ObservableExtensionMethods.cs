@@ -14,6 +14,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="observable"></param>
         /// <param name="span"></param>
+        // ReSharper disable once InconsistentNaming
         public static IObservable<(EntityState Old, EntityState New)> NDSameStateFor(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan span)
         {
             return observable.Throttle(span);
@@ -24,6 +25,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="observable"></param>
         /// <param name="timeout">Timeout waiting for state</param>
+        // ReSharper disable once InconsistentNaming
         public static IObservable<(EntityState Old, EntityState New)> NDWaitForState(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan timeout)
         {
             return observable
@@ -35,16 +37,18 @@ namespace NetDaemon.Common.Reactive
         ///     Wait for state the default time
         /// </summary>
         /// <param name="observable"></param>
+        // ReSharper disable once InconsistentNaming
         public static IObservable<(EntityState Old, EntityState New)> NDWaitForState(this IObservable<(EntityState Old, EntityState New)> observable) => observable
             .Timeout(TimeSpan.FromSeconds(5),
             Observable.Return((new EntityState() { State = "TimeOut" }, new EntityState() { State = "TimeOut" }))).Take(1);
 
         /// <summary>
-        ///     Returns first occurence or null if timedout
+        ///     Returns first occurence or null if timeout
         /// </summary>
         /// <param name="observable">Extended object</param>
         /// <param name="timeout">The time to wait before timeout.</param>
         /// <param name="token">Provide token to cancel early</param>
+        // ReSharper disable once InconsistentNaming
         public static (EntityState Old, EntityState New)? NDFirstOrTimeout(this IObservable<(EntityState Old, EntityState New)> observable, TimeSpan timeout, CancellationToken? token = null)
         {
             try

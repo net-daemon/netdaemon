@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon.Tests
             DefaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
             DefaultMockedRxApp.Object.Id = "app_rx_mock_id";
             DefaultMockedRxApp.Object.IsEnabled = true;
-            DefaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
+            DefaultMockedRxApp.Setup(n => n.CreateObservableInterval(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
             DefaultDaemonHost.InternalRunningAppInstances[DefaultMockedRxApp.Object.Id!] = DefaultMockedRxApp.Object;
 
             var notConnectedHassClientFactoryMock = new HassClientFactoryMock(HassClientMock.MockConnectFalse);

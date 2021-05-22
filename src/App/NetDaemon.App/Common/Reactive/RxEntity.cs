@@ -97,7 +97,7 @@ namespace NetDaemon.Common.Reactive
         {
             get
             {
-                return DaemonRxApp.StateChanges.Where(f => EntityIds.Contains(f.New.EntityId) && f.New?.State != f.Old?.State);
+                return DaemonRxApp.StateChanges.Where(f => EntityIds.Contains(f.New.EntityId) && f.New.State != f.Old.State);
             }
         }
 
@@ -136,7 +136,7 @@ namespace NetDaemon.Common.Reactive
         /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
         public void CallService(string service, dynamic? data = null, bool waitForResponse = false)
         {
-            if (EntityIds?.Any() != true)
+            if (EntityIds.Any() != true)
                 return;
 
             foreach (var entityId in EntityIds!)
@@ -168,7 +168,7 @@ namespace NetDaemon.Common.Reactive
 
         private void CallServiceOnEntity(string service, dynamic? attributes = null)
         {
-            if (EntityIds?.Any() != true)
+            if (EntityIds.Any() != true)
                 return;
 
             dynamic? data = null;

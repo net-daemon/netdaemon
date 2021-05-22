@@ -37,6 +37,7 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Log tupes used
         /// </summary>
+        // ReSharper disable once UnassignedGetOnlyAutoProperty
         public SupressLogType[]? LogTypes { get; }
     }
 

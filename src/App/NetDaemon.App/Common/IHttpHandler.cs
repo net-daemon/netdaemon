@@ -25,7 +25,7 @@ namespace NetDaemon.Common
         HttpClient CreateHttpClient(string? name = null);
 
         /// <summary>
-        ///     Gets a json resopose deserialized
+        ///     Gets a json response deserialized
         /// </summary>
         /// <param name="url">Url</param>
         /// <param name="options">Serialization options to use when serializing</param>

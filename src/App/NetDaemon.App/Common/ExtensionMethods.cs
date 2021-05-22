@@ -25,7 +25,7 @@ namespace NetDaemon.Common
             {
                 foreach (var (attribute, value) in attributeNameValuePair)
                 {
-                    if (value is not null)
+                    if (value != null)
                     {
                         // We only add non-null values since the FluentExpandoObject will 
                         // return null on missing anyway

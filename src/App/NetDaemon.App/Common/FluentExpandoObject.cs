@@ -6,7 +6,6 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
-using JoySoftware.HomeAssistant.Helpers.Json;
 using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Common
@@ -267,7 +266,7 @@ namespace NetDaemon.Common
         /// </summary>
         public override string ToString()
         {
-            return string.Join(", ", _dict.Select(pair => pair.Key + " = " + pair.Value ?? "(null)").ToArray());
+            return string.Join(", ", _dict.Select(pair => pair.Key + " = " + pair.Value).ToArray());
         }
 
         private void UpdateDictionary(string name, object? value)

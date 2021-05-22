@@ -76,7 +76,7 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <summary>
-        ///     Implements IObservable ReactivState
+        ///     Implements IObservable reactive state
         /// </summary>
         /// <param name="observer">Observer</param>
         public IDisposable Subscribe(IObserver<(EntityState, EntityState)> observer)

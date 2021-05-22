@@ -26,6 +26,7 @@ namespace NetDaemon.Common
         ///     Next event being scheduled
         /// </summary>
         [JsonPropertyName("has_error")]
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public bool? HasError { get; set; }
 
         /// <summary>

@@ -1,7 +1,7 @@
 ﻿namespace NetDaemon.Common.Reactive
 {
     /// <summary>
-    ///     Represent an event from eventstream
+    ///     Represent an event from event stream
     /// </summary>
     public class RxEvent
     {

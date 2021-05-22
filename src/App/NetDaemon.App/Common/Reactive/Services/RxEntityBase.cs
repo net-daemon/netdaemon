@@ -18,32 +18,32 @@ namespace NetDaemon.Common.Reactive.Services
         /// <summary>
         /// Gets the entity state
         /// </summary>
-        public EntityState? EntityState => DaemonRxApp?.State(EntityId);
+        public EntityState? EntityState => DaemonRxApp.State(EntityId);
 
         /// <summary>
         /// Gets the Area to which an entity is assigned
         /// </summary>
-        public string? Area => DaemonRxApp?.State(EntityId)?.Area;
+        public string? Area => DaemonRxApp.State(EntityId)?.Area;
 
         /// <summary>
         /// Gets the entity attribute
         /// </summary>
-        public dynamic? Attribute => DaemonRxApp?.State(EntityId)?.Attribute;
+        public dynamic? Attribute => DaemonRxApp.State(EntityId)?.Attribute;
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> that indicates the last time the entity's state changed
         /// </summary>
-        public DateTime? LastChanged => DaemonRxApp?.State(EntityId)?.LastChanged;
+        public DateTime? LastChanged => DaemonRxApp.State(EntityId)?.LastChanged;
 
         /// <summary>
         ///  Gets a <see cref="DateTime"/> that indicates the last time the entity's state updated
         /// </summary>
-        public DateTime? LastUpdated => DaemonRxApp?.State(EntityId)?.LastUpdated;
+        public DateTime? LastUpdated => DaemonRxApp.State(EntityId)?.LastUpdated;
 
         /// <summary>
         /// Gets the entity's state
         /// </summary>
-        public dynamic? State => DaemonRxApp?.State(EntityId)?.State;
+        public dynamic? State => DaemonRxApp.State(EntityId)?.State;
 
         /// <summary>
         /// Representing an AlarmControlPanel entity.

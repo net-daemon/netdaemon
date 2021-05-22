@@ -50,7 +50,7 @@ namespace NetDaemon.Common.Reactive
         public IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
 
         /// <inheritdoc/>
-        public IObservable<(EntityState Old, EntityState New)> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
+        public IObservable<(EntityState Old, EntityState New)> StateChanges => StateAllChanges.Where(e => e.New.State != e.Old.State);
 
         /// <summary>
         ///     Returns the observables states implementation of AppDaemonRxApps
@@ -87,7 +87,7 @@ namespace NetDaemon.Common.Reactive
         /// <summary>
         ///     Implements the async dispose pattern
         /// </summary>
-        public async override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             lock (_cancelTimers)
             {
@@ -98,7 +98,7 @@ namespace NetDaemon.Common.Reactive
 
             LogDebug("RxApp {app} is being Disposes", Id!);
             // To end timers
-            _cancelTimers?.Cancel();
+            _cancelTimers.Cancel();
 
             if (_eventObservables is not null)
                 _eventObservables!.Clear();
@@ -106,7 +106,7 @@ namespace NetDaemon.Common.Reactive
             if (_stateObservables is not null)
                 _stateObservables!.Clear();
 
-            _cancelTimers?.Dispose();
+            _cancelTimers.Dispose();
 
             await base.DisposeAsync().ConfigureAwait(false);
             LogDebug("RxApp {app} is Disposed", Id!);
@@ -144,7 +144,7 @@ namespace NetDaemon.Common.Reactive
         public IRxEntityBase Entity(string entityId)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
-            return new RxEntity(this, new string[] { entityId });
+            return new RxEntity(this, new[] { entityId });
         }
 
         /// <inheritdoc/>
@@ -183,7 +183,7 @@ namespace NetDaemon.Common.Reactive
         /// <inheritdoc/>
         public IDisposable RunEvery(TimeSpan timespan, Action action)
         {
-            return CreateObservableIntervall(timespan, action);
+            return CreateObservableInterval(timespan, action);
         }
 
         /// <inheritdoc/>
@@ -293,7 +293,7 @@ namespace NetDaemon.Common.Reactive
         }
 
         /// <inheritdoc/>
-        public async override Task StartUpAsync(INetDaemon daemon)
+        public override async Task StartUpAsync(INetDaemon daemon)
         {
             await base.StartUpAsync(daemon).ConfigureAwait(false);
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
@@ -307,12 +307,12 @@ namespace NetDaemon.Common.Reactive
         public EntityState? State(string entityId) => Daemon?.GetState(entityId);
 
         /// <summary>
-        ///     Creates an observable intervall
+        ///     Creates an observable interval
         /// </summary>
-        /// <param name="timespan">Time span for intervall</param>
+        /// <param name="timespan">Time span for interval</param>
         /// <param name="action">The action to call</param>
         [SuppressMessage("Microsoft.Design", "CA1031")]
-        internal virtual IDisposable CreateObservableIntervall(TimeSpan timespan, Action action)
+        internal virtual IDisposable CreateObservableInterval(TimeSpan timespan, Action action)
         {
             var result = new DisposableTimerResult(_cancelTimers.Token);
             RuntimeInfo.NextScheduledEvent = DateTime.Now + timespan;
@@ -337,10 +337,10 @@ namespace NetDaemon.Common.Reactive
                         }
                         catch (Exception e)
                         {
-                            LogError(e, "Error, ObservableIntervall APP: {app}", Id ?? "unknown");
+                            LogError(e, "Error, ObservableInterval APP: {app}", Id ?? "unknown");
                         }
                     },
-                    ex => LogTrace(ex, "Exiting ObservableIntervall for app {app}, {trigger}:{span}", Id!, timespan)
+                    ex => LogTrace(ex, "Exiting ObservableInterval for app {app}, {trigger}:{span}", Id!, timespan)
                     , result.Token);
 
             return result;
@@ -350,8 +350,8 @@ namespace NetDaemon.Common.Reactive
         ///     Creates a observable timer that are tracked for errors
         /// </summary>
         /// <param name="timeOfDayToTrigger">When to start the timer</param>
-        /// <param name="interval">The intervall</param>
-        /// <param name="action">Action to call each intervall</param>
+        /// <param name="interval">The interval</param>
+        /// <param name="action">Action to call each interval</param>
         [SuppressMessage("Microsoft.Design", "CA1031")]
 
         internal virtual IDisposable CreateObservableTimer(DateTime timeOfDayToTrigger, TimeSpan interval, Action action)

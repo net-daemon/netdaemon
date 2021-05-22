@@ -59,9 +59,9 @@ namespace NetDaemon.Common
         /// </summary>
         /// <param name="entityId">Entity unique id</param>
         /// <param name="state">The state that being set, only primitives are supported</param>
-        /// <param name="attributes">Attributes, use anonomous types and lowercase letters</param>
+        /// <param name="attributes">Attributes, use anonymous types and lowercase letters</param>
         /// <param name="waitForResponse">If true, waits for object to set and returns the new EntityState else returns null</param>
-        /// <returns>Returns entitystate if waitForResponse is true</returns>
+        /// <returns>Returns entity state if waitForResponse is true</returns>
         EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false);
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace NetDaemon.Common
     /// </summary>
     [SuppressMessage("", "CA1716")]
     public interface INetDaemonAppBase :
-        INetDaemonInitialableApp, INetDaemonAppLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
+        INetDaemonInitiableApp, INetDaemonAppLogging, IAsyncDisposable, IEquatable<INetDaemonAppBase>
     {
         /// <summary>
         ///     The dependencies that needs to be initialized before this app
@@ -397,7 +397,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Apps that can be initialized
     /// </summary>
-    public interface INetDaemonInitialableApp
+    public interface INetDaemonInitiableApp
     {
         /// <summary>
         /// Init the application sync, is called by the NetDaemon after startup

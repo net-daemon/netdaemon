@@ -13,9 +13,11 @@
         ///     Home Assistant port
         /// </summary>
         public short Port { get; set; } = 8123;
+
         /// <summary>
         ///     Connect using ssl
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public bool Ssl { get; set; }
         /// <summary>
         ///     Token to authorize

@@ -28,7 +28,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             app.IsEnabled = true;
 
             // ACT
-            using var disposable = app.CreateObservableIntervall(TimeSpan.FromMilliseconds(10), () => throw new Exception("hello!"));
+            using var disposable = app.CreateObservableInterval(TimeSpan.FromMilliseconds(10), () => throw new Exception("hello!"));
 
             await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
@@ -47,7 +47,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var called = false;
 
             // ACT
-            using var disposable = app.CreateObservableIntervall(TimeSpan.FromMilliseconds(10), () => called = true);
+            using var disposable = app.CreateObservableInterval(TimeSpan.FromMilliseconds(10), () => called = true);
 
             await Task.Delay(150).ConfigureAwait(false);
             // ASSERT
@@ -193,7 +193,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultMockedRxApp.Object.RunEvery(TimeSpan.FromSeconds(5), () => Console.WriteLine("Test"));
 
             // ASSERT
-            DefaultMockedRxApp.Verify(n => n.CreateObservableIntervall(TimeSpan.FromSeconds(5), It.IsAny<Action>()), Times.Once());
+            DefaultMockedRxApp.Verify(n => n.CreateObservableInterval(TimeSpan.FromSeconds(5), It.IsAny<Action>()), Times.Once());
         }
         [Fact]
         [SuppressMessage("", "CA2201")]

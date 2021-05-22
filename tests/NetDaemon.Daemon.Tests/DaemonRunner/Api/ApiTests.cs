@@ -84,7 +84,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             _defaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
             _defaultMockedRxApp.Object.Id = "app_rx_mock_id";
             _defaultMockedRxApp.Object.IsEnabled = true;
-            _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
+            _defaultMockedRxApp.Setup(n => n.CreateObservableInterval(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
             _defaultDaemonHost.InternalRunningAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
             _defaultDaemonHost.InternalAllAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
         }
