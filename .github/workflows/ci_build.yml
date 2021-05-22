@@ -39,6 +39,7 @@ jobs:
 
     analyze:
         name: 🔍 Analyze sources (CI)
+        environment: CI - analyze environment
         runs-on: ubuntu-latest
         steps:
             - name: 📤 Checkout the repository 
