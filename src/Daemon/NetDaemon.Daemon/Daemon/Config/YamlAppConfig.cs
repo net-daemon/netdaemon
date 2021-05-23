@@ -113,78 +113,96 @@ namespace NetDaemon.Daemon.Config
         [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
         private object? InstanceProperty(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
         {
-            if (node.NodeType == YamlNodeType.Scalar)
+            switch (node.NodeType)
             {
-                var scalarNode = (YamlScalarNode) node;
-                ReplaceSecretIfExists(scalarNode);
-                return ((YamlScalarNode) node).ToObject(instanceType, deamonApp);
-            }
-            else if (node.NodeType == YamlNodeType.Sequence)
-            {
-                if (instanceType.IsGenericType && instanceType?.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                case YamlNodeType.Scalar:
                 {
-                    Type listType = instanceType?.GetGenericArguments()[0] ??
-                                    throw new NetDaemonNullReferenceException(
-                                        $"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
-
-                    IList list = listType.CreateListOfPropertyType() ??
-                                 throw new NetDaemonNullReferenceException(
-                                     "Failed to create listtype, please check {prop.Name} of Class {app.GetType().Name}");
-
-                    foreach (YamlNode item in ((YamlSequenceNode) node).Children)
-                    {
-                        var instance = InstanceProperty(deamonApp, null, listType, item) ??
-                                       throw new NotSupportedException(
-                                           $"The class {parent?.GetType().Name} has wrong type in items");
-
-                        list.Add(instance);
-                    }
+                    var scalarNode = (YamlScalarNode) node;
+                    ReplaceSecretIfExists(scalarNode);
+                    return ((YamlScalarNode) node).ToObject(instanceType, deamonApp);
+                }
+                case YamlNodeType.Sequence when !instanceType.IsGenericType ||
+                                                instanceType?.GetGenericTypeDefinition() != typeof(IEnumerable<>):
+                    return null;
+                case YamlNodeType.Sequence:
+                {
+                    var list = CreateSequenceInstance(deamonApp, parent, instanceType, node);
 
                     return list;
                 }
-            }
-            else if (node.NodeType == YamlNodeType.Mapping)
-            {
-                var instance = Activator.CreateInstance(instanceType);
-
-                foreach (KeyValuePair<YamlNode, YamlNode> entry in ((YamlMappingNode) node).Children)
+                case YamlNodeType.Mapping:
                 {
-                    string? scalarPropertyName = ((YamlScalarNode) entry.Key).Value;
-                    // Just continue to next configuration if null or class declaration
-                    if (scalarPropertyName == null) continue;
+                    var instance = CreateMappingInstance(deamonApp, instanceType, node);
 
-                    var childProp = instanceType.GetYamlProperty(scalarPropertyName) ??
-                                    throw new MissingMemberException(
-                                        $"{scalarPropertyName} is missing from the type {instanceType}");
+                    return instance;
+                }
+                default:
+                    return null;
+            }
+        }
 
-                    var valueType = entry.Value.NodeType;
-                    object? result = null;
+        private object? CreateMappingInstance(INetDaemonAppBase deamonApp, Type instanceType, YamlNode node)
+        {
+            var instance = Activator.CreateInstance(instanceType);
 
-                    switch (valueType)
-                    {
-                        case YamlNodeType.Sequence:
-                            result = InstanceProperty(deamonApp, instance, childProp.PropertyType,
-                                (YamlSequenceNode) entry.Value);
+            foreach (KeyValuePair<YamlNode, YamlNode> entry in ((YamlMappingNode) node).Children)
+            {
+                var scalarPropertyName = ((YamlScalarNode) entry.Key).Value;
+                // Just continue to next configuration if null or class declaration
+                if (scalarPropertyName == null) continue;
 
-                            break;
+                var childProp = instanceType.GetYamlProperty(scalarPropertyName) ??
+                                throw new MissingMemberException(
+                                    $"{scalarPropertyName} is missing from the type {instanceType}");
 
-                        case YamlNodeType.Scalar:
-                            result = InstanceProperty(deamonApp, instance, childProp.PropertyType,
-                                (YamlScalarNode) entry.Value);
-                            break;
+                var valueType = entry.Value.NodeType;
+                object? result = null;
 
-                        case YamlNodeType.Mapping:
-                            // Maps are not currently supported (var map = (YamlMappingNode)entry.Value;)
-                            break;
-                    }
+                switch (valueType)
+                {
+                    case YamlNodeType.Sequence:
+                        result = InstanceProperty(deamonApp, instance, childProp.PropertyType,
+                            (YamlSequenceNode) entry.Value);
 
-                    childProp.SetValue(instance, result);
+                        break;
+
+                    case YamlNodeType.Scalar:
+                        result = InstanceProperty(deamonApp, instance, childProp.PropertyType,
+                            (YamlScalarNode) entry.Value);
+                        break;
+
+                    case YamlNodeType.Mapping:
+                        // Maps are not currently supported (var map = (YamlMappingNode)entry.Value;)
+                        break;
                 }
 
-                return instance;
+                childProp.SetValue(instance, result);
             }
 
-            return null;
+            return instance;
+        }
+
+        [SuppressMessage("", "CA1508")]
+        private IList CreateSequenceInstance(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
+        {
+            Type listType = instanceType?.GetGenericArguments()[0] ??
+                            throw new NetDaemonNullReferenceException(
+                                $"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
+
+            IList list = listType.CreateListOfPropertyType() ??
+                         throw new NetDaemonNullReferenceException(
+                             "Failed to create list type, please check {prop.Name} of Class {app.GetType().Name}");
+
+            foreach (YamlNode item in ((YamlSequenceNode) node).Children)
+            {
+                var instance = InstanceProperty(deamonApp, null, listType, item) ??
+                               throw new NotSupportedException(
+                                   $"The class {parent?.GetType().Name} has wrong type in items");
+
+                list.Add(instance);
+            }
+
+            return list;
         }
 
         private void ReplaceSecretIfExists(YamlScalarNode scalarNode)
@@ -202,12 +220,7 @@ namespace NetDaemon.Daemon.Config
         private static string? GetTypeNameFromClassConfig(YamlMappingNode appNode)
         {
             KeyValuePair<YamlNode, YamlNode> classChild = appNode.Children.FirstOrDefault(n =>
-                ((YamlScalarNode) n.Key)?.Value?.ToLowerInvariant() == "class");
-
-            if (classChild.Key == null || classChild.Value == null)
-            {
-                return null;
-            }
+                ((YamlScalarNode) n.Key).Value?.ToLowerInvariant() == "class");
 
             if (classChild.Value.NodeType != YamlNodeType.Scalar)
             {

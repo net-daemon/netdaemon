@@ -17,43 +17,34 @@ namespace NetDaemon.Common
         ///     Converts a valuepair to dynamic object
         /// </summary>
         /// <param name="attributeNameValuePair"></param>
+        [SuppressMessage("", "CA1062")]
         public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
         {
             // Convert the tuple name/value pair to tuple that can be serialized dynamically
             var attributes = new FluentExpandoObject(true, true);
-            if (attributeNameValuePair is not null)
+            foreach (var (attribute, value) in attributeNameValuePair)
             {
-                foreach (var (attribute, value) in attributeNameValuePair)
-                {
-                    if (value is not null)
-                    {
-                        // We only add non-null values since the FluentExpandoObject will 
-                        // return null on missing anyway
-                        attributes.Add(attribute, value);
-                    }
-                }
+                // We only add non-null values since the FluentExpandoObject will 
+                // return null on missing anyway
+                attributes.Add(attribute, value);
             }
 
-            return (dynamic)attributes;
+            return attributes;
         }
 
         /// <summary>
         ///     Converts a anoumous type to expando object
         /// </summary>
         /// <param name="obj"></param>
-        public static ExpandoObject? ToExpandoObject(this object obj)
+        [SuppressMessage("", "CA1062")]
+        public static ExpandoObject ToExpandoObject(this object obj)
         {
-            // Null-check
-
             IDictionary<string, object?> expando = new ExpandoObject();
 
-            if (obj is not null)
+            foreach (PropertyDescriptor? property in TypeDescriptor.GetProperties(obj.GetType()))
             {
-                foreach (PropertyDescriptor? property in TypeDescriptor.GetProperties(obj.GetType()))
-                {
-                    if (property is not null)
-                        expando.Add(property.Name, property.GetValue(obj));
-                }
+                if (property is not null)
+                    expando.Add(property.Name, property.GetValue(obj));
             }
 
             return (ExpandoObject)expando;
@@ -71,7 +62,7 @@ namespace NetDaemon.Common
             };
         }
 
-        internal static object? ParseDataType(string? state)
+        private static object? ParseDataType(string? state)
         {
             if (long.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out long intValue))
                 return intValue;
@@ -90,11 +81,9 @@ namespace NetDaemon.Common
         /// </summary>
         /// <param name="str">The unicode string to convert</param>
         [SuppressMessage(category: "Microsoft.Globalization", checkId: "CA1308")]
+        [SuppressMessage("", "CA1062")]
         public static string ToSafeHomeAssistantEntityId(this string str)
         {
-            if (str is null)
-                return string.Empty;
-
             string normalizedString = str.Normalize(NormalizationForm.FormD);
             StringBuilder stringBuilder = new(str.Length);
 

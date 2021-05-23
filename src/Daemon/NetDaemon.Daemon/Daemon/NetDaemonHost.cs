@@ -27,10 +27,10 @@ namespace NetDaemon.Daemon
 {
     public class NetDaemonHost : INetDaemonHost, IAsyncDisposable
     {
-        private static readonly ConcurrentBag<Func<ExternalEventBase, Task>> concurrentBag = new();
+        private static readonly ConcurrentBag<Func<ExternalEventBase, Task>> _concurrentBag = new();
 
         internal readonly ConcurrentBag<Func<ExternalEventBase, Task>> _externalEventCallSubscribers =
-            concurrentBag;
+            _concurrentBag;
 
         internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
             new();
@@ -73,7 +73,7 @@ namespace NetDaemon.Daemon
         private readonly List<Task> _eventHandlerTasks = new();
 
         private IHassClient? _hassClient;
-        private readonly IHassClientFactory _hassClientFactory;
+
         private readonly IHttpHandler? _httpHandler;
 
         private readonly IDataRepository? _repository;
@@ -92,6 +92,10 @@ namespace NetDaemon.Daemon
 
         internal bool HasNetDaemonIntegration;
 
+        // This is non null if this is running in a add-on
+        private readonly string? _addOnToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
+        private readonly IHassClientFactory _hassClientFactory;
+        internal bool IsAddOn => _addOnToken != null;
         public IServiceProvider? ServiceProvider { get; }
 
         /// <summary>
@@ -123,7 +127,7 @@ namespace NetDaemon.Daemon
             _hassClient = _hassClientFactory.New() ??
                           throw new NetDaemonNullReferenceException(
                               $"Failed to create instance of {nameof(_hassClient)}");
-            StateManager = new EntityStateManager(_hassClient, this, _cancelToken);
+            StateManager = new EntityStateManager(this);
         }
 
         public bool IsConnected { get; private set; }
@@ -147,7 +151,8 @@ namespace NetDaemon.Daemon
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
 
-        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => 
+        [SuppressMessage("", "CA1721")]
+        public IEnumerable<EntityState> State =>
             StateManager.States.Select(s => s.MapWithArea(GetAreaForEntityId(s.EntityId)));
 
         // For testing
@@ -161,12 +166,12 @@ namespace NetDaemon.Daemon
         });
 
         public IDictionary<string, object> DataCache { get; } = new Dictionary<string, object>();
+        internal CancellationToken CancelToken => _cancelToken;
+        internal IHassClient? Client => _hassClient;
 
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-            _cancelToken.ThrowIfCancellationRequested();
-
             return await _hassClient.GetServices().ConfigureAwait(false);
         }
 
@@ -174,7 +179,7 @@ namespace NetDaemon.Daemon
         public void TriggerWebhook(string id, object? data, bool waitForResponse = false)
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-            _cancelToken.ThrowIfCancellationRequested();
+
             if (!waitForResponse)
             {
                 if (!_webhookTriggerMessageChannel.Writer.TryWrite((id, data)))
@@ -196,8 +201,6 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public void CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
         {
-            _cancelToken.ThrowIfCancellationRequested();
-
             if (!waitForResponse)
             {
                 if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
@@ -214,7 +217,6 @@ namespace NetDaemon.Daemon
             bool waitForResponse = false)
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-            _cancelToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -254,8 +256,6 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public INetDaemonAppBase? GetApp(string appInstanceId)
         {
-            _cancelToken.ThrowIfCancellationRequested();
-
             return InternalRunningAppInstances.ContainsKey(appInstanceId)
                 ? InternalRunningAppInstances[appInstanceId]
                 : null;
@@ -263,7 +263,6 @@ namespace NetDaemon.Daemon
 
         public async Task<T?> GetDataAsync<T>(string id) where T : class
         {
-            _cancelToken.ThrowIfCancellationRequested();
             _ = _repository ??
                 throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
 
@@ -280,7 +279,8 @@ namespace NetDaemon.Daemon
             return data;
         }
 
-        public EntityState? GetState(string entityId) => StateManager.GetState(entityId)?.MapWithArea(GetAreaForEntityId(entityId));
+        public EntityState? GetState(string entityId) =>
+            StateManager.GetState(entityId)?.MapWithArea(GetAreaForEntityId(entityId));
 
         /// <inheritdoc/>
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
@@ -299,7 +299,7 @@ namespace NetDaemon.Daemon
         {
             _ = service ??
                 throw new NetDaemonArgumentNullException(nameof(service));
-            _cancelToken.ThrowIfCancellationRequested();
+
             _daemonServiceCallFunctions.Add(("netdaemon", service.ToLowerInvariant(), action));
         }
 
@@ -334,35 +334,21 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
+            // If the host is reconnected the hass client will be null so lets instance new one
+            _hassClient = _hassClientFactory.New() ??
+                          throw new NetDaemonNullReferenceException(
+                              $"Failed to create instance of {nameof(_hassClient)}");
             // Create combine cancellation token
-            _cancelTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(_cancelDaemon.Token, cancellationToken);
-            _cancelToken = _cancelTokenSource.Token;
+            InitCancellationTokens(cancellationToken);
 
-            _cancelToken.ThrowIfCancellationRequested();
-
-            string? hassioToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
-
-            if (_hassClient == null)
-            {
-                throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
-            }
-
+            var runningTasks = new List<Task>();
             try
             {
-                bool connectResult;
-
-                if (hassioToken != null)
-                {
-                    // We are running as hassio add-on
-                    connectResult = await _hassClient.ConnectAsync(new Uri("ws://supervisor/core/websocket"),
-                            hassioToken, false)
-                        .ConfigureAwait(false);
-                }
-                else
-                {
-                    connectResult = await _hassClient.ConnectAsync(host, port, ssl, token, false).ConfigureAwait(false);
-                }
+                var connectResult = _addOnToken != null
+                    ? await _hassClient.ConnectAsync(new Uri(_supervisorWebsocketUri),
+                            _addOnToken, false)
+                        .ConfigureAwait(false)
+                    : await _hassClient.ConnectAsync(host, port, ssl, token, false).ConfigureAwait(false);
 
                 if (!connectResult)
                 {
@@ -379,10 +365,10 @@ namespace NetDaemon.Daemon
                     return;
                 }
 
-                Task handleTextToSpeechMessagesTask = HandleTextToSpeechMessages(cancellationToken);
-                Task handleAsyncServiceCalls = HandleAsyncServiceCalls(cancellationToken);
-                Task handleAsyncWebhookTriggers = HandleAsyncWebhookTriggers(cancellationToken);
-                Task handleAsyncSetState = HandleAsyncSetState(cancellationToken);
+                runningTasks.Add(HandleTextToSpeechMessages());
+                runningTasks.Add(HandleAsyncServiceCalls());
+                runningTasks.Add(HandleAsyncWebhookTriggers());
+                runningTasks.Add(HandleAsyncSetState());
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -393,33 +379,13 @@ namespace NetDaemon.Daemon
                 IsConnected = true;
 
                 Logger.LogInformation(
-                    hassioToken != null
+                    IsAddOn
                         ? "Successfully connected to Home Assistant Core in Home Assistant Add-on"
                         : "Successfully connected to Home Assistant Core on host {host}:{port}", host, port);
 
-                while (!cancellationToken.IsCancellationRequested)
+                while (!_cancelToken.IsCancellationRequested)
                 {
-                    HassEvent changedEvent = await _hassClient.ReadEventAsync(cancellationToken).ConfigureAwait(false);
-                    if (changedEvent != null)
-                    {
-                        if (changedEvent.Data is HassServiceEventData hseData && hseData.Domain == "homeassistant" &&
-                            (hseData.Service == "stop" || hseData.Service == "restart"))
-                        {
-                            // The user stopped HA so just stop processing messages
-                            Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
-                                hseData.Service == "stop" ? "stopping" : "restarting");
-                            return;
-                        }
-
-                        // Remove all completed Tasks
-                        _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
-                        _eventHandlerTasks.Add(HandleNewEvent(changedEvent, cancellationToken));
-                    }
-                    else
-                    {
-                        // Will only happen when doing unit tests
-                        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
-                    }
+                    if (!await ReadEvent().ConfigureAwait(false)) break;
                 }
             }
             catch (OperationCanceledException)
@@ -436,12 +402,66 @@ namespace NetDaemon.Daemon
                 // Set cancel token to avoid background processes
                 // to access disconnected Home Assistant
                 IsConnected = false;
-                _cancelTokenSource.Cancel();
+                _cancelTokenSource?.Cancel();
+                try
+                {
+                    using var waitTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    await Task.WhenAny(Task.WhenAll(runningTasks), waitTokenSource.Token.AsTask())
+                        .ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogTrace(e, "Failed to cancel the running tasks");
+                }
             }
         }
 
+        private const string _supervisorWebsocketUri = "ws://supervisor/core/websocket";
+
+        /// <summary>
+        ///     Reads next event from home assistant and handles it async
+        /// </summary>
+        /// <param name="cancellationToken">Token to cancel current operation</param>
+        /// <returns>true if read operation is success</returns>
+        /// <exception cref="NetDaemonNullReferenceException"></exception>
+        private async Task<bool> ReadEvent()
+        {
+            _ = _hassClient ?? throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
+
+            HassEvent changedEvent = await _hassClient.ReadEventAsync(_cancelToken).ConfigureAwait(false);
+            if (changedEvent == null)
+            {
+                // Will only happen when doing unit tests
+                await Task.Delay(1, _cancelToken).ConfigureAwait(false);
+            }
+            else
+            {
+                if (changedEvent.Data is HassServiceEventData hseData && hseData.Domain == "homeassistant" &&
+                    (hseData.Service == "stop" || hseData.Service == "restart"))
+                {
+                    // The user stopped HA so just stop processing messages
+                    Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
+                        hseData.Service == "stop" ? "stopping" : "restarting");
+                    return false;
+                }
+
+                _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
+                _eventHandlerTasks.Add(HandleNewEvent(changedEvent));
+            }
+
+            return true;
+        }
+
+        private void InitCancellationTokens(CancellationToken cancellationToken)
+        {
+            _cancelTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(_cancelDaemon.Token, cancellationToken);
+            _cancelToken = _cancelTokenSource.Token;
+            _cancelToken.ThrowIfCancellationRequested();
+        }
+
         [SuppressMessage("", "IDE1006")]
-        private record NetDaemonInfo(string version);
+        private record NetDaemonInfo(string Version);
 
         [SuppressMessage("", "CA1031")]
         internal async Task ConnectToHAIntegration()
@@ -467,8 +487,6 @@ namespace NetDaemon.Daemon
 
         public Task SaveDataAsync<T>(string id, T data)
         {
-            _cancelToken.ThrowIfCancellationRequested();
-
             _ = _repository ??
                 throw new NetDaemonNullReferenceException($"{nameof(_repository)} can not be null!");
 
@@ -483,7 +501,7 @@ namespace NetDaemon.Daemon
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-            _cancelToken.ThrowIfCancellationRequested();
+
             if (!IsConnected)
                 return false;
 
@@ -502,8 +520,6 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public async Task SetDaemonStateAsync(int numberOfLoadedApps, int numberOfRunningApps)
         {
-            _cancelToken.ThrowIfCancellationRequested();
-
             await SetStateAndWaitForResponseAsync(
                     "sensor.netdaemon_status",
                     "Connected", // State will always be connected, otherwise state could not be set.
@@ -519,8 +535,6 @@ namespace NetDaemon.Daemon
         public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null,
             bool waitForResponse = false)
         {
-            _cancelToken.ThrowIfCancellationRequested();
-
             if (!waitForResponse)
             {
                 if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
@@ -529,7 +543,7 @@ namespace NetDaemon.Daemon
             }
             else
             {
-                return  SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
+                return SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
             }
         }
 
@@ -540,7 +554,8 @@ namespace NetDaemon.Daemon
             _ = state ?? throw new ArgumentNullException(nameof(state));
 
             var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes,
-                waitForResponse).ConfigureAwait(false);
+                    waitForResponse)
+                .ConfigureAwait(false);
             return hassState?.MapWithArea(GetAreaForEntityId(entityId));
         }
 
@@ -550,8 +565,6 @@ namespace NetDaemon.Daemon
 
         public void Speak(string entityId, string message)
         {
-            _cancelToken.ThrowIfCancellationRequested();
-
             _ttsMessageChannel.Writer.TryWrite((entityId, message));
         }
 
@@ -701,7 +714,6 @@ namespace NetDaemon.Daemon
 
         internal async Task RefreshInternalStatesAndSetArea()
         {
-            _cancelToken.ThrowIfCancellationRequested();
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
@@ -756,9 +768,8 @@ namespace NetDaemon.Daemon
         }
 
         [SuppressMessage("", "CA1031")]
-        protected virtual async Task HandleNewEvent(HassEvent hassEvent, CancellationToken token)
+        protected virtual async Task HandleNewEvent(HassEvent hassEvent)
         {
-            _cancelToken.ThrowIfCancellationRequested();
             _ = hassEvent ??
                 throw new NetDaemonArgumentNullException(nameof(hassEvent));
             try
@@ -766,17 +777,17 @@ namespace NetDaemon.Daemon
                 switch (hassEvent.EventType)
                 {
                     case "state_changed":
-                        HandleStateChangeEvent(hassEvent, token);
+                        HandleStateChangeEvent(hassEvent);
                         break;
                     case "call_service":
-                        HandleCallServiceEvent(hassEvent, token);
+                        HandleCallServiceEvent(hassEvent);
                         break;
                     case "device_registry_updated":
                     case "area_registry_updated":
                         await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
                         break;
                     default:
-                        HandleCustomEvent(hassEvent, token);
+                        HandleCustomEvent(hassEvent);
                         break;
                 }
             }
@@ -787,7 +798,7 @@ namespace NetDaemon.Daemon
         }
 
         [SuppressMessage("", "CA1031")]
-        private void HandleStateChangeEvent(HassEvent hassEvent, CancellationToken token)
+        private void HandleStateChangeEvent(HassEvent hassEvent)
         {
             var stateData = (HassStateChangedEventData?) hassEvent.Data;
 
@@ -843,13 +854,13 @@ namespace NetDaemon.Daemon
                             netDaemonRxApp.LogError(e,
                                 $"Fail to OnNext on state change observer. {newState.EntityId}:{newState?.State}({oldState?.State})");
                         }
-                    }, token));
+                    }, _cancelToken));
                 }
             }
         }
 
         [SuppressMessage("", "CA1031")]
-        private void HandleCallServiceEvent(HassEvent hassEvent, CancellationToken token)
+        private void HandleCallServiceEvent(HassEvent hassEvent)
         {
             _ = EventChangeObservers ??
                 throw new NetDaemonNullReferenceException(nameof(EventChangeObservers));
@@ -898,7 +909,7 @@ namespace NetDaemon.Daemon
 
                         Logger.LogError(e, "Fail to OnNext on event observer (service_call)");
                     }
-                }, token));
+                }, _cancelToken));
             }
 
             foreach (var (domain, service, func) in _daemonServiceCallFunctions)
@@ -912,7 +923,7 @@ namespace NetDaemon.Daemon
         }
 
         [SuppressMessage("", "CA1031")]
-        private void HandleCustomEvent(HassEvent hassEvent, CancellationToken token)
+        private void HandleCustomEvent(HassEvent hassEvent)
         {
             _ = EventChangeObservers ??
                 throw new NetDaemonNullReferenceException(nameof(EventChangeObservers));
@@ -940,7 +951,7 @@ namespace NetDaemon.Daemon
                         observer.OnError(e);
                         Logger.LogError(e, "Fail to OnNext on event observer (event)");
                     }
-                }, token));
+                }, _cancelToken));
             }
         }
 
@@ -1005,20 +1016,19 @@ namespace NetDaemon.Daemon
         //       all kinds of types instead of different queues
 
         [SuppressMessage("", "CA1031")]
-        private async Task HandleAsyncServiceCalls(CancellationToken cancellationToken)
+        private async Task HandleAsyncServiceCalls()
         {
-            _cancelToken.ThrowIfCancellationRequested();
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             bool hasLoggedError = false;
 
             //_serviceCallMessageQueue
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancelToken.IsCancellationRequested)
             {
                 try
                 {
                     (string domain, string service, dynamic? data)
-                        = await _serviceCallMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                        = await _serviceCallMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
 
                     await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false);
 
@@ -1027,31 +1037,31 @@ namespace NetDaemon.Daemon
                 catch (OperationCanceledException)
                 {
                     // Ignore we are leaving
+                    break;
                 }
                 catch (Exception e)
                 {
                     if (!hasLoggedError)
                         Logger.LogDebug(e, "Failure sending call service");
                     hasLoggedError = true;
-                    await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
+                    await Task.Delay(100, _cancelToken).ConfigureAwait(false); // Do a delay to avoid loop
                 }
             }
         }
 
         [SuppressMessage("", "CA1031")]
-        private async Task HandleAsyncWebhookTriggers(CancellationToken cancellationToken)
+        private async Task HandleAsyncWebhookTriggers()
         {
-            _cancelToken.ThrowIfCancellationRequested();
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             bool hasLoggedError = false;
 
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancelToken.IsCancellationRequested)
             {
                 try
                 {
                     (string id, object? data)
-                        = await _webhookTriggerMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                        = await _webhookTriggerMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
 
                     await _hassClient.TriggerWebhook(id, data).ConfigureAwait(false);
 
@@ -1060,30 +1070,30 @@ namespace NetDaemon.Daemon
                 catch (OperationCanceledException)
                 {
                     // Ignore we are leaving
+                    break;
                 }
                 catch (Exception e)
                 {
                     if (!hasLoggedError)
                         Logger.LogDebug(e, "Failure sending trigger webhook");
                     hasLoggedError = true;
-                    await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
+                    await Task.Delay(100, _cancelToken).ConfigureAwait(false); // Do a delay to avoid loop
                 }
             }
         }
 
         [SuppressMessage("", "CA1031")]
-        private async Task HandleAsyncSetState(CancellationToken cancellationToken)
+        private async Task HandleAsyncSetState()
         {
-            _cancelToken.ThrowIfCancellationRequested();
             bool hasLoggedError = false;
 
             //_serviceCallMessageQueue
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancelToken.IsCancellationRequested)
             {
                 try
                 {
                     (string entityId, dynamic state, dynamic? attributes)
-                        = await _setStateMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                        = await _setStateMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
 
                     await SetStateAndWaitForResponseAsync(entityId, state, attributes, false).ConfigureAwait(false);
 
@@ -1092,35 +1102,35 @@ namespace NetDaemon.Daemon
                 catch (OperationCanceledException)
                 {
                     // Ignore we are leaving
+                    break;
                 }
                 catch (Exception e)
                 {
                     if (!hasLoggedError)
                         Logger.LogDebug(e, "Failure setting state");
                     hasLoggedError = true;
-                    await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Do a delay to avoid loop
+                    await Task.Delay(100, _cancelToken).ConfigureAwait(false); // Do a delay to avoid loop
                 }
             }
         }
 
         [SuppressMessage("", "CA1031")]
-        private async Task HandleTextToSpeechMessages(CancellationToken cancellationToken)
+        private async Task HandleTextToSpeechMessages()
         {
-            _cancelToken.ThrowIfCancellationRequested();
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                while (!_cancelToken.IsCancellationRequested)
                 {
                     (string entityId, string message) =
-                        await _ttsMessageChannel.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                        await _ttsMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
 
                     dynamic attributes = new ExpandoObject();
                     attributes.entity_id = entityId;
                     attributes.message = message;
                     await _hassClient.CallService("tts", "google_cloud_say", attributes, true).ConfigureAwait(false);
-                    await Task.Delay(InternalDelayTimeForTts, cancellationToken)
+                    await Task.Delay(InternalDelayTimeForTts, _cancelToken)
                         .ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
 
                     EntityState? currentPlayState = GetState(entityId);
@@ -1132,7 +1142,7 @@ namespace NetDaemon.Daemon
 
                         if (delayInMilliSeconds > 0)
                         {
-                            await Task.Delay(delayInMilliSeconds, cancellationToken)
+                            await Task.Delay(delayInMilliSeconds, _cancelToken)
                                 .ConfigureAwait(false); // Wait remainder of text message
                         }
                     }

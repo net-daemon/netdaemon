@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Reactive.Services;
 using YamlDotNet.RepresentationModel;
 
@@ -20,7 +18,7 @@ namespace NetDaemon.Daemon.Config
         public static IList? CreateListOfPropertyType(this Type listType)
         {
             Type gen = typeof(List<>).MakeGenericType(listType!);
-            object? list = Activator.CreateInstance(gen);
+            var list = Activator.CreateInstance(gen);
 
             return list as IList;
         }
@@ -45,7 +43,7 @@ namespace NetDaemon.Daemon.Config
             _ = node ??
                 throw new NetDaemonArgumentNullException(nameof(node));
 
-            Type? underlyingNullableType = Nullable.GetUnderlyingType(valueType);
+            var underlyingNullableType = Nullable.GetUnderlyingType(valueType);
 
             if (underlyingNullableType != null)
             {
@@ -60,7 +58,7 @@ namespace NetDaemon.Daemon.Config
 
                 case "Int32":
                     if (int.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out int i32Value))
+                        CultureInfo.InvariantCulture, out var i32Value))
                     {
                         return i32Value;
                     }
@@ -69,7 +67,7 @@ namespace NetDaemon.Daemon.Config
 
                 case "Int64":
                     if (long.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out long i64Value))
+                        CultureInfo.InvariantCulture, out var i64Value))
                     {
                         return i64Value;
                     }
@@ -78,7 +76,7 @@ namespace NetDaemon.Daemon.Config
 
                 case "Decimal":
                     if (decimal.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out decimal decimalValue))
+                        CultureInfo.InvariantCulture, out var decimalValue))
                     {
                         return decimalValue;
                     }
@@ -87,7 +85,7 @@ namespace NetDaemon.Daemon.Config
 
                 case "Single":
                     if (float.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out float floatValue))
+                        CultureInfo.InvariantCulture, out var floatValue))
                     {
                         return floatValue;
                     }
@@ -96,7 +94,7 @@ namespace NetDaemon.Daemon.Config
 
                 case "Double":
                     if (double.TryParse(node.Value, NumberStyles.Number,
-                        CultureInfo.InvariantCulture, out double doubleValue))
+                        CultureInfo.InvariantCulture, out var doubleValue))
                     {
                         return doubleValue;
                     }
@@ -104,18 +102,13 @@ namespace NetDaemon.Daemon.Config
                     break;
 
                 case "Boolean":
-                    if (bool.TryParse(node.Value, out bool boolValue))
-                    {
-                        return boolValue;
-                    }
+                    if (bool.TryParse(node.Value, out var boolValue)) return boolValue;
 
                     break;
             }
 
             if (deamonApp != null && valueType.IsAssignableTo(typeof(RxEntityBase)))
-            {
                 return Activator.CreateInstance(valueType, deamonApp, new[] {node.Value});
-            }
             return null;
         }
     }
