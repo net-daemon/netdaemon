@@ -46,7 +46,7 @@ namespace NetDaemon.Common
         /// <param name="id">webhook id</param>
         /// <param name="data">data being sent</param>
         /// <param name="waitForResponse">If we should wait for the service to get response from Home Assistant or send/forget scenario</param>
-        void TriggerWebhook(string id, object? data, bool waitForResponse);
+        void TriggerWebhook(string id, object? data, bool waitForResponse = false);
 
         /// <summary>
         ///     Get application instance by application instance id

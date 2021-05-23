@@ -80,10 +80,10 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Cleans up test
         /// </summary>
-        public Task DisposeAsync()
+        public async Task DisposeAsync()
         {
+            await DefaultDaemonHost.DisposeAsync().ConfigureAwait(false);
             _cancelSource?.Dispose();
-            return Task.CompletedTask;
         }
 
         /// <summary>
