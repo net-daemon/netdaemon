@@ -95,7 +95,7 @@ namespace NetDaemon.Daemon
         // This is non null if this is running in a add-on
         private readonly string? _addOnToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
         private readonly IHassClientFactory _hassClientFactory;
-        public bool IsAddOn => _addOnToken != null;
+        internal bool IsAddOn => _addOnToken != null;
         public IServiceProvider? ServiceProvider { get; }
 
         /// <summary>
@@ -220,7 +220,6 @@ namespace NetDaemon.Daemon
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
-
             try
             {
                 await _hassClient.CallService(domain, service, data, waitForResponse).ConfigureAwait(false);
@@ -337,15 +336,10 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public async Task Run(string host, short port, bool ssl, string token, CancellationToken cancellationToken)
         {
-            if (_hassClient is null)
-            {
-                // If the host is reconnected the hass client will be null so lets instance new one
-                _hassClient = _hassClientFactory.New() ??
-                              throw new NetDaemonNullReferenceException(
-                                  $"Failed to create instance of {nameof(_hassClient)}");
-            }
-            //    _ = _hassClient ?? throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
-
+            // If the host is reconnected the hass client will be null so lets instance new one
+            _hassClient = _hassClientFactory.New() ??
+                          throw new NetDaemonNullReferenceException(
+                              $"Failed to create instance of {nameof(_hassClient)}");
             // Create combine cancellation token
             InitCancellationTokens(cancellationToken);
 
@@ -353,7 +347,7 @@ namespace NetDaemon.Daemon
             try
             {
                 var connectResult = _addOnToken != null
-                    ? await _hassClient.ConnectAsync(new Uri("ws://supervisor/core/websocket"),
+                    ? await _hassClient.ConnectAsync(new Uri(_supervisorWebsocketUri),
                             _addOnToken, false)
                         .ConfigureAwait(false)
                     : await _hassClient.ConnectAsync(host, port, ssl, token, false).ConfigureAwait(false);
@@ -410,21 +404,21 @@ namespace NetDaemon.Daemon
                 // Set cancel token to avoid background processes
                 // to access disconnected Home Assistant
                 IsConnected = false;
-                if (_cancelTokenSource != null)
+                _cancelTokenSource?.Cancel();
+                try
                 {
-                    _cancelTokenSource.Cancel();
-                    try
-                    {
-                        Task.WaitAll(runningTasks.ToArray(), TimeSpan.FromSeconds(1));
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogTrace(e, "Failed to cancel the running tasks");
-                        // We do not handle error here 
-                    }
+                    using var waitTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    await Task.WhenAny(Task.WhenAll(runningTasks), waitTokenSource.Token.AsTask())
+                        .ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogTrace(e, "Failed to cancel the running tasks");
                 }
             }
         }
+
+        private const string _supervisorWebsocketUri = "ws://supervisor/core/websocket";
 
         /// <summary>
         ///     Reads next event from home assistant and handles it async
@@ -437,7 +431,12 @@ namespace NetDaemon.Daemon
             _ = _hassClient ?? throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
 
             HassEvent changedEvent = await _hassClient.ReadEventAsync(_cancelToken).ConfigureAwait(false);
-            if (changedEvent != null)
+            if (changedEvent == null)
+            {
+                // Will only happen when doing unit tests
+                await Task.Delay(1, _cancelToken).ConfigureAwait(false);
+            }
+            else
             {
                 if (changedEvent.Data is HassServiceEventData hseData && hseData.Domain == "homeassistant" &&
                     (hseData.Service == "stop" || hseData.Service == "restart"))
@@ -448,14 +447,8 @@ namespace NetDaemon.Daemon
                     return false;
                 }
 
-                // Remove all completed Tasks
                 _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
                 _eventHandlerTasks.Add(HandleNewEvent(changedEvent));
-            }
-            else
-            {
-                // Will only happen when doing unit tests
-                await Task.Delay(1, _cancelToken).ConfigureAwait(false);
             }
 
             return true;
