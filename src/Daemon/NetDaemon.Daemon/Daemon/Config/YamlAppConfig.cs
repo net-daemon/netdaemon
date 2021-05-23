@@ -126,13 +126,13 @@ namespace NetDaemon.Daemon.Config
                     return null;
                 case YamlNodeType.Sequence:
                 {
-                    var list = InstanceSequence(deamonApp, parent, instanceType, node);
+                    var list = CreateSequenceInstance(deamonApp, parent, instanceType, node);
 
                     return list;
                 }
                 case YamlNodeType.Mapping:
                 {
-                    var instance = InstanceMapping(deamonApp, instanceType, node);
+                    var instance = CreateMappingInstance(deamonApp, instanceType, node);
 
                     return instance;
                 }
@@ -141,7 +141,7 @@ namespace NetDaemon.Daemon.Config
             }
         }
 
-        private object? InstanceMapping(INetDaemonAppBase deamonApp, Type instanceType, YamlNode node)
+        private object? CreateMappingInstance(INetDaemonAppBase deamonApp, Type instanceType, YamlNode node)
         {
             var instance = Activator.CreateInstance(instanceType);
 
@@ -183,7 +183,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")]
-        private IList InstanceSequence(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
+        private IList CreateSequenceInstance(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
         {
             Type listType = instanceType?.GetGenericArguments()[0] ??
                             throw new NetDaemonNullReferenceException(

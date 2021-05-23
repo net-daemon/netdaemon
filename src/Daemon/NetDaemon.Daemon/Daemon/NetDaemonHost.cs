@@ -172,8 +172,6 @@ namespace NetDaemon.Daemon
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-
-
             return await _hassClient.GetServices().ConfigureAwait(false);
         }
 
