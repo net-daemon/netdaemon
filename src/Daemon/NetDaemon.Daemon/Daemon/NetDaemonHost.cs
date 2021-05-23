@@ -166,8 +166,8 @@ namespace NetDaemon.Daemon
         });
 
         public IDictionary<string, object> DataCache { get; } = new Dictionary<string, object>();
-        public CancellationToken CancelToken => _cancelToken;
-        public IHassClient? Client => _hassClient;
+        internal CancellationToken CancelToken => _cancelToken;
+        internal IHassClient? Client => _hassClient;
 
         public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
         {
