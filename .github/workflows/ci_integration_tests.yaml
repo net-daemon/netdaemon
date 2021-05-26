@@ -45,6 +45,6 @@ jobs:
           HOMEASSISTANT__HOST=$(python3 ./scripts/parse_host.py ${{ steps.homeassistant.outputs.url }})
           HOMEASSISTANT__TOKEN=${{ steps.homeassistant.outputs.token }}
           HOMEASSISTANT__PORT=$(python3 ./scripts/parse_port.py ${{ steps.homeassistant.outputs.url }})
-          NETDAEMON__APPSOURCE=${{github.workspace}}/tests/Integration
+          NETDAEMON__APPSOURCE=${{github.workspace}}/tests
           cd ./tests/Integration/TestClient/bin/Debug/net5.0
           ./TestClient
