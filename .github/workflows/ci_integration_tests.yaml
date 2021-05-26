@@ -43,7 +43,7 @@ jobs:
         uses: ludeeus/setup-homeassistant@main
         with:
           tag: ${{ matrix.channel }}
-          config-dir: ${{github.workspace}}/tests/Integration/HA/config
+          config-dir: ./tests/Integration/HA/config
 #
 
       - name: 🧪 Run integration tests
