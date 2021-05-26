@@ -1,5 +1,4 @@
-name: Test with Home Assistant
-
+name: Integration tests with Home Assistant
 on:
   pull_request:
     branches:
@@ -9,6 +8,8 @@ on:
     branches:
       - main
       - dev
+  schedule:
+      - cron: '0 2 * * *' # run at 2 AM UTC
 
 jobs:
   test_with_home_assistant:
@@ -27,9 +28,6 @@ jobs:
         with:
           dotnet-version: '5.0.x' # SDK Version
 
-      - name: 🔍 Enable problem matchers
-        run: echo "::add-matcher::.github/matchers/dotnet.json"
-
       - name: 🛠️ Build code
         run: dotnet build
 
@@ -46,7 +44,6 @@ jobs:
         with:
           tag: ${{ matrix.channel }}
           config-dir: ./tests/Integration/HA/config
-#
 
       - name: 🧪 Run integration tests
         env:
