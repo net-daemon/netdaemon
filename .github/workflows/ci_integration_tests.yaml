@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         channel: [stable, beta, dev]
-        with_interation: [yes, no]
+        with_integration: [yes, no]
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout the repository
