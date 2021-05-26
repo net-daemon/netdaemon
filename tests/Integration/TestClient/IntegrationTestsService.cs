@@ -52,7 +52,7 @@ namespace TestClient
             daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Anne Therese"}, true); //.ConfigureAwait(false);
             await Task.Delay(300, stoppingToken).ConfigureAwait(false);
 
-            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Paulus"))
+            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Anne Therese"))
                 return;
 
             Environment.ExitCode = 0;
@@ -74,18 +74,7 @@ namespace TestClient
             var IsEqual = actual?.Equals(expected) ?? false;
             if (!IsEqual)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("ERROR: ");
-                Console.ResetColor();
-                Console.Write("EXPECTED: ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write($"{expected}");
-                Console.ResetColor();
-                Console.Write(", GOT: ");
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write($"{actual}");
-                Console.ResetColor();
-                Console.WriteLine("");
+                Console.WriteLine($"EXPECTED: {expected}, GOT: {actual}");
             }
             return Fail(IsEqual);
         }
