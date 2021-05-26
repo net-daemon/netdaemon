@@ -18,7 +18,6 @@ namespace TestClient
         private static readonly CancellationTokenSource _globalCancellationSource = MainProgram.GlobalCancellationSource;
         private readonly IServiceProvider _serviceProvider;
 
-        private int _testCaseNumber;
 
         public IntegrationTestsService(
             IServiceProvider serviceProvider)
@@ -29,63 +28,33 @@ namespace TestClient
         {
             Environment.ExitCode = -1;
 
-            var daemonHost  = _serviceProvider.GetService<NetDaemonHost>();
+            var daemonHost = _serviceProvider.GetService<NetDaemonHost>();
             if (daemonHost is null)
             {
                 Debug.Fail("Faild to get daemonHost!");
                 _globalCancellationSource.Cancel();
-               return;
+                return;
             }
-            while (!stoppingToken.IsCancellationRequested && !daemonHost.IsConnected) {
+            while (!stoppingToken.IsCancellationRequested && !daemonHost.IsConnected)
+            {
                 await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
             }
-            // Test case #1 call service and check correct state 
-            LogTestCase();
-            daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Paulus"}); //.ConfigureAwait(false);
-            await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
 
-            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Paulus"))
-                return;
-            // End test case #1
+            var testCaseManager = new TestCases(daemonHost);
+            if (!testCaseManager.RunTestCases())
+            {
+                Environment.ExitCode = 0;
+            }
+            _globalCancellationSource.Cancel();
 
-            LogTestCase();
-            daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Anne Therese"}, true); //.ConfigureAwait(false);
-            await Task.Delay(300, stoppingToken).ConfigureAwait(false);
 
-            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Anne Therese"))
-                return;
+            // Test case #1 call service and check correct state by wait for result 
+
+            // End test case #2
 
             Environment.ExitCode = 0;
             _globalCancellationSource.Cancel();
         }
 
-        private void LogTestCase()
-        {
-            if (_testCaseNumber > 0)
-            {
-                Console.WriteLine("");
-                Console.WriteLine("");
-            }
-            _testCaseNumber++;
-            Console.WriteLine($"-------- Test case: {_testCaseNumber} --------");
-        }
-        private static bool FailEq<T>(T actual, T expected)
-        {
-            var IsEqual = actual?.Equals(expected) ?? false;
-            if (!IsEqual)
-            {
-                Console.WriteLine($"EXPECTED: {expected}, GOT: {actual}");
-            }
-            return Fail(IsEqual);
-        }
-        private static bool Fail(bool check)
-        {
-            if (!check)
-            {
-                Environment.ExitCode = -1;
-                _globalCancellationSource.Cancel();
-            }
-            return !check;
-        }
     }
 }
