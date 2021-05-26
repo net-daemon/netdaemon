@@ -54,9 +54,9 @@ namespace TestClient
 
         private void LogTestCase()
         {
-            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine("------------------------------------------------");
             _testCaseNumber++;
-            Console.WriteLine($"---- Test case: {_testCaseNumber}");
+            Console.WriteLine($"-------- Test case: {_testCaseNumber} --------");
         }
         private static bool FailEq<T>(T actual, T expected)
         {
