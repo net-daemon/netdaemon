@@ -32,20 +32,26 @@ jobs:
       - name: 🛠️ Build code
         run: dotnet build
 
+      - name: 🔽 Download HA integration
+        run: |
+          git clone --depth 1 https://github.com/net-daemon/integration.git /tmp/integration
+          mv /tmp/integration/custom_components ${{github.workspace}}/tests/Integration/HA/config/
+          mv /tmp/integration/.github/test_configuration/.storage ${{github.workspace}}/tests/Integration/HA/config/
+
       - name: 👷 Setup Home Assistant
         id: homeassistant
         uses: ludeeus/setup-homeassistant@main
         with:
           tag: ${{ matrix.channel }}
-          config-dir: ./tests/Integration/HA/config
+          config-dir: ${{github.workspace}}/tests/Integration/HA/config
 #
 
-      - name: Run integration tests
+      - name: 🧪 Run integration tests
         env:
           HOMEASSISTANT__TOKEN: ${{ steps.homeassistant.outputs.token }}
           HOMEASSISTANT__HOST: "127.0.0.1"
           NETDAEMON__APPSOURCE: ${{github.workspace}}/tests/Integration/apps
           NETDAEMON__ADMIN: false
         run: |
-          cd ./tests/Integration/TestClient/bin/Debug/net5.0
+          cd ${{github.workspace}}/tests/Integration/TestClient/bin/Debug/net5.0
           ./TestClient
