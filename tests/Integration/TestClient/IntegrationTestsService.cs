@@ -5,16 +5,20 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Daemon;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TestClient
 {
     /// <summary>
     ///     IntegrationTestService tests integration on a real instance of HA and NetDaemon
     /// </summary>
+    [SuppressMessage("", "CA1303")]
     public class IntegrationTestsService : BackgroundService
     {
         private static readonly CancellationTokenSource _globalCancellationSource = MainProgram.GlobalCancellationSource;
         private readonly IServiceProvider _serviceProvider;
+
+        private int _testCaseNumber;
 
         public IntegrationTestsService(
             IServiceProvider serviceProvider)
@@ -36,7 +40,7 @@ namespace TestClient
                 await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
             }
             // Test case #1 call service and check correct state 
-
+            LogTestCase();
             daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Paulus"}); //.ConfigureAwait(false);
             await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
 
@@ -48,6 +52,12 @@ namespace TestClient
             _globalCancellationSource.Cancel();
         }
 
+        private void LogTestCase()
+        {
+            Console.WriteLine("-----------------------------------------");
+            _testCaseNumber++;
+            Console.WriteLine($"---- Test case: {_testCaseNumber}");
+        }
         private static bool FailEq<T>(T actual, T expected)
         {
             var IsEqual = actual?.Equals(expected) ?? false;
