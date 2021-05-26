@@ -43,7 +43,7 @@ jobs:
       - name: Run integration tests
         run: |
           HOMEASSISTANT__HOST=$(python3 ./scripts/parse_host.py ${{ steps.homeassistant.outputs.url }})
-          HOMEASSISTANT__TOKEN=${{ steps.homeassistant.outputs.token }}
+          HOMEASSISTANT__TOKEN=$(echo ${{ steps.homeassistant.outputs.token }})
           HOMEASSISTANT__PORT=$(python3 ./scripts/parse_port.py ${{ steps.homeassistant.outputs.url }})
           NETDAEMON__APPSOURCE=${{github.workspace}}/tests/Integration
           echo "HOMEASSISTANT__HOST=$HOMEASSISTANT__HOST"
