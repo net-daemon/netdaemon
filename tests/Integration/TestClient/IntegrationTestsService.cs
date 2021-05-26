@@ -52,7 +52,7 @@ namespace TestClient
             daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Anne Therese"}, true); //.ConfigureAwait(false);
             await Task.Delay(300, stoppingToken).ConfigureAwait(false);
 
-            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Paulus"))
+            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Anne Therese"))
                 return;
 
             Environment.ExitCode = 0;
@@ -61,7 +61,11 @@ namespace TestClient
 
         private void LogTestCase()
         {
-            Console.WriteLine("------------------------------------------------");
+            if (_testCaseNumber > 0)
+            {
+                Console.WriteLine("");
+                Console.WriteLine("");
+            }
             _testCaseNumber++;
             Console.WriteLine($"-------- Test case: {_testCaseNumber} --------");
         }
@@ -70,7 +74,17 @@ namespace TestClient
             var IsEqual = actual?.Equals(expected) ?? false;
             if (!IsEqual)
             {
-                Console.WriteLine($"EXPECTED: {expected}, GOT: {actual}");
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.Write("ERROR: ");
+                Console.ResetColor();
+                Console.Write("EXPECTED: ");
+                Console.BackgroundColor = ConsoleColor.Green;
+                Console.Write($"{expected}");
+                Console.ResetColor();
+                Console.Write(", GOT: ");
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                Console.Write($"{actual}");
+                Console.ResetColor();
             }
             return Fail(IsEqual);
         }
