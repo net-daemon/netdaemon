@@ -41,16 +41,10 @@ namespace TestClient
             }
 
             var testCaseManager = new TestCases(daemonHost, stoppingToken);
-            if (!await testCaseManager.RunTestCases().ConfigureAwait(false))
-            {
-                Environment.ExitCode = -1;
-            }
-            else
+            if (await testCaseManager.RunTestCases().ConfigureAwait(false))
             {
                 Environment.ExitCode = 0;
             }
-            // End test case #2
-
             _globalCancellationSource.Cancel();
         }
     }

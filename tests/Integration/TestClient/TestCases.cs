@@ -64,7 +64,7 @@ namespace TestClient
             {
                 Console.WriteLine($"EXPECTED: {expected}, GOT: {actual}");
             }
-            return !IsEqual;
+            return IsEqual;
         }
     }
 }
