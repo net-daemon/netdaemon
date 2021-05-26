@@ -18,7 +18,6 @@ namespace TestClient
         private static readonly CancellationTokenSource _globalCancellationSource = MainProgram.GlobalCancellationSource;
         private readonly IServiceProvider _serviceProvider;
 
-
         public IntegrationTestsService(
             IServiceProvider serviceProvider)
         {
