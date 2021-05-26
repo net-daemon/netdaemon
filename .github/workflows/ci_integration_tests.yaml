@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         channel: [stable, beta, dev]
+        with_interation: ["yes", "no"]
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout the repository
@@ -33,6 +34,7 @@ jobs:
         run: dotnet build
 
       - name: 🔽 Download HA integration
+        if: matrix.with_integration == 'yes'
         run: |
           git clone --depth 1 https://github.com/net-daemon/integration.git /tmp/integration
           mv /tmp/integration/custom_components ${{github.workspace}}/tests/Integration/HA/config/
