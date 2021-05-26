@@ -40,21 +40,18 @@ namespace TestClient
                 await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
             }
 
-            var testCaseManager = new TestCases(daemonHost);
-            if (!testCaseManager.RunTestCases())
+            var testCaseManager = new TestCases(daemonHost, stoppingToken);
+            if (!await testCaseManager.RunTestCases().ConfigureAwait(false))
+            {
+                Environment.ExitCode = -1;
+            }
+            else
             {
                 Environment.ExitCode = 0;
             }
-            _globalCancellationSource.Cancel();
-
-
-            // Test case #1 call service and check correct state by wait for result 
-
             // End test case #2
 
-            Environment.ExitCode = 0;
             _globalCancellationSource.Cancel();
         }
-
     }
 }
