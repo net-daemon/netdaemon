@@ -141,7 +141,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 EntityId = "media_player.fakeplayer"
             });
 
-            DefaultDaemonHost.InternalDelayTimeForTts = 0; // For testing
+            DefaultDaemonHost.TextToSpeechService.InternalDelayTimeForTts = 0; // For testing
 
             // ACT
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
