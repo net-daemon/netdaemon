@@ -31,7 +31,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         }
 
         [HomeAssistantServiceCall]
-        public async Task Testing(dynamic data)
+        public async Task Testing(dynamic _)
         {
             Log("Wait for a update");
             try

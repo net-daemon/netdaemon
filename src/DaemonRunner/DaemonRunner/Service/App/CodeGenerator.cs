@@ -18,7 +18,7 @@ namespace NetDaemon.Service.App
 {
     public class CodeGenerator : ICodeGenerator
     {
-        private static readonly Dictionary<string, string[]> _skipDomainServices = new Dictionary<string, string[]>()
+        private static readonly Dictionary<string, string[]> _skipDomainServices = new()
         {
             {"lock", new[] {"lock", "unlock", "open"}},
             {"light", new[] {"turn_on", "turn_off", "toggle"}},

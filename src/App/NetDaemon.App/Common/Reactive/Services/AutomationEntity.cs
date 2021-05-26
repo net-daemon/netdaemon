@@ -17,7 +17,6 @@ namespace NetDaemon.Common.Reactive.Services
         public void Trigger(dynamic? data = null)
         {
             CallService("automation", "trigger", data, true);
-
         }
 
         /// <summary>
