@@ -44,7 +44,7 @@ jobs:
         env:
           HOMEASSISTANT__TOKEN: ${{ steps.homeassistant.outputs.token }}
           HOMEASSISTANT__HOST: "127.0.0.1"
-          NETDAEMON__APPSOURCE: ${{github.workspace}}/tests/Integration
+          NETDAEMON__APPSOURCE: ${{github.workspace}}/tests/Integration/apps
           NETDAEMON__ADMIN: false
         run: |
           cd ./tests/Integration/TestClient/bin/Debug/net5.0
