@@ -23,6 +23,7 @@ namespace TestClient
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            Environment.ExitCode = 0;
             var daemonHost  = _serviceProvider.GetService<NetDaemonHost>();
             if (daemonHost is null)
             {
