@@ -48,6 +48,13 @@ namespace TestClient
                 return;
             // End test case #1
 
+            LogTestCase();
+            daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Anne Therese"}, true); //.ConfigureAwait(false);
+            await Task.Delay(300, stoppingToken).ConfigureAwait(false);
+
+            if (FailEq<string>(daemonHost.GetState("input_select.who_cooks")?.State, "Paulus"))
+                return;
+
             Environment.ExitCode = 0;
             _globalCancellationSource.Cancel();
         }
