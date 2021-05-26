@@ -13,6 +13,17 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "run integration tests",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run ",
+        "${workspaceFolder}/NetDaemon.sln",
+        "/property:GenerateFullPaths=true"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "test coverage",
       "command": "dotnet",
       "type": "process",

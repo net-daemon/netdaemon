@@ -1,0 +1,49 @@
+name: Test with Home Assistant
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test_with_home_assistant:
+    name: Integration tests with Home Assistant
+    strategy:
+      matrix:
+        channel: [stable, beta, dev]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: 🥅 Install .Net 5
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x' # SDK Version
+
+      - name: 🔍 Enable problem matchers
+        run: echo "::add-matcher::.github/matchers/dotnet.json"
+
+      - name: 🛠️ Build code
+        run: dotnet build
+
+      - name: 👷 Setup Home Assistant
+        id: homeassistant
+        uses: ludeeus/setup-homeassistant@main
+        with:
+          tag: ${{ matrix.channel }}
+          config-dir: ./tests/Integration/HA/config
+#
+
+      - name: Run integration tests
+        run: |
+          HOMEASSISTANT__HOST=$(python3 ./scripts/parse_host.py ${{ steps.homeassistant.outputs.url }})
+          HOMEASSISTANT__TOKEN=${{ steps.homeassistant.outputs.token }}
+          HOMEASSISTANT__PORT=$(python3 ./scripts/parse_port.py ${{ steps.homeassistant.outputs.url }})
+
+          ./tests/Integration/TestClient/bin/Debug/net5.0/TestClient

@@ -267,7 +267,6 @@ namespace NetDaemon.Daemon.Fakes
                     throw;
                 }
             }
-
         }
 
         /// <summary>

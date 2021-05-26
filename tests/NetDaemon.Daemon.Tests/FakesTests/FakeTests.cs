@@ -185,7 +185,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.Verify(n => n.SetState("sensor.any_sensor", "on", expObj));
         }
 
-
         [Fact]
         public void SetStateWithAreaShouldReturnCorrectArea()
         {
