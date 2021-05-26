@@ -74,17 +74,18 @@ namespace TestClient
             var IsEqual = actual?.Equals(expected) ?? false;
             if (!IsEqual)
             {
-                Console.BackgroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write("ERROR: ");
                 Console.ResetColor();
                 Console.Write("EXPECTED: ");
-                Console.BackgroundColor = ConsoleColor.Green;
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"{expected}");
                 Console.ResetColor();
                 Console.Write(", GOT: ");
-                Console.BackgroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write($"{actual}");
                 Console.ResetColor();
+                Console.WriteLine("");
             }
             return Fail(IsEqual);
         }
