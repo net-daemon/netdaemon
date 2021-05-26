@@ -23,7 +23,6 @@ namespace TestClient
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Environment.ExitCode = 0;
             var daemonHost  = _serviceProvider.GetService<NetDaemonHost>();
             if (daemonHost is null)
             {
@@ -38,7 +37,7 @@ namespace TestClient
             System.Console.WriteLine("CONNECTED TO DAEMON");
             daemonHost.CallService("input_select", "select_option", new {entity_id = "input_select.who_cooks", option="Paulus"}); //.ConfigureAwait(false);
             await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
-            Environment.ExitCode = -1;
+            Environment.ExitCode = 0;
             _globalCancellationSource.Cancel();
         }
     }
