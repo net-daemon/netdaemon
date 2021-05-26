@@ -40,6 +40,9 @@ namespace TestClient
                 await Task.Delay(2000, stoppingToken).ConfigureAwait(false);
             }
 
+            // Introduce a small delay so everything is connected and logged
+            await Task.Delay(1000, stoppingToken).ConfigureAwait(false);
+
             var testCaseManager = new TestCases(daemonHost, stoppingToken);
             if (await testCaseManager.RunTestCases().ConfigureAwait(false))
             {
