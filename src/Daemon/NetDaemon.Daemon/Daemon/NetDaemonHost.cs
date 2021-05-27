@@ -36,10 +36,11 @@ namespace NetDaemon.Daemon
         internal readonly ConcurrentDictionary<string, HassArea> _hassAreas = new();
         internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices = new();
         internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities = new();
-        
+
         internal EntityStateManager StateManager { get; }
         internal TextToSpeechService TextToSpeechService { get; }
 
+        internal async Task WaitForTasksAsync() => await Task.WhenAll(_backgroundTasks.Keys).ConfigureAwait(false);
         private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
@@ -115,7 +116,7 @@ namespace NetDaemon.Daemon
 
         public bool IsConnected { get; private set; }
 
-        public IHttpHandler Http => 
+        public IHttpHandler Http =>
             _httpHandler ?? throw new NetDaemonNullReferenceException("HttpHandler can not be null!");
 
         public ILogger Logger { get; }
@@ -1188,18 +1189,22 @@ namespace NetDaemon.Daemon
         private void TrackBackgroundTask(Task task, string? description = null)
         {
             {
+                _backgroundTasks.TryAdd(task, null);
+
                 [SuppressMessage("", "CA1031")]
                 async Task Wrap()
                 {
                     try
                     {
-                        _backgroundTasks.TryAdd(task, null);
                         await task.ConfigureAwait(false);
-                        _backgroundTasks.TryRemove(task, out var _);
                     }
                     catch (Exception e)
                     {
                         Logger.LogError(e, description == null ? null : "Exception in background task: " + description);
+                    }
+                    finally
+                    {
+                        _backgroundTasks.TryRemove(task, out var _);
                     }
                 }
                 // We do not handle task here cause exceptions
