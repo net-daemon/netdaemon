@@ -69,6 +69,7 @@ namespace NetDaemon.Daemon
         private CancellationToken _cancelToken;
 
         private CancellationTokenSource? _cancelTokenSource;
+        private Task? _ttsTask;
 
         internal bool HasNetDaemonIntegration;
 
@@ -329,7 +330,7 @@ namespace NetDaemon.Daemon
                     return;
                 }
 
-                TrackBackgroundTask(TextToSpeechService.ProcessAsync());
+                _ttsTask = TextToSpeechService.ProcessAsync();
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -528,6 +529,8 @@ namespace NetDaemon.Daemon
 
                 await UnloadAllApps().ConfigureAwait(false);
 
+                if (_ttsTask is not null)
+                    await _ttsTask.ConfigureAwait(false);
                 StateManager.Clear();
                 InternalAllAppInstances.Clear();
                 InternalRunningAppInstances.Clear();
@@ -1199,7 +1202,10 @@ namespace NetDaemon.Daemon
                         Logger.LogError(e, description == null ? null : "Exception in background task: " + description);
                     }
                 }
-                Wrap();
+                // We do not handle task here cause exceptions
+                // are handled in the Wrap local functions and
+                // all tasks should be cancelable
+                _ = Wrap();
             }
         }
     }
