@@ -21,12 +21,12 @@ namespace NetDaemon.Infrastructure.Config
                throw new NetDaemonArgumentNullException(nameof(hostingEnvironment));
 
             var loggingConfiguration = GetLoggingConfiguration(hostingEnvironment);
-
             SetMinimumLogLevel(loggingConfiguration.MinimumLevel);
 
             return loggerConfiguration
                 .MinimumLevel.ControlledBy(LevelSwitch)
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .WriteTo.Console(theme: NetDaemonConsoleThemes.GetThemeByType(loggingConfiguration.ConsoleThemeType), applyThemeToRedirectedOutput: true);
         }
