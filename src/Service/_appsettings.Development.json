@@ -1,6 +1,12 @@
 ﻿{
     "Logging": {
-        "MinimumLevel": "Debug",
+        "MinimumLevel": {
+            "Default": "Debug",
+            "Override": {
+              "System.Net.Http.HttpClient": "Warning",
+              "Microsoft": "Warning"
+            }
+        },
         "ConsoleThemeType": "System"
     },
     "HomeAssistant": {
