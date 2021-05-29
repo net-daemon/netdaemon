@@ -40,7 +40,12 @@ namespace NetDaemon.Daemon
         internal EntityStateManager StateManager { get; }
         internal TextToSpeechService TextToSpeechService { get; }
 
-        internal async Task WaitForTasksAsync() => await Task.WhenAll(_backgroundTasks.Keys).ConfigureAwait(false);
+        internal async Task WaitForTasksAsync()
+        {
+            await TextToSpeechService.StopAsync().ConfigureAwait(false);
+            await Task.WhenAll(_backgroundTasks.Keys).ConfigureAwait(false);
+        }
+
         private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
@@ -70,7 +75,6 @@ namespace NetDaemon.Daemon
         private CancellationToken _cancelToken;
 
         private CancellationTokenSource? _cancelTokenSource;
-        private Task? _ttsTask;
 
         internal bool HasNetDaemonIntegration;
 
@@ -331,7 +335,7 @@ namespace NetDaemon.Daemon
                     return;
                 }
 
-                _ttsTask = TextToSpeechService.ProcessAsync();
+                TrackBackgroundTask(TextToSpeechService.ProcessAsync());
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -530,8 +534,6 @@ namespace NetDaemon.Daemon
 
                 await UnloadAllApps().ConfigureAwait(false);
 
-                if (_ttsTask is not null)
-                    await _ttsTask.ConfigureAwait(false);
                 StateManager.Clear();
                 InternalAllAppInstances.Clear();
                 InternalRunningAppInstances.Clear();

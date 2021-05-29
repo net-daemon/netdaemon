@@ -32,6 +32,12 @@ namespace NetDaemon.Daemon
             _ttsMessageChannel.Writer.TryWrite((entityId, message));
         }
 
+        public Task StopAsync()
+        {
+            _ttsMessageChannel.Writer.TryComplete();
+            return _ttsMessageChannel.Reader.Completion;
+        }
+
         [SuppressMessage("", "CA1031")]
         public async Task ProcessAsync()
         {
