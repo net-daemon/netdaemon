@@ -1,0 +1,37 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+switch:
+
+input_select:
+  who_cooks:
+    name: Who cooks today
+    options:
+      - Paulus
+      - Anne Therese
+    initial: Anne Therese
+    icon: mdi:panda
+  living_room_preset:
+    options:
+      - Visitors
+      - Visitors with kids
+      - Home Alone  
+
+template:
+  - trigger:
+      - platform: webhook
+        webhook_id: my-super-secret-id
+    sensor:
+      - name: "NetDaemon webhook temp sensor"
+        state: "{{ trigger.json.temperature }}"
+        unit_of_measurement: °C
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

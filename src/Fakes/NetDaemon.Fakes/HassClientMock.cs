@@ -19,7 +19,7 @@ namespace NetDaemon.Daemon.Fakes
     public class HassClientMock : Mock<IHassClient>
     {
         /// <summary>
-        ///     Default HassClientFactory mock 
+        ///     Default HassClientFactory mock
         /// </summary>
         public HassClientFactoryMock DefaultHassClientFactoryMock { get; }
         /// <summary>
@@ -30,7 +30,6 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Fake devices in HassClient
         /// </summary>
-        /// <returns></returns>
         public HassDevices Devices { get; } = new();
 
         /// <summary>

@@ -11,7 +11,7 @@ using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.NetDaemonApp
 {
-    class TestRxApp : NetDaemonRxApp { }
+    internal class TestRxApp : NetDaemonRxApp { }
 
     public class NetDaemonApptests : IAsyncLifetime, IDisposable
     {
