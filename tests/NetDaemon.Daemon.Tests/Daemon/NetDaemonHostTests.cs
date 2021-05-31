@@ -141,7 +141,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 EntityId = "media_player.fakeplayer"
             });
 
-            DefaultDaemonHost.InternalDelayTimeForTts = 0; // For testing
+            DefaultDaemonHost.TextToSpeechService.InternalDelayTimeForTts = 100; // For testing
 
             // ACT
             DefaultDaemonHost.Speak("media_player.fakeplayer", "Hello test!");
@@ -150,7 +150,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 ("entity_id", "media_player.fakeplayer"),
                 ("message", "Hello test!")
             );
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+
+            await DefaultDaemonHost.WaitForTasksAsync().ConfigureAwait(false);
 
             // ASSERT
             VerifyCallService("tts", "google_cloud_say", expObject, true);
@@ -191,7 +192,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
             VerifyCallService("tts", "google_cloud_say", expectedAttributesExpObject, true, Times.Once());
 
-            await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+            await DefaultDaemonHost.WaitForTasksAsync().ConfigureAwait(false);
             // Called twice
             VerifyCallService("tts", "google_cloud_say", expectedAttributesExpObject, true, Times.Exactly(2));
         }

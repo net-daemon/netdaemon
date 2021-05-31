@@ -39,10 +39,10 @@ namespace NetDaemon.Daemon.Fakes
                 LoggerMock.LoggerFactory,
                 DefaultHttpHandlerMock.Object,
                 DefaultServiceProviderMock.Object
-            )
-            {
-                InternalDelayTimeForTts = 0 // Allow no extra waittime
-            };
+            );
+
+            // Allow no extra wait time
+            DefaultDaemonHost.TextToSpeechService.InternalDelayTimeForTts = 0;
         }
 
         /// <summary>

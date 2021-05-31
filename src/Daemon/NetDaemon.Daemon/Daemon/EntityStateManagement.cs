@@ -32,7 +32,6 @@ namespace NetDaemon.Daemon
 
         public async Task RefreshAsync()
         {
-            _ = _netDaemonHost.Client ?? throw new NetDaemonNullReferenceException("NetDaemon client is null!");
             var hassStates = await _netDaemonHost.Client.GetAllStates(_netDaemonHost.CancelToken).ConfigureAwait(false);
 
             foreach (var state in hassStates)
@@ -48,7 +47,6 @@ namespace NetDaemon.Daemon
         public async Task<HassState?> SetStateAndWaitForResponseAsync(string entityId, object state,
             object? attributes, bool waitForResponse)
         {
-            _ = _netDaemonHost.Client ?? throw new NetDaemonNullReferenceException("NetDaemon client is null!");
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
                 throw new NetDaemonException($"Wrong entity id {entityId} provided");
             try

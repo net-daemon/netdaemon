@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
@@ -8,7 +9,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
@@ -32,45 +32,31 @@ namespace NetDaemon.Daemon
         internal readonly ConcurrentBag<Func<ExternalEventBase, Task>> _externalEventCallSubscribers =
             _concurrentBag;
 
-        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas =
-            new();
-
         // Internal for test
-        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices =
-            new();
-
-        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities =
-            new();
-
-        internal readonly Channel<(string, string, dynamic?)> _serviceCallMessageChannel =
-            Channel.CreateBounded<(string, string, dynamic?)>(200);
-
-        internal readonly Channel<(string, object?)> _webhookTriggerMessageChannel =
-            Channel.CreateBounded<(string, object?)>(200);
-
-        internal readonly Channel<(string, dynamic, dynamic?)> _setStateMessageChannel =
-            Channel.CreateBounded<(string, dynamic, dynamic?)>(200);
-
-        internal readonly Channel<(string, string)> _ttsMessageChannel =
-            Channel.CreateBounded<(string, string)>(200);
-
-        // Used for testing
-        internal int InternalDelayTimeForTts = 2500;
+        internal readonly ConcurrentDictionary<string, HassArea> _hassAreas = new();
+        internal readonly ConcurrentDictionary<string, HassDevice> _hassDevices = new();
+        internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities = new();
 
         internal EntityStateManager StateManager { get; }
+        internal TextToSpeechService TextToSpeechService { get; }
+
+        internal async Task WaitForTasksAsync()
+        {
+            await TextToSpeechService.StopAsync().ConfigureAwait(false);
+            await Task.WhenAll(_backgroundTasks.Keys).ConfigureAwait(false);
+        }
 
         private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
         private readonly CancellationTokenSource _cancelDaemon = new();
 
-        private readonly ConcurrentBag<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions
-            = new();
+        private readonly ConcurrentBag<(string, string, Func<dynamic?, Task>)> _daemonServiceCallFunctions = new();
 
         /// <summary>
         ///     Currently running tasks for handling new events from HomeAssistant
         /// </summary>
-        private readonly List<Task> _eventHandlerTasks = new();
+        private readonly ConcurrentDictionary<Task, object?> _backgroundTasks = new();
 
         private IHassClient? _hassClient;
 
@@ -127,19 +113,15 @@ namespace NetDaemon.Daemon
             _hassClient = _hassClientFactory.New() ??
                           throw new NetDaemonNullReferenceException(
                               $"Failed to create instance of {nameof(_hassClient)}");
+
             StateManager = new EntityStateManager(this);
+            TextToSpeechService = new TextToSpeechService(this);
         }
 
         public bool IsConnected { get; private set; }
 
-        public IHttpHandler Http
-        {
-            get
-            {
-                _ = _httpHandler ?? throw new NetDaemonNullReferenceException("HttpHandler can not be null!");
-                return _httpHandler;
-            }
-        }
+        public IHttpHandler Http =>
+            _httpHandler ?? throw new NetDaemonNullReferenceException("HttpHandler can not be null!");
 
         public ILogger Logger { get; }
 
@@ -167,60 +149,47 @@ namespace NetDaemon.Daemon
 
         public IDictionary<string, object> DataCache { get; } = new Dictionary<string, object>();
         internal CancellationToken CancelToken => _cancelToken;
-        internal IHassClient? Client => _hassClient;
+        internal IHassClient Client => _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
-        public async Task<IEnumerable<HassServiceDomain>> GetAllServices()
-        {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-            return await _hassClient.GetServices().ConfigureAwait(false);
-        }
+        public Task<IEnumerable<HassServiceDomain>> GetAllServices() => Client.GetServices();
 
         [SuppressMessage("", "CA1031")]
         public void TriggerWebhook(string id, object? data, bool waitForResponse = false)
         {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
+            var task = Client.TriggerWebhook(id, data);
 
             if (!waitForResponse)
             {
-                if (!_webhookTriggerMessageChannel.Writer.TryWrite((id, data)))
-                    throw new NetDaemonException("Service call queue full!");
+                TrackBackgroundTask(task, "TriggerWebhook");
             }
             else
             {
-                try
-                {
-                    _hassClient.TriggerWebhook(id, data).Wait(_cancelToken);
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError(e, "Failed call service");
-                }
+                task.Wait(_cancelToken);
             }
         }
 
         [SuppressMessage("", "CA1031")]
-        public void CallService(string domain, string service, dynamic? data = null, bool waitForResponse = false)
+        public void CallService(string domain, string service, object? data = null, bool waitForResponse = false)
         {
+            var task = Client.CallService(domain, service, data!, waitForResponse);
+
             if (!waitForResponse)
             {
-                if (!_serviceCallMessageChannel.Writer.TryWrite((domain, service, data)))
-                    throw new NetDaemonException("Service call queue full!");
+                TrackBackgroundTask(task, $"CallService {domain},{service}");
             }
             else
             {
-                CallServiceAsync(domain, service, (object?) data, true).Wait(_cancelToken);
+                task.Wait(_cancelToken);
             }
         }
 
         [SuppressMessage("", "CA1031")]
-        public async Task CallServiceAsync(string domain, string service, dynamic? data = null,
+        public async Task CallServiceAsync(string domain, string service, object? data = null,
             bool waitForResponse = false)
         {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-
             try
             {
-                await _hassClient.CallService(domain, service, data, waitForResponse).ConfigureAwait(false);
+                await Client.CallService(domain, service, data!, waitForResponse).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -341,7 +310,6 @@ namespace NetDaemon.Daemon
             // Create combine cancellation token
             InitCancellationTokens(cancellationToken);
 
-            var runningTasks = new List<Task>();
             try
             {
                 var connectResult = _addOnToken != null
@@ -365,10 +333,7 @@ namespace NetDaemon.Daemon
                     return;
                 }
 
-                runningTasks.Add(HandleTextToSpeechMessages());
-                runningTasks.Add(HandleAsyncServiceCalls());
-                runningTasks.Add(HandleAsyncWebhookTriggers());
-                runningTasks.Add(HandleAsyncSetState());
+                TrackBackgroundTask(TextToSpeechService.ProcessAsync());
 
                 await RefreshInternalStatesAndSetArea().ConfigureAwait(false);
 
@@ -406,7 +371,7 @@ namespace NetDaemon.Daemon
                 try
                 {
                     using var waitTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    await Task.WhenAny(Task.WhenAll(runningTasks), waitTokenSource.Token.AsTask())
+                    await Task.WhenAny(Task.WhenAll(_backgroundTasks.Keys), waitTokenSource.Token.AsTask())
                         .ConfigureAwait(false);
                 }
                 catch (Exception e)
@@ -426,9 +391,7 @@ namespace NetDaemon.Daemon
         /// <exception cref="NetDaemonNullReferenceException"></exception>
         private async Task<bool> ReadEvent()
         {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException("Failed to instance HassClient!");
-
-            HassEvent changedEvent = await _hassClient.ReadEventAsync(_cancelToken).ConfigureAwait(false);
+            HassEvent changedEvent = await Client.ReadEventAsync(_cancelToken).ConfigureAwait(false);
             if (changedEvent == null)
             {
                 // Will only happen when doing unit tests
@@ -445,8 +408,7 @@ namespace NetDaemon.Daemon
                     return false;
                 }
 
-                _eventHandlerTasks.RemoveAll(x => x.IsCompleted);
-                _eventHandlerTasks.Add(HandleNewEvent(changedEvent));
+                TrackBackgroundTask(HandleNewEvent(changedEvent));
             }
 
             return true;
@@ -466,10 +428,9 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         internal async Task ConnectToHAIntegration()
         {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
             try
             {
-                var x = await _hassClient.GetApiCall<NetDaemonInfo>("netdaemon/info").ConfigureAwait(false);
+                var x = await Client.GetApiCall<NetDaemonInfo>("netdaemon/info").ConfigureAwait(false);
                 if (x is not null)
                 {
                     HasNetDaemonIntegration = true;
@@ -500,21 +461,17 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public async Task<bool> SendEvent(string eventId, dynamic? data = null)
         {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-
-            if (!IsConnected)
-                return false;
+            if (!IsConnected) return false;
 
             try
             {
-                return await _hassClient.SendEvent(eventId, data).ConfigureAwait(false);
+                return await Client.SendEvent(eventId, data).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 Logger.LogDebug(e, "Error sending event!");
+                return false;
             }
-
-            return false;
         }
 
         /// <inheritdoc/>
@@ -532,19 +489,19 @@ namespace NetDaemon.Daemon
                 .ConfigureAwait(false);
         }
 
-        public EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null,
+        public EntityState? SetState(string entityId, object state, object? attributes = null,
             bool waitForResponse = false)
         {
+            var task = SetStateAndWaitForResponseAsync(entityId, state, attributes, true);
+
             if (!waitForResponse)
             {
-                if (!_setStateMessageChannel.Writer.TryWrite((entityId, state, attributes)))
-                    throw new NetDaemonException("Servicecall queue full!");
+                TrackBackgroundTask(task, $"Set state for {entityId}");
                 return null;
             }
-            else
-            {
-                return SetStateAndWaitForResponseAsync(entityId, state, attributes, true).Result;
-            }
+
+            task.Wait(_cancelToken);
+            return task.Result;
         }
 
         public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
@@ -563,10 +520,7 @@ namespace NetDaemon.Daemon
             params (string name, object val)[] attributes)
             => SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
 
-        public void Speak(string entityId, string message)
-        {
-            _ttsMessageChannel.Writer.TryWrite((entityId, message));
-        }
+        public void Speak(string entityId, string message) => TextToSpeechService.Speak(entityId, message);
 
         [SuppressMessage("", "CA1031")]
         public async Task Stop()
@@ -585,7 +539,7 @@ namespace NetDaemon.Daemon
                 _hassEntities.Clear();
                 _daemonServiceCallFunctions.Clear();
                 _externalEventCallSubscribers.Clear();
-                _eventHandlerTasks.Clear();
+                _backgroundTasks.Clear();
 
                 IsConnected = false;
                 if (_hassClient is not null)
@@ -842,7 +796,7 @@ namespace NetDaemon.Daemon
                 // Call the observable with no blocking
                 foreach (var observer in ((StateChangeObservable) netDaemonRxApp.StateChangesObservable).Observers)
                 {
-                    _eventHandlerTasks.Add(Task.Run(() =>
+                    TrackBackgroundTask(Task.Run(() =>
                     {
                         try
                         {
@@ -880,7 +834,7 @@ namespace NetDaemon.Daemon
                     if (domain == serviceCallData.Domain &&
                         service == serviceCallData.Service)
                     {
-                        _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
+                        TrackBackgroundTask(Task.Run(() => func(serviceCallData.Data)));
                     }
                 }
             }
@@ -888,7 +842,7 @@ namespace NetDaemon.Daemon
             // Call the observable with no blocking
             foreach (var observer in EventChangeObservers)
             {
-                _eventHandlerTasks.Add(Task.Run(() =>
+                TrackBackgroundTask(Task.Run(() =>
                 {
                     try
                     {
@@ -917,7 +871,7 @@ namespace NetDaemon.Daemon
                 if (domain == serviceCallData.Domain &&
                     service == serviceCallData.Service)
                 {
-                    _eventHandlerTasks.Add(Task.Run(() => func(serviceCallData.Data)));
+                    TrackBackgroundTask(Task.Run(() => func(serviceCallData.Data)));
                 }
             }
         }
@@ -939,7 +893,7 @@ namespace NetDaemon.Daemon
             // Call the observable with no blocking
             foreach (var observer in EventChangeObservers)
             {
-                _eventHandlerTasks.Add(Task.Run(() =>
+                TrackBackgroundTask(Task.Run(() =>
                 {
                     try
                     {
@@ -1009,152 +963,6 @@ namespace NetDaemon.Daemon
                 L.Reverse();
                 // return L (a topologically sorted order)
                 return L;
-            }
-        }
-
-        // TODO: Refactor the sync to async queue system to allow
-        //       all kinds of types instead of different queues
-
-        [SuppressMessage("", "CA1031")]
-        private async Task HandleAsyncServiceCalls()
-        {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-
-            bool hasLoggedError = false;
-
-            //_serviceCallMessageQueue
-            while (!_cancelToken.IsCancellationRequested)
-            {
-                try
-                {
-                    (string domain, string service, dynamic? data)
-                        = await _serviceCallMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
-
-                    await _hassClient.CallService(domain, service, data, false).ConfigureAwait(false);
-
-                    hasLoggedError = false;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore we are leaving
-                    break;
-                }
-                catch (Exception e)
-                {
-                    if (!hasLoggedError)
-                        Logger.LogDebug(e, "Failure sending call service");
-                    hasLoggedError = true;
-                    await Task.Delay(100, _cancelToken).ConfigureAwait(false); // Do a delay to avoid loop
-                }
-            }
-        }
-
-        [SuppressMessage("", "CA1031")]
-        private async Task HandleAsyncWebhookTriggers()
-        {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-
-            bool hasLoggedError = false;
-
-            while (!_cancelToken.IsCancellationRequested)
-            {
-                try
-                {
-                    (string id, object? data)
-                        = await _webhookTriggerMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
-
-                    await _hassClient.TriggerWebhook(id, data).ConfigureAwait(false);
-
-                    hasLoggedError = false;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore we are leaving
-                    break;
-                }
-                catch (Exception e)
-                {
-                    if (!hasLoggedError)
-                        Logger.LogDebug(e, "Failure sending trigger webhook");
-                    hasLoggedError = true;
-                    await Task.Delay(100, _cancelToken).ConfigureAwait(false); // Do a delay to avoid loop
-                }
-            }
-        }
-
-        [SuppressMessage("", "CA1031")]
-        private async Task HandleAsyncSetState()
-        {
-            bool hasLoggedError = false;
-
-            //_serviceCallMessageQueue
-            while (!_cancelToken.IsCancellationRequested)
-            {
-                try
-                {
-                    (string entityId, dynamic state, dynamic? attributes)
-                        = await _setStateMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
-
-                    await SetStateAndWaitForResponseAsync(entityId, state, attributes, false).ConfigureAwait(false);
-
-                    hasLoggedError = false;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore we are leaving
-                    break;
-                }
-                catch (Exception e)
-                {
-                    if (!hasLoggedError)
-                        Logger.LogDebug(e, "Failure setting state");
-                    hasLoggedError = true;
-                    await Task.Delay(100, _cancelToken).ConfigureAwait(false); // Do a delay to avoid loop
-                }
-            }
-        }
-
-        [SuppressMessage("", "CA1031")]
-        private async Task HandleTextToSpeechMessages()
-        {
-            _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
-
-            try
-            {
-                while (!_cancelToken.IsCancellationRequested)
-                {
-                    (string entityId, string message) =
-                        await _ttsMessageChannel.Reader.ReadAsync(_cancelToken).ConfigureAwait(false);
-
-                    dynamic attributes = new ExpandoObject();
-                    attributes.entity_id = entityId;
-                    attributes.message = message;
-                    await _hassClient.CallService("tts", "google_cloud_say", attributes, true).ConfigureAwait(false);
-                    await Task.Delay(InternalDelayTimeForTts, _cancelToken)
-                        .ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
-
-                    EntityState? currentPlayState = GetState(entityId);
-
-                    if (currentPlayState?.Attribute?.media_duration != null)
-                    {
-                        int delayInMilliSeconds = (int) Math.Round(currentPlayState?.Attribute?.media_duration * 1000) -
-                                                  InternalDelayTimeForTts;
-
-                        if (delayInMilliSeconds > 0)
-                        {
-                            await Task.Delay(delayInMilliSeconds, _cancelToken)
-                                .ConfigureAwait(false); // Wait remainder of text message
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Do nothing it should be normal
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Error reading TTS channel");
             }
         }
 
@@ -1376,5 +1184,31 @@ namespace NetDaemon.Daemon
 
         /// <inheritdoc/>
         public bool HomeAssistantHasNetDaemonIntegration() => HasNetDaemonIntegration;
+
+        private void TrackBackgroundTask(Task task, string? description = null)
+        {
+            _backgroundTasks.TryAdd(task, null);
+
+            [SuppressMessage("", "CA1031")]
+            async Task Wrap()
+            {
+                try
+                {
+                    await task.ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, description == null ? null : "Exception in background task: " + description);
+                }
+                finally
+                {
+                    _backgroundTasks.TryRemove(task, out var _);
+                }
+            }
+            // We do not handle task here cause exceptions
+            // are handled in the Wrap local functions and
+            // all tasks should be cancelable
+            _ = Wrap();
+        }
     }
 }
