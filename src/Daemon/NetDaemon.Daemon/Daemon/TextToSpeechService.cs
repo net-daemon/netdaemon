@@ -68,7 +68,7 @@ namespace NetDaemon.Daemon
                                 .ConfigureAwait(false); // Wait remainder of text message
                         }
                     }
-                    // TODO: Catch within the loop so we can continue processing??
+                    // Maybe we should catch within the loop so we can continue processing??
                 }
             }
             catch (OperationCanceledException)

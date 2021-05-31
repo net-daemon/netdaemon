@@ -194,7 +194,6 @@ namespace NetDaemon.Daemon
             catch (Exception e)
             {
                 Logger.LogError(e, "Failed call service");
-                //TODO: is it correct to swallow here? 
             }
         }
 
