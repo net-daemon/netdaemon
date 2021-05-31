@@ -14,14 +14,14 @@ using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon
 {
-    class TextToSpeechService
+    internal class TextToSpeechService
     {
         internal readonly Channel<(string, string)> _ttsMessageChannel = Channel.CreateBounded<(string, string)>(200);
 
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
 
-        private NetDaemonHost _netDaemonHost;
+        private readonly NetDaemonHost _netDaemonHost;
         public TextToSpeechService(NetDaemonHost netDaemonHost)
         {
             _netDaemonHost = netDaemonHost;

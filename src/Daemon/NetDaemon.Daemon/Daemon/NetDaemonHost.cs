@@ -311,7 +311,6 @@ namespace NetDaemon.Daemon
             // Create combine cancellation token
             InitCancellationTokens(cancellationToken);
 
-            var runningTasks = new List<Task>();
             try
             {
                 var connectResult = _addOnToken != null
@@ -410,7 +409,6 @@ namespace NetDaemon.Daemon
                     return false;
                 }
 
-                //_backgroundTasks.RemoveAll(x => x.IsCompleted);
                 TrackBackgroundTask(HandleNewEvent(changedEvent));
             }
 
@@ -968,7 +966,7 @@ namespace NetDaemon.Daemon
                 return L;
             }
         }
-        
+
         /// <inheritdoc/>
         private async Task LoadAllApps()
         {
@@ -1190,30 +1188,28 @@ namespace NetDaemon.Daemon
 
         private void TrackBackgroundTask(Task task, string? description = null)
         {
-            {
-                _backgroundTasks.TryAdd(task, null);
+            _backgroundTasks.TryAdd(task, null);
 
-                [SuppressMessage("", "CA1031")]
-                async Task Wrap()
+            [SuppressMessage("", "CA1031")]
+            async Task Wrap()
+            {
+                try
                 {
-                    try
-                    {
-                        await task.ConfigureAwait(false);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError(e, description == null ? null : "Exception in background task: " + description);
-                    }
-                    finally
-                    {
-                        _backgroundTasks.TryRemove(task, out var _);
-                    }
+                    await task.ConfigureAwait(false);
                 }
-                // We do not handle task here cause exceptions
-                // are handled in the Wrap local functions and
-                // all tasks should be cancelable
-                _ = Wrap();
+                catch (Exception e)
+                {
+                    Logger.LogError(e, description == null ? null : "Exception in background task: " + description);
+                }
+                finally
+                {
+                    _backgroundTasks.TryRemove(task, out var _);
+                }
             }
+            // We do not handle task here cause exceptions
+            // are handled in the Wrap local functions and
+            // all tasks should be cancelable
+            _ = Wrap();
         }
     }
 }
