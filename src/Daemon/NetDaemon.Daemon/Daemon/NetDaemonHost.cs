@@ -628,7 +628,8 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the integer to double
                             if (oldStateType == typeof(long))
-                                stateData!.OldState!.State = Convert.ToDouble(stateData!.NewState!.State);
+                                stateData!.OldState!.State = Convert.ToDouble(stateData!.OldState!.State);
+
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -788,8 +789,9 @@ namespace NetDaemon.Daemon
             StateManager.Store(stateData!.NewState);
 
             // Make sure we get the area name with the new state
-            var newState = stateData!.NewState!.Map();
-            var oldState = stateData!.OldState!.MapWithArea(GetAreaForEntityId(newState.EntityId));
+            var area = GetAreaForEntityId(stateData!.NewState.EntityId);
+            var newState = stateData!.NewState!.MapWithArea(area);
+            var oldState = stateData!.OldState!.MapWithArea(area);
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {
