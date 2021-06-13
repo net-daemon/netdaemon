@@ -47,6 +47,9 @@
 		"formulahendry.dotnet-test-explorer",
 		"k--kato.docomment",
 		"ryanluker.vscode-coverage-gutters",
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"github.vscode-pull-request-github",
+		"mhutchie.git-graph",
+		"donjayamanne.githistory"
 	]
 }
