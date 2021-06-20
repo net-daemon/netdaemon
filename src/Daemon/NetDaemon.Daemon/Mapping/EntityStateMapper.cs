@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Infrastructure.Extensions;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Daemon;
 
 namespace NetDaemon.Mapping
 {
@@ -21,7 +23,7 @@ namespace NetDaemon.Mapping
         ///     Converts HassState to EntityState
         /// </summary>
         /// <param name="hassState">HassState object to map</param>
-        /// <param name="The Area"></param>
+        /// <param name="area">The Area</param>
         public static EntityState MapWithArea(this HassState hassState, string? area)
         {
             _ = hassState ??
@@ -29,7 +31,7 @@ namespace NetDaemon.Mapping
             var entityState = new EntityState
             {
                 EntityId = hassState.EntityId,
-                State = hassState.State,
+                State = hassState is ExtendedHassState ext ? ext.ObjectState : hassState.State,
                 Area = area,
 
                 LastUpdated = hassState.LastUpdated,

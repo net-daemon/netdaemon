@@ -457,7 +457,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             AddChangeEvent(new()
                 {
                     EntityId = "sensor.temperature",
-                    State = 10.0,
+                    State = "10.0",
                     Attributes = new Dictionary<string, object>()
                     {
                         ["battery_level"] = 18.2
@@ -466,7 +466,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 , new()
                 {
                     EntityId = "sensor.temperature",
-                    State = 10.0,
+                    State = "10.0",
                     Attributes = new Dictionary<string, object>()
                     {
                         ["battery_level"] = 12.0

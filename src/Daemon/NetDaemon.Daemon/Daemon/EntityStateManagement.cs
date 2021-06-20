@@ -43,8 +43,8 @@ namespace NetDaemon.Daemon
         public void Store(HassState newState) => InternalState[newState.EntityId] = newState;
 
         private readonly string[] _supportedDomains = {"binary_sensor", "sensor", "switch"};
-
-        public async Task<HassState?> SetStateAndWaitForResponseAsync(string entityId, object state,
+        
+        public async Task<HassState?> SetStateAndWaitForResponseAsync(string entityId, string? state,
             object? attributes, bool waitForResponse)
         {
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
@@ -61,7 +61,7 @@ namespace NetDaemon.Daemon
                             new
                             {
                                 entity_id = entityId,
-                                state = state.ToString(),
+                                state,
                                 attributes
                             }, waitForResponse)
                         .ConfigureAwait(false);
@@ -72,7 +72,7 @@ namespace NetDaemon.Daemon
                 }
                 else
                 {
-                    result = await _netDaemonHost.Client.SetState(entityId, state.ToString() ?? "", attributes)
+                    result = await _netDaemonHost.Client.SetState(entityId, state ?? "", attributes)
                         .ConfigureAwait(false);
                 }
 
