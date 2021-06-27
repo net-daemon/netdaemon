@@ -172,7 +172,7 @@ namespace NetDaemon.Daemon.Config
                         break;
 
                     case YamlNodeType.Mapping:
-                        // Maps are not currently supported (var map = (YamlMappingNode)entry.Value;)
+                        result = CreateMappingInstance(deamonApp, childProp.PropertyType, entry.Value);
                         break;
                 }
 
