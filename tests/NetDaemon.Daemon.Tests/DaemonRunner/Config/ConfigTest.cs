@@ -274,5 +274,35 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal("command2", instance?.Devices?.First()?.Commands?.ElementAt(1).Name);
             Assert.Equal("some code2", instance?.Devices?.First()?.Commands?.ElementAt(1).Data);
         }
+        
+        [Fact]
+        public void YamlMultilevelObjectShouldReturnCorrectData()
+        {
+            const string? rootData = "lorem ipsum 1";
+            const string? childData = "lorem ipsum 2";
+
+            var yaml = $@"
+            root:
+             data: {rootData}
+             child:
+               child:
+                 data: {childData}";
+
+            var yamlConfig = new YamlAppConfig(
+                    new List<Type>(),
+                    new StringReader(yaml),
+                    new YamlConfig(CreateSettings(ConfigFixturePath)),
+                    ConfigFixturePath
+            );
+
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+
+            var instance = (MultilevelMappingConfig?) yamlConfig.InstanceAndSetPropertyConfig(typeof(MultilevelMappingConfig), root, "id");
+
+            Assert.Equal(rootData, instance!.Root!.Data);
+            Assert.Equal(childData, instance!.Root!.Child!.Child!.Data!);
+        }
     }
 }
