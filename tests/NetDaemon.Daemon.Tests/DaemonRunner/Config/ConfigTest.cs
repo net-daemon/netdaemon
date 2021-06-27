@@ -228,6 +228,22 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), null));
             Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), null));
         }
+        
+        [Fact]
+        public void YamlScalarNodeToObjectUsingEnum()
+        {
+            // ARRANGE
+            const string? yaml = "yaml: Second\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            var scalarValue = (YamlScalarNode) scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal(TestEnum.Second, scalarValue.ToObject(typeof(TestEnum), null));
+        }
 
         [Fact]
         public void YamlAdvancedObjectsShouldReturnCorrectData()
