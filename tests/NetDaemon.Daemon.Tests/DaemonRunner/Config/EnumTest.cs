@@ -1,6 +1,6 @@
 ﻿namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 {
-    public enum TestEnum
+    public enum EnumTest
     {
         First,
         Second

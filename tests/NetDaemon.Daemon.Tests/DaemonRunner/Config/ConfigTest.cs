@@ -242,7 +242,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(TestEnum.Second, scalarValue.ToObject(typeof(TestEnum), null));
+            Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), null));
         }
 
         [Fact]
