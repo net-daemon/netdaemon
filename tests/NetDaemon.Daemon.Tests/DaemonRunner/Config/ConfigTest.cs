@@ -228,6 +228,22 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), null));
             Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), null));
         }
+        
+        [Fact]
+        public void YamlScalarNodeToObjectUsingEnum()
+        {
+            // ARRANGE
+            const string? yaml = "yaml: Second\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+
+            var scalar = root.Children.First();
+
+            var scalarValue = (YamlScalarNode) scalar.Value;
+            // ACT & ASSERT
+            Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), null));
+        }
 
         [Fact]
         public void YamlAdvancedObjectsShouldReturnCorrectData()
@@ -273,6 +289,36 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal("some code", instance?.Devices?.First()?.Commands?.ElementAt(0).Data);
             Assert.Equal("command2", instance?.Devices?.First()?.Commands?.ElementAt(1).Name);
             Assert.Equal("some code2", instance?.Devices?.First()?.Commands?.ElementAt(1).Data);
+        }
+        
+        [Fact]
+        public void YamlMultilevelObjectShouldReturnCorrectData()
+        {
+            const string? rootData = "lorem ipsum 1";
+            const string? childData = "lorem ipsum 2";
+
+            var yaml = $@"
+            root:
+             data: {rootData}
+             child:
+               child:
+                 data: {childData}";
+
+            var yamlConfig = new YamlAppConfig(
+                    new List<Type>(),
+                    new StringReader(yaml),
+                    new YamlConfig(CreateSettings(ConfigFixturePath)),
+                    ConfigFixturePath
+            );
+
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+
+            var instance = (MultilevelMappingConfig?) yamlConfig.InstanceAndSetPropertyConfig(typeof(MultilevelMappingConfig), root, "id");
+
+            Assert.Equal(rootData, instance!.Root!.Data);
+            Assert.Equal(childData, instance!.Root!.Child!.Child!.Data!);
         }
     }
 }

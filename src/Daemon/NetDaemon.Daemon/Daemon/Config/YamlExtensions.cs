@@ -107,6 +107,8 @@ namespace NetDaemon.Daemon.Config
                     break;
             }
 
+            if (valueType.IsEnum && Enum.TryParse(valueType, node.Value, out var enumValue)) return enumValue;
+
             if (deamonApp != null && valueType.IsAssignableTo(typeof(RxEntityBase)))
                 return Activator.CreateInstance(valueType, deamonApp, new[] {node.Value});
             return null;

@@ -1067,14 +1067,26 @@ namespace NetDaemon.Daemon
 
             async Task SetStateOnDaemonAppSwitch(string state, dynamic? data)
             {
-                string? entityId = data?.entity_id;
-                if (entityId is null)
-                    return;
+                object? entityIdField = data?.entity_id;
 
-                if (!entityId.StartsWith("switch.netdaemon_", true, CultureInfo.InvariantCulture))
-                    return; // We only want app switches
+                // the Entity_id can be a single string or an array
+                var entityIds = (entityIdField switch
+                {
+                    string id => new [] { id },
+                    object[] arr => arr.OfType<string>().ToArray(),
+                    _ => Array.Empty<string>()
+                })
+                    // We only want app switches
+                    .Where(id => id.StartsWith("switch.netdaemon_", true, CultureInfo.InvariantCulture))
+                    .ToList();
 
-                await SetDependentState(entityId, state).ConfigureAwait(false);
+                if (entityIds.Count == 0) return;
+
+                foreach (var entityId in entityIds)
+                {
+                    await SetDependentState(entityId, state).ConfigureAwait(false);
+                }
+
                 await ReloadAllApps().ConfigureAwait(false);
 
                 await PostExternalEvent(new AppsInformationEvent()).ConfigureAwait(false);
