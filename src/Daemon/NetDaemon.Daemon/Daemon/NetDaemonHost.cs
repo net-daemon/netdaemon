@@ -509,8 +509,9 @@ namespace NetDaemon.Daemon
         {
             _ = entityId ?? throw new ArgumentNullException(nameof(entityId));
             _ = state ?? throw new ArgumentNullException(nameof(state));
+            var stateString = Convert.ToString(state, CultureInfo.InvariantCulture);
 
-            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes,
+            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, stateString, attributes,
                     waitForResponse)
                 .ConfigureAwait(false);
             return hassState?.MapWithArea(GetAreaForEntityId(entityId));
@@ -604,10 +605,16 @@ namespace NetDaemon.Daemon
             if (stateData.NewState.State is null && stateData.OldState.State is null)
                 return false;
 
-            if (stateData.NewState.State is not null && stateData.OldState.State is not null)
+            // Replace states with extendedHasState so we can save objectState
+            var newState = new ExtendedHassState(stateData.NewState);
+            var oldState = new ExtendedHassState(stateData.OldState);
+            stateData.NewState = newState;
+            stateData.OldState = oldState;
+
+            if (newState.ObjectState is not null && oldState.ObjectState is not null)
             {
-                Type? newStateType = stateData.NewState?.State?.GetType();
-                Type? oldStateType = stateData.OldState?.State?.GetType();
+                Type? newStateType = newState.ObjectState.GetType();
+                Type? oldStateType = oldState.ObjectState.GetType();
 
                 if (newStateType != oldStateType)
                 {
@@ -618,9 +625,9 @@ namespace NetDaemon.Daemon
                         // We have a statechange to or from string, just ignore for now and set the string to null
                         // Todo: Implement a bool that tells that the change are unavailable
                         if (newStateType == typeof(string))
-                            stateData!.NewState!.State = null;
+                            newState.ObjectState = null;
                         else
-                            stateData!.OldState!.State = null;
+                            oldState.ObjectState = null;
                     }
                     else if (newStateType == typeof(double) || oldStateType == typeof(double))
                     {
@@ -628,8 +635,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the integer to double
                             if (oldStateType == typeof(long))
-                                stateData!.OldState!.State = Convert.ToDouble(stateData!.OldState!.State);
-
+                                oldState.ObjectState = Convert.ToDouble(oldState.ObjectState, CultureInfo.InvariantCulture);
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -637,7 +643,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the long to double
                             if (newStateType == typeof(long))
-                                stateData!.NewState!.State = Convert.ToDouble(stateData!.NewState!.State);
+                                newState.ObjectState = Convert.ToDouble(newState.ObjectState, CultureInfo.InvariantCulture);
                             else
                                 return false; // We do not support any other conversion
                         }
