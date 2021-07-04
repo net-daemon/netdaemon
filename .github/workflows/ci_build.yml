@@ -41,7 +41,8 @@ jobs:
     analyze:
         name: 🔍 Analyze sources (CI)
         steps:
-            - uses: actions/checkout@master
+            - name: 📤 Checkout the repository 
+              uses: actions/checkout@main
               with:  
                 # Shallow clones should be disabled for a better relevancy of analysis
                 fetch-depth: 0
