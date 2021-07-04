@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - codecov-instead-of-sonar
   pull_request:
     branches:
       - main
