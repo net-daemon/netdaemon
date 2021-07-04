@@ -17,6 +17,8 @@ jobs:
         steps:
             - name: 📤 Checkout the repository 
               uses: actions/checkout@main
+              with:  
+                fetch-depth: 0
 
             - name: 🥅 Install .Net 5
               uses: actions/setup-dotnet@v1
@@ -37,20 +39,15 @@ jobs:
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
                 path-to-lcov: ${{github.workspace}}/codecover/lcov.info
-
-    
-    analyze:
-        name: 🔍 Analyze sources (CI)
-        runs-on: ubuntu-latest
-        steps:
-            - name: 📤 Checkout the repository 
-              uses: actions/checkout@main
-              with:  
-                # Shallow clones should be disabled for a better relevancy of analysis
-                fetch-depth: 0
             - uses: codecov/codecov-action@v1
               with:
                 flags: unittests # optional
                 name: codecov-umbrella # optional
                 fail_ci_if_error: true # optional (default = false)
                 verbose: true # optional (default = false)
+    
+    # analyze:
+    #     name: 🔍 Analyze sources (CI)
+    #     runs-on: ubuntu-latest
+    #     steps:
+
