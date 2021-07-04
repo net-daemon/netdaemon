@@ -41,6 +41,7 @@ jobs:
     
     analyze:
         name: 🔍 Analyze sources (CI)
+        runs-on: ubuntu-latest
         steps:
             - name: 📤 Checkout the repository 
               uses: actions/checkout@main
