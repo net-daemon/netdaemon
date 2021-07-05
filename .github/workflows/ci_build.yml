@@ -26,7 +26,7 @@ jobs:
               run: echo "::add-matcher::.github/matchers/dotnet.json"
 
             - name: 🛠️ Build code
-              run: dotnet build
+              run: dotnet build /warnaserror
 
             - name: 👀 Test code
               run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=${{github.workspace}}/codecover/lcov.info
