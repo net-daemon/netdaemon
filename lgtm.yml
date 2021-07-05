@@ -62,12 +62,9 @@ extraction:
         # - dotnet ./example-compile-all.sh
       # Specify .NET Core settings.
       dotnet:
-        # Specify additional arguments to `dotnet build`.
-        # Default: empty.
-        arguments: "example_arg"
         # Specify the version of .NET Core SDK to use.
         # Default: The version installed on the build machine.
-        version: 5
+        version: 5.0
 
       # Specify whether or not to perform a NuGet restore for extraction. Default: true.
       nuget_restore: true
