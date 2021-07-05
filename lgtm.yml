@@ -43,8 +43,8 @@ extraction:
     #     - example_package
     # Add an `after-prepare` step if you need to run commands after the `prepare` step.
     # Each command should be listed on a separate line.
-    after_prepare:
-      - export PATH=$LGTM_WORKSPACE/tools:$PATH
+    # after_prepare:
+      # - export PATH=$LGTM_WORKSPACE/tools:$PATH
     # The `index` step builds the code and extracts information during the build
     # process.
     index:
@@ -58,8 +58,8 @@ extraction:
         - NetDaemon.sln
       # Override the autobuild process by specifying a list of custom build commands
       # to use instead. 
-      # build_command:
-        # - dotnet ./example-compile-all.sh
+      build_command:
+        - dotnet build
       # Specify .NET Core settings.
       dotnet:
         # Specify the version of .NET Core SDK to use.
