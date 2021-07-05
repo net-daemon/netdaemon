@@ -45,30 +45,3 @@ jobs:
                 name: codecov-umbrella # optional
                 fail_ci_if_error: true # optional (default = false)
                 verbose: true # optional (default = false)
-
-    analyze:
-        name: 🔍 Analyze sources (CI)
-        environment: CI - analyze environment
-        runs-on: ubuntu-latest
-        steps:
-            - name: 📤 Checkout the repository 
-              uses: actions/checkout@main
-              with:  
-                # Shallow clones should be disabled for a better relevancy of analysis
-                fetch-depth: 0
-
-            - name: 🔍 Analyze code
-              uses: highbyte/sonarscan-dotnet@v2.1-beta
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                sonarOrganization: net-daemon
-                sonarProjectKey: net-daemon_netdaemon
-                sonarProjectName:  netdaemon
-                
-                dotnetTestArguments: --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-                sonarBeginArguments: >- 
-                  /d:sonar.inclusions="**/src/**"
-                  /d:sonar.test.inclusions="**/tests/**"
-                  /d:sonar.cs.xunit.reportsPaths="**/tests/**/TestResults/*.trx"
-                  /d:sonar.cs.opencover.reportsPaths="**/tests/**/coverage.opencover.xml"
