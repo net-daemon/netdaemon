@@ -228,7 +228,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), null));
             Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), null));
         }
-        
+
         [Fact]
         public void YamlScalarNodeToObjectUsingEnum()
         {
@@ -290,7 +290,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             Assert.Equal("command2", instance?.Devices?.First()?.Commands?.ElementAt(1).Name);
             Assert.Equal("some code2", instance?.Devices?.First()?.Commands?.ElementAt(1).Data);
         }
-        
+
         [Fact]
         public void YamlMultilevelObjectShouldReturnCorrectData()
         {

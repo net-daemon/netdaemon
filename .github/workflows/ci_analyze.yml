@@ -1,0 +1,34 @@
+#### Build and tests all pushes, also code coverage
+name: 🔍 CI Analyze sources
+on:
+  push:
+    branches:
+      - main
+      - dev
+jobs:
+    sonarscanner:
+        name: 🔍 SonarScanner
+        environment: CI - analyze environment
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📤 Checkout the repository 
+              uses: actions/checkout@main
+              with:  
+                # Shallow clones should be disabled for a better relevancy of analysis
+                fetch-depth: 0
+
+            - name: 🔍 Analyze code
+              uses: highbyte/sonarscan-dotnet@v2.1-beta
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                sonarOrganization: net-daemon
+                sonarProjectKey: net-daemon_netdaemon
+                sonarProjectName:  netdaemon
+                dotnetTestArguments: --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+                sonarBeginArguments: >-
+                  /d:sonar.inclusions="**/src/**"
+                  /d:sonar.test.inclusions="**/tests/**"
+                  /d:sonar.cs.xunit.reportsPaths="**/tests/**/TestResults/*.trx"
+                  /d:sonar.cs.opencover.reportsPaths="**/tests/**/coverage.opencover.xml"

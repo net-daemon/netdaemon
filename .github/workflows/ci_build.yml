@@ -26,7 +26,7 @@ jobs:
               run: echo "::add-matcher::.github/matchers/dotnet.json"
 
             - name: 🛠️ Build code
-              run: dotnet build
+              run: dotnet build /warnaserror
 
             - name: 👀 Test code
               run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=${{github.workspace}}/codecover/lcov.info
@@ -36,31 +36,10 @@ jobs:
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
                 path-to-lcov: ${{github.workspace}}/codecover/lcov.info
-
-    analyze:
-        name: 🔍 Analyze sources (CI)
-        environment: CI - analyze environment
-        runs-on: ubuntu-latest
-        steps:
-            - name: 📤 Checkout the repository 
-              uses: actions/checkout@main
-              with:  
-                # Shallow clones should be disabled for a better relevancy of analysis
-                fetch-depth: 0
-
-            - name: 🔍 Analyze code
-              uses: highbyte/sonarscan-dotnet@v2.1-beta
-              env:
-                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: 📨 Publish coverage to codecov
+              uses: codecov/codecov-action@v1
               with:
-                sonarOrganization: net-daemon
-                sonarProjectKey: net-daemon_netdaemon
-                sonarProjectName:  netdaemon
-                
-                dotnetTestArguments: --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-                sonarBeginArguments: >- 
-                  /d:sonar.inclusions="**/src/**"
-                  /d:sonar.test.inclusions="**/tests/**"
-                  /d:sonar.cs.xunit.reportsPaths="**/tests/**/TestResults/*.trx"
-                  /d:sonar.cs.opencover.reportsPaths="**/tests/**/coverage.opencover.xml"
+                flags: unittests # optional
+                name: codecov-umbrella # optional
+                fail_ci_if_error: true # optional (default = false)
