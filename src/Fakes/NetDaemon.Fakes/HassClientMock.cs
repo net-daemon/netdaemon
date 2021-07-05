@@ -170,7 +170,7 @@ namespace NetDaemon.Daemon.Fakes
                     EntityId = entityId,
                     NewState = new HassState
                     {
-                        State = toState.ToString(),
+                        State = toState?.ToString(),
                         Attributes = new Dictionary<string, object>
                         {
                             ["device_class"] = "motion"
@@ -180,7 +180,7 @@ namespace NetDaemon.Daemon.Fakes
                     },
                     OldState = new HassState
                     {
-                        State = fromState.ToString(),
+                        State = fromState?.ToString(),
                         Attributes = new Dictionary<string, object>
                         {
                             ["device_class"] = "motion"
@@ -207,7 +207,7 @@ namespace NetDaemon.Daemon.Fakes
                     NewState = new HassState
                     {
                         EntityId = entityId,
-                        State = toState.ToString(),
+                        State = toState?.ToString(),
                         Attributes = new Dictionary<string, object>
                         {
                             ["device_class"] = "motion"
@@ -218,7 +218,7 @@ namespace NetDaemon.Daemon.Fakes
                     OldState = new HassState
                     {
                         EntityId = entityId,
-                        State = fromState.ToString(),
+                        State = fromState?.ToString(),
                         Attributes = new Dictionary<string, object>
                         {
                             ["device_class"] = "motion"
