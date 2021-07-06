@@ -225,13 +225,13 @@ namespace NetDaemon.Service.App
                             doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(summary)\s*>", string.Empty);
                             doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)s*<\s*(\/summary)\s*>", string.Empty);
                             doc = System.Text.RegularExpressions.Regex.Replace(doc, @"(?i)\/\/\/", "");
-                            string comment = string.Empty;
+                            var comment = new StringBuilder();
 
                             foreach (var row in doc.Split('\n'))
                             {
                                 var commentRow = row.Trim();
                                 if (commentRow.Length > 0)
-                                    comment += commentRow + "\n";
+                                    comment.AppendJoin(commentRow, "\n");
                             }
 
                             var app_key = symbol.ContainingNamespace.Name?.Length == 0 ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;
@@ -241,7 +241,7 @@ namespace NetDaemon.Service.App
                                 NetDaemonAppBase.CompileTimeProperties[app_key] = new Dictionary<string, string>();
                             }
 
-                            NetDaemonAppBase.CompileTimeProperties[app_key]["description"] = comment;
+                            NetDaemonAppBase.CompileTimeProperties[app_key]["description"] = comment.ToString();
 
                             break;
                     }
