@@ -33,7 +33,7 @@ namespace NetDaemon.Service.App
     /// <summary>
     ///     Compiles the code into a collectable context
     /// </summary>
-    internal sealed class DaemonCompiler
+    internal static class DaemonCompiler
     {
         public static (IEnumerable<Type>, CollectibleAssemblyLoadContext?) GetDaemonApps(string codeFolder, ILogger logger)
         {
