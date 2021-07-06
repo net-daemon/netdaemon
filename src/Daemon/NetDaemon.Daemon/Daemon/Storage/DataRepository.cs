@@ -48,11 +48,16 @@ namespace NetDaemon.Daemon.Storage
         }
 
         /// <inheritdoc/>
-        public async Task Save<T>(string id, T data)
+        public Task Save<T>(string id, T data)
         {
             if (data == null)
                 throw new ArgumentNullException(nameof(data));
 
+            return SaveInternal<T>(id, data);
+        }
+
+        private async Task SaveInternal<T>(string id, T data)
+        {
             var storageJsonFile = Path.Combine(_dataStoragePath, $"{id}_store.json");
 
             if (!Directory.Exists(_dataStoragePath))
