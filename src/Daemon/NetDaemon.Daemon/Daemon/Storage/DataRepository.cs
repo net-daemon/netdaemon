@@ -38,8 +38,9 @@ namespace NetDaemon.Daemon.Storage
 
                 return await JsonSerializer.DeserializeAsync<T>(jsonStream, _jsonOptions).ConfigureAwait(false);
             }
-            catch  // Ignore all errors for now
+            catch
             {
+                // Ignore all errors for now
             }
 #pragma warning disable CS8603, CS8653
             return default;
