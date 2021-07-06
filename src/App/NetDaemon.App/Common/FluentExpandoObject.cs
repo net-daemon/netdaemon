@@ -195,6 +195,19 @@ namespace NetDaemon.Common
         }
 
         /// <summary>
+        ///     Combine two instances together to get a union.
+        /// </summary>
+        /// <param name="obj">the object to combine</param>
+        public dynamic Augment(ExpandoObject obj)
+        {
+            obj
+                .Where(pair => !_dict.ContainsKey(NormalizePropertyName(pair.Key)))
+                .ToList()
+                .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
+            return this;
+        }
+
+        /// <summary>
         ///     Copy all items from  FluentExpandoObject
         /// </summary>
         /// <param name="obj">The object to copy from</param>
@@ -222,19 +235,6 @@ namespace NetDaemon.Common
                 }
             }
 
-            return this;
-        }
-
-        /// <summary>
-        ///     Combine two instances together to get a union.
-        /// </summary>
-        /// <param name="obj">the object to combine</param>
-        public dynamic Augment(ExpandoObject obj)
-        {
-            obj
-                .Where(pair => !_dict.ContainsKey(NormalizePropertyName(pair.Key)))
-                .ToList()
-                .ForEach(pair => UpdateDictionary(pair.Key, pair.Value));
             return this;
         }
 

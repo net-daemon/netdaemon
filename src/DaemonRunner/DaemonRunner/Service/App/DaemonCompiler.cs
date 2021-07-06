@@ -315,7 +315,6 @@ namespace NetDaemon.Service.App
             }
         }
 
-        // Todo: Refactor using something smarter than string match. In the future use Roslyn
         private static bool ExpressionContainsDisableLogging(MethodDeclarationSyntax methodInvocationExpression)
         {
             var invocationString = methodInvocationExpression.ToFullString();
@@ -323,7 +322,6 @@ namespace NetDaemon.Service.App
                    && invocationString.Contains("SupressLogType.MissingExecute", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        // Todo: Refactor using something smarter than string match. In the future use Roslyn
         private static bool ExpressionContainsExecuteInvocations(InvocationExpressionSyntax invocation)
         {
             var invocationString = invocation.ToFullString();

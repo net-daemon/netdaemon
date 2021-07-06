@@ -623,7 +623,6 @@ namespace NetDaemon.Daemon
                     if (newStateType == typeof(string) || oldStateType == typeof(string))
                     {
                         // We have a statechange to or from string, just ignore for now and set the string to null
-                        // Todo: Implement a bool that tells that the change are unavailable
                         if (newStateType == typeof(string))
                             newState.ObjectState = null;
                         else
@@ -1025,7 +1024,6 @@ namespace NetDaemon.Daemon
                         sortedApp.Id);
                 }
 
-                // Todo: refactor
                 await sortedApp.HandleAttributeInitialization(this).ConfigureAwait(false);
                 Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id,
                     sortedApp.GetType().Name);

@@ -333,11 +333,6 @@ namespace NetDaemon.Common
         /// </summary>
         ILogger? Logger { get; }
 
-        // /// <summary>
-        // ///     Schedule actions to fire in different time
-        // /// </summary>
-        // IScheduler Scheduler { get; }
-
         /// <summary>
         ///     All current states for all known entities
         /// </summary>
@@ -415,7 +410,6 @@ namespace NetDaemon.Common
         /// <remarks>
         /// <para>
         ///     Restores the state of the storage object.!--
-        ///     Todo: in the future also the state of tagged properties
         /// </para>
         /// <para>    It is implemented async so state will be lazy saved</para>
         /// </remarks>
@@ -427,7 +421,6 @@ namespace NetDaemon.Common
         /// <remarks>
         /// <para>
         ///     Saves the state of the storage object.!--
-        ///     Todo: in the future also the state of tagged properties
         /// </para>
         /// <para>    It is implemented async so state will be lazy saved</para>
         /// </remarks>

@@ -3,6 +3,7 @@ using System;
 namespace NetDaemon.Common.Exceptions
 {
     /// <inheritdoc/>
+    [Serializable]
     public class NetDaemonNullReferenceException : NullReferenceException
     {
         /// <inheritdoc/>
@@ -19,9 +20,14 @@ namespace NetDaemon.Common.Exceptions
         public NetDaemonNullReferenceException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
+
+        /// <inheritdoc/>
+        protected NetDaemonNullReferenceException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)        {
+        }
     }
 
     /// <inheritdoc/>
+    [Serializable]
     public class NetDaemonException : Exception
     {
         /// <inheritdoc/>
@@ -38,9 +44,14 @@ namespace NetDaemon.Common.Exceptions
         public NetDaemonException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
+
+        /// <inheritdoc/>
+        protected NetDaemonException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)        {
+        }
     }
 
     /// <inheritdoc/>
+    [Serializable]
     public class NetDaemonArgumentNullException : ArgumentNullException
     {
         /// <inheritdoc/>
@@ -61,6 +72,10 @@ namespace NetDaemon.Common.Exceptions
         /// <inheritdoc/>
         public NetDaemonArgumentNullException(string? paramName, string? message) : base(paramName, message)
         {
+        }
+
+        /// <inheritdoc/>
+        protected NetDaemonArgumentNullException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)        {
         }
     }
 }

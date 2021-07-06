@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using NetDaemon.Common;
 
@@ -108,14 +109,14 @@ namespace NetDaemon.Common
         /// </summary>
         public override string ToString()
         {
-            string attributes = "";
+            var attributes = new StringBuilder();
             if (Attribute is IDictionary attr)
             {
                 foreach (var key in attr.Keys)
                 {
                     if (key is not null)
                     {
-                        attributes += string.Format(CultureInfo.InvariantCulture, "       {0}:{1}", key, attr[key]);
+                        attributes.AppendFormat(CultureInfo.InvariantCulture, "       {0}:{1}", key, attr[key]);
                     }
                 }
             }
