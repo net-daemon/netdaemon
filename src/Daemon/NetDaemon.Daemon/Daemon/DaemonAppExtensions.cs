@@ -43,9 +43,9 @@ namespace NetDaemon.Daemon
             }
         }
 
-        private static (bool, string) CheckIfServiceCallSignatureIsOk(MethodInfo method, bool async)
+        private static (bool, string) CheckIfServiceCallSignatureIsOk(MethodInfo method, bool isAsync)
         {
-            if (async && method.ReturnType != typeof(Task))
+            if (isAsync && method.ReturnType != typeof(Task))
                 return (false, $"{method.Name} has not correct return type, expected Task");
 
             var parameters = method.GetParameters();
@@ -64,9 +64,9 @@ namespace NetDaemon.Daemon
         }
 
         [SuppressMessage("", "CA1031")]
-        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonAppBase netDaemonApp, MethodInfo method, bool async = true)
+        private static async Task HandleServiceCallAttribute(INetDaemon _daemon, NetDaemonAppBase netDaemonApp, MethodInfo method, bool isAsync = true)
         {
-            var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method, async);
+            var (signatureOk, err) = CheckIfServiceCallSignatureIsOk(method, isAsync);
             if (!signatureOk)
             {
                 _daemon.Logger.LogWarning(err);
