@@ -93,7 +93,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             const string? yamlConfig = "app:\n  class: NotFoundApp";
 
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").GetInstances();
 
             // ASSERT
             Assert.Empty(instances);
@@ -118,7 +118,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 - string 2
         ";
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").GetInstances();
             var instance = instances.FirstOrDefault() as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
@@ -147,7 +147,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 new StringReader(yamlConfig),
                 config,
                 Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs")
-            ).Instances;
+            ).GetInstances();
             var instance = instances.FirstOrDefault() as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("this is a secret string", instance?.TestSecretString);
@@ -174,7 +174,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 - string 2
         ";
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances;
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").GetInstances();
             var instance = instances.FirstOrDefault() as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
@@ -227,7 +227,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                     class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssemblyDaemonApp
                 ";
 
-            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").Instances.FirstOrDefault() as AssemblyDaemonApp;
+            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "").GetInstances().FirstOrDefault() as AssemblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
 

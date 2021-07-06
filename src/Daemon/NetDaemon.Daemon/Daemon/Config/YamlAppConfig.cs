@@ -29,47 +29,44 @@ namespace NetDaemon.Daemon.Config
 
         [SuppressMessage("", "CA1508")]
         [SuppressMessage("", "CA1065")]
-        public IEnumerable<INetDaemonAppBase> Instances
+        public IEnumerable<INetDaemonAppBase> GetInstances()
         {
-            get
+            var instances = new List<INetDaemonAppBase>();
+            // For each app instance defined in the yaml config
+            foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
             {
-                var instances = new List<INetDaemonAppBase>();
-                // For each app instance defined in the yaml config
-                foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode) _yamlStream.Documents[0].RootNode)
+                string? appId = null;
+                try
                 {
-                    string? appId = null;
-                    try
+                    if (app.Key.NodeType != YamlNodeType.Scalar ||
+                        app.Value.NodeType != YamlNodeType.Mapping)
                     {
-                        if (app.Key.NodeType != YamlNodeType.Scalar ||
-                            app.Value.NodeType != YamlNodeType.Mapping)
-                        {
-                            continue;
-                        }
-
-                        appId = ((YamlScalarNode) app.Key).Value;
-                        // Get the class
-
-                        string? appClass = GetTypeNameFromClassConfig((YamlMappingNode) app.Value);
-                        Type? appType = _types.FirstOrDefault(n => n.FullName?.ToLowerInvariant() == appClass);
-
-                        if (appType != null)
-                        {
-                            var instance = InstanceAndSetPropertyConfig(appType, (YamlMappingNode) app.Value, appId);
-                            if (instance != null)
-                            {
-                                instance.Id = appId;
-                                instances.Add(instance);
-                            }
-                        }
+                        continue;
                     }
-                    catch (Exception e)
+
+                    appId = ((YamlScalarNode)app.Key).Value;
+                    
+                    // Get the class
+                    string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
+                    Type? appType = _types.FirstOrDefault(n => n.FullName?.ToLowerInvariant() == appClass);
+
+                    if (appType != null)
                     {
-                        throw new NetDaemonException($"Error instancing application {appId}", e);
+                        var instance = InstanceAndSetPropertyConfig(appType, (YamlMappingNode)app.Value, appId);
+                        if (instance != null)
+                        {
+                            instance.Id = appId;
+                            instances.Add(instance);
+                        }
                     }
                 }
-
-                return instances;
+                catch (Exception e)
+                {
+                    throw new NetDaemonException($"Error instancing application {appId}", e);
+                }
             }
+
+            return instances;
         }
 
         public INetDaemonAppBase? InstanceAndSetPropertyConfig(
