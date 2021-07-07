@@ -22,7 +22,6 @@ namespace NetDaemon.Infrastructure.Extensions
         private static async Task WhenAllInternal(this IEnumerable<Task> tasks, CancellationToken cancellationToken)
         {
             await Task.WhenAny(Task.WhenAll(tasks), cancellationToken.AsTask()).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 }
