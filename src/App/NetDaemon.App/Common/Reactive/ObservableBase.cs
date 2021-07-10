@@ -74,6 +74,7 @@ namespace NetDaemon.Common.Reactive
         {
             private readonly IObserver<X> _observer;
             private readonly ConcurrentDictionary<IObserver<X>, IObserver<X>> _observers;
+            private bool disposedValue;
 
             public UnsubscriberObservable(
                 ConcurrentDictionary<IObserver<X>, IObserver<X>> observers, IObserver<X> observer)
@@ -82,13 +83,27 @@ namespace NetDaemon.Common.Reactive
                 _observers = observers;
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                        if (_observer is not null)
+                        {
+                            _observers.TryRemove(_observer, out _);
+                            _observer.OnCompleted();
+                        }
+                    }
+
+                    disposedValue = true;
+                }
+            }
+
             public void Dispose()
             {
-                if (_observer is not null)
-                {
-                    _observers.TryRemove(_observer, out _);
-                    _observer.OnCompleted();
-                }
+                // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+                Dispose(disposing: true);
             }
         }
     }

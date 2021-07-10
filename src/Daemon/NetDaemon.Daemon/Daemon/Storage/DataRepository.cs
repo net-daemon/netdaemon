@@ -38,8 +38,9 @@ namespace NetDaemon.Daemon.Storage
 
                 return await JsonSerializer.DeserializeAsync<T>(jsonStream, _jsonOptions).ConfigureAwait(false);
             }
-            catch  // Ignore all errors for now
+            catch
             {
+                // We ignore errors, we will be adding logging later see issue #403
             }
 #pragma warning disable CS8603, CS8653
             return default;
@@ -47,11 +48,16 @@ namespace NetDaemon.Daemon.Storage
         }
 
         /// <inheritdoc/>
-        public async Task Save<T>(string id, T data)
+        public Task Save<T>(string id, T data)
         {
             if (data == null)
                 throw new ArgumentNullException(nameof(data));
 
+            return SaveInternal<T>(id, data);
+        }
+
+        private async Task SaveInternal<T>(string id, T data)
+        {
             var storageJsonFile = Path.Combine(_dataStoragePath, $"{id}_store.json");
 
             if (!Directory.Exists(_dataStoragePath))

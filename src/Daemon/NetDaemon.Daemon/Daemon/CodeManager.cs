@@ -62,7 +62,7 @@ namespace NetDaemon.Daemon
                     using var fileReader = File.OpenText(file);
                     var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file);
 
-                    foreach (var appInstance in yamlAppConfig.Instances)
+                    foreach (var appInstance in yamlAppConfig.GetInstances())
                     {
                         result.Add(appInstance);
                     }

@@ -43,13 +43,7 @@ namespace NetDaemon.Daemon.Config
             _ = node ??
                 throw new NetDaemonArgumentNullException(nameof(node));
 
-            var underlyingNullableType = Nullable.GetUnderlyingType(valueType);
-
-            if (underlyingNullableType != null)
-            {
-                // It is nullable type
-                valueType = underlyingNullableType;
-            }
+            valueType = Nullable.GetUnderlyingType(valueType) ?? valueType;
 
             switch (valueType.Name)
             {

@@ -138,7 +138,6 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="data">Data sent by service</param>
         public void AddCallServiceEvent(string domain, string service, dynamic? data = null)
         {
-            // Todo: Refactor to something smarter
             FakeEvents.Enqueue(new HassEvent
             {
                 EventType = "call_service",
@@ -161,7 +160,6 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="lastChanged">Last changed</param>
         public void AddChangedEvent(string entityId, object fromState, object toState, DateTime lastUpdated, DateTime lastChanged)
         {
-            // Todo: Refactor to something smarter
             FakeEvents.Enqueue(new HassEvent
             {
                 EventType = "state_changed",

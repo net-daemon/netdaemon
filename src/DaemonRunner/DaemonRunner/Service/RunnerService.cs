@@ -88,7 +88,12 @@ namespace NetDaemon.Service
                 _logger.LogTrace("Finding apps in {folder}...", _sourcePath);
 
                 // Automatically create source directories
-                if (_sourcePath is string && !Directory.Exists(_sourcePath))
+                if (string.IsNullOrEmpty(_sourcePath))
+                {
+                    _logger.LogError("Path to folder cannot be null, exiting...", _sourcePath);
+                    return;
+                }
+                if (!Directory.Exists(_sourcePath))
                 {
                     _logger.LogError("Path to app source does not exist {path}, exiting...", _sourcePath);
                     return;

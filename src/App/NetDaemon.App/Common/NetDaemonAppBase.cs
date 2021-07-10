@@ -112,7 +112,7 @@ namespace NetDaemon.Common
         /// <param name="other">The instance to compare</param>
         public bool Equals([AllowNull] INetDaemonAppBase other)
         {
-            return other is not null && other.Id is not null && Id is not null && Id == other.Id;
+            return Id == other?.Id;
         }
 
         /// <summary>
@@ -479,7 +479,6 @@ namespace NetDaemon.Common
                 try
                 {
                     while (_updateRuntimeInfoChannel.Reader.TryRead(out _)) ;
-
                     _ = await _updateRuntimeInfoChannel.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
                     // do the deed
                     await HandleUpdateRuntimeInformation().ConfigureAwait(false);

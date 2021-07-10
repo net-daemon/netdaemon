@@ -12,13 +12,16 @@ namespace NetDaemon.Infrastructure.Extensions
         /// </summary>
         /// <param name="tasks">The tasks to wait for.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public static async Task WhenAll(this IEnumerable<Task> tasks, CancellationToken cancellationToken)
+        public static Task WhenAll(this IEnumerable<Task> tasks, CancellationToken cancellationToken)
         {
             if (tasks == null)
                 throw new ArgumentNullException(nameof(tasks), $"{nameof(tasks)} is null.");
+            return WhenAllInternal(tasks, cancellationToken);
+        }
 
+        private static async Task WhenAllInternal(this IEnumerable<Task> tasks, CancellationToken cancellationToken)
+        {
             await Task.WhenAny(Task.WhenAll(tasks), cancellationToken.AsTask()).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 }

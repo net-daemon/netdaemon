@@ -74,8 +74,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Equal("on", entity?.State);
         }
 
-        // Todo: Add tests to test objects and arrays from the dynamic conversion
-
         [Fact]
         public async Task RunNotConnectedCompletesTask()
         {
