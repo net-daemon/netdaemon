@@ -231,7 +231,7 @@ namespace NetDaemon.Service.App
                             {
                                 var commentRow = row.Trim();
                                 if (commentRow.Length > 0)
-                                    comment.AppendJoin(commentRow, "\n");
+                                    comment.AppendJoin(commentRow, Environment.NewLine);
                             }
 
                             var app_key = symbol.ContainingNamespace.Name?.Length == 0 ? symbol.Name : symbol.ContainingNamespace.Name + "." + symbol.Name;

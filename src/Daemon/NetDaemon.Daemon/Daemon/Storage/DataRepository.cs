@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon.Storage
             }
             catch
             {
-                // Ignore all errors for now
+                // We ignore errors, we will be adding logging later see issue #403
             }
 #pragma warning disable CS8603, CS8653
             return default;
