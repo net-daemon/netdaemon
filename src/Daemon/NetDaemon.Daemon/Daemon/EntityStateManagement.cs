@@ -42,7 +42,7 @@ namespace NetDaemon.Daemon
 
         public void Store(HassState newState) => InternalState[newState.EntityId] = newState;
 
-        private readonly string[] _supportedDomains = {"binary_sensor", "sensor", "switch"};
+        private readonly string[] _supportedDomains = {"binary_sensor", "sensor", "switch", "climate"};
 
         public async Task<HassState?> SetStateAndWaitForResponseAsync(string entityId, string? state,
             object? attributes, bool waitForResponse)
