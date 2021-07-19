@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
@@ -41,6 +44,7 @@ namespace NetDaemon.Service
         private string? _sourcePath;
 
         private bool _hasConnectedBefore;
+        private readonly IWebHostEnvironment _environment;
 
         public RunnerService(
             ILoggerFactory loggerFactory,
@@ -49,10 +53,11 @@ namespace NetDaemon.Service
             IServiceProvider serviceProvider,
             IYamlConfig yamlConfig,
             IDaemonAppCompiler daemonAppCompiler,
-            ICodeGenerationHandler codeGenerationHandler)
+            ICodeGenerationHandler codeGenerationHandler,
+            IWebHostEnvironment environment)
         {
             _ = homeAssistantSettings ??
-               throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
+                throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
             _ = netDaemonSettings ??
                throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
             _logger = loggerFactory.CreateLogger<RunnerService>();
@@ -62,6 +67,7 @@ namespace NetDaemon.Service
             _yamlConfig = yamlConfig;
             _daemonAppCompiler = daemonAppCompiler;
             _codeGenerationHandler = codeGenerationHandler;
+            _environment = environment;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -164,6 +170,8 @@ namespace NetDaemon.Service
                                     _logger.LogError("No NetDaemon apps could be found, exiting...");
                                     return;
                                 }
+                                
+                                _loadedDaemonApps = FilterFocusApps(_loadedDaemonApps.ToList());
 
                                 IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
                                 await daemonHost.Initialize(codeManager).ConfigureAwait(false);
@@ -214,6 +222,18 @@ namespace NetDaemon.Service
                 // If we reached here it could be a re-connect
                 _hasConnectedBefore = true;
             }
+        }
+
+        private IEnumerable<Type> FilterFocusApps(IReadOnlyCollection<Type> allApps)
+        {
+            if (!_environment.IsDevelopment()) return allApps;
+
+            var focusApps = allApps.Where(a => a.GetCustomAttribute<FocusAttribute>() != null).ToList();
+
+            if (focusApps.Count == 0) return allApps;
+
+            _logger.LogInformation($"Found {focusApps.Count} [Focus] apps, skipping all other apps");
+            return focusApps;
         }
 
         public async Task GenerateEntitiesAsync(NetDaemonHost daemonHost, string sourceFolder)
