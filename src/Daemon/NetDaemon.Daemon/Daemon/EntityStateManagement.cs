@@ -2,9 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
@@ -18,14 +16,9 @@ namespace NetDaemon.Daemon
         // TODO: we only need some methods of NetDaemonHost try to reduce the dependency
         private readonly NetDaemonHost _netDaemonHost;
 
-        private readonly IHassClient _hassClient;
-        private readonly CancellationToken _cancellationToken;
-
-        public EntityStateManager(IHassClient hassClient, NetDaemonHost netDaemonHost, CancellationToken cancellationToken)
+        public EntityStateManager(NetDaemonHost netDaemonHost)
         {
             _netDaemonHost = netDaemonHost;
-            _hassClient = hassClient;
-            _cancellationToken = cancellationToken;
         }
 
         internal ConcurrentDictionary<string, EntityState> InternalState = new();
@@ -39,7 +32,7 @@ namespace NetDaemon.Daemon
 
         public async Task RefreshAsync()
         {
-            var hassStates = await _hassClient.GetAllStates(_cancellationToken).ConfigureAwait(false);
+            var hassStates = await _netDaemonHost.Client.GetAllStates(_netDaemonHost.CancelToken).ConfigureAwait(false);
 
             foreach (var state in hassStates.Select(s => s.Map()))
             {
@@ -67,7 +60,7 @@ namespace NetDaemon.Daemon
                 {
                     var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
                     // We have an integration that will help persist 
-                    await _hassClient.CallService("netdaemon", service,
+                    await _netDaemonHost.Client.CallService("netdaemon", service,
                         new
                         {
                             entity_id = entityId,
@@ -77,11 +70,11 @@ namespace NetDaemon.Daemon
 
                     if (!waitForResponse) return null;
                   
-                    result = await _hassClient.GetState(entityId).ConfigureAwait(false);
+                    result = await _netDaemonHost.Client.GetState(entityId).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await _hassClient.SetState(entityId, state.ToString(), attributes)
+                    result = await _netDaemonHost.Client.SetState(entityId, state.ToString(), attributes)
                         .ConfigureAwait(false);
                 }
 

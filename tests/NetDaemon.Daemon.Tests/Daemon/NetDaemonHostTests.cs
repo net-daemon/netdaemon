@@ -557,13 +557,13 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         [Theory]
         [InlineData(false, null, null, null, null)]
-        [InlineData(true, null, 10, null, 10L)]
-        [InlineData(true, 10, null, 10L, null)]
-        [InlineData(true, "unavailable", 10, null, 10L)]
-        [InlineData(true, 10, "unavailable", 10L, null)]
-        [InlineData(true, 10, 11, 10L, 11L)]
+        [InlineData(true, null, 10L, null, 10L)]
+        [InlineData(true, 10L, null, 10L, null)]
+        [InlineData(true, "unavailable", 10L, null, 10L)]
+        [InlineData(true, 10L, "unavailable", 10L, null)]
+        [InlineData(true, 10L, 11L, 10L, 11L)]
         [InlineData(true, "hello", "world", "hello", "world")]
-        [InlineData(true, (long) 10, 10.1d, 10.0d, 10.1d)]
+        [InlineData(true, 10L, 10.1d, 10.0d, 10.1d)]
         [InlineData(true, 10.1d, 10L, 10.1d, 10.0d)]
         public void FixStateTypesShouldReturnCorrectValues(
             bool result, object? newState, object? oldState, object? expectedNewState, object? expectedOldState)

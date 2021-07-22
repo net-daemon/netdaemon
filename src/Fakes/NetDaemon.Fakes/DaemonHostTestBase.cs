@@ -136,16 +136,15 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="entityId">Unique id of entity</param>
         /// <param name="state">State to set</param>
         /// <param name="area">Area of entity</param>
-        public void SetEntityState(string entityId, dynamic? state = null, string? area = null)
+        public void SetEntityState(string entityId, object? state = null, string? area = null)
         {
-            DefaultDaemonHost.StateManager.Store(new EntityState
+            DefaultDaemonHost.StateManager.Store(new EntityState()
             {
                 EntityId = entityId,
                 Area = area,
-                State = state
+                State = state?.ToString()
             });
         }
-
         /// <summary>
         ///     Adds an new instance of app
         /// </summary>

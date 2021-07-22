@@ -113,7 +113,7 @@ namespace NetDaemon.Daemon
                           throw new NetDaemonNullReferenceException(
                               $"Failed to create instance of {nameof(_hassClient)}");
 
-            StateManager = new EntityStateManager(_hassClient, this, _cancelToken);
+            StateManager = new EntityStateManager(this);
             TextToSpeechService = new TextToSpeechService(this);
         }
 

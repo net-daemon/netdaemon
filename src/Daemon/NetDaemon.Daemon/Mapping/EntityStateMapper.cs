@@ -31,7 +31,7 @@ namespace NetDaemon.Mapping
             var entityState = new EntityState
             {
                 EntityId = hassState.EntityId,
-                State = hassState is ExtendedHassState ext ? ext.ObjectState : hassState.State,
+                State = hassState.State,
                 Area = area,
 
                 LastUpdated = hassState.LastUpdated,
