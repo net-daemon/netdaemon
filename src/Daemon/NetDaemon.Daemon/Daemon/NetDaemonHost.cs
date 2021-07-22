@@ -499,9 +499,8 @@ namespace NetDaemon.Daemon
             return task.Result;
         }
 
-        //private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
-        public Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
-            dynamic? attributes, bool waitForResponse) =>
+        public Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
+            object? attributes, bool waitForResponse) =>
             StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes, waitForResponse);
 
         public Task<EntityState?> SetStateAsync(string entityId, object state,
