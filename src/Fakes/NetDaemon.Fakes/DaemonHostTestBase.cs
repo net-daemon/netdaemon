@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Model;
@@ -137,34 +136,14 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="entityId">Unique id of entity</param>
         /// <param name="state">State to set</param>
         /// <param name="area">Area of entity</param>
-        public void SetEntityState(string entityId, object? state = null, string? area = null)
+        public void SetEntityState(string entityId, dynamic? state = null, string? area = null)
         {
-            DefaultDaemonHost.StateManager.Store(new HassState()
+            DefaultDaemonHost.StateManager.Store(new EntityState
             {
                 EntityId = entityId,
+                Area = area,
                 State = state
             });
-
-            if (area == null) return;
-
-            var deviceId = "TestDevice_" + entityId;
-            DefaultDaemonHost._hassEntities[entityId] = new HassEntity()
-            {
-                EntityId = entityId,
-                DeviceId = deviceId,
-            };
-
-            var areaId = "Area_" + area;
-            DefaultDaemonHost._hassDevices[deviceId] = new HassDevice()
-            {
-                Id = deviceId,
-                AreaId = areaId,
-            };
-            DefaultDaemonHost._hassAreas[areaId] = new HassArea()
-            {
-                Id = areaId,
-                Name = area,
-            };
         }
 
         /// <summary>

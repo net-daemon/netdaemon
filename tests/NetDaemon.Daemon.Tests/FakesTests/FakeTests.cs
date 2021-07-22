@@ -5,8 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Model;
 using Moq;
+using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using Xunit;
@@ -22,6 +22,10 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class FakeTests : CoreDaemonHostTestBase
     {
+        public FakeTests() : base()
+        {
+        }
+
         [Fact]
         public async Task CallServiceShouldCallCorrectFunction()
         {
@@ -256,8 +260,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             DefaultDaemonHost.StateManager.Clear();
-            DefaultDaemonHost.StateManager.Store(new HassState() {EntityId = "light.mylight"});
-            DefaultDaemonHost.StateManager.Store(new HassState() {EntityId = "light.mylight2"});
+            DefaultDaemonHost.StateManager.Store(new EntityState() {EntityId = "light.mylight"});
+            DefaultDaemonHost.StateManager.Store(new EntityState() {EntityId = "light.mylight2"});
 
             var entities = DefaultDaemonRxApp.EntityIds.ToList();
 
@@ -457,7 +461,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             AddChangeEvent(new()
                 {
                     EntityId = "sensor.temperature",
-                    State = 10.0,
+                    State = "10.0",
                     Attributes = new Dictionary<string, object>()
                     {
                         ["battery_level"] = 18.2
@@ -466,7 +470,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 , new()
                 {
                     EntityId = "sensor.temperature",
-                    State = 10.0,
+                    State = "10.0",
                     Attributes = new Dictionary<string, object>()
                     {
                         ["battery_level"] = 12.0

@@ -91,7 +91,6 @@ namespace NetDaemon.Daemon
         /// <param name="repository">Repository to use</param>
         /// <param name="loggerFactory">The loggerfactory</param>
         /// <param name="httpHandler">Http handler to use</param>
-        /// <param name="serviceProvider">The service provider</param>
         public NetDaemonHost(
             IHassClientFactory? hassClientFactory = null,
             IDataRepository? repository = null,
@@ -114,7 +113,7 @@ namespace NetDaemon.Daemon
                           throw new NetDaemonNullReferenceException(
                               $"Failed to create instance of {nameof(_hassClient)}");
 
-            StateManager = new EntityStateManager(this);
+            StateManager = new EntityStateManager(_hassClient, this, _cancelToken);
             TextToSpeechService = new TextToSpeechService(this);
         }
 
@@ -133,9 +132,7 @@ namespace NetDaemon.Daemon
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
 
-        [SuppressMessage("", "CA1721")]
-        public IEnumerable<EntityState> State =>
-            StateManager.States.Select(s => s.MapWithArea(GetAreaForEntityId(s.EntityId)));
+        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => StateManager.States;
 
         // For testing
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
@@ -248,8 +245,7 @@ namespace NetDaemon.Daemon
             return data;
         }
 
-        public EntityState? GetState(string entityId) =>
-            StateManager.GetState(entityId)?.MapWithArea(GetAreaForEntityId(entityId));
+        public EntityState? GetState(string entityId) => StateManager.GetState(entityId);
 
         /// <inheritdoc/>
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
@@ -499,26 +495,18 @@ namespace NetDaemon.Daemon
                 TrackBackgroundTask(task, $"Set state for {entityId}");
                 return null;
             }
-
             task.Wait(_cancelToken);
             return task.Result;
         }
 
-        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
-            object? attributes, bool waitForResponse)
-        {
-            _ = entityId ?? throw new ArgumentNullException(nameof(entityId));
-            _ = state ?? throw new ArgumentNullException(nameof(state));
-
-            var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes,
-                    waitForResponse)
-                .ConfigureAwait(false);
-            return hassState?.MapWithArea(GetAreaForEntityId(entityId));
-        }
+        //private readonly string[] _supportedDomains = new string[] { "binary_sensor", "sensor", "switch" };
+        public Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, dynamic state,
+            dynamic? attributes, bool waitForResponse) =>
+            StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes, waitForResponse);
 
         public Task<EntityState?> SetStateAsync(string entityId, object state,
             params (string name, object val)[] attributes)
-            => SetStateAndWaitForResponseAsync(entityId, state, attributes.ToDynamic(), true);
+            => StateManager.SetStateAndWaitForResponseAsync(entityId, state, attributes, false);
 
         public void Speak(string entityId, string message) => TextToSpeechService.Speak(entityId, message);
 
@@ -594,20 +582,20 @@ namespace NetDaemon.Daemon
         ///     or setting null. It returns false if the casts can not be
         ///     managed.
         /// </remarks>
-        internal static bool FixStateTypes(HassStateChangedEventData stateData)
+        internal static bool FixStateTypes(ref EntityState OldState, ref  EntityState NewState)
         {
             // NewState and OldState can not be null, something is seriously wrong
-            if (stateData.NewState is null || stateData.OldState is null)
+            if (NewState is null || OldState is null)
                 return false;
 
             // Both states can not be null, something is seriously wrong
-            if (stateData.NewState.State is null && stateData.OldState.State is null)
+            if (NewState.State is null && OldState.State is null)
                 return false;
 
-            if (stateData.NewState.State is not null && stateData.OldState.State is not null)
+            if (NewState.State is not null && OldState.State is not null)
             {
-                Type? newStateType = stateData.NewState?.State?.GetType();
-                Type? oldStateType = stateData.OldState?.State?.GetType();
+                Type? newStateType = NewState?.State?.GetType();
+                Type? oldStateType = OldState?.State?.GetType();
 
                 if (newStateType != oldStateType)
                 {
@@ -617,9 +605,9 @@ namespace NetDaemon.Daemon
                     {
                         // We have a statechange to or from string, just ignore for now and set the string to null
                         if (newStateType == typeof(string))
-                            stateData!.NewState!.State = null;
+                            NewState = NewState with { State = null} ;
                         else
-                            stateData!.OldState!.State = null;
+                            OldState = OldState with { State = null} ;
                     }
                     else if (newStateType == typeof(double) || oldStateType == typeof(double))
                     {
@@ -627,8 +615,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the integer to double
                             if (oldStateType == typeof(long))
-                                stateData!.OldState!.State = Convert.ToDouble(stateData!.OldState!.State);
-
+                                OldState = OldState with { State = Convert.ToDouble(OldState!.State) } ;
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -636,7 +623,8 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the long to double
                             if (newStateType == typeof(long))
-                                stateData!.NewState!.State = Convert.ToDouble(stateData!.NewState!.State);
+                                
+                                NewState = NewState with { State = Convert.ToDouble(NewState!.State) };
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -672,19 +660,19 @@ namespace NetDaemon.Daemon
 
             foreach (var device in await _hassClient.GetDevices().ConfigureAwait(false))
             {
-                if (device?.Id != null)
+                if (device is not null && device.Id is not null)
                     _hassDevices[device.Id] = device;
             }
 
             foreach (var area in await _hassClient.GetAreas().ConfigureAwait(false))
             {
-                if (area?.Id != null)
+                if (area is not null && area.Id is not null)
                     _hassAreas[area.Id] = area;
             }
 
             foreach (var entity in await _hassClient.GetEntities().ConfigureAwait(false))
             {
-                if (entity?.EntityId != null)
+                if (entity is not null && entity.EntityId is not null)
                     _hassEntities[entity.EntityId] = entity;
             }
 
@@ -767,7 +755,13 @@ namespace NetDaemon.Daemon
                 return;
             }
 
-            if (!FixStateTypes(stateData))
+            // Make sure we get the area name with the new state
+            var newState = stateData!.NewState!.Map();
+            var oldState = stateData!.OldState!.Map();
+            // TODO: refactor map to take area as input to avoid the copy
+            newState = newState with {Area = GetAreaForEntityId(newState.EntityId)};
+
+            if (!FixStateTypes(ref oldState, ref newState))
             {
                 if (stateData.NewState?.State != stateData.OldState?.State)
                 {
@@ -784,13 +778,8 @@ namespace NetDaemon.Daemon
 
                 return;
             }
-
-            StateManager.Store(stateData!.NewState);
-
-            // Make sure we get the area name with the new state
-            var area = GetAreaForEntityId(stateData!.NewState.EntityId);
-            var newState = stateData!.NewState!.MapWithArea(area);
-            var oldState = stateData!.OldState!.MapWithArea(area);
+            
+            StateManager.Store(newState);
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {

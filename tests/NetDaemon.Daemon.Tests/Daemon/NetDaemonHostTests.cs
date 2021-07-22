@@ -525,7 +525,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal("Correct name", DefaultDaemonHost.GetState("binary_sensor.pir")?.Area);
+            Assert.Equal("Correct name", DefaultDaemonHost.StateManager.GetState("binary_sensor.pir")?.Area);
         }
 
         [Fact]
@@ -566,24 +566,21 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [InlineData(true, (long) 10, 10.0d, 10.0d, 10.0d)]
         [InlineData(true, 10.0d, (long) 10, 10.0d, 10.0d)]
         public void FixStateTypesShouldReturnCorrectValues(
-            bool result, dynamic? newState, dynamic? oldState, dynamic? expectedNewState, dynamic? expectedOldState)
+            bool result, object? newState, object? oldState, object? expectedNewState, object? expectedOldState)
         {
-            HassStateChangedEventData state = new()
+            var newEntityState = new EntityState
             {
-                NewState = new HassState
-                {
-                    State = newState
-                },
-                OldState = new HassState
-                {
-                    State = oldState
-                }
+                State = newState
+            };
+            var oldEntityState = new EntityState
+            {
+                State = oldState
             };
 
-            bool res = NetDaemonHost.FixStateTypes(state);
+            bool res = NetDaemonHost.FixStateTypes(ref oldEntityState, ref newEntityState);
             Assert.Equal(result, res);
-            Assert.Equal(expectedNewState, state.NewState.State);
-            Assert.Equal(expectedOldState, state.OldState.State);
+            Assert.Equal(expectedNewState, newEntityState.State);
+            Assert.Equal(expectedOldState, oldEntityState.State);
         }
     }
 }

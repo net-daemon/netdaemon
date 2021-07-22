@@ -15,22 +15,13 @@ namespace NetDaemon.Mapping
         /// </summary>
         /// <param name="hassState">HassState object to map</param>
         public static EntityState Map(this HassState hassState)
-            => hassState.MapWithArea(null);
-
-        /// <summary>
-        ///     Converts HassState to EntityState
-        /// </summary>
-        /// <param name="hassState">HassState object to map</param>
-        /// <param name="The Area"></param>
-        public static EntityState MapWithArea(this HassState hassState, string? area)
         {
             _ = hassState ??
-                throw new NetDaemonArgumentNullException(nameof(hassState));
+               throw new NetDaemonArgumentNullException(nameof(hassState));
             var entityState = new EntityState
             {
                 EntityId = hassState.EntityId,
                 State = hassState.State,
-                Area = area,
 
                 LastUpdated = hassState.LastUpdated,
                 LastChanged = hassState.LastChanged,
