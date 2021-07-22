@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Model;
@@ -34,20 +35,17 @@ namespace NetDaemon.Daemon
         {
             var hassStates = await _netDaemonHost.Client.GetAllStates(_netDaemonHost.CancelToken).ConfigureAwait(false);
 
-            foreach (var state in hassStates.Select(s => s.Map()))
+            foreach (var state in hassStates)
             {
-                InternalState[state.EntityId] = state with
-                {
-                    Area = _netDaemonHost.GetAreaForEntityId(state.EntityId)
-                };
+                InternalState[state.EntityId] = state.MapWithArea(_netDaemonHost.GetAreaForEntityId(state.EntityId));
             }
         }
 
         public void Store(EntityState newState) => InternalState[newState.EntityId] = newState;
 
-        private readonly string[] _supportedDomains = { "binary_sensor", "sensor", "switch" };
+        private readonly string[] _supportedDomains = {"binary_sensor", "sensor", "switch", "climate"};
 
-        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, object state,
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, string state,
             object? attributes, bool waitForResponse)
         {
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
@@ -61,32 +59,30 @@ namespace NetDaemon.Daemon
                     var service = InternalState.ContainsKey(entityId) ? "entity_update" : "entity_create";
                     // We have an integration that will help persist 
                     await _netDaemonHost.Client.CallService("netdaemon", service,
-                        new
-                        {
-                            entity_id = entityId,
-                            state = state.ToString(),
-                            attributes
-                        }, waitForResponse).ConfigureAwait(false);
+                            new
+                            {
+                                entity_id = entityId,
+                                state,
+                                attributes
+                            }, waitForResponse)
+                        .ConfigureAwait(false);
 
                     if (!waitForResponse) return null;
-                  
+
                     result = await _netDaemonHost.Client.GetState(entityId).ConfigureAwait(false);
                 }
                 else
                 {
-                    result = await _netDaemonHost.Client.SetState(entityId, state.ToString(), attributes)
+                    result = await _netDaemonHost.Client.SetState(entityId, state, attributes)
                         .ConfigureAwait(false);
                 }
 
                 if (result == null) return null;
-        
-                EntityState entityState = result.Map();
-                InternalState[entityState.EntityId] = entityState;
-                return entityState with
-                {
-                    State = state,
-                    Area = _netDaemonHost.GetAreaForEntityId(entityState.EntityId)
-                };
+
+                EntityState entityState = result.MapWithArea(_netDaemonHost.GetAreaForEntityId(result.EntityId));
+                InternalState[entityState.EntityId] = entityState with {State = state};
+
+                return entityState;
             }
             catch (Exception e)
             {

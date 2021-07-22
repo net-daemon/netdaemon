@@ -22,10 +22,6 @@ namespace NetDaemon.Daemon.Tests.Reactive
     /// </remarks>
     public class FakeTests : CoreDaemonHostTestBase
     {
-        public FakeTests() : base()
-        {
-        }
-
         [Fact]
         public async Task CallServiceShouldCallCorrectFunction()
         {
