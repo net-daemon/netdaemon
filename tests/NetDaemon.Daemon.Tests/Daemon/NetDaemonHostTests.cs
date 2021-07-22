@@ -557,33 +557,33 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         [Theory]
         [InlineData(false, null, null, null, null)]
-        [InlineData(true, null, 10, null, 10L)]
-        [InlineData(true, 10, null, 10L, null)]
-        [InlineData(true, "unavailable", 10, null, 10L)]
-        [InlineData(true, 10, "unavailable", 10L, null)]
-        [InlineData(true, 10, 11, 10L, 11L)]
+        [InlineData(true, null, 10, null, 10)]
+        [InlineData(true, 10, null, 10, null)]
+        [InlineData(true, "unavailable", 10, null, 10)]
+        [InlineData(true, 10, "unavailable", 10, null)]
+        [InlineData(true, 10, 11, 10, 11)]
         [InlineData(true, "hello", "world", "hello", "world")]
-        [InlineData(true, (long) 10, 10.1d, 10.0d, 10.1d)]
-        [InlineData(true, 10.1d, 10L, 10.1d, 10.0d)]
+        [InlineData(true, (long) 10, 10.0d, 10.0d, 10.0d)]
+        [InlineData(true, 10.0d, (long) 10, 10.0d, 10.0d)]
         public void FixStateTypesShouldReturnCorrectValues(
-            bool result, object? newState, object? oldState, object? expectedNewState, object? expectedOldState)
+            bool result, dynamic? newState, dynamic? oldState, dynamic? expectedNewState, dynamic? expectedOldState)
         {
             HassStateChangedEventData state = new()
             {
                 NewState = new HassState
                 {
-                    State = newState?.ToString()
+                    State = newState
                 },
                 OldState = new HassState
                 {
-                    State = oldState?.ToString()
+                    State = oldState
                 }
             };
 
             bool res = NetDaemonHost.FixStateTypes(state);
             Assert.Equal(result, res);
-            Assert.Equal(expectedNewState, (state.NewState as ExtendedHassState)?.ObjectState);
-            Assert.Equal(expectedOldState, (state.OldState as ExtendedHassState)?.ObjectState);
+            Assert.Equal(expectedNewState, state.NewState.State);
+            Assert.Equal(expectedOldState, state.OldState.State);
         }
     }
 }

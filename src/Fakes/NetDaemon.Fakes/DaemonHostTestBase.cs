@@ -142,7 +142,7 @@ namespace NetDaemon.Daemon.Fakes
             DefaultDaemonHost.StateManager.Store(new HassState()
             {
                 EntityId = entityId,
-                State = state?.ToString()
+                State = state
             });
 
             if (area == null) return;
