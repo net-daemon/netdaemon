@@ -507,7 +507,7 @@ namespace NetDaemon.Daemon
         {
             _ = entityId ?? throw new ArgumentNullException(nameof(entityId));
             _ = state ?? throw new ArgumentNullException(nameof(state));
-            var stateString = Convert.ToString(state, CultureInfo.InvariantCulture);
+            var stateString = Convert.ToString(state, CultureInfo.InvariantCulture) ?? string.Empty;
 
             var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, stateString, attributes,
                     waitForResponse)
@@ -583,7 +583,6 @@ namespace NetDaemon.Daemon
         ///     Fixes the type differences that can be from Home Assistant depending on
         ///     different conditions
         /// </summary>
-        /// <param name="stateData">The state data to be fixed</param>
         /// <remarks>
         ///     If a sensor is unavailable that normally has a primitive value
         ///     it can be a string. The automations might expect a integer.
@@ -595,18 +594,14 @@ namespace NetDaemon.Daemon
         /// </remarks>
         internal static bool FixStateTypes(ref EntityState oldState, ref  EntityState newState)
         {
-            // NewState and OldState can not be null, something is seriously wrong
-            if (newState is null || oldState is null)
-                return false;
-
             // Both states can not be null, something is seriously wrong
             if (newState.State is null && oldState.State is null)
                 return false;
 
             if (newState.State is not null && oldState.State is not null)
             {
-                Type? newStateType = newState?.State?.GetType();
-                Type? oldStateType = oldState?.State?.GetType();
+                Type? newStateType = newState.State?.GetType();
+                Type? oldStateType = oldState.State?.GetType();
 
                 if (newStateType != oldStateType)
                 {
@@ -634,7 +629,6 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the long to double
                             if (newStateType == typeof(long))
-                                
                                 newState = newState with { State = Convert.ToDouble(newState!.State, CultureInfo.InvariantCulture) };
                             else
                                 return false; // We do not support any other conversion
