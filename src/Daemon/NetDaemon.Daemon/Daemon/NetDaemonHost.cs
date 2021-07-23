@@ -133,7 +133,8 @@ namespace NetDaemon.Daemon
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
 
-        [SuppressMessage("", "CA1721")] public IEnumerable<EntityState> State => StateManager.States;
+        [SuppressMessage("", "CA1721")]
+        public IEnumerable<EntityState> State => StateManager.States;
 
         // For testing
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
@@ -592,20 +593,20 @@ namespace NetDaemon.Daemon
         ///     or setting null. It returns false if the casts can not be
         ///     managed.
         /// </remarks>
-        internal static bool FixStateTypes(ref EntityState OldState, ref  EntityState NewState)
+        internal static bool FixStateTypes(ref EntityState oldState, ref  EntityState newState)
         {
             // NewState and OldState can not be null, something is seriously wrong
-            if (NewState is null || OldState is null)
+            if (newState is null || oldState is null)
                 return false;
 
             // Both states can not be null, something is seriously wrong
-            if (NewState.State is null && OldState.State is null)
+            if (newState.State is null && oldState.State is null)
                 return false;
 
-            if (NewState.State is not null && OldState.State is not null)
+            if (newState.State is not null && oldState.State is not null)
             {
-                Type? newStateType = NewState?.State?.GetType();
-                Type? oldStateType = OldState?.State?.GetType();
+                Type? newStateType = newState?.State?.GetType();
+                Type? oldStateType = oldState?.State?.GetType();
 
                 if (newStateType != oldStateType)
                 {
@@ -615,9 +616,9 @@ namespace NetDaemon.Daemon
                     {
                         // We have a statechange to or from string, just ignore for now and set the string to null
                         if (newStateType == typeof(string))
-                            NewState = NewState with { State = null} ;
+                            newState = newState with { State = null} ;
                         else
-                            OldState = OldState with { State = null} ;
+                            oldState = oldState with { State = null} ;
                     }
                     else if (newStateType == typeof(double) || oldStateType == typeof(double))
                     {
@@ -625,7 +626,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the integer to double
                             if (oldStateType == typeof(long))
-                                OldState = OldState with { State = Convert.ToDouble(OldState!.State) } ;
+                                oldState = oldState with { State = Convert.ToDouble(oldState!.State, CultureInfo.InvariantCulture) } ;
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -634,7 +635,7 @@ namespace NetDaemon.Daemon
                             // Try convert the long to double
                             if (newStateType == typeof(long))
                                 
-                                NewState = NewState with { State = Convert.ToDouble(NewState!.State) };
+                                newState = newState with { State = Convert.ToDouble(newState!.State, CultureInfo.InvariantCulture) };
                             else
                                 return false; // We do not support any other conversion
                         }
