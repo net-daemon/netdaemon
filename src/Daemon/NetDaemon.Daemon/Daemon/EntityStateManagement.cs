@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.Logging;
+using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Mapping;
 
 namespace NetDaemon.Daemon
 {
@@ -21,11 +22,11 @@ namespace NetDaemon.Daemon
             _netDaemonHost = netDaemonHost;
         }
 
-        internal ConcurrentDictionary<string, HassState> InternalState = new();
+        internal ConcurrentDictionary<string, EntityState> InternalState = new();
 
-        public IEnumerable<HassState> States => InternalState.Values;
+        public IEnumerable<EntityState> States => InternalState.Values;
 
-        public HassState? GetState(string entityId)
+        public EntityState? GetState(string entityId)
         {
             return InternalState.TryGetValue(entityId, out var returnValue) ? returnValue : null;
         }
@@ -36,15 +37,15 @@ namespace NetDaemon.Daemon
 
             foreach (var state in hassStates)
             {
-                InternalState[state.EntityId] = state;
+                InternalState[state.EntityId] = state.MapWithArea(_netDaemonHost.GetAreaForEntityId(state.EntityId));
             }
         }
 
-        public void Store(HassState newState) => InternalState[newState.EntityId] = newState;
+        public void Store(EntityState newState) => InternalState[newState.EntityId] = newState;
 
         private readonly string[] _supportedDomains = {"binary_sensor", "sensor", "switch", "climate"};
 
-        public async Task<HassState?> SetStateAndWaitForResponseAsync(string entityId, string? state,
+        public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, string state,
             object? attributes, bool waitForResponse)
         {
             if (!entityId.Contains('.', StringComparison.InvariantCultureIgnoreCase))
@@ -72,15 +73,16 @@ namespace NetDaemon.Daemon
                 }
                 else
                 {
-                    result = await _netDaemonHost.Client.SetState(entityId, state ?? "", attributes)
+                    result = await _netDaemonHost.Client.SetState(entityId, state, attributes)
                         .ConfigureAwait(false);
                 }
 
                 if (result == null) return null;
 
-                InternalState[result.EntityId] = result with {State = state};
+                EntityState entityState = result.MapWithArea(_netDaemonHost.GetAreaForEntityId(result.EntityId));
+                InternalState[entityState.EntityId] = entityState with {State = state};
 
-                return result;
+                return entityState;
             }
             catch (Exception e)
             {

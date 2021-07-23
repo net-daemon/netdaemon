@@ -134,8 +134,7 @@ namespace NetDaemon.Daemon
             NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
 
         [SuppressMessage("", "CA1721")]
-        public IEnumerable<EntityState> State =>
-            StateManager.States.Select(s => s.MapWithArea(GetAreaForEntityId(s.EntityId)));
+        public IEnumerable<EntityState> State => StateManager.States;
 
         // For testing
         internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
@@ -248,8 +247,7 @@ namespace NetDaemon.Daemon
             return data;
         }
 
-        public EntityState? GetState(string entityId) =>
-            StateManager.GetState(entityId)?.MapWithArea(GetAreaForEntityId(entityId));
+        public EntityState? GetState(string entityId) => StateManager.GetState(entityId);
 
         /// <inheritdoc/>
         public async Task Initialize(IInstanceDaemonApp appInstanceManager)
@@ -509,12 +507,12 @@ namespace NetDaemon.Daemon
         {
             _ = entityId ?? throw new ArgumentNullException(nameof(entityId));
             _ = state ?? throw new ArgumentNullException(nameof(state));
-            var stateString = Convert.ToString(state, CultureInfo.InvariantCulture);
+            var stateString = Convert.ToString(state, CultureInfo.InvariantCulture) ?? string.Empty;
 
             var hassState = await StateManager.SetStateAndWaitForResponseAsync(entityId, stateString, attributes,
                     waitForResponse)
                 .ConfigureAwait(false);
-            return hassState?.MapWithArea(GetAreaForEntityId(entityId));
+            return hassState;
         }
 
         public Task<EntityState?> SetStateAsync(string entityId, object state,
@@ -585,7 +583,6 @@ namespace NetDaemon.Daemon
         ///     Fixes the type differences that can be from Home Assistant depending on
         ///     different conditions
         /// </summary>
-        /// <param name="stateData">The state data to be fixed</param>
         /// <remarks>
         ///     If a sensor is unavailable that normally has a primitive value
         ///     it can be a string. The automations might expect a integer.
@@ -595,26 +592,16 @@ namespace NetDaemon.Daemon
         ///     or setting null. It returns false if the casts can not be
         ///     managed.
         /// </remarks>
-        internal static bool FixStateTypes(HassStateChangedEventData stateData)
+        internal static bool FixStateTypes(ref EntityState oldState, ref  EntityState newState)
         {
-            // NewState and OldState can not be null, something is seriously wrong
-            if (stateData.NewState is null || stateData.OldState is null)
-                return false;
-
             // Both states can not be null, something is seriously wrong
-            if (stateData.NewState.State is null && stateData.OldState.State is null)
+            if (newState.State is null && oldState.State is null)
                 return false;
 
-            // Replace states with extendedHasState so we can save objectState
-            var newState = new ExtendedHassState(stateData.NewState);
-            var oldState = new ExtendedHassState(stateData.OldState);
-            stateData.NewState = newState;
-            stateData.OldState = oldState;
-
-            if (newState.ObjectState is not null && oldState.ObjectState is not null)
+            if (newState.State is not null && oldState.State is not null)
             {
-                Type? newStateType = newState.ObjectState.GetType();
-                Type? oldStateType = oldState.ObjectState.GetType();
+                Type? newStateType = newState.State?.GetType();
+                Type? oldStateType = oldState.State?.GetType();
 
                 if (newStateType != oldStateType)
                 {
@@ -624,9 +611,9 @@ namespace NetDaemon.Daemon
                     {
                         // We have a statechange to or from string, just ignore for now and set the string to null
                         if (newStateType == typeof(string))
-                            newState.ObjectState = null;
+                            newState = newState with { State = null} ;
                         else
-                            oldState.ObjectState = null;
+                            oldState = oldState with { State = null} ;
                     }
                     else if (newStateType == typeof(double) || oldStateType == typeof(double))
                     {
@@ -634,7 +621,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the integer to double
                             if (oldStateType == typeof(long))
-                                oldState.ObjectState = Convert.ToDouble(oldState.ObjectState, CultureInfo.InvariantCulture);
+                                oldState = oldState with { State = Convert.ToDouble(oldState!.State, CultureInfo.InvariantCulture) } ;
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -642,7 +629,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the long to double
                             if (newStateType == typeof(long))
-                                newState.ObjectState = Convert.ToDouble(newState.ObjectState, CultureInfo.InvariantCulture);
+                                newState = newState with { State = Convert.ToDouble(newState!.State, CultureInfo.InvariantCulture) };
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -773,7 +760,12 @@ namespace NetDaemon.Daemon
                 return;
             }
 
-            if (!FixStateTypes(stateData))
+            // Make sure we get the area name with the new state
+            var area = GetAreaForEntityId(stateData!.NewState.EntityId);
+            var newState = stateData!.NewState!.MapWithArea(area);
+            var oldState = stateData!.OldState!.MapWithArea(area);
+
+            if (!FixStateTypes(ref oldState, ref newState))
             {
                 if (stateData.NewState?.State != stateData.OldState?.State)
                 {
@@ -790,13 +782,8 @@ namespace NetDaemon.Daemon
 
                 return;
             }
-
-            StateManager.Store(stateData!.NewState);
-
-            // Make sure we get the area name with the new state
-            var area = GetAreaForEntityId(stateData!.NewState.EntityId);
-            var newState = stateData!.NewState!.MapWithArea(area);
-            var oldState = stateData!.OldState!.MapWithArea(area);
+            
+            StateManager.Store(newState);
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {
