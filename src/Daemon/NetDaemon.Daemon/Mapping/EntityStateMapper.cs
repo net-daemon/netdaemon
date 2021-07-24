@@ -31,7 +31,7 @@ namespace NetDaemon.Mapping
             var entityState = new EntityState
             {
                 EntityId = hassState.EntityId,
-                State = hassState.State,
+                State = ParseDataType(hassState.State),
                 Area = area,
 
                 LastUpdated = hassState.LastUpdated,
@@ -67,6 +67,20 @@ namespace NetDaemon.Mapping
                     dict[key] = value;
                 }
             }
+        }
+
+        private static object? ParseDataType(string? state)
+        {
+            if (long.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out long intValue))
+                return intValue;
+
+            if (double.TryParse(state, NumberStyles.Number, CultureInfo.InvariantCulture, out double doubleValue))
+                return doubleValue;
+
+            if (state == "unavailable")
+                return null;
+
+            return state;
         }
     }
 }
