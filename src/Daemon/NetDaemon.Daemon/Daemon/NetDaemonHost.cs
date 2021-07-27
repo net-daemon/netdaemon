@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
@@ -127,7 +126,7 @@ namespace NetDaemon.Daemon
 
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
 
-        private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
+       private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
             InternalRunningAppInstances.Values.OfType<NetDaemonRxApp>();
 
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
@@ -397,8 +396,9 @@ namespace NetDaemon.Daemon
             }
             else
             {
-                if (changedEvent.Data is HassServiceEventData hseData && hseData.Domain == "homeassistant" &&
-                    (hseData.Service == "stop" || hseData.Service == "restart"))
+                if (changedEvent.Data is HassServiceEventData {
+                    Domain: "homeassistant",
+                    Service: "stop" or "restart"} hseData)
                 {
                     // The user stopped HA so just stop processing messages
                     Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
@@ -737,6 +737,11 @@ namespace NetDaemon.Daemon
                         HandleCustomEvent(hassEvent);
                         break;
                 }
+
+                foreach (var handler in AllAppInstances.OfType<IHandleHassEvent>())
+                {
+                    await handler.HandleNewEvent(hassEvent);
+                }
             }
             catch (Exception e)
             {
@@ -788,7 +793,7 @@ namespace NetDaemon.Daemon
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {
                 // Call the observable with no blocking
-                foreach (var observer in ((StateChangeObservable) netDaemonRxApp.StateChangesObservable).Observers)
+                foreach (var observer in netDaemonRxApp.StateChangesObservable.Observers)
                 {
                     TrackBackgroundTask(Task.Run(() =>
                     {
