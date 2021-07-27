@@ -131,7 +131,7 @@ namespace NetDaemon.Daemon
             InternalRunningAppInstances.Values.OfType<NetDaemonRxApp>();
 
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
-            NetDaemonRxApps.SelectMany(app => ((EventObservable) app.EventChangesObservable).Observers);
+            NetDaemonRxApps.SelectMany(app => ((EventObservable)app.EventChangesObservable).Observers);
 
         [SuppressMessage("", "CA1721")]
         public IEnumerable<EntityState> State => StateManager.States;
@@ -150,7 +150,7 @@ namespace NetDaemon.Daemon
         internal CancellationToken CancelToken => _cancelToken;
         internal IHassClient Client => _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
 
-        public Task<IEnumerable<HassServiceDomain>> GetAllServices() => Client.GetServices();
+        public Task<IReadOnlyCollection<HassServiceDomain>> GetAllServices() => Client.GetServices();
 
         [SuppressMessage("", "CA1031")]
         public void TriggerWebhook(string id, object? data, bool waitForResponse = false)
@@ -170,7 +170,7 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         public void CallService(string domain, string service, object? data = null, bool waitForResponse = false)
         {
-            var task = Client.CallService(domain, service, data!, waitForResponse);
+            var task = Client.CallService(domain, service, data!, null, waitForResponse);
 
             if (!waitForResponse)
             {
@@ -188,7 +188,7 @@ namespace NetDaemon.Daemon
         {
             try
             {
-                await Client.CallService(domain, service, data!, waitForResponse).ConfigureAwait(false);
+                await Client.CallService(domain, service, data!, null, waitForResponse).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -236,7 +236,7 @@ namespace NetDaemon.Daemon
 
             if (DataCache.ContainsKey(id))
             {
-                return (T) DataCache[id];
+                return (T)DataCache[id];
             }
 
             var data = await _repository!.Get<T>(id).ConfigureAwait(false);
@@ -592,7 +592,7 @@ namespace NetDaemon.Daemon
         ///     or setting null. It returns false if the casts can not be
         ///     managed.
         /// </remarks>
-        internal static bool FixStateTypes(ref EntityState oldState, ref  EntityState newState)
+        internal static bool FixStateTypes(ref EntityState oldState, ref EntityState newState)
         {
             // Both states can not be null, something is seriously wrong
             if (newState.State is null && oldState.State is null)
@@ -611,9 +611,9 @@ namespace NetDaemon.Daemon
                     {
                         // We have a statechange to or from string, just ignore for now and set the string to null
                         if (newStateType == typeof(string))
-                            newState = newState with { State = null} ;
+                            newState = newState with { State = null };
                         else
-                            oldState = oldState with { State = null} ;
+                            oldState = oldState with { State = null };
                     }
                     else if (newStateType == typeof(double) || oldStateType == typeof(double))
                     {
@@ -621,7 +621,7 @@ namespace NetDaemon.Daemon
                         {
                             // Try convert the integer to double
                             if (oldStateType == typeof(long))
-                                oldState = oldState with { State = Convert.ToDouble(oldState!.State, CultureInfo.InvariantCulture) } ;
+                                oldState = oldState with { State = Convert.ToDouble(oldState!.State, CultureInfo.InvariantCulture) };
                             else
                                 return false; // We do not support any other conversion
                         }
@@ -747,7 +747,7 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1031")]
         private void HandleStateChangeEvent(HassEvent hassEvent)
         {
-            var stateData = (HassStateChangedEventData?) hassEvent.Data;
+            var stateData = (HassStateChangedEventData?)hassEvent.Data;
 
             if (stateData is null)
             {
@@ -782,13 +782,13 @@ namespace NetDaemon.Daemon
 
                 return;
             }
-            
+
             StateManager.Store(newState);
 
             foreach (var netDaemonRxApp in NetDaemonRxApps)
             {
                 // Call the observable with no blocking
-                foreach (var observer in ((StateChangeObservable) netDaemonRxApp.StateChangesObservable).Observers)
+                foreach (var observer in ((StateChangeObservable)netDaemonRxApp.StateChangesObservable).Observers)
                 {
                     TrackBackgroundTask(Task.Run(() =>
                     {
@@ -813,7 +813,7 @@ namespace NetDaemon.Daemon
             _ = EventChangeObservers ??
                 throw new NetDaemonNullReferenceException(nameof(EventChangeObservers));
 
-            var serviceCallData = (HassServiceEventData?) hassEvent.Data;
+            var serviceCallData = (HassServiceEventData?)hassEvent.Data;
 
             if (serviceCallData == null)
             {
@@ -1057,7 +1057,7 @@ namespace NetDaemon.Daemon
                 // the Entity_id can be a single string or an array
                 var entityIds = (entityIdField switch
                 {
-                    string id => new [] { id },
+                    string id => new[] { id },
                     object[] arr => arr.OfType<string>().ToArray(),
                     _ => Array.Empty<string>()
                 })
@@ -1093,7 +1093,7 @@ namespace NetDaemon.Daemon
                     }
 
                     app.IsEnabled = false;
-                    await PersistAppStateAsync((NetDaemonAppBase) app).ConfigureAwait(false);
+                    await PersistAppStateAsync((NetDaemonAppBase)app).ConfigureAwait(false);
                     Logger.LogDebug("SET APP {app} state = disabled", app.Id);
                 }
                 else if (state == "on")
@@ -1109,7 +1109,7 @@ namespace NetDaemon.Daemon
                         }
                     }
 
-                    await PersistAppStateAsync((NetDaemonAppBase) app).ConfigureAwait(false);
+                    await PersistAppStateAsync((NetDaemonAppBase)app).ConfigureAwait(false);
                     Logger.LogDebug("SET APP {app} state = enabled", app.Id);
                 }
             }

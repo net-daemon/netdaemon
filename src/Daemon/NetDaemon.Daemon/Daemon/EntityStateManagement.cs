@@ -43,7 +43,7 @@ namespace NetDaemon.Daemon
 
         public void Store(EntityState newState) => InternalState[newState.EntityId] = newState;
 
-        private readonly string[] _supportedDomains = {"binary_sensor", "sensor", "switch", "climate"};
+        private readonly string[] _supportedDomains = { "binary_sensor", "sensor", "switch", "climate" };
 
         public async Task<EntityState?> SetStateAndWaitForResponseAsync(string entityId, string state,
             object? attributes, bool waitForResponse)
@@ -64,7 +64,7 @@ namespace NetDaemon.Daemon
                                 entity_id = entityId,
                                 state,
                                 attributes
-                            }, waitForResponse)
+                            }, null, waitForResponse)
                         .ConfigureAwait(false);
 
                     if (!waitForResponse) return null;
@@ -80,7 +80,7 @@ namespace NetDaemon.Daemon
                 if (result == null) return null;
 
                 EntityState entityState = result.MapWithArea(_netDaemonHost.GetAreaForEntityId(result.EntityId));
-                InternalState[entityState.EntityId] = entityState with {State = state};
+                InternalState[entityState.EntityId] = entityState with { State = state };
 
                 return entityState;
             }
