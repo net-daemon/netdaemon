@@ -719,6 +719,11 @@ namespace NetDaemon.Daemon
                         HandleCustomEvent(hassEvent);
                         break;
                 }
+
+                foreach (var handler in AllAppInstances.OfType<IHandleHassEvent>())
+                {
+                    await handler.HandleNewEvent(hassEvent).ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
@@ -918,6 +923,12 @@ namespace NetDaemon.Daemon
                 {
                     InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
                 }
+
+                // // TODO: Remove hack to set Cient to application
+                // if (appInstance is IHandleHassEvent handler)
+                // {
+                //     handler.Initialize(Client);
+                // }
             }
 
             // Now run initialize on all sorted by dependencies

@@ -2,48 +2,54 @@ using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using NetDaemon.Common;
-using NetDaemon.Common.Reactive;
+using NetDaemon.Common.ModelV3;
+using NetDaemon.Common.Reactive.Services;
+using ZoneEntity = NetDaemon.Common.ModelV3.Domains.ZoneEntity;
+using  NetDaemon.Common.ModelV3.Domains;
+using ClimateEntity = NetDaemon.Common.ModelV3.Domains.ClimateEntity;
 
 namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
     /// <summary> Use this class as startingpoint for debugging
     /// </summary>
-    public class DebugApp : NetDaemonRxApp
+    [Focus]
+    public class DebugApp : NdApplication
     {
+        
         // Use two guids, one when instanced and one when initialized
         // can track errors with instancing
         private Guid _instanceId = Guid.NewGuid();
+        private readonly ClimateEntity _climateEntity;
+
         public DebugApp() : base()
         {
+            _climateEntity = new (this, "climate.dummy_thermostat");
         }
 
         public override void Initialize()
         {
-            var uid = Guid.NewGuid();
-            RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello developer! from instance {instanceId} - {id}", _instanceId, uid));
-           // CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works!" }, true);
+            base.Initialize();
+            _climateEntity.StateAllChanges.Subscribe(OnNext);
+
+             StateChanges.Subscribe(e =>
+             {
+                 Console.WriteLine($"1 {e.Entity.EntityId}, {e.Old?.State} => {e.New?.State}");
+             });
+
         }
 
-        [HomeAssistantServiceCall]
-        public void CallMeFromHass(dynamic data)
+        private void OnNext(StateChange<ClimateEntity, ClimateState> obj)
         {
-            Log("A call from hass! {data}", data);
+            var attributes = obj.New?.Attributes;
+            Console.WriteLine($"{attributes}");
+            
+            var t = obj.New?.Attributes.Temperature;
+            
+            var a2 = _climateEntity.State?.Attributes;
+            
+            var zone = new ZoneEntity(this, "zone.home");
+            var lat = zone.State?.Attributes.latitude;
         }
 
-        [HomeAssistantServiceCall]
-        public async Task Testing(dynamic _)
-        {
-            Log("Wait for a update");
-            try
-            {
-                Entity("input_select.who_cooks").StateChanges.Timeout(TimeSpan.FromSeconds(20)).Take(1).Wait();
-                Log("State changed as expected");
-            }
-            catch (System.Exception)
-            {
-                Log("We had timeout");
-            }
-            await Task.Delay(10);
-        }
     }
 }
