@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Model3.ModelV3;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon;
@@ -8,34 +11,46 @@ using NetDaemon.Mapping;
 
 namespace NetDaemon.Common.ModelV3
 {
+    // TODO: try to derive from a simpler base class or interface if possible so we require as little as possible
     public class NdApplication : NetDaemonAppBase, IHandleHassEvent, IHaContext
     {
         private readonly ObservableBase<StateChange> _observable;
-        private EntityStateCache _entityStateCache = new EntityStateCache();
+        
+        // TODO: the state cache should be share between applications
+        private EntityStateCache _entityStateCache = new ();
         public NdApplication()
         {
             _observable = new ObservableBase<StateChange>(Logger, this);
         }
-        public IObservable<StateChange> StateChanges { get; }
 
-        public EntityState GetState(string entityId) => new (_entityStateCache.GetState(entityId));
-        
+
+        public EntityState? GetState(string entityId)
+        {
+            var hassState = _entityStateCache.GetState(entityId);
+            
+            return hassState == null ? null : new EntityState(hassState);
+        }
+
         public void CallService(string domain, string service, object? data, bool waitForResponse = false)
         {
             throw new NotImplementedException();
         }
 
-
         public IRxEvent EventChanges { get; }
-        IObservable<StateChange> IHaContext.StateAllChanges => StateAllChanges;
+        public IObservable<StateChange> StateAllChanges => _observable;
+        public IObservable<StateChange> StateChanges => _observable.Where(e => e.New?.State != e.Old?.State);
 
-        IObservable<StateChange> StateAllChanges => _observable;
+        public void Initialize(IHassClient client)
+        {
+            _entityStateCache.RefreshAsync(client);        
+        }
 
         public Task HandleNewEvent(HassEvent hassEvent)
         {
             if (hassEvent.Data is not HassStateChangedEventData stateChangedEventData) return Task.CompletedTask;
             
             _entityStateCache.Store(stateChangedEventData.NewState!);
+            
             foreach (var observer in _observable.Observers)
             {
                 observer.OnNext(stateChangedEventData.Map(this));

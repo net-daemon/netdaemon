@@ -345,6 +345,7 @@ namespace NetDaemon.Daemon
                         ? "Successfully connected to Home Assistant Core in Home Assistant Add-on"
                         : "Successfully connected to Home Assistant Core on host {host}:{port}", host, port);
 
+                
                 while (!_cancelToken.IsCancellationRequested)
                 {
                     if (!await ReadEvent().ConfigureAwait(false)) break;
@@ -990,6 +991,12 @@ namespace NetDaemon.Daemon
                 if (await RestoreAppState(appInstance).ConfigureAwait(false))
                 {
                     InternalRunningAppInstances[appInstance.Id!] = appInstance;
+                }
+
+                // TODO: Remove hack to set Cient to application
+                if (appInstance is IHandleHassEvent handler)
+                {
+                    handler.Initialize(Client);
                 }
             }
 

@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Globalization;
 using System.Text.Json;
 using JoySoftware.HomeAssistant.Model;
+using Model3;
 
 namespace NetDaemon.Common.ModelV3
 {
@@ -13,6 +12,7 @@ namespace NetDaemon.Common.ModelV3
         
         public EntityState(HassState hassState)
         {
+            // TODO: move to a mapper class
             EntityId = hassState.EntityId;
             AttributesJson = hassState.AttributesJson ?? new JsonElement();
             LastChanged = hassState.LastChanged;
@@ -27,35 +27,24 @@ namespace NetDaemon.Common.ModelV3
 
         public string EntityId { get; } = "";
 
-        /// <summary>
-        ///     The state
-        /// </summary>
         public string State { get; } = "";
 
         public JsonElement AttributesJson { get; }
-        /// <summary>
-        ///     Unique id of the entity
-        /// </summary>
+        public virtual object Attributes { get; }
 
-        /// <summary>
-        ///     Attributes of the entity
-        /// </summary>
-        public virtual object? Attributes { get; init; } = new FluentExpandoObject(true, true);
-
-        
-        /// <summary>
-        ///     Last changed, when state changed from and to different values
-        /// </summary>
         public DateTime LastChanged { get; }
 
-        /// <summary>
-        ///     Last updated, when entity state or attributes changed
-        /// </summary>
         public DateTime LastUpdated { get; }
 
-        /// <summary>
-        /// Context
-        /// </summary>
         public Context? Context { get; }
     }
+    
+    public record EntityState<TAttributes> : EntityState where TAttributes : class
+    {
+        public EntityState(EntityState source) : base(source)
+        { }
+        
+        public override TAttributes Attributes => AttributesJson.ToObject<TAttributes>();
+    }
+
 }

@@ -7,25 +7,27 @@ using NetDaemon.Common.ModelV3.Domains;
 namespace NetDaemon.Common.ModelV3
 {
     /// <summary>
-    /// Represents a Home Assitant entity with its state, changes and services
+    /// Represents a Home Assistant entity with its state, changes and services
     /// </summary>
     public class Entity
     {
         /// <summary>
-        ///     The IHAContext
+        /// The IHAContext
         /// </summary>
         protected IHaContext HaContext { get; }
 
         /// <summary>
-        ///     Entity id being handled by this entity
+        /// Entity id being handled by this entity
         /// </summary>
         public string EntityId { get; }
 
-        public Entity(IHaContext daemon, string entityId)
+        public Entity(IHaContext haContext, string entityId)
         {
-            HaContext = daemon;
+            HaContext = haContext;
             EntityId = entityId;
         }
+
+        public string Area => "todo";
 
         public virtual EntityState? State => HaContext.GetState(EntityId);
 
@@ -33,24 +35,32 @@ namespace NetDaemon.Common.ModelV3
             HaContext.StateAllChanges.Where(e => e.New.EntityId == EntityId)
                 .Select(e => new StateChange(this, e.Old, e.New));
 
-        public IObservable<StateChange> StateChanges =>
-            StateAllChanges.Where(s => s.New.State != s.Old.State).Select(e => new StateChange(this, e.Old, e.New));
+        public virtual IObservable<StateChange> StateChanges =>
+            StateAllChanges.Where(s => s.New.State != s.Old.State)
+                .Select(e => new StateChange(this, e.Old, e.New));
 
         public virtual void CallService(string service, object? data = null, bool waitForResponse = false)
         {
-            var domain = EntityId.SplitEntityId().Domain;
-
-            var serviceData = new
-            {
-                target = new
-                {
-                    entity_id = EntityId
-                },
-                data,
-            };
-            
-            HaContext.CallService(domain, service, serviceData, waitForResponse);
+            // todo: use new method to pass target
+            HaContext.CallService(EntityId.SplitEntityId().Domain, service, data , waitForResponse);
         }
+    }
+    
+    public abstract class Entity<TEntity, TState> : Entity where TEntity:  Entity<TEntity, TState> where TState : EntityState
+    {
+        public Entity(IHaContext hasscontext, string entityId) : base(hasscontext, entityId)
+        { }
+    
+        public override TState? State => MapNullableState(base.State) ;
+    
+        public override IObservable<StateChange<TEntity, TState>> StateAllChanges =>
+            base.StateAllChanges.Select(e => new StateChange<TEntity, TState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+
+        public override IObservable<StateChange<TEntity, TState>> StateChanges =>
+            base.StateChanges.Select(e => new StateChange<TEntity, TState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+
+        private TState? MapNullableState(EntityState? state) => state == null ? null : MapState(state!);
+        protected abstract TState MapState(EntityState state);
     }
 
 }
