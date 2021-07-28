@@ -741,7 +741,7 @@ namespace NetDaemon.Daemon
 
                 foreach (var handler in AllAppInstances.OfType<IHandleHassEvent>())
                 {
-                    await handler.HandleNewEvent(hassEvent);
+                    await handler.HandleNewEvent(hassEvent).ConfigureAwait(false);
                 }
             }
             catch (Exception e)

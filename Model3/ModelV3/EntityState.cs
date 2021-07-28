@@ -43,10 +43,14 @@ namespace NetDaemon.Common.ModelV3
     
     public record EntityState<TAttributes> : EntityState where TAttributes : class
     {
+        private Lazy<TAttributes> AttributesLazy;
+
         public EntityState(EntityState source) : base(source)
-        { }
-        
-        public override TAttributes Attributes => AttributesJson.ToObject<TAttributes>();
+        {
+            AttributesLazy = new (() => AttributesJson.ToObject<TAttributes>());            
+        }
+
+        public override TAttributes Attributes => AttributesLazy.Value;
     }
 
 }
