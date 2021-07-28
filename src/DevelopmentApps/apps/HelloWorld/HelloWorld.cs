@@ -12,7 +12,8 @@ namespace NetDaemon.DevelopmentApps.apps.HelloWorld
     {
         public override void Initialize()
         {
-            Log("Hello World!");
+            var state = State("light.bed_light");
+            Log($"Hello World! AREA:{state?.Area}");
         }
     }
 }

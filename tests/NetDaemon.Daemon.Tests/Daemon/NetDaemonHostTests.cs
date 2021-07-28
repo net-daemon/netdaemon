@@ -488,6 +488,22 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
+        public void EntityShouldReturnCorrectValueForAreaAssignedToEntity()
+        {
+            // ARRANGE
+            DefaultDaemonHost._hassEntities["light.lamp"] = new HassEntity
+            {
+                EntityId = "light.lamp",
+                AreaId = "some area"
+            };
+            // ACT
+            var areaName = DefaultDaemonHost.GetAreaForEntityId("light.lamp");
+
+            // ASSERT
+            Assert.Equal("some area", areaName);
+        }
+
+        [Fact]
         public void EntityShouldReturnNullForAreaNotExist()
         {
             // ARRANGE

@@ -644,21 +644,33 @@ namespace NetDaemon.Daemon
             return true;
         }
 
+        /// <summary>
+        ///     Returns any area asociated with the entity or null if missing
+        /// </summary>
+        /// <remarks>
+        ///     It looks for relevant area in the following order:
+        ///         - The area assigned to the entity
+        ///         - The area assigned to the device the entity is assigned to
+        ///         - null if not found
+        /// </remarks>
+        /// <param name="entityId"></param>
         internal string? GetAreaForEntityId(string entityId)
         {
-            if (!_hassEntities.TryGetValue(entityId, out HassEntity? entity) || entity.DeviceId is null) return null;
-            // The entity is on a device
-            if (!_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) || device.AreaId is null)
-                return null;
-            // This device is in an area
-            if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area))
+            if (_hassEntities.TryGetValue(entityId, out HassEntity? entity))
             {
-                return area.Name;
+                if (!string.IsNullOrEmpty(entity.AreaId))
+                    return entity.AreaId;
+                if (entity.DeviceId is null)
+                    return null;
+                if (!_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) || device.AreaId is null)
+                    return null;
+                if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area))
+                {
+                    return area.Name;
+                }
             }
-
             return null;
         }
-
         internal async Task RefreshInternalStatesAndSetArea()
         {
             _ = _hassClient ?? throw new NetDaemonNullReferenceException(nameof(_hassClient));
