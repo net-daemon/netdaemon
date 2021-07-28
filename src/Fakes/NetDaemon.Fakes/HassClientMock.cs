@@ -1,6 +1,7 @@
 ﻿using JoySoftware.HomeAssistant.Client;
 using Moq;
 using System;
+using System.Linq;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Common;
 using Xunit;
 using NetDaemon.Common.Exceptions;
+using System.Collections.ObjectModel;
 
 namespace NetDaemon.Daemon.Fakes
 {
@@ -25,17 +27,17 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Fake areas in HassClient
         /// </summary>
-        public HassAreas Areas { get; } = new();
+        public ICollection<HassArea> Areas { get; } = new List<HassArea>();
 
         /// <summary>
         ///     Fake devices in HassClient
         /// </summary>
-        public HassDevices Devices { get; } = new();
+        public ICollection<HassDevice> Devices { get; } = new List<HassDevice>();
 
         /// <summary>
         ///     Fake entities in HassClient
         /// </summary>
-        public HassEntities Entities { get; } = new();
+        public ICollection<HassEntity> Entities { get; } = new List<HassEntity>();
 
         /// <summary>
         ///     Fake events in HassClient
@@ -60,7 +62,7 @@ namespace NetDaemon.Daemon.Fakes
             SetupGet(x => x.States).Returns(FakeStates);
 
             Setup(x => x.GetAllStates(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() => FakeStates.Values);
+                .ReturnsAsync(() => new ReadOnlyCollection<HassState>(FakeStates.Values.ToList()));
 
             Setup(x => x.ReadEventAsync())
                 .ReturnsAsync(() => FakeEvents.TryDequeue(out var ev) ? ev : null);
@@ -95,10 +97,6 @@ namespace NetDaemon.Daemon.Fakes
                 }
             );
 
-            Setup(n => n.GetAreas()).ReturnsAsync(Areas);
-            Setup(n => n.GetDevices()).ReturnsAsync(Devices);
-            Setup(n => n.GetEntities()).ReturnsAsync(Entities);
-
             // Setup one with area
             Devices.Add(new HassDevice { Id = "device_idd", AreaId = "area_idd" });
             Areas.Add(new HassArea { Name = "Area", Id = "area_idd" });
@@ -108,6 +106,10 @@ namespace NetDaemon.Daemon.Fakes
                 DeviceId = "device_idd"
             });
             DefaultHassClientFactoryMock = new HassClientFactoryMock(this);
+
+            Setup(n => n.GetAreas()).ReturnsAsync(new ReadOnlyCollection<HassArea>(Areas.ToList()));
+            Setup(n => n.GetDevices()).ReturnsAsync(new ReadOnlyCollection<HassDevice>(Devices.ToList()));
+            Setup(n => n.GetEntities()).ReturnsAsync(new ReadOnlyCollection<HassEntity>(Entities.ToList()));
         }
 
         /// <summary>
@@ -313,7 +315,7 @@ namespace NetDaemon.Daemon.Fakes
             foreach (var (attribute, value) in attributesTuples)
                 attributes[attribute] = value;
 
-            Verify(n => n.CallService(domain, service, attributes, It.IsAny<bool>()), Times.AtLeastOnce);
+            Verify(n => n.CallService(domain, service, attributes, null, It.IsAny<bool>()), Times.AtLeastOnce);
         }
 
         /// <summary>
@@ -327,9 +329,9 @@ namespace NetDaemon.Daemon.Fakes
         public void VerifyCallService(string domain, string service, object? data = null, bool waitForResponse = false, Times? times = null)
         {
             if (times is not null)
-                Verify(n => n.CallService(domain, service, data!, waitForResponse), times.Value);
+                Verify(n => n.CallService(domain, service, data!, null, waitForResponse), times.Value);
             else
-                Verify(n => n.CallService(domain, service, data!, waitForResponse), Times.AtLeastOnce);
+                Verify(n => n.CallService(domain, service, data!, null, waitForResponse), Times.AtLeastOnce);
         }
 
         /// <summary>
@@ -356,9 +358,9 @@ namespace NetDaemon.Daemon.Fakes
         public void VerifyCallService(string domain, string service, bool waitForResponse = false, Times? times = null)
         {
             if (times is not null)
-                Verify(n => n.CallService(domain, service, It.IsAny<object>(), waitForResponse), times.Value);
+                Verify(n => n.CallService(domain, service, It.IsAny<object>(), null, waitForResponse), times.Value);
             else
-                Verify(n => n.CallService(domain, service, It.IsAny<object>(), waitForResponse), Times.AtLeastOnce);
+                Verify(n => n.CallService(domain, service, It.IsAny<object>(), null, waitForResponse), Times.AtLeastOnce);
         }
 
         /// <summary>
@@ -368,7 +370,7 @@ namespace NetDaemon.Daemon.Fakes
         /// <param name="times">The number of times it should been called</param>
         public void VerifyCallServiceTimes(string service, Times times)
         {
-            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), It.IsAny<bool>()), times);
+            Verify(n => n.CallService(It.IsAny<string>(), service, It.IsAny<FluentExpandoObject>(), null, It.IsAny<bool>()), times);
         }
 
         /// <summary>
