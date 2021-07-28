@@ -4,9 +4,9 @@
     {
         public StateChange(Entity entity, EntityState? old, EntityState? @new) : this()
         {
+            Entity = entity;
             New = @new;
             Old = old;
-            Entity = entity;
         }
 
         public virtual Entity Entity { get; }

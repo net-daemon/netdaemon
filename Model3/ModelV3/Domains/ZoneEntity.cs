@@ -23,7 +23,7 @@ namespace NetDaemon.Common.ModelV3.Domains
         public double latitude { get; init; }
         public double longitude { get; init; }
         public double radius { get; init; }
-        public string friendly_name { get; init; }
-        public string icon { get; init; }
+        public string? friendly_name { get; init; }
+        public string? icon { get; init; }
     }
 }

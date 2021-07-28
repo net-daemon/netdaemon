@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Model3.ModelV3;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon;
@@ -17,10 +18,10 @@ namespace NetDaemon.Common.ModelV3
         private readonly ObservableBase<StateChange> _observable;
         
         // TODO: the state cache should be share between applications
-        private EntityStateCache _entityStateCache = new ();
+        private readonly EntityStateCache _entityStateCache = new ();
         public NdApplication()
         {
-            _observable = new ObservableBase<StateChange>(Logger, this);
+            _observable = new ObservableBase<StateChange>(Logger?? NullLogger.Instance, this);
         }
 
 
@@ -36,13 +37,14 @@ namespace NetDaemon.Common.ModelV3
             throw new NotImplementedException();
         }
 
-        public IRxEvent EventChanges { get; }
+        //public IRxEvent EventChanges { get; }
         public IObservable<StateChange> StateAllChanges => _observable;
         public IObservable<StateChange> StateChanges => _observable.Where(e => e.New?.State != e.Old?.State);
 
         public void Initialize(IHassClient client)
         {
-            _entityStateCache.RefreshAsync(client);        
+            // todo: better way to initialize cache 
+            _entityStateCache.RefreshAsync(client).Wait();        
         }
 
         public Task HandleNewEvent(HassEvent hassEvent)

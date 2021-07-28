@@ -26,6 +26,6 @@ namespace NetDaemon.Common.ModelV3.Domains
         public double CurrentTemperature { get; init; }
         
         [JsonPropertyName("hvac_action")]
-        public string HacAction { get; init; }
+        public string? HacAction { get; init; }
     }
 }

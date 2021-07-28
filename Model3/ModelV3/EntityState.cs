@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using JoySoftware.HomeAssistant.Model;
 using Model3;
@@ -17,12 +18,13 @@ namespace NetDaemon.Common.ModelV3
             AttributesJson = hassState.AttributesJson ?? new JsonElement();
             LastChanged = hassState.LastChanged;
             LastUpdated = hassState.LastUpdated;
-            Context = new Context
-            {
-                Id = hassState.Context.Id,
-                UserId = hassState.Context.UserId,
-                ParentId = hassState.Context.UserId,
-            };
+            Context = hassState.Context == null ? null : 
+                            new Context
+                            {
+                                Id = hassState.Context.Id,
+                                UserId = hassState.Context.UserId,
+                                ParentId = hassState.Context.UserId,
+                            };
         }
 
         public string EntityId { get; } = "";
@@ -30,7 +32,7 @@ namespace NetDaemon.Common.ModelV3
         public string State { get; } = "";
 
         public JsonElement AttributesJson { get; }
-        public virtual object Attributes { get; }
+        public virtual object Attributes => AttributesJson.ToObject<Dictionary<string, object>>();
 
         public DateTime LastChanged { get; }
 
