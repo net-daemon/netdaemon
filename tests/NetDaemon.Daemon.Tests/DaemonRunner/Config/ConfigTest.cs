@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using NetDaemon.Common;
@@ -269,7 +271,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new List<Type>(),
                 new System.IO.StringReader(yaml),
                 new YamlConfig(CreateSettings(ConfigFixturePath)),
-                ConfigFixturePath
+                ConfigFixturePath,
+                Mock.Of<IServiceProvider>()
             );
 
             var yamlStream = new YamlStream();
@@ -308,7 +311,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                     new List<Type>(),
                     new StringReader(yaml),
                     new YamlConfig(CreateSettings(ConfigFixturePath)),
-                    ConfigFixturePath
+                    ConfigFixturePath,
+                    Mock.Of<IServiceProvider>()
             );
 
             var yamlStream = new YamlStream();

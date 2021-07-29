@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Client;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 
@@ -8,12 +9,13 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
     /// <summary> Use this class as startingpoint for debugging
     /// </summary>
+    [Focus]
     public class DebugApp : NetDaemonRxApp
     {
         // Use two guids, one when instanced and one when initialized
         // can track errors with instancing
         private Guid _instanceId = Guid.NewGuid();
-        public DebugApp() : base()
+        public DebugApp(IClientWebSocketFactory factory) : base()
         {
         }
 

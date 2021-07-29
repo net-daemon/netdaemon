@@ -1,0 +1,2 @@
+injectedApp:
+    class: Injection.DependantApp
