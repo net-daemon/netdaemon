@@ -16,9 +16,12 @@ namespace NetDaemon.Daemon.Config
         private readonly YamlStream _yamlStream;
         private readonly IYamlConfig _yamlConfig;
         private readonly string _yamlFilePath;
+        private IServiceProvider _serviceProvider;
 
-        public YamlAppConfig(IEnumerable<Type> types, TextReader reader, IYamlConfig yamlConfig, string yamlFilePath)
+        public YamlAppConfig(IEnumerable<Type> types, TextReader reader, IYamlConfig yamlConfig, string yamlFilePath,
+            IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
@@ -77,7 +80,7 @@ namespace NetDaemon.Daemon.Config
             _ = appNode ??
                 throw new NetDaemonArgumentNullException(nameof(appNode));
 
-            var netDaemonApp = (INetDaemonAppBase?) Activator.CreateInstance(netDaemonAppType);
+            var netDaemonApp = (INetDaemonAppBase?)ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {

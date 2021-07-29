@@ -38,7 +38,7 @@ namespace NetDaemon.Daemon
         // Internal for testing
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps!;
 
-        public IEnumerable<INetDaemonAppBase> InstanceDaemonApps()
+        public IEnumerable<INetDaemonAppBase> InstanceDaemonApps(IServiceProvider serviceProvider)
         {
             var result = new List<INetDaemonAppBase>(50);
 
@@ -60,7 +60,7 @@ namespace NetDaemon.Daemon
                 try
                 {
                     using var fileReader = File.OpenText(file);
-                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file);
+                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file, serviceProvider);
 
                     foreach (var appInstance in yamlAppConfig.GetInstances())
                     {

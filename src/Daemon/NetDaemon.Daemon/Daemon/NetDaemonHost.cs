@@ -982,7 +982,7 @@ namespace NetDaemon.Daemon
             await UnloadAllApps().ConfigureAwait(false);
 
             // Get all instances
-            var instancedApps = _appInstanceManager.InstanceDaemonApps();
+            var instancedApps = _appInstanceManager.InstanceDaemonApps(ServiceProvider!);
 
             if (!InternalRunningAppInstances.IsEmpty)
             {
