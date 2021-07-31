@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
@@ -67,7 +66,7 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Used for testing
         /// </summary>
-        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalAllAppInstances { get; } = new();
+        internal ConcurrentDictionary<string, INetDaemonApp> InternalAllAppInstances { get; } = new();
 
         private bool _isDisposed;
 
@@ -125,7 +124,7 @@ namespace NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
-        public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values;
+        public IEnumerable<INetDaemonApp> AllAppInstances => InternalAllAppInstances.Values;
 
         private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
             InternalRunningAppInstances.Values.OfType<NetDaemonRxApp>();
@@ -137,7 +136,7 @@ namespace NetDaemon.Daemon
         public IEnumerable<EntityState> State => StateManager.States;
 
         // For testing
-        internal ConcurrentDictionary<string, INetDaemonAppBase> InternalRunningAppInstances { get; } = new();
+        internal ConcurrentDictionary<string, INetDaemonApp> InternalRunningAppInstances { get; } = new();
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
         {
@@ -222,7 +221,7 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public INetDaemonAppBase? GetApp(string appInstanceId)
+        public INetDaemonApp? GetApp(string appInstanceId)
         {
             return InternalRunningAppInstances.ContainsKey(appInstanceId)
                 ? InternalRunningAppInstances[appInstanceId]
@@ -453,7 +452,7 @@ namespace NetDaemon.Daemon
                 throw new NetDaemonArgumentNullException(nameof(data));
 
             DataCache[id] = data;
-            return _repository!.Save(id, data);
+            return _repository.Save(id, data);
         }
 
         [SuppressMessage("", "CA1031")]
@@ -563,15 +562,16 @@ namespace NetDaemon.Daemon
         {
             Logger.LogTrace("Unloading all apps ({instances}, {running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
-            foreach (var app in InternalAllAppInstances)
+            foreach (var app in InternalAllAppInstances.Values)
             {
                 try
                 {
-                    await app.Value.DisposeAsync().ConfigureAwait(false);
+                    if (app is IAsyncDisposable asyncDisposable)
+                        await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError(e, "Failed to unload apps, {app_id}", app.Value.Id);
+                    Logger.LogError(e, "Failed to unload apps, {app_id}", app.Id);
                 }
             }
 
@@ -696,34 +696,49 @@ namespace NetDaemon.Daemon
             await StateManager.RefreshAsync().ConfigureAwait(false);
         }
 
-        internal static IList<INetDaemonAppBase> SortByDependency(IEnumerable<INetDaemonAppBase> unsortedList)
+        internal static IReadOnlyList<INetDaemonApp> SortByDependency(IReadOnlyList<INetDaemonApp> unsortedList)
         {
-            if (unsortedList.SelectMany(n => n.Dependencies).Any())
-            {
-                // There are dependencies defined
-                var edges = new HashSet<Tuple<INetDaemonAppBase, INetDaemonAppBase>>();
+            var dependencies = unsortedList.SelectMany(n => n.Dependencies).ToHashSet();
 
-                foreach (var instance in unsortedList)
-                {
-                    foreach (var dependency in instance.Dependencies)
-                    {
-                        var dependentApp = unsortedList.FirstOrDefault(n => n.Id == dependency);
-                        if (dependentApp == null)
-                        {
-                            throw new NetDaemonException(
-                                $"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
-                        }
+            if (dependencies.Count == 0) return unsortedList;
 
-                        edges.Add(new Tuple<INetDaemonAppBase, INetDaemonAppBase>(instance, dependentApp));
-                    }
-                }
+            // just make sure we  have no null id's
+            unsortedList = unsortedList.Where(a => a.Id is not null).ToList();
 
-                return TopologicalSort(unsortedList.ToHashSet(), edges) ??
-                       throw new NetDaemonException(
-                           "Application dependencies is wrong, please check dependencies for circular dependencies!");
-            }
+            var appById = unsortedList.ToDictionary(a => a.Id!);
+            var ids = appById.Keys.ToHashSet();
 
-            return unsortedList.ToList();
+            var missing = dependencies.FirstOrDefault(d => !ids.Contains(d));
+            if (missing != null)
+                throw new NetDaemonException(
+                             $"There is no app named {missing}, please check dependencies or make sure you have not disabled the dependent app!");
+            
+
+            // There are dependencies defined
+//            var edges = new HashSet<(string, string)>();
+
+            var edges =  unsortedList.SelectMany(p => p.Dependencies.Select(d => (p.Id!, d))).ToHashSet();
+            
+            // foreach (var instance in unsortedList)
+            // {
+            //     foreach (var dependency in instance.Dependencies)
+            //     {
+            //         if (!appById.ContainsKey(dependency))
+            //         {
+            //             throw new NetDaemonException(
+            //                 $"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
+            //         }
+            //
+            //         edges.Add(new Tuple<string, string>(instance.Id!, dependency));
+            //     }
+            // }
+
+            var order = TopologicalSort(ids, edges) ??
+                        throw new NetDaemonException(
+                            "Application dependencies is wrong, please check dependencies for circular dependencies!");
+            
+            return order.Select(id => appById[id]).ToList();
+
         }
 
         [SuppressMessage("", "CA1031")]
@@ -923,7 +938,7 @@ namespace NetDaemon.Daemon
         /// <param name="nodes">All nodes of directed acyclic graph.</param>
         /// <param name="edges">All edges of directed acyclic graph.</param>
         /// <returns>Sorted node in topological order.</returns>
-        private static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<Tuple<T, T>> edges) where T : IEquatable<T>
+        private static List<T>? TopologicalSort<T>(HashSet<T> nodes, HashSet<(T, T)> edges) where T : IEquatable<T>
         {
             // Empty list that will contain the sorted elements
             var L = new List<T>();
@@ -991,7 +1006,7 @@ namespace NetDaemon.Daemon
                 InternalRunningAppInstances.Clear();
             }
 
-            foreach (INetDaemonAppBase appInstance in instancedApps!)
+            foreach (INetDaemonApp appInstance in instancedApps!)
             {
                 InternalAllAppInstances[appInstance.Id!] = appInstance;
                 if (await RestoreAppState(appInstance).ConfigureAwait(false))
@@ -1001,11 +1016,12 @@ namespace NetDaemon.Daemon
             }
 
             // Now run initialize on all sorted by dependencies
-            foreach (var sortedApp in SortByDependency(InternalRunningAppInstances.Values))
+            foreach (var sortedApp in SortByDependency(InternalRunningAppInstances.Values.ToList()))
             {
                 // Init by calling the InitializeAsync
                 var taskInitAsync = sortedApp.InitializeAsync();
-                var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
+                var taskAwaitedAsyncTask =
+                    await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
                 if (taskAwaitedAsyncTask != taskInitAsync)
                 {
                     Logger.LogWarning(
@@ -1013,14 +1029,17 @@ namespace NetDaemon.Daemon
                         sortedApp.Id);
                 }
 
-                // Init by calling the Initialize
-                var taskInit = Task.Run(sortedApp.Initialize);
-                var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
-                if (taskAwaitedTask != taskInit)
+                if (sortedApp is INetDaemonAppBase netDaemonAppBase)
                 {
-                    Logger.LogWarning(
-                        "Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!",
-                        sortedApp.Id);
+                    // Init by calling the Initialize
+                    var taskInit = Task.Run(netDaemonAppBase.Initialize);
+                    var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
+                    if (taskAwaitedTask != taskInit)
+                    {
+                        Logger.LogWarning(
+                            "Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!",
+                            sortedApp.Id);
+                    }
                 }
 
                 await sortedApp.HandleAttributeInitialization(this).ConfigureAwait(false);
@@ -1105,7 +1124,7 @@ namespace NetDaemon.Daemon
                     }
 
                     app.IsEnabled = false;
-                    await PersistAppStateAsync((NetDaemonAppBase)app).ConfigureAwait(false);
+                    await PersistAppStateAsync(app).ConfigureAwait(false);
                     Logger.LogDebug("SET APP {app} state = disabled", app.Id);
                 }
                 else if (state == "on")
@@ -1121,7 +1140,7 @@ namespace NetDaemon.Daemon
                         }
                     }
 
-                    await PersistAppStateAsync((NetDaemonAppBase)app).ConfigureAwait(false);
+                    await PersistAppStateAsync(app).ConfigureAwait(false);
                     Logger.LogDebug("SET APP {app} state = enabled", app.Id);
                 }
             }
@@ -1140,34 +1159,43 @@ namespace NetDaemon.Daemon
         }
 
         //TODO: Refactor this
-        private async Task PersistAppStateAsync(NetDaemonAppBase app)
+        private async Task PersistAppStateAsync(INetDaemonApp app)
         {
-            var obj = await GetDataAsync<IDictionary<string, object?>>(app.GetUniqueIdForStorage())
+            var uniqueIdForStorage = $"{app.GetType().Name}_{app.Id}".ToLowerInvariant();
+            var obj = await GetDataAsync<IDictionary<string, object?>>(uniqueIdForStorage)
                           .ConfigureAwait(false) ??
                       new Dictionary<string, object?>();
 
             obj["__IsDisabled"] = !app.IsEnabled;
-            await SaveDataAsync(app.GetUniqueIdForStorage(), obj).ConfigureAwait(false);
+            await SaveDataAsync(uniqueIdForStorage, obj).ConfigureAwait(false);
         }
 
         [SuppressMessage("", "CA1031")]
-        private async Task<bool> RestoreAppState(INetDaemonAppBase appInstance)
+        private async Task<bool> RestoreAppState(INetDaemonApp appInstance)
         {
             try
             {
                 // First do startup initialization to connect with this daemon instance
-                await appInstance.StartUpAsync(this).ConfigureAwait(false);
-                // The restore the state to load saved settings and if this app is enabled
-                await appInstance.RestoreAppStateAsync().ConfigureAwait(false);
-
-                if (!appInstance.IsEnabled)
+                if (appInstance is INetDaemonAppBase netDaemonAppBase)
                 {
-                    // We should not initialize this app, so dispose it and return
-                    await appInstance.DisposeAsync().ConfigureAwait(false);
-                    return false;
+                    await netDaemonAppBase.StartUpAsync(this).ConfigureAwait(false);
                 }
 
-                return true;
+                // The restore the state to load saved settings and if this app is enabled
+                if (appInstance is INeatDaemonPersistantApp persistantApp)
+                {
+                    await persistantApp.RestoreAppStateAsync().ConfigureAwait(false);
+                }
+
+                if (appInstance.IsEnabled) return true;
+                
+                // We should not initialize this app, so dispose it and return
+                if (appInstance is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                }
+                return false;
+
             }
             catch (Exception e)
             {

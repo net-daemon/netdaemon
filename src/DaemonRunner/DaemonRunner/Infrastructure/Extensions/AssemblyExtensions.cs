@@ -10,7 +10,7 @@ namespace NetDaemon.Infrastructure.Extensions
         public static IEnumerable<Type> GetTypesWhereSubclassOf<T>(this Assembly assembly)
         {
             return assembly.GetTypes()
-                .Where(type => type.IsClass && !type.IsGenericType && !type.IsAbstract && type.IsSubclassOf(typeof(T)));
+                .Where(type => type.IsClass && !type.IsGenericType && !type.IsAbstract && type.IsAssignableTo(typeof(T)));
         }
     }
 }

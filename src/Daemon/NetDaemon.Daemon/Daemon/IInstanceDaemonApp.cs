@@ -21,6 +21,6 @@ namespace NetDaemon.Daemon
         ///     Returns a list of instanced daemonapps
         /// </summary>
         /// <param name="serviceProvider"></param>
-        IEnumerable<INetDaemonAppBase> InstanceDaemonApps(IServiceProvider serviceProvider);
+        IEnumerable<INetDaemonApp> InstanceDaemonApps(IServiceProvider serviceProvider);
     }
 }

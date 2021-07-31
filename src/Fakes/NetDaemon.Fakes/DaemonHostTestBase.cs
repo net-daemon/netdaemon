@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Model;
@@ -340,15 +341,16 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         private async Task InitApps()
         {
-            foreach (var inst in DefaultDaemonHost.InternalAllAppInstances)
+            foreach (var inst in DefaultDaemonHost.InternalAllAppInstances.Values.OfType<INetDaemonAppBase>())
             {
-                await inst.Value.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
+                await inst.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             }
 
-            foreach (var inst in DefaultDaemonHost.InternalRunningAppInstances)
+            foreach (var inst in DefaultDaemonHost.InternalRunningAppInstances.Values)
             {
-                await inst.Value.InitializeAsync().ConfigureAwait(false);
-                inst.Value.Initialize();
+                await inst.InitializeAsync().ConfigureAwait(false);
+                
+                (inst as INetDaemonAppBase)?.Initialize();
             }
         }
 

@@ -350,7 +350,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void SortByDependecyTest()
         {
             // ARRANGE
-            var apps = new List<INetDaemonAppBase>
+            var apps = new List<INetDaemonApp>
             {
                 new MyTestApp()
                 {

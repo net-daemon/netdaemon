@@ -22,7 +22,7 @@ namespace NetDaemon.Common
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
         private readonly Dictionary<string, object> _dict = new();
-        private readonly NetDaemonAppBase? _daemonApp;
+        private readonly INetDaemonAppBase? _daemonApp;
         private readonly bool _ignoreCase;
         private readonly bool _returnNullMissingProperties;
 
@@ -35,7 +35,7 @@ namespace NetDaemon.Common
         /// <param name="daemon">A NetDaemon object used for persistanse</param>
         public FluentExpandoObject(bool ignoreCase = false,
             bool returnNullMissingProperties = false,
-            ExpandoObject? root = null, NetDaemonAppBase? daemon = null)
+            ExpandoObject? root = null, INetDaemonAppBase? daemon = null)
         {
             _daemonApp = daemon;
             _ignoreCase = ignoreCase;

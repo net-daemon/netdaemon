@@ -22,7 +22,7 @@ namespace NetDaemon.Common
         public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; } = new();
 
         private Task? _manageRuntimeInformationUpdatesTask;
-
+      
         /// <summary>
         ///     All actions being performed for service call events
         /// </summary>
@@ -110,7 +110,7 @@ namespace NetDaemon.Common
         ///     Implements the IEqualit.Equals method
         /// </summary>
         /// <param name="other">The instance to compare</param>
-        public bool Equals([AllowNull] INetDaemonAppBase other)
+        public bool Equals([AllowNull] INetDaemonApp other)
         {
             return Id == other?.Id;
         }
@@ -174,7 +174,7 @@ namespace NetDaemon.Common
                 return;
             }
         }
-
+        
         /// <inheritdoc/>
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
@@ -299,7 +299,7 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public INetDaemonAppBase? GetApp(string appInstanceId)
+        public INetDaemonApp? GetApp(string appInstanceId)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
             return Daemon!.GetApp(appInstanceId);

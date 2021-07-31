@@ -33,9 +33,9 @@ namespace NetDaemon.Daemon.Config
 
         [SuppressMessage("", "CA1508")]
         [SuppressMessage("", "CA1065")]
-        public IEnumerable<INetDaemonAppBase> GetInstances()
+        public IEnumerable<INetDaemonApp> GetInstances()
         {
-            var instances = new List<INetDaemonAppBase>();
+            var instances = new List<INetDaemonApp>();
             // For each app instance defined in the yaml config
             foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
             {
@@ -73,7 +73,7 @@ namespace NetDaemon.Daemon.Config
             return instances;
         }
 
-        public INetDaemonAppBase? InstanceAndSetPropertyConfig(
+        public INetDaemonApp? InstanceAndSetPropertyConfig(
             Type netDaemonAppType,
             YamlMappingNode appNode,
             string? appId)
@@ -81,7 +81,7 @@ namespace NetDaemon.Daemon.Config
             _ = appNode ??
                 throw new NetDaemonArgumentNullException(nameof(appNode));
 
-            var netDaemonApp = (INetDaemonAppBase?)ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
+            var netDaemonApp = (INetDaemonApp)ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
@@ -96,9 +96,7 @@ namespace NetDaemon.Daemon.Config
                                throw new MissingMemberException(
                                    $"{scalarPropertyName} is missing from the type {netDaemonAppType}");
 
-                    var valueType = entry.Value.NodeType;
-
-                    var instance = InstanceProperty(netDaemonApp!, netDaemonApp, prop.PropertyType, entry.Value);
+                    var instance = InstanceProperty(netDaemonApp, netDaemonApp, prop.PropertyType, entry.Value);
 
                     prop.SetValue(netDaemonApp, instance);
                 }
@@ -112,7 +110,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
-        private object? InstanceProperty(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
+        private object? InstanceProperty(INetDaemonApp deamonApp, object? parent, Type instanceType, YamlNode node)
         {
             switch (node.NodeType)
             {
@@ -142,7 +140,7 @@ namespace NetDaemon.Daemon.Config
             }
         }
 
-        private object? CreateMappingInstance(INetDaemonAppBase deamonApp, Type instanceType, YamlNode node)
+        private object? CreateMappingInstance(INetDaemonApp deamonApp, Type instanceType, YamlNode node)
         {
             var instance = Activator.CreateInstance(instanceType);
 
@@ -184,7 +182,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")]
-        private IList CreateSequenceInstance(INetDaemonAppBase deamonApp, object? parent, Type instanceType, YamlNode node)
+        private IList CreateSequenceInstance(INetDaemonApp deamonApp, object? parent, Type instanceType, YamlNode node)
         {
             Type listType = instanceType?.GetGenericArguments()[0] ??
                             throw new NetDaemonNullReferenceException(

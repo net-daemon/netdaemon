@@ -81,7 +81,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var codeManager = CM(ConfigFixturePath);
             // ACT
             // ASSERT
-            Assert.Equal(11, codeManager.DaemonAppTypes.Count());
+            Assert.Equal(12, codeManager.DaemonAppTypes.Count());
         }
 
         [Fact]
