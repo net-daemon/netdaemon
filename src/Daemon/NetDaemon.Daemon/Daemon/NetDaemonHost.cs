@@ -709,36 +709,16 @@ namespace NetDaemon.Daemon
             var ids = appById.Keys.ToHashSet();
 
             var missing = dependencies.FirstOrDefault(d => !ids.Contains(d));
-            if (missing != null)
-                throw new NetDaemonException(
+            if (missing != null) throw new NetDaemonException(
                              $"There is no app named {missing}, please check dependencies or make sure you have not disabled the dependent app!");
-            
-
-            // There are dependencies defined
-//            var edges = new HashSet<(string, string)>();
 
             var edges =  unsortedList.SelectMany(p => p.Dependencies.Select(d => (p.Id!, d))).ToHashSet();
-            
-            // foreach (var instance in unsortedList)
-            // {
-            //     foreach (var dependency in instance.Dependencies)
-            //     {
-            //         if (!appById.ContainsKey(dependency))
-            //         {
-            //             throw new NetDaemonException(
-            //                 $"There is no app named {dependency}, please check dependencies or make sure you have not disabled the dependent app!");
-            //         }
-            //
-            //         edges.Add(new Tuple<string, string>(instance.Id!, dependency));
-            //     }
-            // }
 
             var order = TopologicalSort(ids, edges) ??
                         throw new NetDaemonException(
                             "Application dependencies is wrong, please check dependencies for circular dependencies!");
-            
-            return order.Select(id => appById[id]).ToList();
 
+            return order.Select(id => appById[id]).ToList();
         }
 
         [SuppressMessage("", "CA1031")]
