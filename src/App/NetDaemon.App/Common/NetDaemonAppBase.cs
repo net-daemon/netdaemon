@@ -107,15 +107,6 @@ namespace NetDaemon.Common
         internal FluentExpandoObject? InternalStorageObject { get; set; }
 
         /// <summary>
-        ///     Implements the IEqualit.Equals method
-        /// </summary>
-        /// <param name="other">The instance to compare</param>
-        public bool Equals([AllowNull] INetDaemonApp other)
-        {
-            return Id == other?.Id;
-        }
-
-        /// <summary>
         ///     Initializes the app, is virtual and overridden
         /// </summary>
         public virtual void Initialize()
