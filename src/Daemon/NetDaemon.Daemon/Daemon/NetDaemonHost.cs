@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
@@ -567,7 +568,14 @@ namespace NetDaemon.Daemon
                 try
                 {
                     if (app is IAsyncDisposable asyncDisposable)
+                    {
                         await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                    }
+              
+                    if (app is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -973,11 +981,18 @@ namespace NetDaemon.Daemon
             _ = _appInstanceManager ?? throw new NetDaemonNullReferenceException(nameof(_appInstanceManager));
             Logger.LogTrace("Loading all apps ({instances}, {running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
+           
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
+          
+            // create a ServiceCollection for loading dependencies into the apps
+            // for now we only load INetDaemonHost and Ilogger
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<INetDaemonHost>(this);
+            serviceCollection.AddSingleton(Logger);
 
             // Get all instances
-            var instancedApps = _appInstanceManager.InstanceDaemonApps(ServiceProvider!);
+            var instancedApps = _appInstanceManager.InstanceDaemonApps(serviceCollection.BuildServiceProvider()!);
 
             if (!InternalRunningAppInstances.IsEmpty)
             {
@@ -986,7 +1001,7 @@ namespace NetDaemon.Daemon
                 InternalRunningAppInstances.Clear();
             }
 
-            foreach (INetDaemonApp appInstance in instancedApps!)
+            foreach (var appInstance in instancedApps!)
             {
                 InternalAllAppInstances[appInstance.Id!] = appInstance;
                 if (await RestoreAppState(appInstance).ConfigureAwait(false))
@@ -1173,6 +1188,10 @@ namespace NetDaemon.Daemon
                 if (appInstance is IAsyncDisposable asyncDisposable)
                 {
                     await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                }
+                if (appInstance is IDisposable disposable)
+                {
+                    disposable.Dispose();
                 }
                 return false;
 

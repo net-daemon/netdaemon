@@ -14,7 +14,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         // Use two guids, one when instanced and one when initialized
         // can track errors with instancing
         private Guid _instanceId = Guid.NewGuid();
-        public DebugApp(IClientWebSocketFactory factory) : base()
+        public DebugApp() : base()
         {
         }
 
