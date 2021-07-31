@@ -7,7 +7,7 @@ namespace NetDaemon.Infrastructure.Extensions
 {
     internal static class AssemblyExtensions
     {
-        public static IEnumerable<Type> GetTypesWhereSubclassOf<T>(this Assembly assembly)
+        public static IEnumerable<Type> GetTypesAssignableTo<T>(this Assembly assembly)
         {
             return assembly.GetTypes()
                 .Where(type => type.IsClass && !type.IsGenericType && !type.IsAbstract && type.IsAssignableTo(typeof(T)));
