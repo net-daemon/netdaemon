@@ -7,7 +7,7 @@ namespace NetDaemon.Common.Reactive
     /// <summary>
     ///     Implements the System.Reactive pattern for NetDaemon Apps
     /// </summary>
-    public interface INetDaemonRxApp : INetDaemonApp, IRxSchedule, IRxEntity
+    public interface INetDaemonRxApp : INetDaemonAppBase, IRxSchedule, IRxEntity
     {
         /// <summary>
         ///     The observable events
