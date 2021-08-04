@@ -13,7 +13,7 @@ namespace NetDaemon.Common.Reactive
     /// </summary>
     public class ObservableBase<T> : IObservable<T>
     {
-        private readonly INetDaemonAppBase _app;
+        private readonly INetDaemonApp _app;
 
         private readonly ILogger _logger;
 
@@ -24,7 +24,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="logger">A ILogger instance</param>
         /// <param name="app">App being tracked</param>
-        public ObservableBase(ILogger logger, INetDaemonAppBase app)
+        public ObservableBase(ILogger logger, INetDaemonApp app)
         {
             _logger = logger;
             _app = app;
