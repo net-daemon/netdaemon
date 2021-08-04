@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using NetDaemon.Common;
 
@@ -19,6 +20,7 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Returns a list of instanced daemonapps
         /// </summary>
-        IEnumerable<INetDaemonAppBase> InstanceDaemonApps();
+        /// <param name="serviceProvider"></param>
+        IEnumerable<INetDaemonApp> InstanceDaemonApps(IServiceProvider serviceProvider);
     }
 }

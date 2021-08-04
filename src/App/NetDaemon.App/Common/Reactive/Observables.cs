@@ -13,7 +13,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="logger">Logger to use</param>
         /// <param name="app">App being tracked</param>
-        public StateChangeObservable(ILogger logger, INetDaemonAppBase app)
+        public StateChangeObservable(ILogger logger, INetDaemonApp app)
             : base(logger, app)
         { }
     }
@@ -28,7 +28,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="logger">Logger to use</param>
         /// <param name="app">App being tracked</param>
-        public EventObservable(ILogger logger, INetDaemonAppBase app)
+        public EventObservable(ILogger logger, INetDaemonApp app)
             : base(logger, app)
         { }
     }
