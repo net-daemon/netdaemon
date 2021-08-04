@@ -21,7 +21,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
             {
                 Id = "id"
             };
-            DefaultDaemonHost.InternalRunningAppInstances[App.Id] = App;
+            DefaultDaemonHost.AddRunningApp(App);
             App.StartUpAsync(DefaultDaemonHost).Wait();
         }
 

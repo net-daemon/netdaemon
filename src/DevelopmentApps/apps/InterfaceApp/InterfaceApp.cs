@@ -12,7 +12,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
     /// <summary> Test application for interface based app
     /// </summary>
     [Focus]
-    public class InterfaceApp : INetDaemonApp
+    public class InterfaceApp : IAsyncInitializable
     {
         private INetDaemonHost _host;
         private readonly ILogger _logger;
@@ -21,20 +21,14 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         {
             _host = host;
             _logger = logger;
+            _host.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works via DI! via Constructor" }, true);;
         }
+
         public Task InitializeAsync()
         {
             _host.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works via DI!" }, true);;
             _logger.LogInformation("Logging via injected logger");
             return Task.CompletedTask;
         }
-
-        public string? Id { get; set; }
-
-        public string Description => "Sample bare app";
-
-        public bool IsEnabled { get; set; } = true;
-
-        public AppRuntimeInfo RuntimeInfo { get; } = new();
     }
 }

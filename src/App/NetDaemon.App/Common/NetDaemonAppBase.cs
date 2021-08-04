@@ -14,7 +14,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base class for all NetDaemon App types
     /// </summary>
-    public abstract class NetDaemonAppBase : INetDaemonAppBase
+    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata
     {
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
@@ -138,7 +138,7 @@ namespace NetDaemon.Common
             }
 
             bool isDisabled = Storage.__IsDisabled ?? false;
-            var appInfo = Daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
+            var appInfo = Daemon!. State.FirstOrDefault(s => s.EntityId == EntityId);
             var appState = appInfo?.State as string;
             if (isDisabled)
             {
@@ -184,6 +184,7 @@ namespace NetDaemon.Common
         protected INetDaemon? Daemon { get; set; }
 
         /// <inheritdoc/>
+        // TODO: The old application base re-uses the ServiceProvider from the NetDaemonHost, if we change this that might break
         public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
 
         /// <inheritdoc/>
@@ -290,7 +291,7 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public INetDaemonApp? GetApp(string appInstanceId)
+        public INetDaemonAppBase? GetApp(string appInstanceId)
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
             return Daemon!.GetApp(appInstanceId);

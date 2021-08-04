@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Reactive
@@ -169,6 +168,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ARRANGE
             // ACT
             DefaultMockedRxApp.Object.RunEveryMinute(1, () => Console.WriteLine("Test"));
+            DefaultDaemonHost.WaitForTasksAsync();
 
             // ASSERT
             DefaultMockedRxApp.Verify(n => n.CreateObservableTimer(It.IsAny<DateTime>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()), Times.Once());

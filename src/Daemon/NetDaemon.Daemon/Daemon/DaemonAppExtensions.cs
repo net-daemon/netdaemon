@@ -17,7 +17,7 @@ namespace NetDaemon.Daemon
 {
     public static class DaemonAppExtensions
     {
-        public static async Task HandleAttributeInitialization(this INetDaemonApp netDaemonApp, INetDaemon daemon)
+        public static async Task HandleAttributeInitialization(this NetDaemonRxApp netDaemonApp, INetDaemon daemon)
         {
             _ = daemon ??
                throw new NetDaemonArgumentNullException(nameof(daemon));

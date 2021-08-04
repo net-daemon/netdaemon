@@ -74,7 +74,7 @@ namespace NetDaemon.Service.Api
                 await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
             }
         }
-
+        
         [SuppressMessage("", "CA1031")]
         public async Task Invoke(HttpContext context)
         {

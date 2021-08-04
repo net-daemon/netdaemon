@@ -34,7 +34,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
                 Id = "id"
             };
 
-            DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
+            DefaultDaemonHost.AddRunningApp(app);
 
             // ACT
             await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);

@@ -59,7 +59,7 @@ namespace NetDaemon.Service.App
             if (assembly == null)
                 return (null, "Compile error");
 
-            return (assembly.GetTypesAssignableTo<INetDaemonApp>(), string.Empty);
+            return (assembly.GetTypesAssignableTo<IAsyncInitializable>(), string.Empty);
         }
 
         public static Assembly GetCompiledAppAssembly(out CollectibleAssemblyLoadContext alc, string codeFolder, ILogger logger)

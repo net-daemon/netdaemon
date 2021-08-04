@@ -60,8 +60,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
                 Id = "app_id",
                 IsEnabled = true
             };
-            _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
-            _defaultDaemonHost.InternalAllAppInstances[_defaultDaemonApp.Id!] = _defaultDaemonApp;
+
+            _defaultDaemonHost.AddRunningApp(_defaultDaemonApp);
 
             _defaultDaemonApp2 = new BaseTestApp
             {
@@ -69,8 +69,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             };
             _defaultDaemonApp2.RuntimeInfo.NextScheduledEvent = DateTime.Now;
             _defaultDaemonApp2.IsEnabled = false;
-            _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonApp2.Id!] = _defaultDaemonApp2;
-            _defaultDaemonHost.InternalAllAppInstances[_defaultDaemonApp2.Id!] = _defaultDaemonApp2;
+            _defaultDaemonHost.AddRunningApp(_defaultDaemonApp2);
 
             _defaultDaemonRxApp = new BaseTestRxApp
             {
@@ -78,15 +77,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
                 IsEnabled = true
             };
             _defaultDaemonRxApp.RuntimeInfo.NextScheduledEvent = DateTime.Now;
-            _defaultDaemonHost.InternalRunningAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
-            _defaultDaemonHost.InternalAllAppInstances[_defaultDaemonRxApp.Id!] = _defaultDaemonRxApp;
+            _defaultDaemonHost.AddRunningApp(_defaultDaemonRxApp);
 
             _defaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
             _defaultMockedRxApp.Object.Id = "app_rx_mock_id";
             _defaultMockedRxApp.Object.IsEnabled = true;
             _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
-            _defaultDaemonHost.InternalRunningAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
-            _defaultDaemonHost.InternalAllAppInstances[_defaultMockedRxApp.Object.Id!] = _defaultMockedRxApp.Object;
+            _defaultDaemonHost.AddRunningApp(_defaultMockedRxApp.Object);
         }
         public void ConfigureServices(IServiceCollection services)
         {

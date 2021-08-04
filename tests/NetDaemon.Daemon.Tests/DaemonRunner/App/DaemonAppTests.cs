@@ -123,7 +123,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         ";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", _serviceProvider).GetInstances();
-            var instance = instances.FirstOrDefault() as AssemblyDaemonApp;
+            var instance = instances.FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
             Assert.Equal(10, instance?.IntConfig);
@@ -153,7 +153,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs"),
                 _serviceProvider
             ).GetInstances();
-            var instance = instances.FirstOrDefault() as AssemblyDaemonApp;
+            var instance = instances.FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("this is a secret string", instance?.TestSecretString);
             Assert.Equal(99, instance?.TestSecretInt);
@@ -180,7 +180,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         ";
             // ACT
             var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", _serviceProvider).GetInstances();
-            var instance = instances.FirstOrDefault() as AssemblyDaemonApp;
+            var instance = instances.FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
             Assert.Equal(10, instance?.IntConfig);
@@ -233,7 +233,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 ";
 
             await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", Mock.Of<IServiceProvider>())
-                .GetInstances().FirstOrDefault() as AssemblyDaemonApp;
+                .GetInstances().FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
 

@@ -36,7 +36,7 @@ namespace NetDaemon.Daemon.Config
             return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
         }
 
-        public static object? ToObject(this YamlScalarNode node, Type valueType, INetDaemonApp? deamonApp)
+        public static object? ToObject(this YamlScalarNode node, Type valueType, IAsyncInitializable? deamonApp)
         {
             _ = valueType ??
                 throw new NetDaemonArgumentNullException(nameof(valueType));

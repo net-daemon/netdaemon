@@ -31,7 +31,7 @@ namespace NetDaemon.Service.App
         {
             _logger.LogDebug("Loading dynamically compiled apps...");
             var assembly = Load();
-            var apps = assembly.GetTypesAssignableTo<INetDaemonApp>();
+            var apps = assembly.GetTypesAssignableTo<IAsyncInitializable>();
 
             if (!apps.Any())
                 _logger.LogWarning("No .cs files found, please add files to {sourceFolder}", _sourceFolder);

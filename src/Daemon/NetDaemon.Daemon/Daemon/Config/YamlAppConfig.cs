@@ -33,9 +33,9 @@ namespace NetDaemon.Daemon.Config
 
         [SuppressMessage("", "CA1508")]
         [SuppressMessage("", "CA1065")]
-        public IEnumerable<INetDaemonApp> GetInstances()
+        public IEnumerable<ApplicationContext> GetInstances()
         {
-            var instances = new List<INetDaemonApp>();
+            var instances = new List<ApplicationContext>();
             // For each app instance defined in the yaml config
             foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
             {
@@ -49,7 +49,7 @@ namespace NetDaemon.Daemon.Config
                     }
 
                     appId = ((YamlScalarNode)app.Key).Value;
-                    
+         
                     // Get the class
                     string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
                     Type? appType = _types.FirstOrDefault(n => n.FullName?.ToLowerInvariant() == appClass);
@@ -59,8 +59,11 @@ namespace NetDaemon.Daemon.Config
                         var instance = InstanceAndSetPropertyConfig(appType, (YamlMappingNode)app.Value, appId);
                         if (instance != null)
                         {
-                            instance.Id = appId;
-                            instances.Add(instance);
+                            var appContext = new ApplicationContext(instance)
+                            {
+                                Id = appId
+                            };
+                            instances.Add(appContext);
                         }
                     }
                 }
@@ -73,7 +76,7 @@ namespace NetDaemon.Daemon.Config
             return instances;
         }
 
-        public INetDaemonApp? InstanceAndSetPropertyConfig(
+        public IAsyncInitializable? InstanceAndSetPropertyConfig(
             Type netDaemonAppType,
             YamlMappingNode appNode,
             string? appId)
@@ -81,7 +84,7 @@ namespace NetDaemon.Daemon.Config
             _ = appNode ??
                 throw new NetDaemonArgumentNullException(nameof(appNode));
 
-            var netDaemonApp = (INetDaemonApp)ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
+            var netDaemonApp = (IAsyncInitializable)ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
@@ -110,7 +113,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
-        private object? InstanceProperty(INetDaemonApp deamonApp, object? parent, Type instanceType, YamlNode node)
+        private object? InstanceProperty(IAsyncInitializable deamonApp, object? parent, Type instanceType, YamlNode node)
         {
             switch (node.NodeType)
             {
@@ -140,7 +143,7 @@ namespace NetDaemon.Daemon.Config
             }
         }
 
-        private object? CreateMappingInstance(INetDaemonApp deamonApp, Type instanceType, YamlNode node)
+        private object? CreateMappingInstance(IAsyncInitializable deamonApp, Type instanceType, YamlNode node)
         {
             var instance = Activator.CreateInstance(instanceType);
 
@@ -182,7 +185,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")]
-        private IList CreateSequenceInstance(INetDaemonApp deamonApp, object? parent, Type instanceType, YamlNode node)
+        private IList CreateSequenceInstance(IAsyncInitializable deamonApp, object? parent, Type instanceType, YamlNode node)
         {
             Type listType = instanceType?.GetGenericArguments()[0] ??
                             throw new NetDaemonNullReferenceException(

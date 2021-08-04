@@ -48,7 +48,7 @@ namespace NetDaemon.Common
         ///     Get application instance by application instance id
         /// </summary>
         /// <param name="appInstanceId">The identity of the app instance</param>
-        INetDaemonApp? GetApp(string appInstanceId);
+        INetDaemonAppBase? GetApp(string appInstanceId);
 
         /// <summary>
         ///     Set entity state
