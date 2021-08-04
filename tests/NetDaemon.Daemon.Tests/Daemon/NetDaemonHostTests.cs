@@ -342,35 +342,6 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.NotNull(entity);
         }
 
-        private class MyTestApp : NetDaemonRxApp
-        {
-        }
-
-        [Fact]
-        public void SortByDependecyTest()
-        {
-            // ARRANGE
-            var apps = new List<INetDaemonAppBase>
-            {
-                new MyTestApp()
-                {
-                    Id = "test",
-                    Dependencies = new List<string> {"dependent_app"},
-                },
-                new MyTestApp()
-                {
-                    Id = "dependent_app",
-                    Dependencies = new List<string>(),
-                }
-            };
-            // ACT
-            var sorted = NetDaemonHost.SortByDependency(apps);
-
-            // ASSERT
-            Assert.Equal(2, sorted.Count);
-            Assert.Equal("dependent_app", sorted[0].Id);
-        }
-
         [Fact]
         public async Task SetStateDynamicWithNoWaitShouldCallCorrectFunction()
         {
