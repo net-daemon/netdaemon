@@ -24,7 +24,7 @@ namespace NetDaemon.Service.App
             _logger.LogDebug("Loading local assembly apps...");
 
             var assemblies = LoadAll();
-            var apps = assemblies.SelectMany(x => x.GetTypesAssignableTo<IAsyncInitializable>()).ToList();
+            var apps = assemblies.SelectMany(x => x.GetAppClasses()).ToList();
 
             if (apps.Count == 0)
                 _logger.LogWarning("No local daemon apps found.");

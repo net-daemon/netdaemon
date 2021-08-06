@@ -118,7 +118,7 @@ namespace NetDaemon.Daemon
         // for unittesting
         internal void AddRunningApp(INetDaemonAppBase app)
         {
-            var applicationContext = new ApplicationContext(app, Logger);
+            var applicationContext = new ApplicationContext(app,this, Logger);
             InternalRunningAppInstances[applicationContext.Id] = applicationContext;
             InternalAllAppInstances[applicationContext.Id] = applicationContext;
         }
@@ -894,9 +894,9 @@ namespace NetDaemon.Daemon
             await UnloadAllApps().ConfigureAwait(false);
           
             // create a ServiceCollection for loading dependencies into the apps
-            // for now we only load INetDaemonHost and Ilogger
+            // for now we only load INetDaemon and Ilogger
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<INetDaemonHost>(this);
+            serviceCollection.AddSingleton<INetDaemon>(this);
             serviceCollection.AddSingleton(Logger);
 
             // Get all instances
@@ -1084,7 +1084,6 @@ namespace NetDaemon.Daemon
         {
             try
             {
-              
                 // First do startup initialization to connect with this daemon instance
                 if (appInstance.ApplicationInstance is INetDaemonAppBase netDaemonAppBase)
                 {
@@ -1092,7 +1091,7 @@ namespace NetDaemon.Daemon
                 }
 
                 // The restore the state to load saved settings and if this app is enabled
-                if (appInstance.ApplicationInstance is INeatDaemonPersistantApp persistantApp)
+                if (appInstance.ApplicationInstance is INetDaemonPersistantApp persistantApp)
                 {
                     await persistantApp.RestoreAppStateAsync().ConfigureAwait(false);
                 }
@@ -1109,7 +1108,6 @@ namespace NetDaemon.Daemon
                     disposable.Dispose();
                 }
                 return false;
-
             }
             catch (Exception e)
             {

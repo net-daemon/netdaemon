@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
@@ -20,21 +22,27 @@ namespace NetDaemon.Common
     {
         private readonly ILogger _logger;
         private IApplicationMetadata _applicationMetadata;
+        private INetDaemonPersistantApp _persistantApp;
 
-        public ApplicationContext(object applicationInstance, ILogger logger)
+        public ApplicationContext(object applicationInstance, INetDaemon netDaemon, ILogger logger)
         {
-            // For old style applications the metadata properties are stored in the app itself
-            // we need to keep that for backwards compatibility, for new apps we will use a separate class for the
-            // metadata properties
-            _applicationMetadata = applicationInstance is IApplicationMetadata appAsMetaData
-                ? appAsMetaData
-                : new ApplicationMetaData();
-          
             ApplicationInstance = applicationInstance;
             _logger = logger;
+
+            if (applicationInstance is NetDaemonAppBase appBase)
+            {
+                // For old style applications the services are provided by the application itself
+                // we need to keep that for backwards compatibility
+                _applicationMetadata = appBase;
+                _persistantApp = appBase;
+            }
+            else
+            {
+                _applicationMetadata = new ApplicationMetaData();
+                _persistantApp = new ApplicationPersistenceService(_applicationMetadata, netDaemon, logger);
+            }
         }
-        public ApplicationContext(IAsyncInitializable netDaemonApp) : this(netDaemonApp, NullLogger.Instance)
-        { }
+
         public object ApplicationInstance { get; }
         
         /// <summary>

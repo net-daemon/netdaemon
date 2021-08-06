@@ -10,7 +10,7 @@ namespace NetDaemon.Common
     ///     Shared features in both Reactive and async/await models
     /// </summary>
     [SuppressMessage("", "CA1716")]
-    public interface INetDaemonAppBase : INetDaemonInitialableApp, IAsyncInitializable, IInitializable, INeatDaemonPersistantApp, INetDaemonAppLogging, IAsyncDisposable
+    public interface INetDaemonAppBase : INetDaemonInitialableApp, IAsyncInitializable, IInitializable, INetDaemonPersistantApp, INetDaemonAppLogging, IAsyncDisposable
     {
         /// <summary>
         ///     The dependencies that needs to be initialized before this app

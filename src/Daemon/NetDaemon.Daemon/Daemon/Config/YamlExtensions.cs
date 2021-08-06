@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive.Services;
@@ -36,7 +38,7 @@ namespace NetDaemon.Daemon.Config
             return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
         }
 
-        public static object? ToObject(this YamlScalarNode node, Type valueType, IAsyncInitializable? deamonApp)
+        public static object? ToObject(this YamlScalarNode node, Type valueType, object deamonApp, IServiceProvider serviceProvider)
         {
             _ = valueType ??
                 throw new NetDaemonArgumentNullException(nameof(valueType));
@@ -106,6 +108,27 @@ namespace NetDaemon.Daemon.Config
             if (deamonApp != null && valueType.IsAssignableTo(typeof(RxEntityBase)))
                 return Activator.CreateInstance(valueType, deamonApp, new[] {node.Value});
             return null;
+            
+//            return CreateInstance(valueType, serviceProvider, node.Value);
+        }
+    
+        private static object? CreateInstance(Type valueType, IServiceProvider serviceProvider, string? nodeValue)
+        {
+            // Create an instance of the property's type
+            var constructors = valueType.GetConstructors();
+
+            object[] additionalParameters = Array.Empty<object>();
+            if (constructors.Any(c => c.GetParameters().Any(p => p.ParameterType == typeof(string))))
+            {
+                additionalParameters = new object[] { nodeValue };
+            }
+
+            if (constructors.Any(c => c.GetParameters().Any(p => p.ParameterType == typeof(string[]))))
+            {
+                additionalParameters = new object[] {new[] {nodeValue}};
+            }
+
+            return ActivatorUtilities.CreateInstance(serviceProvider, valueType, additionalParameters);
         }
     }
 }

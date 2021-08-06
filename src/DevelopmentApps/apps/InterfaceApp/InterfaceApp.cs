@@ -12,6 +12,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
     /// <summary> Test application for interface based app
     /// </summary>
     [Focus]
+    [NetDaemonApp]
     public class InterfaceApp : IAsyncInitializable
     {
         private INetDaemonHost _host;

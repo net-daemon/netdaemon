@@ -8,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
@@ -16,6 +17,8 @@ namespace NetDaemon.Common
     /// </summary>
     public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata
     {
+        private ApplicationPersistenceService _persistenceService;
+        
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
         /// </summary>
@@ -46,7 +49,7 @@ namespace NetDaemon.Common
             _cancelSource = new();
             _isDisposed = false;
         }
-
+        
         /// <summary>
         ///    Dependencies on other applications that will be initialized before this app
         /// </summary>
@@ -97,14 +100,7 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
-        public dynamic Storage => InternalStorageObject ??
-                                  throw new NetDaemonNullReferenceException(
-                                      $"{nameof(InternalStorageObject)} cant be null");
-
-        internal Channel<bool> InternalLazyStoreStateQueue { get; } =
-            Channel.CreateBounded<bool>(1);
-
-        internal FluentExpandoObject? InternalStorageObject { get; set; }
+        public dynamic Storage => _persistenceService.Storage;
 
         /// <summary>
         ///     Initializes the app, is virtual and overridden
@@ -124,48 +120,8 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public async Task RestoreAppStateAsync()
-        {
-            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+        public Task RestoreAppStateAsync() => _persistenceService.RestoreAppStateAsync();
 
-            var obj = await Daemon.GetDataAsync<IDictionary<string, object?>>(GetUniqueIdForStorage())
-                .ConfigureAwait(false);
-
-            if (obj != null)
-            {
-                var expStore = (FluentExpandoObject) Storage;
-                expStore.CopyFrom(obj);
-            }
-
-            bool isDisabled = Storage.__IsDisabled ?? false;
-            var appInfo = Daemon!. State.FirstOrDefault(s => s.EntityId == EntityId);
-            var appState = appInfo?.State as string;
-            if (isDisabled)
-            {
-                IsEnabled = false;
-                if (appState == "on" || appInfo is null)
-                {
-                    dynamic serviceData = new FluentExpandoObject();
-                    serviceData.entity_id = EntityId;
-                    await Daemon!.SetStateAsync(EntityId, "off").ConfigureAwait(false);
-                }
-
-                return;
-            }
-            else
-            {
-                IsEnabled = true;
-                if (appState == "off" || appInfo is null)
-                {
-                    dynamic serviceData = new FluentExpandoObject();
-                    serviceData.entity_id = EntityId;
-                    await Daemon!.SetStateAsync(EntityId, "on").ConfigureAwait(false);
-                }
-
-                return;
-            }
-        }
-        
         /// <inheritdoc/>
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
@@ -188,13 +144,7 @@ namespace NetDaemon.Common
         public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
 
         /// <inheritdoc/>
-        public void SaveAppState()
-        {
-            // Intentionally ignores full queue since we know
-            // a state change already is in progress wich means
-            // this state will be saved
-            _ = InternalLazyStoreStateQueue.Writer.TryWrite(true);
-        }
+        public void SaveAppState() => _persistenceService.SaveAppState();
 
         /// <inheritdoc/>
         public void Speak(string entityId, string message)
@@ -209,10 +159,11 @@ namespace NetDaemon.Common
             _ = daemon ?? throw new NetDaemonArgumentNullException(nameof(daemon));
 
             Daemon = daemon;
-            _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
-            Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
-            InternalStorageObject = new FluentExpandoObject(false, true, daemon: this);
             Logger = daemon.Logger;
+
+            _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
+            _persistenceService = new ApplicationPersistenceService(this, daemon, daemon.Logger!);
+            _persistenceService.StartUpAsync(_cancelSource.Token);
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
@@ -236,36 +187,6 @@ namespace NetDaemon.Common
         [SuppressMessage("Microsoft.Globalization", "CA1308")]
         public string GetUniqueIdForStorage() => $"{GetType().Name}_{Id}".ToLowerInvariant();
 
-        [SuppressMessage("Microsoft.Design", "CA1031")]
-        private async Task HandleLazyStorage()
-        {
-            _ = InternalStorageObject ??
-                throw new NetDaemonNullReferenceException($"{nameof(InternalStorageObject)} cant be null!");
-            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
-
-            while (!_cancelSource.IsCancellationRequested)
-            {
-                try
-                {
-                    // Dont care about the result, just that it is time to store state
-                    _ = await InternalLazyStoreStateQueue.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
-
-                    await Daemon!.SaveDataAsync(GetUniqueIdForStorage(), (IDictionary<string, object>) Storage)
-                        .ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError("Error in storage queue {e}", e);
-                } // Ignore errors in thread
-            }
-        }
-
-        #region -- Logger helpers --
-
         /// <summary>
         ///     Async disposable support
         /// </summary>
@@ -285,7 +206,6 @@ namespace NetDaemon.Common
             DaemonCallBacksForServiceCalls.Clear();
 
             IsEnabled = false;
-            InternalStorageObject = null;
             _cancelSource.Dispose();
             Daemon = null;
         }
@@ -302,6 +222,8 @@ namespace NetDaemon.Common
         [SuppressMessage("Microsoft.Design", "CA1308")]
         public void ListenServiceCall(string domain, string service, Func<dynamic?, Task> action)
             => DaemonCallBacksForServiceCalls.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
+
+        #region -- Logger helpers --
 
         /// <inheritdoc/>
         public void Log(string message) => Log(LogLevel.Information, message);

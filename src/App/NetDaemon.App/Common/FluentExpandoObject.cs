@@ -22,9 +22,9 @@ namespace NetDaemon.Common
     public class FluentExpandoObject : DynamicObject, IDictionary<string, object>
     {
         private readonly Dictionary<string, object> _dict = new();
-        private readonly INeatDaemonPersistantApp? _daemonApp;
         private readonly bool _ignoreCase;
         private readonly bool _returnNullMissingProperties;
+        private readonly Action? _persistCallback;
 
         /// <summary>
         ///     Creates a BetterExpando object/
@@ -35,11 +35,11 @@ namespace NetDaemon.Common
         /// <param name="daemon">A NetDaemon object used for persistanse</param>
         public FluentExpandoObject(bool ignoreCase = false,
             bool returnNullMissingProperties = false,
-            ExpandoObject? root = null, INeatDaemonPersistantApp? daemon = null)
+            ExpandoObject? root = null, Action? persistCallback = null)
         {
-            _daemonApp = daemon;
             _ignoreCase = ignoreCase;
             _returnNullMissingProperties = returnNullMissingProperties;
+            _persistCallback = persistCallback;
             if (root != null) Augment(root);
         }
 
@@ -137,8 +137,8 @@ namespace NetDaemon.Common
                 throw new NetDaemonNullReferenceException(nameof(binder));
 
             UpdateDictionary(binder.Name, value);
-            // It is supposed to persist, this is the only reason _daemon is present
-            _daemonApp?.SaveAppState();
+            // It is supposed to persist
+            _persistCallback?.Invoke();
 
             return true;
         }

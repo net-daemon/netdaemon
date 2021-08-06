@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
@@ -57,7 +59,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         static ApplicationContext TestApp(string id, params string[] dependencies) => 
-            new(new MyTestApp()) {Id = id, Dependencies = dependencies};
+            new ApplicationContext(new MyTestApp(), null!, NullLogger.Instance 
+            ) {Id = id, Dependencies = dependencies};
 
         [Fact]
         public void TrowsOnNotFoundDependency()
