@@ -2,22 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
-    internal class ApplicationMetaData : IApplicationMetadata
-    {
-        public string? Id { get; set; }
-        public string? Description { get; set; } = null;
-        public bool IsEnabled { get; set; } = true;
-        public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo();
-    }
-
     public class ApplicationContext
     {
         private readonly ILogger _logger;
@@ -31,14 +21,14 @@ namespace NetDaemon.Common
 
             if (applicationInstance is NetDaemonAppBase appBase)
             {
-                // For old style applications the services are provided by the application itself
+                // For applications based on NetDaemonAppBase the services are provided by the application itself
                 // we need to keep that for backwards compatibility
                 _applicationMetadata = appBase;
                 _persistantApp = appBase;
             }
             else
             {
-                _applicationMetadata = new ApplicationMetaData();
+                _applicationMetadata = new ApplicationMetadata();
                 _persistantApp = new ApplicationPersistenceService(_applicationMetadata, netDaemon, logger);
             }
         }

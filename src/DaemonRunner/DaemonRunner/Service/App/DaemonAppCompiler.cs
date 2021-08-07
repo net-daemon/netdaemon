@@ -32,7 +32,6 @@ namespace NetDaemon.Service.App
             _logger.LogDebug("Loading dynamically compiled apps...");
             var assembly = Load();
             var apps = assembly.GetAppClasses();
-            apps = apps.Union(assembly.GetTypes().Where(t => t.GetCustomAttribute<NetDaemonAppAttribute>() != null));
 
             if (!apps.Any())
                 _logger.LogWarning("No .cs files found, please add files to {sourceFolder}", _sourceFolder);
