@@ -219,7 +219,7 @@ namespace NetDaemon.Common
             Daemon = daemon;
             _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
             Task.Run(async () => await HandleLazyStorage().ConfigureAwait(false));
-            InternalStorageObject = new FluentExpandoObject(false, true, daemon: this);
+            InternalStorageObject = new FluentExpandoObject(false, true, persistCallback: this.SaveAppState);
             Logger = daemon.Logger;
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
