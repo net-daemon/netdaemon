@@ -1,6 +1,9 @@
 ﻿namespace NetDaemon.Common
 {
     // TODO: make internal
+    /// <summary>
+    /// Provides metadata for a NetDaemon Application
+    /// </summary>
     public interface IApplicationMetadata
     {
         /// <summary>

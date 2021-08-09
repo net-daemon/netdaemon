@@ -61,7 +61,7 @@ namespace NetDaemon.Service.Api
                 var eventMessage = new WsExternalEvent
                 {
                     Type = "apps",
-                    Data = _host?.AllAppInstances.Select(n => new ApiApplication()
+                    Data = _host?.AllAppContexts.Select(n => new ApiApplication()
                     {
                         Id = n.Id,
                         Dependencies = n.Dependencies,
@@ -112,7 +112,7 @@ namespace NetDaemon.Service.Api
                                 var eventMessage = new WsExternalEvent
                                 {
                                     Type = "apps",
-                                    Data = _host?.AllAppInstances.Select(n => new ApiApplication()
+                                    Data = _host?.AllAppContexts.Select(n => new ApiApplication()
                                     {
                                         Id = n.Id,
                                         Dependencies = n.Dependencies,

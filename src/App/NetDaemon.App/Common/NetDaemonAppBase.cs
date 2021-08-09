@@ -15,9 +15,9 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base class for all NetDaemon App types
     /// </summary>
-    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata
+    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata, INetDaemonPersistantApp
     {
-        private ApplicationPersistenceService _persistenceService;
+        private ApplicationPersistenceService? _persistenceService;
         
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
@@ -100,7 +100,7 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
-        public dynamic Storage => _persistenceService.Storage;
+        public dynamic Storage => _persistenceService!.Storage;
 
         /// <summary>
         ///     Initializes the app, is virtual and overridden
@@ -120,7 +120,7 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public Task RestoreAppStateAsync() => _persistenceService.RestoreAppStateAsync();
+        public Task RestoreAppStateAsync() => _persistenceService!.RestoreAppStateAsync();
 
         /// <inheritdoc/>
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
@@ -144,7 +144,7 @@ namespace NetDaemon.Common
         public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
 
         /// <inheritdoc/>
-        public void SaveAppState() => _persistenceService.SaveAppState();
+        public void SaveAppState() => _persistenceService!.SaveAppState();
 
         /// <inheritdoc/>
         public void Speak(string entityId, string message)

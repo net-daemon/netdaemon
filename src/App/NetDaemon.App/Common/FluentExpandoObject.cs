@@ -32,7 +32,7 @@ namespace NetDaemon.Common
         /// <param name="ignoreCase">Don't be strict about property name casing.</param>
         /// <param name="returnNullMissingProperties">If true, returns String.Empty for missing properties.</param>
         /// <param name="root">An ExpandoObject to consume and expose.</param>
-        /// <param name="daemon">A NetDaemon object used for persistanse</param>
+        /// <param name="persistCallback">callback method to persist on change</param>
         public FluentExpandoObject(bool ignoreCase = false,
             bool returnNullMissingProperties = false,
             ExpandoObject? root = null, Action? persistCallback = null)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
@@ -58,9 +57,12 @@ namespace NetDaemon.Daemon.Tests.Daemon
             AssertSortReturns(apps, "c", "a", "b");
         }
 
-        static ApplicationContext TestApp(string id, params string[] dependencies) => 
-            new ApplicationContext(new MyTestApp(), null!, NullLogger.Instance 
-            ) {Id = id, Dependencies = dependencies};
+        static ApplicationContext TestApp(string id, params string[] dependencies)
+        {
+            var myTestApp = new MyTestApp();
+            return new ApplicationContext(myTestApp, null!, NullLogger.Instance
+            ) { Id = id, Dependencies = dependencies };
+        }
 
         [Fact]
         public void TrowsOnNotFoundDependency()

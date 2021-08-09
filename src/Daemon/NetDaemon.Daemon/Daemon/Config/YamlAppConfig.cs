@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
@@ -91,11 +90,11 @@ namespace NetDaemon.Daemon.Config
                 Id = appId
             };
 
-            SetPropertyConfig(appNode, appId, appContext, appInstance);
+            SetPropertyConfig(appNode, appId, appInstance);
             return appContext;
         }
 
-        public void SetPropertyConfig(YamlMappingNode appNode, string? appId, ApplicationContext appContext, object appInstance)
+        public void SetPropertyConfig(YamlMappingNode appNode, string? appId, object appInstance)
         {
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
@@ -130,7 +129,7 @@ namespace NetDaemon.Daemon.Config
                 {
                     var scalarNode = (YamlScalarNode) node;
                     ReplaceSecretIfExists(scalarNode);
-                    return ((YamlScalarNode) node).ToObject(instanceType, applicationInstance, _serviceProvider);
+                    return ((YamlScalarNode) node).ToObject(instanceType, applicationInstance);
                 }
                 case YamlNodeType.Sequence when !instanceType.IsGenericType ||
                                                 instanceType?.GetGenericTypeDefinition() != typeof(IEnumerable<>):

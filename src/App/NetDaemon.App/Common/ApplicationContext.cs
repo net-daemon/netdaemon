@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -8,12 +9,18 @@ using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
-    public class ApplicationContext
+    /// <summary>
+    /// Context for NetDaemon application
+    /// </summary>
+    public class ApplicationContext : IAsyncDisposable
     {
         private readonly ILogger _logger;
         private IApplicationMetadata _applicationMetadata;
         private INetDaemonPersistantApp _persistantApp;
 
+        /// <summary>
+        /// Creates a new ApplicationContext
+        /// </summary>
         public ApplicationContext(object applicationInstance, INetDaemon netDaemon, ILogger logger)
         {
             ApplicationInstance = applicationInstance;
@@ -33,6 +40,9 @@ namespace NetDaemon.Common
             }
         }
 
+        /// <summary>
+        /// Gets the reference to the Application Instance
+        /// </summary>
         public object ApplicationInstance { get; }
         
         /// <summary>
@@ -49,6 +59,9 @@ namespace NetDaemon.Common
         /// </summary>
         public IEnumerable<string> Dependencies { get; set; } = Array.Empty<string>();
 
+        /// <summary>
+        ///     Returns the description, is the decorating comment of app class
+        /// </summary>
         public string? Description => _applicationMetadata.Description
                                       ?? ApplicationInstance.GetType().GetCustomAttribute<DescriptionAttribute>()?.Description 
                                       ?? "";
@@ -76,24 +89,17 @@ namespace NetDaemon.Common
         /// </summary>
         public string EntityId => _applicationMetadata.EntityId;
 
-
-        public async Task UnloadAsync()
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
         {
-            try
+            if (ApplicationInstance is IAsyncDisposable asyncDisposable)
             {
-                if (ApplicationInstance is IAsyncDisposable asyncDisposable)
-                {
-                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                }
-
-                if (ApplicationInstance is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             }
-            catch (Exception e)
+
+            if (ApplicationInstance is IDisposable disposable)
             {
-                _logger.LogError(e, "Failed to unload apps, {app_id}", Id);
+                disposable.Dispose();
             }
         }
     }

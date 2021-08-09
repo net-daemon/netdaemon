@@ -118,9 +118,10 @@ namespace NetDaemon.Daemon
         // for unittesting
         internal void AddRunningApp(INetDaemonAppBase app)
         {
+            _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
             var applicationContext = new ApplicationContext(app,this, Logger);
-            InternalRunningAppInstances[applicationContext.Id] = applicationContext;
-            InternalAllAppInstances[applicationContext.Id] = applicationContext;
+            InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
+            InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
         
         public bool IsConnected { get; private set; }
@@ -130,7 +131,9 @@ namespace NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
-        public IEnumerable<ApplicationContext> AllAppInstances => InternalAllAppInstances.Values;
+        public IEnumerable<ApplicationContext> AllAppContexts => InternalAllAppInstances.Values;
+        
+        public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values.Select(c => c.ApplicationInstance).OfType<INetDaemonAppBase>();
 
         private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
             InternalRunningAppInstances.Values.Select(c => c.ApplicationInstance).OfType<NetDaemonRxApp>();
@@ -228,7 +231,6 @@ namespace NetDaemon.Daemon
         /// <inheritdoc/>
         public INetDaemonAppBase? GetApp(string appInstanceId)
         {
-            // TODO: this is technically a breaking change because it no longer returns INetDaemonAppBase
             return InternalRunningAppInstances.ContainsKey(appInstanceId)
                 ? InternalRunningAppInstances[appInstanceId].ApplicationInstance as INetDaemonAppBase
                 : null;
@@ -570,7 +572,7 @@ namespace NetDaemon.Daemon
                 InternalRunningAppInstances.Count);
             foreach (var app in InternalAllAppInstances.Values)
             {
-                await app.UnloadAsync().ConfigureAwait(false);
+                await app.DisposeAsync().ConfigureAwait(false);
             }
 
             InternalAllAppInstances.Clear();

@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Reactive.Services;
@@ -34,6 +31,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             });
         
         private readonly IServiceProvider _serviceProvider = Mock.Of<IServiceProvider>();
+
+        private object _mockApp = new ();
 
         [Fact]
         public void NormalLoadSecretsShouldGetCorrectValues()
@@ -123,7 +122,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal("string", scalarValue.ToObject(typeof(string), null, null));
+            Assert.Equal("string", scalarValue.ToObject(typeof(string), new object()));
         }
 
         [Fact]
@@ -139,7 +138,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(1234, scalarValue.ToObject(typeof(int), null, _serviceProvider));
+            Assert.Equal(1234, scalarValue.ToObject(typeof(int), _mockApp));
         }
 
         [Fact]
@@ -155,7 +154,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(true, scalarValue.ToObject(typeof(bool), null, _serviceProvider));
+            Assert.Equal(true, scalarValue.ToObject(typeof(bool), _mockApp));
         }
 
         [Fact]
@@ -171,7 +170,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((long) 1234, scalarValue.ToObject(typeof(long), null, _serviceProvider));
+            Assert.Equal((long) 1234, scalarValue.ToObject(typeof(long), _mockApp));
         }
 
         [Theory]
@@ -209,7 +208,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            var instance = scalarValue.ToObject(entityType, appMock.Object, _serviceProvider) as RxEntityBase;
+            var instance = scalarValue.ToObject(entityType, appMock.Object) as RxEntityBase;
             Assert.NotNull(instance);
             Assert.Equal(entityType,instance!.GetType());
             Assert.Equal("1234", instance.EntityId);
@@ -228,9 +227,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((decimal) 1.5, scalarValue.ToObject(typeof(decimal), null, _serviceProvider));
-            Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), null, _serviceProvider));
-            Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), null, _serviceProvider));
+            Assert.Equal((decimal) 1.5, scalarValue.ToObject(typeof(decimal), _mockApp));
+            Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), _mockApp));
+            Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), _mockApp));
         }
 
         [Fact]
@@ -246,7 +245,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), null, _serviceProvider));
+            Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), _mockApp));
         }
 
         [Fact]
@@ -274,7 +273,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new System.IO.StringReader(yaml),
                 new YamlConfig(CreateSettings(ConfigFixturePath)),
                 ConfigFixturePath,
-                Mock.Of<IServiceProvider>()
+                _serviceProvider
             );
 
             var yamlStream = new YamlStream();
@@ -282,7 +281,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             var instance = new AppComplexConfig(); 
-            yamlConfig.SetPropertyConfig(root, "id", null!, instance);
+            yamlConfig.SetPropertyConfig(root, "id", instance);
 
             Assert.Equal("hello world", instance?.AString);
             Assert.Equal(10, instance?.AnInt);
@@ -314,7 +313,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                     new StringReader(yaml),
                     new YamlConfig(CreateSettings(ConfigFixturePath)),
                     ConfigFixturePath,
-                    Mock.Of<IServiceProvider>()
+                    _serviceProvider
             );
 
             var yamlStream = new YamlStream();
@@ -322,7 +321,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             await using var instance = new MultilevelMappingConfig();
-            yamlConfig.SetPropertyConfig(root, "id", null!, instance);
+            yamlConfig.SetPropertyConfig(root, "id", instance);
 
             Assert.Equal(rootData, instance!.Root!.Data);
             Assert.Equal(childData, instance!.Root!.Child!.Child!.Data!);

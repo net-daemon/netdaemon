@@ -24,7 +24,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="logger">A ILogger instance</param>
         /// <param name="app">App being tracked</param>
-        internal ObservableBase(ILogger logger, INetDaemonAppBase app)
+        public ObservableBase(ILogger logger, INetDaemonAppBase app)
         {
             _logger = logger;
             _app = app;

@@ -82,6 +82,7 @@ namespace NetDaemon.Daemon.Services
             _ = InternalLazyStoreStateQueue.Writer.TryWrite(true);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031")]
         private async Task HandleLazyStorage(CancellationToken cancellationToken)
         {
             _ = _internalStorageObject ??

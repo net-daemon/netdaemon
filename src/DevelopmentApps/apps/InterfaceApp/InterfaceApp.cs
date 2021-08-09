@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
-using NetDaemon.Daemon;
 
 namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
@@ -15,10 +10,10 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
     [NetDaemonApp]
     public class InterfaceApp : IAsyncInitializable
     {
-        private INetDaemonHost _host;
+        private INetDaemon _host;
         private readonly ILogger _logger;
 
-        public InterfaceApp(INetDaemonHost host, ILogger logger)
+        public InterfaceApp(INetDaemon host, ILogger logger)
         {
             _host = host;
             _logger = logger;

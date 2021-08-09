@@ -340,17 +340,17 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         private async Task InitApps()
         {
-            foreach (var inst in DefaultDaemonHost.AllAppInstances.Select(c => c.ApplicationInstance).OfType<INetDaemonAppBase>())
+            foreach (var inst in DefaultDaemonHost.AllAppInstances)
             {
                 await inst.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             }
 
             foreach (var inst in DefaultDaemonHost.AllAppInstances)
             {
-                if (inst.ApplicationInstance is IAsyncInitializable asyncInitializable)
+                if (inst is IAsyncInitializable asyncInitializable)
                     await asyncInitializable.InitializeAsync().ConfigureAwait(false);
 
-                (inst.ApplicationInstance as IInitializable)?.Initialize();
+                (inst as IInitializable)?.Initialize();
             }
         }
 
