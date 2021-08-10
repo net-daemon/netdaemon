@@ -8,7 +8,7 @@ namespace NetDaemon.Daemon
 {
     internal static class AppSorter
     {
-        internal static IReadOnlyList<INetDaemonApp> SortByDependency(IReadOnlyList<INetDaemonApp> unsortedList)
+        internal static IReadOnlyList<ApplicationContext> SortByDependency(IReadOnlyList<ApplicationContext> unsortedList)
         {
             var dependencies = unsortedList.SelectMany(n => n.Dependencies).ToHashSet();
 
@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon
                         throw new NetDaemonException(
                             "Application dependencies is wrong, please check dependencies for circular dependencies!");
 
-            return Enumerable.Select<string, INetDaemonApp>(order, id => appById[id]).ToList();
+            return order.Select(id => appById[id]).ToList();
         }
 
         /// <summary>

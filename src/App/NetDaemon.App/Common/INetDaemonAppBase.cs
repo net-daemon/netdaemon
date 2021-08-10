@@ -10,18 +10,12 @@ namespace NetDaemon.Common
     ///     Shared features in both Reactive and async/await models
     /// </summary>
     [SuppressMessage("", "CA1716")]
-    public interface INetDaemonAppBase : INetDaemonApp, INeatDaemonPersistantApp, INetDaemonAppLogging, IAsyncDisposable
+    public interface INetDaemonAppBase : INetDaemonInitialableApp, INetDaemonAppLogging, IAsyncInitializable, IInitializable, IAsyncDisposable
     {
         /// <summary>
-        /// Start the application, normally implemented by the base class
+        ///     The dependencies that needs to be initialized before this app
         /// </summary>
-        /// <param name="daemon"></param>
-        Task StartUpAsync(INetDaemon daemon);
-        
-        /// <summary>
-        /// Init the application sync, is called by the NetDaemon after startup
-        /// </summary>
-        void Initialize();
+        IEnumerable<string> Dependencies { get; set; }
         
         /// <summary>
         ///     A thread safe key/value dictionary to safely share states within and between apps in memory
@@ -32,6 +26,30 @@ namespace NetDaemon.Common
         ///     Http features of NetDaemon is exposed through the Http property
         /// </summary>
         IHttpHandler Http { get; }
+
+        /// <summary>
+        ///     Unique id of the application
+        /// </summary>
+        public string? Id { get; set; }
+
+        /// <summary>
+        ///     Unique id of the application entity
+        /// </summary>
+        public string EntityId { get; }
+
+        /// <summary>
+        ///     Returns the description, is the decorating comment of app class
+        /// </summary>
+        public string Description { get; }
+
+        /// <summary>
+        ///     Gets or sets a flag indicating whether this app is enabled.
+        ///     This property can be controlled from Home Assistant.
+        /// </summary>
+        /// <remarks>
+        ///     A disabled app will not be initialized during the discovery.
+        /// </remarks>
+        public bool IsEnabled { get; set; }
 
         /// <summary>
         ///     Access stateful data
@@ -45,7 +63,7 @@ namespace NetDaemon.Common
         ///     Get application instance by application instance id
         /// </summary>
         /// <param name="appInstanceId">The identity of the app instance</param>
-        INetDaemonApp? GetApp(string appInstanceId);
+        INetDaemonAppBase? GetApp(string appInstanceId);
 
         /// <summary>
         ///     Use text-to-speech to speak a message
@@ -69,6 +87,11 @@ namespace NetDaemon.Common
         /// <param name="action">The action to perform when service is called</param>
         void ListenServiceCall(string domain, string service,
             Func<dynamic?, Task> action);
+
+        /// <summary>
+        ///     Returns different runtime information about an app
+        /// </summary>
+        public AppRuntimeInfo RuntimeInfo { get; }
 
         /// <summary>
         ///     Returns all entities (EntityId) that are currently registered

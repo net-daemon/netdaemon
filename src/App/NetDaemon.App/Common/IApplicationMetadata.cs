@@ -1,33 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace NetDaemon.Common
+﻿namespace NetDaemon.Common
 {
+    // TODO: make internal
     /// <summary>
-    /// Interface to implement by any app to be hosted
+    /// Provides metadata for a NetDaemon Application
     /// </summary>
-    public interface INetDaemonApp
+    public interface IApplicationMetadata
     {
-        /// <summary>
-        /// Init the application async, is called by the NetDaemon after startup
-        /// </summary>
-        Task InitializeAsync();
-
-        /// <summary>
-        ///     The dependencies that needs to be initialized before this app
-        /// </summary>
-        IEnumerable<string> Dependencies => Array.Empty<string>();
-
         /// <summary>
         ///     Unique id of the application
         /// </summary>
-        string? Id { get; set; }
+        string? Id { get; set;  }
 
         /// <summary>
         ///     Returns the description, is the decorating comment of app class
         /// </summary>
-        string Description { get; }
+        string? Description { get; }
 
         /// <summary>
         ///     Gets or sets a flag indicating whether this app is enabled.

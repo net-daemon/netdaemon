@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\App\NetDaemon.App\NetDaemon.App.csproj" />
-    <ProjectReference Include="..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>

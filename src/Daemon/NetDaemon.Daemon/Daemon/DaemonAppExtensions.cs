@@ -17,7 +17,7 @@ namespace NetDaemon.Daemon
 {
     public static class DaemonAppExtensions
     {
-        public static async Task HandleAttributeInitialization(this INetDaemonApp netDaemonApp, INetDaemon daemon)
+        public static async Task HandleAttributeInitialization(this NetDaemonRxApp netDaemonApp, INetDaemon daemon)
         {
             _ = daemon ??
                throw new NetDaemonArgumentNullException(nameof(daemon));
@@ -28,17 +28,9 @@ namespace NetDaemon.Daemon
 
             foreach (var method in netDaemonAppType.GetMethods())
             {
-                foreach (var attr in method.GetCustomAttributes(false))
+                if (method.GetCustomAttribute<HomeAssistantServiceCallAttribute>(false) != null)
                 {
-                    if (netDaemonApp is NetDaemonRxApp daemonRxApp)
-                    {
-                        switch (attr)
-                        {
-                            case HomeAssistantServiceCallAttribute:
-                                await HandleServiceCallAttribute(daemon, daemonRxApp, method, false).ConfigureAwait(false);
-                                break;
-                        }
-                    }
+                    await HandleServiceCallAttribute(daemon, netDaemonApp, method, false).ConfigureAwait(false);
                 }
             }
         }
