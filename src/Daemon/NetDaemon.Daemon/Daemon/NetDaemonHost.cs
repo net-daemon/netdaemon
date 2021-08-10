@@ -64,10 +64,7 @@ namespace NetDaemon.Daemon
 
         private readonly IDataRepository? _repository;
 
-        /// <summary>
-        ///     Used for testing
-        /// </summary>
-        internal ConcurrentDictionary<string, INetDaemonApp> InternalAllAppInstances { get; } = new();
+        private ConcurrentDictionary<string, ApplicationContext> InternalAllAppInstances { get; } = new();
 
         private bool _isDisposed;
 
@@ -118,6 +115,15 @@ namespace NetDaemon.Daemon
             TextToSpeechService = new TextToSpeechService(this);
         }
 
+        // for unittesting
+        internal void AddRunningApp(INetDaemonAppBase app)
+        {
+            _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
+            var applicationContext = new ApplicationContext(app,this, Logger);
+            InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
+            InternalAllAppInstances[applicationContext.Id!] = applicationContext;
+        }
+        
         public bool IsConnected { get; private set; }
 
         public IHttpHandler Http =>
@@ -125,10 +131,12 @@ namespace NetDaemon.Daemon
 
         public ILogger Logger { get; }
 
-        public IEnumerable<INetDaemonApp> AllAppInstances => InternalAllAppInstances.Values;
+        public IEnumerable<ApplicationContext> AllAppContexts => InternalAllAppInstances.Values;
+        
+        public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values.Select(c => c.ApplicationInstance).OfType<INetDaemonAppBase>();
 
         private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
-            InternalRunningAppInstances.Values.OfType<NetDaemonRxApp>();
+            InternalRunningAppInstances.Values.Select(c => c.ApplicationInstance).OfType<NetDaemonRxApp>();
 
         private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable)app.EventChangesObservable).Observers);
@@ -136,8 +144,7 @@ namespace NetDaemon.Daemon
         [SuppressMessage("", "CA1721")]
         public IEnumerable<EntityState> State => StateManager.States;
 
-        // For testing
-        internal ConcurrentDictionary<string, INetDaemonApp> InternalRunningAppInstances { get; } = new();
+        private ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances { get; } = new();
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
         {
@@ -222,10 +229,10 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        public INetDaemonApp? GetApp(string appInstanceId)
+        public INetDaemonAppBase? GetApp(string appInstanceId)
         {
             return InternalRunningAppInstances.ContainsKey(appInstanceId)
-                ? InternalRunningAppInstances[appInstanceId]
+                ? InternalRunningAppInstances[appInstanceId].ApplicationInstance as INetDaemonAppBase
                 : null;
         }
 
@@ -565,22 +572,7 @@ namespace NetDaemon.Daemon
                 InternalRunningAppInstances.Count);
             foreach (var app in InternalAllAppInstances.Values)
             {
-                try
-                {
-                    if (app is IAsyncDisposable asyncDisposable)
-                    {
-                        await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                    }
-              
-                    if (app is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError(e, "Failed to unload apps, {app_id}", app.Id);
-                }
+                await app.DisposeAsync().ConfigureAwait(false);
             }
 
             InternalAllAppInstances.Clear();
@@ -904,13 +896,13 @@ namespace NetDaemon.Daemon
             await UnloadAllApps().ConfigureAwait(false);
           
             // create a ServiceCollection for loading dependencies into the apps
-            // for now we only load INetDaemonHost and Ilogger
+            // for now we only load INetDaemon and Ilogger
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<INetDaemonHost>(this);
+            serviceCollection.AddSingleton<INetDaemon>(this);
             serviceCollection.AddSingleton(Logger);
 
             // Get all instances
-            var instancedApps = _appInstanceManager.InstanceDaemonApps(serviceCollection.BuildServiceProvider()!);
+            var applicationContexts = _appInstanceManager.InstanceDaemonApps(serviceCollection.BuildServiceProvider()!);
 
             if (!InternalRunningAppInstances.IsEmpty)
             {
@@ -919,45 +911,51 @@ namespace NetDaemon.Daemon
                 InternalRunningAppInstances.Clear();
             }
 
-            foreach (var appInstance in instancedApps!)
+            foreach (var applicationContext in applicationContexts!)
             {
-                InternalAllAppInstances[appInstance.Id!] = appInstance;
-                if (await RestoreAppState(appInstance).ConfigureAwait(false))
+                InternalAllAppInstances[applicationContext.Id!] = applicationContext;
+                if (await RestoreAppState(applicationContext).ConfigureAwait(false))
                 {
-                    InternalRunningAppInstances[appInstance.Id!] = appInstance;
+                    InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
                 }
             }
 
             // Now run initialize on all sorted by dependencies
-            foreach (var sortedApp in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
+            foreach (var applicationContext in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
             {
-                // Init by calling the InitializeAsync
-                var taskInitAsync = sortedApp.InitializeAsync();
-                var taskAwaitedAsyncTask =
-                    await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
-                if (taskAwaitedAsyncTask != taskInitAsync)
+                if (applicationContext.ApplicationInstance is IAsyncInitializable asyncInitializable)
                 {
-                    Logger.LogWarning(
-                        "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
-                        sortedApp.Id);
+                    // Init by calling the InitializeAsync
+                    var taskInitAsync = asyncInitializable.InitializeAsync();
+                    var taskAwaitedAsyncTask =
+                        await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
+                    if (taskAwaitedAsyncTask != taskInitAsync)
+                    {
+                        Logger.LogWarning(
+                            "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
+                            applicationContext.Id);
+                    }
                 }
 
-                if (sortedApp is INetDaemonAppBase netDaemonAppBase)
+                if (applicationContext.ApplicationInstance is IInitializable initalizableApp)
                 {
                     // Init by calling the Initialize
-                    var taskInit = Task.Run(netDaemonAppBase.Initialize);
+                    var taskInit = Task.Run(initalizableApp.Initialize);
                     var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
                     if (taskAwaitedTask != taskInit)
                     {
                         Logger.LogWarning(
                             "Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!",
-                            sortedApp.Id);
+                            applicationContext.Id);
                     }
                 }
 
-                await sortedApp.HandleAttributeInitialization(this).ConfigureAwait(false);
-                Logger.LogInformation("Successfully loaded app {appId} ({class})", sortedApp.Id,
-                    sortedApp.GetType().Name);
+                if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
+                {
+                    await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
+                    Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id,
+                        applicationContext.GetType().Name);
+                }
             }
 
             await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
@@ -1072,7 +1070,7 @@ namespace NetDaemon.Daemon
         }
 
         //TODO: Refactor this
-        private async Task PersistAppStateAsync(INetDaemonApp app)
+        private async Task PersistAppStateAsync(ApplicationContext app)
         {
             var uniqueIdForStorage = $"{app.GetType().Name}_{app.Id}".ToLowerInvariant();
             var obj = await GetDataAsync<IDictionary<string, object?>>(uniqueIdForStorage)
@@ -1084,18 +1082,18 @@ namespace NetDaemon.Daemon
         }
 
         [SuppressMessage("", "CA1031")]
-        private async Task<bool> RestoreAppState(INetDaemonApp appInstance)
+        private async Task<bool> RestoreAppState(ApplicationContext appInstance)
         {
             try
             {
                 // First do startup initialization to connect with this daemon instance
-                if (appInstance is INetDaemonAppBase netDaemonAppBase)
+                if (appInstance.ApplicationInstance is INetDaemonAppBase netDaemonAppBase)
                 {
                     await netDaemonAppBase.StartUpAsync(this).ConfigureAwait(false);
                 }
 
                 // The restore the state to load saved settings and if this app is enabled
-                if (appInstance is INeatDaemonPersistantApp persistantApp)
+                if (appInstance.ApplicationInstance is INetDaemonPersistantApp persistantApp)
                 {
                     await persistantApp.RestoreAppStateAsync().ConfigureAwait(false);
                 }
@@ -1103,16 +1101,15 @@ namespace NetDaemon.Daemon
                 if (appInstance.IsEnabled) return true;
                 
                 // We should not initialize this app, so dispose it and return
-                if (appInstance is IAsyncDisposable asyncDisposable)
+                if (appInstance.ApplicationInstance is IAsyncDisposable asyncDisposable)
                 {
                     await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                 }
-                if (appInstance is IDisposable disposable)
+                if (appInstance.ApplicationInstance is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }
                 return false;
-
             }
             catch (Exception e)
             {

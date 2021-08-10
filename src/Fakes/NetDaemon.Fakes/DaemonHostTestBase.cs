@@ -156,8 +156,7 @@ namespace NetDaemon.Daemon.Fakes
                throw new NetDaemonArgumentNullException(nameof(app));
             if (string.IsNullOrEmpty(app.Id))
                 app.Id = Guid.NewGuid().ToString();
-            DefaultDaemonHost.InternalAllAppInstances[app.Id] = app;
-            DefaultDaemonHost.InternalRunningAppInstances[app.Id] = app;
+            DefaultDaemonHost.AddRunningApp(app);
             await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
         }
 
@@ -341,16 +340,17 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         private async Task InitApps()
         {
-            foreach (var inst in DefaultDaemonHost.InternalAllAppInstances.Values.OfType<INetDaemonAppBase>())
+            foreach (var inst in DefaultDaemonHost.AllAppInstances)
             {
                 await inst.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             }
 
-            foreach (var inst in DefaultDaemonHost.InternalRunningAppInstances.Values)
+            foreach (var inst in DefaultDaemonHost.AllAppInstances)
             {
-                await inst.InitializeAsync().ConfigureAwait(false);
-                
-                (inst as INetDaemonAppBase)?.Initialize();
+                if (inst is IAsyncInitializable asyncInitializable)
+                    await asyncInitializable.InitializeAsync().ConfigureAwait(false);
+
+                (inst as IInitializable)?.Initialize();
             }
         }
 

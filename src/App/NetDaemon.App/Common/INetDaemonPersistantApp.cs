@@ -5,7 +5,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Interface for applications that support Saving nd restoring their state
     /// </summary>
-    public interface INeatDaemonPersistantApp
+    public interface INetDaemonPersistantApp
     {
         /// <summary>
         ///     Saves the app state
