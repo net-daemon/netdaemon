@@ -28,20 +28,21 @@ namespace NetDaemon.Daemon.Tests
                 IsEnabled = true
             };
 
-            DefaultDaemonHost.InternalRunningAppInstances[DefaultDaemonApp.Id!] = DefaultDaemonApp;
+            DefaultDaemonHost.AddRunningApp(DefaultDaemonApp);
 
             DefaultDaemonRxApp = new BaseTestRxApp
             {
                 Id = "app_rx_id",
                 IsEnabled = true
             };
-            DefaultDaemonHost.InternalRunningAppInstances[DefaultDaemonRxApp.Id!] = DefaultDaemonRxApp;
+            DefaultDaemonHost.AddRunningApp(DefaultDaemonRxApp);
 
             DefaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
             DefaultMockedRxApp.Object.Id = "app_rx_mock_id";
             DefaultMockedRxApp.Object.IsEnabled = true;
             DefaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
-            DefaultDaemonHost.InternalRunningAppInstances[DefaultMockedRxApp.Object.Id!] = DefaultMockedRxApp.Object;
+
+            DefaultDaemonHost.AddRunningApp(DefaultMockedRxApp.Object);
 
             var notConnectedHassClientFactoryMock = new HassClientFactoryMock(HassClientMock.MockConnectFalse);
             _notConnectedDaemonHost = new NetDaemonHost(notConnectedHassClientFactoryMock.Object, DefaultDataRepositoryMock.Object, LoggerMock.LoggerFactory);

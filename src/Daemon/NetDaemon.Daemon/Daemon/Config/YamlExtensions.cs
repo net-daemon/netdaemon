@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive.Services;
 using YamlDotNet.RepresentationModel;
@@ -36,7 +35,7 @@ namespace NetDaemon.Daemon.Config
             return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToPascalCase());
         }
 
-        public static object? ToObject(this YamlScalarNode node, Type valueType, INetDaemonApp? deamonApp)
+        public static object? ToObject(this YamlScalarNode node, Type valueType, object deamonApp)
         {
             _ = valueType ??
                 throw new NetDaemonArgumentNullException(nameof(valueType));

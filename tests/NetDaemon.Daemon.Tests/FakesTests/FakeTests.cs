@@ -384,6 +384,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
+            await DefaultDaemonHost.WaitForTasksAsync().ConfigureAwait(false);
 
             Assert.True(isRun);
         }

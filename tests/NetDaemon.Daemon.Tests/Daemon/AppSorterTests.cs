@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
@@ -17,13 +18,13 @@ namespace NetDaemon.Daemon.Tests.Daemon
         [Fact]
         public void SortEmptyTest()
         {
-            AssertSortReturns(Array.Empty<INetDaemonApp>(), Array.Empty<string>());
+            AssertSortReturns(Array.Empty<ApplicationContext>(), Array.Empty<string>());
         }
 
         [Fact]
         public void SortOneTest()
         {
-            var apps = new List<INetDaemonApp>{ TestApp("a")};
+            var apps = new List<ApplicationContext>{ TestApp("a")};
 
             AssertSortReturns(apps, "a");
         }
@@ -32,7 +33,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void SortSeveralAppsTest()
         {
             // ARRANGE
-            var apps = new List<INetDaemonApp>
+            var apps = new List<ApplicationContext>
             {
                 TestApp("a", "b"),
                 TestApp("b", "c"),
@@ -46,7 +47,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void SortSeveralApps2Test()
         {
             // ARRANGE
-            var apps = new List<INetDaemonApp>
+            var apps = new List<ApplicationContext>
             {
                 TestApp("a", "c"),
                 TestApp("b", "c", "a"),
@@ -56,13 +57,18 @@ namespace NetDaemon.Daemon.Tests.Daemon
             AssertSortReturns(apps, "c", "a", "b");
         }
 
-        static MyTestApp TestApp(string id, params string[] dependencies) => new() {Id = id, Dependencies = dependencies};
+        static ApplicationContext TestApp(string id, params string[] dependencies)
+        {
+            var myTestApp = new MyTestApp();
+            return new ApplicationContext(myTestApp, null!, NullLogger.Instance
+            ) { Id = id, Dependencies = dependencies };
+        }
 
         [Fact]
         public void TrowsOnNotFoundDependency()
         {
             // ARRANGE
-            var apps = new List<INetDaemonApp>
+            var apps = new List<ApplicationContext>
             {
                 TestApp("test","dependent_app")
             };
@@ -79,7 +85,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void TrowsOnCycleTest()
         {
             // ARRANGE
-            var apps = new List<INetDaemonApp>
+            var apps = new List<ApplicationContext>
             {
                 TestApp("a", "b"),
                 TestApp("b", "a"),
@@ -92,7 +98,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             Assert.Contains("circular dependencies", ex.Message, StringComparison.Ordinal);
         }
       
-        private static void AssertSortReturns(IReadOnlyList<INetDaemonApp> apps, params string[] expected)
+        private static void AssertSortReturns(IReadOnlyList<ApplicationContext> apps, params string[] expected)
         {
             // ACT
             var sorted = AppSorter.SortByDependency(apps);

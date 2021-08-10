@@ -38,9 +38,9 @@ namespace NetDaemon.Daemon
         // Internal for testing
         public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps!;
 
-        public IEnumerable<INetDaemonApp> InstanceDaemonApps(IServiceProvider serviceProvider)
+        public IEnumerable<ApplicationContext> InstanceDaemonApps(IServiceProvider serviceProvider)
         {
-            var result = new List<INetDaemonApp>(50);
+            var result = new List<ApplicationContext>(50);
 
             // No loaded, just return an empty list
             if (_loadedDaemonApps?.Any() != true)

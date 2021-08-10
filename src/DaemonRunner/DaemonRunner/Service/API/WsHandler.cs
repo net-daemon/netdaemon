@@ -61,7 +61,7 @@ namespace NetDaemon.Service.Api
                 var eventMessage = new WsExternalEvent
                 {
                     Type = "apps",
-                    Data = _host?.AllAppInstances.Select(n => new ApiApplication()
+                    Data = _host?.AllAppContexts.Select(n => new ApiApplication()
                     {
                         Id = n.Id,
                         Dependencies = n.Dependencies,
@@ -74,7 +74,7 @@ namespace NetDaemon.Service.Api
                 await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
             }
         }
-
+        
         [SuppressMessage("", "CA1031")]
         public async Task Invoke(HttpContext context)
         {
@@ -112,7 +112,7 @@ namespace NetDaemon.Service.Api
                                 var eventMessage = new WsExternalEvent
                                 {
                                     Type = "apps",
-                                    Data = _host?.AllAppInstances.Select(n => new ApiApplication()
+                                    Data = _host?.AllAppContexts.Select(n => new ApiApplication()
                                     {
                                         Id = n.Id,
                                         Dependencies = n.Dependencies,
