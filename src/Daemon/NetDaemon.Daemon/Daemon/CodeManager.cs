@@ -55,12 +55,14 @@ namespace NetDaemon.Daemon
                 return result;
             }
 
+            var appInstantiator = new AppInstantiator(serviceProvider);
+            
             foreach (string file in allConfigFilePaths)
             {
                 try
                 {
                     using var fileReader = File.OpenText(file);
-                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file, serviceProvider);
+                    var yamlAppConfig = new YamlAppConfig(_loadedDaemonApps, fileReader, _yamlConfig, file, appInstantiator);
 
                     foreach (var appInstance in yamlAppConfig.GetInstances())
                     {

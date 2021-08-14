@@ -30,7 +30,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 AppSource = appSource
             });
         
-        private readonly IServiceProvider _serviceProvider = Mock.Of<IServiceProvider>();
+        private readonly IAppInstantiator _appInstantiator = Mock.Of<IAppInstantiator>();
 
         private object _mockApp = new ();
 
@@ -273,7 +273,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new System.IO.StringReader(yaml),
                 new YamlConfig(CreateSettings(ConfigFixturePath)),
                 ConfigFixturePath,
-                _serviceProvider
+                _appInstantiator
             );
 
             var yamlStream = new YamlStream();
@@ -313,7 +313,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                     new StringReader(yaml),
                     new YamlConfig(CreateSettings(ConfigFixturePath)),
                     ConfigFixturePath,
-                    _serviceProvider
+                    _appInstantiator
             );
 
             var yamlStream = new YamlStream();
