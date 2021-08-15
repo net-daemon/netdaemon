@@ -5,7 +5,7 @@ using NetDaemon.Common;
 
 namespace NetDaemon.Daemon
 {
-    public class AppInstantiator : IAppInstantiator
+    internal class AppInstantiator : IAppInstantiator
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly INetDaemon _netDaemon;
