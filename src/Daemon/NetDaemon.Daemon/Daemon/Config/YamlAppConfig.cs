@@ -18,18 +18,18 @@ namespace NetDaemon.Daemon.Config
         private readonly YamlStream _yamlStream;
         private readonly IYamlConfig _yamlConfig;
         private readonly string _yamlFilePath;
-        private IServiceProvider _serviceProvider;
+        private readonly IAppInstantiator _appInstantiator;
 
         public YamlAppConfig(IEnumerable<Type> types, TextReader reader, IYamlConfig yamlConfig, string yamlFilePath,
-            IServiceProvider serviceProvider)
+            IAppInstantiator appInstantiator)
         {
-            _serviceProvider = serviceProvider;
             _types = types;
             _yamlStream = new YamlStream();
             _yamlStream.Load(reader);
 
             _yamlConfig = yamlConfig;
             _yamlFilePath = yamlFilePath;
+            _appInstantiator = appInstantiator;
         }
 
         [SuppressMessage("", "CA1508")]
@@ -40,7 +40,7 @@ namespace NetDaemon.Daemon.Config
             // For each app instance defined in the yaml config
             foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)_yamlStream.Documents[0].RootNode)
             {
-                string? appId = null;
+                string appId = null!;
                 try
                 {
                     if (app.Key.NodeType != YamlNodeType.Scalar ||
@@ -49,7 +49,7 @@ namespace NetDaemon.Daemon.Config
                         continue;
                     }
 
-                    appId = ((YamlScalarNode)app.Key).Value;
+                    appId = ((YamlScalarNode)app.Key).Value!;
          
                     // Get the class
                     string? appClass = GetTypeNameFromClassConfig((YamlMappingNode)app.Value);
@@ -58,10 +58,8 @@ namespace NetDaemon.Daemon.Config
                     if (appType != null)
                     {
                         var appContext = InstanceAndSetPropertyConfig(appType, (YamlMappingNode)app.Value, appId);
-                        if (appContext != null)
-                        {
-                            instances.Add(appContext);
-                        }
+                        
+                        instances.Add(appContext);
                     }
                 }
                 catch (Exception e)
@@ -73,24 +71,18 @@ namespace NetDaemon.Daemon.Config
             return instances;
         }
 
-        public ApplicationContext? InstanceAndSetPropertyConfig(
+        public ApplicationContext InstanceAndSetPropertyConfig(
             Type netDaemonAppType,
             YamlMappingNode appNode,
-            string? appId)
+            string appId)
         {
             _ = appNode ??
                 throw new NetDaemonArgumentNullException(nameof(appNode));
 
-            var appInstance = ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
-            
-            var appContext = new ApplicationContext(appInstance, 
-                _serviceProvider.GetRequiredService<INetDaemon>(),
-                _serviceProvider.GetRequiredService<ILogger>())
-            {
-                Id = appId
-            };
+            var appContext = _appInstantiator.Instantiate(netDaemonAppType, appId);
 
-            SetPropertyConfig(appNode, appId, appInstance);
+            SetPropertyConfig(appNode, appId, appContext.ApplicationInstance);
+            
             return appContext;
         }
 
