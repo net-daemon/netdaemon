@@ -78,10 +78,7 @@ namespace NetDaemon.Daemon
             
             foreach (var appType in appTypesWithoutYamlConfig)
             {
-                var appId = appType
-                        .GetCustomAttributes(typeof(NetDaemonAppAttribute), true)
-                        .Cast<NetDaemonAppAttribute>()
-                        .FirstOrDefault()?.Id ?? appType.Name;
+                var appId = appType.GetCustomAttribute<NetDaemonAppAttribute>()?.Id ?? appType.Name;
 
                 result.Add(appInstantiator.Instantiate(appType, appId));
             }
