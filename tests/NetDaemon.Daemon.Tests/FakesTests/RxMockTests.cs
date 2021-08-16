@@ -406,6 +406,23 @@ namespace NetDaemon.Daemon.Tests.Reactive
             Assert.NotNull(updatedTestData);
             Assert.Equal(updatedTestData.Value, savedObject!.Value);
         }
+        
+        [Fact]
+        public void SetStateReturnsCorrectValues()
+        {
+            // ARRANGE
+            const string switchEntityId = "switch.test";
+            const string switchState = "on";
+
+            // ACT
+            Object.SetState(switchEntityId, switchState);
+
+            // ASSERT
+            var switchEntity = Object.States.FirstOrDefault(state => state.EntityId == switchEntityId);
+
+            Assert.NotNull(switchEntity);
+            Assert.Equal(switchState, switchEntity.State);
+        }
 
         private class TestData
         {
