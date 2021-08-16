@@ -421,7 +421,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             var switchEntity = Object.States.FirstOrDefault(state => state.EntityId == switchEntityId);
 
             Assert.NotNull(switchEntity);
-            Assert.Equal(switchState, switchEntity.State);
+            Assert.Equal(switchState, switchEntity?.State);
         }
 
         private class TestData
