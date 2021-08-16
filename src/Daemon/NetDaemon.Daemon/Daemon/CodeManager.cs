@@ -42,16 +42,12 @@ namespace NetDaemon.Daemon
         {
             var result = new List<ApplicationContext>(50);
 
-            // No loaded, just return an empty list
-            if (_loadedDaemonApps?.Any() != true)
-                return result;
-
             // Get all yaml config file paths
-            var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths();
+            var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths().ToArray();
 
-            if (!allConfigFilePaths.Any())
+            if (_loadedDaemonApps?.Any() != true && allConfigFilePaths.Length == 0)
             {
-                _logger.LogWarning("No yaml configuration files found, please add yaml configuration to insance apps!");
+                _logger.LogWarning("No yaml configuration files or loaded apps found");
                 return result;
             }
 
@@ -76,6 +72,17 @@ namespace NetDaemon.Daemon
                     throw new NetDaemonException($"Error instance the app from the file {file}", e);
                 }
             }
+
+            var appTypesWithoutYamlConfig = _loadedDaemonApps
+                    .Where(appType => !result.Select(x => x.ApplicationInstance.GetType()).Contains(appType));
+            
+            foreach (var appType in appTypesWithoutYamlConfig)
+            {
+                var appId = appType.GetCustomAttribute<NetDaemonAppAttribute>()?.Id ?? appType.Name;
+
+                result.Add(appInstantiator.Instantiate(appType, appId));
+            }
+            
             return result;
         }
     }

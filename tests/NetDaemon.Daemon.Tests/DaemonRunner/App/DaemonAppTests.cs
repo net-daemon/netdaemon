@@ -97,7 +97,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var codeManager = CM(ConfigFixturePath);
             // ACT
             // ASSERT
-            Assert.Equal(12, codeManager.DaemonAppTypes.Count());
+            Assert.Equal(14, codeManager.DaemonAppTypes.Count());
         }
 
         [Fact]
@@ -292,6 +292,50 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ASSERT
             Assert.Equal(1, codeManager.InstanceDaemonApps(serviceProvider).Count());
             mockAction.Verify(a => a("Hello logger"));
+        }
+        
+        [Fact]
+        public void YamllessAppShouldBeInitialized()
+        {
+            // ARRANGE
+            var codeManager = CM(Path.Combine(ConfigFixturePath, "yamlless"));
+            // ACT
+            // ASSERT
+            Assert.Contains(codeManager.DaemonAppTypes, type => type.FullName == "YamllessApp");
+        }
+        
+        [Fact]
+        public void YamllessAppShouldBeIdentifiedUsingClassName()
+        {
+            // ARRANGE
+            var appTypeName = "YamllessApp";
+            var codeManager = CM(Path.Combine(ConfigFixturePath, "yamlless"));
+            // ACT
+            // ASSERT
+            var appId = codeManager
+                    .InstanceDaemonApps(ServiceProvider)
+                    .FirstOrDefault(app => app.ApplicationInstance.GetType().Name == appTypeName)
+                    ?.Id;
+
+            Assert.Equal(appTypeName, appId);
+        }
+        
+        [Fact]
+        public void YamllessAppShouldBeIdentifiedUsingAttribute()
+        {
+            // ARRANGE
+            var appTypeName = "YamllessAppIdentifiedUsingAttribute";
+            var expectedAppId = "This app is identified using attribute";
+            
+            var codeManager = CM(Path.Combine(ConfigFixturePath, "yamlless"));
+            // ACT
+            // ASSERT
+            var appId = codeManager
+                    .InstanceDaemonApps(ServiceProvider)
+                    .FirstOrDefault(app => app.ApplicationInstance.GetType().Name == appTypeName)
+                    ?.Id;
+
+            Assert.Equal(expectedAppId, appId);
         }
 
         public static CodeManager CM(string path)
