@@ -49,6 +49,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 return serviceProvider;
             }
         }
+        
+        private static IAppInstantiator AppInstantiator => new AppInstantiator(ServiceProvider);
+
         [Fact]
         public void FaultyApplicationShouldLogError()
         {
@@ -110,7 +113,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             const string? yamlConfig = "app:\n  class: NotFoundApp";
 
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", ServiceProvider).GetInstances();
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", AppInstantiator).GetInstances();
 
             // ASSERT
             Assert.Empty(instances);
@@ -135,7 +138,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 - string 2
         ";
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", ServiceProvider)
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", AppInstantiator)
                 .GetInstances();
             var instance = instances.FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             // ASSERT
@@ -165,7 +168,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 new StringReader(yamlConfig),
                 config,
                 Path.Combine(ConfigFixturePath, "level2", "level3", "any.cs"),
-                ServiceProvider
+                AppInstantiator
             ).GetInstances();
             var instance = instances.FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             // ASSERT
@@ -193,7 +196,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 - string 2
         ";
             // ACT
-            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", ServiceProvider).GetInstances();
+            var instances = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", AppInstantiator).GetInstances();
             var instance = instances.FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             // ASSERT
             Assert.Equal("a string", instance?.StringConfig);
@@ -244,7 +247,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                     class: NetDaemon.Daemon.Tests.DaemonRunner.App.AssemblyDaemonApp
                 ";
 
-            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", ServiceProvider)
+            await using var instance = new YamlAppConfig(types, new StringReader(yamlConfig), yamlConfigMock.Object, "", AppInstantiator)
                 .GetInstances().FirstOrDefault()?.ApplicationInstance as AssemblyDaemonApp;
             var daemonMock = new Mock<INetDaemon>();
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
@@ -286,7 +289,6 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 .AddSingleton(mockAction.Object)
                 .BuildServiceProvider();
             
-
             // ASSERT
             Assert.Equal(1, codeManager.InstanceDaemonApps(serviceProvider).Count());
             mockAction.Verify(a => a("Hello logger"));
