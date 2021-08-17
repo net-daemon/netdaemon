@@ -16,7 +16,6 @@ namespace NetDaemon.Common
         ///     The dependencies that needs to be initialized before this app
         /// </summary>
         IEnumerable<string> Dependencies { get; set; }
-        
         /// <summary>
         ///     A thread safe key/value dictionary to safely share states within and between apps in memory
         /// </summary>
