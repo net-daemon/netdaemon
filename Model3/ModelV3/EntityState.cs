@@ -27,18 +27,18 @@ namespace NetDaemon.Common.ModelV3
                             };
         }
 
-        public string EntityId { get; } = "";
+        public string EntityId { get; init; } = "";
 
-        public string State { get; } = "";
+        public string? State { get; init; }
 
-        public JsonElement AttributesJson { get; }
+        public JsonElement AttributesJson { get; init; }
         public virtual object Attributes => AttributesJson.ToObject<Dictionary<string, object>>();
 
-        public DateTime LastChanged { get; }
+        public DateTime LastChanged { get; init; }
 
-        public DateTime LastUpdated { get; }
+        public DateTime LastUpdated { get; init; }
 
-        public Context? Context { get; }
+        public Context? Context { get; init; }
     }
     
     public record EntityState<TAttributes> : EntityState where TAttributes : class

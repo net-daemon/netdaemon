@@ -7,9 +7,7 @@ namespace NetDaemon.Common.ModelV3.Domains
 {
     public record ClimateEntity(IHaContext HaContext, string EntityId) 
         : Entity<ClimateEntity, ClimateState>(HaContext, EntityId)
-    {
-        protected override ClimateState MapState(EntityState state) => new(state);
-    }
+    { }
 
     public record ClimateState(EntityState Source) : EntityState<ClimateAttributes>(Source);
     

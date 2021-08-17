@@ -11,7 +11,7 @@
     <None Update="apps\HelloWorld\HelloWorld.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="apps\DebugApp\DebugApp.yaml">
+    <None Update="apps\DebugApp\M3App.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="apps\InterfaceApp\InterfaceApp.yaml">

@@ -1,4 +1,6 @@
-﻿namespace NetDaemon.Common.ModelV3
+﻿using System;
+
+namespace NetDaemon.Common.ModelV3
 {
     public record StateChange()
     {
@@ -9,7 +11,7 @@
             Old = old;
         }
 
-        public virtual Entity Entity { get; }
+        public virtual Entity Entity { get; } = default!; // Somehow this is needed to avoid a warning about this field being initialized
         public virtual EntityState? Old { get; }
         public virtual EntityState? New { get; }
     }

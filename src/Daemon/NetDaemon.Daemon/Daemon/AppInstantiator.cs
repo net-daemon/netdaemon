@@ -15,8 +15,8 @@ namespace NetDaemon.Daemon
         {
             _serviceProvider = serviceProvider;
             
-            _netDaemon = _serviceProvider.GetRequiredService<INetDaemon>();
-            _logger = _serviceProvider.GetRequiredService<ILogger>();
+            _netDaemon = _serviceProvider.GetRequiredService<NetDaemonHost>();
+            _logger = _serviceProvider.GetRequiredService<ILogger<AppInstantiator>>();
         }
         
         public ApplicationContext Instantiate(Type netDaemonAppType, string appId)
@@ -27,7 +27,7 @@ namespace NetDaemon.Daemon
             {
                 Id = appId
             };
-            
+
             return appContext;
         }
     }

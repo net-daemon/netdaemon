@@ -13,7 +13,7 @@ namespace Model3
     /// <summary>
     ///     Useful extension methods used
     /// </summary>
-    public static class NetDaemonExtensions
+    internal static class NetDaemonExtensions
     {
         public static T ToObject<T>(this JsonElement element, JsonSerializerOptions? options = null)
         {

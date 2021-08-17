@@ -59,7 +59,9 @@ namespace NetDaemon.Common.ModelV3
             base.StateChanges.Select(e => new StateChange<TEntity, TState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
 
         private TState? MapNullableState(EntityState? state) => state == null ? null : MapState(state!);
-        protected abstract TState MapState(EntityState state);
+
+
+        protected TState MapState(EntityState state) => (TState)Activator.CreateInstance(typeof(TState), state)!;
     }
 
 }

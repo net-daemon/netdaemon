@@ -4,12 +4,10 @@ using Model3;
 
 namespace NetDaemon.Common.ModelV3.Domains
 {
-    public class ZoneEntity : Entity<ZoneEntity, ZoneState>
+    public record ZoneEntity : Entity<ZoneEntity, ZoneState>
     {
         public ZoneEntity(IHaContext daemon, string entityId) : base(daemon, entityId)
         { }
-
-        protected override ZoneState MapState(EntityState state) => new(state);
     }
 
     public record ZoneState : EntityState<ZoneAttributes>
