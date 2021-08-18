@@ -64,6 +64,10 @@ namespace NetDaemon.Daemon.Fakes
             });
 
             Setup(n => n.State(It.IsAny<string>())).Returns<string>(entityId => MockState.First(state => state.EntityId == entityId));
+            Setup(n => n.States).Returns(() => MockState);
+
+            Setup(n => n.StateChanges).Returns(StateChangesObservable.Where(f => f.New.State != f.Old.State));
+            Setup(n => n.StateAllChanges).Returns(StateChangesObservable);
 
             Setup(n => n.Entities(It.IsAny<string[]>())).Returns<string[]>(entityIds =>
             {
@@ -86,6 +90,27 @@ namespace NetDaemon.Daemon.Fakes
                 m.Setup(e => e.TurnOff(It.IsAny<object?>())).Throws(new NotImplementedException());
                 return m.Object;
             });
+
+            Setup(s => s.SetState(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<object?>(), It.IsAny<bool>()))
+                    .Returns<string, object, object?, bool>((entityId, state, attributes, _) =>
+                    {
+                        var existingState = MockState.FirstOrDefault(e => e.EntityId == entityId);
+                        if (existingState is not null)
+                        {
+                            MockState.Remove(existingState);
+                        }
+
+                        var entityState = new EntityState
+                        {
+                                EntityId = entityId,
+                                State = state,
+                                Attribute = attributes
+                        };
+
+                        MockState.Add(entityState);
+
+                        return entityState;
+                    });
 
             // Scheduler Setups
             Setup(s => s.RunIn(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns<TimeSpan, Action>((span, action) =>
