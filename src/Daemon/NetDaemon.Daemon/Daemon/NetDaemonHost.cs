@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -112,6 +113,10 @@ namespace NetDaemon.Daemon
 
             StateManager = new EntityStateManager(this);
             TextToSpeechService = new TextToSpeechService(this);
+            
+            HassEventsObservable = Observable.FromEventPattern<EventHandler<HassEvent>, HassEvent>(
+                a => HassEvents += a,
+                a => HassEvents -= a).Select(e=> e.EventArgs);
         }
 
         // for unittesting
@@ -123,9 +128,10 @@ namespace NetDaemon.Daemon
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
 
-        // TODO: maybe find a nicer way to get events from here to the model3 API
-        public event EventHandler<HassEvent> HassEvents;
-        
+        public IObservable<HassEvent> HassEventsObservable { get; }
+
+        private event EventHandler<HassEvent>? HassEvents;
+
         public bool IsConnected { get; private set; }
 
         public IHttpHandler Http =>

@@ -8,25 +8,6 @@ namespace NetDaemon.Common.ModelV3
 {
     public record EntityState
     {
-        public EntityState()
-        { }
-        
-        internal EntityState(HassState hassState)
-        {
-            // TODO: move to a mapper class
-            EntityId = hassState.EntityId;
-            AttributesJson = hassState.AttributesJson ?? new JsonElement();
-            LastChanged = hassState.LastChanged;
-            LastUpdated = hassState.LastUpdated;
-            Context = hassState.Context == null ? null : 
-                            new Context
-                            {
-                                Id = hassState.Context.Id,
-                                UserId = hassState.Context.UserId,
-                                ParentId = hassState.Context.UserId,
-                            };
-        }
-
         public string EntityId { get; init; } = "";
 
         public string? State { get; init; }

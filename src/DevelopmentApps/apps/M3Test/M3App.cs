@@ -19,8 +19,7 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
         {
             Ha = ha;
 
-            // do not forget to remove this call before merging ;-)            
-            Ha.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works in Model3 via HaContext" }, true);;
+            // Ha.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works in Model3 via HaContext" }, true);;
             
             _climateEntity = new ClimateEntity(ha, "climate.dummy_thermostat");
 

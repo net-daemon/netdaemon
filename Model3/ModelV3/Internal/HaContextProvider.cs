@@ -1,42 +1,35 @@
 ﻿using System;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
-using Microsoft.Extensions.Logging.Abstractions;
 using Model3.ModelV3;
-using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon;
-using NetDaemon.Mapping;
 
 namespace NetDaemon.Common.ModelV3
 {
     internal class HaContextProvider : IHaContext
     {
-        private readonly NetDaemonHost _netDaemonHost;
-        private readonly ObservableBase<StateChange> _observable;
-        
+        private readonly INetDaemonHost _netDaemonHost;
+        private readonly IObservable<HassEvent> _hassEventObservable;
+
         // TODO: Initialize the stateCache here, would need some sort of init event, and access to the IHassClient 
         private readonly EntityStateCache _entityStateCache = new ();
-        public HaContextProvider(NetDaemonHost netDaemonHost)
+        public HaContextProvider(INetDaemonHost netDaemonHost, IObservable<HassEvent> hassEventObservable)
         {
             _netDaemonHost = netDaemonHost;
-            _netDaemonHost.HassEvents +=NetDaemonHostOnHassEvents;
-            
-            // todo: use observable that does not need an app instance or logger
-            _observable = new ObservableBase<StateChange>(NullLogger.Instance, null!);
-        }
+            _hassEventObservable = hassEventObservable;
 
-        private void NetDaemonHostOnHassEvents(object? sender, HassEvent hassEvent)
-        {
-            if (hassEvent.Data is not HassStateChangedEventData stateChangedEventData) return;
+            var stateChanges = _hassEventObservable
+                .Select(e => e.Data as HassStateChangedEventData)
+                .Where(e => e != null)
+                .Select(e => e!);
             
-            _entityStateCache.Store(stateChangedEventData.NewState!);
-
-            foreach (var observer in _observable.Observers)
+            stateChanges.Subscribe(s =>
             {
-                observer.OnNext(stateChangedEventData.Map(this));
-            }
+                var state = s.NewState;
+                if (state !=  null) _entityStateCache.Store(state);
+            });
+            
+            StateAllChanges = stateChanges.Select(e => e.Map(this));
         }
 
         public EntityState? GetState(string entityId)
@@ -52,7 +45,8 @@ namespace NetDaemon.Common.ModelV3
         }
 
         //public IRxEvent EventChanges { get; }
-        public IObservable<StateChange> StateAllChanges => _observable;
-        public IObservable<StateChange> StateChanges => _observable.Where(e => e.New?.State != e.Old?.State);
+        public IObservable<StateChange> StateAllChanges { get; }
+    
+        public IObservable<StateChange> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
     }
 }

@@ -15,7 +15,7 @@ namespace NetDaemon.Daemon
         {
             _serviceProvider = serviceProvider;
             
-            _netDaemon = _serviceProvider.GetRequiredService<NetDaemonHost>();
+            _netDaemon = _serviceProvider.GetRequiredService<INetDaemonHost>();
             _logger = _serviceProvider.GetRequiredService<ILogger<AppInstantiator>>();
         }
         
