@@ -4,7 +4,7 @@ using NetDaemon.Common.ModelV3;
 
 namespace Model3.ModelV3
 {
-    internal static class HassObjectMapperMapper
+    internal static class HassObjectMapper
     {
         public static StateChange Map(this HassStateChangedEventData source, IHaContext haContext)
         {

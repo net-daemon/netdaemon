@@ -36,7 +36,7 @@ namespace NetDaemon.Common.ModelV3
         {
             var hassState = _entityStateCache.GetState(entityId);
             
-            return HassObjectMapperMapper.Map(hassState);
+            return HassObjectMapper.Map(hassState);
         }
 
         public void CallService(string domain, string service, object? data, bool waitForResponse = false)

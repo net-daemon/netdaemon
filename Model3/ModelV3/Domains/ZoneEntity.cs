@@ -17,6 +17,8 @@ namespace NetDaemon.Common.ModelV3.Domains
     
     public record ZoneAttributes
     {
+        // TODO: complete these props and correct casing using [JsonPropertyName] (this is really an example)
+
         public bool hidden { get; init; }
         public double latitude { get; init; }
         public double longitude { get; init; }

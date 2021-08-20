@@ -13,6 +13,7 @@ namespace NetDaemon.Common.ModelV3.Domains
     
     public record ClimateAttributes
     {
+        // TODO: complete these props (this is really an example)
         [JsonPropertyName("temperature")]
         public double Temperature { get; init; }
 
