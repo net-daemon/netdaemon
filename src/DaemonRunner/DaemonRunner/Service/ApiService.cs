@@ -41,6 +41,9 @@ namespace NetDaemon.Service
                     , ".storage")));
             services.AddTransient<IHttpHandler, HttpHandler>();
             services.AddSingleton<NetDaemonHost>();
+            services.AddSingleton<INetDaemonHost>(s => s.GetRequiredService<NetDaemonHost>());
+            services.AddSingleton(s => s.GetRequiredService<NetDaemonHost>().HassEventsObservable);
+
             services.AddHttpClient();
         }
 

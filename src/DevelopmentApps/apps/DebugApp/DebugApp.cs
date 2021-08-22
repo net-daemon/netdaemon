@@ -10,6 +10,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
     /// </summary>
     public class DebugApp : NetDaemonRxApp
     {
+        
         // Use two guids, one when instanced and one when initialized
         // can track errors with instancing
         private Guid _instanceId = Guid.NewGuid();
@@ -26,7 +27,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
 
         [HomeAssistantServiceCall]
         public void CallMeFromHass(dynamic data)
-        {
+             {
             Log("A call from hass! {data}", data);
         }
 
@@ -40,9 +41,9 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
                 Log("State changed as expected");
             }
             catch (System.Exception)
-            {
+        {
                 Log("We had timeout");
-            }
+        }
             await Task.Delay(10);
         }
     }
