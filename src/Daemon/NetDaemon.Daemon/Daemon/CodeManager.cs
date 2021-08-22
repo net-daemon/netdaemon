@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
@@ -17,7 +18,7 @@ namespace NetDaemon.Daemon
     {
         private readonly ILogger _logger;
         private readonly IYamlConfig _yamlConfig;
-        private readonly IEnumerable<Type>? _loadedDaemonApps;
+        private readonly IEnumerable<Type> _loadedDaemonApps;
 
         /// <summary>
         ///     Constructor
