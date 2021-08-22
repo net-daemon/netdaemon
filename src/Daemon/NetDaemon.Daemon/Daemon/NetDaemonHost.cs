@@ -5,13 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
@@ -113,6 +113,10 @@ namespace NetDaemon.Daemon
 
             StateManager = new EntityStateManager(this);
             TextToSpeechService = new TextToSpeechService(this);
+            
+            HassEventsObservable = Observable.FromEventPattern<EventHandler<HassEvent>, HassEvent>(
+                a => HassEvents += a,
+                a => HassEvents -= a).Select(e=> e.EventArgs);
         }
 
         // for unittesting
@@ -123,7 +127,11 @@ namespace NetDaemon.Daemon
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
-        
+
+        public IObservable<HassEvent> HassEventsObservable { get; }
+
+        private event EventHandler<HassEvent>? HassEvents;
+
         public bool IsConnected { get; private set; }
 
         public IHttpHandler Http =>
@@ -719,13 +727,15 @@ namespace NetDaemon.Daemon
                         HandleCustomEvent(hassEvent);
                         break;
                 }
+                
+                HassEvents?.Invoke(this, hassEvent);
             }
             catch (Exception e)
             {
                 Logger.LogError(e, $"Failed to handle new event ({hassEvent.EventType})");
             }
         }
-
+        
         [SuppressMessage("", "CA1031")]
         private void HandleStateChangeEvent(HassEvent hassEvent)
         {
@@ -895,14 +905,14 @@ namespace NetDaemon.Daemon
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
           
-            // create a ServiceCollection for loading dependencies into the apps
-            // for now we only load INetDaemon and Ilogger
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<INetDaemon>(this);
-            serviceCollection.AddSingleton(Logger);
+            // // create a ServiceCollection for loading dependencies into the apps
+            // // for now we only load INetDaemon and Ilogger
+            // var serviceCollection = new ServiceCollection();
+            // serviceCollection.AddSingleton<INetDaemon>(this);
+            // serviceCollection.AddSingleton(Logger);
 
             // Get all instances
-            var applicationContexts = _appInstanceManager.InstanceDaemonApps(serviceCollection.BuildServiceProvider()!);
+            var applicationContexts = _appInstanceManager.InstanceDaemonApps(ServiceProvider!);
 
             if (!InternalRunningAppInstances.IsEmpty)
             {
