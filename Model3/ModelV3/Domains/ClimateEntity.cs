@@ -5,12 +5,12 @@ using Model3;
 
 namespace NetDaemon.Common.ModelV3.Domains
 {
-    public record ClimateEntity(IHaContext HaContext, string EntityId) 
-        : Entity<ClimateEntity, ClimateState>(HaContext, EntityId)
-    { }
+    public record ClimateEntity : Entity<ClimateEntity, EntityState<string, ClimateAttributes>, string, ClimateAttributes>
+    {
+        public ClimateEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
+    }
 
-    public record ClimateState(EntityState Source) : EntityState<ClimateAttributes>(Source);
-    
+
     public record ClimateAttributes
     {
         // TODO: complete these props (this is really an example)
