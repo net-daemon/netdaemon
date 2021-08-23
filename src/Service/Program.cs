@@ -10,7 +10,8 @@ try
     await Host.CreateDefaultBuilder(args)
         .UseDefaultNetDaemonLogging()
         .UseNetDaemon()
-        .UseNetDaemonV3()
+        .UseNetDaemonSingletonServices()
+        .UseHaContext()
         .Build()
         .RunAsync()
         .ConfigureAwait(false);
@@ -24,4 +25,3 @@ finally
 {
     NetDaemonExtensions.CleanupNetDaemon();
 }
-
