@@ -34,11 +34,12 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
 
             Ha.StateChanges.Subscribe(e =>
             {
-               // Console.WriteLine($"1 {e.Entity.EntityId}, {e.Old?.State} => {e.New?.State}");
+ 
             });
 
             // Entity that has not changed yet is retrieved on demand
             var zone = new ZoneEntity(Ha, "zone.home");
+ 
             var lat = zone.Attributes?.latitude;
             
             var netEnergySensor = new NumericSensorEntity(Ha, "sensor.netto_energy");
@@ -62,16 +63,17 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             var currentState = e.Entity.EntityState; // should be the same as e.New (unless the was another change in the meantime)
 
             string area = e.Entity.Area;
+
             string? state = e.Entity.State;
 
             // attribute properties are strong typed
             double temperature = e.New?.Attributes.Temperature ?? 0;
             double? temperatureDelta = e.New?.Attributes.Temperature - e.Old?.Attributes.Temperature;
 
+
             // TODO: We might also want some nicer way to parse it as number (double) or On / Off
             // maybe extension methods IsOn() and IsOff() would work nice
-
-
+ 
             // dump as json to view the structure
             var asJson = JsonSerializer.Serialize(e, new JsonSerializerOptions(){WriteIndented = true});
             Console.WriteLine(asJson);

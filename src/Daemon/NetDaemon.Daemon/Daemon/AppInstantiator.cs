@@ -8,27 +8,34 @@ namespace NetDaemon.Daemon
     internal class AppInstantiator : IAppInstantiator
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly INetDaemon _netDaemon;
-        private readonly ILogger _logger;
 
         public AppInstantiator(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            
-            _netDaemon = _serviceProvider.GetRequiredService<INetDaemonHost>();
-            _logger = _serviceProvider.GetRequiredService<ILogger<AppInstantiator>>();
         }
-        
+
         public ApplicationContext Instantiate(Type netDaemonAppType, string appId)
         {
-            var appInstance = ActivatorUtilities.CreateInstance(_serviceProvider, netDaemonAppType);
-
-            var appContext = new ApplicationContext(appInstance, _netDaemon, _logger)
+            IServiceScope? serviceScope = null;
+            try
             {
-                Id = appId
-            };
+                serviceScope = _serviceProvider.CreateScope();
+                // The AppContext will dispose the ServiceScope
 
-            return appContext;
+                var appInstance = ActivatorUtilities.CreateInstance(serviceScope.ServiceProvider, netDaemonAppType);
+
+                var appContext = new ApplicationContext(appInstance)
+                {
+                    Id = appId
+                };
+                appContext.TrackDisposable(serviceScope);
+                return appContext;
+            }
+            catch
+            {
+                serviceScope?.Dispose();
+                throw;
+            }
         }
     }
 }

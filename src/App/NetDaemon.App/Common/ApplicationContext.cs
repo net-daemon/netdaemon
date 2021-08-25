@@ -1,50 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
     /// <summary>
     /// Context for NetDaemon application
     /// </summary>
-    public class ApplicationContext : IAsyncDisposable
+    public sealed class ApplicationContext : IAsyncDisposable, IDisposable
     {
-        private readonly ILogger _logger;
         private IApplicationMetadata _applicationMetadata;
-        private INetDaemonPersistantApp _persistantApp;
+        private IList<IDisposable> _toDispose = new List<IDisposable>();
 
         /// <summary>
         /// Creates a new ApplicationContext
         /// </summary>
-        public ApplicationContext(object applicationInstance, INetDaemon netDaemon, ILogger logger)
+        public ApplicationContext(object applicationInstance)
         {
             ApplicationInstance = applicationInstance;
-            _logger = logger;
 
             if (applicationInstance is NetDaemonAppBase appBase)
             {
                 // For applications based on NetDaemonAppBase the services are provided by the application itself
                 // we need to keep that for backwards compatibility
                 _applicationMetadata = appBase;
-                _persistantApp = appBase;
             }
             else
             {
                 _applicationMetadata = new ApplicationMetadata();
-                _persistantApp = new ApplicationPersistenceService(_applicationMetadata, netDaemon, logger);
             }
+        }
+
+        public void TrackDisposable(IDisposable toDispose)
+        {
+            _toDispose.Add(toDispose);
         }
 
         /// <summary>
         /// Gets the reference to the Application Instance
         /// </summary>
         public object ApplicationInstance { get; }
-        
+
         /// <summary>
         ///     Unique id of the application
         /// </summary>
@@ -63,7 +61,8 @@ namespace NetDaemon.Common
         ///     Returns the description, is the decorating comment of app class
         /// </summary>
         public string? Description => _applicationMetadata.Description
-                                      ?? ApplicationInstance.GetType().GetCustomAttribute<DescriptionAttribute>()?.Description 
+                                      ?? ApplicationInstance.GetType().GetCustomAttribute<DescriptionAttribute>()
+                                          ?.Description
                                       ?? "";
 
         /// <summary>
@@ -101,6 +100,16 @@ namespace NetDaemon.Common
             {
                 disposable.Dispose();
             }
+
+            foreach (var trackedDisposable in _toDispose)
+            {
+                trackedDisposable.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            DisposeAsync().AsTask().Wait();
         }
     }
 }
