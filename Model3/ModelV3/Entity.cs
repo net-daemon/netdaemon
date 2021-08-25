@@ -28,8 +28,19 @@ namespace NetDaemon.Common.ModelV3
 
         public string Area => "todo";
 
-        public virtual EntityState? State => HaContext.GetState(EntityId);
+        public string? State => EntityState?.State;
 
+        public virtual object? Attributes => EntityState?.Attributes;
+
+        public virtual EntityState? EntityState => HaContext.GetState(EntityId);
+
+        // We could also add these properties here and make the EntityState protected
+        // public DateTime? LastChanged => EntityState?.LastChanged;
+        //
+        // public DateTime? LastUpdated => EntityState?.LastUpdated;
+        //
+        // public Context? Context => EntityState?.Context;
+        
         public virtual IObservable<StateChange> StateAllChanges =>
             HaContext.StateAllChanges.Where(e => e.New?.EntityId == EntityId)
                 .Select(e => new StateChange(this, e.Old, e.New));
@@ -44,24 +55,38 @@ namespace NetDaemon.Common.ModelV3
             HaContext.CallService(EntityId.SplitEntityId().Domain, service, data , waitForResponse);
         }
     }
-    
-    public abstract record Entity<TEntity, TState> : Entity where TEntity:  Entity<TEntity, TState> where TState : EntityState
+
+    public abstract record Entity<TEntity, TEntityState, TState, TAttributes> : Entity
+        where TEntity : Entity<TEntity, TEntityState, TState, TAttributes>
+        where TEntityState : EntityState<TState, TAttributes>
+        where TAttributes : class
     {
-        public Entity(IHaContext hasscontext, string entityId) : base(hasscontext, entityId)
-        { }
-    
-        public override TState? State => MapNullableState(base.State) ;
-    
-        public override IObservable<StateChange<TEntity, TState>> StateAllChanges =>
-            base.StateAllChanges.Select(e => new StateChange<TEntity, TState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+        private readonly Lazy<TAttributes?> _attributesLazy;
 
-        public override IObservable<StateChange<TEntity, TState>> StateChanges =>
-            base.StateChanges.Select(e => new StateChange<TEntity, TState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+        public Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
+        {
+            _attributesLazy = new (() => EntityState?.AttributesJson.ToObject<TAttributes>());            
+        }
 
-        private TState? MapNullableState(EntityState? state) => state == null ? null : MapState(state!);
+        // We need a 'new' here because the normal type of State is string and we cannot overload string with eg double
+        // TODO: smarter conversion of string to TState to take into account 'Unavalable' etc
+        public new TState? State => base.State == null ? default : (TState?)Convert.ChangeType(base.State, typeof(TState));
 
+        public override TAttributes? Attributes => _attributesLazy.Value;
 
-        protected TState MapState(EntityState state) => (TState)Activator.CreateInstance(typeof(TState), state)!;
+        public override TEntityState? EntityState => MapNullableState(base.EntityState);
+
+        public override IObservable<StateChange<TEntity,  TEntityState>> StateAllChanges =>
+            base.StateAllChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+        
+        public override IObservable<StateChange<TEntity, TEntityState>> StateChanges =>
+            base.StateChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+
+         private static TEntityState? MapNullableState(EntityState? state)
+         {
+             // TODO: this requires the TEntityState to have a copy ctor from EntityState,
+             // maybe we could make this work without the copy ctor
+             return state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;
+         }
     }
-
 }
