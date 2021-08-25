@@ -113,17 +113,17 @@ namespace NetDaemon.Daemon
 
             StateManager = new EntityStateManager(this);
             TextToSpeechService = new TextToSpeechService(this);
-            
+
             HassEventsObservable = Observable.FromEventPattern<EventHandler<HassEvent>, HassEvent>(
                 a => HassEvents += a,
-                a => HassEvents -= a).Select(e=> e.EventArgs);
+                a => HassEvents -= a).Select(e => e.EventArgs);
         }
 
         // for unittesting
         internal void AddRunningApp(INetDaemonAppBase app)
         {
             _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
-            var applicationContext = new ApplicationContext(app,this, Logger);
+            var applicationContext = new ApplicationContext(app);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
@@ -140,7 +140,7 @@ namespace NetDaemon.Daemon
         public ILogger Logger { get; }
 
         public IEnumerable<ApplicationContext> AllAppContexts => InternalAllAppInstances.Values;
-        
+
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values.Select(c => c.ApplicationInstance).OfType<INetDaemonAppBase>();
 
         private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
@@ -727,7 +727,7 @@ namespace NetDaemon.Daemon
                         HandleCustomEvent(hassEvent);
                         break;
                 }
-                
+
                 HassEvents?.Invoke(this, hassEvent);
             }
             catch (Exception e)
@@ -735,7 +735,7 @@ namespace NetDaemon.Daemon
                 Logger.LogError(e, $"Failed to handle new event ({hassEvent.EventType})");
             }
         }
-        
+
         [SuppressMessage("", "CA1031")]
         private void HandleStateChangeEvent(HassEvent hassEvent)
         {
@@ -901,10 +901,10 @@ namespace NetDaemon.Daemon
             _ = _appInstanceManager ?? throw new NetDaemonNullReferenceException(nameof(_appInstanceManager));
             Logger.LogTrace("Loading all apps ({instances}, {running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
-           
+
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
-          
+
             // // create a ServiceCollection for loading dependencies into the apps
             // // for now we only load INetDaemon and Ilogger
             // var serviceCollection = new ServiceCollection();
@@ -1008,11 +1008,11 @@ namespace NetDaemon.Daemon
 
                 // the Entity_id can be a single string or an array
                 var entityIds = (entityIdField switch
-                {
-                    string id => new[] { id },
-                    object[] arr => arr.OfType<string>().ToArray(),
-                    _ => Array.Empty<string>()
-                })
+                    {
+                        string id => new[] { id },
+                        object[] arr => arr.OfType<string>().ToArray(),
+                        _ => Array.Empty<string>()
+                    })
                     // We only want app switches
                     .Where(id => id.StartsWith("switch.netdaemon_", true, CultureInfo.InvariantCulture))
                     .ToList();
@@ -1109,7 +1109,7 @@ namespace NetDaemon.Daemon
                 }
 
                 if (appInstance.IsEnabled) return true;
-                
+
                 // We should not initialize this app, so dispose it and return
                 if (appInstance.ApplicationInstance is IAsyncDisposable asyncDisposable)
                 {
