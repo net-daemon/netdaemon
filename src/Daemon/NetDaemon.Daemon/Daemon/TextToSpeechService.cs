@@ -1,27 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
-using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon
 {
-    internal class TextToSpeechService
+    internal class TextToSpeechService : ITextToSpeechService
     {
-        internal readonly Channel<(string, string)> _ttsMessageChannel = Channel.CreateBounded<(string, string)>(200);
+        private readonly Channel<(string, string)> _ttsMessageChannel = Channel.CreateBounded<(string, string)>(200);
 
         // Used for testing
         internal int InternalDelayTimeForTts = 2500;
 
         private readonly NetDaemonHost _netDaemonHost;
+
         public TextToSpeechService(NetDaemonHost netDaemonHost)
         {
             _netDaemonHost = netDaemonHost;
@@ -51,7 +46,8 @@ namespace NetDaemon.Daemon
                     dynamic attributes = new ExpandoObject();
                     attributes.entity_id = entityId;
                     attributes.message = message;
-                    await _netDaemonHost.CallServiceAsync("tts", "google_cloud_say", (object)attributes, true).ConfigureAwait(false);
+                    await _netDaemonHost.CallServiceAsync("tts", "google_cloud_say", (object)attributes, true)
+                        .ConfigureAwait(false);
                     await Task.Delay(InternalDelayTimeForTts, _netDaemonHost.CancelToken)
                         .ConfigureAwait(false); // Wait 2 seconds to wait for status to complete
 
