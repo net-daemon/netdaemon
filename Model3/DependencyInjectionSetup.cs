@@ -17,6 +17,7 @@ namespace Model3
                 {
                     services.AddScoped<IHaContext, HaContextProvider>();
                     services.AddSingleton<EntityStateCache>();
+                    services.AddTransient<IEventProvider, TypedEventProvider>();
                 });
         }
     }
