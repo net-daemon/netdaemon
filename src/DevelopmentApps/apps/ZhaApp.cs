@@ -7,7 +7,6 @@ using NetDaemon.Common;
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
-    [Focus]
     public class ZhaApp
     {
         public ZhaApp(IEventProvider eventProvider)

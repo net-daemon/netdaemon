@@ -34,13 +34,7 @@ namespace NetDaemon.Common.ModelV3
 
         public virtual EntityState? EntityState => HaContext.GetState(EntityId);
 
-        // We could also add these properties here and make the EntityState protected
-        // public DateTime? LastChanged => EntityState?.LastChanged;
-        //
-        // public DateTime? LastUpdated => EntityState?.LastUpdated;
-        //
-        // public Context? Context => EntityState?.Context;
-        
+       
         public virtual IObservable<StateChange> StateAllChanges =>
             HaContext.StateAllChanges.Where(e => e.New?.EntityId == EntityId)
                 .Select(e => new StateChange(this, e.Old, e.New));
@@ -49,10 +43,9 @@ namespace NetDaemon.Common.ModelV3
             StateAllChanges.Where(s => s.New?.State != s.Old?.State)
                 .Select(e => new StateChange(this, e.Old, e.New));
 
-        public virtual void CallService(string service, object? data = null, bool waitForResponse = false)
+        public virtual void CallService(string service, object? data = null)
         {
-            // todo: use new method to pass target
-            HaContext.CallService(EntityId.SplitEntityId().Domain, service, data , waitForResponse);
+            HaContext.CallService(EntityId.SplitEntityId().Domain, service, data, this);
         }
     }
 
