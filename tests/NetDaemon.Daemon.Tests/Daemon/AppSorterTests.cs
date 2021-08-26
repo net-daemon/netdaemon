@@ -60,8 +60,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         static ApplicationContext TestApp(string id, params string[] dependencies)
         {
             var myTestApp = new MyTestApp();
-            return new ApplicationContext(myTestApp, null!, NullLogger.Instance
-            ) { Id = id, Dependencies = dependencies };
+            return new ApplicationContext(myTestApp) { Id = id, Dependencies = dependencies };
         }
 
         [Fact]

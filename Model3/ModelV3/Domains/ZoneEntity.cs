@@ -4,20 +4,16 @@ using Model3;
 
 namespace NetDaemon.Common.ModelV3.Domains
 {
-    public record ZoneEntity : Entity<ZoneEntity, ZoneState>
+    public record ZoneEntity : Entity<ZoneEntity, EntityState<string, ZoneAttributes>, string, ZoneAttributes>
     {
-        public ZoneEntity(IHaContext daemon, string entityId) : base(daemon, entityId)
+        public ZoneEntity(IHaContext haContext, string entityId) : base(haContext, entityId)
         { }
     }
 
-    public record ZoneState : EntityState<ZoneAttributes>
-    {
-        public ZoneState(EntityState source) : base(source) { }
-    }
-    
     public record ZoneAttributes
     {
         // TODO: complete these props and correct casing using [JsonPropertyName] (this is really an example)
+        // maybe we can implement automatic mapping of snake_case to PascalCase
 
         public bool hidden { get; init; }
         public double latitude { get; init; }

@@ -1,4 +1,6 @@
 using System;
+using System.Reactive.Linq;
+using System.Text.Json;
 using NetDaemon.Common;
 using NetDaemon.Common.ModelV3;
 using NetDaemon.Common.ModelV3.Domains;
@@ -11,7 +13,7 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
     [NetDaemonApp]
     public class M3App
     {
-        private  IHaContext Ha { get; }
+        private IHaContext Ha { get; }
 
         private readonly ClimateEntity _climateEntity;
 
@@ -20,49 +22,66 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             Ha = ha;
 
             // Ha.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works in Model3 via HaContext" }, true);;
-            
+
             _climateEntity = new ClimateEntity(ha, "climate.dummy_thermostat");
 
-            _climateEntity.StateAllChanges.Subscribe(ClimateStateChanged);
+            _climateEntity.StateAllChanges.Where(e => e.New?.Attributes.Temperature > 20).Subscribe();
+            _climateEntity.StateAllChanges.Subscribe(OnNext);
 
-             Ha.StateChanges.Subscribe(e =>
-             {
-                 Console.WriteLine($"1 {e.Entity.EntityId}, {e.Old?.State} => {e.New?.State}");
-             });
+            string? state = _climateEntity.State;
+            string? state2 = _climateEntity.EntityState?.State; // is the same
+            DateTime? lastChanged = _climateEntity.EntityState?.LastChanged;
+
+            Ha.StateChanges.Subscribe(e =>
+            {
+ 
+            });
+
+            // Entity that has not changed yet is retrieved on demand
+            var zone = new ZoneEntity(Ha, "zone.home");
+ 
+            var lat = zone.Attributes?.latitude;
+            
+            var netEnergySensor = new NumericSensorEntity(Ha, "sensor.netto_energy");
+            // NumericSensor has double? as state
+            double? netEnergy = netEnergySensor.State;
+            double? netEnergy2 = netEnergySensor.EntityState.State;
+
+            netEnergySensor.StateChanges.Subscribe(e =>
+                Console.WriteLine($"{e.New?.Attributes?.FriendlyName} {e.New?.State:0.##} {e.New?.Attributes?.UnitOfMeasurement}"));
+            
+            // Prints: 'Netto energy 8908.81 kWh'
         }
 
-        private void ClimateStateChanged(StateChange<ClimateEntity, ClimateState> e)
+        private void OnNext(StateChange<ClimateEntity, EntityState<string, ClimateAttributes>> e)
         {
             // event has 3 properties
             ClimateEntity entity = e.Entity;
-            ClimateState? newSate = e.New;
-            ClimateState? oldState = e.Old;
+            EntityState<string, ClimateAttributes>? newSate = e.New;
+            EntityState<string, ClimateAttributes>? oldState = e.Old;
 
-            ClimateState? currentState = e.Entity.State; // should be the same as new
+            var currentState = e.Entity.EntityState; // should be the same as e.New (unless the was another change in the meantime)
 
             string area = e.Entity.Area;
-            ClimateState? state = e.Entity.State;
-            
-            // attribute properties are strong typed
-            double temperature = state?.Attributes.Temperature ?? 0;
-            double? temperatureDelta = e.New?.Attributes.Temperature - e.Old?.Attributes.Temperature; 
 
-            // The 'entity state' is a bit weird to give a good name
-            // We have the 'state object' which is a class that has a property for the 'state' which is a string 
-            string? entityState = state?.State;
-            
+            string? state = e.Entity.State;
+
+            // attribute properties are strong typed
+            double temperature = e.New?.Attributes.Temperature ?? 0;
+            double? temperatureDelta = e.New?.Attributes.Temperature - e.Old?.Attributes.Temperature;
+
+
             // TODO: We might also want some nicer way to parse it as number (double) or On / Off
             // maybe extension methods IsOn() and IsOff() would work nice
-
+ 
+            // dump as json to view the structure
+            var asJson = JsonSerializer.Serialize(e, new JsonSerializerOptions(){WriteIndented = true});
+            Console.WriteLine(asJson);
+            
             Console.WriteLine($"{e}");
 
-            
-            Console.WriteLine($"{e.New?.Attributes}");
-            
-            // does not work yet / anymore because state cache is not initialized before first state change of entity
-            var zone = new ZoneEntity(Ha, "zone.home");
-            var lat = zone.State?.Attributes.latitude;
-        }
 
+            Console.WriteLine($"{e.New?.Attributes}");
+        }
     }
 }
