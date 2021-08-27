@@ -13,8 +13,21 @@ namespace NetDaemon.Common
     public sealed class ApplicationContext : IAsyncDisposable, IDisposable
     {
         private readonly IServiceScope _serviceScope;
-       
         private IApplicationMetadata _applicationMetadata;
+
+        /// <summary>
+        /// Creates a new ApplicationContext
+        /// </summary>
+        public ApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider)
+        {
+            // Create a new ServiceScope for all objects we create for this app
+            // this makes sure they will all be disposed along with the app
+            _serviceScope = serviceProvider.CreateScope();
+            
+            ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceScope.ServiceProvider, applicationType);
+            _applicationMetadata = InitializeMetaData();
+            Id = id;
+        }
 
         /// <summary>
         /// Creates a new ApplicationContext
@@ -24,16 +37,18 @@ namespace NetDaemon.Common
             _serviceScope = serviceScope;
             ApplicationInstance = applicationInstance;
 
-            if (applicationInstance is NetDaemonAppBase appBase)
+            _applicationMetadata = InitializeMetaData();
+        }
+
+        private IApplicationMetadata InitializeMetaData()
+        {
+            if (ApplicationInstance is IApplicationMetadata appBase)
             {
                 // For applications based on NetDaemonAppBase the services are provided by the application itself
                 // we need to keep that for backwards compatibility
-                _applicationMetadata = appBase;
+                return appBase;
             }
-            else
-            {
-                _applicationMetadata = new ApplicationMetadata();
-            }
+            return new ApplicationMetadata();
         }
 
         /// <summary>
@@ -52,7 +67,7 @@ namespace NetDaemon.Common
         public string? Id
         {
             get => _applicationMetadata.Id;
-            init => _applicationMetadata.Id = value;
+            private init => _applicationMetadata.Id = value;
         }
 
         /// <summary>
@@ -63,7 +78,7 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Returns the description, is the decorating comment of app class
         /// </summary>
-        public string? Description => _applicationMetadata.Description
+        public string Description => _applicationMetadata.Description
                                       ?? ApplicationInstance.GetType().GetCustomAttribute<DescriptionAttribute>()
                                           ?.Description
                                       ?? "";
@@ -106,7 +121,6 @@ namespace NetDaemon.Common
         public void Dispose()
         {
             _serviceScope.Dispose();
-            (ApplicationInstance as IDisposable)?.Dispose();
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Reactive.Services;
 using YamlDotNet.RepresentationModel;
 
@@ -19,7 +20,7 @@ namespace NetDaemon.Daemon.Config
     {
         public static IList? CreateListOfPropertyType(this Type listType)
         {
-            Type gen = typeof(List<>).MakeGenericType(listType!);
+            Type gen = typeof(List<>).MakeGenericType(listType);
             var list = Activator.CreateInstance(gen);
 
             return list as IList;
@@ -108,21 +109,21 @@ namespace NetDaemon.Daemon.Config
             if (valueType.IsAssignableTo(typeof(RxEntityBase)))
             {
                 // ctor of RXEntityBase has a string[] parameters for the EntityId(s) 
-                return Activator.CreateInstance(valueType, applicationContext.ApplicationInstance,
+                return Activator.CreateInstance(valueType, (INetDaemonRxApp)applicationContext.ApplicationInstance,
                     new[] { node.Value });
             }
 
             return CreateInstance(valueType, node.Value, applicationContext.ServiceProvider);
         }
 
-        private static object? CreateInstance(Type valueType, string? nodeValue, IServiceProvider serviceProvider)
+        private static object CreateInstance(Type valueType, string? nodeValue, IServiceProvider serviceProvider)
         {
             // Create an instance of the property's type
 
             var constructors = valueType.GetConstructors();
 
             object[] additionalParameters = Array.Empty<object>();
-            if (constructors.Any(c => c.GetParameters().Any(p => p.ParameterType == typeof(string))))
+            if (nodeValue != null && constructors.Any(c => c.GetParameters().Any(p => p.ParameterType == typeof(string))))
             {
                 additionalParameters = new object[] { nodeValue };
             }

@@ -15,6 +15,11 @@ namespace NetDaemon.Daemon.Tests
 
     public class BaseTestRxApp : NetDaemonRxApp { }
 
+    public class MockedRxApp : NetDaemonRxApp
+    {
+        internal override IDisposable CreateObservableIntervall(TimeSpan timespan, Action action) => Mock.Of<IDisposable>();
+    }
+
     public class CoreDaemonHostTestBase : DaemonHostTestBase, IAsyncLifetime, IDisposable
     {
         private readonly NetDaemonHost _notConnectedDaemonHost;
@@ -22,27 +27,15 @@ namespace NetDaemon.Daemon.Tests
 
         public CoreDaemonHostTestBase() : base()
         {
-            DefaultDaemonApp = new BaseTestApp
-            {
-                Id = "app_id",
-                IsEnabled = true
-            };
+            DefaultDaemonApp = DefaultDaemonHost.LoadApp<BaseTestApp>("app_id");
 
-            DefaultDaemonHost.AddRunningApp(DefaultDaemonApp);
-
-            DefaultDaemonRxApp = new BaseTestRxApp
-            {
-                Id = "app_rx_id",
-                IsEnabled = true
-            };
-            DefaultDaemonHost.AddRunningApp(DefaultDaemonRxApp);
-
+            DefaultDaemonRxApp = DefaultDaemonHost.LoadApp<BaseTestRxApp>("app_rx_id");
+            
             DefaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
-            DefaultMockedRxApp.Object.Id = "app_rx_mock_id";
-            DefaultMockedRxApp.Object.IsEnabled = true;
             DefaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
 
-            DefaultDaemonHost.AddRunningApp(DefaultMockedRxApp.Object);
+            DefaultServiceProviderMock.Services[typeof(NetDaemonRxApp)] = DefaultMockedRxApp.Object;
+            DefaultDaemonHost.LoadApp<MockedRxApp>("app_rx_mock_id");
 
             var notConnectedHassClientFactoryMock = new HassClientFactoryMock(HassClientMock.MockConnectFalse);
             _notConnectedDaemonHost = new NetDaemonHost(notConnectedHassClientFactoryMock.Object, DefaultDataRepositoryMock.Object, LoggerMock.LoggerFactory);

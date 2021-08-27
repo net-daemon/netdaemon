@@ -49,42 +49,32 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             _defaultDataRepositoryMock = new Mock<IDataRepository>();
             _defaultHttpHandlerMock = new HttpHandlerMock();
             var hassClientFactoryMock = new HassClientFactoryMock(_defaultHassClientMock );
+            var serviceCollection = new ServiceCollection();
+
+            _defaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
+            _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
+            serviceCollection.AddSingleton(_defaultMockedRxApp.Object);
+
+            
             _defaultDaemonHost = new NetDaemonHost(
                 hassClientFactoryMock.Object,
                 _defaultDataRepositoryMock.Object,
                 _loggerMock.LoggerFactory,
-                _defaultHttpHandlerMock.Object);
+                _defaultHttpHandlerMock.Object,
+                serviceCollection.BuildServiceProvider());
 
-            _defaultDaemonApp = new BaseTestApp
-            {
-                Id = "app_id",
-                IsEnabled = true
-            };
+            _defaultDaemonHost.LoadApp<BaseTestApp>("app_id");
 
-            _defaultDaemonHost.AddRunningApp(_defaultDaemonApp);
-
-            _defaultDaemonApp2 = new BaseTestApp
-            {
-                Id = "app_id2"
-            };
+            _defaultDaemonApp2 =_defaultDaemonHost.LoadApp<BaseTestApp>("app_id2");
             _defaultDaemonApp2.RuntimeInfo.NextScheduledEvent = DateTime.Now;
             _defaultDaemonApp2.IsEnabled = false;
-            _defaultDaemonHost.AddRunningApp(_defaultDaemonApp2);
 
-            _defaultDaemonRxApp = new BaseTestRxApp
-            {
-                Id = "app_rx_id",
-                IsEnabled = true
-            };
+            _defaultDaemonRxApp = _defaultDaemonHost.LoadApp<BaseTestRxApp>("app_rx_id");
             _defaultDaemonRxApp.RuntimeInfo.NextScheduledEvent = DateTime.Now;
-            _defaultDaemonHost.AddRunningApp(_defaultDaemonRxApp);
 
-            _defaultMockedRxApp = new Mock<NetDaemonRxApp>() { CallBase = true };
-            _defaultMockedRxApp.Object.Id = "app_rx_mock_id";
-            _defaultMockedRxApp.Object.IsEnabled = true;
-            _defaultMockedRxApp.Setup(n => n.CreateObservableIntervall(It.IsAny<TimeSpan>(), It.IsAny<Action>())).Returns(new Mock<IDisposable>().Object);
-            _defaultDaemonHost.AddRunningApp(_defaultMockedRxApp.Object);
+            _defaultDaemonHost.LoadApp<NetDaemonRxApp>("app_rx_mock_id");
         }
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<HomeAssistantSettings>(Configuration.GetSection("HomeAssistant"));

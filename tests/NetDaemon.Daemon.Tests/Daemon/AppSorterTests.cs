@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
@@ -59,8 +61,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         static ApplicationContext TestApp(string id, params string[] dependencies)
         {
-            var myTestApp = new MyTestApp();
-            return new ApplicationContext(myTestApp, null!) { Id = id, Dependencies = dependencies };
+            return new ApplicationContext(typeof(MyTestApp), id, new ServiceCollection().BuildServiceProvider()) { Dependencies = dependencies };
         }
 
         [Fact]
