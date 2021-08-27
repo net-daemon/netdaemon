@@ -16,6 +16,16 @@ namespace NetDaemon.Common.ModelV3
         public virtual EntityState? New { get; }
     }
 
+    public record StateChange<TEntity, TState, TAttributes> : StateChange<TEntity, EntityState<TState, TAttributes>>
+        where TEntity : Entity
+        where TAttributes : class
+    {
+        public StateChange(TEntity entity, EntityState<TState, TAttributes>? old, EntityState<TState, TAttributes>? @new) 
+            : base(entity, old, @new)
+        {
+        }
+    }
+
     public record StateChange<TEntity, TEntityState> : StateChange 
         where TEntity : Entity 
         where TEntityState : EntityState

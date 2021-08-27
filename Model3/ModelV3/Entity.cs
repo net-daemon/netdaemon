@@ -76,6 +76,8 @@ namespace NetDaemon.Common.ModelV3
 
         public override TEntityState? EntityState => MapNullableState(base.EntityState);
 
+        public IObservable<StateChange<TEntity, TState, TAttributes>> StateAllChanges2 =>
+            base.StateAllChanges.Select(e => new StateChange<TEntity, TState, TAttributes>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
         public override IObservable<StateChange<TEntity,  TEntityState>> StateAllChanges =>
             base.StateAllChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
         

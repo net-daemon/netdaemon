@@ -46,7 +46,7 @@ namespace NetDaemon.Daemon
             // Get all yaml config file paths
             var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths().ToArray();
 
-            if (_loadedDaemonApps?.Any() != true && allConfigFilePaths.Length == 0)
+            if (!_loadedDaemonApps.Any() && allConfigFilePaths.Length == 0)
             {
                 _logger.LogWarning("No yaml configuration files or loaded apps found");
                 return result;

@@ -53,6 +53,15 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             // Prints: 'Netto energy 8908.81 kWh'
         }
 
+        private void OnNext(string? obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnNext(StateChange<ClimateEntity, string, ClimateAttributes> obj)
+        {
+        }
+
         private void OnNext(StateChange<ClimateEntity, EntityState<string, ClimateAttributes>> e)
         {
             // event has 3 properties

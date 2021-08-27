@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
+using NetDaemon.Common;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Reactive.Services;
@@ -31,8 +33,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             });
         
         private readonly IAppInstantiator _appInstantiator = Mock.Of<IAppInstantiator>();
+        
+        private readonly IServiceProvider _serviceProvider =new ServiceCollection().BuildServiceProvider();
 
         private object _mockApp = new ();
+        private ApplicationContext AppContextMock => new ApplicationContext(_mockApp, _serviceProvider.CreateScope());
 
         [Fact]
         public void NormalLoadSecretsShouldGetCorrectValues()
@@ -122,7 +127,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal("string", scalarValue.ToObject(typeof(string), new object()));
+            Assert.Equal("string", scalarValue.ToObject(typeof(string), AppContextMock));
         }
 
         [Fact]
@@ -138,7 +143,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(1234, scalarValue.ToObject(typeof(int), _mockApp));
+            Assert.Equal(1234, scalarValue.ToObject(typeof(int), AppContextMock));
         }
 
         [Fact]
@@ -154,7 +159,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(true, scalarValue.ToObject(typeof(bool), _mockApp));
+            Assert.Equal(true, scalarValue.ToObject(typeof(bool), AppContextMock));
         }
 
         [Fact]
@@ -170,7 +175,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((long) 1234, scalarValue.ToObject(typeof(long), _mockApp));
+            Assert.Equal((long) 1234, scalarValue.ToObject(typeof(long), AppContextMock));
         }
 
         [Theory]
@@ -208,12 +213,50 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            var instance = scalarValue.ToObject(entityType, appMock.Object) as RxEntityBase;
+            var instance = scalarValue.ToObject(entityType, AppContextMock) as RxEntityBase;
             Assert.NotNull(instance);
             Assert.Equal(entityType,instance!.GetType());
             Assert.Equal("1234", instance.EntityId);
         }
 
+
+
+        class TestClass
+        {
+            public TestClass(Action<string> inject, string name)
+            {
+                inject("Hello " + name);
+            }
+        }
+        
+        [Fact]
+        public void YamlScalarToObjectUsingAnyType()
+        {
+            // ARRANGE
+            const string? yaml = "yaml: 1234\n";
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var app = new object();
+            var scalar = root.Children.First();
+
+            var scalarValue = (YamlScalarNode) scalar.Value;
+            // ACT & ASSERT
+            var mockAction = new Mock<Action<string>>();
+            
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton(mockAction.Object)
+                .BuildServiceProvider();
+
+            using var serviceScope = serviceProvider.CreateScope();
+            using var applicationContext = new ApplicationContext(app, serviceScope);
+            var instance = scalarValue.ToObject(typeof(TestClass), applicationContext);
+            Assert.NotNull(instance);
+            Assert.Equal(typeof(TestClass),instance!.GetType());
+            
+            mockAction.Verify(a => a.Invoke("Hello 1234"));
+        }        
+        
         [Fact]
         public void YamlScalarNodeToObjectUsingDecimal()
         {
@@ -227,9 +270,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((decimal) 1.5, scalarValue.ToObject(typeof(decimal), _mockApp));
-            Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), _mockApp));
-            Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), _mockApp));
+            Assert.Equal((decimal) 1.5, scalarValue.ToObject(typeof(decimal), AppContextMock));
+            Assert.Equal((float) 1.5f, scalarValue.ToObject(typeof(float), AppContextMock));
+            Assert.Equal((double) 1.5, scalarValue.ToObject(typeof(double), AppContextMock));
         }
 
         [Fact]
@@ -245,7 +288,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), _mockApp));
+            Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), AppContextMock));
         }
 
         [Fact]
@@ -273,26 +316,26 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new System.IO.StringReader(yaml),
                 new YamlConfig(CreateSettings(ConfigFixturePath)),
                 ConfigFixturePath,
-                _appInstantiator
-            );
+                _appInstantiator);
 
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
-            var instance = new AppComplexConfig(); 
-            yamlConfig.SetPropertyConfig(root, "id", instance);
+            var instance = new AppComplexConfig();
+            using var applicationContext =  new ApplicationContext(instance, _serviceProvider.CreateScope());
+            yamlConfig.SetPropertyConfig(root, "id", applicationContext);
 
-            Assert.Equal("hello world", instance?.AString);
-            Assert.Equal(10, instance?.AnInt);
-            Assert.Equal(true, instance?.ABool);
-            Assert.NotNull(instance?.Devices);
-            Assert.Equal(1, instance?.Devices?.Count());
-            Assert.Equal("tv", instance?.Devices?.First().Name);
-            Assert.Equal("command1", instance?.Devices?.First()?.Commands?.ElementAt(0).Name);
-            Assert.Equal("some code", instance?.Devices?.First()?.Commands?.ElementAt(0).Data);
-            Assert.Equal("command2", instance?.Devices?.First()?.Commands?.ElementAt(1).Name);
-            Assert.Equal("some code2", instance?.Devices?.First()?.Commands?.ElementAt(1).Data);
+            Assert.Equal("hello world", instance.AString);
+            Assert.Equal(10, instance.AnInt);
+            Assert.Equal(true, instance.ABool);
+            Assert.NotNull(instance.Devices);
+            Assert.Equal(1, instance.Devices?.Count());
+            Assert.Equal("tv", instance.Devices?.First().Name);
+            Assert.Equal("command1", instance.Devices?.First()?.Commands?.ElementAt(0).Name);
+            Assert.Equal("some code", instance.Devices?.First()?.Commands?.ElementAt(0).Data);
+            Assert.Equal("command2", instance.Devices?.First()?.Commands?.ElementAt(1).Name);
+            Assert.Equal("some code2", instance.Devices?.First()?.Commands?.ElementAt(1).Data);
         }
 
         [Fact]
@@ -321,7 +364,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             await using var instance = new MultilevelMappingConfig();
-            yamlConfig.SetPropertyConfig(root, "id", instance);
+            yamlConfig.SetPropertyConfig(root, "id", AppContextMock);
 
             Assert.Equal(rootData, instance!.Root!.Data);
             Assert.Equal(childData, instance!.Root!.Child!.Child!.Data!);

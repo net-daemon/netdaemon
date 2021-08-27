@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NetDaemon.Common
 {
@@ -11,14 +12,16 @@ namespace NetDaemon.Common
     /// </summary>
     public sealed class ApplicationContext : IAsyncDisposable, IDisposable
     {
+        private readonly IServiceScope _serviceScope;
+       
         private IApplicationMetadata _applicationMetadata;
-        private IList<IDisposable> _toDispose = new List<IDisposable>();
 
         /// <summary>
         /// Creates a new ApplicationContext
         /// </summary>
-        public ApplicationContext(object applicationInstance)
+        public ApplicationContext(object applicationInstance, IServiceScope serviceScope)
         {
+            _serviceScope = serviceScope;
             ApplicationInstance = applicationInstance;
 
             if (applicationInstance is NetDaemonAppBase appBase)
@@ -33,15 +36,15 @@ namespace NetDaemon.Common
             }
         }
 
-        public void TrackDisposable(IDisposable toDispose)
-        {
-            _toDispose.Add(toDispose);
-        }
-
         /// <summary>
         /// Gets the reference to the Application Instance
         /// </summary>
         public object ApplicationInstance { get; }
+
+        /// <summary>
+        /// ServiceProvider scoped for this application
+        /// </summary>
+        public IServiceProvider ServiceProvider => _serviceScope.ServiceProvider;
 
         /// <summary>
         ///     Unique id of the application
@@ -91,25 +94,19 @@ namespace NetDaemon.Common
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
+            Dispose();
+
             if (ApplicationInstance is IAsyncDisposable asyncDisposable)
             {
                 await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             }
-
-            if (ApplicationInstance is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-
-            foreach (var trackedDisposable in _toDispose)
-            {
-                trackedDisposable.Dispose();
-            }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            DisposeAsync().AsTask().Wait();
+            _serviceScope.Dispose();
+            (ApplicationInstance as IDisposable)?.Dispose();
         }
     }
 }
