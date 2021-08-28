@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
@@ -79,7 +80,7 @@ namespace NetDaemon.Daemon
         private readonly string? _addOnToken = Environment.GetEnvironmentVariable("HASSIO_TOKEN");
         private readonly IHassClientFactory _hassClientFactory;
         internal bool IsAddOn => _addOnToken != null;
-        public IServiceProvider? ServiceProvider { get; }
+        public IServiceProvider ServiceProvider { get; }
 
         /// <summary>
         ///     Constructor
@@ -102,7 +103,7 @@ namespace NetDaemon.Daemon
             Logger = loggerFactory.CreateLogger<NetDaemonHost>();
             _hassClientFactory = hassClientFactory
                                  ?? throw new ArgumentNullException(nameof(hassClientFactory));
-            ServiceProvider = serviceProvider;
+            ServiceProvider = serviceProvider ?? new ServiceCollection().BuildServiceProvider();
             _repository = repository;
             _isDisposed = false;
             Logger.LogTrace("Instance NetDaemonHost");
@@ -119,15 +120,24 @@ namespace NetDaemon.Daemon
                 a => HassEvents -= a).Select(e => e.EventArgs);
         }
 
-        // for unittesting
+        //for unit testing with INetDaemonAppBase apps
         internal void AddRunningApp(INetDaemonAppBase app)
         {
             _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
-            var applicationContext = new ApplicationContext(app);
+            var applicationContext = ApplicationContext.CreateFromAppInstance(app, ServiceProvider);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
 
+        internal T LoadApp<T>(string id)
+        {
+            var applicationContext = new ApplicationContext(typeof(T), id, ServiceProvider);
+            InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
+            InternalAllAppInstances[applicationContext.Id!] = applicationContext;
+            
+            return (T)applicationContext.ApplicationInstance;
+        }        
+        
         public IObservable<HassEvent> HassEventsObservable { get; }
 
         private event EventHandler<HassEvent>? HassEvents;

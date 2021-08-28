@@ -53,25 +53,25 @@ namespace NetDaemon.Daemon.Tests
         public void SetupFakeData()
         {
             SetEntityState(
-            new HassState
-            {
-                EntityId = "light.correct_entity",
-                Attributes = new Dictionary<string, object>
+                new HassState
                 {
-                    ["test"] = 100
-                },
-                State = "on"
-            });
+                    EntityId = "light.correct_entity",
+                    Attributes = new Dictionary<string, object>
+                    {
+                        ["test"] = 100
+                    },
+                    State = "on"
+                });
             SetEntityState(
-            new HassState
-            {
-                EntityId = "light.correct_entity2",
-                Attributes = new Dictionary<string, object>
+                new HassState
                 {
-                    ["test"] = 101
-                },
-                State = "off"
-            });
+                    EntityId = "light.correct_entity2",
+                    Attributes = new Dictionary<string, object>
+                    {
+                        ["test"] = 101
+                    },
+                    State = "off"
+                });
 
             SetEntityState(new()
             {
@@ -162,7 +162,8 @@ namespace NetDaemon.Daemon.Tests
         public NetDaemonRxApp DefaultDaemonApp { get; }
         public static string HelloWorldData => "Hello world!";
 
-        public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100, bool overrideDebugNotCancel = false)
+        public (Task, CancellationTokenSource) ReturnRunningNotConnectedDaemonHostTask(short milliSeconds = 100,
+            bool overrideDebugNotCancel = false)
         {
             var cancelSource = Debugger.IsAttached && !overrideDebugNotCancel
                 ? new CancellationTokenSource()
@@ -177,6 +178,7 @@ namespace NetDaemon.Daemon.Tests
                 if (disposing)
                 {
                 }
+
                 disposedValue = true;
             }
         }

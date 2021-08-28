@@ -81,13 +81,15 @@ namespace NetDaemon.Daemon.Config
 
             var appContext = _appInstantiator.Instantiate(netDaemonAppType, appId);
 
-            SetPropertyConfig(appNode, appId, appContext.ApplicationInstance);
+            SetPropertyConfig(appNode, appId, appContext);
             
             return appContext;
         }
 
-        public void SetPropertyConfig(YamlMappingNode appNode, string? appId, object appInstance)
+        public void SetPropertyConfig(YamlMappingNode appNode, string? appId, ApplicationContext applicationContext)
         {
+            var appInstance = applicationContext.ApplicationInstance;
+
             foreach (KeyValuePair<YamlNode, YamlNode> entry in appNode.Children)
             {
                 string? scalarPropertyName = ((YamlScalarNode)entry.Key).Value;
@@ -101,7 +103,7 @@ namespace NetDaemon.Daemon.Config
                                throw new MissingMemberException(
                                    $"{scalarPropertyName} is missing from the type {appInstance.GetType()}");
 
-                    var instance = InstanceProperty(appInstance, prop.PropertyType, entry.Value, appInstance);
+                    var instance = InstanceProperty(appInstance, prop.PropertyType, entry.Value, applicationContext);
 
                     prop.SetValue(appInstance, instance);
                 }
@@ -113,7 +115,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")] // Weird bug that this should not warn!
-        private object? InstanceProperty(object? parent, Type instanceType, YamlNode node, object applicationInstance)
+        private object? InstanceProperty(object? parent, Type instanceType, YamlNode node, ApplicationContext applicationContext)
         {
             switch (node.NodeType)
             {
@@ -121,20 +123,20 @@ namespace NetDaemon.Daemon.Config
                 {
                     var scalarNode = (YamlScalarNode) node;
                     ReplaceSecretIfExists(scalarNode);
-                    return ((YamlScalarNode) node).ToObject(instanceType, applicationInstance);
+                    return ((YamlScalarNode) node).ToObject(instanceType, applicationContext);
                 }
                 case YamlNodeType.Sequence when !instanceType.IsGenericType ||
                                                 instanceType?.GetGenericTypeDefinition() != typeof(IEnumerable<>):
                     return null;
                 case YamlNodeType.Sequence:
                 {
-                    var list = CreateSequenceInstance(parent, instanceType, node, applicationInstance);
+                    var list = CreateSequenceInstance(parent, instanceType, node, applicationContext);
 
                     return list;
                 }
                 case YamlNodeType.Mapping:
                 {
-                    var instance = CreateMappingInstance(instanceType, node, applicationInstance);
+                    var instance = CreateMappingInstance(instanceType, node, applicationContext);
 
                     return instance;
                 }
@@ -143,7 +145,7 @@ namespace NetDaemon.Daemon.Config
             }
         }
 
-        private object? CreateMappingInstance(Type instanceType, YamlNode node, object applicationInstance)
+        private object? CreateMappingInstance(Type instanceType, YamlNode node, ApplicationContext applicationContext)
         {
             var instance = Activator.CreateInstance(instanceType);
 
@@ -163,17 +165,17 @@ namespace NetDaemon.Daemon.Config
                 switch (valueType)
                 {
                     case YamlNodeType.Sequence:
-                        result = InstanceProperty(instance, childProp.PropertyType, (YamlSequenceNode) entry.Value, applicationInstance);
+                        result = InstanceProperty(instance, childProp.PropertyType, (YamlSequenceNode) entry.Value, applicationContext);
 
                         break;
 
                     case YamlNodeType.Scalar:
                         result = InstanceProperty(instance, childProp.PropertyType,
-                            (YamlScalarNode) entry.Value, applicationInstance);
+                            (YamlScalarNode) entry.Value, applicationContext);
                         break;
 
                     case YamlNodeType.Mapping:
-                        result = CreateMappingInstance(childProp.PropertyType, entry.Value, applicationInstance);
+                        result = CreateMappingInstance(childProp.PropertyType, entry.Value, applicationContext);
                         break;
                 }
 
@@ -184,7 +186,7 @@ namespace NetDaemon.Daemon.Config
         }
 
         [SuppressMessage("", "CA1508")]
-        private IList CreateSequenceInstance(object? parent, Type instanceType, YamlNode node, object applicationInstance)
+        private IList CreateSequenceInstance(object? parent, Type instanceType, YamlNode node, ApplicationContext applicationContext)
         {
             Type listType = instanceType?.GetGenericArguments()[0] ??
                             throw new NetDaemonNullReferenceException(
@@ -196,7 +198,7 @@ namespace NetDaemon.Daemon.Config
 
             foreach (YamlNode item in ((YamlSequenceNode) node).Children)
             {
-                var instance = InstanceProperty(null, listType, item, applicationInstance) ??
+                var instance = InstanceProperty(null, listType, item, applicationContext) ??
                                throw new NotSupportedException(
                                    $"The class {parent?.GetType().Name} has wrong type in items");
 

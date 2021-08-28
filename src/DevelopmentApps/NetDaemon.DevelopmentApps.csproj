@@ -17,6 +17,12 @@
     <None Update="apps\InterfaceApp\InterfaceApp.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="apps\DebugApp\DebugApp.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="apps\YamlEntities\YamlEntitiesApp.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
