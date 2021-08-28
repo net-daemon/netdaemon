@@ -14,15 +14,15 @@ namespace NetDaemon.Common
     public static class NetDaemonExtensions
     {
         /// <summary>
-        ///     Converts a valuepair to dynamic object
+        ///     Converts valuepairs to dynamic object
         /// </summary>
-        /// <param name="attributeNameValuePair"></param>
+        /// <param name="attributeNameValuePairs"></param>
         [SuppressMessage("", "CA1062")]
-        public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePair)
+        public static dynamic ToDynamic(this (string name, object val)[] attributeNameValuePairs)
         {
             // Convert the tuple name/value pair to tuple that can be serialized dynamically
             var attributes = new FluentExpandoObject(true, true);
-            foreach (var (attribute, value) in attributeNameValuePair)
+            foreach (var (attribute, value) in attributeNameValuePairs)
             {
                 // We only add non-null values since the FluentExpandoObject will 
                 // return null on missing anyway
@@ -30,6 +30,15 @@ namespace NetDaemon.Common
             }
 
             return attributes;
+        }
+
+        /// <summary>
+        ///     Converts a valuepair to dynamic object
+        /// </summary>
+        /// <param name="attributeNameValuePair"></param>
+        public static dynamic ToDynamic(this (string name, object val) attributeNameValuePair)
+        {
+            return ToDynamic(new[] { attributeNameValuePair });
         }
 
         /// <summary>

@@ -344,20 +344,6 @@ namespace NetDaemon.Daemon.Fakes
         }
 
         /// <summary>
-        ///     Instance new dynamic attribute providing name-value pairs
-        /// </summary>
-        /// <param name="attr">Name value pair tuple of attribute name and attribute value</param>
-        public static dynamic NewAttribute(params (string, object)[] attr)
-        {
-            var returnValue = new FluentExpandoObject();
-            foreach (var (name, value) in attr)
-            {
-                returnValue[name] = value;
-            }
-            return returnValue;
-        }
-
-        /// <summary>
         ///     Verify CallService been called using Moq.Times.
         /// </summary>
         /// <param name="domain">Domain of service call</param>
