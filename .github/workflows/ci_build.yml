@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - dev
+      - remodel
   pull_request:
     branches:
       - main
       - dev
+      - remodel
 jobs:
     build:
         name: 🔨 Build sources (CI)
