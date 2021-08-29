@@ -1,12 +1,14 @@
-﻿namespace Model3.ModelV3.EventTypes
+﻿using System.Text.Json.Serialization;
+
+namespace Model3.ModelV3.EventTypes
 {
     public record ZhaEventData
     {
-        public string device_ieee { get; set; }
-        public string unique_id { get; set; }
-        public int endpoint_id { get; set; }
-        public int cluster_id { get; set; }
-        public string command { get; set; }
-        public object[] args { get; set; }
+        [JsonPropertyName("device_ieee")] public string? DeviceIeee { get; set; }
+        [JsonPropertyName("unique_id")] public string? UniqueId { get; set; }
+        [JsonPropertyName("endpoint_id")] public int? EndpointId { get; set; }
+        [JsonPropertyName("endpoint_id")] public int? ClusterId { get; set; }
+        [JsonPropertyName("command")] public string? Command { get; set; }
+        [JsonPropertyName("args")] public object[]? Args { get; set; }
     }
 }

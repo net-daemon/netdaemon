@@ -11,8 +11,8 @@ namespace NetDaemon.DevelopmentApps.apps.YamlEntities
     [NetDaemonApp]
     public class YamlEntitiesApp : IInitializable
     {
-        public ClimateEntity TargetClimate { get; init; }
-        public IEnumerable<NumericSensorEntity> TempSensors { get; init; }
+        public ClimateEntity? TargetClimate { get; init; }
+        public IEnumerable<NumericSensorEntity> TempSensors { get; init; } = Array.Empty<NumericSensorEntity>();
         
         public void Initialize()
         {
@@ -24,9 +24,9 @@ namespace NetDaemon.DevelopmentApps.apps.YamlEntities
 
         private void Sync()
         {
-            if (TempSensors.Any(s => s.State < 20))
+            if (TempSensors?.Any(s => s.State < 20) ?? false)
             {
-                TargetClimate.CallService("set_hvac_mode", new { HvacMode = "heat" });
+                TargetClimate?.CallService("set_hvac_mode", new { HvacMode = "heat" });
             }
         }
     }
