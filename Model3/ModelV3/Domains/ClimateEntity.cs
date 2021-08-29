@@ -10,7 +10,6 @@ namespace NetDaemon.Common.ModelV3.Domains
         public ClimateEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
     }
 
-
     public record ClimateAttributes
     {
         // TODO: complete these props (this is really an example)
