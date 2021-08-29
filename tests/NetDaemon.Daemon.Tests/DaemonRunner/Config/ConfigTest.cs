@@ -349,8 +349,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
-            await using var instance = new MultilevelMappingConfig();
             await using var applicationContext = new ApplicationContext(typeof(MultilevelMappingConfig), "TestAppId", _serviceProvider);
+
+            var instance = (MultilevelMappingConfig)applicationContext.ApplicationInstance;
+
             yamlConfig.SetPropertyConfig(root,  applicationContext);
 
             Assert.Equal(rootData, instance!.Root!.Data);
