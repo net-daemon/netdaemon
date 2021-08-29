@@ -1,0 +1,43 @@
+#### Build and tests all pushes, also code coverage
+name: 🛠️ CI build check
+on:
+  push:
+    branches:
+      - remodel
+  pull_request:
+    branches:
+      - remodel
+jobs:
+    build:
+        name: 🔨 Build sources (CI) remodel branch
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📤 Checkout the repository 
+              uses: actions/checkout@main
+
+            - name: 🥅 Install .Net 5
+              uses: actions/setup-dotnet@v1
+              with:
+                dotnet-version: '5.0.x' # SDK Version
+
+            - name: 🔍 Enable problem matchers
+              run: echo "::add-matcher::.github/matchers/dotnet.json"
+
+            - name: 🛠️ Build code
+              run: dotnet build /warnaserror
+
+            - name: 👀 Test code
+              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=${{github.workspace}}/codecover/lcov.info
+
+            - name: 📨 Publish coverage report to coveralls.io
+              uses: coverallsapp/github-action@master
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                path-to-lcov: ${{github.workspace}}/codecover/lcov.info
+            
+            - name: 📨 Publish coverage to codecov
+              uses: codecov/codecov-action@v1
+              with:
+                flags: unittests # optional
+                name: codecov-umbrella # optional
+                fail_ci_if_error: true # optional (default = false)
