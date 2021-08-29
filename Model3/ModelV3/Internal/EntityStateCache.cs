@@ -1,9 +1,12 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 
 namespace Model3.ModelV3
 {
+    // TODO: Warning that the internal class is never instansiated. Supress for now, fix later
+    [SuppressMessage("", "CA1812")]
     internal class EntityStateCache
     {
         private readonly IHassClient _hassClient;
@@ -13,7 +16,7 @@ namespace Model3.ModelV3
             _hassClient = hassClient;
         }
 
-        private ConcurrentDictionary<string, HassState> _latestStates = new();
+        private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
 
         public void Store(HassState newState) => _latestStates[newState.EntityId] = newState;
 

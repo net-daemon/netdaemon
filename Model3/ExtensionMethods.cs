@@ -28,7 +28,7 @@ namespace Model3
 
         public static (string Domain, string Entity) SplitEntityId(this string entityId)
         {
-            var firstDot = entityId.IndexOf('.');
+            var firstDot = entityId.IndexOf('.', System.StringComparison.InvariantCulture);
             return (entityId[.. firstDot ], entityId[ firstDot .. ]);
         }
      

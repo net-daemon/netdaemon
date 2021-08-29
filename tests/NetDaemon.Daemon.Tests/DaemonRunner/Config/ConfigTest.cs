@@ -209,27 +209,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            var instance = scalarValue.ToObject(entityType, new ApplicationContext(typeof(BaseTestApp), "id", _serviceProvider)) as RxEntityBase;
+            using var applicationContext = new ApplicationContext(typeof(BaseTestApp), "id", _serviceProvider);
+            var instance = scalarValue.ToObject(entityType, applicationContext) as RxEntityBase;
             Assert.NotNull(instance);
             Assert.Equal(entityType,instance!.GetType());
             Assert.Equal("1234", instance.EntityId);
         }
 
-
-
-        class TestClass
-        {
-            public TestClass(ISpeaker speaker, string name)
-            {
-                speaker.Say("Hello " + name);
-            }
-        }
-        
-        public interface ISpeaker
-        {
-            public void Say(string message);
-        }
-        
         [Fact]
         public void YamlScalarToObjectUsingAnyType()
         {
@@ -324,7 +310,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             using var applicationContext =  new ApplicationContext(typeof(AppComplexConfig), "id", _serviceProvider);
             var instance = (AppComplexConfig)applicationContext.ApplicationInstance;
-            yamlConfig.SetPropertyConfig(root, "id", applicationContext);
+            yamlConfig.SetPropertyConfig(root, applicationContext);
 
             Assert.Equal("hello world", instance.AString);
             Assert.Equal(10, instance.AnInt);
@@ -363,12 +349,30 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
-            await using var instance = new MultilevelMappingConfig();
             await using var applicationContext = new ApplicationContext(typeof(MultilevelMappingConfig), "TestAppId", _serviceProvider);
-            yamlConfig.SetPropertyConfig(root, "id", applicationContext);
+
+            var instance = (MultilevelMappingConfig)applicationContext.ApplicationInstance;
+
+            yamlConfig.SetPropertyConfig(root,  applicationContext);
 
             Assert.Equal(rootData, instance!.Root!.Data);
             Assert.Equal(childData, instance!.Root!.Child!.Child!.Data!);
         }
+    }
+    
+#pragma warning disable CA1812 // internal class is instantiated dynamically
+
+    internal class TestClass
+#pragma warning restore CA1812
+    {
+        public TestClass(ISpeaker speaker, string name)
+        {
+            speaker.Say("Hello " + name);
+        }
+    }
+        
+    public interface ISpeaker
+    {
+        public void Say(string message);
     }
 }

@@ -17,7 +17,7 @@ namespace NetDaemon.Daemon.Tests.NetDaemonApp
     {
         public FaultyRxAppTests() : base()
         {
-            DefaultDaemonHost.LoadApp<FaultyRxAppTests>("id");
+            App = DefaultDaemonHost.LoadApp<DaemonRxAppTestApp>("id");
             App.StartUpAsync(DefaultDaemonHost).Wait();
         }
 

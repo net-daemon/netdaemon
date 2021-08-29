@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Client;
@@ -8,19 +9,24 @@ using NetDaemon.Daemon;
 
 namespace NetDaemon.Common.ModelV3
 {
+    // TODO: Warning that the internal class is never instansiated. Supress for now, fix later
+    [SuppressMessage("", "CA1812")]
     internal class HaContextProvider : IHaContext
     {
         private readonly INetDaemonHost _netDaemonHost;
         private readonly IObservable<HassEvent> _hassEventObservable;
         private readonly EntityStateCache _entityStateCache;
+        private readonly IHassClient _hassClient;
 
         public HaContextProvider(INetDaemonHost netDaemonHost,
             IObservable<HassEvent> hassEventObservable,
-            EntityStateCache entityStateCache)
+            EntityStateCache entityStateCache,
+            IHassClient hassClient)
         {
             _netDaemonHost = netDaemonHost;
             _hassEventObservable = hassEventObservable;
             _entityStateCache = entityStateCache;
+            _hassClient = hassClient;
 
             var stateChanges = _hassEventObservable
                 .Select(e => e.Data as HassStateChangedEventData)
@@ -43,9 +49,11 @@ namespace NetDaemon.Common.ModelV3
             return HassObjectMapper.Map(hassState);
         }
 
-        public void CallService(string domain, string service, object? data, bool waitForResponse = false)
+        public void CallService(string domain, string service, object? data, Entity entity)
         {
-            _netDaemonHost.CallService(domain, service, data, waitForResponse);
+            _hassClient.CallService(domain, service,
+                data,
+                new HassTarget { EntityIds = new[] { entity.EntityId } });
         }
 
         //public IRxEvent EventChanges { get; }
