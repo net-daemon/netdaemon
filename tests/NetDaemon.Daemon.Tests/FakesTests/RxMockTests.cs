@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Moq;
+using NetDaemon.Common;
 using NetDaemon.Daemon.Fakes;
 using Xunit;
 using NetDaemon.Common.Reactive;
@@ -350,9 +351,9 @@ namespace NetDaemon.Daemon.Tests.Reactive
             TriggerStateChange(
                "sensor.temperature",
                "15",
-               NewAttribute(("battery_level", 20)),
+               ("battery_level", 20).ToDynamic(),
                "15",
-               NewAttribute(("battery_level", 14))
+               ("battery_level", 14).ToDynamic()
             );
 
             // ASSERT
@@ -405,6 +406,23 @@ namespace NetDaemon.Daemon.Tests.Reactive
             // ASSERT
             Assert.NotNull(updatedTestData);
             Assert.Equal(updatedTestData.Value, savedObject!.Value);
+        }
+        
+        [Fact]
+        public void SetStateReturnsCorrectValues()
+        {
+            // ARRANGE
+            const string switchEntityId = "switch.test";
+            const string switchState = "on";
+
+            // ACT
+            Object.SetState(switchEntityId, switchState);
+
+            // ASSERT
+            var switchEntity = Object.States.FirstOrDefault(state => state.EntityId == switchEntityId);
+
+            Assert.NotNull(switchEntity);
+            Assert.Equal(switchState, switchEntity?.State);
         }
 
         private class TestData
