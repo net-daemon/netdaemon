@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using YamlDotNet.RepresentationModel;
@@ -81,12 +79,12 @@ namespace NetDaemon.Daemon.Config
 
             var appContext = _appInstantiator.Instantiate(netDaemonAppType, appId);
 
-            SetPropertyConfig(appNode, appId, appContext);
+            SetPropertyConfig(appNode, appContext);
             
             return appContext;
         }
 
-        public void SetPropertyConfig(YamlMappingNode appNode, string? appId, ApplicationContext applicationContext)
+        public void SetPropertyConfig(YamlMappingNode appNode, ApplicationContext applicationContext)
         {
             var appInstance = applicationContext.ApplicationInstance;
 
@@ -109,7 +107,7 @@ namespace NetDaemon.Daemon.Config
                 }
                 catch (Exception e)
                 {
-                    throw new NetDaemonException($"Failed to set value {scalarPropertyName} for app {appId}", e);
+                    throw new NetDaemonException($"Failed to set value {scalarPropertyName} for app {applicationContext.Id}", e);
                 }
             }
         }
