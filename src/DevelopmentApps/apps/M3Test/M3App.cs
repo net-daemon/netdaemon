@@ -9,7 +9,6 @@ using ClimateEntity = NetDaemon.Common.ModelV3.Domains.ClimateEntity;
 
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {
-    [Focus]
     [NetDaemonApp]
     public class M3App
     {

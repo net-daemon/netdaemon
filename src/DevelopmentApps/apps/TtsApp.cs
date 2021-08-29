@@ -5,7 +5,6 @@ using NetDaemon.Daemon;
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
-    [Focus]
     public class TtsApp
     {
         public TtsApp(ITextToSpeechService tts, IHaContext ha)

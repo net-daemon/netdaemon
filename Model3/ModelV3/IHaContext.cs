@@ -36,7 +36,7 @@ namespace NetDaemon.Common.ModelV3
         /// <param name="domain">Domain of sevice</param>
         /// <param name="service">Service name</param>
         /// <param name="data">Data provided to service. Use anonomous type</param>
-        /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
-        void CallService(string domain, string service, object? data, bool waitForResponse = false);
+        /// <param name="entity">The entity that is targeted by this service call</param>
+        void CallService(string domain, string service, object? data, Entity entity);
     }
 }
