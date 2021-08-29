@@ -9,7 +9,6 @@ using ClimateEntity = NetDaemon.Common.ModelV3.Domains.ClimateEntity;
 
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {
-    [Focus]
     [NetDaemonApp]
     public class M3App
     {
@@ -45,7 +44,7 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             var netEnergySensor = new NumericSensorEntity(Ha, "sensor.netto_energy");
             // NumericSensor has double? as state
             double? netEnergy = netEnergySensor.State;
-            double? netEnergy2 = netEnergySensor.EntityState.State;
+            double? netEnergy2 = netEnergySensor.EntityState?.State;
 
             netEnergySensor.StateChanges.Subscribe(e =>
                 Console.WriteLine($"{e.New?.Attributes?.FriendlyName} {e.New?.State:0.##} {e.New?.Attributes?.UnitOfMeasurement}"));

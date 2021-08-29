@@ -33,10 +33,11 @@ namespace NetDaemon.Daemon
             _yamlConfig = yamlConfig;
         }
 
-        [SuppressMessage("", "CA1065")] public int Count => _loadedDaemonApps?.Count() ?? throw new NetDaemonNullReferenceException("_loadedDaemonApps cannot be null");
+        [SuppressMessage("", "CA1065")]
+        public int Count => _loadedDaemonApps.Count();
 
         // Internal for testing
-        public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps!;
+        public IEnumerable<Type> DaemonAppTypes => _loadedDaemonApps;
 
         public IEnumerable<ApplicationContext> InstanceDaemonApps(IServiceProvider serviceProvider)
         {
@@ -45,14 +46,14 @@ namespace NetDaemon.Daemon
             // Get all yaml config file paths
             var allConfigFilePaths = _yamlConfig.GetAllConfigFilePaths().ToArray();
 
-            if (_loadedDaemonApps?.Any() != true && allConfigFilePaths.Length == 0)
+            if (_loadedDaemonApps.Any() != true && allConfigFilePaths.Length == 0)
             {
                 _logger.LogWarning("No yaml configuration files or loaded apps found");
                 return result;
             }
 
             var appInstantiator = new AppInstantiator(serviceProvider);
-
+            
             foreach (string file in allConfigFilePaths)
             {
                 try
@@ -74,15 +75,15 @@ namespace NetDaemon.Daemon
             }
 
             var appTypesWithoutYamlConfig = _loadedDaemonApps
-                .Where(appType => !result.Select(x => x.ApplicationInstance.GetType()).Contains(appType));
-
+                    .Where(appType => !result.Select(x => x.ApplicationInstance.GetType()).Contains(appType));
+            
             foreach (var appType in appTypesWithoutYamlConfig)
             {
                 var appId = appType.GetCustomAttribute<NetDaemonAppAttribute>()?.Id ?? appType.Name;
 
                 result.Add(appInstantiator.Instantiate(appType, appId));
             }
-
+            
             return result;
         }
     }

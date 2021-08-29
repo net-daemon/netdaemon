@@ -4,16 +4,12 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
-using NetDaemon.Common.Reactive;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
 {
-    public class AppSorterTests
+     public class AppSorterTests
     {
-        private class MyTestApp : NetDaemonRxApp
-        {
-        }
 
         [Fact]
         public void SortEmptyTest()
@@ -59,7 +55,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         static ApplicationContext TestApp(string id, params string[] dependencies)
         {
-            return new ApplicationContext(typeof(MyTestApp), id, new ServiceCollection().BuildServiceProvider()) { Dependencies = dependencies };
+            return new ApplicationContext(typeof(object), id, new ServiceCollection().BuildServiceProvider()) { Dependencies = dependencies };
         }
 
         [Fact]

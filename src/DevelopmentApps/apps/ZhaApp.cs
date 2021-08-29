@@ -7,14 +7,13 @@ using NetDaemon.Common;
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
-    [Focus]
     public class ZhaApp
     {
         public ZhaApp(IEventProvider eventProvider)
         {
             eventProvider.GetEventDataOfType<ZhaEventData>("zha_event")
-                .Where(e => e.device_ieee == "84:71:27:ff:fe:40:78:7b")
-                .Subscribe(e => Console.WriteLine($"device {e.device_ieee} sent command: { e.command} endpoint: {e.endpoint_id}"));
+                .Where(e => e.DeviceIeee == "84:71:27:ff:fe:40:78:7b")
+                .Subscribe(e => Console.WriteLine($"device {e.DeviceIeee} sent command: { e.Command} endpoint: {e.EndpointId}"));
             
             // Prints: `device 84:71:27:ff:fe:40:78:7b sent command: off endpoint: 1`
             
