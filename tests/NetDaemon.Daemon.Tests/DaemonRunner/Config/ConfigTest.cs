@@ -13,6 +13,7 @@ using NetDaemon.Daemon.Config;
 using Xunit;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
+using static NetDaemon.Daemon.Tests.DaemonRunner.CommonTestMethods;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 {
@@ -26,21 +27,20 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public static IOptions<NetDaemonSettings> CreateSettings(string appSource) =>
             new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
             {
-                AppSource = appSource
+                    AppSource = appSource
             });
-        
-        private readonly IAppInstantiator _appInstantiator = Mock.Of<IAppInstantiator>();
-        
+
         private readonly IServiceProvider _serviceProvider = new ServiceCollection().BuildServiceProvider();
 
-        private ApplicationContext TestAppContext => new (typeof(object), "id", _serviceProvider);
+        private ApplicationContext TestAppContext => new(typeof(object), "id", _serviceProvider);
 
         [Fact]
         public void NormalLoadSecretsShouldGetCorrectValues()
         {
             // ARRANGE AND ACT
+            var yamlConfig = new YamlSecretsProvider(ConfigFixturePath, new YamlConfigReader(new IoWrapper()));
             IDictionary<string, string> secrets =
-                YamlConfig.GetSecretsFromSecretsYaml(GetFixturePath("secrets_normal.yaml"));
+                yamlConfig.GetSecretsFromFile(GetFixturePath("secrets_normal.yaml"));
 
             // ASSERT
             Assert.True(secrets.ContainsKey("secret_int"));
@@ -62,16 +62,19 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 "yaml_missing: \"missing" +
                 "yaml_correct: 10";
 
+            var yamlConfigReader = GetYamlConfigReader(faultyYaml);
+
             // ACT & ASSERT
             Assert.Throws<SyntaxErrorException>(
-                () => YamlConfig.GetSecretsFromSecretsYaml(new StringReader(faultyYaml)));
+                () => yamlConfigReader.GetYamlStream(faultyYaml));
         }
 
         [Fact]
         public void SecretLoadAllSecretsInDictionaryShouldBeCorrect()
         {
             // ARRANGE & ACT
-            var secrets = YamlConfig.GetAllSecretsFromPath(ConfigFixturePath);
+            var yamlConfig = new YamlSecretsProvider(ConfigFixturePath, new YamlConfigReader(new IoWrapper()));
+            var secrets = yamlConfig.GetAllSecrets();
 
             // ASSERT
             Assert.Equal(3, secrets.Count);
@@ -89,11 +92,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void SecretShouldBeRelevantDependingOnFolderLevel(string secret, string configPath, string secretValue)
         {
             // ARRANGE
-            var config = new YamlConfig(CreateSettings(ConfigFixturePath));
+            var yamlSecretsProvider = new YamlSecretsProvider(ConfigFixturePath, new YamlConfigReader(new IoWrapper()));
 
             // ACT
 
-            string? confValue = config.GetSecretFromPath(secret, configPath);
+            string? confValue = yamlSecretsProvider.GetSecretFromPath(secret, configPath);
 
             // ASSERT
             Assert.Equal(secretValue, confValue);
@@ -106,7 +109,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 new object?[] {"secret_int", Path.Combine(ConfigFixturePath, "level2"), "20"},
                 new object?[] {"secret_int", Path.Combine(ConfigFixturePath, "level2", "level3"), "40"},
                 new object?[] {"string_setting", Path.Combine(ConfigFixturePath, "level2", "level3"), "level2"},
-                new object?[] {"secret_only_exists_here", Path.Combine(ConfigFixturePath, "level2", "level3"), "test"},
+                new object?[]
+                {
+                        "secret_only_exists_here", Path.Combine(ConfigFixturePath, "level2", "level3"), "test"
+                },
                 new object?[] {"notexists", Path.Combine(ConfigFixturePath, "level2", "level3"), null},
             };
 
@@ -212,7 +218,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             using var applicationContext = new ApplicationContext(typeof(BaseTestApp), "id", _serviceProvider);
             var instance = scalarValue.ToObject(entityType, applicationContext) as RxEntityBase;
             Assert.NotNull(instance);
-            Assert.Equal(entityType,instance!.GetType());
+            Assert.Equal(entityType, instance!.GetType());
             Assert.Equal("1234", instance.EntityId);
         }
 
@@ -237,11 +243,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             // ACT & ASSERT
             var instance = scalarValue.ToObject(typeof(TestClass), applicationContext);
             Assert.NotNull(instance);
-            Assert.Equal(typeof(TestClass),instance!.GetType());
-            
+            Assert.Equal(typeof(TestClass), instance!.GetType());
             mockAction.Verify(a => a.Say("Hello 1234"));
-        }        
-        
+        }
+
         [Fact]
         public void YamlScalarNodeToObjectUsingDecimal()
         {
@@ -280,37 +285,23 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public void YamlAdvancedObjectsShouldReturnCorrectData()
         {
             const string? yaml = @"
-            a_string: hello world
-            an_int: 10
-            a_bool: true
-            a_string_list:
-            - hi
-            - this
-            - is
-            - cool!
-            devices:
-            - name: tv
-              commands:
-                - name: command1
-                  data: some code
-                - name: command2
-                  data: some code2";
+                a_string: hello world
+                an_int: 10
+                a_bool: true
+                a_string_list:
+                - hi
+                - this
+                - is
+                - cool!
+                devices:
+                - name: tv
+                  commands:
+                    - name: command1
+                      data: some code
+                    - name: command2
+                      data: some code2";
 
-            var yamlConfig = new YamlAppConfig(
-                new List<Type>(),
-                new StringReader(yaml),
-                new YamlConfig(CreateSettings(ConfigFixturePath)),
-                ConfigFixturePath,
-                _appInstantiator
-            );
-
-            var yamlStream = new YamlStream();
-            yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
-
-            using var applicationContext =  new ApplicationContext(typeof(AppComplexConfig), "id", _serviceProvider);
-            var instance = (AppComplexConfig)applicationContext.ApplicationInstance;
-            yamlConfig.SetPropertyConfig(root, applicationContext);
+            var instance = InstantiateAppAndSetPropertyConfig<AppComplexConfig>(yaml);
 
             Assert.Equal("hello world", instance.AString);
             Assert.Equal(10, instance.AnInt);
@@ -325,7 +316,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         }
 
         [Fact]
-        public async void YamlMultilevelObjectShouldReturnCorrectData()
+        public void YamlMultilevelObjectShouldReturnCorrectData()
         {
             const string? rootData = "lorem ipsum 1";
             const string? childData = "lorem ipsum 2";
@@ -337,29 +328,33 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                child:
                  data: {childData}";
 
-            var yamlConfig = new YamlAppConfig(
-                    new List<Type>(),
-                    new StringReader(yaml),
-                    new YamlConfig(CreateSettings(ConfigFixturePath)),
-                    ConfigFixturePath,
-                    _appInstantiator
-            );
-
-            var yamlStream = new YamlStream();
-            yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
-
-            await using var applicationContext = new ApplicationContext(typeof(MultilevelMappingConfig), "TestAppId", _serviceProvider);
-
-            var instance = (MultilevelMappingConfig)applicationContext.ApplicationInstance;
-
-            yamlConfig.SetPropertyConfig(root,  applicationContext);
+            var instance = InstantiateAppAndSetPropertyConfig<MultilevelMappingConfig>(yaml);
 
             Assert.Equal(rootData, instance!.Root!.Data);
             Assert.Equal(childData, instance!.Root!.Child!.Child!.Data!);
         }
+
+        private T InstantiateAppAndSetPropertyConfig<T>(string yaml)
+        {
+            var yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(yaml));
+            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+
+            using var applicationContext =
+                    new ApplicationContext(typeof(T), "id", _serviceProvider);
+            var instance = (T) applicationContext.ApplicationInstance;
+
+            var config = new YamlConfigEntry("path is mocked by yamlConfigReader ->",
+                    GetYamlConfigReader(yaml),
+                    Mock.Of<IYamlSecretsProvider>());
+            var yamlAppConfigEntry = new YamlAppConfigEntry("id", root, config);
+
+            yamlAppConfigEntry.SetPropertyConfig(applicationContext);
+
+            return instance;
+        }
     }
-    
+
 #pragma warning disable CA1812 // internal class is instantiated dynamically
 
     internal class TestClass
@@ -370,7 +365,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             speaker.Say("Hello " + name);
         }
     }
-        
+
     public interface ISpeaker
     {
         public void Say(string message);
