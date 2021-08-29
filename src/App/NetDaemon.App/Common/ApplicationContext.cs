@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NetDaemon.Common
 {
@@ -11,31 +12,52 @@ namespace NetDaemon.Common
     /// </summary>
     public sealed class ApplicationContext : IAsyncDisposable, IDisposable
     {
+        private readonly IServiceScope? _serviceScope;
         private IApplicationMetadata _applicationMetadata;
-        private IList<IDisposable> _toDispose = new List<IDisposable>();
 
         /// <summary>
         /// Creates a new ApplicationContext
         /// </summary>
-        public ApplicationContext(object applicationInstance)
+        public ApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider)
+        {
+            // Create a new ServiceScope for all objects we create for this app
+            // this makes sure they will all be disposed along with the app
+            _serviceScope = serviceProvider.CreateScope();
+            ServiceProvider = _serviceScope.ServiceProvider;
+            
+            ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceScope.ServiceProvider, applicationType);
+            _applicationMetadata = InitializeMetaData();
+            Id = id;
+        }
+
+        /// <summary>
+        /// Creates a new ApplicationContext
+        /// </summary>
+        private ApplicationContext(INetDaemonAppBase applicationInstance, IServiceProvider serviceProvider)
         {
             ApplicationInstance = applicationInstance;
+            ServiceProvider = serviceProvider;
 
-            if (applicationInstance is NetDaemonAppBase appBase)
+            _applicationMetadata = InitializeMetaData();
+        }
+
+        /// <summary>
+        /// Intended for internal use only
+        /// </summary>
+        public static ApplicationContext CreateFromAppInstance(INetDaemonAppBase applicationInstance, IServiceProvider serviceProvider)
+        {
+            return new ApplicationContext(applicationInstance, serviceProvider);
+        }
+
+        private IApplicationMetadata InitializeMetaData()
+        {
+            if (ApplicationInstance is IApplicationMetadata appBase)
             {
                 // For applications based on NetDaemonAppBase the services are provided by the application itself
                 // we need to keep that for backwards compatibility
-                _applicationMetadata = appBase;
+                return appBase;
             }
-            else
-            {
-                _applicationMetadata = new ApplicationMetadata();
-            }
-        }
-
-        public void TrackDisposable(IDisposable toDispose)
-        {
-            _toDispose.Add(toDispose);
+            return new ApplicationMetadata();
         }
 
         /// <summary>
@@ -44,12 +66,17 @@ namespace NetDaemon.Common
         public object ApplicationInstance { get; }
 
         /// <summary>
+        /// ServiceProvider scoped for this application
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; }
+
+        /// <summary>
         ///     Unique id of the application
         /// </summary>
         public string? Id
         {
             get => _applicationMetadata.Id;
-            init => _applicationMetadata.Id = value;
+            private init => _applicationMetadata.Id = value;
         }
 
         /// <summary>
@@ -60,7 +87,7 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Returns the description, is the decorating comment of app class
         /// </summary>
-        public string? Description => _applicationMetadata.Description
+        public string Description => _applicationMetadata.Description
                                       ?? ApplicationInstance.GetType().GetCustomAttribute<DescriptionAttribute>()
                                           ?.Description
                                       ?? "";
@@ -91,25 +118,19 @@ namespace NetDaemon.Common
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
+            Dispose();
+
             if (ApplicationInstance is IAsyncDisposable asyncDisposable)
             {
                 await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             }
-
-            if (ApplicationInstance is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-
-            foreach (var trackedDisposable in _toDispose)
-            {
-                trackedDisposable.Dispose();
-            }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            DisposeAsync().AsTask().Wait();
+            (ApplicationInstance as IDisposable) ?.Dispose();
+            _serviceScope?.Dispose();
         }
     }
 }

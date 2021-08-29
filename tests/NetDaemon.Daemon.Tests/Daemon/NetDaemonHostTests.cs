@@ -29,12 +29,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
         {
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
-            var app = new AssemblyDaemonApp
-            {
-                Id = "id"
-            };
 
-            DefaultDaemonHost.AddRunningApp(app);
+            var app = DefaultDaemonHost.LoadApp<AssemblyDaemonApp>("id");
 
             // ACT
             await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);
