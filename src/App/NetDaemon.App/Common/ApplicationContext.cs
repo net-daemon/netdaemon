@@ -129,7 +129,8 @@ namespace NetDaemon.Common
         /// <inheritdoc />
         public void Dispose()
         {
-            _serviceScope.Dispose();
+            (ApplicationInstance as IDisposable) ?.Dispose();
+            _serviceScope?.Dispose();
         }
     }
 }

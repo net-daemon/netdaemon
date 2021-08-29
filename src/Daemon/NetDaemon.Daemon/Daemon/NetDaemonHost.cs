@@ -120,7 +120,17 @@ namespace NetDaemon.Daemon
                 a => HassEvents -= a).Select(e => e.EventArgs);
         }
 
-        //for unit testing with INetDaemonAppBase apps
+        //for unit testing
+        internal T LoadApp<T>(string id)
+        {
+            var applicationContext = new ApplicationContext(typeof(T), id, ServiceProvider);
+            InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
+            InternalAllAppInstances[applicationContext.Id!] = applicationContext;
+   
+            return (T)applicationContext.ApplicationInstance;
+        }
+
+        //for unit testing with INetDaemonAppBase apps that ware instatiated by the testcode
         internal void AddRunningApp(INetDaemonAppBase app)
         {
             _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
@@ -129,15 +139,6 @@ namespace NetDaemon.Daemon
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
 
-        internal T LoadApp<T>(string id)
-        {
-            var applicationContext = new ApplicationContext(typeof(T), id, ServiceProvider);
-            InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
-            InternalAllAppInstances[applicationContext.Id!] = applicationContext;
-            
-            return (T)applicationContext.ApplicationInstance;
-        }        
-        
         public IObservable<HassEvent> HassEventsObservable { get; }
 
         private event EventHandler<HassEvent>? HassEvents;
