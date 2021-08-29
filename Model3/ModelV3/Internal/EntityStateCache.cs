@@ -13,7 +13,7 @@ namespace Model3.ModelV3
             _hassClient = hassClient;
         }
 
-        private ConcurrentDictionary<string, HassState> _latestStates = new();
+        private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
 
         public void Store(HassState newState) => _latestStates[newState.EntityId] = newState;
 

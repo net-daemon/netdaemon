@@ -10,7 +10,7 @@ using YamlDotNet.RepresentationModel;
 
 namespace NetDaemon.Daemon.Config
 {
-    public class YamlAppConfig
+    internal class YamlAppConfig
     {
         private readonly IEnumerable<Type> _types;
         private readonly YamlStream _yamlStream;
@@ -124,7 +124,7 @@ namespace NetDaemon.Daemon.Config
                     return ((YamlScalarNode) node).ToObject(instanceType, applicationContext);
                 }
                 case YamlNodeType.Sequence when !instanceType.IsGenericType ||
-                                                instanceType?.GetGenericTypeDefinition() != typeof(IEnumerable<>):
+                                                instanceType.GetGenericTypeDefinition() != typeof(IEnumerable<>):
                     return null;
                 case YamlNodeType.Sequence:
                 {
@@ -186,9 +186,9 @@ namespace NetDaemon.Daemon.Config
         [SuppressMessage("", "CA1508")]
         private IList CreateSequenceInstance(object? parent, Type instanceType, YamlNode node, ApplicationContext applicationContext)
         {
-            Type listType = instanceType?.GetGenericArguments()[0] ??
+            Type listType = instanceType.GetGenericArguments()[0] ??
                             throw new NetDaemonNullReferenceException(
-                                $"The property {instanceType?.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
+                                $"The property {instanceType.Name} of Class {parent?.GetType().Name} is not compatible with configuration");
 
             IList list = listType.CreateListOfPropertyType() ??
                          throw new NetDaemonNullReferenceException(
