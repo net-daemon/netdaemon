@@ -11,11 +11,11 @@ namespace NetDaemon.Common
     /// </summary>
     public sealed class ApplicationContext : IAsyncDisposable, IDisposable
     {
-        private IApplicationMetadata _applicationMetadata;
-        private IList<IDisposable> _toDispose = new List<IDisposable>();
+        private readonly IApplicationMetadata _applicationMetadata;
+        private readonly IList<IDisposable> _toDispose = new List<IDisposable>();
 
         /// <summary>
-        /// Creates a new ApplicationContext
+        ///     Creates a new ApplicationContext
         /// </summary>
         public ApplicationContext(object applicationInstance)
         {
@@ -33,13 +33,17 @@ namespace NetDaemon.Common
             }
         }
 
+        /// <summary>
+        ///     Tracks all disposable objects to dispose when application disposes
+        /// </summary>
+        /// <param name="toDispose">The object to dispose later on</param>
         public void TrackDisposable(IDisposable toDispose)
         {
             _toDispose.Add(toDispose);
         }
 
         /// <summary>
-        /// Gets the reference to the Application Instance
+        ///     Gets the reference to the Application Instance
         /// </summary>
         public object ApplicationInstance { get; }
 
@@ -107,6 +111,9 @@ namespace NetDaemon.Common
             }
         }
 
+        /// <summary>
+        ///     Disposes the application context
+        /// </summary>
         public void Dispose()
         {
             DisposeAsync().AsTask().Wait();
