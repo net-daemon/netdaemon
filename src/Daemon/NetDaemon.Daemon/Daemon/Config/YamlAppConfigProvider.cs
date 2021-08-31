@@ -68,8 +68,8 @@ namespace NetDaemon.Daemon.Config
             {
                 const string? message = "Error loading yaml app configs";
 
-                _logger.LogTrace(e, $"{message}, use trace flag for details");
-                _logger.LogError(message);
+                _logger.LogTrace(e, message);
+                _logger.LogError($"{message}, use trace flag for details");
 
                 throw new NetDaemonException(message, e);
             }

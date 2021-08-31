@@ -26,8 +26,8 @@ namespace NetDaemon.Daemon
             {
                 var message = $"Error instantiating app of type {applicationType} with id \"{appId}\"";
 
-                _logger.LogTrace(e, $"{message}, use trace flag for details");
-                _logger.LogError(message);
+                _logger.LogTrace(e, message);
+                _logger.LogError($"{message}, use trace flag for details");
                 throw new NetDaemonException(message, e);
             }
         }
