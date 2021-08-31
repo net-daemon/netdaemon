@@ -27,6 +27,8 @@ namespace NetDaemon.Daemon.Config
 
         public void SetPropertyConfig(ApplicationContext applicationContext)
         {
+            if (applicationContext is null) throw new ArgumentNullException(nameof(applicationContext));
+
             var appInstance = applicationContext.ApplicationInstance;
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in _yamlMappingNode.Children)

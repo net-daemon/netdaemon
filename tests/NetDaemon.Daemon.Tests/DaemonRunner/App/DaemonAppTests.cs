@@ -100,7 +100,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         }
 
         [Fact]
-        public void InstanceAppFromConfigNotFoundShouldReturnNull()
+        public void ConfigForUnknownAppClassShouldReturnNull()
         {
             // ARRANGE
             const string? yamlConfig = @"
@@ -110,10 +110,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var yamlAppConfigProvider = new YamlAppConfigProvider(new YamlConfigProvider(CreateSettings(ConfigFixturePath), GetYamlConfigReader(yamlConfig)), Mock.Of<ILogger>());
 
             // ACT
-            var instance = yamlAppConfigProvider.GetConfigs(typeof(AssemblyDaemonApp)).FirstOrDefault();
+            var yamlConfigEntry = yamlAppConfigProvider.GetConfigs(typeof(AssemblyDaemonApp)).FirstOrDefault();
 
             // ASSERT
-            Assert.Null(instance);
+            Assert.Null(yamlConfigEntry);
         }
 
         [Fact]

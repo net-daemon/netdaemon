@@ -32,13 +32,14 @@ namespace NetDaemon.Daemon.Config
             return _appConfigs.Where(x => x.AppFullTypeName == appTypeFullName).Select(x => x.Config);
         }
 
+        [SuppressMessage("", "CA1508")]
         private void LoadAppConfigs()
         {
             try
             {
-                foreach (var yamlConfigInstance in _yamlConfig.GetAllConfigs())
+                foreach (var yamlConfigEntry in _yamlConfig.GetAllConfigs())
                 {
-                    var yamlStream = yamlConfigInstance.GetYamlStream();
+                    var yamlStream = yamlConfigEntry.GetYamlStream();
 
                     foreach (KeyValuePair<YamlNode, YamlNode> app in (YamlMappingNode)yamlStream.Documents[0].RootNode)
                     {
@@ -57,7 +58,7 @@ namespace NetDaemon.Daemon.Config
                         }
 
                         var appId = ((YamlScalarNode)app.Key).Value!;
-                        var appConfiguration = new YamlAppConfigEntry(appId, appValue, yamlConfigInstance);
+                        var appConfiguration = new YamlAppConfigEntry(appId, appValue, yamlConfigEntry);
 
                         _appConfigs.Add((appTypeFullName, appConfiguration));
                     }

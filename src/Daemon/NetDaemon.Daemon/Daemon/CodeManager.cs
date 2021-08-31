@@ -38,6 +38,7 @@ namespace NetDaemon.Daemon
         // Internal for testing
         internal IEnumerable<Type> DaemonAppTypes { get; }
 
+        [SuppressMessage("", "CA2000")]
         public IEnumerable<ApplicationContext> InstanceDaemonApps(IServiceProvider serviceProvider)
         {
             if (!DaemonAppTypes.Any() && !_yamlConfig.GetAllConfigs().Any())
