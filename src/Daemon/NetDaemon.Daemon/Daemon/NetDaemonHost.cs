@@ -19,6 +19,7 @@ using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon.Storage;
 using NetDaemon.Infrastructure.Extensions;
+using NetDaemon.Infrastructure.ObservableHelpers;
 using NetDaemon.Mapping;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -117,7 +118,8 @@ namespace NetDaemon.Daemon
 
             HassEventsObservable = Observable.FromEventPattern<EventHandler<HassEvent>, HassEvent>(
                 a => HassEvents += a,
-                a => HassEvents -= a).Select(e => e.EventArgs);
+                a => HassEvents -= a).Select(e => e.EventArgs)
+                .AsConcurrent(t => TrackBackgroundTask(t));
         }
 
         //for unit testing
@@ -126,7 +128,7 @@ namespace NetDaemon.Daemon
             var applicationContext = new ApplicationContext(typeof(T), id, ServiceProvider);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
-   
+
             return (T)applicationContext.ApplicationInstance;
         }
 
@@ -140,7 +142,7 @@ namespace NetDaemon.Daemon
         }
 
         public IObservable<HassEvent> HassEventsObservable { get; }
-
+        
         private event EventHandler<HassEvent>? HassEvents;
 
         public bool IsConnected { get; private set; }

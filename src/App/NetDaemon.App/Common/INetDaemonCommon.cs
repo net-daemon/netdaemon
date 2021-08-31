@@ -13,7 +13,7 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Logger to use
         /// </summary>
-        ILogger? Logger { get; }
+        ILogger Logger { get; }
 
         /// <summary>
         ///     All current states for all known entities

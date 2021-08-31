@@ -1,31 +1,31 @@
 ﻿using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
+using Model3;
 using Model3.ModelV3;
-using NetDaemon.Daemon;
+using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.Common.ModelV3
 {
-    internal class HaContextProvider : IHaContext
+    internal class HaContextProvider : IHaContext, IDisposable, IEventProvider
     {
-        private readonly INetDaemonHost _netDaemonHost;
-        private readonly IObservable<HassEvent> _hassEventObservable;
         private readonly EntityStateCache _entityStateCache;
         private readonly IHassClient _hassClient;
+        private readonly ScopedObservable<HassEvent> _scopedObservable;
 
-        public HaContextProvider(INetDaemonHost netDaemonHost,
-            IObservable<HassEvent> hassEventObservable,
+        public HaContextProvider(IObservable<HassEvent> hassEventObservable,
             EntityStateCache entityStateCache,
             IHassClient hassClient)
         {
-            _netDaemonHost = netDaemonHost;
-            _hassEventObservable = hassEventObservable;
             _entityStateCache = entityStateCache;
             _hassClient = hassClient;
 
-            var stateChanges = _hassEventObservable
+            // Create a new ScopedObservable from the one we got
+            // this makes sure we will unsubscribe then this ContextProvider is Disposed
+            _scopedObservable = new ScopedObservable<HassEvent>(hassEventObservable);
+
+            var stateChanges = _scopedObservable
                 .Select(e => e.Data as HassStateChangedEventData)
                 .Where(e => e != null)
                 .Select(e => e!);
@@ -48,14 +48,21 @@ namespace NetDaemon.Common.ModelV3
 
         public void CallService(string domain, string service, object? data, Entity entity)
         {
-            _hassClient.CallService(domain, service, 
-                data,
-                new HassTarget { EntityIds = new[] { entity.EntityId } });
+            _hassClient.CallService(domain, service, data, new HassTarget { EntityIds = new[] { entity.EntityId } });
         }
 
-        //public IRxEvent EventChanges { get; }
         public IObservable<StateChange> StateAllChanges { get; }
 
         public IObservable<StateChange> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
+
+        public IObservable<T> GetEventDataOfType<T>(string eventType) where T : class => 
+            _scopedObservable
+                .Where(e => e.EventType == eventType && e.DataElement != null)
+                .Select(e => e.DataElement?.ToObject<T>()!);
+
+        public void Dispose()
+        {
+            _scopedObservable.Dispose();
+        }
     }
 }

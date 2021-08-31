@@ -7,7 +7,6 @@ using ClimateEntity = NetDaemon.Common.ModelV3.Domains.ClimateEntity;
 
 namespace NetDaemon.DevelopmentApps.apps.YamlEntities
 {
-    [Focus]
     [NetDaemonApp]
     public class YamlEntitiesApp : IInitializable
     {
