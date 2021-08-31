@@ -100,6 +100,23 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         }
 
         [Fact]
+        public void InstanceAppFromConfigNotFoundShouldReturnNull()
+        {
+            // ARRANGE
+            const string? yamlConfig = @"
+                app:
+                    class: NotFoundApp";
+
+            var yamlAppConfigProvider = new YamlAppConfigProvider(new YamlConfigProvider(CreateSettings(ConfigFixturePath), GetYamlConfigReader(yamlConfig)), Mock.Of<ILogger>());
+
+            // ACT
+            var instance = yamlAppConfigProvider.GetConfigs(typeof(AssemblyDaemonApp)).FirstOrDefault();
+
+            // ASSERT
+            Assert.Null(instance);
+        }
+
+        [Fact]
         public void InstanceAppWithoutConfigShouldNotBeConfiguredByConfig()
         {
             // ARRANGE
