@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using Model3;
 
@@ -33,7 +34,7 @@ namespace NetDaemon.Common.ModelV3
             _attributesLazy = new (() => AttributesJson.ToObject<TAttributes>());            
         }
 
-        public new TState? State => base.State == null ? default : (TState?)Convert.ChangeType(base.State, typeof(TState));
+        public new TState? State => base.State == null ? default : (TState?)Convert.ChangeType(base.State, typeof(TState), CultureInfo.InvariantCulture);
         public override TAttributes Attributes => _attributesLazy.Value;
     }
 }
