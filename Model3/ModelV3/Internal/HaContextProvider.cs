@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Client;
@@ -8,6 +9,8 @@ using NetDaemon.Daemon;
 
 namespace NetDaemon.Common.ModelV3
 {
+    // TODO: Warning that the internal class is never instansiated. Supress for now, fix later
+    [SuppressMessage("", "CA1812")]
     internal class HaContextProvider : IHaContext
     {
         private readonly INetDaemonHost _netDaemonHost;
@@ -48,7 +51,7 @@ namespace NetDaemon.Common.ModelV3
 
         public void CallService(string domain, string service, object? data, Entity entity)
         {
-            _hassClient.CallService(domain, service, 
+            _hassClient.CallService(domain, service,
                 data,
                 new HassTarget { EntityIds = new[] { entity.EntityId } });
         }
