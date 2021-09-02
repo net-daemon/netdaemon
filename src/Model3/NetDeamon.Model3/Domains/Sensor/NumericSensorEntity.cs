@@ -1,6 +1,8 @@
 ﻿using System.Text.Json.Serialization;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Common.ModelV3.Domains
+namespace NetDaemon.Model3.Domains.Sensor
 {
     public record NumericSensorEntity : Entity<NumericSensorEntity, EntityState<double, NumericSensorAttributes>, double, NumericSensorAttributes>
     {

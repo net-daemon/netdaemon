@@ -3,10 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 
-namespace Model3.ModelV3
+namespace NetDaemon.Model3.Internal
 {
-    // TODO: Warning that the internal class is never instansiated. Supress for now, fix later
-    [SuppressMessage("", "CA1812")]
+    [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class EntityStateCache
     {
         private readonly IHassClient _hassClient;
