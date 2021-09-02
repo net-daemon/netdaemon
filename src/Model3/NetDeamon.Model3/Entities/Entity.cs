@@ -3,9 +3,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
-using Model3;
+using NetDaemon.Model3.Common;
 
-namespace NetDaemon.Common.ModelV3
+namespace NetDaemon.Model3.Entities
 {
     /// <summary>
     /// Represents a Home Assistant entity with its state, changes and services

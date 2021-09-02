@@ -1,8 +1,9 @@
 ﻿using System.Text.Json;
 using JoySoftware.HomeAssistant.Model;
-using NetDaemon.Common.ModelV3;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace Model3.ModelV3
+namespace NetDaemon.Model3.Internal
 {
     internal static class HassObjectMapper
     {

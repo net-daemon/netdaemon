@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using Model3;
+using NetDaemon.Model3.Common;
 
-namespace NetDaemon.Common.ModelV3
+namespace NetDaemon.Model3.Entities
 {
-
-
     public record EntityState
     {
         public string EntityId { get; init; } = "";

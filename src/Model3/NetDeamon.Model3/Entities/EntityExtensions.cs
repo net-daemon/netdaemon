@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetDaemon.Common.ModelV3
+namespace NetDaemon.Model3.Entities
 {
     public static class EntityExtensions
     {
