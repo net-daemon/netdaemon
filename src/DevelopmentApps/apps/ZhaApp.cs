@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Model3.ModelV3;
-using Model3.ModelV3.EventTypes;
 using NetDaemon.Common;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.EventTypes;
 
 namespace NetDaemon.DevelopmentApps.apps
 {

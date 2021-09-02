@@ -2,12 +2,12 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Model;
+using NetDaemon.Model3.Common;
 
-namespace Model3.ModelV3
+namespace NetDaemon.Model3.Internal
 {
 
-    // TODO: Supressing the warning but it complains that the internal class never is instansiated
-    [SuppressMessage("", "CA1812")]
+    [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class TypedEventProvider : IEventProvider
     {
         private readonly IObservable<HassEvent> _hassEventsObservable;

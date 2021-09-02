@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Model3.ModelV3.EventTypes
+namespace NetDaemon.Model3.EventTypes
 {
     public record ZhaEventData
     {

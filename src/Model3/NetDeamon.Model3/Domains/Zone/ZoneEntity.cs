@@ -1,9 +1,8 @@
-﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
-using Model3;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Common.ModelV3.Domains
+namespace NetDaemon.Model3.Domains.Zone
 {
     public record ZoneEntity : Entity<ZoneEntity, EntityState<string, ZoneAttributes>, string, ZoneAttributes>
     {

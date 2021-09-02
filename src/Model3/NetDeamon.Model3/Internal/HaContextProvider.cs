@@ -1,29 +1,25 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
-using Model3.ModelV3;
-using NetDaemon.Daemon;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Common.ModelV3
+namespace NetDaemon.Model3.Internal
 {
-    // TODO: Warning that the internal class is never instansiated. Supress for now, fix later
-    [SuppressMessage("", "CA1812")]
+    [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class HaContextProvider : IHaContext
     {
-        private readonly INetDaemonHost _netDaemonHost;
         private readonly IObservable<HassEvent> _hassEventObservable;
         private readonly EntityStateCache _entityStateCache;
         private readonly IHassClient _hassClient;
 
-        public HaContextProvider(INetDaemonHost netDaemonHost,
+        public HaContextProvider(
             IObservable<HassEvent> hassEventObservable,
             EntityStateCache entityStateCache,
             IHassClient hassClient)
         {
-            _netDaemonHost = netDaemonHost;
             _hassEventObservable = hassEventObservable;
             _entityStateCache = entityStateCache;
             _hassClient = hassClient;
