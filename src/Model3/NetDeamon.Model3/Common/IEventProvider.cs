@@ -1,7 +1,6 @@
 ﻿using System;
-using NetDaemon.Common;
 
-namespace Model3.ModelV3
+namespace NetDaemon.Model3.Common
 {
     public interface IEventProvider
     {

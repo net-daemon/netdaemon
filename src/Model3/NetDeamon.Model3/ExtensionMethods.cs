@@ -1,14 +1,7 @@
 using System.Buffers;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
-using System.Globalization;
-using System.Text;
 using System.Text.Json;
-using NetDaemon.Common;
 
-namespace Model3
+namespace NetDaemon.Model3
 {
     /// <summary>
     ///     Useful extension methods used

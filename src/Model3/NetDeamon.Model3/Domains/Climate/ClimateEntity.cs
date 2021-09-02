@@ -1,15 +1,13 @@
-﻿using System;
-using System.Reactive.Linq;
-using System.Text.Json.Serialization;
-using Model3;
+﻿using System.Text.Json.Serialization;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Common.ModelV3.Domains
+namespace NetDaemon.Model3.Domains.Climate
 {
     public record ClimateEntity : Entity<ClimateEntity, EntityState<string, ClimateAttributes>, string, ClimateAttributes>
     {
         public ClimateEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
     }
-
 
     public record ClimateAttributes
     {
