@@ -2,12 +2,14 @@
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
-using Model3;
-using Model3.ModelV3;
+using System.Diagnostics.CodeAnalysis;
 using NetDaemon.Infrastructure.ObservableHelpers;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Common.ModelV3
+namespace NetDaemon.Model3.Internal
 {
+    [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class HaContextProvider : IHaContext, IDisposable, IEventProvider
     {
         private readonly EntityStateCache _entityStateCache;

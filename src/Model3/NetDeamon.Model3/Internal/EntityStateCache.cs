@@ -1,9 +1,11 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 
-namespace Model3.ModelV3
+namespace NetDaemon.Model3.Internal
 {
+    [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class EntityStateCache
     {
         private readonly IHassClient _hassClient;

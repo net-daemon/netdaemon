@@ -1,8 +1,8 @@
-﻿using System;
-using System.Reactive.Linq;
-using Model3;
+using System.Diagnostics.CodeAnalysis;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Common.ModelV3.Domains
+namespace NetDaemon.Model3.Domains.Zone
 {
     public record ZoneEntity : Entity<ZoneEntity, EntityState<string, ZoneAttributes>, string, ZoneAttributes>
     {
@@ -10,6 +10,7 @@ namespace NetDaemon.Common.ModelV3.Domains
         { }
     }
 
+    [SuppressMessage("", "CA1707")]
     public record ZoneAttributes
     {
         // TODO: complete these props and correct casing using [JsonPropertyName] (this is really an example)

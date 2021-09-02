@@ -2,10 +2,11 @@ using System;
 using System.Reactive.Linq;
 using System.Text.Json;
 using NetDaemon.Common;
-using NetDaemon.Common.ModelV3;
-using NetDaemon.Common.ModelV3.Domains;
-using ZoneEntity = NetDaemon.Common.ModelV3.Domains.ZoneEntity;
-using ClimateEntity = NetDaemon.Common.ModelV3.Domains.ClimateEntity;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Domains.Climate;
+using NetDaemon.Model3.Domains.Sensor;
+using NetDaemon.Model3.Domains.Zone;
+using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {

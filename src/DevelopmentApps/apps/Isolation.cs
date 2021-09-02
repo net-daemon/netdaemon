@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Reactive.Linq;
 using NetDaemon.Common;
-using NetDaemon.Common.ModelV3;
+using NetDaemon.Model3.Common;
 
 namespace NetDaemon.DevelopmentApps.apps
 {

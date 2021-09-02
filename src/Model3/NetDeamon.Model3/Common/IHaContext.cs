@@ -1,8 +1,7 @@
 ﻿using System;
-using JoySoftware.HomeAssistant.Model;
+using NetDaemon.Model3.Entities;
 
-
-namespace NetDaemon.Common.ModelV3
+namespace NetDaemon.Model3.Common
 {
     public interface IHaContext
     {

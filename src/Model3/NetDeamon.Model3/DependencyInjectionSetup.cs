@@ -3,10 +3,10 @@ using System.Linq;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Model3.ModelV3;
-using NetDaemon.Common.ModelV3;
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Internal;
 
-namespace Model3
+namespace NetDaemon.Model3
 {
     public static class DependencyInjectionSetup
     {

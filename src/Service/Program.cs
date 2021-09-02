@@ -1,9 +1,7 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Model3;
 using NetDaemon;
-using NetDaemon.Common.ModelV3;
+using NetDaemon.Model3;
 
 try
 {
