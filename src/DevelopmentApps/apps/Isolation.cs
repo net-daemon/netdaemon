@@ -5,7 +5,6 @@ using NetDaemon.Model3.Common;
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
-   // [Focus]
     public class Isolation1
     {
         public Isolation1(IHaContext ha)
@@ -14,7 +13,7 @@ namespace NetDaemon.DevelopmentApps.apps
             ha.StateAllChanges.Subscribe(e =>
             {
                 Console.WriteLine("app 1.1");
-                throw new Exception();
+                throw new Exception("Exception 1.1");
             });
             ha.StateAllChanges.Subscribe(e =>
             {
@@ -25,7 +24,6 @@ namespace NetDaemon.DevelopmentApps.apps
     }
     
     [NetDaemonApp]
-  //  [Focus]
     public class Isolation2
     {
         public Isolation2(IHaContext ha)
@@ -39,8 +37,8 @@ namespace NetDaemon.DevelopmentApps.apps
             });
         }
     }
+    
     [NetDaemonApp]
-    //[Focus]
     public class Isolation3
     {
         public Isolation3(IHaContext ha)

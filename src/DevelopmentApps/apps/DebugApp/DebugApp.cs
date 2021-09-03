@@ -8,7 +8,6 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
     /// <summary> Use this class as startingpoint for debugging
     /// </summary>
-    [Focus]
     public class DebugApp : NetDaemonRxApp
     {
         

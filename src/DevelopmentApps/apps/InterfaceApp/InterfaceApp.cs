@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
+using NetDaemon.Daemon;
 
 namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
@@ -12,7 +13,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
         private INetDaemon _host;
         private readonly ILogger _logger;
 
-        public InterfaceApp(INetDaemon host, ILogger logger)
+        public InterfaceApp(INetDaemonHost host, ILogger logger)
         {
             _host = host;
             _logger = logger;
