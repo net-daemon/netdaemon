@@ -20,16 +20,10 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
 
         public override void Initialize()
         {
-            Console.WriteLine("isolator 1");
-            StateAllChanges.Subscribe(e =>
-            {
-                Console.WriteLine("app 1.1");
-                throw new Exception();
-            });
-            StateAllChanges.Subscribe(e =>
-            {
-                Console.WriteLine("app 1.2");
-            });             }
+            var uid = Guid.NewGuid();
+            RunEvery(TimeSpan.FromSeconds(5), () => Log("Hello developer! from instance {instanceId} - {id}", _instanceId, uid));
+           // CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works!" }, true);
+        }
 
         [HomeAssistantServiceCall]
         public void CallMeFromHass(dynamic data)
