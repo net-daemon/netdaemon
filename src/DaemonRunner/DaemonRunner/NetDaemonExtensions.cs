@@ -34,9 +34,11 @@ namespace NetDaemon
                 {
                     services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                     services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
-                    services.AddSingleton<IYamlConfig, YamlConfig>();
+                    services.AddSingleton<IYamlConfig, YamlConfigProvider>();
                     services.AddSingleton<ICodeGenerationHandler, CodeGenerationHandler>();
                     services.AddSingleton<ICodeGenerator, CodeGenerator>();
+                    services.AddSingleton<IYamlConfigReader, YamlConfigReader>();
+                    services.AddSingleton<IIoWrapper, IoWrapper>();
 
                     RegisterNetDaemonAssembly(services);
                 })
