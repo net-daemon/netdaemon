@@ -12,6 +12,12 @@
       <PackageReference Include="System.Reactive" Version="5.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>NetDaemon.Model3.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
