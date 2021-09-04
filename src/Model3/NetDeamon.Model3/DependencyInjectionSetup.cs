@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Model3.Common;
@@ -15,9 +17,10 @@ namespace NetDaemon.Model3
             return hostBuilder
                 .ConfigureServices((_, services) =>
                 {
-                    services.AddScoped<IHaContext, HaContextProvider>();
                     services.AddSingleton<EntityStateCache>();
-                    services.AddTransient<IEventProvider, TypedEventProvider>();
+                    services.AddScoped<HaContextProvider>();
+                    services.AddTransient<IHaContext>(s => s.GetRequiredService<HaContextProvider>());
+                    services.AddTransient<IEventProvider>(s => s.GetRequiredService<HaContextProvider>());
                 });
         }
     }

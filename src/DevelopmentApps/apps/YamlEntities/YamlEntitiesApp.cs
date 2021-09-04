@@ -7,7 +7,6 @@ using NetDaemon.Model3.Domains.Sensor;
 
 namespace NetDaemon.DevelopmentApps.apps.YamlEntities
 {
-    [Focus]
     [NetDaemonApp]
     public class YamlEntitiesApp : IInitializable
     {
