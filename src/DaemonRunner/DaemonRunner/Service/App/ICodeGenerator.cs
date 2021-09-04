@@ -5,6 +5,6 @@ namespace NetDaemon.Service.App
 {
     public interface ICodeGenerator
     {
-        string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities, IEnumerable<HassServiceDomain> services);
+        string? GenerateCodeRx(string nameSpace, IReadOnlyCollection<string> entities, IReadOnlyCollection<HassServiceDomain> services);
     }
 }

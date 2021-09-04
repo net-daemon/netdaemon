@@ -31,10 +31,12 @@ namespace NetDaemon.Service.App
         private async Task GenerateEntitiesAsyncInternal(NetDaemonHost daemonHost, string sourceFolder)
         {
             var services = await daemonHost.GetAllServices().ConfigureAwait(false);
+            var entityIds = daemonHost.State.Select(n => n.EntityId).Distinct().ToList();
+
             var sourceRx = _codeGenerator.GenerateCodeRx(
-                    "NetDaemon.Generated.Reactive",
-                    daemonHost.State.Select(n => n.EntityId).Distinct(),
-                    services
+                    "NetDaemon.Generated.Reactive.Services",
+                    entityIds.ToList(),
+                    services.ToList()
             );
 
             await File.WriteAllTextAsync(Path.Combine(sourceFolder, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);

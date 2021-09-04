@@ -89,8 +89,8 @@ namespace NetDaemon.Service.App
             }
         };
 
-        public string? GenerateCodeRx(string nameSpace, IEnumerable<string> entities,
-            IEnumerable<HassServiceDomain> services)
+        public string? GenerateCodeRx(string nameSpace, IReadOnlyCollection<string> entities,
+            IReadOnlyCollection<HassServiceDomain> services)
         {
             var code = SyntaxFactory.CompilationUnit();
 
