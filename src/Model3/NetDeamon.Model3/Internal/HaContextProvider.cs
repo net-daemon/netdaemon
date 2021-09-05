@@ -14,7 +14,8 @@ namespace NetDaemon.Model3.Internal
     {
         private readonly EntityStateCache _entityStateCache;
         private readonly IHassClient _hassClient;
-        private readonly ScopedObservable<HassEvent> _scopedObservable;
+        private readonly ScopedObservable<HassEvent> _scopedEventObservable;
+        private readonly ScopedObservable<HassStateChangedEventData> _scopedStateObservable;
 
         public HaContextProvider(IObservable<HassEvent> hassEventObservable,
             EntityStateCache entityStateCache,
@@ -23,22 +24,10 @@ namespace NetDaemon.Model3.Internal
             _entityStateCache = entityStateCache;
             _hassClient = hassClient;
 
-            // Create a new ScopedObservable from the one we got
-            // this makes sure we will unsubscribe then this ContextProvider is Disposed
-            _scopedObservable = new ScopedObservable<HassEvent>(hassEventObservable);
-
-            var stateChanges = _scopedObservable
-                .Select(e => e.Data as HassStateChangedEventData)
-                .Where(e => e != null)
-                .Select(e => e!);
-
-            stateChanges.Subscribe(s =>
-            {
-                var state = s.NewState;
-                if (state != null) _entityStateCache.Store(state);
-            });
-
-            StateAllChanges = stateChanges.Select(e => e.Map(this));
+            // Create ScopedObservables for this app
+            // This makes sure we will unsubscribe when this ContextProvider is Disposed
+            _scopedEventObservable = new ScopedObservable<HassEvent>(hassEventObservable);
+            _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges);
         }
 
         public EntityState? GetState(string entityId)
@@ -53,18 +42,19 @@ namespace NetDaemon.Model3.Internal
             _hassClient.CallService(domain, service, data, new HassTarget { EntityIds = new[] { entity.EntityId } });
         }
 
-        public IObservable<StateChange> StateAllChanges { get; }
+        public IObservable<StateChange> StateAllChanges => _entityStateCache.StateAllChanges.Select(e => e.Map(this));
 
         public IObservable<StateChange> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
 
         public IObservable<T> GetEventDataOfType<T>(string eventType) where T : class => 
-            _scopedObservable
+            _scopedEventObservable
                 .Where(e => e.EventType == eventType && e.DataElement != null)
                 .Select(e => e.DataElement?.ToObject<T>()!);
 
         public void Dispose()
         {
-            _scopedObservable.Dispose();
+            _scopedEventObservable.Dispose();
+            _scopedStateObservable.Dispose();
         }
     }
 }
