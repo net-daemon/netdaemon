@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
@@ -12,25 +11,25 @@ namespace NetDaemon.Model3.Internal
     internal class EntityStateCache : IDisposable
     {
         private readonly IHassClient _hassClient;
-        private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
         private readonly Subject<HassStateChangedEventData> _innerSubject = new();
+        private readonly IDisposable _eventSubscription;
+        private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
 
         public EntityStateCache(IHassClient hassClient, IObservable<HassEvent> events)
         {
             _hassClient = hassClient;
 
-            var stateChanges = events
-                .Select(e => e.Data as HassStateChangedEventData)
-                .Where(e => e != null)
-                .Select(e => e!);
+            _eventSubscription = events.Subscribe(HandleEvent);
+        }
 
-            stateChanges.Subscribe(s =>
-            {
-                // Make sure to first add the new state to the cache before calling other subscribers.
-                _latestStates[s.EntityId] = s.NewState;
+        private void HandleEvent(HassEvent hassEvent)
+        {
+            if (hassEvent.Data is not HassStateChangedEventData hassStateChangedEventData) return;
+            
+            // Make sure to first add the new state to the cache before calling other subscribers.
+            _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
 
-                _innerSubject.OnNext(s);
-            });
+            _innerSubject.OnNext(hassStateChangedEventData);
         }
 
         public IObservable<HassStateChangedEventData> StateAllChanges => _innerSubject;
@@ -46,6 +45,7 @@ namespace NetDaemon.Model3.Internal
         public void Dispose()
         {
             _innerSubject.Dispose();
+            _eventSubscription.Dispose();
         }
     }
 }
