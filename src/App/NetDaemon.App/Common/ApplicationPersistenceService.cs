@@ -35,8 +35,7 @@ namespace NetDaemon.Daemon.Services
             return HandleLazyStorage(cancellationToken);
         }
 
-        // TODO: GetType of the actual app
-        private string GetUniqueIdForStorage() => $"{GetType().Name}_{_applicationMetadata.Id}".ToLowerInvariant();
+        private string GetUniqueIdForStorage() => $"{_applicationMetadata.AppType.Name}_{_applicationMetadata.Id}".ToLowerInvariant();
 
         public async Task RestoreAppStateAsync()
         {
