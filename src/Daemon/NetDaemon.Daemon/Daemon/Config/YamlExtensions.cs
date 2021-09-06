@@ -33,7 +33,7 @@ namespace NetDaemon.Daemon.Config
 
             // Lets try convert from python style to CamelCase
 
-            return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToCamelCase());
+            return type.GetProperty(propertyName) ?? type.GetProperty(propertyName.ToPascalCase());
         }
 
         public static object? ToObject(this YamlScalarNode node, Type valueType, INetDaemonAppBase? deamonApp)
