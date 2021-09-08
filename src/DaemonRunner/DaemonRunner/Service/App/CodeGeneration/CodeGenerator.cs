@@ -11,10 +11,9 @@ using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Common.Reactive.Services;
 using NetDaemon.Daemon.Config;
-
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace NetDaemon.Service.App
+namespace NetDaemon.Service.App.CodeGeneration
 {
     public class CodeGenerator : ICodeGenerator
     {

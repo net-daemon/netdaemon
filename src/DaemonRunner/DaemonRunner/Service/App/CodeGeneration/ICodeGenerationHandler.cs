@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NetDaemon.Daemon;
-
-namespace NetDaemon.Service
+namespace NetDaemon.Service.App.CodeGeneration
 {
     public interface ICodeGenerationHandler
     {

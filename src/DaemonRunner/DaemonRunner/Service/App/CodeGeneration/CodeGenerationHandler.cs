@@ -3,8 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NetDaemon.Daemon;
-
-namespace NetDaemon.Service.App
+namespace NetDaemon.Service.App.CodeGeneration
 {
     public class CodeGenerationHandler : ICodeGenerationHandler
     {
@@ -39,7 +38,7 @@ namespace NetDaemon.Service.App
                     services.ToList()
             );
 
-            await File.WriteAllTextAsync(Path.Combine(sourceFolder, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(sourceFolder, @"_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
         }
     }
 }

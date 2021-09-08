@@ -14,6 +14,7 @@ using NetDaemon.Infrastructure.Config;
 using NetDaemon.Common.Exceptions;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using NetDaemon.Service.App.CodeGeneration;
 
 namespace NetDaemon
 {

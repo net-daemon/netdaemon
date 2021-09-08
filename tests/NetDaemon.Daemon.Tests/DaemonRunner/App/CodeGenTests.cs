@@ -1,5 +1,5 @@
 using System.Linq;
-using NetDaemon.Service.App;
+using NetDaemon.Service.App.CodeGeneration;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
