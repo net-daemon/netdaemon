@@ -219,7 +219,7 @@ namespace NetDaemon.Common.Reactive
         public IDisposable RunEveryMinute(short second, Action action)
         {
             var now = DateTime.Now;
-            var startTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, second);
+            var startTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, second).AddMinutes(1);
 
             return CreateObservableTimer(startTime, TimeSpan.FromMinutes(1), action);
         }

@@ -24,7 +24,7 @@ namespace NetDaemon.Daemon.Config
 
     public static class ConfigStringExtensions
     {
-        public static string ToCamelCase(this string str)
+        public static string ToPascalCase(this string str)
         {
             _ = str ??
                 throw new NetDaemonArgumentNullException(nameof(str));

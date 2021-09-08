@@ -118,7 +118,7 @@ namespace NetDaemon.Service.App
             var singleServiceDomains = new string[] {"script"};
             foreach (var domain in domains)
             {
-                var camelCaseDomain = domain.ToCamelCase();
+                var camelCaseDomain = domain.ToPascalCase();
 
                 var isSingleServiceDomain = Array.IndexOf(singleServiceDomains, domain) != 0;
 
@@ -142,12 +142,12 @@ namespace NetDaemon.Service.App
             {
                 if (!ShouldGenerateDomainEntity(domain, services)) continue;
                 var baseClass = _skipDomainServices.ContainsKey(domain)
-                    ? $"{typeof(RxEntityBase).Namespace}.{domain.ToCamelCase()}Entity"
+                    ? $"{typeof(RxEntityBase).Namespace}.{domain.ToPascalCase()}Entity"
                     : $"{typeof(RxEntityBase).Namespace}.RxEntityBase";
 
-                var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entity : {baseClass}
+                var classDeclaration = $@"public partial class {domain.ToPascalCase()}Entity : {baseClass}
 {{
-        public {domain.ToCamelCase()}Entity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
+        public {domain.ToPascalCase()}Entity(INetDaemonRxApp daemon, IEnumerable<string> entityIds) : base(daemon, entityIds)
         {{
         }}
     }}";
@@ -184,7 +184,7 @@ namespace NetDaemon.Service.App
 
                     var hasEntityId = s.Fields is not null && s.Fields.Any(c => c.Field == "entity_id");
                     var hasEntityIdString = hasEntityId ? "true" : "false";
-                    var methodCode = $@"public void {name.ToCamelCase()}(dynamic? data=null)
+                    var methodCode = $@"public void {name.ToPascalCase()}(dynamic? data=null)
                     {{
                         CallService(""{domain}"", ""{s.Service}"", data,{hasEntityIdString});
                     }}
@@ -204,11 +204,11 @@ namespace NetDaemon.Service.App
             // Add the classes implementing the specific entities
             foreach (var domain in GetDomainsFromEntities(entities))
             {
-                var classDeclaration = $@"public partial class {domain.ToCamelCase()}Entities
+                var classDeclaration = $@"public partial class {domain.ToPascalCase()}Entities
     {{
         private readonly {nameof(NetDaemonRxApp)} _app;
 
-        public {domain.ToCamelCase()}Entities( {nameof(NetDaemonRxApp)} app)
+        public {domain.ToPascalCase()}Entities( {nameof(NetDaemonRxApp)} app)
         {{
             _app = app;
         }}
@@ -231,7 +231,7 @@ namespace NetDaemon.Service.App
                     }
 
                     var propertyCode =
-                        $@"public {domain.ToCamelCase()}Entity {name.ToCamelCase()} => new(_app, new string[] {{""{entity}""}});";
+                        $@"public {domain.ToPascalCase()}Entity {name.ToPascalCase()} => new(_app, new string[] {{""{entity}""}});";
                     var propDeclaration = CSharpSyntaxTree.ParseText(propertyCode)
                                               .GetRoot()
                                               .ChildNodes()
