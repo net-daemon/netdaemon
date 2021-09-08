@@ -142,7 +142,7 @@ namespace NetDaemon.Daemon
         }
 
         public IObservable<HassEvent> HassEventsObservable { get; }
-        
+
         private event EventHandler<HassEvent>? HassEvents;
 
         public bool IsConnected { get; private set; }
@@ -199,6 +199,20 @@ namespace NetDaemon.Daemon
         public void CallService(string domain, string service, object? data = null, bool waitForResponse = false)
         {
             var task = Client.CallService(domain, service, data!, null, waitForResponse);
+
+            if (!waitForResponse)
+            {
+                TrackBackgroundTask(task, $"CallService {domain},{service}");
+            }
+            else
+            {
+                task.Wait(_cancelToken);
+            }
+        }
+
+        public void CallService(string domain, string service, HassTarget target, object? data = null, bool waitForResponse = false)
+        {
+            var task = Client.CallService(domain, service, data!, target, waitForResponse);
 
             if (!waitForResponse)
             {
