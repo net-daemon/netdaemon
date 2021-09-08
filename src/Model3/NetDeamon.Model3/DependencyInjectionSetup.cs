@@ -10,7 +10,10 @@ namespace NetDaemon.Model3
 {
     public static class DependencyInjectionSetup
     {
-        public static IHostBuilder UseHaContext(this IHostBuilder hostBuilder)
+        /// <summary>
+        /// Registers services for using the IHaContext interface scoped to NetDemonApps
+        /// </summary>
+        public static IHostBuilder UseAppScopedHaContext(this IHostBuilder hostBuilder)
         {
             if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
 
@@ -18,9 +21,9 @@ namespace NetDaemon.Model3
                 .ConfigureServices((_, services) =>
                 {
                     services.AddSingleton<EntityStateCache>();
-                    services.AddScoped<HaContextProvider>();
-                    services.AddTransient<IHaContext>(s => s.GetRequiredService<HaContextProvider>());
-                    services.AddTransient<IEventProvider>(s => s.GetRequiredService<HaContextProvider>());
+                    services.AddScoped<AppScopedHaContextProvider>();
+                    services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
+                    services.AddTransient<IEventProvider>(s => s.GetRequiredService<AppScopedHaContextProvider>());
                 });
         }
     }

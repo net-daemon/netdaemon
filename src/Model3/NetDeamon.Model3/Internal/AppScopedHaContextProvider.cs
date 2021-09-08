@@ -9,15 +9,19 @@ using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.Model3.Internal
 {
+    /// <summary>
+    /// Implements IHaContext and IEventProvider to be used in a scope like a NetDaemon App
+    /// (We could eg. also have an implementation that does not deal with scopes or caching etc to be used en Console apps)
+    /// </summary>
     [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
-    internal class HaContextProvider : IHaContext, IDisposable, IEventProvider
+    internal class AppScopedHaContextProvider : IHaContext, IDisposable, IEventProvider
     {
         private readonly EntityStateCache _entityStateCache;
         private readonly IHassClient _hassClient;
         private readonly ScopedObservable<HassEvent> _scopedEventObservable;
         private readonly ScopedObservable<HassStateChangedEventData> _scopedStateObservable;
 
-        public HaContextProvider(IObservable<HassEvent> hassEventObservable,
+        public AppScopedHaContextProvider(IObservable<HassEvent> hassEventObservable,
             EntityStateCache entityStateCache,
             IHassClient hassClient)
         {
@@ -33,7 +37,6 @@ namespace NetDaemon.Model3.Internal
         public EntityState? GetState(string entityId)
         {
             var hassState = _entityStateCache.GetState(entityId);
-
             return HassObjectMapper.Map(hassState);
         }
 

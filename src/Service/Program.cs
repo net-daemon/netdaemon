@@ -8,8 +8,7 @@ try
     await Host.CreateDefaultBuilder(args)
         .UseDefaultNetDaemonLogging()
         .UseNetDaemon()
-        .UseNetDaemonSingletonServices()
-        .UseHaContext()
+        .UseAppScopedHaContext()
         .Build()
         .RunAsync()
         .ConfigureAwait(false);

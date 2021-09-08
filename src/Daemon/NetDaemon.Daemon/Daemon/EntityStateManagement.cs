@@ -14,7 +14,6 @@ namespace NetDaemon.Daemon
 {
     internal class EntityStateManager
     {
-        // TODO: we only need some methods of NetDaemonHost try to reduce the dependency
         private readonly NetDaemonHost _netDaemonHost;
 
         public EntityStateManager(NetDaemonHost netDaemonHost)
