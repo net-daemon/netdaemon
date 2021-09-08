@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Service.CodeGenerator.Extensions
+namespace NetDaemon.Service.App.CodeGeneration.Extensions
 {
     internal static class SyntaxFactoryExtensions
     {

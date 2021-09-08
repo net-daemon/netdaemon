@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-namespace Service.CodeGenerator.Extensions
+namespace NetDaemon.Service.App.CodeGeneration.Extensions
 {
     internal static class TypeExtensions
     {

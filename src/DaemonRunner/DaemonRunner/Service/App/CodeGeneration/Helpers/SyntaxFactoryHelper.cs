@@ -4,9 +4,8 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using static Service.CodeGenerator.Helpers.NamingHelper;
 
-namespace Service.CodeGenerator.Helpers
+namespace NetDaemon.Service.App.CodeGeneration.Helpers
 {
     internal static class SyntaxFactoryHelper
     {
@@ -32,7 +31,7 @@ namespace Service.CodeGenerator.Helpers
 
         public static ClassDeclarationSyntax ClassWithInjected<TInjected>(string className)
         {
-            var (typeName, variableName) = GetNames<TInjected>();
+            var (typeName, variableName) = NamingHelper.GetNames<TInjected>();
 
             var classCode = $@"class {className}
                           {{

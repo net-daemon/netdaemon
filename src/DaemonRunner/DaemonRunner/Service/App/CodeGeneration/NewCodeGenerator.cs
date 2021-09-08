@@ -4,13 +4,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis;
-using NetDaemon.Service.App;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using EntityState = NetDaemon.Common.EntityState;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace Service.CodeGenerator
+namespace NetDaemon.Service.App.CodeGeneration
 {
     [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
     public partial class NewCodeGenerator : ICodeGenerator

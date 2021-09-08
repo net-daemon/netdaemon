@@ -2,19 +2,15 @@
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.Model3.Common;
-using Service.CodeGenerator.Helpers;
-using static Service.CodeGenerator.Helpers.SyntaxFactoryHelper;
-using static Service.CodeGenerator.Helpers.NamingHelper;
 using OldEntityState = NetDaemon.Common.EntityState;
 
-namespace Service.CodeGenerator
+namespace NetDaemon.Service.App.CodeGeneration
 {
     public partial class NewCodeGenerator
     {
         private static IEnumerable<ClassDeclarationSyntax> GenerateExtensionMethodClasses(IEnumerable<HassServiceDomain> serviceDomains, IEnumerable<OldEntityState> entities)
         {
-            var entityDomains = entities.GroupBy(e => EntityIdHelper.GetDomain(e.EntityId)).Select(x => x.Key);
+            var entityDomains = entities.GroupBy(e => Helpers.EntityIdHelper.GetDomain(e.EntityId)).Select(x => x.Key);
 
             foreach (var domainServicesGroup in serviceDomains
                 .Where(sd =>
@@ -36,7 +32,7 @@ namespace Service.CodeGenerator
 
         private static ClassDeclarationSyntax GenerateDomainExtensionClass(string domain, IEnumerable<HassService> services)
         {
-            var serviceTypeDeclaration = Class(GetEntityDomainExtensionMethodClassName(domain)).ToPublic().ToStatic();
+            var serviceTypeDeclaration = Helpers.SyntaxFactoryHelper.ToStatic(Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.Class(Helpers.NamingHelper.GetEntityDomainExtensionMethodClassName(domain))));
 
             var serviceMethodDeclarations = services
                 .SelectMany(service => GenerateExtensionMethod(domain, service))
@@ -51,23 +47,21 @@ namespace Service.CodeGenerator
 
             var args = GetServiceArguments(domain, service);
 
-            var entityTypeName = GetDomainEntityTypeName(domain);
+            var entityTypeName = Helpers.NamingHelper.GetDomainEntityTypeName(domain);
 
-            yield return ParseMethod(
-        $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(args is not null ? $", {args.GetParametersString()}" : string.Empty)})
+            yield return Helpers.SyntaxFactoryHelper.ToStatic(Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseMethod(
+                $@"void {Helpers.NamingHelper.GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(args is not null ? $", {args.GetParametersString()}" : string.Empty)})
             {{
                 entity.CallService(""{serviceName}""{(args is not null ? $", {ServiceArguments.GetParametersVariable()}" : string.Empty)});
-            }}")
-                .ToPublic().ToStatic();
+            }}")));
 
             if (args is not null)
             {
-                yield return ParseMethod(
-            $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity , {args.GetParametersDecomposedString()})
+                yield return Helpers.SyntaxFactoryHelper.ToStatic(Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseMethod(
+                    $@"void {Helpers.NamingHelper.GetServiceMethodName(serviceName)}(this {entityTypeName} entity , {args.GetParametersDecomposedString()})
                 {{
                     entity.CallService(""{serviceName}"", {args.GetParametersDecomposedVariable()});
-                }}")
-                    .ToPublic().ToStatic();
+                }}")));
             }
         }
     }

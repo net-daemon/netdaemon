@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
-using Service.CodeGenerator.Extensions;
-using static Service.CodeGenerator.Helpers.NamingHelper;
-
-namespace Service.CodeGenerator
+using NetDaemon.Service.App.CodeGeneration.Extensions;
+namespace NetDaemon.Service.App.CodeGeneration
 {
     internal record ServiceArgument
     {
@@ -42,7 +40,7 @@ namespace Service.CodeGenerator
 
         public bool HasRequiredArguments => Arguments.Any(v => v.Required);
 
-        public string TypeName => GetServiceArgumentsTypeName(_domain, _serviceName);
+        public string TypeName => Helpers.NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
 
         private static ServiceArgument GetArgument(HassServiceField field)
         {

@@ -4,10 +4,7 @@ using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.Common;
-using static Service.CodeGenerator.Helpers.SyntaxFactoryHelper;
-using static Service.CodeGenerator.Helpers.NamingHelper;
-
-namespace Service.CodeGenerator
+namespace NetDaemon.Service.App.CodeGeneration
 {
     public partial class NewCodeGenerator
     {
@@ -42,33 +39,33 @@ namespace Service.CodeGenerator
 
         private static TypeDeclarationSyntax GenerateRootServicesType(IEnumerable<string> domains)
         {
-            var haContextNames = GetNames<IHaContext>();
+            var haContextNames = Helpers.NamingHelper.GetNames<IHaContext>();
             var properties = domains.Select(domain =>
             {
-                var propertyCode = $"{GetServicesTypeName(domain)} {domain.ToPascalCase()} => new(_{haContextNames.VariableName});";
+                var propertyCode = $"{Helpers.NamingHelper.GetServicesTypeName(domain)} {domain.ToPascalCase()} => new(_{haContextNames.VariableName});";
 
-                return ParseProperty(propertyCode).ToPublic();
+                return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseProperty(propertyCode));
             }).ToArray();
 
-            return ClassWithInjected<IHaContext>("Services").WithBase("IServices").AddMembers(properties).ToPublic();
+            return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.WithBase(Helpers.SyntaxFactoryHelper.ClassWithInjected<IHaContext>("Services"), (string)"IServices").AddMembers(properties));
         }
 
         private static TypeDeclarationSyntax GenerateRootServicesInterface(IEnumerable<string> domains)
         {
             var properties = domains.Select(domain =>
             {
-                var typeName = GetServicesTypeName(domain);
+                var typeName = Helpers.NamingHelper.GetServicesTypeName(domain);
                 var domainName = domain.ToPascalCase();
 
-                return Property(typeName, domainName, set: false);
+                return Helpers.SyntaxFactoryHelper.Property(typeName, domainName, set: false);
             }).ToArray();
 
-            return Interface("IServices").AddMembers(properties).ToPublic();
+            return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.Interface("IServices").AddMembers(properties));
         }
 
         private static TypeDeclarationSyntax GenerateServicesDomainType(string domain, IEnumerable<HassService> services)
         {
-            var serviceTypeDeclaration = ClassWithInjected<IHaContext>(GetServicesTypeName(domain)).ToPublic();
+            var serviceTypeDeclaration = Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ClassWithInjected<IHaContext>(Helpers.NamingHelper.GetServicesTypeName(domain)));
 
             var serviceMethodDeclarations = services.SelectMany(service => GenerateServiceMethod(domain, service)).ToArray();
 
@@ -85,10 +82,10 @@ namespace Service.CodeGenerator
             }
 
             var autoProperties = serviceArguments.Arguments
-                .Select(argument => Property(argument.TypeName!, argument.PropertyName!))
+                .Select(argument => Helpers.SyntaxFactoryHelper.Property(argument.TypeName!, argument.PropertyName!))
                 .ToArray();
 
-            yield return Record(serviceArguments.TypeName, autoProperties).ToPublic();
+            yield return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.Record(serviceArguments.TypeName, autoProperties));
         }
 
         private static IEnumerable<MemberDeclarationSyntax> GenerateServiceMethod(string domain, HassService service)
@@ -96,25 +93,25 @@ namespace Service.CodeGenerator
             var serviceName = service.Service!;
 
             var serviceArguments = GetServiceArguments(domain, service);
-            var haContextVariableName = GetVariableName<IHaContext>("_");
+            var haContextVariableName = Helpers.NamingHelper.GetVariableName<IHaContext>("_");
 
             var argsParametersString = serviceArguments is not null ? $"{serviceArguments.TypeName} data {(serviceArguments.HasRequiredArguments ? "" : "= null")}" : null ;
 
             if (service.Target is not null)
             {
-                yield return ParseMethod(
-            $@"void {GetServiceMethodName(serviceName)}({typeof(HassTarget).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
+                yield return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseMethod(
+                    $@"void {Helpers.NamingHelper.GetServiceMethodName(serviceName)}({typeof(HassTarget).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
                 {{
                     {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", target {(serviceArguments is not null ? ", data" : string.Empty)});
-                }}").ToPublic();
+                }}"));
             }
             else
             {
-                yield return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}({argsParametersString})
+                yield return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseMethod(
+                    $@"void {Helpers.NamingHelper.GetServiceMethodName(serviceName)}({argsParametersString})
                 {{
                     {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"" {(serviceArguments is not null ? ", null" : "")} {(serviceArguments is not null ? ", data" : "")});
-                }}").ToPublic();
+                }}"));
             }
         }
 

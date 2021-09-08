@@ -1,55 +1,54 @@
 ﻿using System;
 using NetDaemon.Daemon.Config;
-using Service.CodeGenerator.Extensions;
-namespace Service.CodeGenerator.Helpers
+namespace NetDaemon.Service.App.CodeGeneration.Helpers
 {
     internal static class NamingHelper
     {
         public static string GetEntitiesTypeName(string prefix)
         {
-            var normalizedDomain = prefix.ToNormalizedPascalCase();
+            var normalizedDomain = Extensions.StringExtensions.ToNormalizedPascalCase(prefix);
 
             return $"{normalizedDomain}Entities";
         }
 
         public static string GetAttributesTypeName(string prefix)
         {
-            var normalizedEntityId = prefix.ToNormalizedPascalCase();
+            var normalizedEntityId = Extensions.StringExtensions.ToNormalizedPascalCase(prefix);
 
             return $"{normalizedEntityId}Attributes";
         }
 
         public static string GetDomainEntityTypeName(string prefix)
         {
-            var normalizedDomain = prefix.ToNormalizedPascalCase();
+            var normalizedDomain = Extensions.StringExtensions.ToNormalizedPascalCase(prefix);
 
             return $"{normalizedDomain}Entity";
         }
 
         public static string GetServicesTypeName(string prefix)
         {
-            var normalizedDomain = prefix.ToNormalizedPascalCase();
+            var normalizedDomain = Extensions.StringExtensions.ToNormalizedPascalCase(prefix);
 
             return $"{normalizedDomain}Services";
         }
 
         public static string GetEntityDomainExtensionMethodClassName(string prefix)
         {
-            var normalizedDomain = prefix.ToNormalizedPascalCase();
+            var normalizedDomain = Extensions.StringExtensions.ToNormalizedPascalCase(prefix);
 
             return $"{normalizedDomain}EntityExtensionMethods";
         }
 
         public static string GetServiceMethodName(string serviceName)
         {
-            serviceName = serviceName.ToNormalizedPascalCase();
+            serviceName = Extensions.StringExtensions.ToNormalizedPascalCase(serviceName);
 
             return $"{serviceName}";
         }
 
         public static string GetServiceArgumentsTypeName(string domain, string serviceName)
         {
-            return $"{domain.ToNormalizedPascalCase()}{GetServiceMethodName(serviceName)}Parameters";
+            return $"{Extensions.StringExtensions.ToNormalizedPascalCase(domain)}{GetServiceMethodName(serviceName)}Parameters";
         }
 
         public static (string TypeName, string VariableName) GetNames<T>(string variablePrefix = "")

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using NetDaemon.Daemon.Config;
-
-namespace Service.CodeGenerator.Extensions
+namespace NetDaemon.Service.App.CodeGeneration.Extensions
 {
     internal static class StringExtensions
     {

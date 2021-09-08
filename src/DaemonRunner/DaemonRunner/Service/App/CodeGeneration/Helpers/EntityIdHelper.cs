@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Service.CodeGenerator.Helpers
+namespace NetDaemon.Service.App.CodeGeneration.Helpers
 {
     internal static class EntityIdHelper
     {
