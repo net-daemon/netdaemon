@@ -8,8 +8,7 @@ namespace NetDaemon
 {
     public static class DependencyInjectionSetup
     {
-        // TODO: rename
-        public static IHostBuilder UseNetDaemonSingletonServices(this IHostBuilder hostBuilder)
+        public static IHostBuilder UseNetDaemonHostSingleton(this IHostBuilder hostBuilder)
         {
             if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
 

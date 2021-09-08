@@ -71,9 +71,6 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             double? temperatureDelta = e.New?.Attributes.Temperature - e.Old?.Attributes.Temperature;
 
 
-            // TODO: We might also want some nicer way to parse it as number (double) or On / Off
-            // maybe extension methods IsOn() and IsOff() would work nice
- 
             // dump as json to view the structure
             var asJson = JsonSerializer.Serialize(e, new JsonSerializerOptions(){WriteIndented = true});
             Console.WriteLine(asJson);

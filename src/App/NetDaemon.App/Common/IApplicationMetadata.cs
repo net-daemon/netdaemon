@@ -1,10 +1,11 @@
-﻿namespace NetDaemon.Common
+﻿using System;
+
+namespace NetDaemon.Common
 {
-    // TODO: make internal
     /// <summary>
     /// Provides metadata for a NetDaemon Application
     /// </summary>
-    public interface IApplicationMetadata
+    internal interface IApplicationMetadata
     {
         /// <summary>
         ///     Unique id of the application
@@ -34,5 +35,7 @@
         ///     Unique id of the application entity
         /// </summary>
         string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
+
+        Type AppType { get; }
     }
 }

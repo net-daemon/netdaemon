@@ -42,6 +42,7 @@ namespace NetDaemon
 
                     RegisterNetDaemonAssembly(services);
                 })
+                .UseNetDaemonHostSingleton()
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
                     webbuilder.UseKestrel(_ => { });
