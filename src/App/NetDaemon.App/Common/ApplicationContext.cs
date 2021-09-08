@@ -57,7 +57,7 @@ namespace NetDaemon.Common
                 // we need to keep that for backwards compatibility
                 return appBase;
             }
-            return new ApplicationMetadata();
+            return new ApplicationMetadata(ApplicationInstance.GetType());
         }
 
         /// <summary>

@@ -126,6 +126,9 @@ namespace NetDaemon.Common
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
         /// <inheritdoc/>
+        public Type AppType => GetType();
+
+        /// <inheritdoc/>
         public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo {HasError = false};
 
         /// <inheritdoc/>
@@ -140,7 +143,6 @@ namespace NetDaemon.Common
         protected INetDaemon? Daemon { get; set; }
 
         /// <inheritdoc/>
-        // TODO: The old application base re-uses the ServiceProvider from the NetDaemonHost, if we change this that might break
         public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
 
         /// <inheritdoc/>
