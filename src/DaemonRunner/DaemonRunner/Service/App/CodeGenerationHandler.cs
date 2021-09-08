@@ -31,11 +31,11 @@ namespace NetDaemon.Service.App
         private async Task GenerateEntitiesAsyncInternal(NetDaemonHost daemonHost, string sourceFolder)
         {
             var services = await daemonHost.GetAllServices().ConfigureAwait(false);
-            var entityIds = daemonHost.State.Select(n => n.EntityId).Distinct().ToList();
+            var entityIds = daemonHost.State.Distinct().ToList();
 
             var sourceRx = _codeGenerator.GenerateCodeRx(
                     "NetDaemon.Generated.Reactive.Services",
-                    entityIds.ToList(),
+                    entityIds,
                     services.ToList()
             );
 

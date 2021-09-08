@@ -89,9 +89,10 @@ namespace NetDaemon.Service.App
             }
         };
 
-        public string? GenerateCodeRx(string nameSpace, IReadOnlyCollection<string> entities,
-            IReadOnlyCollection<HassServiceDomain> services)
+        public string? GenerateCodeRx(string nameSpace, IReadOnlyCollection<EntityState> entities, IReadOnlyCollection<HassServiceDomain> services)
         {
+            var entityIds = entities.Select(e => e.EntityId).ToList();
+
             var code = SyntaxFactory.CompilationUnit();
 
             // Add Usings statements
@@ -113,7 +114,7 @@ namespace NetDaemon.Service.App
                 SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(nameof(NetDaemonRxApp))));
 
             // Get all available domains, this is used to create the extensionmethods
-            var domains = GetDomainsFromEntities(entities);
+            var domains = GetDomainsFromEntities(entityIds);
 
             var singleServiceDomains = new string[] {"script"};
             foreach (var domain in domains)
@@ -138,7 +139,7 @@ namespace NetDaemon.Service.App
 
             namespaceDeclaration = namespaceDeclaration.AddMembers(extensionClass);
 
-            foreach (var domain in GetDomainsFromEntities(entities))
+            foreach (var domain in GetDomainsFromEntities(entityIds))
             {
                 if (!ShouldGenerateDomainEntity(domain, services)) continue;
                 var baseClass = _skipDomainServices.ContainsKey(domain)
@@ -202,7 +203,7 @@ namespace NetDaemon.Service.App
             }
 
             // Add the classes implementing the specific entities
-            foreach (var domain in GetDomainsFromEntities(entities))
+            foreach (var domain in GetDomainsFromEntities(entityIds))
             {
                 var classDeclaration = $@"public partial class {domain.ToPascalCase()}Entities
     {{
@@ -219,7 +220,7 @@ namespace NetDaemon.Service.App
                                       .OfType<ClassDeclarationSyntax>()
                                       .FirstOrDefault()
                                   ?? throw new NetDaemonNullReferenceException("Failed to parse entity class");
-                foreach (var entity in entities.Where(n =>
+                foreach (var entity in entityIds.Where(n =>
                     n.StartsWith(domain, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     var name = entity[(entity.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
