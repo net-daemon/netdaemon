@@ -35,7 +35,7 @@ namespace Service.CodeGenerator.Extensions
             friendlyName = type.Name;
             if (type.IsGenericType)
             {
-                var backtick = friendlyName.IndexOf('`');
+                var backtick = friendlyName.IndexOf('`', StringComparison.InvariantCultureIgnoreCase);
                 if (backtick > 0)
                 {
                     friendlyName = friendlyName.Remove(backtick);

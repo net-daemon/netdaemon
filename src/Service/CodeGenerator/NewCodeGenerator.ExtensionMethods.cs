@@ -22,9 +22,9 @@ namespace Service.CodeGenerator
                     && sd.Services.Any(s => entityDomains.Contains(s.Target?.Entity?.Domain)))
                 .GroupBy(x => x.Domain, x => x.Services))
             {
-                var domain = domainServicesGroup.Key;
+                var domain = domainServicesGroup.Key!;
                 var domainServices = domainServicesGroup
-                    .SelectMany(services => services)
+                    .SelectMany(services => services!)
                     .Where(s => s.Target?.Entity?.Domain != null)
                     .Select(group => group)
                     .OrderBy(x => x.Service)

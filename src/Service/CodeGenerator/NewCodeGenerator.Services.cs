@@ -13,7 +13,7 @@ namespace Service.CodeGenerator
     {
         private static IEnumerable<TypeDeclarationSyntax> GenerateServiceTypes(IEnumerable<HassServiceDomain> serviceDomains)
         {
-            var domains = serviceDomains.Select(x => x.Domain).ToList();
+            var domains = serviceDomains.Select(x => x.Domain!);
 
             yield return GenerateRootServicesInterface(domains);
 
@@ -21,9 +21,9 @@ namespace Service.CodeGenerator
 
             foreach (var domainServicesGroup in serviceDomains.Where(sd => sd.Services?.Any() == true).GroupBy(x => x.Domain, x => x.Services))
             {
-                var domain = domainServicesGroup.Key;
+                var domain = domainServicesGroup.Key!;
                 var domainServices = domainServicesGroup
-                    .SelectMany(services => services)
+                    .SelectMany(services => services!)
                     .Select(group => group)
                     .OrderBy(x => x.Service)
                     .ToList();
@@ -125,7 +125,7 @@ namespace Service.CodeGenerator
                 return null;
             }
 
-            return new ServiceArguments(domain, service.Service, service.Fields);
+            return new ServiceArguments(domain, service.Service!, service.Fields);
         }
     }
 }

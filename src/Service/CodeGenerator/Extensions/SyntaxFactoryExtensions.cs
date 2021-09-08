@@ -23,11 +23,6 @@ namespace Service.CodeGenerator.Extensions
 
         private static PropertyDeclarationSyntax WithAttributes(this PropertyDeclarationSyntax property, params AttributeSyntax[]? attributeSyntaxes)
         {
-            if (attributeSyntaxes is null || attributeSyntaxes.Length == 0)
-            {
-                return property;
-            }
-
             var attributes = property.AttributeLists.Add(
                 AttributeList(SeparatedList(attributeSyntaxes)).NormalizeWhitespace());
 
