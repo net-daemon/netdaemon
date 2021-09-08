@@ -47,5 +47,12 @@ namespace NetDaemon.Daemon.Config
 
             return build.ToString();
         }
+
+        public static string ToCamelCase(this string str)
+        {
+            var camelCaseStr = ToPascalCase(str);
+
+            return char.ToLowerInvariant(camelCaseStr[0]) + camelCaseStr[1..];
+        }
     }
 }
