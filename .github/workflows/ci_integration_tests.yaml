@@ -22,9 +22,10 @@ jobs:
         id: versions
         run: | 
           versions='"stable", "beta"'
-          if [[ ${{ github.event_name == 'schedule' }} ]]; then
+          if ${{ github.event_name == 'schedule' }}; then
             versions+=', "dev"'
           fi
+          echo "[${versions}]"
           echo "::set-output name=versions::[${versions}]"
 
   test_with_home_assistant:
