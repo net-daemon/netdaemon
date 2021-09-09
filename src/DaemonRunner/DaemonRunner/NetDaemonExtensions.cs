@@ -42,12 +42,13 @@ namespace NetDaemon
 
                     RegisterNetDaemonAssembly(services);
                 })
-                .UseNetDaemonHostSingleton()
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
                     webbuilder.UseKestrel(_ => { });
                     webbuilder.UseStartup<ApiStartup>();
-                });
+                })
+                .UseNetDaemonHostSingleton()
+                ;
         }
 
         public static IHostBuilder UseDefaultNetDaemonLogging(this IHostBuilder hostBuilder)
