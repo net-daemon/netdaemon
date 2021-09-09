@@ -35,7 +35,7 @@ namespace NetDaemon.Service.App.CodeGeneration
         {
             _domain = domain;
             _serviceName = serviceName!;
-            Arguments = serviceFields.Select(GetArgument);
+            Arguments = serviceFields.Select(HassServiceArgumentMapper.Map);
         }
 
         public IEnumerable<ServiceArgument> Arguments { get; }
@@ -43,18 +43,6 @@ namespace NetDaemon.Service.App.CodeGeneration
         public bool HasRequiredArguments => Arguments.Any(v => v.Required);
 
         public string TypeName => NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
-
-        private static ServiceArgument GetArgument(HassServiceField field)
-        {
-            Type type = GetTypeFromSelector(field.Selector);
-
-            return new ServiceArgument
-            {
-                HaName = field.Field!,
-                Type = type,
-                Required = field.Required == true
-            };
-        }
 
         public string GetParametersString()
         {
@@ -82,27 +70,6 @@ namespace NetDaemon.Service.App.CodeGeneration
             var anonymousVariableStr = Arguments.Select(x => $"@{x.HaName} = @{x.VariableName}");
 
             return $"new {{ {string.Join(", ", anonymousVariableStr)} }}";
-        }
-
-        private static Type GetTypeFromSelector(object? selectorObject)
-        {
-            return selectorObject switch
-            {
-                ActionSelector
-                    or AreaSelector
-                    or AddonSelector
-                    or EntitySelector
-                    or DeviceSelector
-                    or ObjectSelector
-                    or TargetSelector
-                    or TextSelector
-                    or null => typeof(string),
-                BooleanSelector => typeof(bool),
-                NumberSelector => typeof(long),
-                TimeSelector => typeof(DateTime),
-                SelectSelector => typeof(List<string>),
-                _ => throw new ArgumentOutOfRangeException(nameof(selectorObject), selectorObject, null)
-            };
         }
     }
 }
