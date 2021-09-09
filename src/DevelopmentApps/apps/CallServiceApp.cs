@@ -7,6 +7,7 @@ using NetDaemon.Model3.Domains.Climate;
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
+    [Focus]
     public class CallServiceApp
     {
         public CallServiceApp(IHaContext ha)
