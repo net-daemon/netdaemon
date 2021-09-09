@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        channel: ${{ fromJson(needs.init.outputs.changed_addons) }}
+        channel: ${{ fromJson(needs.init.outputs.versions) }}
         with_integration: [yes, no]
     runs-on: ubuntu-latest
     steps:
