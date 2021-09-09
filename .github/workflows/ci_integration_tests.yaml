@@ -12,11 +12,28 @@ on:
       - cron: '0 2 * * *' # run at 2 AM UTC
 
 jobs:
+  init:
+    name: Initialize tests with Home Assistant
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.versions.outputs.versions }}
+    steps:
+      - name: Set versions
+        id: versions
+        run: | 
+          versions='"stable", "beta"'
+          if [[ ${{ github.event_name == 'schedule' }} ]]; then
+            versions+=', "dev"'
+          fi
+          echo "::set-output name=versions::[${versions}]"
+
   test_with_home_assistant:
     name: Integration tests with Home Assistant
+    needs: init
     strategy:
+      fail-fast: false
       matrix:
-        channel: [stable, beta, dev]
+        channel: ${{ fromJson(needs.init.outputs.changed_addons) }}
         with_integration: [yes, no]
     runs-on: ubuntu-latest
     steps:
@@ -54,3 +71,15 @@ jobs:
         run: |
           cd ${{github.workspace}}/tests/Integration/TestClient/bin/Debug/net5.0
           ./TestClient
+
+      - name: Get Home Assistant log in failure
+        if: ${{ failure() }}
+        run: cat ${{github.workspace}}/tests/Integration/HA/config/home-assistant.log
+
+      - name: Discord failure notification
+        if: ${{ github.event_name == 'schedule' && failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_ACTION_FAILURE }}
+        uses: Ilshidur/action-discord@0.3.2
+        with:
+          args: "[Scheduled action failed!](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})"
