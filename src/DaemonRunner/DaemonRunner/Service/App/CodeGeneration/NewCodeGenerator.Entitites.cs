@@ -6,6 +6,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
+using NetDaemon.Service.App.CodeGeneration.Extensions;
+using NetDaemon.Service.App.CodeGeneration.Helpers;
+using static NetDaemon.Service.App.CodeGeneration.Helpers.NamingHelper;
+using static NetDaemon.Service.App.CodeGeneration.Helpers.SyntaxFactoryHelper;
+using static NetDaemon.Service.App.CodeGeneration.Helpers.TypeHelper;
 using OldEntityState = NetDaemon.Common.EntityState;
 
 namespace NetDaemon.Service.App.CodeGeneration
@@ -41,33 +46,33 @@ namespace NetDaemon.Service.App.CodeGeneration
         {
             var autoProperties = domains.Select(domain =>
             {
-                var typeName = Helpers.NamingHelper.GetEntitiesTypeName(domain);
+                var typeName = GetEntitiesTypeName(domain);
                 var propertyName = domain.ToPascalCase();
 
-                return Helpers.SyntaxFactoryHelper.Property(typeName, propertyName, set: false);
+                return Property(typeName, propertyName, set: false);
             }).ToArray();
 
-            return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.Interface("IEntities").AddMembers(autoProperties));
+            return Interface("IEntities").AddMembers(autoProperties).ToPublic();
         }
 
         private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<string> domains)
         {
-            var haContextNames = Helpers.NamingHelper.GetNames<IHaContext>();
+            var haContextNames = GetNames<IHaContext>();
 
             var properties = domains.Select(domain =>
             {
-                var entitiesTypeName = Helpers.NamingHelper.GetEntitiesTypeName(domain);
+                var entitiesTypeName = GetEntitiesTypeName(domain);
                 var entitiesPropertyName = domain.ToPascalCase();
 
-                return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseProperty($"{entitiesTypeName} {entitiesPropertyName} => new(_{haContextNames.VariableName});"));
+                return ParseProperty($"{entitiesTypeName} {entitiesPropertyName} => new(_{haContextNames.VariableName});").ToPublic();
             }).ToArray();
 
-            return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.WithBase(Helpers.SyntaxFactoryHelper.ClassWithInjected<IHaContext>("Entities"), (string)"IEntities").AddMembers(properties));
+            return ClassWithInjected<IHaContext>("Entities").WithBase((string)"IEntities").AddMembers(properties).ToPublic();
         }
 
         private static IEnumerable<TypeDeclarationSyntax> GenerateEntityAttributeRecords(IEnumerable<OldEntityState> entities)
         {
-            foreach (var entityDomainGroups in entities.GroupBy(x => Helpers.EntityIdHelper.GetDomain(x.EntityId)))
+            foreach (var entityDomainGroups in entities.GroupBy(x => EntityIdHelper.GetDomain(x.EntityId)))
             {
                 var attributes = new Dictionary<string, Type>();
 
@@ -80,38 +85,38 @@ namespace NetDaemon.Service.App.CodeGeneration
                             continue;
                         }
 
-                        attributes.Add(attributeName, Helpers.TypeHelper.GetType(attributeObject));
+                        attributes.Add(attributeName, TypeHelper.GetType(attributeObject));
                     }
                 }
 
                 IEnumerable<(string Name, string TypeName, string SerializationName)> autoPropertiesParams = attributes
-                    .Select(a => (Extensions.StringExtensions.ToNormalizedPascalCase(a.Key), Extensions.TypeExtensions.GetFriendlyName(a.Value), a.Key));
+                    .Select(a => (a.Key.ToNormalizedPascalCase(), a.Value.GetFriendlyName(), a.Key));
 
                 // handles the case when attributes have equal names in PascalCase but different types.
                 // i.e. available & Available convert to AvailableString & AvailableBool
 
-                autoPropertiesParams = Extensions.CollectionExtensions.HandleDuplicates(autoPropertiesParams, x => x.Name,
-                d => { d.Name = Extensions.StringExtensions.ToNormalizedPascalCase($"{d.Name}{ConfigStringExtensions.ToPascalCase(d.TypeName)}"); return d; });
+                autoPropertiesParams = autoPropertiesParams.HandleDuplicates(x => x.Name,
+                d => { d.Name = $"{d.Name}{d.TypeName.ToPascalCase()}".ToNormalizedPascalCase(); return d; });
 
                 // but when they are the same type, we cannot generate meaninguful name so just numerate them.
                 // TODO: come up with a meaningful name
                 var i = 1;
-                autoPropertiesParams = Extensions.CollectionExtensions.HandleDuplicates(autoPropertiesParams, x => x.Name,
+                autoPropertiesParams = autoPropertiesParams.HandleDuplicates(x => x.Name,
                     d => { d.Name += i++; return d; });
 
                 var autoProperties = autoPropertiesParams.Select(a =>
-                    Extensions.SyntaxFactoryExtensions.WithAttribute<JsonPropertyNameAttribute>(Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.Property(a.TypeName, a.Name)), a.SerializationName))
+                    Property(a.TypeName, a.Name).ToPublic().WithAttribute<JsonPropertyNameAttribute>(a.SerializationName))
                     .ToArray();
 
                 var domain = entityDomainGroups.Key;
 
-                yield return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.Record(Helpers.NamingHelper.GetAttributesTypeName(domain), autoProperties));
+                yield return Record(GetAttributesTypeName(domain), autoProperties).ToPublic();
             }
         }
 
         private static TypeDeclarationSyntax GenerateEntityDomainType(string domain, IEnumerable<string> entities)
         {
-            var entityClass = Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ClassWithInjected<IHaContext>(Helpers.NamingHelper.GetEntitiesTypeName(domain)));
+            var entityClass = ClassWithInjected<IHaContext>(GetEntitiesTypeName(domain)).ToPublic();
 
             var domainEntities = entities.Where(EntityIsOfDomain(domain)).ToList();
 
@@ -127,22 +132,22 @@ namespace NetDaemon.Service.App.CodeGeneration
 
         private static PropertyDeclarationSyntax GenerateEntityProperty(string entityId, string domain)
         {
-            var entityName = Helpers.EntityIdHelper.GetEntity(entityId);
+            var entityName = EntityIdHelper.GetEntity(entityId);
 
-            var propertyCode = $@"{Helpers.NamingHelper.GetDomainEntityTypeName(domain)} {Extensions.StringExtensions.ToNormalizedPascalCase(entityName, (string)"E_")} => new(_{Helpers.NamingHelper.GetNames<IHaContext>().VariableName}, ""{entityId}"");";
+            var propertyCode = $@"{GetDomainEntityTypeName(domain)} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entityId}"");";
 
-            return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseProperty(propertyCode));
+            return ParseProperty(propertyCode).ToPublic();
         }
 
         private static TypeDeclarationSyntax GenerateEntityType(string domain)
         {
-            string attributesGeneric = Helpers.NamingHelper.GetAttributesTypeName(domain);
+            string attributesGeneric = GetAttributesTypeName(domain);
 
-            var entityClass = $"{Helpers.NamingHelper.GetDomainEntityTypeName(domain)}";
+            var entityClass = $"{GetDomainEntityTypeName(domain)}";
 
             var baseClass = $"{typeof(Entity).FullName}<{entityClass}, {typeof(EntityState).FullName}<string, {attributesGeneric}>, string, {attributesGeneric}>";
 
-            var (className, variableName) = Helpers.NamingHelper.GetNames<IHaContext>();
+            var (className, variableName) = GetNames<IHaContext>();
             var classDeclaration = $@"record {entityClass} : {baseClass}
                                     {{
                                             public {domain.ToPascalCase()}Entity({className} {variableName}, string entityId) : base({variableName}, entityId)
@@ -150,12 +155,12 @@ namespace NetDaemon.Service.App.CodeGeneration
                                             }}
                                     }}";
 
-            return Helpers.SyntaxFactoryHelper.ToPublic(Helpers.SyntaxFactoryHelper.ParseRecord(classDeclaration));
+            return ParseRecord(classDeclaration).ToPublic();
         }
         /// <summary>
         ///     Returns a list of domains from all entities
         /// </summary>
         /// <param name="entities">A list of entities</param>
-        internal static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) => entities.Select(Helpers.EntityIdHelper.GetDomain).Distinct();
+        internal static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) => entities.Select(EntityIdHelper.GetDomain).Distinct();
     }
 }

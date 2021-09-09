@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Service.App.CodeGeneration.Extensions;
+using NetDaemon.Service.App.CodeGeneration.Helpers;
 namespace NetDaemon.Service.App.CodeGeneration
 {
     internal record ServiceArgument
@@ -40,7 +42,7 @@ namespace NetDaemon.Service.App.CodeGeneration
 
         public bool HasRequiredArguments => Arguments.Any(v => v.Required);
 
-        public string TypeName => Helpers.NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
+        public string TypeName => NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
 
         private static ServiceArgument GetArgument(HassServiceField field)
         {
@@ -60,7 +62,8 @@ namespace NetDaemon.Service.App.CodeGeneration
             return $"{TypeName} data";
         }
 
-        public static string GetParametersVariable()
+        [SuppressMessage("", "CA1822", Justification = "we might want to use specific arg name in the future")]
+        public string GetParametersVariable()
         {
             return "data";
         }
