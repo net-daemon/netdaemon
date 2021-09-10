@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
-using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Model3.Common;
 
 namespace NetDaemon.Model3.Entities
@@ -50,7 +49,7 @@ namespace NetDaemon.Model3.Entities
 
         public virtual void CallService(string service, object? data = null)
         {
-            HaContext.CallService(EntityId.SplitEntityId().Domain, service, new HassTarget { EntityIds = new [] { EntityId }}, data);
+            HaContext.CallService(EntityId.SplitEntityId().Domain, service, new Target(EntityId), data);
         }
     }
 

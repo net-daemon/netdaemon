@@ -38,7 +38,7 @@ namespace NetDaemon.Service.App.CodeGeneration
                     services.ToList()
             );
 
-            await File.WriteAllTextAsync(Path.Combine(sourceFolder, @"_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(sourceFolder, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace NetDaemon.Service.App.CodeGeneration.Extensions
             return sourceList;
         }
 
-        public static bool IsMultiple<T>(this IEnumerable<T> source)
+        private static bool IsMultiple<T>(this IEnumerable<T> source)
         {
             using var enumerator = source.GetEnumerator();
             return enumerator.MoveNext() && enumerator.MoveNext();

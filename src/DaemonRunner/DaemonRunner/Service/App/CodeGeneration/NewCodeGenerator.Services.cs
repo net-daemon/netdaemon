@@ -4,6 +4,7 @@ using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
 using NetDaemon.Service.App.CodeGeneration.Helpers;
 using static NetDaemon.Service.App.CodeGeneration.Helpers.NamingHelper;
 using static NetDaemon.Service.App.CodeGeneration.Helpers.SyntaxFactoryHelper;
@@ -103,7 +104,7 @@ namespace NetDaemon.Service.App.CodeGeneration
             if (service.Target is not null)
             {
                 yield return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}({typeof(HassTarget).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
+                    $@"void {GetServiceMethodName(serviceName)}({typeof(Target).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
                 {{
                     {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", target {(serviceArguments is not null ? ", data" : string.Empty)});
                 }}").ToPublic();

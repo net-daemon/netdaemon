@@ -1,5 +1,4 @@
 ﻿using System;
-using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.Model3.Common
@@ -37,6 +36,6 @@ namespace NetDaemon.Model3.Common
         /// <param name="service">Service name</param>
         /// <param name="target">The target that is targeted by this service call</param>
         /// <param name="data">Data provided to service. Use anonomous type</param>
-        void CallService(string domain, string service, HassTarget? target = null, object? data = null);
+        void CallService(string domain, string service, Target? target = null, object? data = null);
     }
 }

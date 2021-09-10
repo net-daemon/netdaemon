@@ -40,10 +40,11 @@ namespace NetDaemon.Model3.Internal
             return HassObjectMapper.Map(hassState);
         }
 
-        public void CallService(string domain, string service, HassTarget? target = null, object? data = null)
+        public void CallService(string domain, string service, Target? target = null, object? data = null)
         {
-            _hassClient.CallService(domain, service, data, target);
+            _hassClient.CallService(domain, service, data, target.Map());
         }
+
         public IObservable<StateChange> StateAllChanges => _entityStateCache.StateAllChanges.Select(e => e.Map(this));
 
         public IObservable<StateChange> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
