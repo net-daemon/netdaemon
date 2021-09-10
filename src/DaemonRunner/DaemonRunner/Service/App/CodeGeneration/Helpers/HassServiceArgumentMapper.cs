@@ -33,7 +33,7 @@ namespace NetDaemon.Service.App.CodeGeneration.Helpers
                 NumberSelector => typeof(long),
                 TimeSelector => typeof(DateTime),
                 SelectSelector => typeof(List<string>),
-                _ => throw new ArgumentOutOfRangeException(nameof(selectorObject), selectorObject, null)
+                _ => typeof(string)
             };
         }
     }

@@ -64,16 +64,23 @@ namespace NetDaemon.Service.App.CodeGeneration.Helpers
 
         private static (string TypeName, string VariableName) GetNames(Type type, string variablePrefix = "")
         {
-            // if it's an interface, remove an 'I' from start
-            var className = type.IsInterface ? type.Name[1..] : type.Name;
-
-            var variableName = GetVariableName(className, variablePrefix);
+            var variableName = GetVariableName(type.Name, variablePrefix);
 
             return (type.FullName!, variableName);
         }
 
-        private static string GetVariableName(string typeName, string variablePrefix = "")
+        private static string GetVariableName(string typeName, string variablePrefix)
         {
+            if (typeName.Length == 0)
+            {
+                return typeName;
+            }
+
+            if (char.ToLowerInvariant(typeName[0]) == 'i')
+            {
+                typeName = typeName[1..];
+            }
+
             return $"{variablePrefix}{typeName.ToCamelCase()}";
         }
     }
