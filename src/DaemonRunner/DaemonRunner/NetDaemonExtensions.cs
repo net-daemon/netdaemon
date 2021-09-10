@@ -14,6 +14,7 @@ using NetDaemon.Infrastructure.Config;
 using NetDaemon.Common.Exceptions;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using NetDaemon.Service.App.CodeGeneration;
 
 namespace NetDaemon
 {
@@ -42,12 +43,13 @@ namespace NetDaemon
 
                     RegisterNetDaemonAssembly(services);
                 })
-                .UseNetDaemonHostSingleton()
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
                     webbuilder.UseKestrel(_ => { });
                     webbuilder.UseStartup<ApiStartup>();
-                });
+                })
+                .UseNetDaemonHostSingleton()
+                ;
         }
 
         public static IHostBuilder UseDefaultNetDaemonLogging(this IHostBuilder hostBuilder)

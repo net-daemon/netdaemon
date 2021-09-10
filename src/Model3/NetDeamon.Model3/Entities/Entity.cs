@@ -49,7 +49,7 @@ namespace NetDaemon.Model3.Entities
 
         public virtual void CallService(string service, object? data = null)
         {
-            HaContext.CallService(EntityId.SplitEntityId().Domain, service, data, this);
+            HaContext.CallService(EntityId.SplitEntityId().Domain, service, new Target(EntityId), data);
         }
     }
 

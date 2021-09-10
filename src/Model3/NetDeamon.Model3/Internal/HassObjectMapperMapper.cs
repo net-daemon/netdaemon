@@ -18,15 +18,15 @@ namespace NetDaemon.Model3.Internal
         public static EntityState? Map(HassState? hassState)
         {
             if (hassState == null) return null;
-            
+
             return new EntityState()
-            {                
+            {
                 EntityId = hassState.EntityId,
                 State = hassState.State,
                 AttributesJson = hassState.AttributesJson ?? new JsonElement(),
                 LastChanged = hassState.LastChanged,
                 LastUpdated = hassState.LastUpdated,
-                Context = hassState.Context == null ? null : 
+                Context = hassState.Context == null ? null :
                     new Context
                     {
                         Id = hassState.Context.Id,
@@ -34,6 +34,18 @@ namespace NetDaemon.Model3.Internal
                         ParentId = hassState.Context.UserId,
                         }
                     };
+        }
+
+        public static HassTarget? Map(this Target? target)
+        {
+            if (target is null) return null;
+
+            return new HassTarget
+            {
+                AreaIds = target.AreaIds,
+                DeviceIds = target.DeviceIds,
+                EntityIds = target.EntityIds,
+            };
         }
     }
 }
