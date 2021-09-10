@@ -75,7 +75,7 @@ jobs:
 
       - name: Get Home Assistant log in failure
         if: ${{ failure() }}
-        run: cat ${{github.workspace}}/tests/Integration/HA/config/home-assistant.log
+        run: docker logs ${{ steps.homeassistant.outputs.container_name }}
 
       - name: Discord failure notification
         if: ${{ github.event_name == 'schedule' && failure() }}
