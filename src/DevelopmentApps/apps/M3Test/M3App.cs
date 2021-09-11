@@ -25,7 +25,7 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
 
             _climateEntity = new ClimateEntity(ha, "climate.dummy_thermostat");
 
-            _climateEntity.StateAllChanges.Where(e => e.New?.Attributes.Temperature > 20).Subscribe();
+            _climateEntity.StateAllChanges.Where(e => e.New?.Attributes?.Temperature > 20).Subscribe();
             _climateEntity.StateAllChanges.Subscribe(OnNext);
 
             string? state = _climateEntity.State;
@@ -67,8 +67,8 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             string? state = e.Entity.State;
 
             // attribute properties are strong typed
-            double temperature = e.New?.Attributes.Temperature ?? 0;
-            double? temperatureDelta = e.New?.Attributes.Temperature - e.Old?.Attributes.Temperature;
+            double temperature = e.New?.Attributes?.Temperature ?? 0;
+            double? temperatureDelta = e.New?.Attributes?.Temperature - e.Old?.Attributes?.Temperature;
 
 
             // dump as json to view the structure
