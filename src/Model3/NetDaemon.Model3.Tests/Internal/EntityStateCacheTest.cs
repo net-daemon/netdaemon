@@ -15,7 +15,7 @@ namespace NetDaemon.Model3.Tests.Internal
         {
             // Arrange
             using var testSubject = new Subject<HassEvent>();
-            var cache = new EntityStateCache(Mock.Of<IHassClient>(), testSubject);
+            using var cache = new EntityStateCache(Mock.Of<IHassClient>(), testSubject);
             var handlerCalled = false;
 
             var changedEventData = new HassStateChangedEventData()

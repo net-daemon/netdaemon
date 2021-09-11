@@ -40,7 +40,7 @@ namespace NetDaemon.Model3.Entities
 
 
         public virtual IObservable<StateChange> StateAllChanges =>
-            HaContext.StateAllChanges.Where(e => e.New?.EntityId == EntityId)
+            HaContext.StateAllChanges.Where(e => e.Entity.EntityId == EntityId)
                 .Select(e => new StateChange(this, e.Old, e.New));
 
         public virtual IObservable<StateChange> StateChanges =>
@@ -62,7 +62,7 @@ namespace NetDaemon.Model3.Entities
 
         protected Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
         {
-            _attributesLazy = new(() => EntityState?.AttributesJson.ToObject<TAttributes>());
+            _attributesLazy = new(() => EntityState?.AttributesJson?.ToObject<TAttributes>());
         }
 
         // We need a 'new' here because the normal type of State is string and we cannot overload string with eg double
