@@ -2,6 +2,7 @@
 using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetDaemon.Common;
 using NetDaemon.Daemon;
 
 namespace NetDaemon
@@ -19,6 +20,7 @@ namespace NetDaemon
 
                 services.AddSingleton<NetDaemonHost>();
                 services.AddSingleton<INetDaemonHost>(s => s.GetRequiredService<NetDaemonHost>());
+                services.AddSingleton<INetDaemon>(s => s.GetRequiredService<NetDaemonHost>());
 
                 // Provide services created by NetDaemonHost as separate services so apps only need to take a dependency on 
                 // these interfaces and methods directly on INetDaemonHost can eventually be removed

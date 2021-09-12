@@ -164,7 +164,7 @@ namespace NetDaemon.Common
             Logger = daemon.Logger;
 
             _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
-            _persistenceService = new ApplicationPersistenceService(this, daemon, daemon.Logger!);
+            _persistenceService = new ApplicationPersistenceService(this, daemon);
             _persistenceService.StartUpAsync(_cancelSource.Token);
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());

@@ -1105,30 +1105,26 @@ namespace NetDaemon.Daemon
         }
 
         [SuppressMessage("", "CA1031")]
-        private async Task<bool> RestoreAppState(ApplicationContext appInstance)
+        private async Task<bool> RestoreAppState(ApplicationContext appContext)
         {
             try
             {
                 // First do startup initialization to connect with this daemon instance
-                if (appInstance.ApplicationInstance is INetDaemonAppBase netDaemonAppBase)
+                if (appContext.ApplicationInstance is INetDaemonAppBase netDaemonAppBase)
                 {
                     await netDaemonAppBase.StartUpAsync(this).ConfigureAwait(false);
                 }
+                
+                await appContext.RestoreAppStateAsync().ConfigureAwait(false);
 
-                // The restore the state to load saved settings and if this app is enabled
-                if (appInstance.ApplicationInstance is INetDaemonPersistantApp persistantApp)
-                {
-                    await persistantApp.RestoreAppStateAsync().ConfigureAwait(false);
-                }
-
-                if (appInstance.IsEnabled) return true;
+                if (appContext.IsEnabled) return true;
 
                 // We should not initialize this app, so dispose it and return
-                if (appInstance.ApplicationInstance is IAsyncDisposable asyncDisposable)
+                if (appContext.ApplicationInstance is IAsyncDisposable asyncDisposable)
                 {
                     await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                 }
-                if (appInstance.ApplicationInstance is IDisposable disposable)
+                if (appContext.ApplicationInstance is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }

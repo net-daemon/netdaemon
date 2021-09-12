@@ -20,11 +20,11 @@ namespace NetDaemon.Daemon.Services
         private Channel<bool> InternalLazyStoreStateQueue { get; } = Channel.CreateBounded<bool>(1);
         private readonly FluentExpandoObject _internalStorageObject;
 
-        public ApplicationPersistenceService(IApplicationMetadata applicationMetadata, INetDaemon netDaemon,  ILogger logger)
+        public ApplicationPersistenceService(IApplicationMetadata applicationMetadata, INetDaemon netDaemon)
         { 
             _applicationMetadata = applicationMetadata;
             _daemon = netDaemon;
-            _logger = logger;
+            _logger = netDaemon.Logger;
             _internalStorageObject = new FluentExpandoObject(false, true, persistCallback: SaveAppState);
         }
 

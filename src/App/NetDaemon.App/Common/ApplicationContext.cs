@@ -4,16 +4,18 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
     /// <summary>
     /// Context for NetDaemon application
     /// </summary>
-    public sealed class ApplicationContext : IAsyncDisposable, IDisposable
+    public sealed class ApplicationContext : IAsyncDisposable, IDisposable, INetDaemonPersistantApp
     {
         private readonly IServiceScope? _serviceScope;
         private IApplicationMetadata _applicationMetadata;
+        private INetDaemonPersistantApp _persistanceService;
 
         /// <summary>
         /// Creates a new ApplicationContext
@@ -27,6 +29,7 @@ namespace NetDaemon.Common
             
             ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceScope.ServiceProvider, applicationType);
             _applicationMetadata = InitializeMetaData();
+            _persistanceService = ActivatorUtilities.CreateInstance<ApplicationPersistenceService>(serviceProvider, _applicationMetadata);
             Id = id;
         }
 
@@ -132,5 +135,9 @@ namespace NetDaemon.Common
             (ApplicationInstance as IDisposable) ?.Dispose();
             _serviceScope?.Dispose();
         }
+
+        public void SaveAppState() => _persistanceService.SaveAppState();
+
+        public Task RestoreAppStateAsync() => _persistanceService.RestoreAppStateAsync();
     }
 }
