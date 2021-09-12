@@ -10,36 +10,40 @@ on:
       - main
       - dev
 jobs:
-    build:
-        name: 🔨 Build sources (CI)
-        runs-on: ubuntu-latest
-        steps:
-            - name: 📤 Checkout the repository 
-              uses: actions/checkout@main
+  build:
+    name: 🔨 Build sources (CI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📤 Checkout the repository
+        uses: actions/checkout@main
 
-            - name: 🥅 Install .Net 5
-              uses: actions/setup-dotnet@v1
-              with:
-                dotnet-version: '5.0.x' # SDK Version
+      - name: 🥅 Install .Net 5
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x" # SDK Version
 
-            - name: 🔍 Enable problem matchers
-              run: echo "::add-matcher::.github/matchers/dotnet.json"
+      - name: 🔍 Enable problem matchers
+        run: echo "::add-matcher::.github/matchers/dotnet.json"
 
-            - name: 🛠️ Build code
-              run: dotnet build /warnaserror
+      - name: 🛠️ Build code
+        run: dotnet build /warnaserror
 
-            - name: 👀 Test code
-              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=${{github.workspace}}/codecover/lcov.info
+      - name: 👀 Test V2
+        run: dotnet test tests/NetDaemon.Daemon.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:CoverletOutput=${{github.workspace}}/codecover
 
-            - name: 📨 Publish coverage report to coveralls.io
-              uses: coverallsapp/github-action@master
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                path-to-lcov: ${{github.workspace}}/codecover/lcov.info
-            
-            - name: 📨 Publish coverage to codecov
-              uses: codecov/codecov-action@v1
-              with:
-                flags: unittests # optional
-                name: codecov-umbrella # optional
-                fail_ci_if_error: true # optional (default = false)
+      - name: 👀 Test V3
+        run: dotnet test src/Model3/NetDaemon.Model3.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
+
+      - name: 📨 Publish coverage report to coveralls.io
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ${{github.workspace}}/codecover_merged.info
+
+      - name: 📨 Publish coverage to codecov
+        uses: codecov/codecov-action@v1
+        with:
+          flags: unittests # optional
+          name: codecov-umbrella # optional
+          files: ${{github.workspace}}/codecover_merged.info
+          fail_ci_if_error: true # optional (default = false)
