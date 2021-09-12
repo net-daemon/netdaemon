@@ -36,12 +36,12 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{github.workspace}}/code_cover_merged.info
+          path-to-lcov: ${{github.workspace}}/codecover_merged.info
 
       - name: 📨 Publish coverage to codecov
         uses: codecov/codecov-action@v1
         with:
           flags: unittests # optional
           name: codecov-umbrella # optional
-          files: ${{github.workspace}}/code_cover_merged.info
+          files: ${{github.workspace}}/codecover_merged.info
           fail_ci_if_error: true # optional (default = false)
