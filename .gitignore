@@ -20,6 +20,7 @@ scripts/version.txt
 
 # Coverage files
 lcov.info
+codecover.json
 code_cover.json
 codecover
 

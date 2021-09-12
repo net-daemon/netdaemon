@@ -29,20 +29,21 @@ jobs:
               run: dotnet build /warnaserror
 
             - name: 👀 Test V2 
-              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={lcov,json} /p:CoverletOutput=${{github.workspace}}/codecover
+              run: dotnet test tests/NetDaemon.Daemon.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={lcov,json} /p:CoverletOutput=${{github.workspace}}/codecover
 
             - name: 👀 Test V3
-              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={lcov,json} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
+              run: dotnet test src/Model3/NetDaemon.Model3.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={lcov,json} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
 
             - name: 📨 Publish coverage report to coveralls.io
               uses: coverallsapp/github-action@master
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                path-to-lcov: ${{github.workspace}}/lcov.info
+                path-to-lcov: ${{github.workspace}}/code_cover_merged.info
             
             - name: 📨 Publish coverage to codecov
               uses: codecov/codecov-action@v1
               with:
                 flags: unittests # optional
                 name: codecov-umbrella # optional
+                files: ${{github.workspace}}/code_cover_merged.info
                 fail_ci_if_error: true # optional (default = false)
