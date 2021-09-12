@@ -28,14 +28,17 @@ jobs:
             - name: 🛠️ Build code
               run: dotnet build /warnaserror
 
-            - name: 👀 Test code
-              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=${{github.workspace}}/codecover/lcov.info
+            - name: 👀 Test V2 
+              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={lcov,json} /p:CoverletOutput=${{github.workspace}}/codecover
+
+            - name: 👀 Test V3
+              run: dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={lcov,json} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
 
             - name: 📨 Publish coverage report to coveralls.io
               uses: coverallsapp/github-action@master
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                path-to-lcov: ${{github.workspace}}/codecover/lcov.info
+                path-to-lcov: ${{github.workspace}}/lcov.info
             
             - name: 📨 Publish coverage to codecov
               uses: codecov/codecov-action@v1
