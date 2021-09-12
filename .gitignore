@@ -23,6 +23,9 @@ lcov.info
 codecover.json
 code_cover.json
 codecover
+codecover.info
+codecover_merged.json
+codecover_merged.info
 
 ### VisualStudioCode ###
 # Setting files
