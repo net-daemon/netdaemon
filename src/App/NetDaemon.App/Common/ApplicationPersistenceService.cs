@@ -11,14 +11,18 @@ using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Services
 {
-    internal class ApplicationPersistenceService : INetDaemonPersistantApp
+    internal class ApplicationPersistenceService : IPersistenceService, IAsyncDisposable
     {
         private readonly IApplicationMetadata _applicationMetadata;
         private readonly ILogger _logger;
         private readonly INetDaemon _daemon;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly FluentExpandoObject _internalStorageObject;
+        private readonly Task _handleStorageTask;
+
+        public dynamic Storage => _internalStorageObject;
 
         private Channel<bool> InternalLazyStoreStateQueue { get; } = Channel.CreateBounded<bool>(1);
-        private readonly FluentExpandoObject _internalStorageObject;
 
         public ApplicationPersistenceService(IApplicationMetadata applicationMetadata, INetDaemon netDaemon)
         { 
@@ -26,13 +30,7 @@ namespace NetDaemon.Daemon.Services
             _daemon = netDaemon;
             _logger = netDaemon.Logger;
             _internalStorageObject = new FluentExpandoObject(false, true, persistCallback: SaveAppState);
-        }
-
-        public dynamic Storage => _internalStorageObject;
-
-        public Task StartUpAsync(CancellationToken cancellationToken)
-        {
-            return HandleLazyStorage(cancellationToken);
+            _handleStorageTask = HandleLazyStorage(_cancellationTokenSource.Token);
         }
 
         private string GetUniqueIdForStorage() => $"{_applicationMetadata.AppType.Name}_{_applicationMetadata.Id}".ToLowerInvariant();
@@ -48,6 +46,12 @@ namespace NetDaemon.Daemon.Services
                 expStore.CopyFrom(obj);
             }
 
+            await StoreAppStateInHa().ConfigureAwait(false);
+        }
+
+        private async Task StoreAppStateInHa()
+        {
+            // Set the state of the Entity that represents this app   
             bool isDisabled = Storage.__IsDisabled ?? false;
             var appInfo = _daemon.State.FirstOrDefault(s => s.EntityId == _applicationMetadata.EntityId);
             var appState = appInfo?.State as string;
@@ -56,8 +60,6 @@ namespace NetDaemon.Daemon.Services
                 _applicationMetadata.IsEnabled = false;
                 if (appState == "on" || appInfo is null)
                 {
-                    dynamic serviceData = new FluentExpandoObject();
-                    serviceData.entity_id = _applicationMetadata. EntityId;
                     await _daemon.SetStateAsync(_applicationMetadata.EntityId, "off").ConfigureAwait(false);
                 }
             }
@@ -66,13 +68,11 @@ namespace NetDaemon.Daemon.Services
                 _applicationMetadata.IsEnabled = true;
                 if (appState == "off" || appInfo is null)
                 {
-                    dynamic serviceData = new FluentExpandoObject();
-                    serviceData.entity_id = _applicationMetadata.EntityId;
                     await _daemon.SetStateAsync(_applicationMetadata.EntityId, "on").ConfigureAwait(false);
                 }
             }
         }
-        
+
         public void SaveAppState()
         {
             // Intentionally ignores full queue since we know
@@ -107,6 +107,13 @@ namespace NetDaemon.Daemon.Services
                     _logger.LogError("Error in storage queue {e}", e);
                 } // Ignore errors in thread
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _cancellationTokenSource.Cancel();
+            await _handleStorageTask.ConfigureAwait(false);
+            _cancellationTokenSource.Dispose();
         }
     }
 }

@@ -11,11 +11,11 @@ namespace NetDaemon.Common
     /// <summary>
     /// Context for NetDaemon application
     /// </summary>
-    public sealed class ApplicationContext : IAsyncDisposable, IDisposable, INetDaemonPersistantApp
+    public sealed class ApplicationContext : IAsyncDisposable, IDisposable
     {
         private readonly IServiceScope? _serviceScope;
-        private IApplicationMetadata _applicationMetadata;
-        private INetDaemonPersistantApp _persistanceService;
+        private readonly IApplicationMetadata _applicationMetadata;
+        private readonly IPersistenceService _persistenceService;
 
         /// <summary>
         /// Creates a new ApplicationContext
@@ -26,10 +26,26 @@ namespace NetDaemon.Common
             // this makes sure they will all be disposed along with the app
             _serviceScope = serviceProvider.CreateScope();
             ServiceProvider = _serviceScope.ServiceProvider;
-            
-            ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceScope.ServiceProvider, applicationType);
-            _applicationMetadata = InitializeMetaData();
-            _persistanceService = ActivatorUtilities.CreateInstance<ApplicationPersistenceService>(serviceProvider, _applicationMetadata);
+
+
+            if (applicationType.IsAssignableFrom(typeof(NetDaemonAppBase)))
+            {
+                var app = (NetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
+
+                app.PersistenceService = _persistenceService;
+                _applicationMetadata = app;
+            }
+            else
+            {
+                _applicationMetadata = new ApplicationMetadata(applicationType);
+                _persistenceService = new ApplicationPersistenceService(_applicationMetadata, ServiceProvider.GetRequiredService<INetDaemon>());
+
+                if (_applicationMetadata.IsEnabled)
+                {
+                    ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
+                }
+            }
+
             Id = id;
         }
 
@@ -41,7 +57,8 @@ namespace NetDaemon.Common
             ApplicationInstance = applicationInstance;
             ServiceProvider = serviceProvider;
 
-            _applicationMetadata = InitializeMetaData();
+            _applicationMetadata = GetInitializeMetaData();
+            _persistenceService = GetPersistanceService();
         }
 
         /// <summary>
@@ -52,7 +69,17 @@ namespace NetDaemon.Common
             return new ApplicationContext(applicationInstance, serviceProvider);
         }
 
-        private IApplicationMetadata InitializeMetaData()
+        private IPersistenceService GetPersistanceService()
+        {
+            if (ApplicationInstance is IPersistenceService service)
+            {
+                return service;
+            }
+
+            return _persistenceService;
+        }
+
+        private IApplicationMetadata GetInitializeMetaData()
         {
             if (ApplicationInstance is IApplicationMetadata appBase)
             {
@@ -132,12 +159,13 @@ namespace NetDaemon.Common
         /// <inheritdoc />
         public void Dispose()
         {
+            IsEnabled = false;
             (ApplicationInstance as IDisposable) ?.Dispose();
             _serviceScope?.Dispose();
         }
 
-        public void SaveAppState() => _persistanceService.SaveAppState();
+        public void SaveAppState() => _persistenceService.SaveAppState();
 
-        public Task RestoreAppStateAsync() => _persistanceService.RestoreAppStateAsync();
+        public Task RestoreAppStateAsync() => _persistenceService.RestoreAppStateAsync();
     }
 }

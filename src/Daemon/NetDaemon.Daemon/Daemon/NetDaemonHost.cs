@@ -1095,7 +1095,7 @@ namespace NetDaemon.Daemon
         //TODO: Refactor this
         private async Task PersistAppStateAsync(ApplicationContext app)
         {
-            var uniqueIdForStorage = $"{app.GetType().Name}_{app.Id}".ToLowerInvariant();
+            var uniqueIdForStorage = $"{app.ApplicationInstance.GetType().Name}_{app.Id}".ToLowerInvariant();
             var obj = await GetDataAsync<IDictionary<string, object?>>(uniqueIdForStorage)
                           .ConfigureAwait(false) ??
                       new Dictionary<string, object?>();

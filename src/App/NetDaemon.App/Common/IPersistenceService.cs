@@ -5,7 +5,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Interface for applications that support Saving nd restoring their state
     /// </summary>
-    public interface INetDaemonPersistantApp
+    public interface IPersistenceService
     {
         /// <summary>
         ///     Saves the app state
@@ -28,5 +28,7 @@ namespace NetDaemon.Common
         /// <para>    It is implemented async so state will be lazy saved</para>
         /// </remarks>
         Task RestoreAppStateAsync();
+
+        dynamic Storage { get; }
     }
 }
