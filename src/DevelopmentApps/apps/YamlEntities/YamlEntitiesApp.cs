@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using NetDaemon.Common;
-using NetDaemon.Model3.Domains.Climate;
-using NetDaemon.Model3.Domains.Sensor;
+using NetDaemon.DevelopmentApps.Domains.Climate;
+using NetDaemon.DevelopmentApps.Domains.Sensor;
 
 namespace NetDaemon.DevelopmentApps.apps.YamlEntities
 {
