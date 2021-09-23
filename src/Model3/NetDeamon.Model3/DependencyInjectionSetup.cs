@@ -8,6 +8,9 @@ using NetDaemon.Model3.Internal;
 
 namespace NetDaemon.Model3
 {
+    /// <summary>
+    /// Setup methods for services configuration 
+    /// </summary>
     public static class DependencyInjectionSetup
     {
         /// <summary>
