@@ -2,7 +2,7 @@
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Model3.Domains.Sensor
+namespace NetDaemon.DevelopmentApps.Domains.Sensor
 {
     public record NumericSensorEntity : Entity<NumericSensorEntity, EntityState<double, NumericSensorAttributes>, double, NumericSensorAttributes>
     {

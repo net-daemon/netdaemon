@@ -2,7 +2,7 @@
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Model3.Domains.Climate
+namespace NetDaemon.DevelopmentApps.Domains.Climate
 {
     public record ClimateEntity : Entity<ClimateEntity, EntityState<string, ClimateAttributes>, string, ClimateAttributes>
     {
