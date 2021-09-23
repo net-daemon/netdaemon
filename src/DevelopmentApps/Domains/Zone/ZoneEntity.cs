@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
 
-namespace NetDaemon.Model3.Domains.Zone
+namespace NetDaemon.DevelopmentApps.Domains.Zone
 {
     public record ZoneEntity : Entity<ZoneEntity, EntityState<string, ZoneAttributes>, string, ZoneAttributes>
     {
