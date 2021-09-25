@@ -37,7 +37,7 @@ namespace NetDaemon.Common
                     // do the deed
                     await HandleUpdateRuntimeInformation().ConfigureAwait(false);
                     // make sure we never push more messages that 10 per second
-                    await Task.Delay(100).ConfigureAwait(false);
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

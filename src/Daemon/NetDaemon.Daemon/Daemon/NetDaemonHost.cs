@@ -934,7 +934,7 @@ namespace NetDaemon.Daemon
                 InternalRunningAppInstances.Clear();
             }
 
-            foreach (var applicationContext in applicationContexts!)
+            foreach (var applicationContext in applicationContexts)
             {
                 InternalAllAppInstances[applicationContext.Id!] = applicationContext;
                 if (await RestoreAppState(applicationContext).ConfigureAwait(false))
@@ -1095,7 +1095,7 @@ namespace NetDaemon.Daemon
         //TODO: Refactor this
         private async Task PersistAppStateAsync(ApplicationContext app)
         {
-            var uniqueIdForStorage = $"{app.ApplicationInstance.GetType().Name}_{app.Id}".ToLowerInvariant();
+            var uniqueIdForStorage = $"{app.ApplicationType.Name}_{app.Id}".ToLowerInvariant();
             var obj = await GetDataAsync<IDictionary<string, object?>>(uniqueIdForStorage)
                           .ConfigureAwait(false) ??
                       new Dictionary<string, object?>();
@@ -1113,22 +1113,17 @@ namespace NetDaemon.Daemon
                 if (appContext.ApplicationInstance is INetDaemonAppBase netDaemonAppBase)
                 {
                     await netDaemonAppBase.StartUpAsync(this).ConfigureAwait(false);
+                    await netDaemonAppBase.RestoreAppStateAsync().ConfigureAwait(false);
                 }
-                
-                await appContext.RestoreAppStateAsync().ConfigureAwait(false);
 
-                if (appContext.IsEnabled) return true;
+                if (!appContext.IsEnabled)
+                {
+                    // We should not initialize this app, so dispose it and return
+                    await appContext.DisposeAsync().ConfigureAwait(false);
+                    return false;
+                }
 
-                // We should not initialize this app, so dispose it and return
-                if (appContext.ApplicationInstance is IAsyncDisposable asyncDisposable)
-                {
-                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                }
-                if (appContext.ApplicationInstance is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-                return false;
+                return true;
             }
             catch (Exception e)
             {

@@ -16,9 +16,8 @@ namespace NetDaemon.Common
     /// </summary>
     public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata, IPersistenceService
     {
-        internal IPersistenceService? PersistenceService { get; set; }
-
-        internal RuntimeInfoManager? InfoManager { get; private set; }
+        private IPersistenceService? _persistenceService;
+        private RuntimeInfoManager? _runtimeInfoManager;
 
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
@@ -36,19 +35,20 @@ namespace NetDaemon.Common
 
         private readonly CancellationTokenSource _cancelSource = new();
         private bool _isDisposed;
-
-       
-        /// <summary>
-        ///    Dependencies on other applications that will be initialized before this app
-        /// </summary>
-        public IEnumerable<string> Dependencies { get; set; } = new List<string>();
-
+        
         /// <inheritdoc/>
         public ConcurrentDictionary<string, object> Global => _global;
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
         public IHttpHandler Http => Daemon?.Http ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+
+        #region ApplicationMetaData
+        
+        /// <summary>
+        ///    Dependencies on other applications that will be initialized before this app
+        /// </summary>
+        public IEnumerable<string> Dependencies { get; set; } = new List<string>();
 
         /// <inheritdoc/>
         public string? Id { get; set; }
@@ -77,11 +77,19 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
+
+        /// <inheritdoc/>
+        public Type AppType => GetType();
+        
+        #endregion
+        
+        /// <inheritdoc/>
         public ILogger? Logger { get; set; }
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
-        public dynamic Storage => PersistenceService!.Storage;
+        public dynamic Storage => _persistenceService!.Storage;
 
         /// <summary>
         ///     Initializes the app, is virtual and overridden
@@ -101,16 +109,10 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
-        public Task RestoreAppStateAsync() => PersistenceService!.RestoreAppStateAsync();
+        public Task RestoreAppStateAsync() => _persistenceService!.RestoreAppStateAsync();
 
         /// <inheritdoc/>
-        public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
-
-        /// <inheritdoc/>
-        public Type AppType => GetType();
-
-        /// <inheritdoc/>
-        public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo {HasError = false};
+        public AppRuntimeInfo RuntimeInfo { get; } = new () {HasError = false};
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
@@ -127,7 +129,7 @@ namespace NetDaemon.Common
         public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
 
         /// <inheritdoc/>
-        public void SaveAppState() => PersistenceService!.SaveAppState();
+        public void SaveAppState() => _persistenceService!.SaveAppState();
 
         /// <inheritdoc/>
         public void Speak(string entityId, string message)
@@ -140,12 +142,11 @@ namespace NetDaemon.Common
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
             _ = daemon ?? throw new NetDaemonArgumentNullException(nameof(daemon));
-            InfoManager = new RuntimeInfoManager(daemon, this);
-
             Daemon = daemon;
             Logger = daemon.Logger;
 
-            PersistenceService = new ApplicationPersistenceService(this, daemon);
+            _runtimeInfoManager = new RuntimeInfoManager(daemon, this);
+            _persistenceService = new ApplicationPersistenceService(this, daemon);
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
@@ -181,7 +182,7 @@ namespace NetDaemon.Common
                 _isDisposed = true;
             }
 
-            if (InfoManager != null) await InfoManager.DisposeAsync().ConfigureAwait(false);
+            if (_runtimeInfoManager != null) await _runtimeInfoManager.DisposeAsync().ConfigureAwait(false);
                
             _cancelSource.Cancel();
 
@@ -362,6 +363,6 @@ namespace NetDaemon.Common
         ///     Use a channel to make sure bad apps do not flood the
         ///     updating of
         /// </remarks>
-        internal void UpdateRuntimeInformation() => InfoManager?.UpdateRuntimeInformation();
+        internal void UpdateRuntimeInformation() => _runtimeInfoManager?.UpdateRuntimeInformation();
     }
 }

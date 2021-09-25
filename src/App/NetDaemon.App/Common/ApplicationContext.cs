@@ -22,31 +22,36 @@ namespace NetDaemon.Common
         /// </summary>
         public ApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider)
         {
+            if (applicationType == null) throw new ArgumentNullException(nameof(applicationType));
+
             // Create a new ServiceScope for all objects we create for this app
             // this makes sure they will all be disposed along with the app
             _serviceScope = serviceProvider.CreateScope();
             ServiceProvider = _serviceScope.ServiceProvider;
 
 
-            if (applicationType.IsAssignableFrom(typeof(NetDaemonAppBase)))
+            if (applicationType.IsAssignableFrom(typeof(INetDaemonAppBase)))
             {
-                var app = (NetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
+                var app = (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
 
-                app.PersistenceService = _persistenceService;
-                _applicationMetadata = app;
+                ApplicationInstance = app;
+
+                _applicationMetadata = new MetaDataFromAppBase(app);
+                _persistenceService = new ApplicationPersistenceService(_applicationMetadata, ServiceProvider.GetRequiredService<INetDaemon>());
+                Id = id;
             }
             else
             {
                 _applicationMetadata = new ApplicationMetadata(applicationType);
                 _persistenceService = new ApplicationPersistenceService(_applicationMetadata, ServiceProvider.GetRequiredService<INetDaemon>());
+                Id = id;
+                _persistenceService.RestoreAppStateAsync();
 
                 if (_applicationMetadata.IsEnabled)
                 {
                     ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
                 }
             }
-
-            Id = id;
         }
 
         /// <summary>
@@ -57,8 +62,8 @@ namespace NetDaemon.Common
             ApplicationInstance = applicationInstance;
             ServiceProvider = serviceProvider;
 
-            _applicationMetadata = GetInitializeMetaData();
-            _persistenceService = GetPersistanceService();
+            _applicationMetadata = new MetaDataFromAppBase(applicationInstance);
+            _persistenceService = new ApplicationPersistenceService(_applicationMetadata, ServiceProvider.GetRequiredService<INetDaemon>());
         }
 
         /// <summary>
@@ -66,34 +71,20 @@ namespace NetDaemon.Common
         /// </summary>
         public static ApplicationContext CreateFromAppInstance(INetDaemonAppBase applicationInstance, IServiceProvider serviceProvider)
         {
-            return new ApplicationContext(applicationInstance, serviceProvider);
-        }
-
-        private IPersistenceService GetPersistanceService()
-        {
-            if (ApplicationInstance is IPersistenceService service)
-            {
-                return service;
-            }
-
-            return _persistenceService;
-        }
-
-        private IApplicationMetadata GetInitializeMetaData()
-        {
-            if (ApplicationInstance is IApplicationMetadata appBase)
-            {
-                // For applications based on NetDaemonAppBase the services are provided by the application itself
-                // we need to keep that for backwards compatibility
-                return appBase;
-            }
-            return new ApplicationMetadata(ApplicationInstance.GetType());
+            var applicationContext = new ApplicationContext(applicationInstance, serviceProvider);
+            
+            return applicationContext;
         }
 
         /// <summary>
         /// Gets the reference to the Application Instance
         /// </summary>
-        public object ApplicationInstance { get; }
+        public object? ApplicationInstance { get; }
+
+        /// <summary>
+        /// The CLR Type of the application
+        /// </summary>
+        public Type ApplicationType => _applicationMetadata.AppType;
 
         /// <summary>
         /// ServiceProvider scoped for this application
@@ -118,7 +109,7 @@ namespace NetDaemon.Common
         ///     Returns the description, is the decorating comment of app class
         /// </summary>
         public string Description => _applicationMetadata.Description
-                                      ?? ApplicationInstance.GetType().GetCustomAttribute<DescriptionAttribute>()
+                                      ?? ApplicationType.GetCustomAttribute<DescriptionAttribute>()
                                           ?.Description
                                       ?? "";
 
@@ -163,9 +154,5 @@ namespace NetDaemon.Common
             (ApplicationInstance as IDisposable) ?.Dispose();
             _serviceScope?.Dispose();
         }
-
-        public void SaveAppState() => _persistenceService.SaveAppState();
-
-        public Task RestoreAppStateAsync() => _persistenceService.RestoreAppStateAsync();
     }
 }
