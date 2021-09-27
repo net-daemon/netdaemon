@@ -8,6 +8,7 @@ using NetDaemon.DevelopmentApps.Domains.Sensor;
 namespace NetDaemon.DevelopmentApps.apps.YamlEntities
 {
     [NetDaemonApp]
+    [Focus]
     public class YamlEntitiesApp : IInitializable
     {
         public ClimateEntity? TargetClimate { get; init; }

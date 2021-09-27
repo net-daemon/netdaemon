@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Security.Cryptography.Xml;
 using System.Threading.Tasks;
 using Moq;
 using NetDaemon.Common;
@@ -378,13 +379,15 @@ namespace NetDaemon.Daemon.Tests.Reactive
             bool isRun = false;
             using var ctx = DefaultDaemonRxApp.StateChanges
                 .Where(t => t.New.EntityId == "binary_sensor.pir")
-                .NDSameStateFor(TimeSpan.FromMilliseconds(50))
+                .NDSameStateFor(TimeSpan.FromMilliseconds(10))
                 .Subscribe(_ => isRun = true);
 
             DefaultHassClientMock.AddChangedEvent("binary_sensor.pir", "off", "on");
+            Assert.False(isRun);
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
             await DefaultDaemonHost.WaitForTasksAsync().ConfigureAwait(false);
+            await Task.Delay(100).ConfigureAwait(false);
 
             Assert.True(isRun);
         }

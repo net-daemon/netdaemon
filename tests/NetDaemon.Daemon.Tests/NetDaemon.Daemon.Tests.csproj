@@ -47,11 +47,79 @@
 
   <ItemGroup>
     <Compile Remove="DaemonRunner/CodeGen/**" />
-    <Compile Remove="DaemonRunner/Fixtures/**" />
     <Compile Remove="DaemonRunner/FaultyApp/**" />
+    <Compile Update="DaemonRunner\Fixtures\BaseLessAppYaml\BaseLessYaml.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DaemonRunner/Fixtures/**">
+    <Content Include="DaemonRunner\Fixtures\BaseLessAppYaml\baseLessYaml.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\dependtests\global_app.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\dependtests\global_app.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\fullname\FullNameApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\fullname\FullNameApp.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\fullname\FullNameApp_ns.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\injection\DependantApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\injection\dependant_app.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\level2\level3\LevThreeApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\level2\level3\LevThreeApp.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\level2\level3\secrets.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\level2\LevTwoApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\level2\LevTwoApp.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\level2\secrets.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\LevOneApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\LevOneApp.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\mulitinstance\instance1.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\mulitinstance\instance2.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\mulitinstance\multiinstance.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\secrets.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\secrets_normal.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\yamlless\YamllessApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DaemonRunner\Fixtures\yamlless\YamllessAppIdentifiedUsingAttribute.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="DaemonRunner/CodeGen/**">

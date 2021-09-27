@@ -36,6 +36,6 @@ namespace NetDaemon.Common
         /// </summary>
         string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
-        Type AppType { get; }
+        Type ApplicationType { get; }
     }
 }

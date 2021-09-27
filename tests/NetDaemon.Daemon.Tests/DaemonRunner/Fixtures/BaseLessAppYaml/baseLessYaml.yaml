@@ -1,0 +1,3 @@
+BaseLessYaml:
+    class: BaseLessNs.BaseLessYaml
+    ConfigValue: Hello Config

@@ -125,7 +125,7 @@ namespace NetDaemon.Daemon
         //for unit testing
         internal T LoadApp<T>(string id)
         {
-            var applicationContext = new ApplicationContext(typeof(T), id, ServiceProvider);
+            var applicationContext = ApplicationContext.Create(typeof(T), id, ServiceProvider, this);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
 
@@ -136,7 +136,7 @@ namespace NetDaemon.Daemon
         internal void AddRunningApp(INetDaemonAppBase app)
         {
             _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
-            var applicationContext = ApplicationContext.CreateFromAppInstance(app, ServiceProvider);
+            var applicationContext = ApplicationContext.CreateFromAppInstance(app, this, ServiceProvider);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
@@ -946,43 +946,33 @@ namespace NetDaemon.Daemon
             // Now run initialize on all sorted by dependencies
             foreach (var applicationContext in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
             {
-                if (applicationContext.ApplicationInstance is IAsyncInitializable asyncInitializable)
-                {
-                    // Init by calling the InitializeAsync
-                    var taskInitAsync = asyncInitializable.InitializeAsync();
-                    var taskAwaitedAsyncTask =
-                        await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
-                    if (taskAwaitedAsyncTask != taskInitAsync)
-                    {
-                        Logger.LogWarning(
-                            "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
-                            applicationContext.Id);
-                    }
-                }
-
-                if (applicationContext.ApplicationInstance is IInitializable initalizableApp)
-                {
-                    // Init by calling the Initialize
-                    var taskInit = Task.Run(initalizableApp.Initialize);
-                    var taskAwaitedTask = await Task.WhenAny(taskInit, Task.Delay(5000)).ConfigureAwait(false);
-                    if (taskAwaitedTask != taskInit)
-                    {
-                        Logger.LogWarning(
-                            "Initialize of application {app} took longer that 5 seconds, make sure Initialize function is not blocking!",
-                            applicationContext.Id);
-                    }
-                }
-
-                if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
-                {
-                    await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
-                    Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id,
-                        applicationContext.GetType().Name);
-                }
+                await InitializeApp(applicationContext);
             }
 
             await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
                 .ConfigureAwait(false);
+        }
+
+        private async Task InitializeApp(ApplicationContext applicationContext)
+        {
+            applicationContext.InstantiateApp();
+
+            // Init by calling the InitializeAsync
+            var taskInitAsync = applicationContext.InitializeAsync();
+            var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
+            if (taskAwaitedAsyncTask != taskInitAsync)
+            {
+                Logger.LogWarning(
+                    "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
+                    applicationContext.Id);
+            }
+
+            if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
+            {
+                await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
+                Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id,
+                    applicationContext.GetType().Name);
+            }
         }
 
         [SuppressMessage("", "CA1031")]
@@ -1109,21 +1099,9 @@ namespace NetDaemon.Daemon
         {
             try
             {
-                // First do startup initialization to connect with this daemon instance
-                if (appContext.ApplicationInstance is INetDaemonAppBase netDaemonAppBase)
-                {
-                    await netDaemonAppBase.StartUpAsync(this).ConfigureAwait(false);
-                    await netDaemonAppBase.RestoreAppStateAsync().ConfigureAwait(false);
-                }
-
-                if (!appContext.IsEnabled)
-                {
-                    // We should not initialize this app, so dispose it and return
-                    await appContext.DisposeAsync().ConfigureAwait(false);
-                    return false;
-                }
-
-                return true;
+                await appContext.RestoreStateAsync().ConfigureAwait(false);
+                
+                return appContext.IsEnabled;
             }
             catch (Exception e)
             {

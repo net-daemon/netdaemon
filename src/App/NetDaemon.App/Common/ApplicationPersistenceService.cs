@@ -33,7 +33,7 @@ namespace NetDaemon.Daemon.Services
             _handleStorageTask = HandleLazyStorage(_cancellationTokenSource.Token);
         }
 
-        private string GetUniqueIdForStorage() => $"{_applicationMetadata.AppType.Name}_{_applicationMetadata.Id}".ToLowerInvariant();
+        private string GetUniqueIdForStorage() => $"{_applicationMetadata.ApplicationType.Name}_{_applicationMetadata.Id}".ToLowerInvariant();
 
         public async Task RestoreAppStateAsync()
         {

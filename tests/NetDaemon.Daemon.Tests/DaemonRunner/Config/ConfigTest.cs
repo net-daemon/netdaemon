@@ -32,7 +32,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
         private readonly IServiceProvider _serviceProvider = new ServiceCollection().BuildServiceProvider();
 
-        private ApplicationContext TestAppContext => new(typeof(object), "id", _serviceProvider);
+        private ApplicationContext TestAppContext => ApplicationContext.Create(typeof(object), "id", _serviceProvider, Mock.Of<INetDaemon>());
 
         [Fact]
         public void NormalLoadSecretsShouldGetCorrectValues()
@@ -215,7 +215,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            using var applicationContext = new ApplicationContext(typeof(BaseTestApp), "id", _serviceProvider);
+            using var applicationContext = ApplicationContext.Create(typeof(BaseTestApp), "id", _serviceProvider, Mock.Of<INetDaemon>());
             var instance = scalarValue.ToObject(entityType, applicationContext) as RxEntityBase;
             Assert.NotNull(instance);
             Assert.Equal(entityType, instance!.GetType());
@@ -238,7 +238,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                 .AddSingleton(mockAction.Object)
                 .BuildServiceProvider();
 
-            using var applicationContext = new ApplicationContext(typeof(object), "Id", serviceProvider);
+            using var applicationContext = ApplicationContext.Create(typeof(object), "Id", serviceProvider, Mock.Of<INetDaemon>());
 
             // ACT & ASSERT
             var instance = scalarValue.ToObject(typeof(TestClass), applicationContext);
@@ -341,7 +341,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
             using var applicationContext =
-                    new ApplicationContext(typeof(T), "id", _serviceProvider);
+                ApplicationContext.Create(typeof(T), "id", _serviceProvider, Mock.Of<INetDaemon>());
             var instance = (T) applicationContext.ApplicationInstance;
 
             var config = new YamlConfigEntry("path is mocked by yamlConfigReader ->",

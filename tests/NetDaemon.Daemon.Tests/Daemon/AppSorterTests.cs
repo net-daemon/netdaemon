@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using Xunit;
@@ -55,7 +56,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         static ApplicationContext TestApp(string id, params string[] dependencies)
         {
-            return new ApplicationContext(typeof(object), id, new ServiceCollection().BuildServiceProvider()) { Dependencies = dependencies };
+            var applicationContext = ApplicationContext.Create(typeof(object), id, new ServiceCollection().BuildServiceProvider(), Mock.Of<INetDaemon>());
+            applicationContext.Dependencies = dependencies;
+            return applicationContext;
         }
 
         [Fact]

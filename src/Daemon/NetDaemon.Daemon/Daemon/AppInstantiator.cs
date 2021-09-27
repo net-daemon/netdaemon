@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
@@ -20,7 +21,7 @@ namespace NetDaemon.Daemon
         {
             try
             {
-                return new ApplicationContext(applicationType, appId, ServiceProvider);
+                return ApplicationContext.Create(applicationType, appId, ServiceProvider, ServiceProvider.GetRequiredService<INetDaemon>());
             }
             catch (Exception e)
             {

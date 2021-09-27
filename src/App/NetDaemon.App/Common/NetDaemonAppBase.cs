@@ -80,7 +80,7 @@ namespace NetDaemon.Common
         public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
 
         /// <inheritdoc/>
-        public Type AppType => GetType();
+        public Type ApplicationType => GetType();
         
         #endregion
         

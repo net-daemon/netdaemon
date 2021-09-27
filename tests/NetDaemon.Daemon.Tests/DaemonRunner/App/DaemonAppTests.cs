@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BaseLessNs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
@@ -25,6 +26,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public static readonly string FaultyAppPath =
             Path.Combine(AppContext.BaseDirectory, "DaemonRunner", "FaultyApp");
 
+        private readonly Mock<Action<string>> _mockAction = new();
+
         public static string GetFixtureContent(string filename) => File.ReadAllText(Path.Combine(AppTests.ConfigFixturePath, filename));
 
         public static string GetFixturePath(string filename) => Path.Combine(AppTests.ConfigFixturePath, filename);
@@ -34,7 +37,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             AppSource = appSource
         });
 
-        private static ServiceProvider ServiceProvider
+        private ServiceProvider ServiceProvider
         {
             get
             {
@@ -46,6 +49,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 var serviceProvider = new ServiceCollection()
                     .AddSingleton(moqLogger.Logger)
                     .AddSingleton<INetDaemon>(moqDaemon.Object)
+                    .AddSingleton(_mockAction.Object)
                     .BuildServiceProvider();
                 return serviceProvider;
             }
@@ -96,7 +100,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var codeManager = CM(ConfigFixturePath);
             // ACT
             // ASSERT
-            Assert.Equal(14, codeManager.DaemonAppTypes.Count());
+            Assert.Equal(15, codeManager.DaemonAppTypes.Count());
         }
 
         [Fact]
@@ -292,7 +296,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         {
             // ARRANGE
 
-            await using var appContext = new ApplicationContext(typeof(AssemblyDaemonApp), "id", ServiceProvider);
+            await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", ServiceProvider, Mock.Of<INetDaemon>());
             var instance = appContext.ApplicationInstance as AssemblyDaemonApp;
 
             var daemonMock = new Mock<INetDaemon>();
@@ -379,10 +383,31 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ASSERT
             var appId = codeManager
                     .InstanceDaemonApps(ServiceProvider)
-                    .FirstOrDefault(app => app.ApplicationInstance.GetType().Name == appTypeName)
+                    .FirstOrDefault(app => app.ApplicationType.Name == appTypeName)
                     ?.Id;
 
             Assert.Equal(expectedAppId, appId);
+        }
+        
+        
+        [Fact]
+        public async void BaseLassYamlAppShouldGetConfigs()
+        {
+            // ARRANGE
+            var appTypeName = "BaseLessAppYaml";
+            var expectedAppId = "This app is identified using attribute";
+
+            var codeManager = CM(Path.Combine(ConfigFixturePath, "BaseLessAppYaml"));
+            // ACT
+            // ASSERT
+            var app = codeManager
+                    .InstanceDaemonApps(ServiceProvider)
+                    .First();
+            app.InstantiateApp();
+            await app.InitializeAsync();
+
+            var value = app.ApplicationInstance.GetType().GetProperty("ConfigValue").GetValue(app.ApplicationInstance);
+            Assert.Equal("Hello Config", value);
         }
 
         public static CodeManager CM(string path)
