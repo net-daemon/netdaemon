@@ -9,34 +9,51 @@ namespace NetDaemon.Common
     /// </summary>
     class AppBaseApplicationContext : ApplicationContext
     {
-        private readonly INetDaemon _netDaemon;
+        //private readonly INetDaemon _netDaemon;
         private readonly INetDaemonAppBase _appInstance;
-        public AppBaseApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider, INetDaemon netDaemon) 
-            : base(applicationType, id, serviceProvider, netDaemon)
-        {
-            _netDaemon = netDaemon;
-            // INetDaemonAppBase apps are always instantiated but will be disposed directly if they are disabled
-            // this is needed because these app classes implement their own Startup and RestoreAppState
-            var app = (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
-            _appInstance = app ?? throw new InvalidOperationException($"Faild to create instance {applicationType.Name} for of app id {id}");
 
-            app.Id = id;
-            ApplicationInstance = app;
+        public AppBaseApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider)
+            : this(CreateInstance(applicationType, serviceProvider), serviceProvider)
+        {
+            Id = id;
+        }
+        //     : base(applicationType, id, serviceProvider)
+        // {
+        //     // INetDaemonAppBase apps are always instantiated but will be disposed directly if they are disabled
+        //     // changing this would be a breaking change because these app classes implement their own lifetime management
+        //     
+        //     var appInstance = (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
+        //     _appInstance = appInstance ?? throw new InvalidOperationException($"Faild to create instance {applicationType.Name} for of app id {id}");
+        //
+        //     appInstance.Id = id;
+        //     if (appInstance is NetDaemonAppBase appBase)
+        //     {
+        //         appBase.ServiceProvider = ServiceProvider;
+        //     }
+        //     ApplicationInstance = appInstance;
+        // }
+
+        private static INetDaemonAppBase CreateInstance(Type applicationType, IServiceProvider serviceProvider)
+        {
+            return (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, applicationType);
         }
 
         /// <summary>
         /// Constructor from an already instantiated app (used for unit testing)
         /// </summary>
         /// <param name="appInstance"></param>
-        /// <param name="id"></param>
         /// <param name="serviceProvider"></param>
         /// <param name="netDaemon"></param>
-        public AppBaseApplicationContext(INetDaemonAppBase appInstance, string id, IServiceProvider serviceProvider, INetDaemon netDaemon)
-            : base(appInstance.GetType(), id, serviceProvider, netDaemon)
+        public AppBaseApplicationContext(INetDaemonAppBase appInstance, IServiceProvider serviceProvider)
+            : base(appInstance.GetType(), appInstance.Id!, serviceProvider)
         {
             _appInstance = appInstance;
+
+            if (appInstance is NetDaemonAppBase appBase)
+            {
+                appBase.ServiceProvider = ServiceProvider;
+            }
             ApplicationInstance = appInstance;
-            _netDaemon = netDaemon;
         }
 
         public override void SetConfigProvider(Action configProvider)
@@ -46,7 +63,7 @@ namespace NetDaemon.Common
 
         public override async Task RestoreStateAsync()
         {
-            await _appInstance.StartUpAsync(_netDaemon).ConfigureAwait(false);
+            await _appInstance.StartUpAsync(ServiceProvider.GetRequiredService<INetDaemon>()).ConfigureAwait(false);
             await _appInstance.RestoreAppStateAsync().ConfigureAwait(false);
             if (!_appInstance.IsEnabled)
             {

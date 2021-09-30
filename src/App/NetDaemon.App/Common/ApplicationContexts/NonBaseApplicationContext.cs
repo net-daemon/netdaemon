@@ -5,13 +5,13 @@ using NetDaemon.Daemon.Services;
 
 namespace NetDaemon.Common
 {
-    sealed class NonBaseApplicationContext : ApplicationContext
+    internal sealed class NonBaseApplicationContext : ApplicationContext
     {
-        private readonly ApplicationPersistenceService _persistenceService;
+        private readonly IPersistenceService _persistenceService;
 
-        public NonBaseApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider, INetDaemon netDaemon) : base(applicationType, id, serviceProvider, netDaemon)
+        public NonBaseApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider) : base(applicationType, id, serviceProvider)
         {
-            _persistenceService = new ApplicationPersistenceService(this, netDaemon);
+            _persistenceService = ServiceProvider.GetRequiredService<IPersistenceService>();
         }
 
         public override async Task RestoreStateAsync()
@@ -21,7 +21,9 @@ namespace NetDaemon.Common
 
         public override void InstantiateApp()
         {
-            ApplicationInstance = ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, ApplicationType);
+            var appInstance = ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, ApplicationType);
+            ApplicationInstance = appInstance ?? throw new InvalidOperationException($"Faild to create instance {ApplicationType.Name} for of app id {Id}");
+
             ApplyConfig();
        }
     }

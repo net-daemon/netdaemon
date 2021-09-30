@@ -37,7 +37,8 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             AppSource = appSource
         });
 
-        private ServiceProvider ServiceProvider
+
+        private IServiceCollection ServiceCollection
         {
             get
             {
@@ -46,14 +47,17 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
                 moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
 
-                var serviceProvider = new ServiceCollection()
+                var serviceCollection = new ServiceCollection()
                     .AddSingleton(moqLogger.Logger)
+                    .AddNetDaemonServices()
                     .AddSingleton<INetDaemon>(moqDaemon.Object)
-                    .AddSingleton(_mockAction.Object)
-                    .BuildServiceProvider();
-                return serviceProvider;
+                    .AddSingleton(_mockAction.Object);
+                return serviceCollection;
             }
         }
+        
+        private ServiceProvider ServiceProvider => ServiceCollection.BuildServiceProvider();
+
 
         [Fact]
         public void FaultyApplicationShouldLogError()
@@ -295,11 +299,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         public async Task StorageShouldRestoreWithCorrectValues()
         {
             // ARRANGE
+            
+            var daemonMock = new Mock<INetDaemon>();
+            var serviceProvider =  ServiceCollection.AddSingleton(daemonMock.Object).BuildServiceProvider();
 
-            await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", ServiceProvider, Mock.Of<INetDaemon>());
+            await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", serviceProvider, daemonMock.Object);
             var instance = appContext.ApplicationInstance as AssemblyDaemonApp;
 
-            var daemonMock = new Mock<INetDaemon>();
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
             var storageItem = new FluentExpandoObject
@@ -308,6 +314,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             };
 
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
+            daemonMock.SetupGet(x => x.ServiceProvider).Returns(ServiceProvider);
             daemonMock.Setup(n => n.GetDataAsync<IDictionary<string, object>>(It.IsAny<string>()))
                 .ReturnsAsync((IDictionary<string, object>)storageItem);
 

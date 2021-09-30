@@ -69,7 +69,7 @@ namespace NetDaemon.Model3.Tests.Internal
 
             serviceCollection.AddSingleton(_hassClientMock.Object);
             serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
-            DependencyInjectionSetup.AddScopedHaContext(default, serviceCollection);
+            serviceCollection.AddScopedHaContext();
             var provider = serviceCollection.BuildServiceProvider();
 
             var haContext = provider.GetRequiredService<IHaContext>();

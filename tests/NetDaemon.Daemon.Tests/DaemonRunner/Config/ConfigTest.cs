@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -30,7 +31,10 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
                     AppSource = appSource
             });
 
-        private readonly IServiceProvider _serviceProvider = new ServiceCollection().BuildServiceProvider();
+        private readonly IServiceProvider _serviceProvider = new ServiceCollection()
+            .AddNetDaemonServices()
+            .AddTransient(_=> Mock.Of<INetDaemon>())
+            .BuildServiceProvider();
 
         private ApplicationContext TestAppContext => ApplicationContext.Create(typeof(object), "id", _serviceProvider, Mock.Of<INetDaemon>());
 
@@ -203,7 +207,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         [InlineData(typeof(SwitchEntity))]
         [InlineData(typeof(VacuumEntity))]
         [InlineData(typeof(ZoneEntity))]
-        public void YamlScalarNotToObjectUsingEntityType(Type entityType)
+        public async void YamlScalarNotToObjectUsingEntityType(Type entityType)
         {
             // ARRANGE
             const string? yaml = "yaml: 1234\n";
@@ -215,7 +219,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
 
             var scalarValue = (YamlScalarNode) scalar.Value;
             // ACT & ASSERT
-            using var applicationContext = ApplicationContext.Create(typeof(BaseTestApp), "id", _serviceProvider, Mock.Of<INetDaemon>());
+            await using var applicationContext = ApplicationContext.Create(typeof(BaseTestApp), "id", _serviceProvider, Mock.Of<INetDaemon>());
             var instance = scalarValue.ToObject(entityType, applicationContext) as RxEntityBase;
             Assert.NotNull(instance);
             Assert.Equal(entityType, instance!.GetType());
@@ -223,7 +227,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         }
 
         [Fact]
-        public void YamlScalarToObjectUsingAnyType()
+        public async void YamlScalarToObjectUsingAnyType()
         {
             // ARRANGE
             const string? yaml = "yaml: 1234\n";
@@ -235,10 +239,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             var scalarValue = (YamlScalarNode) scalar.Value;
             var mockAction = new Mock<ISpeaker>();
             var serviceProvider = new ServiceCollection()
+                .AddNetDaemonServices()
+                .AddTransient(_=> Mock.Of<INetDaemon>())
                 .AddSingleton(mockAction.Object)
                 .BuildServiceProvider();
 
-            using var applicationContext = ApplicationContext.Create(typeof(object), "Id", serviceProvider, Mock.Of<INetDaemon>());
+            await using var applicationContext = ApplicationContext.Create(typeof(object), "Id", serviceProvider, Mock.Of<INetDaemon>());
 
             // ACT & ASSERT
             var instance = scalarValue.ToObject(typeof(TestClass), applicationContext);
@@ -340,9 +346,9 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             yamlStream.Load(new StringReader(yaml));
             var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
 
-            using var applicationContext =
+            var applicationContext =
                 ApplicationContext.Create(typeof(T), "id", _serviceProvider, Mock.Of<INetDaemon>());
-            var instance = (T) applicationContext.ApplicationInstance;
+            var instance = (T) applicationContext.ApplicationInstance!;
 
             var config = new YamlConfigEntry("path is mocked by yamlConfigReader ->",
                     GetYamlConfigReader(yaml),

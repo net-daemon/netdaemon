@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Services;
@@ -14,7 +15,7 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base class for all NetDaemon App types
     /// </summary>
-    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata, IPersistenceService
+    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata
     {
         private IPersistenceService? _persistenceService;
         private RuntimeInfoManager? _runtimeInfoManager;
@@ -43,8 +44,6 @@ namespace NetDaemon.Common
         [SuppressMessage("", "CA1065")]
         public IHttpHandler Http => Daemon?.Http ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
-        #region ApplicationMetaData
-        
         /// <summary>
         ///    Dependencies on other applications that will be initialized before this app
         /// </summary>
@@ -81,8 +80,6 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         public Type ApplicationType => GetType();
-        
-        #endregion
         
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }
@@ -126,7 +123,7 @@ namespace NetDaemon.Common
         protected INetDaemon? Daemon { get; set; }
 
         /// <inheritdoc/>
-        public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
+        public IServiceProvider? ServiceProvider { get; internal set; }
 
         /// <inheritdoc/>
         public void SaveAppState() => _persistenceService!.SaveAppState();
@@ -144,8 +141,9 @@ namespace NetDaemon.Common
             _ = daemon ?? throw new NetDaemonArgumentNullException(nameof(daemon));
             Daemon = daemon;
             Logger = daemon.Logger;
+            ServiceProvider ??= daemon.ServiceProvider!;
 
-            _runtimeInfoManager = new RuntimeInfoManager(daemon, this);
+            _runtimeInfoManager = new(daemon, this);
             _persistenceService = new ApplicationPersistenceService(this, daemon);
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());

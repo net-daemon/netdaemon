@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
@@ -33,16 +34,18 @@ namespace NetDaemon.Daemon.Fakes
             DefaultHttpHandlerMock = new HttpHandlerMock();
             var hassClientFactoryMock = new HassClientFactoryMock(DefaultHassClientMock);
 
-            DefaultDaemonHost = new NetDaemonHost(
-                hassClientFactoryMock.Object,
-                DefaultDataRepositoryMock.Object,
-                LoggerMock.LoggerFactory,
-                DefaultHttpHandlerMock.Object,
-                DefaultServiceProviderMock.Object
-            );
-
-            // Allow no extra wait time
-            DefaultDaemonHost.TextToSpeechService.InternalDelayTimeForTts = 0;
+            // The DefaultNetDaemonHost is created lazy so new services could be added to the ServiceCollection before
+            // it is created
+            _LazyDefaultDaemonHost = new Lazy<NetDaemonHost>(
+                () => new NetDaemonHost(
+                        hassClientFactoryMock.Object,
+                        DefaultDataRepositoryMock.Object,
+                        LoggerMock.LoggerFactory,
+                        DefaultHttpHandlerMock.Object,
+                        DefaultServiceCollection.BuildServiceProvider()
+                    )
+                    // Allow no extra wait time
+                    { TextToSpeechService = { InternalDelayTimeForTts = 0}});
         }
 
         /// <summary>
@@ -53,11 +56,17 @@ namespace NetDaemon.Daemon.Fakes
         /// <summary>
         ///     Returns default DaemonHost mock
         /// </summary>
-        public NetDaemonHost DefaultDaemonHost { get; }
+        public NetDaemonHost DefaultDaemonHost => _LazyDefaultDaemonHost.Value;
+
+        private readonly Lazy<NetDaemonHost> _LazyDefaultDaemonHost;
+
+        public IServiceCollection DefaultServiceCollection = new ServiceCollection();
+        
         /// <summary>
         ///     Returns default data repository mock
         /// </summary>
         public Mock<IDataRepository> DefaultDataRepositoryMock { get; }
+        
         /// <summary>
         ///     Returns default HassClient mock
         /// </summary>
@@ -67,10 +76,10 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public HttpHandlerMock DefaultHttpHandlerMock { get; }
 
-        /// <summary>
-        ///     Default mock for the IServiceProvider
-        /// </summary>
-        public ServiceProviderMock DefaultServiceProviderMock { get; } = new();
+        // /// <summary>
+        // ///     Default mock for the IServiceProvider
+        // /// </summary>
+        // public ServiceProviderMock DefaultServiceProviderMock { get; } = new();
 
         /// <summary>
         ///     Returns default logger mock

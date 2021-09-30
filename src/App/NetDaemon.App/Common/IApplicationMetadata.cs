@@ -10,12 +10,7 @@ namespace NetDaemon.Common
         /// <summary>
         ///     Unique id of the application
         /// </summary>
-        string? Id { get; set;  }
-
-        /// <summary>
-        ///     Returns the description, is the decorating comment of app class
-        /// </summary>
-        string? Description { get; }
+        string? Id { get; }
 
         /// <summary>
         ///     Gets or sets a flag indicating whether this app is enabled.

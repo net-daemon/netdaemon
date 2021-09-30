@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Daemon.Tests.DaemonRunner.App;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
@@ -56,7 +57,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         static ApplicationContext TestApp(string id, params string[] dependencies)
         {
-            var applicationContext = ApplicationContext.Create(typeof(object), id, new ServiceCollection().BuildServiceProvider(), Mock.Of<INetDaemon>());
+            var applicationContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), id, new ServiceCollection().BuildServiceProvider(), Mock.Of<INetDaemon>());
             applicationContext.Dependencies = dependencies;
             return applicationContext;
         }

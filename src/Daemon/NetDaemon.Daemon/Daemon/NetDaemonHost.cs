@@ -132,11 +132,11 @@ namespace NetDaemon.Daemon
             return (T)applicationContext.ApplicationInstance;
         }
 
-        //for unit testing with INetDaemonAppBase apps that ware instatiated by the testcode
+        // for unit testing with INetDaemonAppBase apps that are instantiated by the test code
         internal void AddRunningApp(INetDaemonAppBase app)
         {
             _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
-            var applicationContext = ApplicationContext.CreateFromAppInstance(app, this, ServiceProvider);
+            var applicationContext = ApplicationContext.CreateFromAppInstance(app, ServiceProvider);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }
@@ -908,7 +908,6 @@ namespace NetDaemon.Daemon
             }
         }
 
-        /// <inheritdoc/>
         private async Task LoadAllApps()
         {
             _ = _appInstanceManager ?? throw new NetDaemonNullReferenceException(nameof(_appInstanceManager));
@@ -917,12 +916,6 @@ namespace NetDaemon.Daemon
 
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
-
-            // // create a ServiceCollection for loading dependencies into the apps
-            // // for now we only load INetDaemon and Ilogger
-            // var serviceCollection = new ServiceCollection();
-            // serviceCollection.AddSingleton<INetDaemon>(this);
-            // serviceCollection.AddSingleton(Logger);
 
             // Get all instances
             var applicationContexts = _appInstanceManager.InstanceDaemonApps(ServiceProvider!);
@@ -1100,16 +1093,13 @@ namespace NetDaemon.Daemon
             try
             {
                 await appContext.RestoreStateAsync().ConfigureAwait(false);
-                
                 return appContext.IsEnabled;
             }
             catch (Exception e)
             {
                 Logger.LogError(e, "Failed to load app {appInstance.Id}");
+                return false;
             }
-
-            // Error return false
-            return false;
         }
 
         /// <inheritdoc/>
