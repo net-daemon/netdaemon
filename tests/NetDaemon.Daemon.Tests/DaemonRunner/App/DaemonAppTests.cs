@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BaseLessNs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
@@ -303,7 +302,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             var daemonMock = new Mock<INetDaemon>();
             var serviceProvider =  ServiceCollection.AddSingleton(daemonMock.Object).BuildServiceProvider();
 
-            await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", serviceProvider, daemonMock.Object);
+            await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", serviceProvider);
             var instance = appContext.ApplicationInstance as AssemblyDaemonApp;
 
             daemonMock.SetupGet(x => x.Logger).Returns(new Mock<ILogger>().Object);
@@ -372,7 +371,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ASSERT
             var appId = codeManager
                     .InstanceDaemonApps(ServiceProvider)
-                    .FirstOrDefault(app => app.ApplicationInstance.GetType().Name == appTypeName)
+                    .FirstOrDefault(app => app.ApplicationInstance?.GetType().Name == appTypeName)
                     ?.Id;
 
             Assert.Equal(appTypeName, appId);
@@ -396,24 +395,20 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             Assert.Equal(expectedAppId, appId);
         }
         
-        
         [Fact]
         public async void BaseLassYamlAppShouldGetConfigs()
         {
             // ARRANGE
-            var appTypeName = "BaseLessAppYaml";
-            var expectedAppId = "This app is identified using attribute";
-
             var codeManager = CM(Path.Combine(ConfigFixturePath, "BaseLessAppYaml"));
             // ACT
             // ASSERT
             var app = codeManager
                     .InstanceDaemonApps(ServiceProvider)
                     .First();
-            app.InstantiateApp();
-            await app.InitializeAsync();
+            app.Start();
+            await app.InitializeAsync().ConfigureAwait(false);
 
-            var value = app.ApplicationInstance.GetType().GetProperty("ConfigValue").GetValue(app.ApplicationInstance);
+            var value = app.ApplicationInstance?.GetType().GetProperty("ConfigValue")?.GetValue(app.ApplicationInstance);
             Assert.Equal("Hello Config", value);
         }
 

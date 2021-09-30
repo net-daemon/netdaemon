@@ -122,16 +122,6 @@ namespace NetDaemon.Daemon
                 .AsConcurrent(t => TrackBackgroundTask(t));
         }
 
-        //for unit testing
-        internal T LoadApp<T>(string id)
-        {
-            var applicationContext = ApplicationContext.Create(typeof(T), id, ServiceProvider, this);
-            InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
-            InternalAllAppInstances[applicationContext.Id!] = applicationContext;
-
-            return (T)applicationContext.ApplicationInstance;
-        }
-
         // for unit testing with INetDaemonAppBase apps that are instantiated by the test code
         internal void AddRunningApp(INetDaemonAppBase app)
         {
@@ -939,7 +929,7 @@ namespace NetDaemon.Daemon
             // Now run initialize on all sorted by dependencies
             foreach (var applicationContext in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
             {
-                await InitializeApp(applicationContext);
+                await InitializeApp(applicationContext).ConfigureAwait(false);
             }
 
             await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
@@ -948,7 +938,7 @@ namespace NetDaemon.Daemon
 
         private async Task InitializeApp(ApplicationContext applicationContext)
         {
-            applicationContext.InstantiateApp();
+            applicationContext.Start();
 
             // Init by calling the InitializeAsync
             var taskInitAsync = applicationContext.InitializeAsync();
@@ -963,10 +953,10 @@ namespace NetDaemon.Daemon
             if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
             {
                 await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
-                Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id,
-                    applicationContext.GetType().Name);
             }
-        }
+            
+            Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id,
+                applicationContext.GetType().Name);        }
 
         [SuppressMessage("", "CA1031")]
         private void RegisterAppSwitchesAndTheirStates()

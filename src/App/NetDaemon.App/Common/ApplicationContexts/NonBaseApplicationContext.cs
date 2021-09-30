@@ -13,13 +13,13 @@ namespace NetDaemon.Common
         {
             _persistenceService = ServiceProvider.GetRequiredService<IPersistenceService>();
         }
-
+        
         public override async Task RestoreStateAsync()
         {
             await _persistenceService.RestoreAppStateAsync().ConfigureAwait(false);
         }
 
-        public override void InstantiateApp()
+        public override void Start()
         {
             var appInstance = ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, ApplicationType);
             ApplicationInstance = appInstance ?? throw new InvalidOperationException($"Faild to create instance {ApplicationType.Name} for of app id {Id}");

@@ -552,6 +552,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(300), tokenSource.Token));
         }
 
+        [SuppressMessage("", checkId:"CA1034")]
         public class ServiceProviderTest : DaemonHostTestBase
         {
             // This test is in a nested class because the CoreDaemonHostTestBase will create the ServiceProvider before
@@ -568,12 +569,13 @@ namespace NetDaemon.Daemon.Tests.Reactive
             }
 
             [Fact]
-            public void ServiceProviderShouldReturnCorrectService()
+            public async void ServiceProviderShouldReturnCorrectService()
             {
                 // ARRANGE
                 DefaultServiceCollection.AddSingleton<ITestGetService>(new TestGetService());
 
-                var app = DefaultDaemonHost.LoadApp<BaseTestRxApp>("_rx_id");
+                await using var app = new BaseTestRxApp { Id = " _rx_id" };
+                DefaultDaemonHost.AddRunningApp(app);
 
                 // ACT
                 var service = app.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;

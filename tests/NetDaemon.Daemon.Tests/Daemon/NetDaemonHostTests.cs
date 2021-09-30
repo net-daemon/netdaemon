@@ -31,7 +31,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            var app = DefaultDaemonHost.LoadApp<AssemblyDaemonApp>("id");
+            await using var app = new AssemblyDaemonApp() { Id = "id" };
+            DefaultDaemonHost.AddRunningApp(app);
 
             // ACT
             await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);
@@ -425,6 +426,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             public string TestString => "Test";
         }
 
+        [SuppressMessage("", checkId:"CA1034")]
         public class ServiceProviderTest : DaemonHostTestBase
         {
             // This test is in a nested class because the CoreDaemonHostTestBase will create the ServiceProvider before

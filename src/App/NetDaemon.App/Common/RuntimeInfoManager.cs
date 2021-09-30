@@ -54,7 +54,7 @@ namespace NetDaemon.Common
                 _applicationMetadata.RuntimeInfo.HasError = true;
             }
 
-            if (_daemon!.IsConnected)
+            if (_daemon.IsConnected)
             {
                 await _daemon.SetStateAsync(_applicationMetadata.EntityId, _applicationMetadata.IsEnabled ? "on" : "off", ("runtime_info", _applicationMetadata.RuntimeInfo))
                     .ConfigureAwait(false);

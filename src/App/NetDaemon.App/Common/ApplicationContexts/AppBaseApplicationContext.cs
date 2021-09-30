@@ -9,33 +9,19 @@ namespace NetDaemon.Common
     /// </summary>
     class AppBaseApplicationContext : ApplicationContext
     {
-        //private readonly INetDaemon _netDaemon;
         private readonly INetDaemonAppBase _appInstance;
 
         public AppBaseApplicationContext(Type applicationType, string id, IServiceProvider serviceProvider)
-            : this(CreateInstance(applicationType, serviceProvider), serviceProvider)
+            : base(applicationType, id, serviceProvider)
         {
-            Id = id;
-        }
-        //     : base(applicationType, id, serviceProvider)
-        // {
-        //     // INetDaemonAppBase apps are always instantiated but will be disposed directly if they are disabled
-        //     // changing this would be a breaking change because these app classes implement their own lifetime management
-        //     
-        //     var appInstance = (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
-        //     _appInstance = appInstance ?? throw new InvalidOperationException($"Faild to create instance {applicationType.Name} for of app id {id}");
-        //
-        //     appInstance.Id = id;
-        //     if (appInstance is NetDaemonAppBase appBase)
-        //     {
-        //         appBase.ServiceProvider = ServiceProvider;
-        //     }
-        //     ApplicationInstance = appInstance;
-        // }
+            _appInstance = (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
 
-        private static INetDaemonAppBase CreateInstance(Type applicationType, IServiceProvider serviceProvider)
-        {
-            return (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, applicationType);
+            if (_appInstance is NetDaemonAppBase appBase)
+            {
+                appBase.ServiceProvider = ServiceProvider;
+            }
+            ApplicationInstance = _appInstance;
+            Id = id;
         }
 
         /// <summary>
@@ -43,7 +29,6 @@ namespace NetDaemon.Common
         /// </summary>
         /// <param name="appInstance"></param>
         /// <param name="serviceProvider"></param>
-        /// <param name="netDaemon"></param>
         public AppBaseApplicationContext(INetDaemonAppBase appInstance, IServiceProvider serviceProvider)
             : base(appInstance.GetType(), appInstance.Id!, serviceProvider)
         {
@@ -71,7 +56,7 @@ namespace NetDaemon.Common
             }
         }
 
-        public override void InstantiateApp()
+        public override void Start()
         {
             // Do nothing, already instantiated 
         }

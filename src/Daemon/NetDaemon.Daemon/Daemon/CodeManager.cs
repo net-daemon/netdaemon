@@ -5,10 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
-using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]

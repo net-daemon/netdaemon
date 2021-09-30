@@ -60,7 +60,6 @@ namespace NetDaemon.Daemon.Fakes
 
         private readonly Lazy<NetDaemonHost> _LazyDefaultDaemonHost;
 
-        public IServiceCollection DefaultServiceCollection = new ServiceCollection();
         
         /// <summary>
         ///     Returns default data repository mock
@@ -76,10 +75,10 @@ namespace NetDaemon.Daemon.Fakes
         /// </summary>
         public HttpHandlerMock DefaultHttpHandlerMock { get; }
 
-        // /// <summary>
-        // ///     Default mock for the IServiceProvider
-        // /// </summary>
-        // public ServiceProviderMock DefaultServiceProviderMock { get; } = new();
+        /// <summary>
+        ///     Default Service collection for DefaultDaemonHost
+        /// </summary>
+        public IServiceCollection DefaultServiceCollection { get; } = new ServiceCollection();
 
         /// <summary>
         ///     Returns default logger mock
