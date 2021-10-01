@@ -10,7 +10,8 @@ namespace NetDaemon.Common
         private readonly INetDaemon _daemon;
         private readonly IApplicationMetadata _applicationMetadata;
         private readonly Channel<bool> _updateRuntimeInfoChannel = Channel.CreateBounded<bool>(5);
-        private CancellationTokenSource _cancellationTokenSource = new();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private bool isDisposed;
         private readonly Task _ProcessTask;
 
         public RuntimeInfoManager(INetDaemon daemon, IApplicationMetadata applicationMetadata)
@@ -63,9 +64,12 @@ namespace NetDaemon.Common
 
         public async ValueTask DisposeAsync()
         {
+            if (isDisposed) return;
             _cancellationTokenSource.Cancel();
             await _ProcessTask.ConfigureAwait(false);
             _cancellationTokenSource.Dispose();
+
+            isDisposed = true;
         }
     }
 }

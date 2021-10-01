@@ -19,6 +19,7 @@ namespace NetDaemon.Daemon.Services
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly FluentExpandoObject _internalStorageObject;
         private readonly Task _handleStorageTask;
+        private bool isDisposed;
 
         public dynamic Storage => _internalStorageObject;
 
@@ -111,9 +112,12 @@ namespace NetDaemon.Daemon.Services
 
         public async ValueTask DisposeAsync()
         {
+            if (isDisposed) return;
+            
             _cancellationTokenSource.Cancel();
             await _handleStorageTask.ConfigureAwait(false);
             _cancellationTokenSource.Dispose();
+            isDisposed = true;
         }
     }
 }
