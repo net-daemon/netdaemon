@@ -40,6 +40,8 @@ namespace NetDaemon.Daemon
         internal readonly ConcurrentDictionary<string, HassEntity> _hassEntities = new();
 
         internal EntityStateManager StateManager { get; }
+
+        private AppManager _appManager;
         internal TextToSpeechService TextToSpeechService { get; }
 
         internal async Task WaitForTasksAsync()
@@ -65,8 +67,6 @@ namespace NetDaemon.Daemon
         private readonly IHttpHandler? _httpHandler;
 
         private readonly IDataRepository? _repository;
-
-        private ConcurrentDictionary<string, ApplicationContext> InternalAllAppInstances { get; } = new();
 
         private bool _isDisposed;
 
@@ -120,6 +120,8 @@ namespace NetDaemon.Daemon
                 a => HassEvents += a,
                 a => HassEvents -= a).Select(e => e.EventArgs)
                 .AsConcurrent(t => TrackBackgroundTask(t));
+            
+            _appManager = new AppManager(ServiceProvider, Logger);
         }
 
         // for unit testing with INetDaemonAppBase apps that are instantiated by the test code
@@ -146,16 +148,19 @@ namespace NetDaemon.Daemon
 
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values.Select(c => c.ApplicationInstance).OfType<INetDaemonAppBase>();
 
-        private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>
-            InternalRunningAppInstances.Values.Select(c => c.ApplicationInstance).OfType<NetDaemonRxApp>();
+        private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>  InternalRunningAppInstances.Values.Select(c => c.ApplicationInstance).OfType<NetDaemonRxApp>();
 
-        private IEnumerable<IObserver<RxEvent>>? EventChangeObservers =>
+        private ConcurrentDictionary<string, ApplicationContext> InternalAllAppInstances => _appManager.InternalAllAppInstances;
+
+        private ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances => _appManager.InternalRunningAppInstances;
+
+        
+        private IEnumerable<IObserver<RxEvent>> EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable)app.EventChangesObservable).Observers);
 
         [SuppressMessage("", "CA1721")]
         public IEnumerable<EntityState> State => StateManager.States;
 
-        private ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances { get; } = new();
 
         private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
         {
@@ -275,7 +280,7 @@ namespace NetDaemon.Daemon
 
             _appInstanceManager = appInstanceManager;
 
-            await LoadAllApps().ConfigureAwait(false);
+            await ReloadAllApps().ConfigureAwait(false);
             EnableApplicationDiscoveryService();
         }
 
@@ -295,13 +300,6 @@ namespace NetDaemon.Daemon
             _ = domain ??
                 throw new NetDaemonArgumentNullException(nameof(domain));
             _daemonServiceCallFunctions.Add((domain.ToLowerInvariant(), service.ToLowerInvariant(), action));
-        }
-
-        /// <inheritdoc/>
-        public async Task ReloadAllApps()
-        {
-            await UnloadAllApps().ConfigureAwait(false);
-            await LoadAllApps().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -402,7 +400,6 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Reads next event from home assistant and handles it async
         /// </summary>
-        /// <param name="cancellationToken">Token to cancel current operation</param>
         /// <returns>true if read operation is success</returns>
         /// <exception cref="NetDaemonNullReferenceException"></exception>
         private async Task<bool> ReadEvent()
@@ -576,19 +573,27 @@ namespace NetDaemon.Daemon
         }
 
         /// <inheritdoc/>
-        [SuppressMessage("", "CA1031")]
-        public async Task UnloadAllApps()
+        public async Task ReloadAllApps()
         {
-            Logger.LogTrace("Unloading all apps ({instances}, {running})", InternalAllAppInstances.Count,
-                InternalRunningAppInstances.Count);
-            foreach (var app in InternalAllAppInstances.Values)
-            {
-                await app.DisposeAsync().ConfigureAwait(false);
-            }
+            if (_appInstanceManager == null) throw new InvalidOperationException("_appInstanceManager has not yet been initialized");
+            
+            await _appManager.ReloadAllApps(_appInstanceManager).ConfigureAwait(false);
 
-            InternalAllAppInstances.Clear();
-            InternalRunningAppInstances.Clear();
+            await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
+                .ConfigureAwait(false);
+            
+            foreach (var applicationContext in _appManager.InternalRunningAppInstances.Values)
+            {
+                if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
+                {
+                    await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
+                }                
+            }
         }
+
+        /// <inheritdoc/>
+        [SuppressMessage("", "CA1031")]
+        public Task UnloadAllApps() => _appManager.UnloadAllApps();
 
         /// <summary>
         ///     Fixes the type differences that can be from Home Assistant depending on
@@ -898,66 +903,6 @@ namespace NetDaemon.Daemon
             }
         }
 
-        private async Task LoadAllApps()
-        {
-            _ = _appInstanceManager ?? throw new NetDaemonNullReferenceException(nameof(_appInstanceManager));
-            Logger.LogTrace("Loading all apps ({instances}, {running})", InternalAllAppInstances.Count,
-                InternalRunningAppInstances.Count);
-
-            // First unload any apps running
-            await UnloadAllApps().ConfigureAwait(false);
-
-            // Get all instances
-            var applicationContexts = _appInstanceManager.InstanceDaemonApps(ServiceProvider!);
-
-            if (!InternalRunningAppInstances.IsEmpty)
-            {
-                Logger.LogWarning("Old apps not unloaded correctly. {nr} apps still loaded.",
-                    InternalRunningAppInstances.Count);
-                InternalRunningAppInstances.Clear();
-            }
-
-            foreach (var applicationContext in applicationContexts)
-            {
-                InternalAllAppInstances[applicationContext.Id!] = applicationContext;
-                if (await RestoreAppState(applicationContext).ConfigureAwait(false))
-                {
-                    InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
-                }
-            }
-
-            // Now run initialize on all sorted by dependencies
-            foreach (var applicationContext in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
-            {
-                await InitializeApp(applicationContext).ConfigureAwait(false);
-            }
-
-            await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
-                .ConfigureAwait(false);
-        }
-
-        private async Task InitializeApp(ApplicationContext applicationContext)
-        {
-            applicationContext.Start();
-
-            // Init by calling the InitializeAsync
-            var taskInitAsync = applicationContext.InitializeAsync();
-            var taskAwaitedAsyncTask = await Task.WhenAny(taskInitAsync, Task.Delay(5000)).ConfigureAwait(false);
-            if (taskAwaitedAsyncTask != taskInitAsync)
-            {
-                Logger.LogWarning(
-                    "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
-                    applicationContext.Id);
-            }
-
-            if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
-            {
-                await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
-            }
-            
-            Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id,
-                applicationContext.GetType().Name);        }
-
         [SuppressMessage("", "CA1031")]
         private void RegisterAppSwitchesAndTheirStates()
         {
@@ -1075,21 +1020,6 @@ namespace NetDaemon.Daemon
 
             obj["__IsDisabled"] = !app.IsEnabled;
             await SaveDataAsync(uniqueIdForStorage, obj).ConfigureAwait(false);
-        }
-
-        [SuppressMessage("", "CA1031")]
-        private async Task<bool> RestoreAppState(ApplicationContext appContext)
-        {
-            try
-            {
-                await appContext.RestoreStateAsync().ConfigureAwait(false);
-                return appContext.IsEnabled;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Failed to load app {appInstance.Id}");
-                return false;
-            }
         }
 
         /// <inheritdoc/>
