@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Daemon;
+using NetDaemon.Model3.Common;
 
 namespace NetDaemon.DevelopmentApps.apps.DebugApp
 {
@@ -10,17 +11,16 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
     [NetDaemonApp]
     public class InterfaceApp : IAsyncInitializable
     {
-        private INetDaemon _host;
+        private readonly IHaContext _ha;
 
-        public InterfaceApp(INetDaemonHost host)
+        public InterfaceApp(IHaContext ha)
         {
-            _host = host;
-            _host.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works via DI! via Constructor" }, true);;
+            _ha = ha;
         }
 
         public Task InitializeAsync()
         {
-            _host.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works via DI!" }, true);;
+            _ha.CallService("notify", "persistent_notification", data: new { message = "Hello", title = "Yay it works via DI!" });;
             return Task.CompletedTask;
         }
     }

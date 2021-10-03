@@ -3,13 +3,11 @@ using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.Model3.Common
 {
+    /// <summary>
+    /// Represents a context for interacting with Home Assistant
+    /// </summary>
     public interface IHaContext
     {
-        /// <summary>
-        ///     The observable events
-        /// </summary>
-//        IRxEvent EventChanges { get; }
-
         /// <summary>
         ///     The observable statestream, all changes including attributes
         /// </summary>
@@ -32,7 +30,7 @@ namespace NetDaemon.Model3.Common
         /// <summary>
         ///     Calls service in Home Assistant
         /// </summary>
-        /// <param name="domain">Domain of sevice</param>
+        /// <param name="domain">Domain of service</param>
         /// <param name="service">Service name</param>
         /// <param name="target">The target that is targeted by this service call</param>
         /// <param name="data">Data provided to service. Use anonomous type</param>

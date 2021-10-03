@@ -1,12 +1,13 @@
 ﻿using System.Text.Json.Serialization;
 using NetDaemon.Common;
+using NetDaemon.DevelopmentApps.Domains.Climate;
 using NetDaemon.Model3.Common;
-using NetDaemon.Model3.Domains.Climate;
 
 
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
+    [Focus]
     public class CallServiceApp
     {
         public CallServiceApp(IHaContext ha)

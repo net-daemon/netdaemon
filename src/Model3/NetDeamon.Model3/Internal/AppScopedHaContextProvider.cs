@@ -42,7 +42,7 @@ namespace NetDaemon.Model3.Internal
 
         public void CallService(string domain, string service, Target? target = null, object? data = null)
         {
-            _hassClient.CallService(domain, service, data, target.Map());
+            _hassClient.CallService(domain, service, data, target.Map(), false);
         }
 
         public IObservable<StateChange> StateAllChanges => _entityStateCache.StateAllChanges.Select(e => e.Map(this));

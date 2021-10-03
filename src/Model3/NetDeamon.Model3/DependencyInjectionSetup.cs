@@ -8,6 +8,9 @@ using NetDaemon.Model3.Internal;
 
 namespace NetDaemon.Model3
 {
+    /// <summary>
+    /// Setup methods for services configuration 
+    /// </summary>
     public static class DependencyInjectionSetup
     {
         /// <summary>
@@ -18,13 +21,15 @@ namespace NetDaemon.Model3
             if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
 
             return hostBuilder
-                .ConfigureServices((_, services) =>
-                {
-                    services.AddSingleton<EntityStateCache>();
-                    services.AddScoped<AppScopedHaContextProvider>();
-                    services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
-                    services.AddTransient<IEventProvider>(s => s.GetRequiredService<AppScopedHaContextProvider>());
-                });
+                .ConfigureServices(AddScopedHaContext);
+        }
+
+        internal static void AddScopedHaContext(HostBuilderContext _, IServiceCollection services)
+        {
+            services.AddSingleton<EntityStateCache>();
+            services.AddScoped<AppScopedHaContextProvider>();
+            services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
+            services.AddTransient<IEventProvider>(s => s.GetRequiredService<AppScopedHaContextProvider>());
         }
     }
 }

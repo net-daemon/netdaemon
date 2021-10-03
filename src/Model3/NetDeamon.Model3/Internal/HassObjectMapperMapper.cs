@@ -23,7 +23,7 @@ namespace NetDaemon.Model3.Internal
             {
                 EntityId = hassState.EntityId,
                 State = hassState.State,
-                AttributesJson = hassState.AttributesJson ?? new JsonElement(),
+                AttributesJson = hassState.AttributesJson,
                 LastChanged = hassState.LastChanged,
                 LastUpdated = hassState.LastUpdated,
                 Context = hassState.Context == null ? null :
