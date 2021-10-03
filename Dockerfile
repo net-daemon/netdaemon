@@ -6,7 +6,7 @@ RUN \
     \
     && git clone https://github.com/net-daemon/admin.git /admin \
     && cd /admin \
-    && git checkout tags/1.3.4 \
+    && git checkout tags/1.3.5 \
     && make deploy \
     \
     && rm -fr /var/lib/apt/lists/* \
