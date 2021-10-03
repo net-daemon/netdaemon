@@ -128,7 +128,7 @@ namespace NetDaemon.Daemon
         internal void AddRunningApp(INetDaemonAppBase app)
         {
             _ = app.Id ?? throw new InvalidOperationException("app.id should not be null");
-            var applicationContext = ApplicationContext.CreateFromAppInstance(app, ServiceProvider);
+            var applicationContext = ApplicationContext.CreateFromAppInstanceForTest(app, ServiceProvider);
             InternalRunningAppInstances[applicationContext.Id!] = applicationContext;
             InternalAllAppInstances[applicationContext.Id!] = applicationContext;
         }

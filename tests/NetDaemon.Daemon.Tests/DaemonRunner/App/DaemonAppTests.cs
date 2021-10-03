@@ -37,25 +37,22 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         });
 
 
-        private IServiceCollection ServiceCollection
+        private IServiceCollection InitializeServiceCollection()
         {
-            get
-            {
-                var moqDaemon = new Mock<INetDaemonHost>();
-                var moqLogger = new LoggerMock();
+            var moqDaemon = new Mock<INetDaemonHost>();
+            var moqLogger = new LoggerMock();
 
-                moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
+            moqDaemon.SetupGet(n => n.Logger).Returns(moqLogger.Logger);
 
-                var serviceCollection = new ServiceCollection()
-                    .AddSingleton(moqLogger.Logger)
-                    .AddNetDaemonServices()
-                    .AddSingleton<INetDaemon>(moqDaemon.Object)
-                    .AddSingleton(_mockAction.Object);
-                return serviceCollection;
-            }
+            var serviceCollection = new ServiceCollection()
+                .AddSingleton(moqLogger.Logger)
+                .AddNetDaemonServices()
+                .AddSingleton<INetDaemon>(moqDaemon.Object)
+                .AddSingleton(_mockAction.Object);
+            return serviceCollection;
         }
         
-        private ServiceProvider ServiceProvider => ServiceCollection.BuildServiceProvider();
+        private ServiceProvider ServiceProvider => InitializeServiceCollection().BuildServiceProvider();
 
 
         [Fact]
@@ -300,7 +297,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
             // ARRANGE
             
             var daemonMock = new Mock<INetDaemon>();
-            var serviceProvider =  ServiceCollection.AddSingleton(daemonMock.Object).BuildServiceProvider();
+            var serviceProvider =  InitializeServiceCollection().AddSingleton(daemonMock.Object).BuildServiceProvider();
 
             await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", serviceProvider);
             var instance = appContext.ApplicationInstance as AssemblyDaemonApp;

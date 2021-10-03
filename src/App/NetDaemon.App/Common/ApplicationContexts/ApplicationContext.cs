@@ -37,7 +37,7 @@ namespace NetDaemon.Common
         /// <summary>
         /// Intended for internal use by fakes only
         /// </summary>
-        public static ApplicationContext CreateFromAppInstance(INetDaemonAppBase applicationInstance, IServiceProvider serviceProvider)
+        public static ApplicationContext CreateFromAppInstanceForTest(INetDaemonAppBase applicationInstance, IServiceProvider serviceProvider)
         {
             if (applicationInstance == null) throw new ArgumentNullException(nameof(applicationInstance));
 
