@@ -21,10 +21,10 @@ namespace NetDaemon.Model3
             if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
 
             return hostBuilder
-                .ConfigureServices(AddScopedHaContext);
+                .ConfigureServices((_, services) => services.AddScopedHaContext());
         }
 
-        internal static void AddScopedHaContext(HostBuilderContext _, IServiceCollection services)
+        internal static void AddScopedHaContext(this IServiceCollection services)
         {
             services.AddSingleton<EntityStateCache>();
             services.AddScoped<AppScopedHaContextProvider>();

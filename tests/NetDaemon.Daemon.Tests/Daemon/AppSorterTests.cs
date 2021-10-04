@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
+using NetDaemon.Daemon.Tests.DaemonRunner.App;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Daemon
@@ -55,7 +56,9 @@ namespace NetDaemon.Daemon.Tests.Daemon
 
         static ApplicationContext TestApp(string id, params string[] dependencies)
         {
-            return new ApplicationContext(typeof(object), id, new ServiceCollection().BuildServiceProvider()) { Dependencies = dependencies };
+            var applicationContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), id, new ServiceCollection().BuildServiceProvider());
+            applicationContext.Dependencies = dependencies;
+            return applicationContext;
         }
 
         [Fact]

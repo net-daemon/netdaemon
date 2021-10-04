@@ -7,10 +7,12 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NetDaemon.Common;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Common.Reactive;
+using NetDaemon.Daemon.Fakes;
 using Xunit;
 
 namespace NetDaemon.Daemon.Tests.Reactive
@@ -47,11 +49,11 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await InitializeFakeDaemon().ConfigureAwait(false);
 
             // ACT
-            DefaultDaemonRxApp.TriggerWebhook("some-id", new {data = 1});
+            DefaultDaemonRxApp.TriggerWebhook("some-id", new { data = 1 });
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // ASSERT
-            VerifyTriggerWebhook("some-id", new {data = 1});
+            VerifyTriggerWebhook("some-id", new { data = 1 });
         }
 
         [Fact]
@@ -98,7 +100,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultDaemonRxApp.EventChanges
                 .Subscribe(_ => called = true);
 
-            DefaultHassClientMock.AddCustomEvent("AN_EVENT", new {somedata = "hello"});
+            DefaultHassClientMock.AddCustomEvent("AN_EVENT", new { somedata = "hello" });
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -273,8 +275,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             DefaultDaemonHost.StateManager.Clear();
-            DefaultDaemonHost.StateManager.Store(new EntityState() {EntityId = "light.mylight"});
-            DefaultDaemonHost.StateManager.Store(new EntityState() {EntityId = "light.mylight2"});
+            DefaultDaemonHost.StateManager.Store(new EntityState() { EntityId = "light.mylight" });
+            DefaultDaemonHost.StateManager.Store(new EntityState() { EntityId = "light.mylight2" });
             var entities = DefaultDaemonRxApp.EntityIds.ToList();
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
@@ -550,26 +552,38 @@ namespace NetDaemon.Daemon.Tests.Reactive
                 DefaultDaemonRxApp.Delay(TimeSpan.FromMilliseconds(300), tokenSource.Token));
         }
 
-        private interface ITestGetService
+        [SuppressMessage("", checkId:"CA1034")]
+        public class ServiceProviderTest : DaemonHostTestBase
         {
-            string TestString { get; }
-        }
+            // This test is in a nested class because the CoreDaemonHostTestBase will create the ServiceProvider before
+            // we get a chance to add additional services to the ServiceCollection.  DaemonHostTestBase doe snot do that
 
-        private class TestGetService : ITestGetService
-        {
-            public string TestString => "Test";
-        }
+            private interface ITestGetService
+            {
+                string TestString { get; }
+            }
 
-        [Fact]
-        public void ServiceProviderShouldReturnCorrectService()
-        {
-            // ARRANGE
-            DefaultServiceProviderMock.Services[typeof(ITestGetService)] = new TestGetService();
-            // ACT
-            var service = DefaultDaemonRxApp.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;
-            // ASSERT
-            Assert.NotNull(service);
-            Assert.Equal("Test", service?.TestString);
+            private class TestGetService : ITestGetService
+            {
+                public string TestString => "Test";
+            }
+
+            [Fact]
+            public async void ServiceProviderShouldReturnCorrectService()
+            {
+                // ARRANGE
+                DefaultServiceCollection.AddSingleton<ITestGetService>(new TestGetService());
+
+                await using var app = new BaseTestRxApp { Id = " _rx_id" };
+                DefaultDaemonHost.AddRunningApp(app);
+
+                // ACT
+                var service = app.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;
+                // ASSERT
+                Assert.NotNull(service);
+                Assert.Equal("Test", service?.TestString);
+            }
         }
     }
+
 }
