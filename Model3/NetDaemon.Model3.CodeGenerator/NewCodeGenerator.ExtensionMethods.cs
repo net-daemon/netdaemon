@@ -50,7 +50,7 @@ namespace NetDaemon.Service.App.CodeGeneration
 
             var args = GetServiceArguments(domain, service);
 
-            var entityTypeName = GetDomainEntityTypeName(domain);
+            var entityTypeName = GetDomainEntityTypeName(service.Target?.Entity?.Domain!);
 
             yield return ParseMethod(
                 $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(args is not null ? $", {args.GetParametersString()}" : string.Empty)})
