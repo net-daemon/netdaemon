@@ -64,8 +64,7 @@ namespace NetDaemon.Model3.Entities
         /// Observable, All state changes. New.State!=Old.State
         /// </summary>
         public virtual IObservable<StateChange> StateChanges =>
-            StateAllChanges.Where(s => s.New?.State != s.Old?.State)
-                .Select(e => new StateChange(this, e.Old, e.New));
+             StateAllChanges.Where(s => s.New?.State != s.Old?.State);
 
         /// <summary>
         /// Calls a service using this entity as the target

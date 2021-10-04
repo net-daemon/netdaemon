@@ -50,8 +50,8 @@ namespace NetDaemon.Model3.Tests.Internal
                 }
             });
 
-            stateAllChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")));
-            stateChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")));
+            stateAllChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once);
+            stateChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once());
             
             haContext.GetState("TestDomain.TestEntity").State!.Should().Be("newstate");
             // the state should come from the state cache so we do not expect a call to HassClient.GetState 
@@ -65,7 +65,7 @@ namespace NetDaemon.Model3.Tests.Internal
 
             serviceCollection.AddSingleton(_hassClientMock.Object);
             serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
-            DependencyInjectionSetup.AddScopedHaContext(default, serviceCollection);
+            serviceCollection.AddScopedHaContext();
             var provider = serviceCollection.BuildServiceProvider();
 
             var haContext = provider.GetRequiredService<IHaContext>();

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Services;
@@ -15,17 +15,16 @@ namespace NetDaemon.Common
     /// <summary>
     ///     Base class for all NetDaemon App types
     /// </summary>
-    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata, INetDaemonPersistantApp
+    public abstract class NetDaemonAppBase : INetDaemonAppBase, IApplicationMetadata
     {
-        private ApplicationPersistenceService? _persistenceService;
-        
+        private IPersistenceService? _persistenceService;
+        private RuntimeInfoManager? _runtimeInfoManager;
+
         /// <summary>
         ///     A set of properties found in static analysis of code for each app
         /// </summary>
         public static Dictionary<string, Dictionary<string, string>> CompileTimeProperties { get; } = new();
 
-        private Task? _manageRuntimeInformationUpdatesTask;
-      
         /// <summary>
         ///     All actions being performed for service call events
         /// </summary>
@@ -35,39 +34,20 @@ namespace NetDaemon.Common
         // This is declared as static since it will contain state shared globally
         private static readonly ConcurrentDictionary<string, object> _global = new();
 
-        private readonly Channel<bool> _updateRuntimeInfoChannel =
-            Channel.CreateBounded<bool>(5);
-
-        private readonly CancellationTokenSource _cancelSource;
+        private readonly CancellationTokenSource _cancelSource = new();
         private bool _isDisposed;
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        protected NetDaemonAppBase()
-        {
-            _cancelSource = new();
-            _isDisposed = false;
-        }
         
-        /// <summary>
-        ///    Dependencies on other applications that will be initialized before this app
-        /// </summary>
-        public IEnumerable<string> Dependencies { get; set; } = new List<string>();
-
         /// <inheritdoc/>
         public ConcurrentDictionary<string, object> Global => _global;
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
-        public IHttpHandler Http
-        {
-            get
-            {
-                _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
-                return Daemon!.Http;
-            }
-        }
+        public IHttpHandler Http => Daemon?.Http ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
+
+        /// <summary>
+        ///    Dependencies on other applications that will be initialized before this app
+        /// </summary>
+        public IEnumerable<string> Dependencies { get; set; } = new List<string>();
 
         /// <inheritdoc/>
         public string? Id { get; set; }
@@ -96,6 +76,12 @@ namespace NetDaemon.Common
         }
 
         /// <inheritdoc/>
+        public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
+
+        /// <inheritdoc/>
+        public Type ApplicationType => GetType();
+        
+        /// <inheritdoc/>
         public ILogger? Logger { get; set; }
 
         /// <inheritdoc/>
@@ -123,13 +109,7 @@ namespace NetDaemon.Common
         public Task RestoreAppStateAsync() => _persistenceService!.RestoreAppStateAsync();
 
         /// <inheritdoc/>
-        public string EntityId => $"switch.netdaemon_{Id?.ToSafeHomeAssistantEntityId()}";
-
-        /// <inheritdoc/>
-        public Type AppType => GetType();
-
-        /// <inheritdoc/>
-        public AppRuntimeInfo RuntimeInfo { get; } = new AppRuntimeInfo {HasError = false};
+        public AppRuntimeInfo RuntimeInfo { get; } = new () {HasError = false};
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
@@ -143,7 +123,7 @@ namespace NetDaemon.Common
         protected INetDaemon? Daemon { get; set; }
 
         /// <inheritdoc/>
-        public IServiceProvider? ServiceProvider => Daemon?.ServiceProvider;
+        public IServiceProvider? ServiceProvider { get; internal set; }
 
         /// <inheritdoc/>
         public void SaveAppState() => _persistenceService!.SaveAppState();
@@ -159,13 +139,12 @@ namespace NetDaemon.Common
         public virtual Task StartUpAsync(INetDaemon daemon)
         {
             _ = daemon ?? throw new NetDaemonArgumentNullException(nameof(daemon));
-
             Daemon = daemon;
             Logger = daemon.Logger;
+            ServiceProvider ??= daemon.ServiceProvider!;
 
-            _manageRuntimeInformationUpdatesTask = ManageRuntimeInformationUpdates();
-            _persistenceService = new ApplicationPersistenceService(this, daemon, daemon.Logger!);
-            _persistenceService.StartUpAsync(_cancelSource.Token);
+            _runtimeInfoManager = new(daemon, this);
+            _persistenceService = new ApplicationPersistenceService(this, daemon);
 
             Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
 
@@ -201,9 +180,9 @@ namespace NetDaemon.Common
                 _isDisposed = true;
             }
 
+            if (_runtimeInfoManager != null) await _runtimeInfoManager.DisposeAsync().ConfigureAwait(false);
+               
             _cancelSource.Cancel();
-            if (_manageRuntimeInformationUpdatesTask is not null)
-                await _manageRuntimeInformationUpdatesTask.ConfigureAwait(false);
 
             DaemonCallBacksForServiceCalls.Clear();
 
@@ -382,47 +361,6 @@ namespace NetDaemon.Common
         ///     Use a channel to make sure bad apps do not flood the
         ///     updating of
         /// </remarks>
-        internal void UpdateRuntimeInformation()
-        {
-            // We just ignore if channel is full, it will be ok
-            _updateRuntimeInfoChannel.Writer.TryWrite(true);
-        }
-
-        private async Task ManageRuntimeInformationUpdates()
-        {
-            while (!_cancelSource.IsCancellationRequested)
-            {
-                try
-                {
-                    while (_updateRuntimeInfoChannel.Reader.TryRead(out _)) ;
-                    _ = await _updateRuntimeInfoChannel.Reader.ReadAsync(_cancelSource.Token).ConfigureAwait(false);
-                    // do the deed
-                    await HandleUpdateRuntimeInformation().ConfigureAwait(false);
-                    // make sure we never push more messages that 10 per second
-                    await Task.Delay(100).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Just exit
-                    break;
-                }
-            }
-        }
-
-        private async Task HandleUpdateRuntimeInformation()
-        {
-            _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
-
-            if (RuntimeInfo.LastErrorMessage is not null)
-            {
-                RuntimeInfo.HasError = true;
-            }
-
-            if (Daemon!.IsConnected)
-            {
-                await Daemon!.SetStateAsync(EntityId, IsEnabled ? "on" : "off", ("runtime_info", RuntimeInfo))
-                    .ConfigureAwait(false);
-            }
-        }
+        internal void UpdateRuntimeInformation() => _runtimeInfoManager?.UpdateRuntimeInformation();
     }
 }
