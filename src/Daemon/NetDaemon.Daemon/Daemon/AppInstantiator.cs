@@ -20,7 +20,7 @@ namespace NetDaemon.Daemon
         {
             try
             {
-                return new ApplicationContext(applicationType, appId, ServiceProvider);
+                return ApplicationContext.Create(applicationType, appId, ServiceProvider);
             }
             catch (Exception e)
             {

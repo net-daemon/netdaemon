@@ -73,5 +73,20 @@ namespace NetDaemon.Model3.Tests.Entities
             stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>() ), Times.Once);
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>() ), Times.Exactly(2));
         }
+
+        [Fact]
+        public void ShouldCallServiceOnContext()
+        {
+            var haContextMock = new Mock<IHaContext>();
+
+            var entity = new TestEntity(haContextMock.Object, "domain.testEntity");
+            var data = "payload";
+            
+            entity.CallService("service", data);
+            
+            // TODO: should we always use the domain of the entity?
+            haContextMock.Verify(h => h.CallService("domain", "service", data, entity), Times.Once);
+
+        }
     }
 }

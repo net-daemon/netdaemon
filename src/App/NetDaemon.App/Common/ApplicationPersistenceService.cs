@@ -11,31 +11,30 @@ using NetDaemon.Common.Exceptions;
 
 namespace NetDaemon.Daemon.Services
 {
-    internal class ApplicationPersistenceService : INetDaemonPersistantApp
+    internal class ApplicationPersistenceService : IPersistenceService, IAsyncDisposable
     {
         private readonly IApplicationMetadata _applicationMetadata;
         private readonly ILogger _logger;
         private readonly INetDaemon _daemon;
-
-        private Channel<bool> InternalLazyStoreStateQueue { get; } = Channel.CreateBounded<bool>(1);
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly FluentExpandoObject _internalStorageObject;
-
-        public ApplicationPersistenceService(IApplicationMetadata applicationMetadata, INetDaemon netDaemon,  ILogger logger)
-        { 
-            _applicationMetadata = applicationMetadata;
-            _daemon = netDaemon;
-            _logger = logger;
-            _internalStorageObject = new FluentExpandoObject(false, true, persistCallback: SaveAppState);
-        }
+        private readonly Task _handleStorageTask;
+        private bool isDisposed;
 
         public dynamic Storage => _internalStorageObject;
 
-        public Task StartUpAsync(CancellationToken cancellationToken)
-        {
-            return HandleLazyStorage(cancellationToken);
+        private Channel<bool> InternalLazyStoreStateQueue { get; } = Channel.CreateBounded<bool>(1);
+
+        public ApplicationPersistenceService(IApplicationMetadata applicationMetadata, INetDaemon netDaemon)
+        { 
+            _applicationMetadata = applicationMetadata;
+            _daemon = netDaemon;
+            _logger = netDaemon.Logger;
+            _internalStorageObject = new FluentExpandoObject(false, true, persistCallback: SaveAppState);
+            _handleStorageTask = HandleLazyStorage(_cancellationTokenSource.Token);
         }
 
-        private string GetUniqueIdForStorage() => $"{_applicationMetadata.AppType.Name}_{_applicationMetadata.Id}".ToLowerInvariant();
+        private string GetUniqueIdForStorage() => $"{_applicationMetadata.ApplicationType.Name}_{_applicationMetadata.Id}".ToLowerInvariant();
 
         public async Task RestoreAppStateAsync()
         {
@@ -48,6 +47,12 @@ namespace NetDaemon.Daemon.Services
                 expStore.CopyFrom(obj);
             }
 
+            await StoreAppStateInHa().ConfigureAwait(false);
+        }
+
+        private async Task StoreAppStateInHa()
+        {
+            // Set the state of the Entity that represents this app   
             bool isDisabled = Storage.__IsDisabled ?? false;
             var appInfo = _daemon.State.FirstOrDefault(s => s.EntityId == _applicationMetadata.EntityId);
             var appState = appInfo?.State as string;
@@ -56,8 +61,6 @@ namespace NetDaemon.Daemon.Services
                 _applicationMetadata.IsEnabled = false;
                 if (appState == "on" || appInfo is null)
                 {
-                    dynamic serviceData = new FluentExpandoObject();
-                    serviceData.entity_id = _applicationMetadata. EntityId;
                     await _daemon.SetStateAsync(_applicationMetadata.EntityId, "off").ConfigureAwait(false);
                 }
             }
@@ -66,13 +69,11 @@ namespace NetDaemon.Daemon.Services
                 _applicationMetadata.IsEnabled = true;
                 if (appState == "off" || appInfo is null)
                 {
-                    dynamic serviceData = new FluentExpandoObject();
-                    serviceData.entity_id = _applicationMetadata.EntityId;
                     await _daemon.SetStateAsync(_applicationMetadata.EntityId, "on").ConfigureAwait(false);
                 }
             }
         }
-        
+
         public void SaveAppState()
         {
             // Intentionally ignores full queue since we know
@@ -107,6 +108,16 @@ namespace NetDaemon.Daemon.Services
                     _logger.LogError("Error in storage queue {e}", e);
                 } // Ignore errors in thread
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (isDisposed) return;
+            
+            _cancellationTokenSource.Cancel();
+            await _handleStorageTask.ConfigureAwait(false);
+            _cancellationTokenSource.Dispose();
+            isDisposed = true;
         }
     }
 }

@@ -109,7 +109,7 @@ namespace NetDaemon.Daemon.Config
             if (valueType.IsAssignableTo(typeof(RxEntityBase)))
             {
                 // ctor of RXEntityBase has a string[] parameters for the EntityId(s) 
-                return Activator.CreateInstance(valueType, (INetDaemonRxApp)applicationContext.ApplicationInstance,
+                return Activator.CreateInstance(valueType, (INetDaemonRxApp)applicationContext.ApplicationInstance!,
                     new[] { node.Value });
             }
 

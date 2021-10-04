@@ -29,7 +29,7 @@ namespace NetDaemon.Daemon.Config
         {
             if (applicationContext is null) throw new ArgumentNullException(nameof(applicationContext));
 
-            var appInstance = applicationContext.ApplicationInstance;
+            var appInstance = applicationContext.ApplicationInstance ?? throw new InvalidOperationException("Application is not yet instantiated");
 
             foreach (KeyValuePair<YamlNode, YamlNode> entry in _yamlMappingNode.Children)
             {
@@ -66,7 +66,7 @@ namespace NetDaemon.Daemon.Config
                     return ((YamlScalarNode) node).ToObject(instanceType, applicationContext);
                 }
                 case YamlNodeType.Sequence when !instanceType.IsGenericType ||
-                                                instanceType?.GetGenericTypeDefinition() != typeof(IEnumerable<>):
+                                                instanceType.GetGenericTypeDefinition() != typeof(IEnumerable<>):
                     return null;
                 case YamlNodeType.Sequence:
                 {

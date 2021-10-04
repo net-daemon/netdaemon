@@ -10,6 +10,7 @@ using NetDaemon.Daemon.Tests.DaemonRunner.App;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common.Reactive;
 
 namespace NetDaemon.Daemon.Tests.Daemon
@@ -30,7 +31,8 @@ namespace NetDaemon.Daemon.Tests.Daemon
             // ARRANGE
             await InitializeFakeDaemon().ConfigureAwait(false);
 
-            var app = DefaultDaemonHost.LoadApp<AssemblyDaemonApp>("id");
+            await using var app = new AssemblyDaemonApp() { Id = "id" };
+            DefaultDaemonHost.AddRunningApp(app);
 
             // ACT
             await app.HandleAttributeInitialization(DefaultDaemonHost).ConfigureAwait(false);
@@ -424,16 +426,22 @@ namespace NetDaemon.Daemon.Tests.Daemon
             public string TestString => "Test";
         }
 
-        [Fact]
-        public void ServiceProviderShouldReturnCorrectService()
+        [SuppressMessage("", checkId:"CA1034")]
+        public class ServiceProviderTest : DaemonHostTestBase
         {
-            // ARRANGE
-            DefaultServiceProviderMock.Services[typeof(ITestGetService)] = new TestGetService();
-            // ACT
-            var service = DefaultDaemonHost.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;
-            // ASSERT
-            Assert.NotNull(service);
-            Assert.Equal("Test", service?.TestString);
+            // This test is in a nested class because the CoreDaemonHostTestBase will create the ServiceProvider before
+            // we get a chance to add additional services to the ServiceCollection.  DaemonHostTestBase doe snot do that
+            [Fact]
+            public void ServiceProviderShouldReturnCorrectService()
+            {
+                // ARRANGE
+                DefaultServiceCollection.AddSingleton<ITestGetService>(new TestGetService());
+                // ACT
+                var service = DefaultDaemonHost.ServiceProvider?.GetService(typeof(ITestGetService)) as TestGetService;
+                // ASSERT
+                Assert.NotNull(service);
+                Assert.Equal("Test", service?.TestString);
+            }
         }
 
         [Fact]
