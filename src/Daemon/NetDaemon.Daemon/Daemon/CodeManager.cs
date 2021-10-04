@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
-using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -65,8 +64,9 @@ namespace NetDaemon.Daemon
                 {
                     var appContext = appInstantiator.Instantiate(appType, appConfig.AppId);
 
-                    appConfig.SetPropertyConfig(appContext);
-
+                    // Hack, make the Context apply the config
+                    appContext.SetConfigProvider(() => appConfig.SetPropertyConfig(appContext));
+                    
                     yield return appContext;
                 }
             }

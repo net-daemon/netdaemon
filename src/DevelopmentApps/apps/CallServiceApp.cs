@@ -7,7 +7,6 @@ using NetDaemon.Model3.Common;
 namespace NetDaemon.DevelopmentApps.apps
 {
     [NetDaemonApp]
-    [Focus]
     public class CallServiceApp
     {
         public CallServiceApp(IHaContext ha)
