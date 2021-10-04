@@ -98,7 +98,7 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                                 },
                                 new()
                                 {
-                                    Field = "brightnes",
+                                    Field = "brightness",
                                     Selector = new NumberSelector() { Step = 0.2f },
                                 }
                             },
