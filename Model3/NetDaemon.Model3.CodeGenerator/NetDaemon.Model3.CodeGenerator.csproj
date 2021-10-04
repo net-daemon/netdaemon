@@ -13,4 +13,10 @@
       <PackageReference Include="JoySoftware.HassClient" Version="21.35.0-beta" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>NetDaemon.Model3.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>

@@ -20,19 +20,10 @@ namespace NetDaemon.Service.App.CodeGeneration.Helpers
         {
             return selectorObject switch
             {
-                ActionSelector
-                    or AreaSelector
-                    or AddonSelector
-                    or EntitySelector
-                    or DeviceSelector
-                    or ObjectSelector
-                    or TargetSelector
-                    or TextSelector
-                    or null => typeof(string),
                 BooleanSelector => typeof(bool),
+                NumberSelector s when (s.Step ?? 1) % 1 != 0 => typeof(double),
                 NumberSelector => typeof(long),
                 TimeSelector => typeof(DateTime),
-                SelectSelector => typeof(List<string>),
                 _ => typeof(string)
             };
         }

@@ -10,7 +10,6 @@ using NetDaemon.Service.App.CodeGeneration.Extensions;
 using NetDaemon.Service.App.CodeGeneration.Helpers;
 using static NetDaemon.Service.App.CodeGeneration.Helpers.NamingHelper;
 using static NetDaemon.Service.App.CodeGeneration.Helpers.SyntaxFactoryHelper;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.TypeHelper;
 using OldEntityState = NetDaemon.Common.EntityState;
 
 namespace NetDaemon.Service.App.CodeGeneration
