@@ -86,7 +86,7 @@ namespace NetDaemon.Model3.Tests.Entities
             entity.CallService("service", data);
             
             // TODO: should we always use the domain of the entity?
-            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<Target>(t => t.EntityIds.Single() == entity.EntityId), data), Times.Once);
+            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds.Single() == entity.EntityId), data), Times.Once);
 
         }
     }

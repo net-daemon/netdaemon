@@ -40,7 +40,7 @@ namespace NetDaemon.Model3.Internal
             return HassObjectMapper.Map(hassState);
         }
 
-        public void CallService(string domain, string service, Target? target = null, object? data = null)
+        public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
         {
             _hassClient.CallService(domain, service, data, target.Map(), false);
         }

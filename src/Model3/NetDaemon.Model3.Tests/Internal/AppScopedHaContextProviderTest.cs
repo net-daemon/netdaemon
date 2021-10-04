@@ -22,7 +22,7 @@ namespace NetDaemon.Model3.Tests.Internal
         {
             var haContext = CreateTarget();
 
-            var target = new Target("domain.entity");
+            var target = ServiceTarget.FromEntity("domain.entity");
             var data = new { Name = "value" };
             haContext.CallService("domain", "service", target, data);
             

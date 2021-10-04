@@ -82,6 +82,17 @@ namespace NetDaemon.Model3.CodeGenerator.Helpers
             return (T)member.WithBaseList(BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(IdentifierName(baseTypeName)))));
         }
 
+        // public static T WithSummary<T>(this T member, string summary)
+        //     where T: SyntaxNode
+        // {
+        //      // parseLeadingTrivia($"/// <summary>{summary}<summary/>");
+        //     var t = DocumentationCommentTrivia(SyntaxKind.SingleLineDocumentationCommentTrivia, 
+        //         new SyntaxList<XmlNodeSyntax>(
+        //             new XmlNodeSyntax[}XmlText().WithTextTokens(
+        //         TokenList(XmlTextLiteral(TriviaList(DocumentationCommentExterior("///")))))]));
+        //     return member.WithLeadingTrivia(Trivia(t));
+        // }
+
         private static T Parse<T>(string text)
         {
             var node = CSharpSyntaxTree.ParseText(text).GetRoot().ChildNodes().OfType<T>().FirstOrDefault();

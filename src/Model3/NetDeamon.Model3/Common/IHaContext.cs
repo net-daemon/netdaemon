@@ -34,6 +34,6 @@ namespace NetDaemon.Model3.Common
         /// <param name="service">Service name</param>
         /// <param name="target">The target that is targeted by this service call</param>
         /// <param name="data">Data provided to service. Use anonomous type</param>
-        void CallService(string domain, string service, Target? target = null, object? data = null);
+        void CallService(string domain, string service, ServiceTarget? target = null, object? data = null);
     }
 }

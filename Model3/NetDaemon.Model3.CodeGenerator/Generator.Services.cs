@@ -70,7 +70,7 @@ namespace NetDaemon.Model3.CodeGenerator
         {
             var serviceTypeDeclaration = ClassWithInjected<IHaContext>(GetServicesTypeName(domain)).ToPublic();
 
-            var serviceMethodDeclarations = services.SelectMany(service => GenerateServiceMethod(domain, service)).ToArray();
+            var serviceMethodDeclarations = services.Select(service => GenerateServiceMethod(domain, service)).ToArray();
 
             return serviceTypeDeclaration.AddMembers(serviceMethodDeclarations);
         }
@@ -91,7 +91,7 @@ namespace NetDaemon.Model3.CodeGenerator
             yield return Record(serviceArguments.TypeName, autoProperties).ToPublic();
         }
 
-        private static IEnumerable<MemberDeclarationSyntax> GenerateServiceMethod(string domain, HassService service)
+        private static MemberDeclarationSyntax GenerateServiceMethod(string domain, HassService service)
         {
             var serviceName = service.Service!;
 
@@ -102,15 +102,15 @@ namespace NetDaemon.Model3.CodeGenerator
 
             if (service.Target is not null)
             {
-                yield return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}({typeof(Target).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
+                return ParseMethod(
+                    $@"void {GetServiceMethodName(serviceName)}({typeof(ServiceTarget).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
                 {{
                     {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", target {(serviceArguments is not null ? ", data" : string.Empty)});
                 }}").ToPublic();
             }
             else
             {
-                yield return ParseMethod(
+                return ParseMethod(
                     $@"void {GetServiceMethodName(serviceName)}({argsParametersString})
                 {{
                     {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"" {(serviceArguments is not null ? ", null" : "")} {(serviceArguments is not null ? ", data" : "")});

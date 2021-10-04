@@ -36,7 +36,7 @@ namespace NetDaemon.Model3.Internal
                     };
         }
 
-        public static HassTarget? Map(this Target? target)
+        public static HassTarget? Map(this ServiceTarget? target)
         {
             if (target is null) return null;
 
