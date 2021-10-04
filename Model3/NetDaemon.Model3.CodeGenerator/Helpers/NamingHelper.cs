@@ -1,7 +1,8 @@
 ﻿using System;
 using NetDaemon.Daemon.Config;
-using NetDaemon.Service.App.CodeGeneration.Extensions;
-namespace NetDaemon.Service.App.CodeGeneration.Helpers
+using NetDaemon.Model3.CodeGenerator.Extensions;
+
+namespace NetDaemon.Model3.CodeGenerator.Helpers
 {
     internal static class NamingHelper
     {

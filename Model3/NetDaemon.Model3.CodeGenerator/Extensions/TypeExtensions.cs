@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-namespace NetDaemon.Service.App.CodeGeneration.Extensions
+
+namespace NetDaemon.Model3.CodeGenerator.Extensions
 {
     internal static class TypeExtensions
     {

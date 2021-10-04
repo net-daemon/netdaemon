@@ -5,12 +5,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
-using NetDaemon.Service.App.CodeGeneration.Helpers;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.NamingHelper;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.SyntaxFactoryHelper;
-namespace NetDaemon.Service.App.CodeGeneration
+using static NetDaemon.Model3.CodeGenerator.Helpers.NamingHelper;
+using static NetDaemon.Model3.CodeGenerator.Helpers.SyntaxFactoryHelper;
+namespace NetDaemon.Model3.CodeGenerator
 {
-    public partial class NewCodeGenerator
+    public partial class Generator
     {
         private static IEnumerable<TypeDeclarationSyntax> GenerateServiceTypes(IEnumerable<HassServiceDomain> serviceDomains)
         {

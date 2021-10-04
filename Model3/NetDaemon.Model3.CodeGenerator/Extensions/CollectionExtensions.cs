@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace NetDaemon.Service.App.CodeGeneration.Extensions
+
+namespace NetDaemon.Model3.CodeGenerator.Extensions
 {
     internal static class CollectionExtensions
     {

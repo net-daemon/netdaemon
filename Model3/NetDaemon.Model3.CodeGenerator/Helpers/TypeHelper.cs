@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace NetDaemon.Service.App.CodeGeneration.Helpers
+
+namespace NetDaemon.Model3.CodeGenerator.Helpers
 {
     internal static class TypeHelper
     {

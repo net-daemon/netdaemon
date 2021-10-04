@@ -5,17 +5,18 @@ using System.Runtime.CompilerServices;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NetDaemon.Service.App.CodeGeneration;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using EntityState = NetDaemon.Common.EntityState;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace NetDaemon.Service.App.CodeGeneration
+namespace NetDaemon.Model3.CodeGenerator
 {
     [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
-    public partial class NewCodeGenerator : ICodeGenerator
+    public partial class Generator : ICodeGenerator
     {
-        public string? GenerateCodeRx(string nameSpace, IReadOnlyCollection<EntityState> entities, IReadOnlyCollection<HassServiceDomain> services)
+        public string GenerateCodeRx(string nameSpace, IReadOnlyCollection<EntityState> entities, IReadOnlyCollection<HassServiceDomain> services)
         {
             var code = CreateCompilationUnitSyntax(nameSpace, entities, services);
             return code.ToFullString();

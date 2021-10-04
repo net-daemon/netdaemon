@@ -2,14 +2,14 @@
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.Service.App.CodeGeneration.Helpers;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.NamingHelper;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.SyntaxFactoryHelper;
+using NetDaemon.Model3.CodeGenerator.Helpers;
+using static NetDaemon.Model3.CodeGenerator.Helpers.NamingHelper;
+using static NetDaemon.Model3.CodeGenerator.Helpers.SyntaxFactoryHelper;
 using OldEntityState = NetDaemon.Common.EntityState;
 
-namespace NetDaemon.Service.App.CodeGeneration
+namespace NetDaemon.Model3.CodeGenerator
 {
-    public partial class NewCodeGenerator
+    public partial class Generator
     {
         private static IEnumerable<ClassDeclarationSyntax> GenerateExtensionMethodClasses(IEnumerable<HassServiceDomain> serviceDomains, IEnumerable<OldEntityState> entities)
         {

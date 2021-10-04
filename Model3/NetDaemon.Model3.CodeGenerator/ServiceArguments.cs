@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
-using NetDaemon.Service.App.CodeGeneration.Extensions;
-using NetDaemon.Service.App.CodeGeneration.Helpers;
-namespace NetDaemon.Service.App.CodeGeneration
+using NetDaemon.Model3.CodeGenerator.Extensions;
+using NetDaemon.Model3.CodeGenerator.Helpers;
+
+namespace NetDaemon.Model3.CodeGenerator
 {
     internal record ServiceArgument
     {

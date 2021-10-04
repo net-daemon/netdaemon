@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using JoySoftware.HomeAssistant.Model;
-namespace NetDaemon.Service.App.CodeGeneration.Helpers
+
+namespace NetDaemon.Model3.CodeGenerator.Helpers
 {
     internal static class HassServiceArgumentMapper
     {

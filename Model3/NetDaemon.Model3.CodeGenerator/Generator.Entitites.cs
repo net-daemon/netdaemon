@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
+using NetDaemon.Model3.CodeGenerator.Extensions;
+using NetDaemon.Model3.CodeGenerator.Helpers;
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
-using NetDaemon.Service.App.CodeGeneration.Extensions;
-using NetDaemon.Service.App.CodeGeneration.Helpers;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.NamingHelper;
-using static NetDaemon.Service.App.CodeGeneration.Helpers.SyntaxFactoryHelper;
+using static NetDaemon.Model3.CodeGenerator.Helpers.NamingHelper;
+using static NetDaemon.Model3.CodeGenerator.Helpers.SyntaxFactoryHelper;
 using OldEntityState = NetDaemon.Common.EntityState;
 
-namespace NetDaemon.Service.App.CodeGeneration
+namespace NetDaemon.Model3.CodeGenerator
 {
-    public partial class NewCodeGenerator
+    public partial class Generator
     {
         private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(IEnumerable<OldEntityState> entities)
         {

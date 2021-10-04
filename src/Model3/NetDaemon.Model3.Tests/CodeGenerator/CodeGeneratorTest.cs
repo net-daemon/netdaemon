@@ -5,6 +5,7 @@ using FluentAssertions;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Common;
+using NetDaemon.Model3.CodeGenerator;
 using NetDaemon.Service.App.CodeGeneration;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
         [Fact]
         public void RunCodeGenEMpy()
         {
-            var generated = NewCodeGenerator.CreateCompilationUnitSyntax("RootNameSpace", new EntityState[0], new HassServiceDomain[0]);
+            var generated = Generator.CreateCompilationUnitSyntax("RootNameSpace", new EntityState[0], new HassServiceDomain[0]);
 
             generated.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
         }
@@ -31,7 +32,7 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                 new() { EntityId = "switch.switch2" },
             };
 
-            var code = NewCodeGenerator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
 
             var entitiesInterface = FindTypeDeclaration<InterfaceDeclarationSyntax>(code, "IEntities");
 
@@ -60,7 +61,7 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                 },
             };
             
-            var code = NewCodeGenerator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
 
             var lightAttributesRecord = FindTypeDeclaration<RecordDeclarationSyntax>(code, "LightAttributes");
             var props = lightAttributesRecord.Members.OfType<PropertyDeclarationSyntax>();
@@ -97,7 +98,7 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                                 },
                                 new()
                                 {
-                                    Field = "brightness",
+                                    Field = "brightnes",
                                     Selector = new NumberSelector() { Step = 0.2f },
                                 }
                             },
@@ -111,7 +112,7 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
             };
 
             // Act:
-            var code = NewCodeGenerator.CreateCompilationUnitSyntax("RootNameSpace", readOnlyCollection, hassServiceDomains);
+            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", readOnlyCollection, hassServiceDomains);
 
             // Assert:
             var lightTurnOnParametersRecord = FindTypeDeclaration<RecordDeclarationSyntax>(code, "LightTurnOnParameters");

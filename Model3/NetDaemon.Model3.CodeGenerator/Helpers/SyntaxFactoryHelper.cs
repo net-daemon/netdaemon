@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace NetDaemon.Service.App.CodeGeneration.Helpers
+namespace NetDaemon.Model3.CodeGenerator.Helpers
 {
     internal static class SyntaxFactoryHelper
     {
