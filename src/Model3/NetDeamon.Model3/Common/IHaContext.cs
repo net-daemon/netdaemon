@@ -32,8 +32,8 @@ namespace NetDaemon.Model3.Common
         /// </summary>
         /// <param name="domain">Domain of service</param>
         /// <param name="service">Service name</param>
-        /// <param name="data">Data provided to service. Should deserialize into correct json using System.Text.Json</param>
-        /// <param name="entity">The entity that is targeted by this service call</param>
-        void CallService(string domain, string service, object? data, Entity? entity);
+        /// <param name="target">The target that is targeted by this service call</param>
+        /// <param name="data">Data provided to service. Use anonomous type</param>
+        void CallService(string domain, string service, ServiceTarget? target = null, object? data = null);
     }
 }

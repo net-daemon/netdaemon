@@ -17,6 +17,7 @@ using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
+using NetDaemon.Service.App.CodeGeneration;
 
 namespace NetDaemon.Service
 {

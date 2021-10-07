@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -85,7 +86,7 @@ namespace NetDaemon.Model3.Tests.Entities
             entity.CallService("service", data);
             
             // TODO: should we always use the domain of the entity?
-            haContextMock.Verify(h => h.CallService("domain", "service", data, entity), Times.Once);
+            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds.Single() == entity.EntityId), data), Times.Once);
 
         }
     }
