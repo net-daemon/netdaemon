@@ -3,8 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NetDaemon.Daemon;
-
-namespace NetDaemon.Service.App
+namespace NetDaemon.Service.App.CodeGeneration
 {
     public class CodeGenerationHandler : ICodeGenerationHandler
     {
@@ -31,10 +30,12 @@ namespace NetDaemon.Service.App
         private async Task GenerateEntitiesAsyncInternal(NetDaemonHost daemonHost, string sourceFolder)
         {
             var services = await daemonHost.GetAllServices().ConfigureAwait(false);
+            var entityIds = daemonHost.State.Distinct().ToList();
+
             var sourceRx = _codeGenerator.GenerateCodeRx(
-                    "NetDaemon.Generated.Reactive",
-                    daemonHost.State.Select(n => n.EntityId).Distinct(),
-                    services
+                    "NetDaemon.Generated.Reactive.Services",
+                    entityIds,
+                    services.ToList()
             );
 
             await File.WriteAllTextAsync(Path.Combine(sourceFolder, "_EntityExtensionsRx.cs.gen"), sourceRx).ConfigureAwait(false);
