@@ -22,15 +22,11 @@ namespace NetDaemon.Model3.Tests.Internal
         {
             var haContext = CreateTarget();
 
+            var target = ServiceTarget.FromEntity("domain.entity");
             var data = new { Name = "value" };
-            haContext.CallService("domain", "service", data, new Entity(haContext, "domain.entity"));
+            haContext.CallService("domain", "service", target, data);
             
-            // when merging with New codegen this should become
-            // var target = new Target("domain.entity");
-            // var data = new { Name = "value" };
-            // haContext.CallService("domain", "service", target, data);
-            
-            _hassClientMock.Verify(c => c.CallService("domain", "service",data, It.Is<HassTarget>(t => t.EntityIds.First() == "domain.entity"), false), Times.Once);
+            _hassClientMock.Verify(c => c.CallService("domain", "service", data, It.Is<HassTarget>(t => t.EntityIds.Single() == "domain.entity"), false), Times.Once);
         }
 
         [Fact]

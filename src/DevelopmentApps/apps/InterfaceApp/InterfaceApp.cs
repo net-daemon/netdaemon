@@ -20,7 +20,7 @@ namespace NetDaemon.DevelopmentApps.apps.DebugApp
 
         public Task InitializeAsync()
         {
-            _ha.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works via DI!" }, null!);;
+            _ha.CallService("notify", "persistent_notification", data: new { message = "Hello", title = "Yay it works via DI!" });;
             return Task.CompletedTask;
         }
     }

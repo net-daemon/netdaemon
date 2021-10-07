@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using JoySoftware.HomeAssistant.Model;
 using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -70,5 +71,6 @@ namespace NetDaemon.Daemon
         ///     Returns true of the NetDaemon custom component is installed
         /// </summary>
         bool HomeAssistantHasNetDaemonIntegration();
+        void CallService(string domain, string service, HassTarget target, object? data = null, bool waitForResponse = false);
     }
 }

@@ -12,7 +12,7 @@ namespace NetDaemon.DevelopmentApps.apps
         public CallServiceApp(IHaContext ha)
         {
             var climate = new ClimateEntity(ha, "climate.dummy_thermostat");
-            
+
             climate.CallService("set_temperature",
                 new SetTemperatureData
                 {
