@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using FluentAssertions;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
@@ -14,8 +16,8 @@ namespace NetDaemon.Model3.Tests.Internal
 {
     public class AppScopedHaContextProviderTest
     {
-        private Subject<HassEvent> _hassEventSubjectMock = new ();
-        private readonly Mock<IHassClient> _hassClientMock = new Mock<IHassClient>();
+        private readonly Subject<HassEvent> _hassEventSubjectMock = new ();
+        private readonly Mock<IHassClient> _hassClientMock = new();
 
         [Fact]
         public void TestCallService()
@@ -45,8 +47,8 @@ namespace NetDaemon.Model3.Tests.Internal
                 Data = new HassStateChangedEventData()
                 {
                    EntityId = "TestDomain.TestEntity",
-                   NewState = new HassState(){State = "newstate"},
-                   OldState = new HassState(){State = "oldstate"}
+                   NewState = new HassState(){ State = "newstate" },
+                   OldState = new HassState(){ State = "oldstate" }
                 }
             });
 
@@ -55,7 +57,7 @@ namespace NetDaemon.Model3.Tests.Internal
             
             haContext.GetState("TestDomain.TestEntity").State!.Should().Be("newstate");
             // the state should come from the state cache so we do not expect a call to HassClient.GetState 
-            _hassClientMock.VerifyNoOtherCalls();
+            _hassClientMock.Verify(m => m.GetState(It.IsAny<string>()), Times.Never);
         }
 
         
@@ -63,10 +65,14 @@ namespace NetDaemon.Model3.Tests.Internal
         {
             var serviceCollection = new ServiceCollection();
 
+            _hassClientMock.Setup(m => m.GetAllStates(It.IsAny<CancellationToken>())).ReturnsAsync(new List<HassState>());
+
             serviceCollection.AddSingleton(_hassClientMock.Object);
             serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
             serviceCollection.AddScopedHaContext();
+            
             var provider = serviceCollection.BuildServiceProvider();
+            DependencyInjectionSetup.InitializeAsync(provider, CancellationToken.None);
 
             var haContext = provider.GetRequiredService<IHaContext>();
             return haContext;

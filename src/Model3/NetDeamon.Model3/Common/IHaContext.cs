@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
 using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.Model3.Common
@@ -19,7 +21,7 @@ namespace NetDaemon.Model3.Common
         /// <remarks>
         ///     Old state != New state
         /// </remarks>
-        IObservable<StateChange> StateChanges { get; }
+        IObservable<StateChange> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
 
         /// <summary>
         ///     Get state for a single entity
@@ -28,12 +30,17 @@ namespace NetDaemon.Model3.Common
         EntityState? GetState(string entityId);
 
         /// <summary>
+        /// Gets all the entities in HomeAssistant
+        /// </summary>
+        IEnumerable<Entity> GetAllEntities();
+
+        /// <summary>
         ///     Calls service in Home Assistant
         /// </summary>
         /// <param name="domain">Domain of service</param>
         /// <param name="service">Service name</param>
         /// <param name="target">The target that is targeted by this service call</param>
-        /// <param name="data">Data provided to service. Use anonomous type</param>
+        /// <param name="data">Data provided to service. Use anonyomous type</param>
         void CallService(string domain, string service, ServiceTarget? target = null, object? data = null);
     }
 }
