@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using NetDaemon.Infrastructure.ObservableHelpers;
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
@@ -40,14 +42,14 @@ namespace NetDaemon.Model3.Internal
             return HassObjectMapper.Map(hassState);
         }
 
+        public IReadOnlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
+
         public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
         {
             _hassClient.CallService(domain, service, data, target.Map(), false);
         }
 
         public IObservable<StateChange> StateAllChanges => _entityStateCache.StateAllChanges.Select(e => e.Map(this));
-
-        public IObservable<StateChange> StateChanges => StateAllChanges.Where(e => e.New?.State != e.Old?.State);
 
         public IObservable<T> GetEventDataOfType<T>(string eventType) where T : class =>
             _scopedEventObservable

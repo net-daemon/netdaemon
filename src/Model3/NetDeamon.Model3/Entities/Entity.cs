@@ -69,11 +69,17 @@ namespace NetDaemon.Model3.Entities
         /// <summary>
         /// Calls a service using this entity as the target
         /// </summary>
-        /// <param name="service">Name of the service to call</param>
+        /// <param name="service">Name of the service to call. If the Domain of the service is the same as the domain of the Entity it can be omitted</param>
         /// <param name="data">Data to provide</param>
         public virtual void CallService(string service, object? data = null)
         {
-            HaContext.CallService(EntityId.SplitEntityId().Domain, service, ServiceTarget.FromEntity(EntityId), data);
+            if (service == null) throw new ArgumentNullException(nameof(service));
+            
+            var (serviceDomain, serviceName) = service.SplitAtDot();
+
+            serviceDomain ??= EntityId.SplitAtDot().Left ?? throw new InvalidOperationException("EntityId must be formatted 'domain.name'");;
+            
+            HaContext.CallService(serviceDomain, serviceName, ServiceTarget.FromEntity(EntityId), data);
         }
     }
 

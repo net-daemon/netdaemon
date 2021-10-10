@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
+using System.Threading;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Moq;
@@ -11,11 +13,15 @@ namespace NetDaemon.Model3.Tests.Internal
     public class EntityStateCacheTest
     {
         [Fact]
-        public void StateChangeEventIsFirstStoredInCacheThanForwarded()
+        public async void StateChangeEventIsFirstStoredInCacheThanForwarded()
         {
             // Arrange
             using var testSubject = new Subject<HassEvent>();
-            using var cache = new EntityStateCache(Mock.Of<IHassClient>(), testSubject);
+            var hassClientMock = new Mock<IHassClient>();
+            hassClientMock.Setup(m => m.GetAllStates(CancellationToken.None)).ReturnsAsync(new List<HassState>());
+                
+            using var cache = new EntityStateCache(hassClientMock.Object, testSubject);
+            await cache.InitializeAsync(CancellationToken.None);
             var handlerCalled = false;
 
             var changedEventData = new HassStateChangedEventData()
