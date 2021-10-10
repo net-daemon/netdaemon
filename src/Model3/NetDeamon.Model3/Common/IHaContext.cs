@@ -32,7 +32,7 @@ namespace NetDaemon.Model3.Common
         /// <summary>
         /// Gets all the entities in HomeAssistant
         /// </summary>
-        IEnumerable<Entity> GetAllEntities();
+        IReadOnlyList<Entity> GetAllEntities();
 
         /// <summary>
         ///     Calls service in Home Assistant
