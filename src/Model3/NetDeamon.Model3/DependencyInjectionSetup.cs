@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
-using JoySoftware.HomeAssistant.Model;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Model3.Common;
@@ -30,6 +30,14 @@ namespace NetDaemon.Model3
             services.AddScoped<AppScopedHaContextProvider>();
             services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
             services.AddTransient<IEventProvider>(s => s.GetRequiredService<AppScopedHaContextProvider>());
+        }
+        
+        /// <summary>
+        /// Performs async initialization of the Model3 services 
+        /// </summary>
+        public static Task InitializeAsync(IServiceProvider sp, CancellationToken cancellationToken)
+        {
+            return sp.GetRequiredService<EntityStateCache>().InitializeAsync(cancellationToken);
         }
     }
 }
