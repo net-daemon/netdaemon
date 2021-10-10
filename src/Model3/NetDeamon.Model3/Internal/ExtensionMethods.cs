@@ -19,10 +19,12 @@ namespace NetDaemon.Model3
             return JsonSerializer.Deserialize<T>(bufferWriter.WrittenSpan, options) ?? default!;
         } 
 
-        public static (string Domain, string Entity) SplitEntityId(this string entityId)
+        public static (string? Left, string Right) SplitAtDot(this string id)
         {
-            var firstDot = entityId.IndexOf('.', System.StringComparison.InvariantCulture);
-            return (entityId[.. firstDot ], entityId[ firstDot .. ]);
+            var firstDot = id.IndexOf('.', System.StringComparison.InvariantCulture);
+            if (firstDot == -1) return (null, id);
+            
+            return (id[.. firstDot ], id[ firstDot .. ]);
         }
      
     }
