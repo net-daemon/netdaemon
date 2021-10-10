@@ -42,7 +42,7 @@ namespace NetDaemon.Model3.Internal
             return HassObjectMapper.Map(hassState);
         }
 
-        public IReadonlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
+        public IReadOnlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
 
         public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
         {
