@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Common;
 using NetDaemon.Model3.CodeGenerator;
-using NetDaemon.Service.App.CodeGeneration;
 using Xunit;
 
 namespace NetDaemon.Model3.Tests.CodeGenerator
@@ -16,9 +18,11 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
         [Fact]
         public void RunCodeGenEMpy()
         {
-            var generated = Generator.CreateCompilationUnitSyntax("RootNameSpace", new EntityState[0], new HassServiceDomain[0]);
+            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", new EntityState[0], new HassServiceDomain[0]);
 
-            generated.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
+            code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
+            
+            AssertCodeCompiles(code.ToString());
         }
 
         [Fact]
@@ -32,17 +36,24 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                 new() { EntityId = "switch.switch2" },
             };
 
-            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var appCode = @"
+using NetDaemon.Model3.Entities;
+using NetDaemon.Model3.Common;
+using RootNameSpace;
 
-            var entitiesInterface = FindTypeDeclaration<InterfaceDeclarationSyntax>(code, "IEntities");
-
-            var props = entitiesInterface.Members.OfType<PropertyDeclarationSyntax>().Select(p => p.Identifier.Text).ToList();
-            props.Should().BeEquivalentTo("Light", "Switch");
-
-            var lightEntitiesClass = code.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault(i => i.Identifier.Text == "LightEntities");
-            lightEntitiesClass.Members.OfType<PropertyDeclarationSyntax>().Select(p => p.Identifier.Text).Should().BeEquivalentTo("Light1", "Light2");
-
-            FindTypeDeclaration<RecordDeclarationSyntax>(code, "LightEntity").Should().NotBeNull();
+public class Root
+{
+    public void Run(IHaContext ha)
+    {
+        IEntities entities = new Entities(ha);
+        LightEntity light1 = entities.Light.Light1;
+        LightEntity light2 = entities.Light.Light2;
+        SwitchEntity switch1 = entities.Switch.Switch1;
+        SwitchEntity switch2 = entities.Switch.Switch2;
+    }
+}";
+            AssertCodeCompiles(generatedCode.ToString(), appCode);
         }
 
         [Fact]
@@ -61,13 +72,24 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                 },
             };
             
-            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
 
-            var lightAttributesRecord = FindTypeDeclaration<RecordDeclarationSyntax>(code, "LightAttributes");
-            var props = lightAttributesRecord.Members.OfType<PropertyDeclarationSyntax>();
-            props.Should().NotBeNull();
-            props.First(p => p.Identifier.ToString() == "Brightness").Type.ToString().Should().Be("int");
-            props.First(p => p.Identifier.ToString() == "FriendlyName").Type.ToString().Should().Be("string");
+            var appCode = @"
+using NetDaemon.Model3.Entities;
+using NetDaemon.Model3.Common;
+using RootNameSpace;
+
+public class Root
+{
+    public void Run(IHaContext ha)
+    {
+        IEntities entities = new Entities(ha);
+        LightEntity light1 = entities.Light.Light1;
+        long brightness = light1.Attributes.Brightness;
+        string friendlyName = light1.Attributes.FriendlyName;
+    }
+}";
+            AssertCodeCompiles(generatedCode.ToString(), appCode);
         }
 
         [Fact]
@@ -85,7 +107,14 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
                     Domain = "light",
                     Services = new HassService[]
                     {
-                        new() { Service = "turn_off" },
+                        new()
+                        {
+                            Service = "turn_off",
+                            Target = new TargetSelector()
+                            {
+                                Entity = new() { Domain = "light" }
+                            }
+                        },
                         new()
                         {
                             Service = "turn_on",
@@ -113,21 +142,54 @@ namespace NetDaemon.Model3.Tests.CodeGenerator
 
             // Act:
             var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", readOnlyCollection, hassServiceDomains);
+            // uncomment for debugging
+            // File.WriteAllText(@"c:\temp\generated.cs", code.ToString());
 
             // Assert:
-            var lightTurnOnParametersRecord = FindTypeDeclaration<RecordDeclarationSyntax>(code, "LightTurnOnParameters");
 
-            lightTurnOnParametersRecord.Should().NotBeNull();
-            var props = lightTurnOnParametersRecord.Members.OfType<PropertyDeclarationSyntax>().ToList();
-            
-            props.Should().HaveCount(2);
-            props.Single(p => p.Identifier.ToString() == "Transition").Type.ToString().Should().Be("long");
-            props.Single(p => p.Identifier.ToString() == "Brightness").Type.ToString().Should().Be("double");
+            var appCode = @"
+using NetDaemon.Model3.Common;
+using NetDaemon.Model3.Entities;
+using RootNameSpace;
+
+public class Root
+{
+    public void Run(IHaContext ha)
+    {
+        var s = new RootNameSpace.Services(ha);
+
+        s.Light.TurnOn(new ServiceTarget() );
+        s.Light.TurnOn(new ServiceTarget(), transition: 12, brightness: 324.5f);
+        s.Light.TurnOn(new ServiceTarget(), new (){ Transition = 12l, Brightness = 12.3f });
+        s.Light.TurnOn(new ServiceTarget(), new (){ Brightness = 12.3f });
+
+        s.Light.TurnOff(new ServiceTarget());
+
+        var light = new RootNameSpace.LightEntity(null, ""light.testlight"");
+
+        light.TurnOn();
+        light.TurnOn(transition: 12, brightness: 324.5f);
+        light.TurnOn(new (){ Transition = 12l, Brightness = 12.3f });
+        light.TurnOff();
+    }
+}";
+            AssertCodeCompiles(code.ToString(), appCode);
         }
 
-        private T FindTypeDeclaration<T>(CompilationUnitSyntax root, string name) where T : TypeDeclarationSyntax
+        private void AssertCodeCompiles(params string[] code)
         {
-            return root.DescendantNodes().OfType<T>().FirstOrDefault(n => n.Identifier.Text == name);
+            var syntaxtrees = code.Select(s => SyntaxFactory.ParseSyntaxTree(s)).ToArray();
+            
+            var compilation = CSharpCompilation.Create("tempAssembly",
+                syntaxtrees,
+                AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)).ToArray(),
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            );
+
+            var emitResult = compilation.Emit(Stream.Null);
+
+            emitResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+            
         }
     }
 }

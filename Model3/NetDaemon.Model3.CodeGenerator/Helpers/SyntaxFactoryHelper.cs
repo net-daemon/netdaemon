@@ -24,9 +24,9 @@ namespace NetDaemon.Model3.CodeGenerator.Helpers
             return Parse<RecordDeclarationSyntax>(code);
         }
 
-        public static PropertyDeclarationSyntax Property(string typeName, string propertyName, bool set = true)
+        public static PropertyDeclarationSyntax Property(string typeName, string propertyName, bool init = true)
         {
-            return ParseProperty($"{typeName} {propertyName} {{ get; {( set ? "set; " : string.Empty )}}}");
+            return ParseProperty($"{typeName} {propertyName} {{ get; {( init ? "init; " : string.Empty )}}}");
         }
 
         public static ClassDeclarationSyntax ClassWithInjected<TInjected>(string className)
@@ -56,7 +56,7 @@ namespace NetDaemon.Model3.CodeGenerator.Helpers
             return InterfaceDeclaration(name);
         }
 
-        public static RecordDeclarationSyntax Record(string name, IEnumerable<PropertyDeclarationSyntax> properties)
+        public static RecordDeclarationSyntax Record(string name, IEnumerable<MemberDeclarationSyntax> properties)
         {
             return RecordDeclaration(Token(SyntaxKind.RecordKeyword), name)
                 .WithOpenBraceToken(Token(SyntaxKind.OpenBraceToken))
