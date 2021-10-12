@@ -48,7 +48,7 @@ namespace NetDaemon.Model3.CodeGenerator
                 var typeName = GetEntitiesTypeName(domain);
                 var propertyName = domain.ToPascalCase();
 
-                return Property(typeName, propertyName, set: false);
+                return Property(typeName, propertyName, init: false);
             }).ToArray();
 
             return Interface("IEntities").AddMembers(autoProperties).ToPublic();
