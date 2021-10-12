@@ -48,22 +48,22 @@ namespace NetDaemon.Model3.CodeGenerator
         {
             var serviceName = service.Service!;
 
-            var args = GetServiceArguments(domain, service);
+            var serviceArguments = GetServiceArguments(domain, service);
 
             var entityTypeName = GetDomainEntityTypeName(service.Target?.Entity?.Domain!);
 
             yield return ParseMethod(
-                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(args is not null ? $", {args.GetParametersString()}" : string.Empty)})
+                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(serviceArguments is not null ? $", {serviceArguments.GetParametersString()}" : string.Empty)})
             {{
-                entity.CallService(""{serviceName}""{(args is not null ? $", {args.GetParametersVariable()}" : string.Empty)});
+                entity.CallService(""{serviceName}""{(serviceArguments is not null ? $", {serviceArguments.GetParametersVariable()}" : string.Empty)});
             }}").ToPublic().ToStatic();
 
-            if (args is not null)
+            if (serviceArguments is not null)
             {
                 yield return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity , {args.GetParametersDecomposedString()})
+                    $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity, {serviceArguments.GetParametersDecomposedString()})
                 {{
-                    entity.CallService(""{serviceName}"", {args.GetParametersDecomposedVariable()});
+                    entity.CallService(""{serviceName}"", {serviceArguments.GetParametersDecomposedVariable()});
                 }}").ToPublic().ToStatic();
             }
         }

@@ -24,6 +24,7 @@ namespace NetDaemon.Model3.CodeGenerator.Helpers
                 NumberSelector s when (s.Step ?? 1) % 1 != 0 => typeof(double),
                 NumberSelector => typeof(long),
                 TimeSelector => typeof(DateTime),
+                ObjectSelector => typeof(object),
                 _ => typeof(string)
             };
         }

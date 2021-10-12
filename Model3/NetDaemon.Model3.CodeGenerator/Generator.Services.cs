@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.Common;
@@ -60,7 +61,7 @@ namespace NetDaemon.Model3.CodeGenerator
                 var typeName = GetServicesTypeName(domain);
                 var domainName = domain.ToPascalCase();
 
-                return Property(typeName, domainName, set: false);
+                return Property(typeName, domainName, init: false);
             }).ToArray();
 
             return Interface("IServices").AddMembers(properties).ToPublic();
@@ -70,7 +71,7 @@ namespace NetDaemon.Model3.CodeGenerator
         {
             var serviceTypeDeclaration = ClassWithInjected<IHaContext>(GetServicesTypeName(domain)).ToPublic();
 
-            var serviceMethodDeclarations = services.Select(service => GenerateServiceMethod(domain, service)).ToArray();
+            var serviceMethodDeclarations = services.SelectMany(service => GenerateServiceMethod(domain, service)).ToArray();
 
             return serviceTypeDeclaration.AddMembers(serviceMethodDeclarations);
         }
@@ -85,39 +86,45 @@ namespace NetDaemon.Model3.CodeGenerator
             }
 
             var autoProperties = serviceArguments.Arguments
-                .Select(argument => Property(argument.TypeName!, argument.PropertyName!))
+                .Select(argument => Property(argument.TypeName!, argument.PropertyName!).ToPublic())
                 .ToArray();
 
             yield return Record(serviceArguments.TypeName, autoProperties).ToPublic();
         }
 
-        private static MemberDeclarationSyntax GenerateServiceMethod(string domain, HassService service)
+        private static IEnumerable<MemberDeclarationSyntax> GenerateServiceMethod(string domain, HassService service)
         {
             var serviceName = service.Service!;
 
             var serviceArguments = GetServiceArguments(domain, service);
             var haContextVariableName = GetVariableName<IHaContext>("_");
 
-            var argsParametersString = serviceArguments is not null ? $"{serviceArguments.TypeName} data {(serviceArguments.HasRequiredArguments ? "" : "= null")}" : null ;
+            var argsParametersString = serviceArguments is not null ? $"{serviceArguments.TypeName} data" : null ;
 
-            if (service.Target is not null)
+            var serviceMethodName = GetServiceMethodName(serviceName);
+            var targetParam = service.Target is not null ? $"{typeof(ServiceTarget).FullName} target" : null; 
+            var targetArg = service.Target is not null ? "target" : "null";
+            
+            // method using arguments object 
+            yield return ParseMethod(
+                $@"void {serviceMethodName}({JoinArguments(targetParam, argsParametersString)})
+            {{
+                {haContextVariableName}.CallService({JoinArguments($"\"{domain}\"", $"\"{serviceName}\"", targetArg, serviceArguments is not null ? "data" : null)});
+            }}").ToPublic();
+            
+            if (serviceArguments is not null)
             {
-                return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}({typeof(ServiceTarget).FullName} target {(argsParametersString is not null ? "," : "")} {argsParametersString})
-                {{
-                    {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", target {(serviceArguments is not null ? ", data" : string.Empty)});
-                }}").ToPublic();
-            }
-            else
-            {
-                return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}({argsParametersString})
-                {{
-                    {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"" {(serviceArguments is not null ? ", null" : "")} {(serviceArguments is not null ? ", data" : "")});
-                }}").ToPublic();
+                // method using arguments as separate parameters 
+                yield return ParseMethod(
+                $@"void {serviceMethodName}({JoinArguments(targetParam, serviceArguments.GetParametersDecomposedString())})
+            {{
+                {haContextVariableName}.CallService({JoinArguments($"\"{domain}\"", $"\"{serviceName}\"", targetArg, serviceArguments.GetParametersDecomposedVariable())});
+            }}").ToPublic();
             }
         }
 
+        private static string JoinArguments(params string?[] args) => string.Join(", ", args.Where(s => !string.IsNullOrEmpty(s)));
+        
         private static ServiceArguments? GetServiceArguments(string domain, HassService service)
         {
             if (service.Fields is null || service.Fields.Count == 0)
