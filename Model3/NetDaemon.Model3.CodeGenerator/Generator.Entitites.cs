@@ -144,7 +144,7 @@ namespace NetDaemon.Model3.CodeGenerator
 
             var entityClass = $"{GetDomainEntityTypeName(domain)}";
 
-            var baseClass = $"{typeof(Entity).FullName}<{entityClass}, {typeof(EntityState).FullName}<string, {attributesGeneric}>, string, {attributesGeneric}>";
+            var baseClass = $"{typeof(Entity).FullName}<{entityClass}, {typeof(EntityState).FullName}<{attributesGeneric}>, {attributesGeneric}>";
 
             var (className, variableName) = GetNames<IHaContext>();
             var classDeclaration = $@"record {entityClass} : {baseClass}

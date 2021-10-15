@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.Json;
 using NetDaemon.Model3.Common;
 
@@ -37,9 +36,8 @@ namespace NetDaemon.Model3.Entities
     /// <summary>
     /// Generic EntityState with specific types of State and Attributes
     /// </summary>
-    /// <typeparam name="TState"></typeparam>
-    /// <typeparam name="TAttributes"></typeparam>
-    public record EntityState<TState, TAttributes> : EntityState 
+    /// <typeparam name="TAttributes">The type of the Attributes Property</typeparam>
+    public record EntityState<TAttributes> : EntityState 
         where TAttributes : class
     {
         private readonly Lazy<TAttributes?> _attributesLazy;
@@ -53,9 +51,6 @@ namespace NetDaemon.Model3.Entities
             _attributesLazy = new (() => AttributesJson?.ToObject<TAttributes>() ?? default);            
         }
 
-        /// <summary>The state </summary>
-        public new TState? State => base.State == null ? default : (TState?)Convert.ChangeType(base.State, typeof(TState), CultureInfo.InvariantCulture);
-        
         /// <inheritdoc/>
         public override TAttributes? Attributes => _attributesLazy.Value;
     }
