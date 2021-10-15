@@ -67,8 +67,6 @@ namespace NetDaemon.Model3.Tests.Internal
         [Fact]
         public async void AllEntityIds_returnsInitialPlusChangedEntities()
         {
-            var entityId = "sensor.test";
-
             // Arrange
             using var testSubject = new Subject<HassEvent>();
             var hassClientMock = new Mock<IHassClient>();
