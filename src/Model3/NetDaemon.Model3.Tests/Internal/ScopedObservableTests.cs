@@ -2,6 +2,7 @@
 using NetDaemon.Infrastructure.ObservableHelpers;
 using System.Reactive.Subjects;
 using Moq;
+using NetDaemon.Model3.Internal;
 using Xunit;
 
 namespace NetDaemon.Model3.Tests.Internal
