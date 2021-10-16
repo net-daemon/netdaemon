@@ -15,7 +15,7 @@ namespace NetDaemon.Model3.Tests.Entities
 {
     public class EntityTest
     {
-        record TestEntity : Entity<TestEntity, EntityState<string, TestEntityAttributes>, string, TestEntityAttributes>
+        record TestEntity : Entity<TestEntity, EntityState<TestEntityAttributes>, TestEntityAttributes>
         {
             public TestEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
         }

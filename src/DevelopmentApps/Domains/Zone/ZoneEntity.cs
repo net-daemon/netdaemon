@@ -4,7 +4,7 @@ using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.DevelopmentApps.Domains.Zone
 {
-    public record ZoneEntity : Entity<ZoneEntity, EntityState<string, ZoneAttributes>, string, ZoneAttributes>
+    public record ZoneEntity : Entity<ZoneEntity, EntityState<ZoneAttributes>, ZoneAttributes>
     {
         public ZoneEntity(IHaContext haContext, string entityId) : base(haContext, entityId)
         { }
