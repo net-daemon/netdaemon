@@ -1,0 +1,12 @@
+﻿{
+    "HomeAssistant": {
+        "Host": "ENTER YOUR IP TO Development Home Assistant here",
+        "Port": 8124,
+        "Ssl": false,
+        "Token": "ENTER YOUR TOKEN"
+    },
+    "CodeGeneration": {
+        "Namespace": "HomeAssistantGenerated",
+        "OutputFile": "HomeAssistantGenerated.cs"
+    }
+}
