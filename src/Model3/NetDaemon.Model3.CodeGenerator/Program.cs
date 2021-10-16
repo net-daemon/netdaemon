@@ -8,6 +8,8 @@ using NetDaemon.Common.Configuration;
 using NetDaemon.Mapping;
 using NetDaemon.Model3.CodeGenerator;
 
+#pragma warning disable CA1303
+
 var configurationRoot = GetConfigurationRoot();
 var haSettings = configurationRoot.GetSection("HomeAssistant").Get<HomeAssistantSettings>();
 var generationSettings = configurationRoot.GetSection("CodeGeneration").Get<CodeGenerationSettings>();
