@@ -4,7 +4,7 @@ using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.DevelopmentApps.Domains.Sensor
 {
-    public record NumericSensorEntity : Entity<NumericSensorEntity, EntityState<double, NumericSensorAttributes>, double, NumericSensorAttributes>
+    public record NumericSensorEntity : NumericEntity<NumericSensorAttributes>
     {
         public NumericSensorEntity(IHaContext hasscontext, string entityId) : base(hasscontext, entityId) { }
     }

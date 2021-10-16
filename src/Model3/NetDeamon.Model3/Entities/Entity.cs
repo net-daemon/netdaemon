@@ -1,15 +1,12 @@
 ﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Reactive.Linq;
 using NetDaemon.Model3.Common;
 
 namespace NetDaemon.Model3.Entities
 {
-    /// <summary>
-    /// Represents a Home Assistant entity with its state, changes and services
-    /// </summary>
+    /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
     public record Entity
     {
         /// <summary>
@@ -37,9 +34,7 @@ namespace NetDaemon.Model3.Entities
         [SuppressMessage("", "CA1822")]
         public string Area => "todo";
 
-        /// <summary>
-        /// The current state of this Entity 
-        /// </summary>
+        /// <summary>The current state of this Entity</summary>
         public string? State => EntityState?.State;
 
         /// <summary>
@@ -83,22 +78,25 @@ namespace NetDaemon.Model3.Entities
         }
     }
 
-    public abstract record Entity<TEntity, TEntityState, TState, TAttributes> : Entity
-        where TEntity : Entity<TEntity, TEntityState, TState, TAttributes>
-        where TEntityState : EntityState<TState, TAttributes>
+    /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
+    public abstract record Entity<TEntity, TEntityState, TAttributes> : Entity
+        where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        where TEntityState : EntityState<TAttributes>
         where TAttributes : class
     {
         private readonly Lazy<TAttributes?> _attributesLazy;
 
-        protected Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
+        /// <summary>Copy constructor from Base type</summary>
+        protected Entity(Entity entity) : base(entity)
         {
             _attributesLazy = new(() => EntityState?.AttributesJson?.ToObject<TAttributes>());
         }
 
-        // We need a 'new' here because the normal type of State is string and we cannot overload string with eg double
-
-        /// <inheritdoc />
-        public new TState? State => base.State == null ? default : (TState?)Convert.ChangeType(base.State, typeof(TState), CultureInfo.InvariantCulture);
+        /// <summary>Constructor from haContext and entityId</summary>
+        protected Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
+        {
+            _attributesLazy = new(() => EntityState?.AttributesJson?.ToObject<TAttributes>());
+        }
 
         /// <inheritdoc />
         public override TAttributes? Attributes => _attributesLazy.Value;
@@ -114,11 +112,18 @@ namespace NetDaemon.Model3.Entities
         public override IObservable<StateChange<TEntity, TEntityState>> StateChanges =>
             base.StateChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
 
-        private static TEntityState? MapNullableState(EntityState? state)
-        {
-            // TODO: this requires the TEntityState to have a copy ctor from EntityState,
-            // maybe we could make this work without the copy ctor
-            return state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;
-        }
+        private static TEntityState? MapNullableState(EntityState? state) => 
+            state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;
+    }
+    
+    /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
+    public record Entity<TAttributes> : Entity<Entity<TAttributes>, EntityState<TAttributes>, TAttributes>
+        where TAttributes : class
+    {
+        /// <summary>Copy constructor from Base type</summary>
+        public Entity(Entity entity) : base(entity) { }
+        
+        /// <summary>Constructor from haContext and entityId</summary>
+        public Entity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
     }
 }
