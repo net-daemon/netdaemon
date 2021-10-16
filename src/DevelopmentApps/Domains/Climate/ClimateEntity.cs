@@ -4,7 +4,7 @@ using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.DevelopmentApps.Domains.Climate
 {
-    public record ClimateEntity : Entity<ClimateEntity, EntityState<string, ClimateAttributes>, string, ClimateAttributes>
+    public record ClimateEntity : Entity<ClimateEntity, EntityState<ClimateAttributes>, ClimateAttributes>
     {
         public ClimateEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
     }
