@@ -42,7 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Model3", "Model3", "{1D0125
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Model3.Tests", "src\Model3\NetDaemon.Model3.Tests\NetDaemon.Model3.Tests.csproj", "{ED06E300-F256-4BD9-B2FF-BBA0FF8C2461}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Model3.CodeGenerator", "Model3\NetDaemon.Model3.CodeGenerator\NetDaemon.Model3.CodeGenerator.csproj", "{A2F2FDA3-A0E9-4D55-B31A-6C7BBD1800C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Model3.CodeGenerator", "src\Model3\NetDaemon.Model3.CodeGenerator\NetDaemon.Model3.CodeGenerator.csproj", "{A2F2FDA3-A0E9-4D55-B31A-6C7BBD1800C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

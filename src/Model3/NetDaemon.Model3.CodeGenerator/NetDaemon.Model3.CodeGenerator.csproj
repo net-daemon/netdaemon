@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
+      <ProjectReference Include="..\..\..\src\DaemonRunner\DaemonRunner\DaemonRunner.csproj" />
     </ItemGroup>
 
     <ItemGroup>
