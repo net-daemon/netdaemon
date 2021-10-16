@@ -53,12 +53,12 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             // Prints: 'Netto energy 8908.81 kWh'
         }
 
-        private void OnNext(StateChange<ClimateEntity, EntityState<string, ClimateAttributes>> e)
+        private void OnNext(StateChange<ClimateEntity, EntityState<ClimateAttributes>> e)
         {
             // event has 3 properties
             ClimateEntity entity = e.Entity;
-            EntityState<string, ClimateAttributes>? newSate = e.New;
-            EntityState<string, ClimateAttributes>? oldState = e.Old;
+            EntityState<ClimateAttributes>? newSate = e.New;
+            EntityState<ClimateAttributes>? oldState = e.Old;
 
             var currentState = e.Entity.EntityState; // should be the same as e.New (unless the was another change in the meantime)
 
