@@ -27,10 +27,8 @@ namespace NetDaemon.Model3.CodeGenerator.Extensions
             return Regex.Replace(name, "[^a-zA-Z0-9]+", "", RegexOptions.Compiled);
         }
         
-        public static string? ToPascalCase(this string? str)
+        public static string ToPascalCase(this string str)
         {
-            if (string.IsNullOrEmpty(str)) return str;
-            
             var build = new StringBuilder(str.Length);
             bool nextIsUpper = false;
             bool isFirstCharacter = true;
@@ -50,11 +48,9 @@ namespace NetDaemon.Model3.CodeGenerator.Extensions
             return build.ToString();
         }
 
-        public static string? ToCamelCase(this string? str)
+        public static string ToCamelCase(this string str)
         {
             var camelCaseStr = ToPascalCase(str);
-
-            if (string.IsNullOrEmpty(camelCaseStr)) return str;
 
             return char.ToLowerInvariant(camelCaseStr[0]) + camelCaseStr[1..];
         }

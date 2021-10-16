@@ -30,7 +30,7 @@ var code = new Generator().GenerateCodeRx(generationSettings.Namespace, states.S
 File.WriteAllText(generationSettings.OutputFile, code);
 
 Console.WriteLine("Code Generated successfully!");
-
+return 0;
 
 IConfigurationRoot GetConfigurationRoot()
 {
