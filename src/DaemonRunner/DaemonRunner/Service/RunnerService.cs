@@ -174,7 +174,7 @@ namespace NetDaemon.Service
                                 
                                 _loadedDaemonApps = FilterFocusApps(_loadedDaemonApps.ToList());
 
-                                await Model3.DependencyInjectionSetup.InitializeAsync(_serviceProvider, stoppingToken).ConfigureAwait(false);
+                                await HassModel.DependencyInjectionSetup.InitializeAsync(_serviceProvider, stoppingToken).ConfigureAwait(false);
 
                                 IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
                                 await daemonHost.Initialize(codeManager).ConfigureAwait(false);
