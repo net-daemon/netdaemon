@@ -1,5 +1,4 @@
 ﻿using System;
-using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.CodeGenerator.Extensions;
 
 namespace NetDaemon.Model3.CodeGenerator.Helpers
