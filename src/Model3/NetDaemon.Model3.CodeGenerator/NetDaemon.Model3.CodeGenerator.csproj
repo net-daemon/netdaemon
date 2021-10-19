@@ -23,9 +23,6 @@
         </AssemblyAttribute>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Console" />
-    </ItemGroup>
 
     <ItemGroup>
       <None Update="appsettings.json">
