@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.Daemon.Config;
 using NetDaemon.Model3.CodeGenerator.Extensions;
 using NetDaemon.Model3.CodeGenerator.Helpers;
 using NetDaemon.Model3.Common;
