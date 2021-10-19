@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive.Subjects;
 
-namespace NetDaemon.Infrastructure.ObservableHelpers
+namespace NetDaemon.Model3.Internal
 {
     /// <summary>
     /// Wraps an Observable so all subscribers can be unsubscribed by disposing

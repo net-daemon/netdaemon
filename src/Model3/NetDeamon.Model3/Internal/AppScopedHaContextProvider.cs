@@ -5,18 +5,17 @@ using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using NetDaemon.Infrastructure.ObservableHelpers;
 using NetDaemon.Model3.Common;
 using NetDaemon.Model3.Entities;
 
 namespace NetDaemon.Model3.Internal
 {
     /// <summary>
-    /// Implements IHaContext and IEventProvider to be used in a scope like a NetDaemon App
+    /// Implements IHaContext to be used in a scope like a NetDaemon App
     /// (We could eg. also have an implementation that does not deal with scopes or caching etc to be used en Console apps)
     /// </summary>
     [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
-    internal class AppScopedHaContextProvider : IHaContext, IDisposable, IEventProvider
+    internal class AppScopedHaContextProvider : IHaContext, IDisposable
     {
         private readonly EntityStateCache _entityStateCache;
         private readonly IHassClient _hassClient;
@@ -36,11 +35,7 @@ namespace NetDaemon.Model3.Internal
             _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges);
         }
 
-        public EntityState? GetState(string entityId)
-        {
-            var hassState = _entityStateCache.GetState(entityId);
-            return HassObjectMapper.Map(hassState);
-        }
+        public EntityState? GetState(string entityId) => _entityStateCache.GetState(entityId).Map();
 
         public IReadOnlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
 
@@ -51,10 +46,7 @@ namespace NetDaemon.Model3.Internal
 
         public IObservable<StateChange> StateAllChanges => _entityStateCache.StateAllChanges.Select(e => e.Map(this));
 
-        public IObservable<T> GetEventDataOfType<T>(string eventType) where T : class =>
-            _scopedEventObservable
-                .Where(e => e.EventType == eventType && e.DataElement != null)
-                .Select(e => e.DataElement?.ToObject<T>()!);
+        public IObservable<Event> Events => _scopedEventObservable.Select(e => e.Map());
 
         public void Dispose()
         {
