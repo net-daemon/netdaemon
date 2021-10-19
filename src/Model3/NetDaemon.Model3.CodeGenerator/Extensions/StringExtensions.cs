@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
-using NetDaemon.Daemon.Config;
 
 namespace NetDaemon.Model3.CodeGenerator.Extensions
 {
@@ -24,6 +25,34 @@ namespace NetDaemon.Model3.CodeGenerator.Extensions
                 name = prefix + name;
 
             return Regex.Replace(name, "[^a-zA-Z0-9]+", "", RegexOptions.Compiled);
+        }
+        
+        public static string ToPascalCase(this string str)
+        {
+            var build = new StringBuilder(str.Length);
+            bool nextIsUpper = false;
+            bool isFirstCharacter = true;
+            foreach (char c in str)
+            {
+                if (c == '_')
+                {
+                    nextIsUpper = true;
+                    continue;
+                }
+
+                build.Append(nextIsUpper || isFirstCharacter ? char.ToUpper(c, CultureInfo.InvariantCulture) : c);
+                nextIsUpper = false;
+                isFirstCharacter = false;
+            }
+
+            return build.ToString();
+        }
+
+        public static string ToCamelCase(this string str)
+        {
+            var camelCaseStr = ToPascalCase(str);
+
+            return char.ToLowerInvariant(camelCaseStr[0]) + camelCaseStr[1..];
         }
     }
 }
