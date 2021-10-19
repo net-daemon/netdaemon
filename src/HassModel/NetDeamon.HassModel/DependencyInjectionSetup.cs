@@ -29,7 +29,6 @@ namespace NetDaemon.HassModel
             services.AddSingleton<EntityStateCache>();
             services.AddScoped<AppScopedHaContextProvider>();
             services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
-            services.AddTransient<IEventProvider>(s => s.GetRequiredService<AppScopedHaContextProvider>());
         }
         
         /// <summary>
