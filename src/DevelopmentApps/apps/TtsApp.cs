@@ -1,6 +1,6 @@
 ﻿using NetDaemon.Common;
 using NetDaemon.Daemon;
-using NetDaemon.Model3.Common;
+using NetDaemon.HassModel.Common;
 
 namespace NetDaemon.DevelopmentApps.apps
 {
