@@ -5,8 +5,8 @@ using NetDaemon.Common;
 using NetDaemon.DevelopmentApps.Domains.Climate;
 using NetDaemon.DevelopmentApps.Domains.Sensor;
 using NetDaemon.DevelopmentApps.Domains.Zone;
-using NetDaemon.Model3.Common;
-using NetDaemon.Model3.Entities;
+using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {
@@ -21,7 +21,7 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
         {
             Ha = ha;
 
-            // Ha.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works in Model3 via HaContext" }, true);;
+            // Ha.CallService("notify", "persistent_notification", new { message = "Hello", title = "Yay it works in HassModel via HaContext" }, true);;
 
             _climateEntity = new ClimateEntity(ha, "climate.dummy_thermostat");
             

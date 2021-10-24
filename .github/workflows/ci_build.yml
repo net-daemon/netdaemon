@@ -32,7 +32,7 @@ jobs:
         run: dotnet test tests/NetDaemon.Daemon.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:CoverletOutput=${{github.workspace}}/codecover
 
       - name: 👀 Test V3
-        run: dotnet test src/Model3/NetDaemon.Model3.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
+        run: dotnet test src/HassModel/NetDaemon.HassModel.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
