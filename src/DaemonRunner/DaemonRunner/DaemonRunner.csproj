@@ -41,7 +41,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
     <ProjectReference Include="..\..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
-    <ProjectReference Include="..\..\Model3\NetDeamon.Model3\NetDaemon.Model3.csproj" />
+    <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
