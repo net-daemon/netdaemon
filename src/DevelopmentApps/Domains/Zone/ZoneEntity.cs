@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using NetDaemon.Model3.Common;
-using NetDaemon.Model3.Entities;
+using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.DevelopmentApps.Domains.Zone
 {

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using NetDaemon.Common;
 using NetDaemon.DevelopmentApps.Domains.Climate;
-using NetDaemon.Model3.Common;
+using NetDaemon.HassModel.Common;
 
 
 namespace NetDaemon.DevelopmentApps.apps

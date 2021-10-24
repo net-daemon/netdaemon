@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Hosting;
 using NetDaemon;
-using NetDaemon.Model3;
+using NetDaemon.HassModel;
 
 try
 {
