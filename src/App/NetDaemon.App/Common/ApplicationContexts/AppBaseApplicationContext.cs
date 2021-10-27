@@ -15,7 +15,7 @@ namespace NetDaemon.Common
             : base(applicationType, id, serviceProvider)
         {
             _appInstance = (INetDaemonAppBase)ActivatorUtilities.GetServiceOrCreateInstance(ServiceProvider, applicationType);
-
+            _appInstance.Id = id;
             if (_appInstance is NetDaemonAppBase appBase)
             {
                 appBase.ServiceProvider = ServiceProvider;
