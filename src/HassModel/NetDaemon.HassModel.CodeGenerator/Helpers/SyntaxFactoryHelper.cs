@@ -24,6 +24,22 @@ namespace NetDaemon.HassModel.CodeGenerator.Helpers
             return Parse<RecordDeclarationSyntax>(code);
         }
 
+        public static MemberDeclarationSyntax WithJsonPropertyName(this MemberDeclarationSyntax input, string name)
+        {
+            return input.WithAttributeLists(
+                SingletonList(
+                    AttributeList(
+                        SingletonSeparatedList(
+                            Attribute(IdentifierName("System.Text.Json.Serialization.JsonPropertyName"))
+                                .WithArgumentList(
+                                    AttributeArgumentList(
+                                        SingletonSeparatedList(
+                                            AttributeArgument(
+                                                LiteralExpression(
+                                                    SyntaxKind.StringLiteralExpression,
+                                                    Literal(name))))))))));
+        }
+
         public static PropertyDeclarationSyntax Property(string typeName, string propertyName, bool init = true)
         {
             return ParseProperty($"{typeName} {propertyName} {{ get; {( init ? "init; " : string.Empty )}}}");
