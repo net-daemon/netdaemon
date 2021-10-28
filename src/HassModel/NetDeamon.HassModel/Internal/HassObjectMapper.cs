@@ -15,7 +15,7 @@ namespace NetDaemon.HassModel.Internal
                 Map(source.NewState));
         }
 
-        public static EntityState? Map(HassState? hassState)
+        public static EntityState? Map(this HassState? hassState)
         {
             if (hassState == null) return null;
 
@@ -45,6 +45,17 @@ namespace NetDaemon.HassModel.Internal
                 AreaIds = target.AreaIds,
                 DeviceIds = target.DeviceIds,
                 EntityIds = target.EntityIds,
+            };
+        }
+
+        public static Event Map(this HassEvent hassEvent)
+        {
+            return new ()
+            {
+                Origin = hassEvent.Origin,
+                EventType = hassEvent.EventType,
+                TimeFired = hassEvent.TimeFired,
+                DataElement = hassEvent.DataElement,
             };
         }
     }

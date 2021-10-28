@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
 using System.Threading;
 using FluentAssertions;
 using JoySoftware.HomeAssistant.Client;
@@ -18,6 +19,15 @@ namespace NetDaemon.HassModel.Tests.Internal
     {
         private readonly Subject<HassEvent> _hassEventSubjectMock = new ();
         private readonly Mock<IHassClient> _hassClientMock = new();
+
+        private readonly HassEvent _sampleHassEvent = new HassEvent()
+        {
+            Origin = "Test",
+            EventType = "test_event",
+            TimeFired = new DateTime(2020, 12, 2),
+            DataElement = JsonSerializer.Deserialize<JsonElement>(@"{""command"" : ""flip"",
+                                                                     ""endpoint_id"" : 2}")
+        };
 
         [Fact]
         public void TestCallService()
@@ -54,13 +64,78 @@ namespace NetDaemon.HassModel.Tests.Internal
 
             stateAllChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once);
             stateChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once());
-            
-            haContext.GetState("TestDomain.TestEntity").State!.Should().Be("newstate");
+
+            haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newstate");
             // the state should come from the state cache so we do not expect a call to HassClient.GetState 
             _hassClientMock.Verify(m => m.GetState(It.IsAny<string>()), Times.Never);
         }
 
+        [Fact]
+        public void Events_PassesMappedEvents()
+        {
+            // Arrange
+            var haContext = CreateTarget();
+            Mock<IObserver<Event>> eventObserverMock = new ();
+
+            haContext.Events.Subscribe(eventObserverMock.Object);
+            
+            // Act
+            _hassEventSubjectMock.OnNext(_sampleHassEvent);
+            
+            // Assert
+            eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
+            var @event = eventObserverMock.Invocations.Single().Arguments[0] as Event;
+            @event!.Origin.Should().Be(_sampleHassEvent.Origin);
+            @event!.EventType.Should().Be(_sampleHassEvent.EventType);
+            @event!.TimeFired.Should().Be(_sampleHassEvent.TimeFired);
+            @event!.DataElement.Should().Be(_sampleHassEvent.DataElement);
+        }
+
+        [Fact]
+        public void EventsAndFilter_ShowsOnlyMatchingEventsAsCorrectType()
+        {
+            // Arrange
+            var haContext = CreateTarget();
+            Mock<IObserver<Event<TestEventData>>> typedEventObserverMock = new ();
+
+            haContext.Events.Filter<TestEventData>("test_event").Subscribe(typedEventObserverMock.Object);
+            
+            // Act
+            _hassEventSubjectMock.OnNext(_sampleHassEvent);
+            _hassEventSubjectMock.OnNext(_sampleHassEvent with { EventType = "other_type" });
+            
+            // Assert
+            typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
+            var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.Single().Arguments[0];
+            
+            @event.Data!.command.Should().Be("flip");
+            @event.Data!.endpoint_id.Should().Be(2);
+            @event.Data!.otherField.Should().BeNull(because: "it is not in the Json");
+        }        
         
+        [Fact]
+        public void EventsStopAfterDispose()
+        {
+            // Arrange
+            var haContext = CreateTarget();
+            Mock<IObserver<Event>> eventObserverMock = new ();
+            haContext.Events.Subscribe(eventObserverMock.Object);
+            
+            // Act
+            _hassEventSubjectMock.OnNext(_sampleHassEvent);
+            
+            eventObserverMock.Verify(e => e.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+
+            // Act
+            ((IDisposable)haContext).Dispose();
+            _hassEventSubjectMock.OnNext(_sampleHassEvent);
+
+            // Assert
+            eventObserverMock.VerifyNoOtherCalls();
+        }        
+        
+        public record TestEventData(string command, int endpoint_id, string otherField);
+
         private IHaContext CreateTarget()
         {
             var serviceCollection = new ServiceCollection();
