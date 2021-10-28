@@ -42,6 +42,8 @@ jobs:
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
       - name: 🎁 Pack HassModel
         run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+      - name: 🎁 Pack HassModel codegen
+        run: dotnet pack src/HassModel/NetDaemon.HassModel.CodeGenerator/NetDaemon.HassModel.CodeGenerator.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
       - name: 🎁 Pack Test
         run: dotnet pack src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
       - name: 📨 Push to nuget
