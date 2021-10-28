@@ -31,6 +31,7 @@ if (args?.Length > 0)
 
     These settings is valid when installed codegen as global dotnet tool.
             ");
+            return 0;
         }
     }
 }
