@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using JoySoftware.HomeAssistant.Client;
@@ -13,6 +14,27 @@ using NetDaemon.HassModel.CodeGenerator;
 var configurationRoot = GetConfigurationRoot();
 var haSettings = configurationRoot.GetSection("HomeAssistant").Get<HomeAssistantSettings>();
 var generationSettings = configurationRoot.GetSection("CodeGeneration").Get<CodeGenerationSettings>();
+
+if (args?.Length > 0)
+{
+    foreach (var arg in args)
+    {
+        if (arg.ToLower(CultureInfo.InvariantCulture) == "-help")
+        {
+            Console.WriteLine(@"
+    Usage: nd-codegen [options] -ns namespace -o outfile
+    Options:
+        -host       : Host of the netdaemon instance
+        -port       : Port of the NetDaemon instance
+        -ssl        : true if NetDaemon instance use ssl
+        -token      : A long lived HomeAssistant token
+
+    These settings is valid when installed codegen as global dotnet tool.
+            ");
+            return 0;
+        }
+    }
+}
 
 Console.WriteLine($"Connecting to Home Assistant at {haSettings.Host}:{haSettings.Port}");
 await using var client = new HassClient();
@@ -46,7 +68,7 @@ IConfigurationRoot GetConfigurationRoot()
             ["-o"] = "CodeGeneration:OutputFile",
             ["-ns"] = "CodeGeneration:Namespace",
             ["-host"] = "HomeAssistant:Host",
-            ["-port"] = "HomeAssistant:Post",
+            ["-port"] = "HomeAssistant:Port",
             ["-ssl"] = "HomeAssistant:Ssl",
             ["-token"] = "HomeAssistant:Token",
         });
