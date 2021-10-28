@@ -1,0 +1,48 @@
+#### Publish tags to docker hub
+name: 📦 Push to nuget manual
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Enter version number"
+        required: true
+        default: "21.43.0"
+
+jobs:
+  deploy_nuget:
+    name: 📦 publish nuget packages manual version
+    runs-on: ubuntu-latest
+    environment: CI - release environment
+    steps:
+      - name: 📤 Checkout the repository
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
+
+      - name: 🥅 Install .Net 5
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x" # SDK Version
+
+      - name: 🔖 Set version number
+        run: |
+          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ github.event.inputs.tag }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+      - name: 🎁 Pack DaemonRunner
+        run: dotnet pack src/DaemonRunner/DaemonRunner/DaemonRunner.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+      - name: 🎁 Pack App
+        run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+      - name: 🎁 Pack Daemon
+        run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+      - name: 🎁 Pack HassModel
+        run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+      - name: 🎁 Pack Test
+        run: dotnet pack src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+      - name: 📨 Push to nuget
+        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true
