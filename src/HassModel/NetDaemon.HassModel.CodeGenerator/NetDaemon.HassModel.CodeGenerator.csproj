@@ -5,6 +5,20 @@
         <Nullable>enable</Nullable>
         <LangVersion>9.0</LangVersion>
         <OutputType>Exe</OutputType>
+        <PackageId>JoySoftware.NetDaemon.HassModel.CodeGen</PackageId>
+        <Version>20.49.2-beta</Version>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>nd-codegen</ToolCommandName>
+        <Authors>frankbakkernl, helto4real</Authors>
+        <Company>JoySoftware</Company>
+        <description>A .net core appdaemon for Home Assistant, the code generator tool for dotnet cli</description>
+        <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageDescription>
+          A application model for writing automations for the free open source home automations software Home Assisstant written in .net 5.
+        </PackageDescription>
+        <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
+        <tags>Home Assistant</tags>
     </PropertyGroup>
 
     <ItemGroup>
