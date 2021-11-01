@@ -13,4 +13,5 @@ namespace NetDaemon.HassModel.Tests.TestHelpers
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }
-    }}
+    }
+}
