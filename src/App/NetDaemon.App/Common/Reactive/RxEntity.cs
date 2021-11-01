@@ -40,7 +40,7 @@ namespace NetDaemon.Common.Reactive
         void TurnOn(dynamic? attributes = null);
 
         /// <summary>
-        ///     Observable, All state changes inkluding attributes
+        ///     Observable, All state changes including attributes
         /// </summary>
         IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
 

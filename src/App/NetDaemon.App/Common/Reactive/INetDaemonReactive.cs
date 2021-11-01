@@ -15,7 +15,7 @@ namespace NetDaemon.Common.Reactive
         public IRxEvent EventChanges { get; }
 
         /// <summary>
-        ///     The observable statestream, all changes inkluding attributes
+        ///     The observable state stream, all changes including attributes
         /// </summary>
         public IObservable<(EntityState Old, EntityState New)> StateAllChanges { get; }
 
@@ -51,7 +51,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="entityId">EntityId</param>
         /// <param name="state">The state to set</param>
-        /// <param name="attributes">The attributes, use anonomous type like new {attr="someattr", attr2=25}</param>
+        /// <param name="attributes">The attributes, use anonymous type like new {attr="someattr", attr2=25}</param>
         /// <param name="waitForResponse">If true it waits for response and returns new state</param>
         EntityState? SetState(string entityId, dynamic state, dynamic? attributes = null, bool waitForResponse = false);
 
@@ -66,7 +66,7 @@ namespace NetDaemon.Common.Reactive
         /// </summary>
         /// <param name="domain">Domain of sevice</param>
         /// <param name="service">Service name</param>
-        /// <param name="data">Data provided to service. Use anonomous type</param>
+        /// <param name="data">Data provided to service. Use anonymous type</param>
         /// <param name="waitForResponse">Waits for Home Assistant to return result before returning</param>
         void CallService(string domain, string service, dynamic? data, bool waitForResponse = false);
 
