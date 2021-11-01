@@ -12,8 +12,8 @@ using NetDaemon.HassModel.CodeGenerator;
 #pragma warning disable CA1303
 
 var configurationRoot = GetConfigurationRoot();
-var haSettings = configurationRoot.GetSection("HomeAssistant").Get<HomeAssistantSettings>();
-var generationSettings = configurationRoot.GetSection("CodeGeneration").Get<CodeGenerationSettings>();
+var haSettings = configurationRoot.GetSection("HomeAssistant")?.Get<HomeAssistantSettings>() ?? new HomeAssistantSettings();
+var generationSettings = configurationRoot.GetSection("CodeGeneration").Get<CodeGenerationSettings>() ?? new CodeGenerationSettings();
 
 if (args?.Length > 0)
 {
@@ -54,14 +54,25 @@ var code = new Generator().GenerateCodeRx(generationSettings.Namespace, states.S
 File.WriteAllText(generationSettings.OutputFile, code);
 
 Console.WriteLine("Code Generated successfully!");
+Console.WriteLine(Path.GetFullPath(generationSettings.OutputFile));
+
 return 0;
 
 IConfigurationRoot GetConfigurationRoot()
 {
     var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
     var builder = new ConfigurationBuilder()
+        // default path is the folder of the currently execting root assembley
         .AddJsonFile("appsettings.json", true, true)
         .AddJsonFile($"appsettings.{env}.json", true, true)
+        
+        // Also look in the current directory which wil typically be the project folder
+        // of the users code and have a appsettings.development.json with the correct HA connection settings
+        .SetBasePath(Environment.CurrentDirectory)
+        .AddJsonFile("appsettings.json", true, true)
+        .AddJsonFile($"appsettings.development.json", true, true)
+        
+        // finally override with Environment vars or commandline
         .AddEnvironmentVariables()
         .AddCommandLine(args, new Dictionary<string, string>()
         {
