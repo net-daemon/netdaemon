@@ -12,7 +12,7 @@ namespace NetDaemon.HassModel.Entities
         /// <summary>
         /// The IHAContext
         /// </summary>
-        protected IHaContext HaContext { get; }
+        public IHaContext HaContext { get; }
 
         /// <summary>
         /// Entity id being handled by this entity
@@ -59,7 +59,7 @@ namespace NetDaemon.HassModel.Entities
         /// Observable, All state changes. New.State!=Old.State
         /// </summary>
         public virtual IObservable<StateChange> StateChanges =>
-             StateAllChanges.Where(s => s.New?.State != s.Old?.State);
+             StateAllChanges.StateChangesOnly();
 
         /// <summary>
         /// Calls a service using this entity as the target
@@ -109,8 +109,7 @@ namespace NetDaemon.HassModel.Entities
             base.StateAllChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
 
         /// <inheritdoc />
-        public override IObservable<StateChange<TEntity, TEntityState>> StateChanges =>
-            base.StateChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+        public override IObservable<StateChange<TEntity, TEntityState>> StateChanges => StateAllChanges.StateChangesOnly();
 
         private static TEntityState? MapNullableState(EntityState? state) => 
             state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;

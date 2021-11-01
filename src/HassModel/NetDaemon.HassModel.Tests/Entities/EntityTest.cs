@@ -1,31 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Moq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using FluentAssertions;
+using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NetDaemon.HassModel.Tests.Entities
 {
     public class EntityTest
     {
-        record TestEntity : Entity<TestEntity, EntityState<TestEntityAttributes>, TestEntityAttributes>
-        {
-            public TestEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
-        }
-
-        record TestEntityAttributes
-        {
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-        }
-
         [Fact]
         public void ShouldWrapStateFromHaContext()
         {
@@ -35,7 +21,7 @@ namespace NetDaemon.HassModel.Tests.Entities
                 new EntityState()
                 {
                     State = "CurrentState",
-                    AttributesJson = JsonSerializer.Deserialize<JsonElement>("{\"name\": \"value\"}")
+                    AttributesJson = new { name = "value" }.AsJsonElement()
                 };
             
             haContextMock.Setup(t => t.GetState("domain.testEntity")).Returns(entityState);
@@ -85,9 +71,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             
             entity.CallService("service", data);
             
-            // TODO: should we always use the domain of the entity?
             haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds.Single() == entity.EntityId), data), Times.Once);
-
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Linq;
 
 namespace NetDaemon.HassModel.Entities
 {
@@ -52,5 +53,8 @@ namespace NetDaemon.HassModel.Entities
         public static NumericEntity<TAttributes> WithAttributesAs<TAttributes>(this NumericEntity entity)
             where TAttributes : class
             => new (entity);
+        
+        internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
+            => changes.Where(c => c.New?.State != c.Old?.State);
     }
 }

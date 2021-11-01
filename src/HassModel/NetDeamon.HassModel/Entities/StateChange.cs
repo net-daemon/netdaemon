@@ -3,9 +3,9 @@
     /// <summary>
     /// Represents a state change event for an entity
     /// </summary>
-    public record StateChange()
+    public record StateChange
     {
-        internal StateChange(Entity entity, EntityState? old, EntityState? @new) : this()
+        internal StateChange(Entity entity, EntityState? old, EntityState? @new) 
         {
             Entity = entity;
             New = @new;
