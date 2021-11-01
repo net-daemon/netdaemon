@@ -62,7 +62,7 @@ IConfigurationRoot GetConfigurationRoot()
 {
     var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
     var builder = new ConfigurationBuilder()
-        // default path is the folder of the currently execting root assembleyappsettings.development.json
+        // default path is the folder of the currently execting root assembley
         .AddJsonFile("appsettings.json", true, true)
         .AddJsonFile($"appsettings.{env}.json", true, true)
         
