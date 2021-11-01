@@ -20,7 +20,7 @@ namespace NetDaemon.HassModel.Entities
         /// Observable, All state changes. New.State != Old.State
         /// </summary>
         public static IObservable<StateChange> StateChanges(this IEnumerable<Entity> entities) =>
-            entities.StateAllChanges().StateOnly();
+            entities.StateAllChanges().StateChangesOnly();
         
         /// <summary>
         /// Observable, All state changes including attributes
@@ -38,7 +38,7 @@ namespace NetDaemon.HassModel.Entities
             where TEntity : Entity<TEntity, TEntityState, TAttributes>
             where TEntityState : EntityState<TAttributes>
             where TAttributes : class => 
-            entities.StateAllChanges().StateOnly();
+            entities.StateAllChanges().StateChangesOnly();
         
         /// <summary>
         /// Calls a service with a set of Entities as the target

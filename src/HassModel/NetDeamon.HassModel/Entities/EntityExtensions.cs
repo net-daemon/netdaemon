@@ -54,7 +54,7 @@ namespace NetDaemon.HassModel.Entities
             where TAttributes : class
             => new (entity);
         
-        internal static IObservable<T> StateOnly<T>(this IObservable<T> changes) where T : StateChange
+        internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
             => changes.Where(c => c.New?.State != c.Old?.State);
     }
 }

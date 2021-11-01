@@ -26,7 +26,7 @@ namespace NetDaemon.HassModel.Common
         /// <remarks>
         /// Old state != New state
         /// </remarks>
-        IObservable<StateChange> StateChanges => StateAllChanges.StateOnly();
+        IObservable<StateChange> StateChanges => StateAllChanges.StateChangesOnly();
 
         /// <summary>
         /// Get state for a single entity
