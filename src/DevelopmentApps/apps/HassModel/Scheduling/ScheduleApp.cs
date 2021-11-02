@@ -13,7 +13,7 @@ using NetDaemon.HassModel.Entities;
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {
     [NetDaemonApp]
-    public class ScheduledApp //: IDisposable, IAsyncDisposable
+    public class ScheduledApp
     {
         public ScheduledApp(IHaContext ha, INetDaemonScheduler scheduler)
         {
