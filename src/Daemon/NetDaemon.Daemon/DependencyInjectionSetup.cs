@@ -30,7 +30,7 @@ namespace NetDaemon
             // these interfaces and methods directly on INetDaemonHost can eventually be removed
             services.AddSingleton(s => s.GetRequiredService<NetDaemonHost>().HassEventsObservable);
             services.AddSingleton<ITextToSpeechService>(s => s.GetRequiredService<NetDaemonHost>().TextToSpeechService);
-            services.AddTransient<INetDaemonScheduler, NetDaemonScheduler>();
+            services.AddNetDaemonScheduler();
             services.AddNetDaemonAppServices();
 
             return services;
