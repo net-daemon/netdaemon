@@ -23,17 +23,20 @@ namespace NetDaemon.Extensions.Scheduler
                 .AddConsole();
         });
 
-        private ILogger _log { get; }
+        private readonly ILogger _log;
+        private readonly IScheduler _reactiveScheduler;
 
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="loggerFactory">Injected logger factory</param>
-        public NetDaemonScheduler(ILoggerFactory? loggerFactory = null)
+        /// <param name="reactiveScheduler">Used for unit testing the scheduler</param>
+        public NetDaemonScheduler(ILoggerFactory? loggerFactory = null, IScheduler? reactiveScheduler = null)
         {
             _cancelTimers = new();
             loggerFactory = loggerFactory ?? DefaultLoggerFactory;
             _log = loggerFactory.CreateLogger<NetDaemonScheduler>();
+            _reactiveScheduler = reactiveScheduler ?? TaskPoolScheduler.Default;
         }
         /// <inheritdoc/>
         public IDisposable RunDaily(string time, Action action)
@@ -77,7 +80,7 @@ namespace NetDaemon.Extensions.Scheduler
         {
             var result = new DisposableTimer(_cancelTimers.Token);
 
-            Observable.Interval(timespan, TaskPoolScheduler.Default)
+            Observable.Interval(timespan, _reactiveScheduler)
                 .Subscribe(
                     _ =>
                     {
@@ -144,7 +147,7 @@ namespace NetDaemon.Extensions.Scheduler
         public IDisposable RunIn(TimeSpan timespan, Action action)
         {
             var result = new DisposableTimer(_cancelTimers.Token);
-            Observable.Timer(timespan, TaskPoolScheduler.Default)
+            Observable.Timer(timespan, _reactiveScheduler)
                 .Subscribe(
                     _ =>
                     {
@@ -185,7 +188,7 @@ namespace NetDaemon.Extensions.Scheduler
             Observable.Timer(
                 timeOfDayToTrigger,
                 interval,
-                TaskPoolScheduler.Default)
+                _reactiveScheduler)
                 .Subscribe(
                     _ =>
                     {

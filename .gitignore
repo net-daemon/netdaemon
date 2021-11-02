@@ -57,3 +57,5 @@ codecover_merged.info
 appsettings.Development.json
 
 **/core
+
+**/coverage.json
