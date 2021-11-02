@@ -30,20 +30,20 @@ jobs:
 
       - name: 👀 Test
         run: |
-          dotnet test tests/NetDaemon.Daemon.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:CoverletOutput=${{github.workspace}}/codecover
-          dotnet test src/HassModel/NetDaemon.HassModel.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
-          dotnet test src/Extensions/NetDaemon.Extensions.Scheduling.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat={json,lcov} /p:MergeWith=${{github.workspace}}/codecover_merged.json /p:CoverletOutput=${{github.workspace}}/codecover_merged
+          dotnet test tests/NetDaemon.Daemon.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:CoverletOutput=${{github.workspace}}/codecover
+          dotnet test src/HassModel/NetDaemon.HassModel.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover
+          dotnet test src/Extensions/NetDaemon.Extensions.Scheduling.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{github.workspace}}/codecover_merged.info
+          path-to-lcov: ${{github.workspace}}/codecover.info
 
       - name: 📨 Publish coverage to codecov
         uses: codecov/codecov-action@v1
         with:
           flags: unittests # optional
           name: codecov-umbrella # optional
-          files: ${{github.workspace}}/codecover_merged.info
+          files: ${{github.workspace}}/codecover.info
           fail_ci_if_error: true # optional (default = false)
