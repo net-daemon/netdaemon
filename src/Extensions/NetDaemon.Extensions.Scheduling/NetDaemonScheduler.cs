@@ -3,15 +3,18 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+
+[assembly: InternalsVisibleTo("NetDaemon.Extensions.Scheduling.Tests")]
 
 namespace NetDaemon.Extensions.Scheduler
 {
     /// <summary>
     ///     Provides scheduling capability to be injected into apps
     /// </summary>
-    public class NetDaemonScheduler : INetDaemonScheduler, IDisposable
+    internal class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     {
         private readonly CancellationTokenSource _cancelTimers;
         private bool disposedValue;
@@ -23,19 +26,18 @@ namespace NetDaemon.Extensions.Scheduler
                 .AddConsole();
         });
 
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
         private readonly IScheduler _reactiveScheduler;
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        /// <param name="loggerFactory">Injected logger factory</param>
+        /// <param name="logger">Injected logger</param>
         /// <param name="reactiveScheduler">Used for unit testing the scheduler</param>
-        public NetDaemonScheduler(ILoggerFactory? loggerFactory = null, IScheduler? reactiveScheduler = null)
+        public NetDaemonScheduler(ILogger<NetDaemonScheduler>? logger = null, IScheduler? reactiveScheduler = null)
         {
             _cancelTimers = new();
-            loggerFactory = loggerFactory ?? DefaultLoggerFactory;
-            _log = loggerFactory.CreateLogger<NetDaemonScheduler>();
+            _logger = logger ?? DefaultLoggerFactory.CreateLogger<NetDaemonScheduler>();
             _reactiveScheduler = reactiveScheduler ?? TaskPoolScheduler.Default;
         }
         /// <inheritdoc/>
@@ -94,10 +96,10 @@ namespace NetDaemon.Extensions.Scheduler
                         }
                         catch (Exception e)
                         {
-                            _log.LogError(e, "Error in scheduled timer!");
+                            _logger.LogError(e, "Error in scheduled timer!");
                         }
                     },
-                    _ => _log.LogTrace("Exiting timer using trigger with span {span}",
+                    _ => _logger.LogTrace("Exiting timer using trigger with span {span}",
                             timespan)
                     , result.Token);
 
@@ -162,14 +164,14 @@ namespace NetDaemon.Extensions.Scheduler
                         catch (TimeoutException te)
                         {
                             // Ignore
-                            _log.LogWarning(te, "Timeout Exception thrown in please catch it in user code");
+                            _logger.LogWarning(te, "Timeout Exception thrown in please catch it in user code");
                         }
                         catch (Exception e)
                         {
-                            _log.LogError(e, "Error in scheduled timer!");
+                            _logger.LogError(e, "Error in scheduled timer!");
                         }
                     },
-                    () => _log.LogTrace("Exiting scheduled timer...")
+                    () => _logger.LogTrace("Exiting scheduled timer...")
                     , result.Token);
             return result;
         }
@@ -195,6 +197,7 @@ namespace NetDaemon.Extensions.Scheduler
                         try
                         {
                             action();
+                            _logger.LogInformation("Test");
                         }
                         catch (OperationCanceledException)
                         {
@@ -202,10 +205,10 @@ namespace NetDaemon.Extensions.Scheduler
                         }
                         catch (Exception e)
                         {
-                            _log.LogError(e, "Error in scheduled timer!");
+                            _logger.LogError(e, "Error in scheduled timer!");
                         }
                     },
-                    () => _log.LogTrace("Exiting timer using trigger {trigger} and span {span}",
+                    () => _logger.LogTrace("Exiting timer using trigger {trigger} and span {span}",
                             timeOfDayToTrigger, interval),
                     result.Token
                     );
