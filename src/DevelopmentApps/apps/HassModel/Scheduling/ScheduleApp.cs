@@ -13,14 +13,15 @@ using NetDaemon.HassModel.Entities;
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {
     [NetDaemonApp]
+    [Focus]
     public class ScheduledApp
     {
         public ScheduledApp(IHaContext ha, INetDaemonScheduler scheduler)
         {
-            scheduler.RunEvery(TimeSpan.FromSeconds(5), () =>
-            {
-                ha.CallService("notify", "persistent_notification", data: new { message = "Another scheduled message", title = "Scheduled message!" });
-            });
+            scheduler.RunAt(new DateTime(2021, 11, 03, 9, 27, 0), () =>
+             {
+                 ha.CallService("notify", "persistent_notification", data: new { message = "Another scheduled message", title = "Scheduled message!" });
+             });
         }
     }
 

@@ -8,7 +8,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("NetDaemon.Extensions.Scheduling.Tests")]
-
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace NetDaemon.Extensions.Scheduler
 {
     /// <summary>

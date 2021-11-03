@@ -32,6 +32,7 @@ namespace NetDaemon.Extensions.Scheduling.Tests
             // ASSERT
             Assert.True(isCalled);
         }
+
         [Fact]
         public void TestRunInShouldNotCallFunctionIfNotDue()
         {
@@ -49,10 +50,34 @@ namespace NetDaemon.Extensions.Scheduling.Tests
         }
 
         [Fact]
+        public void TestRunInLogsException()
+        {
+            // ARRANGE
+            var testScheduler = new TestScheduler();
+            var loggerMock = new Mock<ILogger<NetDaemonScheduler>>();
+
+            var netDaemonScheduler = new NetDaemonScheduler(loggerMock.Object, reactiveScheduler: testScheduler);
+            netDaemonScheduler.RunIn(TimeSpan.FromMinutes(1), () => throw new Exception("hello"));
+
+            // ACT
+            testScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+
+            // ASSERT that error is logged once
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((_, __) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Once);
+        }
+
+        [Fact]
         public void TestRunAtCallsFunction()
         {
             // ARRANGE
             var testScheduler = new TestScheduler();
+
             // sets the date to a specific time so we do not get errors in UTC
             var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
             testScheduler.AdvanceTo(dueTime.Ticks);
@@ -65,9 +90,34 @@ namespace NetDaemon.Extensions.Scheduling.Tests
             // ACT and ASSERT
             testScheduler.AdvanceBy(TimeSpan.FromMinutes(30).Ticks);
             Assert.False(isCalled);
-
             testScheduler.AdvanceBy(TimeSpan.FromMinutes(30).Ticks);
             Assert.True(isCalled);
+        }
+
+        [Fact]
+        public void TestRunAtLogsException()
+        {
+            // ARRANGE
+            var testScheduler = new TestScheduler();
+            var loggerMock = new Mock<ILogger<NetDaemonScheduler>>();
+            // sets the date to a specific time so we do not get errors in UTC
+            var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+            testScheduler.AdvanceTo(dueTime.Ticks);
+
+            var netDaemonScheduler = new NetDaemonScheduler(loggerMock.Object, reactiveScheduler: testScheduler);
+
+            netDaemonScheduler.RunAt(testScheduler.Now.AddHours(1), () => throw new Exception("hello"));
+
+            // ACT and ASSERT
+            testScheduler.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+            // ASSERT that error is logged once
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((_, __) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Once);
         }
 
         [Fact]
@@ -90,6 +140,32 @@ namespace NetDaemon.Extensions.Scheduling.Tests
         }
 
         [Fact]
+        public void TestRunEveryLogsException()
+        {
+            // ARRANGE
+            var testScheduler = new TestScheduler();
+            var loggerMock = new Mock<ILogger<NetDaemonScheduler>>();
+            // sets the date to a specific time so we do not get errors in UTC
+            var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+            testScheduler.AdvanceTo(dueTime.Ticks);
+
+            var netDaemonScheduler = new NetDaemonScheduler(loggerMock.Object, reactiveScheduler: testScheduler);
+
+            netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), () => throw new Exception("hello"));
+
+            // ACT and ASSERT
+            testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
+            // ASSERT that error is logged once
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((_, __) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(5));
+        }
+
+        [Fact]
         public void TestRunEveryCallsCorrectNrOfTimesUsingForwardTime()
         {
             // ARRANGE
@@ -106,6 +182,31 @@ namespace NetDaemon.Extensions.Scheduling.Tests
             // ACT and ASSERT
             testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
             Assert.Equal(4, nrOfTimesCalled);
+        }
+
+        [Fact]
+        public void TestRunEveryLogsExceptionUsingForwardTime()
+        {
+            // ARRANGE
+            var testScheduler = new TestScheduler();
+            var loggerMock = new Mock<ILogger<NetDaemonScheduler>>();
+            // sets the date to a specific time so we do not get errors in UTC
+            var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+            testScheduler.AdvanceTo(dueTime.Ticks);
+
+            var netDaemonScheduler = new NetDaemonScheduler(loggerMock.Object, reactiveScheduler: testScheduler);
+
+            netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), testScheduler.Now.AddSeconds(2), () => throw new Exception("hello"));
+
+            // ACT and ASSERT
+            testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((_, __) => true),
+                    It.IsAny<Exception>(),
+                    It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(4));
         }
     }
 }
