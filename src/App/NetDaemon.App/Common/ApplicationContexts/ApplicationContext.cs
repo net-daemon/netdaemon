@@ -157,6 +157,11 @@ namespace NetDaemon.Common
                 await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             }
 
+            if (ApplicationInstance is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+
             if (_serviceScope is IAsyncDisposable asyncDisposable1)
             {
                 await asyncDisposable1.DisposeAsync().ConfigureAwait(false);

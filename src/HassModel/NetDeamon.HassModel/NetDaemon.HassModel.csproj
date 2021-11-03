@@ -30,7 +30,6 @@
             <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
-
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

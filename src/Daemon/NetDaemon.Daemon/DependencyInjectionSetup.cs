@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Common;
 using NetDaemon.Daemon;
+using NetDaemon.Extensions.Scheduler;
 
 namespace NetDaemon
 {
@@ -29,7 +30,7 @@ namespace NetDaemon
             // these interfaces and methods directly on INetDaemonHost can eventually be removed
             services.AddSingleton(s => s.GetRequiredService<NetDaemonHost>().HassEventsObservable);
             services.AddSingleton<ITextToSpeechService>(s => s.GetRequiredService<NetDaemonHost>().TextToSpeechService);
-            
+            services.AddNetDaemonScheduler();
             services.AddNetDaemonAppServices();
 
             return services;

@@ -1,43 +1,34 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon</RootNamespace>
-    <PackageId>JoySoftware.NetDaemon.Daemon</PackageId>
+    <PackageId>JoySoftware.NetDaemon.Extensions.Scheduling</PackageId>
     <Version>20.49.2-beta</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
-    <description>A .net core appdaemon for Home Assistant</description>
+    <description>Scheduling extensions for NetDaemon</description>
     <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageDescription>
-      A application daemon for writing automations for the free open source home automations software Home Assisstant written in .net 5.
-      This is the NetDaemon core capabilities.
+      This package contains scheduling features for NetDaemon.
     </PackageDescription>
     <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
-    <tags>Home Assistant</tags>
+    <tags>Home Assistant, NetDaemon</tags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="JoySoftware.HassClient" Version="21.35.0-beta" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
-    <PackageReference Include="YamlDotNet" Version="11.2.1" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="Roslynator.Analyzers" Version="3.2.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
-    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj" />
-  </ItemGroup>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

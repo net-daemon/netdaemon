@@ -57,3 +57,9 @@ codecover_merged.info
 appsettings.Development.json
 
 **/core
+
+**/coverage.json
+
+# remove HA integration test files from git
+tests/Integration/HA/config/*
+!tests/Integration/HA/config/*.yaml
