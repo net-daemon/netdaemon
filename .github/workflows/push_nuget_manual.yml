@@ -45,7 +45,7 @@ jobs:
       - name: 🎁 Pack HassModel codegen
         run: dotnet pack src/HassModel/NetDaemon.HassModel.CodeGenerator/NetDaemon.HassModel.CodeGenerator.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
       - name: 🎁 Pack scheduling extensions
-        run: dotnet pack src\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.Scheduling/NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
       - name: 🎁 Pack Test
         run: dotnet pack src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-beta
       - name: 📨 Push to nuget
