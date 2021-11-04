@@ -103,7 +103,7 @@ namespace NetDaemon.HassModel.CodeGenerator
                     d => { d.Name += i++; return d; });
 
                 var autoProperties = autoPropertiesParams.Select(a =>
-                    Property(a.TypeName, a.Name).ToPublic().WithAttribute<JsonPropertyNameAttribute>(a.SerializationName))
+                    Property(a.TypeName + "?", a.Name).ToPublic().WithAttribute<JsonPropertyNameAttribute>(a.SerializationName))
                     .ToArray();
 
                 var domain = entityDomainGroups.Key;
