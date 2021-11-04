@@ -66,7 +66,7 @@ public class Root
                     EntityId = "light.light1",
                     Attribute = new Dictionary<string, object>
                     {
-                        ["brightness"] = 255l,
+                        ["brightness"] = 255L,
                         ["friendly_name"] = "attic"
                     }
                 },
