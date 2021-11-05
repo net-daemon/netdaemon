@@ -208,5 +208,20 @@ namespace NetDaemon.Extensions.Scheduling.Tests
                     It.IsAny<Exception>(),
                     It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(4));
         }
+
+        [Fact]
+        public void TestNowIsCorrectTime()
+        {
+            // ARRANGE
+            var testScheduler = new TestScheduler();
+            // sets the date to a specific time 
+            var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+            testScheduler.AdvanceTo(dueTime.Ticks);
+
+            var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+
+            // ACT & ASSERT
+            Assert.Equal(testScheduler.Now, netDaemonScheduler.Now);
+        }
     }
 }

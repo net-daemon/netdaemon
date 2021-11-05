@@ -104,6 +104,9 @@ namespace NetDaemon.Extensions.Scheduler
             return result;
         }
 
+        /// <inheritdoc/>
+        public DateTimeOffset Now => _reactiveScheduler.Now;
+
         [SuppressMessage("", "CA1031")]
         private void RunAction(Action action)
         {

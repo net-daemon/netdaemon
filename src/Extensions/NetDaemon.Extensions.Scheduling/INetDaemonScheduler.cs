@@ -35,5 +35,10 @@ namespace NetDaemon.Extensions.Scheduler
         /// <param name="timeOffset">Absolute time to run the action</param>
         /// <param name="action">Action to run</param>
         IDisposable RunAt(DateTimeOffset timeOffset, Action action);
+
+        /// <summary>
+        ///     The current time of the scheduler
+        /// </summary>
+        DateTimeOffset Now { get; }
     }
 }
