@@ -68,7 +68,7 @@ namespace NetDaemon.HassModel.CodeGenerator
 
         public string GetParametersDecomposedVariable()
         {
-            var anonymousVariableStr = Arguments.Select(x => $"@{x.HaName} = @{x.VariableName}");
+            var anonymousVariableStr = Arguments.Select(x => x.HaName == x.VariableName ? "@" + x.HaName : $"@{x.HaName} = @{x.VariableName}");
 
             return $"new {{ {string.Join(", ", anonymousVariableStr)} }}";
         }

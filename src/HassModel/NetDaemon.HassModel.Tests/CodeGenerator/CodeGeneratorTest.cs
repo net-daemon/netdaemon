@@ -22,7 +22,7 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator
 
             code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
             
-            AssertCodeCompiles(code.ToString());
+            AssertCodeCompiles(code.ToString(), string.Empty);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ public class Root
                     EntityId = "light.light1",
                     Attribute = new Dictionary<string, object>
                     {
-                        ["brightness"] = 255,
+                        ["brightness"] = 255L,
                         ["friendly_name"] = "attic"
                     }
                 },
@@ -85,8 +85,9 @@ public class Root
     {
         IEntities entities = new Entities(ha);
         LightEntity light1 = entities.Light.Light1;
-        long brightness = light1.Attributes.Brightness;
-        string friendlyName = light1.Attributes.FriendlyName;
+        long? brightnessNullable = light1.Attributes?.Brightness;
+        long brightness = light1.Attributes?.Brightness ?? 0L;
+        string? friendlyName = light1.Attributes?.FriendlyName;
     }
 }";
             AssertCodeCompiles(generatedCode.ToString(), appCode);
@@ -160,35 +161,42 @@ public class Root
 
         s.Light.TurnOn(new ServiceTarget() );
         s.Light.TurnOn(new ServiceTarget(), transition: 12, brightness: 324.5f);
-        s.Light.TurnOn(new ServiceTarget(), new (){ Transition = 12l, Brightness = 12.3f });
+        s.Light.TurnOn(new ServiceTarget(), new (){ Transition = 12L, Brightness = 12.3f });
         s.Light.TurnOn(new ServiceTarget(), new (){ Brightness = 12.3f });
 
         s.Light.TurnOff(new ServiceTarget());
 
-        var light = new RootNameSpace.LightEntity(null, ""light.testlight"");
+        var light = new RootNameSpace.LightEntity(ha, ""light.testLight"");
 
         light.TurnOn();
         light.TurnOn(transition: 12, brightness: 324.5f);
-        light.TurnOn(new (){ Transition = 12l, Brightness = 12.3f });
+        light.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
         light.TurnOff();
     }
 }";
             AssertCodeCompiles(code.ToString(), appCode);
         }
 
-        private void AssertCodeCompiles(params string[] code)
+        private void AssertCodeCompiles(string generated, string appCode)
         {
-            var syntaxtrees = code.Select(s => SyntaxFactory.ParseSyntaxTree(s)).ToArray();
+            var syntaxtrees = new []
+            {
+                SyntaxFactory.ParseSyntaxTree(generated, path: "generated.cs"),
+                SyntaxFactory.ParseSyntaxTree(appCode, path: "appcode.cs")
+                
+            };
             
             var compilation = CSharpCompilation.Create("tempAssembly",
                 syntaxtrees,
                 AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)).ToArray(),
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
             );
 
             var emitResult = compilation.Emit(Stream.Null);
 
-            emitResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+            emitResult.Diagnostics
+                .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning)
+                .Should().BeEmpty();
             
         }
     }
