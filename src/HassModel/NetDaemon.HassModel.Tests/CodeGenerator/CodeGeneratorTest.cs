@@ -22,7 +22,7 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator
 
             code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
             
-            AssertCodeCompiles(code.ToString(), "");
+            AssertCodeCompiles(code.ToString(), string.Empty);
         }
 
         [Fact]
