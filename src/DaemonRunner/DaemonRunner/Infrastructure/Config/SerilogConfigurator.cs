@@ -28,7 +28,8 @@ namespace NetDaemon.Infrastructure.Config
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(theme: NetDaemonConsoleThemes.GetThemeByType(loggingConfiguration.ConsoleThemeType), applyThemeToRedirectedOutput: true);
+                .WriteTo.Console(theme: NetDaemonConsoleThemes.GetThemeByType(loggingConfiguration.ConsoleThemeType), applyThemeToRedirectedOutput: true,
+                                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext:l}: {Message:lj}{NewLine}{Exception}");
         }
 
         private static LoggingConfiguration GetLoggingConfiguration(IHostEnvironment hostingEnvironment)
