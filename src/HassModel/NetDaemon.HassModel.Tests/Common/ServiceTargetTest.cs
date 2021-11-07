@@ -21,5 +21,13 @@ namespace NetDaemon.HassModel.Tests.Common
 
             serviceTarget.EntityIds.Should().BeEquivalentTo("light.kitchen", "light.livingroom");
         }
+
+        [Fact]
+        public void ServiceTargetShouldContainCorrectEntitiesUsingParams()
+        {
+            var serviceTarget = ServiceTarget.FromEntities("light.kitchen", "light.livingroom");
+
+            serviceTarget.EntityIds.Should().BeEquivalentTo("light.kitchen", "light.livingroom");
+        }
     }
 }

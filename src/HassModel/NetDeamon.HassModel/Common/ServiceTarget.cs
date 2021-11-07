@@ -24,6 +24,14 @@ namespace NetDaemon.HassModel.Entities
             new() { EntityIds = entityIds.ToArray() };
 
         /// <summary>
+        /// Creates a new ServiceTarget from EntityIds
+        /// </summary>
+        /// <param name="entityIds">The Ids of entities</param>
+        /// <returns>A new ServiceTarget</returns>
+        public static ServiceTarget FromEntities(params string[] entityIds) =>
+            new() { EntityIds = entityIds.ToArray() };
+
+        /// <summary>
         /// Creates a new empty ServiceTarget
         /// </summary>
         public ServiceTarget()
