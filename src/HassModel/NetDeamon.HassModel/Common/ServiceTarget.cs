@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 namespace NetDaemon.HassModel.Entities
 {
     /// <summary>
@@ -12,8 +13,24 @@ namespace NetDaemon.HassModel.Entities
         /// <param name="entityId">The Id of teh entity</param>
         /// <returns>A new ServiceTarget</returns>
         public static ServiceTarget FromEntity(string entityId) =>
-            new() { EntityIds = new[]{ entityId } };
-        
+            new() { EntityIds = new[] { entityId } };
+
+        /// <summary>
+        /// Creates a new ServiceTarget from a list of EntityIds
+        /// </summary>
+        /// <param name="entityIds">The Ids of entities</param>
+        /// <returns>A new ServiceTarget</returns>
+        public static ServiceTarget FromEntities(IEnumerable<string> entityIds) =>
+            new() { EntityIds = entityIds.ToArray() };
+
+        /// <summary>
+        /// Creates a new ServiceTarget from EntityIds
+        /// </summary>
+        /// <param name="entityIds">The Ids of entities</param>
+        /// <returns>A new ServiceTarget</returns>
+        public static ServiceTarget FromEntities(params string[] entityIds) =>
+            new() { EntityIds = entityIds.ToArray() };
+
         /// <summary>
         /// Creates a new empty ServiceTarget
         /// </summary>
