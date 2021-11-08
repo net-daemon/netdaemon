@@ -28,8 +28,11 @@ jobs:
       - name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
-      - name: 🔓 Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+      - name: 🔓 Login to Docker hub
+        uses: docker/login-action@v1.10.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
       - name: 🔓 Login to GitHub Container Registry
         uses: docker/login-action@v1.10.0
         with:
@@ -44,5 +47,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag "netdaemon/netdaemon:feature-${{ github.event.inputs.tag }}"
+            --tag "netdaemon/netdaemon:feature-${{ github.event.inputs.tag }}" \
             --tag "ghcr.io/net-daemon/netdaemon:feature-${{ github.event.inputs.tag }}"
