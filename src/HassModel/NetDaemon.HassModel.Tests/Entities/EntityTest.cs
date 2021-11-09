@@ -15,26 +15,47 @@ namespace NetDaemon.HassModel.Tests.Entities
         [Fact]
         public void ShouldWrapStateFromHaContext()
         {
+            // Arrange
             var haContextMock = new Mock<IHaContext>();
 
             var entityState =
                 new EntityState()
                 {
                     State = "CurrentState",
-                    AttributesJson = new { name = "value" }.AsJsonElement()
+                    AttributesJson = new { name = "FirstName" }.AsJsonElement()
                 };
             
             haContextMock.Setup(t => t.GetState("domain.testEntity")).Returns(entityState);
             
+            // Act
             var target = new TestEntity(haContextMock.Object, "domain.testEntity");
 
+            // Assert
             target.State.Should().Be("CurrentState");
-            target.Attributes!.Name.Should().Be("value");
+            target.Attributes!.Name.Should().Be("FirstName");
             
             target.EntityState!.State.Should().Be("CurrentState");
-            target.EntityState!.Attributes!.Name.Should().Be("value");
-        }
+            target.EntityState!.Attributes!.Name.Should().Be("FirstName");
+            
+            // Act2: update the state
+            var newEntityState =
+                new EntityState()
+                {
+                    State = "NewState",
+                    AttributesJson = new { name = "SecondName" }.AsJsonElement()
+                };
+            
+            haContextMock.Setup(t => t.GetState("domain.testEntity")).Returns(newEntityState);
+            
+            // Assert
+            target.State.Should().Be("NewState");
+            target.Attributes!.Name.Should().Be("SecondName");
+            
+            target.EntityState!.State.Should().Be("NewState");
+            target.EntityState!.Attributes!.Name.Should().Be("SecondName");
 
+        }
+        
         [Fact]
         public void ShouldShowStateChangesFromContext()
         {
