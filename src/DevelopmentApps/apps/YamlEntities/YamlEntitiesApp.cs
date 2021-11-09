@@ -17,7 +17,7 @@ namespace NetDaemon.DevelopmentApps.apps.YamlEntities
         {
             foreach (var numericSensorEntity in TempSensors)
             {
-                numericSensorEntity.StateChanges.Subscribe(_ => Sync());
+                numericSensorEntity.StateChanges().Subscribe(_ => Sync());
             }
         }
 

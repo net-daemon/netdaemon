@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Moq;
 using NetDaemon.HassModel.Common;
@@ -61,14 +62,14 @@ namespace NetDaemon.HassModel.Tests.Entities
         {
             var stateChangesSubject = new Subject<StateChange>();
             var haContextMock = new Mock<IHaContext>();
-            haContextMock.Setup(h => h.StateAllChanges).Returns(stateChangesSubject);
+            haContextMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
             
             var target = new TestEntity(haContextMock.Object, "domain.testEntity");
             var stateChangeObserverMock = new Mock<IObserver<StateChange>>();
             var stateAllChangeObserverMock = new Mock<IObserver<StateChange>>();
 
-            target.StateAllChanges.Subscribe(stateAllChangeObserverMock.Object);
-            target.StateChanges.Subscribe(stateChangeObserverMock.Object);
+            target.StateAllChanges().Subscribe(stateAllChangeObserverMock.Object);
+            target.StateChanges().Subscribe(stateChangeObserverMock.Object);
 
             stateChangesSubject.OnNext(
                 new StateChange(target, new EntityState {State = "old"}, 

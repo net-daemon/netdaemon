@@ -14,7 +14,7 @@ namespace NetDaemon.HassModel.Entities
         /// Observable, All state changes including attributes
         /// </summary>
         public static IObservable<StateChange> StateAllChanges(this IEnumerable<Entity> entities) => 
-            entities.Select(t => t.StateAllChanges).Merge();
+            entities.Select(t => t.StateAllChanges()).Merge();
 
         /// <summary>
         /// Observable, All state changes. New.State != Old.State
@@ -29,7 +29,7 @@ namespace NetDaemon.HassModel.Entities
             where TEntity : Entity<TEntity, TEntityState, TAttributes>
             where TEntityState : EntityState<TAttributes>
             where TAttributes : class =>
-            entities.Select(t => t.StateAllChanges).Merge();
+            entities.Select(t => t.StateAllChanges()).Merge();
 
         /// <summary>
         /// Observable, All state changes. New.State != Old.State

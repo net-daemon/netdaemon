@@ -45,7 +45,7 @@ namespace NetDaemon.HassModel.Internal
             _hassClient.CallService(domain, service, data, target.Map(), false);
         }
 
-        public IObservable<StateChange> StateAllChanges => _entityStateCache.StateAllChanges.Select(e => e.Map(this));
+        public IObservable<StateChange> StateAllChanges() => _entityStateCache.StateAllChanges.Select(e => e.Map(this));
 
         public IObservable<Event> Events => _scopedEventObservable.Select(e => e.Map());
 

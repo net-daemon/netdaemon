@@ -20,7 +20,7 @@ namespace NetDaemon.HassModel.Tests.Internal
         private readonly Subject<HassEvent> _hassEventSubjectMock = new ();
         private readonly Mock<IHassClient> _hassClientMock = new();
 
-        private readonly HassEvent _sampleHassEvent = new HassEvent()
+        private readonly HassEvent _sampleHassEvent = new ()
         {
             Origin = "Test",
             EventType = "test_event",
@@ -48,8 +48,8 @@ namespace NetDaemon.HassModel.Tests.Internal
             var stateAllChangesObserverMock = new Mock<IObserver<StateChange>>();
             var stateChangesObserverMock = new Mock<IObserver<StateChange>>();
 
-            haContext.StateAllChanges.Subscribe(stateAllChangesObserverMock.Object);
-            haContext.StateChanges.Subscribe(stateChangesObserverMock.Object);
+            haContext.StateAllChanges().Subscribe(stateAllChangesObserverMock.Object);
+            haContext.StateChanges().Subscribe(stateChangesObserverMock.Object);
             
             _hassEventSubjectMock.OnNext(new HassEvent()
             {
@@ -57,15 +57,15 @@ namespace NetDaemon.HassModel.Tests.Internal
                 Data = new HassStateChangedEventData()
                 {
                    EntityId = "TestDomain.TestEntity",
-                   NewState = new HassState(){ State = "newstate" },
-                   OldState = new HassState(){ State = "oldstate" }
+                   NewState = new HassState(){ State = "newState" },
+                   OldState = new HassState(){ State = "oldState" }
                 }
             });
 
             stateAllChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once);
             stateChangesObserverMock.Verify(o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once());
 
-            haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newstate");
+            haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newState");
             // the state should come from the state cache so we do not expect a call to HassClient.GetState 
             _hassClientMock.Verify(m => m.GetState(It.IsAny<string>()), Times.Never);
         }
@@ -124,7 +124,7 @@ namespace NetDaemon.HassModel.Tests.Internal
             // Act
             _hassEventSubjectMock.OnNext(_sampleHassEvent);
             
-            eventObserverMock.Verify(e => e.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+            eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
 
             // Act
             ((IDisposable)haContext).Dispose();

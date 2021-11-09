@@ -22,7 +22,7 @@ namespace NetDaemon.HassModel.Entities
         /// <summary>
         /// Creates a new instance of a Entity class
         /// </summary>
-        /// <param name="haContext">The Home Assisatnt context associated with this Entity</param>
+        /// <param name="haContext">The Home Assistant context associated with this Entity</param>
         /// <param name="entityId">The id of this Entity</param>
         public Entity(IHaContext haContext, string entityId)
         {
@@ -47,19 +47,18 @@ namespace NetDaemon.HassModel.Entities
         /// </summary>
         public virtual EntityState? EntityState => HaContext.GetState(EntityId);
 
-
         /// <summary>
         /// Observable, All state changes including attributes
         /// </summary>
-        public virtual IObservable<StateChange> StateAllChanges =>
-            HaContext.StateAllChanges.Where(e => e.Entity.EntityId == EntityId)
+        public virtual IObservable<StateChange> StateAllChanges() =>
+            HaContext.StateAllChanges().Where(e => e.Entity.EntityId == EntityId)
                 .Select(e => new StateChange(this, e.Old, e.New));
 
         /// <summary>
         /// Observable, All state changes. New.State!=Old.State
         /// </summary>
-        public virtual IObservable<StateChange> StateChanges =>
-             StateAllChanges.StateChangesOnly();
+        public virtual IObservable<StateChange> StateChanges() =>
+             StateAllChanges().StateChangesOnly();
 
         /// <summary>
         /// Calls a service using this entity as the target
@@ -72,7 +71,7 @@ namespace NetDaemon.HassModel.Entities
             
             var (serviceDomain, serviceName) = service.SplitAtDot();
 
-            serviceDomain ??= EntityId.SplitAtDot().Left ?? throw new InvalidOperationException("EntityId must be formatted 'domain.name'");;
+            serviceDomain ??= EntityId.SplitAtDot().Left ?? throw new InvalidOperationException("EntityId must be formatted 'domain.name'");
             
             HaContext.CallService(serviceDomain, serviceName, ServiceTarget.FromEntity(EntityId), data);
         }
@@ -105,11 +104,11 @@ namespace NetDaemon.HassModel.Entities
         public override TEntityState? EntityState => MapNullableState(base.EntityState);
 
         /// <inheritdoc />
-        public override IObservable<StateChange<TEntity, TEntityState>> StateAllChanges =>
-            base.StateAllChanges.Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+        public override IObservable<StateChange<TEntity, TEntityState>> StateAllChanges() =>
+            base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
 
         /// <inheritdoc />
-        public override IObservable<StateChange<TEntity, TEntityState>> StateChanges => StateAllChanges.StateChangesOnly();
+        public override IObservable<StateChange<TEntity, TEntityState>> StateChanges() => StateAllChanges().StateChangesOnly();
 
         private static TEntityState? MapNullableState(EntityState? state) => 
             state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;
