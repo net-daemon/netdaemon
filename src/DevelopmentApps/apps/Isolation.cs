@@ -10,12 +10,12 @@ namespace NetDaemon.DevelopmentApps.apps
         public Isolation1(IHaContext ha)
         {
             Console.WriteLine("isolator 1");
-            ha.StateAllChanges.Subscribe(e =>
+            ha.StateAllChanges().Subscribe(_ =>
             {
                 Console.WriteLine("app 1.1");
                 throw new Exception("Exception 1.1");
             });
-            ha.StateAllChanges.Subscribe(e =>
+            ha.StateAllChanges().Subscribe(_ =>
             {
                 Console.WriteLine("app 1.2");
             });            
@@ -29,7 +29,7 @@ namespace NetDaemon.DevelopmentApps.apps
         public Isolation2(IHaContext ha)
         {
             Console.WriteLine("isolator 2");
-            ha.StateAllChanges.Subscribe(e =>
+            ha.StateAllChanges().Subscribe(_ =>
             {
                 Console.WriteLine("app 2");
 
@@ -44,7 +44,7 @@ namespace NetDaemon.DevelopmentApps.apps
         public Isolation3(IHaContext ha)
         {
             Console.WriteLine("isolator 2");
-            ha.StateAllChanges.Subscribe(e =>
+            ha.StateAllChanges().Subscribe(_ =>
             {
                 Console.WriteLine("app 3");
             });

@@ -53,7 +53,19 @@ namespace NetDaemon.HassModel.Entities
         public static NumericEntity<TAttributes> WithAttributesAs<TAttributes>(this NumericEntity entity)
             where TAttributes : class
             => new (entity);
-        
+
+        // /// <summary>
+        // /// Observable, All state changes. New.State != Old.State
+        // /// </summary>
+        // public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes>(this TEntity entity) 
+        //     where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        //     where TEntityState : EntityState<TAttributes>
+        //     where TAttributes : class
+        // {
+        //     if (entity == null) throw new ArgumentNullException(nameof(entity));
+        //     return entity.StateAllChanges().StateChangesOnly();
+        // }
+
         internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
             => changes.Where(c => c.New?.State != c.Old?.State);
     }

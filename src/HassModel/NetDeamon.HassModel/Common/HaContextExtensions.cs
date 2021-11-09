@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using JoySoftware.HomeAssistant.Client;
 using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Common
@@ -9,6 +10,18 @@ namespace NetDaemon.HassModel.Common
     /// </summary>
     public static class HaContextExtensions
     {
+        /// <summary>
+        /// The observable state stream state change
+        /// </summary>
+        /// <remarks>
+        /// Old state != New state
+        /// </remarks>
+        public static IObservable<StateChange> StateChanges(this IHaContext haContext)
+        {
+            if (haContext == null) throw new ArgumentNullException(nameof(haContext));
+            return haContext.StateAllChanges().StateChangesOnly();
+        }
+
         /// <summary>
         /// Creates a new Entity instance
         /// </summary>

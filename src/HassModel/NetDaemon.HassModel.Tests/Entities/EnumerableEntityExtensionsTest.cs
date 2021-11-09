@@ -20,7 +20,7 @@ namespace NetDaemon.HassModel.Tests.Entities
 
             Subject<StateChange> stateChangesSubject  = new();
             var haMock = new Mock<IHaContext>();
-            haMock.Setup(h => h.StateAllChanges).Returns(stateChangesSubject);
+            haMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
             
             var switch1 = new Entity(haMock.Object, "switch.Living1");
             var switch2 = new Entity(haMock.Object, "switch.Living2");
@@ -46,7 +46,7 @@ namespace NetDaemon.HassModel.Tests.Entities
 
             Subject<StateChange> stateChangesSubject  = new();
             var haMock = new Mock<IHaContext>();
-            haMock.Setup(h => h.StateAllChanges).Returns(stateChangesSubject);
+            haMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
             
             var switch1 = new TestEntity(haMock.Object, "switch.Living1");
             var switch2 = new TestEntity(haMock.Object, "switch.Living2");
@@ -73,7 +73,7 @@ namespace NetDaemon.HassModel.Tests.Entities
         {
             Subject<StateChange> stateChangesSubject  = new();
             var haMock = new Mock<IHaContext>();
-            haMock.Setup(h => h.StateAllChanges).Returns(stateChangesSubject);
+            haMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
             
             var switch1 = new Entity(haMock.Object, "switch.Living1");
             var switch2 = new Entity(haMock.Object, "switch.Living2");

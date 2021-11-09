@@ -25,14 +25,14 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
 
             _climateEntity = new ClimateEntity(ha, "climate.dummy_thermostat");
             
-            _climateEntity.StateAllChanges.Where(e => e.New?.Attributes?.Temperature > 20).Subscribe();
-            _climateEntity.StateAllChanges.Subscribe(OnNext);
+            _climateEntity.StateAllChanges().Where(e => e.New?.Attributes?.Temperature > 20).Subscribe();
+            _climateEntity.StateAllChanges().Subscribe(OnNext);
 
             string? state = _climateEntity.State;
             string? state2 = _climateEntity.EntityState?.State; // is the same
             DateTime? lastChanged = _climateEntity.EntityState?.LastChanged;
 
-            Ha.StateChanges.Subscribe(e =>
+            Ha.StateChanges().Subscribe(e =>
             {
  
             });
@@ -47,8 +47,8 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
             double? netEnergy = netEnergySensor.State;
             double? netEnergy2 = netEnergySensor.EntityState?.State;
 
-            netEnergySensor.StateChanges.Subscribe(e =>
-                Console.WriteLine($"{e.New?.Attributes?.FriendlyName} {e.New?.State:0.##} {e.New?.Attributes?.UnitOfMeasurement}"));
+            netEnergySensor.StateChanges().Subscribe(e =>
+                Console.WriteLine($"{e.New?.Attributes?.FriendlyName} {e.New?.State} {e.New?.Attributes?.UnitOfMeasurement}"));
             
             // Prints: 'Netto energy 8908.81 kWh'
         }

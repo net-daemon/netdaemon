@@ -18,15 +18,7 @@ namespace NetDaemon.HassModel.Common
         /// <summary>
         ///     The observable state stream, all changes including attributes
         /// </summary>
-        IObservable<StateChange> StateAllChanges { get; }
-
-        /// <summary>
-        /// The observable state stream state change
-        /// </summary>
-        /// <remarks>
-        /// Old state != New state
-        /// </remarks>
-        IObservable<StateChange> StateChanges => StateAllChanges.StateChangesOnly();
+        IObservable<StateChange> StateAllChanges();
 
         /// <summary>
         /// Get state for a single entity
