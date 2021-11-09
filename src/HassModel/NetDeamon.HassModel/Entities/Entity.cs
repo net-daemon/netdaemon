@@ -98,7 +98,7 @@ namespace NetDaemon.HassModel.Entities
         }
 
         /// <inheritdoc />
-        public override TAttributes? Attributes => _attributesLazy.Value;
+        public override TAttributes? Attributes => EntityState?.Attributes;
 
         /// <inheritdoc />
         public override TEntityState? EntityState => MapNullableState(base.EntityState);
