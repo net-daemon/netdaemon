@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@main
 
       - name: 🥅 Install .Net 6
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v1
         with:
           dotnet-version: "6.0.x" # SDK Version
 
