@@ -36,7 +36,7 @@ namespace NetDaemon.Common
 
         private readonly CancellationTokenSource _cancelSource = new();
         private bool _isDisposed;
-        
+
         /// <inheritdoc/>
         public ConcurrentDictionary<string, object> Global => _global;
 
@@ -80,7 +80,7 @@ namespace NetDaemon.Common
 
         /// <inheritdoc/>
         public Type ApplicationType => GetType();
-        
+
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }
 
@@ -109,7 +109,7 @@ namespace NetDaemon.Common
         public Task RestoreAppStateAsync() => _persistenceService!.RestoreAppStateAsync();
 
         /// <inheritdoc/>
-        public AppRuntimeInfo RuntimeInfo { get; } = new () {HasError = false};
+        public AppRuntimeInfo RuntimeInfo { get; } = new() { HasError = false };
 
         /// <inheritdoc/>
         [SuppressMessage("", "CA1065")]
@@ -146,7 +146,7 @@ namespace NetDaemon.Common
             _runtimeInfoManager = new(daemon, this);
             _persistenceService = new ApplicationPersistenceService(this, daemon);
 
-            Logger.LogDebug("Startup: {app}", GetUniqueIdForStorage());
+            Logger.LogDebug("Startup: {App}", GetUniqueIdForStorage());
 
             var appInfo = Daemon!.State.FirstOrDefault(s => s.EntityId == EntityId);
             if (appInfo?.State is not string appState || (appState != "on" && appState != "off"))
@@ -181,7 +181,7 @@ namespace NetDaemon.Common
             }
 
             if (_runtimeInfoManager != null) await _runtimeInfoManager.DisposeAsync().ConfigureAwait(false);
-               
+
             _cancelSource.Cancel();
 
             DaemonCallBacksForServiceCalls.Clear();
@@ -189,6 +189,7 @@ namespace NetDaemon.Common
             IsEnabled = false;
             _cancelSource.Dispose();
             Daemon = null;
+            GC.SuppressFinalize(this);
         }
 
         /// <inheritdoc/>
@@ -220,14 +221,14 @@ namespace NetDaemon.Common
                 return;
             }
 
-            if (param.Length > 0)
+            if (param?.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();
                 Logger.Log(level, $"  {{Id}}: {message}", result);
             }
             else
             {
-                Logger.Log(level, $"  {{Id}}: {message}", new object[] {Id ?? ""});
+                Logger.Log(level, $"  {{Id}}: {message}", new object[] { Id ?? "" });
             }
         }
 
@@ -237,14 +238,14 @@ namespace NetDaemon.Common
         /// <inheritdoc/>
         public void Log(LogLevel level, Exception exception, string message, params object[] param)
         {
-            if (param.Length > 0)
+            if (param?.Length > 0)
             {
                 var result = param.Prepend(Id).ToArray();
-                Logger.Log(level, exception, $"  {{Id}}: {message}", result);
+                Logger?.Log(level, exception, $"  {{Id}}: {message}", result);
             }
             else
             {
-                Logger.Log(level, exception, $"  {{Id}}: {message}", new object[] {Id ?? ""});
+                Logger?.Log(level, exception, $"  {{Id}}: {message}", new object[] { Id ?? "" });
             }
         }
 

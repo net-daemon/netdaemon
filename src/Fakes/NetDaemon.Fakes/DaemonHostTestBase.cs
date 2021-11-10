@@ -44,8 +44,8 @@ namespace NetDaemon.Daemon.Fakes
                         DefaultHttpHandlerMock.Object,
                         DefaultServiceCollection.BuildServiceProvider()
                     )
-                    // Allow no extra wait time
-                    { TextToSpeechService = { InternalDelayTimeForTts = 0}});
+                // Allow no extra wait time
+                { TextToSpeechService = { InternalDelayTimeForTts = 0 } });
         }
 
         /// <summary>
@@ -60,12 +60,12 @@ namespace NetDaemon.Daemon.Fakes
 
         private readonly Lazy<NetDaemonHost> _LazyDefaultDaemonHost;
 
-        
+
         /// <summary>
         ///     Returns default data repository mock
         /// </summary>
         public Mock<IDataRepository> DefaultDataRepositoryMock { get; }
-        
+
         /// <summary>
         ///     Returns default HassClient mock
         /// </summary>
@@ -113,7 +113,7 @@ namespace NetDaemon.Daemon.Fakes
             var expandoObject = new FluentExpandoObject();
             var dict = expandoObject as IDictionary<string, object>;
 
-            foreach (var (name, value) in dynamicParameters)
+            foreach (var (name, value) in dynamicParameters ?? Array.Empty<(string attribute, object value)>())
             {
                 dict[name] = value;
             }
@@ -298,7 +298,7 @@ namespace NetDaemon.Daemon.Fakes
             {
                 ["entity_id"] = entityId
             };
-            foreach (var (attr, val) in attributesTuples)
+            foreach (var (attr, val) in attributesTuples ?? Array.Empty<(string attribute, object value)>())
             {
                 serviceObject[attr] = val;
             }

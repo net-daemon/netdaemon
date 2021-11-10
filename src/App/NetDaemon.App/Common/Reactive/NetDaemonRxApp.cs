@@ -109,6 +109,7 @@ namespace NetDaemon.Common.Reactive
             _cancelTimers?.Dispose();
 
             await base.DisposeAsync().ConfigureAwait(false);
+            GC.SuppressFinalize(this);
             LogDebug("RxApp {app} is Disposed", Id!);
         }
 
@@ -125,7 +126,7 @@ namespace NetDaemon.Common.Reactive
             }
             catch (Exception e)
             {
-                Daemon.Logger.LogDebug(e, "Failed to select entities func in app {appId}", Id);
+                Daemon.Logger.LogDebug(e, "Failed to select entities func in app {AppId}", Id);
                 throw;
             }
         }
@@ -262,7 +263,7 @@ namespace NetDaemon.Common.Reactive
         {
             _ = Daemon ?? throw new NetDaemonNullReferenceException($"{nameof(Daemon)} cant be null!");
 
-            foreach (var scriptName in script)
+            foreach (var scriptName in script ?? Array.Empty<string>())
             {
                 var name = scriptName;
                 if (scriptName.Contains('.', StringComparison.InvariantCultureIgnoreCase))

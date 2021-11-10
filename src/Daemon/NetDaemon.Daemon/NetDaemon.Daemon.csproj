@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.Daemon</PackageId>
@@ -21,8 +21,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JoySoftware.HassClient" Version="21.35.0-beta" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="Roslynator.Analyzers" Version="3.2.2">

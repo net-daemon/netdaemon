@@ -166,6 +166,8 @@ namespace NetDaemon.Common
             {
                 await asyncDisposable1.DisposeAsync().ConfigureAwait(false);
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

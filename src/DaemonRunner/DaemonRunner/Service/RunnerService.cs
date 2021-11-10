@@ -78,6 +78,7 @@ namespace NetDaemon.Service
         }
 
         [SuppressMessage("", "CA1031")]
+        [SuppressMessage("", "CA2007")]
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -92,7 +93,7 @@ namespace NetDaemon.Service
 
                 _sourcePath = _netDaemonSettings.GetAppSourceDirectory();
 
-                _logger.LogTrace("Finding apps in {folder}...", _sourcePath);
+                _logger.LogTrace("Finding apps in {Folder}...", _sourcePath);
 
                 // Automatically create source directories
                 if (string.IsNullOrEmpty(_sourcePath))
@@ -102,7 +103,7 @@ namespace NetDaemon.Service
                 }
                 if (!Directory.Exists(_sourcePath))
                 {
-                    _logger.LogError("Path to app source does not exist {path}, exiting...", _sourcePath);
+                    _logger.LogError("Path to app source does not exist {Path}, exiting...", _sourcePath);
                     return;
                 }
 
@@ -171,7 +172,7 @@ namespace NetDaemon.Service
                                     _logger.LogError("No NetDaemon apps could be found, exiting...");
                                     return;
                                 }
-                                
+
                                 _loadedDaemonApps = FilterFocusApps(_loadedDaemonApps.ToList());
 
                                 await HassModel.DependencyInjectionSetup.InitializeAsync(_serviceProvider, stoppingToken).ConfigureAwait(false);

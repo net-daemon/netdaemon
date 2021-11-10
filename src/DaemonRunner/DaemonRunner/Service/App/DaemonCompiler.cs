@@ -47,7 +47,7 @@ namespace NetDaemon.Service.App
             else if (!string.IsNullOrEmpty(compileErrorText))
                 logger.LogError(compileErrorText);
             else if (loadedApps.Count == 0)
-                logger.LogWarning("No .cs files files found, please add files to netdaemonfolder {codeFolder}", codeFolder);
+                logger.LogWarning("No .cs files files found, please add files to netdaemonfolder {CodeFolder}", codeFolder);
 
             return (loadedApps, alc);
         }
@@ -307,6 +307,7 @@ namespace NetDaemon.Service.App
                         var x = syntaxTree.GetLineSpan(topInvocationExpression.Span);
                         if (!linesReported.Contains(x.StartLinePosition.Line))
                         {
+                            // var startLinePosition = x.StartLinePosition.Line + 1;
                             logger.LogError($"Missing Execute or ExecuteAsync in {syntaxTree.FilePath} ({x.StartLinePosition.Line + 1},{x.StartLinePosition.Character + 1}) near {topInvocationExpression.ToFullString().Trim()}");
                             linesReported.Add(x.StartLinePosition.Line);
                         }

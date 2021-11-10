@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,12 +29,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         public static IOptions<NetDaemonSettings> CreateSettings(string appSource) =>
             new OptionsWrapper<NetDaemonSettings>(new NetDaemonSettings
             {
-                    AppSource = appSource
+                AppSource = appSource
             });
 
         private readonly IServiceProvider _serviceProvider = new ServiceCollection()
             .AddNetDaemonServices()
-            .AddTransient(_=> Mock.Of<INetDaemon>())
+            .AddTransient(_ => Mock.Of<INetDaemon>())
             .BuildServiceProvider();
 
         private ApplicationContext TestAppContext => ApplicationContext.Create(typeof(object), "id", _serviceProvider);
@@ -127,11 +128,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: string\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal("string", scalarValue.ToObject(typeof(string), TestAppContext));
         }
@@ -143,11 +144,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(1234, scalarValue.ToObject(typeof(int), TestAppContext));
         }
@@ -159,11 +160,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: true\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(true, scalarValue.ToObject(typeof(bool), TestAppContext));
         }
@@ -175,13 +176,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
-            Assert.Equal((long) 1234, scalarValue.ToObject(typeof(long), TestAppContext));
+            Assert.Equal((long)1234, scalarValue.ToObject(typeof(long), TestAppContext));
         }
 
         [Theory]
@@ -207,17 +208,18 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         [InlineData(typeof(SwitchEntity))]
         [InlineData(typeof(VacuumEntity))]
         [InlineData(typeof(ZoneEntity))]
+        [SuppressMessage("", "CA2007")]
         public async void YamlScalarNotToObjectUsingEntityType(Type entityType)
         {
             // ARRANGE
             const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
             var appMock = new Mock<INetDaemonRxApp>();
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             await using var applicationContext = ApplicationContext.Create(typeof(BaseTestApp), "id", _serviceProvider);
             var instance = scalarValue.ToObject(entityType, applicationContext) as RxEntityBase;
@@ -227,20 +229,21 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async void YamlScalarToObjectUsingAnyType()
         {
             // ARRANGE
             const string? yaml = "yaml: 1234\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             var mockAction = new Mock<ISpeaker>();
             var serviceProvider = new ServiceCollection()
                 .AddNetDaemonServices()
-                .AddTransient(_=> Mock.Of<INetDaemon>())
+                .AddTransient(_ => Mock.Of<INetDaemon>())
                 .AddSingleton(mockAction.Object)
                 .BuildServiceProvider();
 
@@ -260,11 +263,11 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: 1.5\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(1.5m, scalarValue.ToObject(typeof(decimal), TestAppContext));
             Assert.Equal(1.5f, scalarValue.ToObject(typeof(float), TestAppContext));
@@ -278,16 +281,17 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
             const string? yaml = "yaml: Second\n";
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var scalar = root.Children.First();
 
-            var scalarValue = (YamlScalarNode) scalar.Value;
+            var scalarValue = (YamlScalarNode)scalar.Value;
             // ACT & ASSERT
             Assert.Equal(EnumTest.Second, scalarValue.ToObject(typeof(EnumTest), TestAppContext));
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async void YamlAdvancedObjectsShouldReturnCorrectData()
         {
             const string? yaml = @"
@@ -323,6 +327,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async void YamlMultilevelObjectShouldReturnCorrectData()
         {
             const string? rootData = "lorem ipsum 1";
@@ -346,12 +351,12 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Config
         {
             var yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(yaml));
-            var root = (YamlMappingNode) yamlStream.Documents[0].RootNode;
+            var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
 
             var applicationContext =
                 ApplicationContext.Create(typeof(T), "id", _serviceProvider);
-            var instance = (T) applicationContext.ApplicationInstance!;
-            
+            var instance = (T)applicationContext.ApplicationInstance!;
+
             var config = new YamlConfigEntry("path is mocked by yamlConfigReader ->",
                     GetYamlConfigReader(yaml),
                     Mock.Of<IYamlSecretsProvider>());

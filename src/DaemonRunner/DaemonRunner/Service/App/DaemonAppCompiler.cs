@@ -34,9 +34,9 @@ namespace NetDaemon.Service.App
             var apps = assembly.GetAppClasses();
 
             if (!apps.Any())
-                _logger.LogWarning("No .cs files found, please add files to {sourceFolder}", _sourceFolder);
+                _logger.LogWarning("No .cs files found, please add files to {SourceFolder}", _sourceFolder);
             else
-                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count());
+                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count());
 
             return apps;
         }

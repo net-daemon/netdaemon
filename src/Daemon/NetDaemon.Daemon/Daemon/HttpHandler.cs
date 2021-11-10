@@ -20,7 +20,7 @@ namespace NetDaemon.Daemon
         public HttpClient CreateHttpClient(string? name = null)
         {
             _ = _httpClientFactory ?? throw new NetDaemonNullReferenceException("No IHttpClientFactory provided, please add AddHttpClient() in configure services!");
-            return _httpClientFactory.CreateClient(name);
+            return _httpClientFactory.CreateClient(name ?? "no_name");
         }
 
         public async Task<T?> GetJson<T>(string url, JsonSerializerOptions? options = null, params (string, object)[] headers)

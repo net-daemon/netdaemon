@@ -120,7 +120,7 @@ namespace NetDaemon.Daemon
                 a => HassEvents += a,
                 a => HassEvents -= a).Select(e => e.EventArgs)
                 .AsConcurrent(t => TrackBackgroundTask(t));
-            
+
             _appManager = new AppManager(ServiceProvider, Logger);
         }
 
@@ -148,13 +148,13 @@ namespace NetDaemon.Daemon
 
         public IEnumerable<INetDaemonAppBase> AllAppInstances => InternalAllAppInstances.Values.Select(c => c.ApplicationInstance).OfType<INetDaemonAppBase>();
 
-        private IEnumerable<NetDaemonRxApp> NetDaemonRxApps =>  InternalRunningAppInstances.Values.Select(c => c.ApplicationInstance).OfType<NetDaemonRxApp>();
+        private IEnumerable<NetDaemonRxApp> NetDaemonRxApps => InternalRunningAppInstances.Values.Select(c => c.ApplicationInstance).OfType<NetDaemonRxApp>();
 
         private ConcurrentDictionary<string, ApplicationContext> InternalAllAppInstances => _appManager.InternalAllAppInstances;
 
         private ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances => _appManager.InternalRunningAppInstances;
 
-        
+
         private IEnumerable<IObserver<RxEvent>> EventChangeObservers =>
             NetDaemonRxApps.SelectMany(app => ((EventObservable)app.EventChangesObservable).Observers);
 
@@ -247,6 +247,7 @@ namespace NetDaemon.Daemon
             _cancelDaemon.Dispose();
             _cancelTokenSource?.Dispose();
 
+            GC.SuppressFinalize(this);
             Logger.LogTrace("Instance NetDaemonHost Disposed");
         }
 
@@ -356,7 +357,7 @@ namespace NetDaemon.Daemon
                 var hassConfig = await _hassClient.GetConfig().ConfigureAwait(false);
                 if (hassConfig.State != "RUNNING")
                 {
-                    Logger.LogInformation("Home Assistant is not ready yet, state: {state} ..", hassConfig.State);
+                    Logger.LogInformation("Home Assistant is not ready yet, state: {State} ..", hassConfig.State);
                     await _hassClient.CloseAsync().ConfigureAwait(false);
                     return;
                 }
@@ -430,7 +431,7 @@ namespace NetDaemon.Daemon
                     (hseData.Service == "stop" || hseData.Service == "restart"))
                 {
                     // The user stopped HA so just stop processing messages
-                    Logger.LogInformation("User {action} Home Assistant, will try to reconnect...",
+                    Logger.LogInformation("User {Action} Home Assistant, will try to reconnect...",
                         hseData.Service == "stop" ? "stopping" : "restarting");
                     return false;
                 }
@@ -590,18 +591,18 @@ namespace NetDaemon.Daemon
         public async Task ReloadAllApps()
         {
             if (_appInstanceManager == null) throw new InvalidOperationException("_appInstanceManager has not yet been initialized");
-            
+
             await _appManager.ReloadAllApps(_appInstanceManager).ConfigureAwait(false);
 
             await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
                 .ConfigureAwait(false);
-            
+
             foreach (var applicationContext in _appManager.InternalRunningAppInstances.Values)
             {
                 if (applicationContext.ApplicationInstance is NetDaemonRxApp netDaemonRxApp)
                 {
                     await netDaemonRxApp.HandleAttributeInitialization(this).ConfigureAwait(false);
-                }                
+                }
             }
         }
 
@@ -953,11 +954,11 @@ namespace NetDaemon.Daemon
 
                 // the Entity_id can be a single string or an array
                 var entityIds = (entityIdField switch
-                    {
-                        string id => new[] { id },
-                        object[] arr => arr.OfType<string>().ToArray(),
-                        _ => Array.Empty<string>()
-                    })
+                {
+                    string id => new[] { id },
+                    object[] arr => arr.OfType<string>().ToArray(),
+                    _ => Array.Empty<string>()
+                })
                     // We only want app switches
                     .Where(id => id.StartsWith("switch.netdaemon_", true, CultureInfo.InvariantCulture))
                     .ToList();
@@ -991,7 +992,7 @@ namespace NetDaemon.Daemon
 
                     app.IsEnabled = false;
                     await PersistAppStateAsync(app).ConfigureAwait(false);
-                    Logger.LogDebug("SET APP {app} state = disabled", app.Id);
+                    Logger.LogDebug("SET APP {App} state = disabled", app.Id);
                 }
                 else if (state == "on")
                 {
@@ -1007,7 +1008,7 @@ namespace NetDaemon.Daemon
                     }
 
                     await PersistAppStateAsync(app).ConfigureAwait(false);
-                    Logger.LogDebug("SET APP {app} state = enabled", app.Id);
+                    Logger.LogDebug("SET APP {App} state = enabled", app.Id);
                 }
             }
 

@@ -34,6 +34,14 @@ namespace NetDaemon.Service.Api
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+
+        private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
+        {
+            builder
+                .ClearProviders()
+                .AddConsole();
+        });
+
         public ApiWebsocketMiddleware(
             RequestDelegate next,
             IOptions<NetDaemonSettings> netDaemonSettings,
@@ -46,6 +54,7 @@ namespace NetDaemon.Service.Api
                throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
             _ = homeAssistantSettings ??
                throw new NetDaemonArgumentNullException(nameof(homeAssistantSettings));
+            loggerFactory = loggerFactory ?? DefaultLoggerFactory;
             _logger = loggerFactory.CreateLogger<ApiWebsocketMiddleware>();
             _host = host;
             _netdaemonSettings = netDaemonSettings.Value;
@@ -74,12 +83,14 @@ namespace NetDaemon.Service.Api
                 await BroadCast(JsonSerializer.Serialize(eventMessage, _jsonOptions)).ConfigureAwait(false);
             }
         }
-        
+
         [SuppressMessage("", "CA1031")]
         public async Task Invoke(HttpContext context)
         {
             _ = context ??
                throw new NetDaemonArgumentNullException(nameof(context));
+            _ = _host ??
+                throw new NetDaemonNullReferenceException($"{nameof(_host)} cannot be null");
             if (!context.WebSockets.IsWebSocketRequest && context.Request.Path != "/api/ws")
             {
                 await _next.Invoke(context).ConfigureAwait(false);
@@ -91,7 +102,7 @@ namespace NetDaemon.Service.Api
             var socketId = Guid.NewGuid().ToString();
 
             _sockets.TryAdd(socketId, currentSocket);
-            _logger.LogDebug("New websocket client {socketId}", socketId);
+            _logger.LogDebug("New websocket client {SocketId}", socketId);
             try
             {
                 while (!ct.IsCancellationRequested)
@@ -166,11 +177,13 @@ namespace NetDaemon.Service.Api
                                     {
                                         if (command.IsEnabled.Value)
                                         {
-                                            _host?.CallService("switch", "turn_on", new { entity_id = $"switch.netdaemon_{msg.App.ToSafeHomeAssistantEntityId()}" });
+                                            if (_host is not null)
+                                                await _host.CallServiceAsync("switch", "turn_on", new { entity_id = $"switch.netdaemon_{msg.App.ToSafeHomeAssistantEntityId()}" }).ConfigureAwait(false);
                                         }
                                         else
                                         {
-                                            _host?.CallService("switch", "turn_off", new { entity_id = $"switch.netdaemon_{msg.App.ToSafeHomeAssistantEntityId()}" });
+                                            if (_host is not null)
+                                                await _host.CallServiceAsync("switch", "turn_off", new { entity_id = $"switch.netdaemon_{msg.App.ToSafeHomeAssistantEntityId() ?? "no_id"}" }).ConfigureAwait(false);
                                         }
                                     }
                                 }
@@ -198,7 +211,7 @@ namespace NetDaemon.Service.Api
 
         public async Task BroadCast(string message, CancellationToken ct = default)
         {
-            _logger.LogTrace("Broadcasting to {count} clients", _sockets.Count);
+            _logger.LogTrace("Broadcasting to {Count} clients", _sockets.Count);
             foreach (var socket in _sockets)
             {
                 if (socket.Value.State != WebSocketState.Open)
@@ -231,7 +244,7 @@ namespace NetDaemon.Service.Api
 
                 result = await socket.ReceiveAsync(buffer, ct).ConfigureAwait(false);
                 if (!result.CloseStatus.HasValue)
-                    ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    await ms.WriteAsync(new ReadOnlyMemory<byte>(buffer.Array, buffer.Offset, result.Count), ct).ConfigureAwait(false);
                 else
                     return null;
             }

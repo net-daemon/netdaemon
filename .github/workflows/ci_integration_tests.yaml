@@ -9,7 +9,7 @@ on:
       - main
       - dev
   schedule:
-      - cron: '0 2 * * *' # run at 2 AM UTC
+    - cron: "0 2 * * *" # run at 2 AM UTC
 
 jobs:
   init:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Set versions
         id: versions
-        run: | 
+        run: |
           versions='"stable", "beta"'
           if ${{ github.event_name == 'schedule' }}; then
             versions+=', "dev"'
@@ -39,12 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@main
 
-      - name: 🥅 Install .Net 5
+      - name: 🥅 Install .Net 6
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x' # SDK Version
+          dotnet-version: "6.0.x" # SDK Version
 
       - name: 🛠️ Build code
         run: dotnet build
@@ -70,7 +70,7 @@ jobs:
           NETDAEMON__APPSOURCE: ${{github.workspace}}/tests/Integration/apps
           NETDAEMON__ADMIN: false
         run: |
-          cd ${{github.workspace}}/tests/Integration/TestClient/bin/Debug/net5.0
+          cd ${{github.workspace}}/tests/Integration/TestClient/bin/Debug/net6.0
           ./TestClient
 
       - name: Get Home Assistant log in failure

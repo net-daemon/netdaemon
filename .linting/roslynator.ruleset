@@ -34,7 +34,9 @@ Just add ruleset file to a solution and open it.
     <!-- Lots of catching rare null pointer exceptions in properties. Might refactor those in the future -->
     <Rule Id="CA1065" Action="None" />
 
-
+    <!-- Logging rule to optimize later -->
+    <Rule Id="CA1848" Action="None" />
+    <Rule Id="CA2254" Action="None" />
   </Rules>
 
 </RuleSet>

@@ -85,7 +85,7 @@ namespace NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                _netDaemonHost.Logger.LogError(e, "Failed to set state for entity {entityId}", entityId);
+                _netDaemonHost.Logger.LogError(e, "Failed to set state for entity {EntityId}", entityId);
                 throw;
             }
         }

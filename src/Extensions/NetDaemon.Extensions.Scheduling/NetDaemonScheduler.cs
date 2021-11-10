@@ -48,7 +48,7 @@ namespace NetDaemon.Extensions.Scheduler
             Observable.Interval(timespan, _reactiveScheduler)
                 .Subscribe(
                     _ => RunAction(action),
-                    _ => _logger.LogTrace("Exiting timer using trigger with span {span}",
+                    _ => _logger.LogTrace("Exiting timer using trigger with span {Span}",
                             timespan)
                     , result.Token);
 
@@ -66,7 +66,7 @@ namespace NetDaemon.Extensions.Scheduler
                 _reactiveScheduler)
                 .Subscribe(
                     _ => RunAction(action),
-                    () => _logger.LogTrace("Exiting timer that was scheduled at {startTime} and every {period}",
+                    () => _logger.LogTrace("Exiting timer that was scheduled at {StartTime} and every {Period}",
                             startTime, period),
                     result.Token
                     );
@@ -81,7 +81,7 @@ namespace NetDaemon.Extensions.Scheduler
             Observable.Timer(timespan, _reactiveScheduler)
                 .Subscribe(
                     _ => RunAction(action),
-                    () => _logger.LogTrace("Exiting scheduled run at {timespan}", timespan)
+                    () => _logger.LogTrace("Exiting scheduled run at {Timespan}", timespan)
                     , result.Token);
             return result;
         }
@@ -96,7 +96,7 @@ namespace NetDaemon.Extensions.Scheduler
                 _reactiveScheduler)
                 .Subscribe(
                     _ => RunAction(action),
-                    () => _logger.LogTrace("Exiting timer that was scheduled at {timeOffset}",
+                    () => _logger.LogTrace("Exiting timer that was scheduled at {TimeOffset}",
                             timeOffset),
                     result.Token
                     );
