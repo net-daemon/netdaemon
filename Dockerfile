@@ -13,8 +13,7 @@ RUN \
     && rm -fr /tmp/* /var/{cache,log}/*  
 
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:6.0 as netbuilder
-
+FROM mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-amd64 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
