@@ -70,7 +70,7 @@ jobs:
           NETDAEMON__APPSOURCE: ${{github.workspace}}/tests/Integration/apps
           NETDAEMON__ADMIN: false
         run: |
-          cd ${{github.workspace}}/tests/Integration/TestClient/bin/Debug/net5.0
+          cd ${{github.workspace}}/tests/Integration/TestClient/bin/Debug/net6.0
           ./TestClient
 
       - name: Get Home Assistant log in failure
