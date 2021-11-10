@@ -14,6 +14,7 @@ using NetDaemon.Service.App;
 using Xunit;
 using NetDaemon.Daemon.Fakes;
 using static NetDaemon.Daemon.Tests.DaemonRunner.CommonTestMethods;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 {
@@ -51,7 +52,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
                 .AddSingleton(_mockAction.Object);
             return serviceCollection;
         }
-        
+
         private ServiceProvider ServiceProvider => InitializeServiceCollection().BuildServiceProvider();
 
 
@@ -292,12 +293,13 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async Task StorageShouldRestoreWithCorrectValues()
         {
             // ARRANGE
-            
+
             var daemonMock = new Mock<INetDaemon>();
-            var serviceProvider =  InitializeServiceCollection().AddSingleton(daemonMock.Object).BuildServiceProvider();
+            var serviceProvider = InitializeServiceCollection().AddSingleton(daemonMock.Object).BuildServiceProvider();
 
             await using var appContext = ApplicationContext.Create(typeof(AssemblyDaemonApp), "id", serviceProvider);
             var instance = appContext.ApplicationInstance as AssemblyDaemonApp;
@@ -391,7 +393,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.App
 
             Assert.Equal(expectedAppId, appId);
         }
-        
+
         [Fact]
         public async void BaseLassYamlAppShouldGetConfigs()
         {

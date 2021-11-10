@@ -29,7 +29,7 @@ namespace NetDaemon.Service.App
             if (apps.Count == 0)
                 _logger.LogWarning("No local daemon apps found.");
             else
-                _logger.LogDebug("Found total of {nr_of_apps} apps", apps.Count);
+                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count);
 
             return apps;
         }
@@ -46,7 +46,7 @@ namespace NetDaemon.Service.App
 
             foreach (var netDaemonDllToLoadDynamically in netDaemonDlls.Except(alreadyLoadedAssemblies))
             {
-                _logger.LogTrace("Loading {dll} into AssemblyLoadContext", netDaemonDllToLoadDynamically);
+                _logger.LogTrace("Loading {Dll} into AssemblyLoadContext", netDaemonDllToLoadDynamically);
                 AssemblyLoadContext.Default.LoadFromAssemblyPath(netDaemonDllToLoadDynamically);
             }
 

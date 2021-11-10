@@ -81,7 +81,7 @@ namespace NetDaemon.Daemon
                     }
                     catch (Exception e)
                     {
-                        _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {appId}", netDaemonApp);
+                        _daemon.Logger.LogError(e, "Failed to invoke the ServiceCall function for app {AppId}", netDaemonApp);
                     }
                 });
         }

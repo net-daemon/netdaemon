@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
@@ -69,7 +70,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             DefaultDaemonRxApp.EventChanges
                 .Subscribe(_ => called = true);
 
-            DefaultHassClientMock.AddCustomEvent("AN_EVENT", new {somedata = "hello"});
+            DefaultHassClientMock.AddCustomEvent("AN_EVENT", new { somedata = "hello" });
 
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
@@ -256,8 +257,8 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await InitializeFakeDaemon().ConfigureAwait(false);
             // ACT
             DefaultDaemonHost.StateManager.Clear();
-            DefaultDaemonHost.StateManager.Store(new EntityState() {EntityId = "light.mylight"});
-            DefaultDaemonHost.StateManager.Store(new EntityState() {EntityId = "light.mylight2"});
+            DefaultDaemonHost.StateManager.Store(new EntityState() { EntityId = "light.mylight" });
+            DefaultDaemonHost.StateManager.Store(new EntityState() { EntityId = "light.mylight2" });
 
             var entities = DefaultDaemonRxApp.EntityIds.ToList();
 
@@ -427,6 +428,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async Task TestFakeAppTurnOnCorrectLight()
         {
             // Add the app to test
@@ -447,6 +449,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async Task TestFakeAppCallNoteWhenBatteryLevelBelowValue()
         {
             // Add the app to test
@@ -458,14 +461,14 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
             // Fake a changed event from en entity
             AddChangeEvent(new()
+            {
+                EntityId = "sensor.temperature",
+                State = "10.0",
+                Attributes = new Dictionary<string, object>()
                 {
-                    EntityId = "sensor.temperature",
-                    State = "10.0",
-                    Attributes = new Dictionary<string, object>()
-                    {
-                        ["battery_level"] = 18.2
-                    }
+                    ["battery_level"] = 18.2
                 }
+            }
                 , new()
                 {
                     EntityId = "sensor.temperature",
@@ -480,7 +483,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
             await RunFakeDaemonUntilTimeout().ConfigureAwait(false);
 
             // Verify that netdaemon called light.turn_on
-            VerifyCallService("notify", "notify", new {title = "Hello from Home Assistant"});
+            VerifyCallService("notify", "notify", new { title = "Hello from Home Assistant" });
         }
 
         [Fact]

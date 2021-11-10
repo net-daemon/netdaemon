@@ -17,17 +17,17 @@ namespace NetDaemon.Daemon
             _serviceProvider = serviceProvider;
             Logger = logger;
         }
-        
+
         public ILogger Logger { get; }
 
         public ConcurrentDictionary<string, ApplicationContext> InternalAllAppInstances { get; } = new();
 
         public ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances { get; } = new();
-        
+
         /// <inheritdoc/>
         public async Task ReloadAllApps(IInstanceDaemonApp appInstanceManager)
         {
-            Logger.LogTrace("Loading all apps ({instances}, {running})", InternalAllAppInstances.Count,
+            Logger.LogTrace("Loading all apps ({Instances}, {Running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
 
             // First unload any apps running
@@ -38,7 +38,7 @@ namespace NetDaemon.Daemon
 
             if (!InternalRunningAppInstances.IsEmpty)
             {
-                Logger.LogWarning("Old apps not unloaded correctly. {nr} apps still loaded.",
+                Logger.LogWarning("Old apps not unloaded correctly. {Nr} apps still loaded.",
                     InternalRunningAppInstances.Count);
                 InternalRunningAppInstances.Clear();
             }
@@ -69,13 +69,13 @@ namespace NetDaemon.Daemon
             if (taskAwaitedAsyncTask != taskInitAsync)
             {
                 Logger.LogWarning(
-                    "InitializeAsync of application {app} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
+                    "InitializeAsync of application {App} took longer that 5 seconds, make sure InitializeAsync is not blocking!",
                     applicationContext.Id);
             }
 
-            Logger.LogInformation("Successfully loaded app {appId} ({class})", applicationContext.Id, applicationContext.GetType().Name);
+            Logger.LogInformation("Successfully loaded app {AppId} ({Class})", applicationContext.Id, applicationContext.GetType().Name);
         }
-        
+
         [SuppressMessage("", "CA1031")]
         private async Task<bool> RestoreAppState(ApplicationContext appContext)
         {
@@ -86,16 +86,16 @@ namespace NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Failed to load app {appInstance.Id}");
+                Logger.LogError(e, "Failed to load app {AppId}", appContext.Id);
                 return false;
             }
         }
-        
+
         /// <inheritdoc/>
         [SuppressMessage("", "CA1031")]
         public async Task UnloadAllApps()
         {
-            Logger.LogTrace("Unloading all apps ({instances}, {running})", InternalAllAppInstances.Count,
+            Logger.LogTrace("Unloading all apps ({Instances}, {Running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
             foreach (var app in InternalAllAppInstances.Values)
             {
@@ -105,5 +105,5 @@ namespace NetDaemon.Daemon
             InternalAllAppInstances.Clear();
             InternalRunningAppInstances.Clear();
         }
-   }
+    }
 }

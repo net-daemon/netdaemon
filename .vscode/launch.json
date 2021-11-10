@@ -11,7 +11,7 @@
       "preLaunchTask": "build",
       "justMyCode": false,
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/src/Service/bin/Debug/net5.0/Service.dll",
+      "program": "${workspaceFolder}/src/Service/bin/Debug/net6.0/Service.dll",
       "args": [],
       "cwd": "${workspaceFolder}/src/Service",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

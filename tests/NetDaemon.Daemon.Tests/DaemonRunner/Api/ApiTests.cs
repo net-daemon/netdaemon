@@ -48,7 +48,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             _defaultHassClientMock = HassClientMock.DefaultMock;
             _defaultDataRepositoryMock = new Mock<IDataRepository>();
             _defaultHttpHandlerMock = new HttpHandlerMock();
-            var hassClientFactoryMock = new HassClientFactoryMock(_defaultHassClientMock );
+            var hassClientFactoryMock = new HassClientFactoryMock(_defaultHassClientMock);
             _defaultDaemonHost = new NetDaemonHost(
                 hassClientFactoryMock.Object,
                 _defaultDataRepositoryMock.Object,
@@ -178,6 +178,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
         }
 
         [SuppressMessage("", "CA2201")]
+        [SuppressMessage("", "CA1835")]
         private static async Task<string> ReadString(WebSocket ws)
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
@@ -188,7 +189,7 @@ namespace NetDaemon.Daemon.Tests.DaemonRunner.Api
             do
             {
                 result = await ws.ReceiveAsync(buffer, CancellationToken.None).ConfigureAwait(false);
-                ms.Write(buffer.Array, buffer.Offset, result.Count);
+                await ms.WriteAsync(buffer.Array, buffer.Offset, result.Count).ConfigureAwait(false);
             }
             while (!result.EndOfMessage);
 

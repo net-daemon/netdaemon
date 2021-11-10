@@ -53,7 +53,7 @@ namespace NetDaemon.Common.Reactive
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(e, "Error complete the observables for app {app}", _app.Id);
+                    _logger.LogWarning(e, "Error complete the observables for app {App}", _app.Id);
                 }
             }
             _observersTuples.Clear();

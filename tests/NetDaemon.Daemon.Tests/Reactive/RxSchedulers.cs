@@ -19,10 +19,12 @@ namespace NetDaemon.Daemon.Tests.Reactive
     {
         [Fact]
         [SuppressMessage("", "CA2201")]
+        [SuppressMessage("", "CA2007")]
         public async Task CreateObservableIntervallFailureShouldLogError()
         {
             // ARRANGE
             await using var app = new BaseTestRxApp();
+            app.ConfigureAwait(false);
             await app.StartUpAsync(DefaultDaemonHost).ConfigureAwait(false);
             app.IsEnabled = true;
 
@@ -35,6 +37,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async Task CreateObservableIntervallShouldCallFunction()
         {
             // ARRANGE
@@ -55,6 +58,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
 
         [Fact]
         [SuppressMessage("", "CA2201")]
+        [SuppressMessage("", "CA2007")]
         public async Task CreateObservableTimerFailureShouldLogError()
         {
             // ARRANGE
@@ -71,6 +75,7 @@ namespace NetDaemon.Daemon.Tests.Reactive
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async Task CreateObservableTimerShouldCallFunction()
         {
             // ARRANGE

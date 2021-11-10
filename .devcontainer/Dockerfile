@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
 #-------------------------------------------------------------------------------------------------------------
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-focal
+FROM mcr.microsoft.com/dotnet/sdk:6.0-focal
 
 RUN apt-get update && apt-get install -y ssh
 # This Dockerfile adds a non-root 'vscode' user with sudo access. However, for Linux,

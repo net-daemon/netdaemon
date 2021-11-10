@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Hosting;
 using NetDaemon;
 
+#pragma warning disable CA1812
+
 try
 {
     await Host.CreateDefaultBuilder(args)

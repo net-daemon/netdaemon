@@ -26,10 +26,10 @@ jobs:
           echo Current version:    $latest
           echo "::set-output name=version::$latest"
 
-      - name: 🥅 Install .Net 5
+      - name: 🥅 Install .Net 6
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "5.0.x" # SDK Version
+          dotnet-version: "6.0.x" # SDK Version
 
       - name: 🔖 Set version number
         run: |

@@ -312,7 +312,7 @@ namespace NetDaemon.Daemon.Fakes
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
-            foreach (var (attribute, value) in attributesTuples)
+            foreach (var (attribute, value) in attributesTuples ?? Array.Empty<(string attribute, object value)>())
                 attributes[attribute] = value;
 
             Verify(n => n.CallService(domain, service, attributes, null, It.IsAny<bool>()), Times.AtLeastOnce);
@@ -383,7 +383,7 @@ namespace NetDaemon.Daemon.Fakes
             params (string attribute, object value)[] attributesTuples)
         {
             var attributes = new FluentExpandoObject();
-            foreach (var (attribute, value) in attributesTuples)
+            foreach (var (attribute, value) in attributesTuples ?? Array.Empty<(string attribute, object value)>())
                 attributes[attribute] = value;
 
             Verify(n => n.SetState(entity, state, attributes), Times.AtLeastOnce);

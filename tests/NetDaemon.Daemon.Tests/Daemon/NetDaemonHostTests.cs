@@ -26,6 +26,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
         }
 
         [Fact]
+        [SuppressMessage("", "CA2007")]
         public async Task AttributeServiceCallShouldFindCorrectFunction()
         {
             // ARRANGE
@@ -426,7 +427,7 @@ namespace NetDaemon.Daemon.Tests.Daemon
             public string TestString => "Test";
         }
 
-        [SuppressMessage("", checkId:"CA1034")]
+        [SuppressMessage("", checkId: "CA1034")]
         public class ServiceProviderTest : DaemonHostTestBase
         {
             // This test is in a nested class because the CoreDaemonHostTestBase will create the ServiceProvider before

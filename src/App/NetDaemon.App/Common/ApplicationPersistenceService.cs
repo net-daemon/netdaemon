@@ -26,7 +26,7 @@ namespace NetDaemon.Daemon.Services
         private Channel<bool> InternalLazyStoreStateQueue { get; } = Channel.CreateBounded<bool>(1);
 
         public ApplicationPersistenceService(IApplicationMetadata applicationMetadata, INetDaemon netDaemon)
-        { 
+        {
             _applicationMetadata = applicationMetadata;
             _daemon = netDaemon;
             _logger = netDaemon.Logger;
@@ -43,7 +43,7 @@ namespace NetDaemon.Daemon.Services
 
             if (obj != null)
             {
-                var expStore = (FluentExpandoObject) Storage;
+                var expStore = (FluentExpandoObject)Storage;
                 expStore.CopyFrom(obj);
             }
 
@@ -96,7 +96,7 @@ namespace NetDaemon.Daemon.Services
                     // Dont care about the result, just that it is time to store state
                     _ = await InternalLazyStoreStateQueue.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                    await _daemon.SaveDataAsync(GetUniqueIdForStorage(), (IDictionary<string, object>) Storage)
+                    await _daemon.SaveDataAsync(GetUniqueIdForStorage(), (IDictionary<string, object>)Storage)
                         .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -105,7 +105,7 @@ namespace NetDaemon.Daemon.Services
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Error in storage queue {e}", e);
+                    _logger.LogError(e, "Error in storage queue");
                 } // Ignore errors in thread
             }
         }
@@ -113,7 +113,7 @@ namespace NetDaemon.Daemon.Services
         public async ValueTask DisposeAsync()
         {
             if (isDisposed) return;
-            
+
             _cancellationTokenSource.Cancel();
             await _handleStorageTask.ConfigureAwait(false);
             _cancellationTokenSource.Dispose();

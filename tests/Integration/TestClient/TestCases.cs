@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using NetDaemon.Daemon;
@@ -29,6 +30,7 @@ namespace TestClient
             return true;
         }
 
+        [SuppressMessage("", "CA1849")]
         public async Task<bool> TestCallServiceAndCheckCorrectState()
         {
             LogTestCase();
@@ -38,6 +40,7 @@ namespace TestClient
             return FailEq<string>(_daemonHost.GetState("input_select.who_cooks")?.State, "Paulus");
         }
 
+        [SuppressMessage("", "CA1849")]
         public async Task<bool> TestCallServiceAndCheckCorrectStateAndWaitForResult()
         {
             LogTestCase();

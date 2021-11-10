@@ -10,11 +10,11 @@ using NetDaemon.Mapping;
 using NetDaemon.HassModel.CodeGenerator;
 
 #pragma warning disable CA1303
+#pragma warning disable CA2007
 
 var configurationRoot = GetConfigurationRoot();
 var haSettings = configurationRoot.GetSection("HomeAssistant")?.Get<HomeAssistantSettings>() ?? new HomeAssistantSettings();
 var generationSettings = configurationRoot.GetSection("CodeGeneration").Get<CodeGenerationSettings>() ?? new CodeGenerationSettings();
-
 if (args?.Length > 0)
 {
     foreach (var arg in args)
@@ -43,7 +43,7 @@ var connected = await client.ConnectAsync(haSettings.Host, haSettings.Port, haSe
 
 if (!connected)
 {
-    Console.Error.WriteLine("Failed to Connect to Home Assistant");
+    await Console.Error.WriteLineAsync("Failed to Connect to Home Assistant").ConfigureAwait(false);
     return -1;
 }
 
@@ -65,13 +65,13 @@ IConfigurationRoot GetConfigurationRoot()
         // default path is the folder of the currently execting root assembley
         .AddJsonFile("appsettings.json", true, true)
         .AddJsonFile($"appsettings.{env}.json", true, true)
-        
+
         // Also look in the current directory which wil typically be the project folder
         // of the users code and have a appsettings.development.json with the correct HA connection settings
         .SetBasePath(Environment.CurrentDirectory)
         .AddJsonFile("appsettings.json", true, true)
         .AddJsonFile($"appsettings.development.json", true, true)
-        
+
         // finally override with Environment vars or commandline
         .AddEnvironmentVariables()
         .AddCommandLine(args, new Dictionary<string, string>()
