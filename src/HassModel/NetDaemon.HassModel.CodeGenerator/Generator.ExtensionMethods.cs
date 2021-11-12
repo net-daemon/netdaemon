@@ -5,13 +5,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.HassModel.CodeGenerator.Helpers;
 using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
 using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
-using OldEntityState = NetDaemon.Common.EntityState;
 
 namespace NetDaemon.HassModel.CodeGenerator
 {
     public partial class Generator
     {
-        private static IEnumerable<ClassDeclarationSyntax> GenerateExtensionMethodClasses(IEnumerable<HassServiceDomain> serviceDomains, IEnumerable<OldEntityState> entities)
+        private static IEnumerable<ClassDeclarationSyntax> GenerateExtensionMethodClasses(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<HassState> entities)
         {
             var entityDomains = entities.GroupBy(e => EntityIdHelper.GetDomain(e.EntityId)).Select(x => x.Key);
 

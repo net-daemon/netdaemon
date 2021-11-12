@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.HassModel.CodeGenerator.Helpers;
 using NetDaemon.HassModel.CodeGenerator.Extensions;
@@ -9,13 +11,12 @@ using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
 using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
-using OldEntityState = NetDaemon.Common.EntityState;
 
 namespace NetDaemon.HassModel.CodeGenerator
 {
     public partial class Generator
     {
-        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(IEnumerable<OldEntityState> entities)
+        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(IReadOnlyCollection<HassState> entities)
         {
             var entityIds = entities.Select(x => x.EntityId).ToList();
 
@@ -47,7 +48,7 @@ namespace NetDaemon.HassModel.CodeGenerator
                 var typeName = GetEntitiesTypeName(domain);
                 var propertyName = domain.ToPascalCase();
 
-                return Property(typeName, propertyName, init: false);
+                return (MemberDeclarationSyntax)Property(typeName, propertyName, init: false);
             }).ToArray();
 
             return Interface("IEntities").AddMembers(autoProperties).ToPublic();
@@ -62,55 +63,81 @@ namespace NetDaemon.HassModel.CodeGenerator
                 var entitiesTypeName = GetEntitiesTypeName(domain);
                 var entitiesPropertyName = domain.ToPascalCase();
 
-                return ParseProperty($"{entitiesTypeName} {entitiesPropertyName} => new(_{haContextNames.VariableName});").ToPublic();
+                return (MemberDeclarationSyntax)ParseProperty($"{entitiesTypeName} {entitiesPropertyName} => new(_{haContextNames.VariableName});")
+                    .ToPublic();
             }).ToArray();
 
             return ClassWithInjected<IHaContext>("Entities").WithBase((string)"IEntities").AddMembers(properties).ToPublic();
         }
 
-        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityAttributeRecords(IEnumerable<OldEntityState> entities)
+        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityAttributeRecords(IEnumerable<HassState> entities)
         {
-            foreach (var entityDomainGroups in entities.GroupBy(x => EntityIdHelper.GetDomain(x.EntityId)))
-            {
-                var attributes = new Dictionary<string, Type>();
-
-                foreach (var entity in entityDomainGroups)
-                {
-                    foreach (var (attributeName, attributeObject) in new Dictionary<string, object>(entity.Attribute))
-                    {
-                        if (attributes.ContainsKey(attributeName))
-                        {
-                            continue;
-                        }
-
-                        attributes.Add(attributeName, TypeHelper.GetType(attributeObject));
-                    }
-                }
-
-                IEnumerable<(string Name, string TypeName, string SerializationName)> autoPropertiesParams = attributes
-                    .Select(a => (a.Key.ToNormalizedPascalCase(), a.Value.GetFriendlyName(), a.Key));
-
-                // handles the case when attributes have equal names in PascalCase but different types.
-                // i.e. available & Available convert to AvailableString & AvailableBool
-
-                autoPropertiesParams = autoPropertiesParams.HandleDuplicates(x => x.Name,
-                d => { d.Name = $"{d.Name}{d.TypeName.ToPascalCase()}".ToNormalizedPascalCase(); return d; });
-
-                // but when they are the same type, we cannot generate meaninguful name so just numerate them.
-                // TODO: come up with a meaningful name
-                var i = 1;
-                autoPropertiesParams = autoPropertiesParams.HandleDuplicates(x => x.Name,
-                    d => { d.Name += i++; return d; });
-
-                var autoProperties = autoPropertiesParams.Select(a =>
-                    Property($"{a.TypeName}?", a.Name).ToPublic().WithAttribute<JsonPropertyNameAttribute>(a.SerializationName))
-                    .ToArray();
-
-                var domain = entityDomainGroups.Key;
-
-                yield return Record(GetAttributesTypeName(domain), autoProperties).ToPublic();
-            }
+            // group the entities by their domain and create one attribute record for each domain
+            return entities.GroupBy(x => EntityIdHelper.GetDomain(x.EntityId))
+                .Select(entityDomainGroup => GenerateAtributeRecord(entityDomainGroup.Key, entityDomainGroup));
         }
+
+        private static RecordDeclarationSyntax GenerateAtributeRecord(string domainName, IEnumerable<HassState> entityStates)
+        {
+            // Get all attributes of all entities in this set
+            var jsonProperties = entityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
+            
+            // Group the attributes by JsonPropertyName and find the best ClrType that fits all
+            var attributesByJsonName = jsonProperties
+                .GroupBy(p => p.Name)
+                .Select(group => (CSharpName: group.Key.ToNormalizedPascalCase(), 
+                                  JsonName: group.Key, 
+                                  Type: GetBestClrType(group)));
+            
+            // We might have different json names that after CamelCasing result in the same CSharpName 
+            var uniqueProperties = attributesByJsonName
+                .GroupBy(t => t.CSharpName)
+                .SelectMany(DeduplictateCSharpName)
+                .OrderBy(p => p.CSharpName);
+            
+            var propertyDeclarations = uniqueProperties.Select(a => Property($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
+                                                                    .ToPublic()
+                                                                    .WithAttribute<JsonPropertyNameAttribute>(a.JsonName));
+
+            return Record(GetAttributesTypeName(domainName), propertyDeclarations).ToPublic();
+        }
+
+        private static IEnumerable<(string CSharpName, string JsonName, Type ClrType)> DeduplictateCSharpName(IEnumerable<(string CSharpName, string JsonName, Type ClrType)> items)
+        {
+            var list = items.ToList();
+            if (list.Count == 1) return new[] { list.First() };
+
+            return list.OrderBy(i => i.JsonName).Select((p, i) => ($"{p.CSharpName}_{i}", jsonName: p.JsonName, type: p.ClrType));
+        }
+
+        private static Type GetBestClrType(IEnumerable<JsonProperty> valueKinds)
+        {
+            var distinctCrlTypes = valueKinds
+                .Select(p => p.Value.ValueKind)
+                .Distinct()
+                .Where(k => k!= JsonValueKind.Null) // null fits in any type so we can ignore it for now
+                .Select(MapJsonType)
+                .ToHashSet();
+
+            // If all have the same clr type use that, if not it will be 'object'
+            return distinctCrlTypes.Count == 1 
+                ? distinctCrlTypes.First() 
+                : typeof(object); 
+        }
+        
+        private static Type MapJsonType(JsonValueKind kind) =>
+            kind switch
+            {
+                JsonValueKind.False => typeof(bool),
+                JsonValueKind.Undefined => typeof(object),
+                JsonValueKind.Object => typeof(object),
+                JsonValueKind.Array => typeof(object),
+                JsonValueKind.String => typeof(string),
+                JsonValueKind.Number => typeof(double),
+                JsonValueKind.True => typeof(bool),
+                JsonValueKind.Null => typeof(object),
+                _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
+            };
 
         private static TypeDeclarationSyntax GenerateEntityDomainType(string domain, IEnumerable<string> entities)
         {
@@ -128,7 +155,7 @@ namespace NetDaemon.HassModel.CodeGenerator
             return n => n.StartsWith(domain + ".", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        private static PropertyDeclarationSyntax GenerateEntityProperty(string entityId, string domain)
+        private static MemberDeclarationSyntax GenerateEntityProperty(string entityId, string domain)
         {
             var entityName = EntityIdHelper.GetEntity(entityId);
 
@@ -159,6 +186,6 @@ namespace NetDaemon.HassModel.CodeGenerator
         ///     Returns a list of domains from all entities
         /// </summary>
         /// <param name="entities">A list of entities</param>
-        internal static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) => entities.Select(EntityIdHelper.GetDomain).Distinct();
+        private static IEnumerable<string> GetDomainsFromEntities(IEnumerable<string> entities) => entities.Select(EntityIdHelper.GetDomain).Distinct();
     }
 }

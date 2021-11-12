@@ -5,9 +5,8 @@ using System.IO;
 using System.Linq;
 using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Configuration;
-using NetDaemon.Common.Configuration;
-using NetDaemon.Mapping;
 using NetDaemon.HassModel.CodeGenerator;
+using NetDaemon.HassModel.CodeGenerator.Helpers;
 
 #pragma warning disable CA1303
 #pragma warning disable CA2007
@@ -50,7 +49,7 @@ if (!connected)
 var services = await client.GetServices().ConfigureAwait(false);
 var states = await client.GetAllStates().ConfigureAwait(false);
 
-var code = new Generator().GenerateCodeRx(generationSettings.Namespace, states.Select(s => s.Map()).ToList(), services);
+var code = Generator.GenerateCode(generationSettings.Namespace, states, services);
 File.WriteAllText(generationSettings.OutputFile, code);
 
 Console.WriteLine("Code Generated successfully!");
