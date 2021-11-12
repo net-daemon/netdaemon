@@ -67,12 +67,18 @@ public class Root
                     {
                         brightness = 255L,
                         friendly_name = "attic",
-                        start_date = new DateTime(2010, 12, 23, 23, 12, 00)
+                        FriendlyName = "attic",
+                        start_date = new DateTime(2010, 12, 23, 23, 12, 00),
+                        not_used = (string)null,
+                        trueValue = true,
+                        falseValue = false,
+                        dict = new {},
+                        arr = new []{"red", "blue"}
                     }.AsJsonElement()
                 },
             };
             
-            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var generatedCode = Generator.GenerateCode("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
 
             var appCode = @"
 using NetDaemon.HassModel.Entities;
@@ -87,11 +93,12 @@ public class Root
         LightEntity light1 = entities.Light.Light1;
         double? brightnessNullable = light1.Attributes?.Brightness;
         double brightness = light1.Attributes?.Brightness ?? 0L;
-        string? friendlyName = light1.Attributes?.FriendlyName;
+        string? friendlyName0 = light1.Attributes?.FriendlyName_0;
+        string? friendlyName1 = light1.Attributes?.FriendlyName_1;
         string? startDate = light1.Attributes?.StartDate;
     }
 }";
-            AssertCodeCompiles(generatedCode.ToString(), appCode);
+            AssertCodeCompiles(generatedCode, appCode);
         }
 
         [Fact]
