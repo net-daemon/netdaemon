@@ -41,8 +41,6 @@ namespace NetDaemon.HassModel.CodeGenerator
 
         public IEnumerable<ServiceArgument> Arguments { get; }
 
-        public bool HasRequiredArguments => Arguments.Any(v => v.Required);
-
         public string TypeName => NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
 
         public string GetParametersString()
