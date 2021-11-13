@@ -20,7 +20,7 @@
     <tags>Home Assistant</tags>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JoySoftware.HassClient" Version="21.35.0-beta" />
+    <PackageReference Include="JoySoftware.HassClient" Version="21.45.0-beta" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
