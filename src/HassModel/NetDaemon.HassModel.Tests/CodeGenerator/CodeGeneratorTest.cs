@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -7,8 +6,8 @@ using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.Common;
 using NetDaemon.HassModel.CodeGenerator;
+using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.CodeGenerator
@@ -18,7 +17,7 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator
         [Fact]
         public void RunCodeGenEMpy()
         {
-            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", new EntityState[0], new HassServiceDomain[0]);
+            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", Array.Empty<HassState>(), new HassServiceDomain[0]);
 
             code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
             
@@ -28,7 +27,7 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator
         [Fact]
         public void TestIEntityGeneration()
         {
-            var entityStates = new EntityState[]
+            var entityStates = new HassState[]
             {
                 new() { EntityId = "light.light1" },
                 new() { EntityId = "light.light2" },
@@ -59,20 +58,27 @@ public class Root
         [Fact]
         public void TestAttributeClassGeneration()
         {
-            var entityStates = new EntityState[]
+            var entityStates = new HassState[]
             {
                 new()
                 {
                     EntityId = "light.light1",
-                    Attribute = new Dictionary<string, object>
+                    AttributesJson = new 
                     {
-                        ["brightness"] = 255L,
-                        ["friendly_name"] = "attic"
-                    }
+                        brightness = 255L,
+                        friendly_name = "attic",
+                        FriendlyName = "attic",
+                        start_date = new DateTime(2010, 12, 23, 23, 12, 00),
+                        not_used = (string)null,
+                        trueValue = true,
+                        falseValue = false,
+                        dict = new {},
+                        arr = new []{"red", "blue"}
+                    }.AsJsonElement()
                 },
             };
             
-            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var generatedCode = Generator.GenerateCode("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
 
             var appCode = @"
 using NetDaemon.HassModel.Entities;
@@ -85,18 +91,20 @@ public class Root
     {
         IEntities entities = new Entities(ha);
         LightEntity light1 = entities.Light.Light1;
-        long? brightnessNullable = light1.Attributes?.Brightness;
-        long brightness = light1.Attributes?.Brightness ?? 0L;
-        string? friendlyName = light1.Attributes?.FriendlyName;
+        double? brightnessNullable = light1.Attributes?.Brightness;
+        double brightness = light1.Attributes?.Brightness ?? 0L;
+        string? friendlyName0 = light1.Attributes?.FriendlyName_0;
+        string? friendlyName1 = light1.Attributes?.FriendlyName_1;
+        string? startDate = light1.Attributes?.StartDate;
     }
 }";
-            AssertCodeCompiles(generatedCode.ToString(), appCode);
+            AssertCodeCompiles(generatedCode, appCode);
         }
 
         [Fact]
         public void TestServicesGeneration()
         {
-            var readOnlyCollection = new EntityState[]
+            var readOnlyCollection = new HassState[]
             {
                 new() { EntityId = "light.light1" },
             };
@@ -124,12 +132,12 @@ public class Root
                                 new()
                                 {
                                     Field = "transition",
-                                    Selector = new NumberSelector() { },
+                                    Selector = new NumberSelector(),
                                 },
                                 new()
                                 {
                                     Field = "brightness",
-                                    Selector = new NumberSelector() { Step = 0.2f },
+                                    Selector = new NumberSelector { Step = 0.2f },
                                 }
                             },
                             Target = new TargetSelector()

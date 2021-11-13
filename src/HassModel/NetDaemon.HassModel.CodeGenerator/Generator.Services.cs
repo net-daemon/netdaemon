@@ -2,7 +2,7 @@
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.Daemon.Config;
+using NetDaemon.HassModel.CodeGenerator.Extensions;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
