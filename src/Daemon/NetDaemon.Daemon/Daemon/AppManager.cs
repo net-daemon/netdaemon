@@ -73,7 +73,7 @@ namespace NetDaemon.Daemon
                     applicationContext.Id);
             }
 
-            Logger.LogInformation("Successfully loaded app {AppId} ({Class})", applicationContext.Id, applicationContext.GetType().Name);
+            Logger.LogInformation("Successfully loaded app {AppId} ({Class})", applicationContext.Id, applicationContext.ApplicationInstance?.GetType().Name);
         }
 
         [SuppressMessage("", "CA1031")]
