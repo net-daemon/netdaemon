@@ -19,8 +19,8 @@ namespace NetDaemon
 
         public static IServiceCollection AddNetDaemonServices(this IServiceCollection services)
         {
-            // replace the transient IHassClient with a singleton
-            services.AddSingleton<IHassClient, HassClient>();
+            // replace the transient IHassClient with the one that is setup by NetDaemonHost
+            services.AddTransient(s => s.GetRequiredService<NetDaemonHost>().Client);
 
             services.AddSingleton<NetDaemonHost>();
             services.AddSingleton<INetDaemonHost>(s => s.GetRequiredService<NetDaemonHost>());
