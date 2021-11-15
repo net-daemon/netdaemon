@@ -349,8 +349,6 @@ namespace NetDaemon.Daemon
 
                 if (!connectResult)
                 {
-                    IsConnected = false;
-                    await _hassClient.CloseAsync().ConfigureAwait(false);
                     return;
                 }
 
@@ -358,7 +356,6 @@ namespace NetDaemon.Daemon
                 if (hassConfig.State != "RUNNING")
                 {
                     Logger.LogInformation("Home Assistant is not ready yet, state: {State} ..", hassConfig.State);
-                    await _hassClient.CloseAsync().ConfigureAwait(false);
                     return;
                 }
 
@@ -388,11 +385,19 @@ namespace NetDaemon.Daemon
             }
             catch (Exception e)
             {
-                IsConnected = false;
                 Logger.LogError(e, "Error, during operation");
             }
             finally
             {
+                try
+                {
+                    await _hassClient.CloseAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error, during closing of HassClient websocket");
+                }
+
                 // Set cancel token to avoid background processes
                 // to access disconnected Home Assistant
                 IsConnected = false;
