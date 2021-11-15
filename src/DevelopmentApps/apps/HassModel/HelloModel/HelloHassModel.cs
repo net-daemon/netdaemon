@@ -13,12 +13,12 @@ using NetDaemon.HassModel.Entities;
 namespace NetDaemon.DevelopmentApps.apps.M3Test
 {
     [NetDaemonApp]
-    [Focus]
+    // [Focus]
     public class HelloNewModelApp
     {
         public HelloNewModelApp(IHaContext ha, INetDaemonScheduler scheduler)
         {
-            ha.CallService("notify", "persistent_notification", data: new { message = "it is a test app", title = "Hello HassModel!!" });
+            // ha.CallService("notify", "persistent_notification", data: new { message = "it is a test app", title = "Hello HassModel!!" });
         }
     }
 

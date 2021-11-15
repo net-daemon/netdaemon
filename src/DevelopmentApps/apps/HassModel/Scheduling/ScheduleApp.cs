@@ -20,7 +20,7 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
         {
             scheduler.RunAt(new DateTime(2021, 11, 03, 9, 27, 0), () =>
              {
-                 ha.CallService("notify", "persistent_notification", data: new { message = "Another scheduled message", title = "Scheduled message!" });
+                //  ha.CallService("notify", "persistent_notification", data: new { message = "Another scheduled message", title = "Scheduled message!" });
              });
         }
     }
