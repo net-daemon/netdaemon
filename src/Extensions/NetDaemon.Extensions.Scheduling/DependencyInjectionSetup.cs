@@ -15,7 +15,7 @@ namespace NetDaemon.Extensions.Scheduler
         /// <param name="services">Provided service collection</param>
         public static IServiceCollection AddNetDaemonScheduler(this IServiceCollection services)
         {
-            services.AddTransient<INetDaemonScheduler, NetDaemonScheduler>();
+            services.AddScoped<INetDaemonScheduler, NetDaemonScheduler>();
             return services;
         }
     }
