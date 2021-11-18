@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NetDaemon.HassModel.Common
 {
@@ -11,21 +12,25 @@ namespace NetDaemon.HassModel.Common
         /// <summary>
         /// The EventData as a JsonElement
         /// </summary>
+        [JsonPropertyName("data")]
         public JsonElement? DataElement { get; init; }
 
         /// <summary>
         /// The type of the Event
         /// </summary>
+        [JsonPropertyName("event_type")]
         public string EventType { get; init; } = string.Empty;
 
         /// <summary>
         /// The Event Origin
         /// </summary>
+        [JsonPropertyName("origin")]
         public string Origin { get; init; } = string.Empty;
 
         /// <summary>
         /// The Time the Event fired
         /// </summary>
+        [JsonPropertyName("time_fired")]
         public DateTime? TimeFired { get; init; }
     }
 
