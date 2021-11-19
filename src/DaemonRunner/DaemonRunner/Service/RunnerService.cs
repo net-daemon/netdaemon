@@ -230,13 +230,23 @@ namespace NetDaemon.Service
 
         private IEnumerable<Type> FilterFocusApps(IReadOnlyCollection<Type> allApps)
         {
-            if (!_environment.IsDevelopment()) return allApps;
-
             var focusApps = allApps.Where(a => a.GetCustomAttribute<FocusAttribute>() != null).ToList();
 
             if (focusApps.Count == 0) return allApps;
 
-            _logger.LogInformation($"Found {focusApps.Count} [Focus] apps, skipping all other apps");
+            foreach (var focusApp in focusApps)
+            {
+                _logger.LogInformation("[Focus] attribute is set for app {AppName}", focusApp.FullName);
+            }
+
+            if (!_environment.IsDevelopment())
+            {
+                _logger.LogError("{Count} Focus apps were found but current environment is not 'Development', the [Focus] attribute is ignored" +
+                                 "Make sure the environment variable `DOTNET_ENVIRONMENT` is set to `Development` to use [Focus] or remove the [Focus] attribute when running in production", focusApps.Count);
+                return allApps;
+            }
+            
+            _logger.LogWarning($"Found {focusApps.Count} [Focus] apps, skipping all other apps");
             return focusApps;
         }
 
