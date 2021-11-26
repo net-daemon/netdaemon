@@ -1,14 +1,12 @@
-# NetDaemon - Application daemon in .NET core for Home Assistant
+# NetDaemon - Write your automations in C# for Home Assistant
 
 ![CI build](https://github.com/net-daemon/netdaemon/workflows/CI%20build/badge.svg?branch=main) [![Coverage Status](https://coveralls.io/repos/github/net-daemon/netdaemon/badge.svg?branch=dev)](https://coveralls.io/github/net-daemon/netdaemon?branch=dev) [![Sonar Quality Gate](https://img.shields.io/sonar/quality_gate/net-daemon_netdaemon?server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/summary/overall?id=net-daemon_netdaemon)
 
-<a href="https://www.buymeacoffee.com/ij1qXRM6E" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
-
-Welcome to the NetDaemon project. This is the application daemon for Home Assistant for people that love to write code in the .NET ecosystem and want to do their automation for Home Assistant in .NET and C#.
+Welcome to the NetDaemon project. This is the application daemon that allows you to write your home automations in C# for Home Assistant. We are currently working on a new API, the HassModel that will replace the V2 API eventually. We encourage users to use this API starting out with NetDaemon. We are working hard to add more features that corresponds to the old V2 API.
 
 Please see [https://netdaemon.xyz](https://netdaemon.xyz) for detailed instructions how to get started using NetDaemon.
 
-> **The NetDaemon is currently in beta release so expect things to change.**
+> **The NetDaemon project is stable but is still in development so expect things to change.**
 
 ## Issues
 
@@ -24,18 +22,10 @@ https://netdaemon.xyz/docs/started/installation
 
 ## Example apps
 
-Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊
+Please check out the apps being developed for netdaemon. Since documentation is still lacking behind it will be best looking at real code 😊. To check out the new HassModel examples, please checkout the descriptions what user has adopted it below.
 
 | User                                                                                                    | Description                                                 |
 | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| [@helto4real](https://github.com/helto4real/hassio/tree/master/netdaemon/apps)                          | My own netdaemon apps running in production                 |
-| [@isabellaalstrom](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) | Isabella's netdaemon apps, check them out, nice stuff       |
-| [@Horizon0156](https://github.com/Horizon0156/netdaemon-apps)                                           | Stefan W's netdaemon apps, good example extending netdaemon |
-
-## VSCode customization
-
-Please advice that some customizations to VSCode has been made through settings. Check out the settings.json in the .vscode folder.
-
-## Attribution
-
-ICON: Attribution: [chris](https://commons.wikimedia.org/wiki/User:Chrkl) 論
+| [@helto4real](https://github.com/helto4real/HassModelAutomations)                          | Tomas netdaemon apps running in production (use HassModel)                 |
+| [@isabellaalstrom](https://github.com/isabellaalstrom/home-assistant-config/tree/master/netdaemon/apps) | Isabella's netdaemon apps, check them out, nice stuff. (V2 API)       |
+| [@Horizon0156](https://github.com/Horizon0156/netdaemon-apps)                                           | Stefan W's netdaemon apps, good example extending netdaemon (V2 API)|
