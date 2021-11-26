@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.Extensions.Scheduling</PackageId>
-    <Version>20.49.2-beta</Version>
+    <Version>21.47.1</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
     <description>Scheduling extensions for NetDaemon</description>
