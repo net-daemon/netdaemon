@@ -89,7 +89,7 @@ jobs:
           git clone https://github.com/net-daemon/netdaemon-app-template.git --depth=1
           cd netdaemon-app-template
           git checkout -b "$branch"
-          find . -type f -name "*.csproj" -exec sed -i -E "s/(<PackageReference Include=\"JoySoftware\.NetDaemon\.\w*.\" Version=\")(.*)(-beta\".*)/\1${VERSION}\3/g" {} +
+          find . -type f -name "*.csproj" -exec sed -i -E "s/(<PackageReference Include=\"JoySoftware\.NetDaemon\.\w*.\" Version=\")(.*)(\".*)/\1${VERSION}\3/g" {} +
           find . -type f -name "*.csproj" -exec git add {} +
           git commit -m "Release ${VERSION}"
           git push --set-upstream origin "$branch"

@@ -6,7 +6,7 @@
         <LangVersion>10.0</LangVersion>
         <OutputType>Exe</OutputType>
         <PackageId>JoySoftware.NetDaemon.HassModel.CodeGen</PackageId>
-        <Version>20.49.2-beta</Version>
+        <Version>21.47.1</Version>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>nd-codegen</ToolCommandName>
         <Authors>frankbakkernl, helto4real</Authors>
