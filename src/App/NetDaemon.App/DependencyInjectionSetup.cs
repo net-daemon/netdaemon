@@ -16,10 +16,11 @@ namespace NetDaemon
         public static IServiceCollection AddNetDaemonAppServices(this IServiceCollection services)
         {
             // The ApplicationScope is used as a way to make the ApplicationContext resolvable per Scope
-            
+
             services.AddScoped<ApplicationScope>();
             services.AddScoped(s => s.GetRequiredService<ApplicationScope>().ApplicationContext);
             services.AddScoped<IApplicationMetadata>(s => s.GetRequiredService<ApplicationScope>().ApplicationContext ?? throw new InvalidOperationException("ApplicationMetaData not yet initialized"));
+            services.AddScoped<IApplicationContext>(s => s.GetRequiredService<ApplicationScope>().ApplicationContext ?? throw new InvalidOperationException("ApplicationMetaData not yet initialized"));
             services.AddScoped<IPersistenceService, ApplicationPersistenceService>();
             services.AddScoped<RuntimeInfoManager>();
 

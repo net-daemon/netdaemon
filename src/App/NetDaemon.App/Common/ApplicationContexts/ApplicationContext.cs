@@ -9,7 +9,7 @@ namespace NetDaemon.Common
     /// <summary>
     /// Context for NetDaemon application
     /// </summary>
-    public abstract class ApplicationContext : IAsyncDisposable, IApplicationMetadata
+    public abstract class ApplicationContext : IAsyncDisposable, IApplicationMetadata, IApplicationContext
     {
         private readonly IServiceScope? _serviceScope;
 
