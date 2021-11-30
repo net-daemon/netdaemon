@@ -266,6 +266,29 @@ namespace NetDaemon.Daemon
                 ? InternalRunningAppInstances[appInstanceId].ApplicationInstance as INetDaemonAppBase
                 : null;
         }
+        
+        public T? GetApp<T>()
+            where T : class
+        {
+            return GetApp<T>(typeof(T).Name);
+        }
+        
+        public T? GetApp<T>(string appInstanceId)
+            where T : class
+        {
+            if (InternalRunningAppInstances.ContainsKey(appInstanceId))
+            {
+                var app = InternalRunningAppInstances[appInstanceId];
+                return app.ApplicationInstance as T;
+            }
+
+            return null;
+        }
+        
+        public object? GetNetApp(string appInstanceId)
+        {
+            return InternalRunningAppInstances.ContainsKey(appInstanceId) ? InternalRunningAppInstances[appInstanceId].ApplicationInstance : null;
+        }
 
         public async Task<T?> GetDataAsync<T>(string id) where T : class
         {

@@ -53,7 +53,8 @@ namespace NetDaemon.Daemon
             }
 
             // Now run initialize on all sorted by dependencies
-            foreach (var applicationContext in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
+            var orderedApps = AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList());
+            foreach (var applicationContext in orderedApps)
             {
                 await InitializeApp(applicationContext).ConfigureAwait(false);
             }
