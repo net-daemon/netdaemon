@@ -54,6 +54,46 @@ public class Root
 }";
             AssertCodeCompiles(generatedCode.ToString(), appCode);
         }
+        
+        [Fact]
+        public void TestNumericSensorEntityGeneration()
+        {
+            var entityStates = new HassState[]
+            {
+                new()
+                {
+                    EntityId = "sensor.daily_power_consumption",
+                    AttributesJson = new 
+                    {
+                        unit_of_measurement = "Kwh",
+                    }.AsJsonElement()
+                },
+                new()
+                {
+                    EntityId = "sensor.Pir",
+                },
+            };
+
+            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+            var appCode = @"
+using NetDaemon.HassModel.Entities;
+using NetDaemon.HassModel.Common;
+using RootNameSpace;
+
+public class Root
+{
+    public void Run(IHaContext ha)
+    {
+        IEntities entities = new Entities(ha);
+        NumericSensorEntity dailyPower = entities.Sensor.DailyPowerConsumption;
+        double? cost = dailyPower.State;
+
+        SensorEntity pirSensor = entities.Sensor.Pir;
+        string? pir = pirSensor.State; 
+    }
+}";
+            AssertCodeCompiles(generatedCode.ToString(), appCode);
+        }
 
         [Fact]
         public void TestAttributeClassGeneration()

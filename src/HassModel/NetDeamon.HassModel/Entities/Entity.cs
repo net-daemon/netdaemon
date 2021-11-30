@@ -51,8 +51,7 @@ namespace NetDaemon.HassModel.Entities
         /// Observable, All state changes including attributes
         /// </summary>
         public virtual IObservable<StateChange> StateAllChanges() =>
-            HaContext.StateAllChanges().Where(e => e.Entity.EntityId == EntityId)
-                .Select(e => new StateChange(this, e.Old, e.New));
+            HaContext.StateAllChanges().Where(e => e.Entity.EntityId == EntityId);
 
         /// <summary>
         /// Observable, All state changes. New.State!=Old.State

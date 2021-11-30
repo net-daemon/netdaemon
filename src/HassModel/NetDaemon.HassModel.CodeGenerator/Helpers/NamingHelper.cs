@@ -5,18 +5,11 @@ namespace NetDaemon.HassModel.CodeGenerator.Helpers
 {
     internal static class NamingHelper
     {
-        public static string GetEntitiesTypeName(string prefix)
+        public static string GetEntitiesForDomainClassName(string prefix)
         {
             var normalizedDomain = prefix.ToNormalizedPascalCase();
 
             return $"{normalizedDomain}Entities";
-        }
-
-        public static string GetAttributesTypeName(string prefix)
-        {
-            var normalizedEntityId = prefix.ToNormalizedPascalCase();
-
-            return $"{normalizedEntityId}Attributes";
         }
 
         public static string GetDomainEntityTypeName(string prefix)

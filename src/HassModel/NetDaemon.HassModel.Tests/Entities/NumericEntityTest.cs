@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Text.Json;
 using FluentAssertions;
 using Moq;
@@ -30,7 +31,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             // Assert
             numericEntity.State!.Value!.Should().Be(12.3d);
             numericEntity.EntityState!.State!.Value!.Should().Be(12.3d);
-
+            numericEntity.StateAllChanges().Where(e => e.New?.State > 1.2);
             // Act: WithAttributesAs 
             var withAttributes = numericEntity.WithAttributesAs<TestSensorAttributes>();
             

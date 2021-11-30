@@ -14,29 +14,46 @@ using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
 
 namespace NetDaemon.HassModel.CodeGenerator
 {
+
+    record EntitySet(string Domain, bool IsNumeric, IEnumerable<HassState> EntityStates)
+    {
+        private string prefixedDomain = (IsNumeric && Domain != "input_number" ? "numeric_" : "") + Domain;
+
+        public string EntityClassName => GetDomainEntityTypeName(prefixedDomain);
+
+        public string AttributesClassName => $"{prefixedDomain}Attributes".ToNormalizedPascalCase();
+
+        public string EntitiesForDomainClassName => $"{Domain}Entities".ToNormalizedPascalCase();
+    }
+    
     public partial class Generator
     {
         private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(IReadOnlyCollection<HassState> entities)
         {
+            var entitySets = entities.GroupBy(e => (EntityIdHelper.GetDomain(e.EntityId), IsNumeric(e)))
+                .Select(g => new EntitySet(g.Key.Item1, g.Key.Item2, g))
+                .OrderBy(s => s.Domain)
+                .ToList();
+            
             var entityIds = entities.Select(x => x.EntityId).ToList();
 
             var entityDomains = GetDomainsFromEntities(entityIds).OrderBy(s => s).ToList();
 
             yield return GenerateRootEntitiesInterface(entityDomains);
 
-            yield return GenerateRootEntitiesClass(entityDomains);
+            yield return GenerateRootEntitiesClass(entitySets);
 
-            foreach (var entityClass in entityDomains.Select(entityDomain => GenerateEntityDomainType(entityDomain, entityIds)))
+            foreach (var entityClass in entitySets.GroupBy(s => s.Domain) .Select(GenerateEntiesForDomainClass))
             {
                 yield return entityClass;
             }
 
-            foreach (var entityDomain in entityDomains)
+            foreach (var entitytype in entitySets.SelectMany(GenerateEntityTypes))
             {
-                yield return GenerateEntityType(entityDomain);
+                yield return entitytype;
             }
 
-            foreach (var attributeRecord in GenerateEntityAttributeRecords(entities))
+            foreach (var attributeRecord in entitySets.Select(GenerateAtributeRecord))
             {
                 yield return attributeRecord;
             }
@@ -45,7 +62,7 @@ namespace NetDaemon.HassModel.CodeGenerator
         {
             var autoProperties = domains.Select(domain =>
             {
-                var typeName = GetEntitiesTypeName(domain);
+                var typeName = GetEntitiesForDomainClassName(domain);
                 var propertyName = domain.ToPascalCase();
 
                 return (MemberDeclarationSyntax)Property(typeName, propertyName, init: false);
@@ -54,14 +71,15 @@ namespace NetDaemon.HassModel.CodeGenerator
             return Interface("IEntities").AddMembers(autoProperties).ToPublic();
         }
 
-        private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<string> domains)
+        private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<EntitySet> entitySet)
         {
             var haContextNames = GetNames<IHaContext>();
-
-            var properties = domains.Select(domain =>
+            
+        
+            var properties = entitySet.DistinctBy(s=>s.Domain).Select(set =>
             {
-                var entitiesTypeName = GetEntitiesTypeName(domain);
-                var entitiesPropertyName = domain.ToPascalCase();
+                var entitiesTypeName = GetEntitiesForDomainClassName(set.Domain);
+                var entitiesPropertyName = set.Domain.ToPascalCase();
 
                 return (MemberDeclarationSyntax)ParseProperty($"{entitiesTypeName} {entitiesPropertyName} => new(_{haContextNames.VariableName});")
                     .ToPublic();
@@ -70,17 +88,10 @@ namespace NetDaemon.HassModel.CodeGenerator
             return ClassWithInjected<IHaContext>("Entities").WithBase((string)"IEntities").AddMembers(properties).ToPublic();
         }
 
-        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityAttributeRecords(IEnumerable<HassState> entities)
-        {
-            // group the entities by their domain and create one attribute record for each domain
-            return entities.GroupBy(x => EntityIdHelper.GetDomain(x.EntityId))
-                .Select(entityDomainGroup => GenerateAtributeRecord(entityDomainGroup.Key, entityDomainGroup));
-        }
-
-        private static RecordDeclarationSyntax GenerateAtributeRecord(string domainName, IEnumerable<HassState> entityStates)
+        private static RecordDeclarationSyntax GenerateAtributeRecord(EntitySet entitySet)
         {
             // Get all attributes of all entities in this set
-            var jsonProperties = entityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
+            var jsonProperties = entitySet.EntityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
             
             // Group the attributes by JsonPropertyName and find the best ClrType that fits all
             var attributesByJsonName = jsonProperties
@@ -99,7 +110,7 @@ namespace NetDaemon.HassModel.CodeGenerator
                                                                     .ToPublic()
                                                                     .WithAttribute<JsonPropertyNameAttribute>(a.JsonName));
 
-            return Record(GetAttributesTypeName(domainName), propertyDeclarations).ToPublic();
+            return Record(entitySet.AttributesClassName, propertyDeclarations).ToPublic();
         }
 
         private static IEnumerable<(string CSharpName, string JsonName, Type ClrType)> DeduplictateCSharpName(IEnumerable<(string CSharpName, string JsonName, Type ClrType)> items)
@@ -120,11 +131,11 @@ namespace NetDaemon.HassModel.CodeGenerator
                 .ToHashSet();
 
             // If all have the same clr type use that, if not it will be 'object'
-            return distinctCrlTypes.Count == 1 
-                ? distinctCrlTypes.First() 
-                : typeof(object); 
+            return distinctCrlTypes.Count == 1
+                ? distinctCrlTypes.First()
+                : typeof(object);
         }
-        
+
         private static Type MapJsonType(JsonValueKind kind) =>
             kind switch
             {
@@ -139,49 +150,60 @@ namespace NetDaemon.HassModel.CodeGenerator
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
 
-        private static TypeDeclarationSyntax GenerateEntityDomainType(string domain, IEnumerable<string> entities)
+        private static TypeDeclarationSyntax GenerateEntiesForDomainClass(IEnumerable<EntitySet> entitySets)
         {
-            var entityClass = ClassWithInjected<IHaContext>(GetEntitiesTypeName(domain)).ToPublic();
+            var entityClass = ClassWithInjected<IHaContext>(entitySets.First().EntitiesForDomainClassName).ToPublic();
 
-            var domainEntities = entities.Where(EntityIsOfDomain(domain)).ToList();
-
-            var entityProperty = domainEntities.Select(entityId => GenerateEntityProperty(entityId, domain)).ToArray();
+            var entityProperty = entitySets.SelectMany(s=> s.EntityStates.Select(e => GenerateEntityProperty(e, s.EntityClassName))).ToArray();
 
             return entityClass.AddMembers(entityProperty);
         }
 
-        private static Func<string, bool> EntityIsOfDomain(string domain)
+        private static MemberDeclarationSyntax GenerateEntityProperty(HassState entity, string className)
         {
-            return n => n.StartsWith(domain + ".", StringComparison.InvariantCultureIgnoreCase);
-        }
+            var entityName = EntityIdHelper.GetEntity(entity.EntityId);
 
-        private static MemberDeclarationSyntax GenerateEntityProperty(string entityId, string domain)
-        {
-            var entityName = EntityIdHelper.GetEntity(entityId);
-
-            var propertyCode = $@"{GetDomainEntityTypeName(domain)} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entityId}"");";
+            var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.EntityId}"");";
 
             return ParseProperty(propertyCode).ToPublic();
         }
 
-        private static TypeDeclarationSyntax GenerateEntityType(string domain)
+        private static bool IsNumeric(HassState entity)
         {
-            string attributesGeneric = GetAttributesTypeName(domain);
+            if (EntityIdHelper.GetDomain(entity.EntityId) == "input_number") return true; 
+            return entity.Attributes?.ContainsKey("unit_of_measurement") ?? false;
+        }
 
-            var entityClass = $"{GetDomainEntityTypeName(domain)}";
+        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(EntitySet entitySet)
+        {
+//            if (entitySet.Domain == "input_number") return new[] { GenerateEntityType(entitySet.EntityClassName, true) };
+            return new[] { GenerateEntityType(entitySet) };
+        }
+        
+        private static TypeDeclarationSyntax GenerateEntityType(EntitySet entitySet)
+        {
+            string attributesGeneric = entitySet.AttributesClassName;
 
-            var baseClass = $"{typeof(Entity).FullName}<{entityClass}, {typeof(EntityState).FullName}<{attributesGeneric}>, {attributesGeneric}>";
-
+            var baseType = entitySet.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
+            var entityStateType = entitySet.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
+            
+            var baseClass = $"{baseType.FullName}<{entitySet.EntityClassName}, {entityStateType.FullName}<{attributesGeneric}>, {attributesGeneric}>";
+          
             var (className, variableName) = GetNames<IHaContext>();
-            var classDeclaration = $@"record {entityClass} : {baseClass}
+            var classDeclaration = $@"record {entitySet.EntityClassName} : {baseClass}
                                     {{
-                                            public {domain.ToPascalCase()}Entity({className} {variableName}, string entityId) : base({variableName}, entityId)
-                                            {{
-                                            }}
+                                            public {entitySet.EntityClassName}({className} {variableName}, string entityId) : base({variableName}, entityId)
+                                            {{}}
+
+                                            public {entitySet.EntityClassName}({typeof(Entity).FullName} entity) : base(entity)
+                                            {{}}
+
                                     }}";
 
             return ParseRecord(classDeclaration).ToPublic();
         }
+        
+        
         /// <summary>
         ///     Returns a list of domains from all entities
         /// </summary>

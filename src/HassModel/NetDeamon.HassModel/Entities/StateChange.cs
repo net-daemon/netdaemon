@@ -37,7 +37,7 @@
             Old = old;
             New = @new;
         }
-        
+                
         /// <inheritdoc/>
         public override TEntity Entity { get; }
 
