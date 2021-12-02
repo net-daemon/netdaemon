@@ -17,5 +17,15 @@ namespace NetDaemon.Infrastructure.Extensions
                                (type.IsAssignableTo(typeof(INetDaemonAppBase)) || type.GetCustomAttribute<NetDaemonAppAttribute>() != null
                                ));
         }
+        
+        public static IEnumerable<Type> GetAppServicesClasses(this Assembly assembly)
+        {
+            return assembly.GetTypes()
+                .Where(type => type.IsClass && 
+                               !type.IsGenericType && 
+                               !type.IsAbstract && 
+                               type.GetCustomAttribute<NetDaemonAppServicesAttribute>() != null
+                               );
+        }
     }
 }

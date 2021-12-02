@@ -36,10 +36,14 @@ namespace NetDaemon.Service
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IYamlConfig _yamlConfig;
+        private readonly IDaemonAssemblyCompiler _daemonAssemblyCompiler;
+        private readonly IDaemonAppServicesCompiler _daemonAppServicesCompiler;
         private readonly IDaemonAppCompiler _daemonAppCompiler;
         private readonly ICodeGenerationHandler _codeGenerationHandler;
 
         private bool _entitiesGenerated;
+        private IEnumerable<Assembly>? _loadedDaemonAssemblies;
+        private IEnumerable<Type>? _loadedDaemonAppServices;
         private IEnumerable<Type>? _loadedDaemonApps;
 
         private string? _sourcePath;
@@ -53,6 +57,8 @@ namespace NetDaemon.Service
             IOptions<HomeAssistantSettings> homeAssistantSettings,
             IServiceProvider serviceProvider,
             IYamlConfig yamlConfig,
+            IDaemonAssemblyCompiler daemonAssemblyCompiler, 
+            IDaemonAppServicesCompiler daemonAppServicesCompiler,
             IDaemonAppCompiler daemonAppCompiler,
             ICodeGenerationHandler codeGenerationHandler,
             IWebHostEnvironment environment)
@@ -69,6 +75,8 @@ namespace NetDaemon.Service
             _daemonAppCompiler = daemonAppCompiler;
             _codeGenerationHandler = codeGenerationHandler;
             _environment = environment;
+            _daemonAssemblyCompiler = daemonAssemblyCompiler;
+            _daemonAppServicesCompiler = daemonAppServicesCompiler;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -164,8 +172,12 @@ namespace NetDaemon.Service
                                 if (_sourcePath is string)
                                     await GenerateEntitiesAsync(daemonHost, _sourcePath).ConfigureAwait(false);
 
+                                if (_loadedDaemonAssemblies is null)
+                                    _loadedDaemonAssemblies = _daemonAssemblyCompiler.Load();
+                                if (_loadedDaemonAppServices is null)
+                                    _loadedDaemonAppServices = _daemonAppServicesCompiler.GetAppServices(_loadedDaemonAssemblies);
                                 if (_loadedDaemonApps is null)
-                                    _loadedDaemonApps = _daemonAppCompiler.GetApps();
+                                    _loadedDaemonApps = _daemonAppCompiler.GetApps(_loadedDaemonAssemblies);
 
                                 if (_loadedDaemonApps?.Any() != true)
                                 {
@@ -177,8 +189,9 @@ namespace NetDaemon.Service
 
                                 await HassModel.DependencyInjectionSetup.InitializeAsync(_serviceProvider, stoppingToken).ConfigureAwait(false);
 
+                                IInstanceDaemonAppServiceCollection? codeServicesManager = new CodeServicesManager(_loadedDaemonAppServices, _loadedDaemonApps, _logger, _yamlConfig);
                                 IInstanceDaemonApp? codeManager = new CodeManager(_loadedDaemonApps, _logger, _yamlConfig);
-                                await daemonHost.Initialize(codeManager).ConfigureAwait(false);
+                                await daemonHost.Initialize(codeServicesManager, codeManager).ConfigureAwait(false);
 
                                 // Wait until daemon stops
                                 await daemonHostTask.ConfigureAwait(false);

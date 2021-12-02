@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace NetDaemon.Service.App
 {
-    public interface IDaemonAppCompiler
+    public interface IDaemonAssemblyCompiler
     {
         /// <summary>
         /// Temporary
         /// </summary>
-        IEnumerable<Type> GetApps(IEnumerable<Assembly> assemblies);
+        IEnumerable<Assembly> Load();
     }
 }

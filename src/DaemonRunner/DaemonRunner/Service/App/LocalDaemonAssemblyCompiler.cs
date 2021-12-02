@@ -10,32 +10,19 @@ using NetDaemon.Infrastructure.Extensions;
 
 namespace NetDaemon.Service.App
 {
-    public class LocalDaemonAppCompiler : IDaemonAppCompiler
+    public class LocalDaemonAssemblyCompiler : IDaemonAssemblyCompiler
     {
-        private readonly ILogger<DaemonAppCompiler> _logger;
+        private readonly ILogger<DaemonAssemblyCompiler> _logger;
 
-        public LocalDaemonAppCompiler(ILogger<DaemonAppCompiler> logger)
+        public LocalDaemonAssemblyCompiler(ILogger<DaemonAssemblyCompiler> logger)
         {
             _logger = logger;
         }
 
-        public IEnumerable<Type> GetApps()
+        public IEnumerable<Assembly> Load()
         {
-            _logger.LogDebug("Loading local assembly apps...");
-
-            var assemblies = LoadAll();
-            var apps = assemblies.SelectMany(x => x.GetAppClasses()).ToList();
-
-            if (apps.Count == 0)
-                _logger.LogWarning("No local daemon apps found.");
-            else
-                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count);
-
-            return apps;
-        }
-
-        private IEnumerable<Assembly> LoadAll()
-        {
+            _logger.LogDebug("Loading local app assemblies...");
+            
             var binFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location)!;
             var netDaemonDlls = Directory.GetFiles(binFolder, "NetDaemon.*.dll");
 
@@ -49,6 +36,8 @@ namespace NetDaemon.Service.App
                 _logger.LogTrace("Loading {Dll} into AssemblyLoadContext", netDaemonDllToLoadDynamically);
                 AssemblyLoadContext.Default.LoadFromAssemblyPath(netDaemonDllToLoadDynamically);
             }
+            
+            _logger.LogDebug("Loaded app assemblies");
 
             return AssemblyLoadContext.Default.Assemblies;
         }

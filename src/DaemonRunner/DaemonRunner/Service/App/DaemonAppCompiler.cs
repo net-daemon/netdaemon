@@ -27,23 +27,20 @@ namespace NetDaemon.Service.App
 
         public IOptions<NetDaemonSettings> NetDaemonSettings { get; }
 
-        public IEnumerable<Type> GetApps()
+        
+
+        public IEnumerable<Type> GetApps(IEnumerable<Assembly> assemblies)
         {
-            _logger.LogDebug("Loading dynamically compiled apps...");
-            var assembly = Load();
-            var apps = assembly.GetAppClasses();
+            _logger.LogDebug("Loading apps...");
+            
+            var apps = assemblies.SelectMany(x => x.GetAppClasses()).ToList();
 
             if (!apps.Any())
-                _logger.LogWarning("No .cs files found, please add files to {SourceFolder}", _sourceFolder);
+                _logger.LogWarning("No daemon apps found.");
             else
                 _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count());
 
             return apps;
-        }
-
-        public Assembly Load()
-        {
-            return DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
         }
     }
 }

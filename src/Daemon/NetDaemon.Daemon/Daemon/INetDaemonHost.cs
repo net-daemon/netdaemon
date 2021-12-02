@@ -18,7 +18,8 @@ namespace NetDaemon.Daemon
         ///     Initializes the NetDaemon
         /// </summary>
         /// <param name="appInstanceManager">Handles all instancing of applications. </param>
-        Task Initialize(IInstanceDaemonApp appInstanceManager);
+        Task Initialize(IInstanceDaemonAppServiceCollection appServicesManager,
+            IInstanceDaemonApp appInstanceManager);
 
         /// <summary>
         ///     Listens to the given service in the netdaemon domain. Those subscritions

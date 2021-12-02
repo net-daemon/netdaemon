@@ -14,6 +14,7 @@ using NetDaemon.Infrastructure.Config;
 using NetDaemon.Common.Exceptions;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using Autofac.Extensions.DependencyInjection;
 using NetDaemon.HassModel;
 using NetDaemon.Service.App.CodeGeneration;
 
@@ -32,6 +33,7 @@ namespace NetDaemon
                 ReadHassioConfig();
 
             return hostBuilder
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureServices((context, services) =>
                 {
                     services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
@@ -67,9 +69,12 @@ namespace NetDaemon
         private static void RegisterNetDaemonAssembly(IServiceCollection services)
         {
             if (UseLocalAssemblyLoading())
-                services.AddSingleton<IDaemonAppCompiler, LocalDaemonAppCompiler>();
+                services.AddSingleton<IDaemonAssemblyCompiler, LocalDaemonAssemblyCompiler>();
             else
-                services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
+                services.AddSingleton<IDaemonAssemblyCompiler, DaemonAssemblyCompiler>();
+            
+            services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
+            services.AddSingleton<IDaemonAppServicesCompiler, DaemonAppServicesCompiler>();
         }
 
         /// <summary>

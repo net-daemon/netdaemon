@@ -18,10 +18,10 @@ namespace NetDaemon.DevelopmentApps.apps.Dependencies
             _testServiceDi = testServiceDi;
         }
 
-        public static void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<TestServiceDi>();
-        }
+        // public static void ConfigureServices(IServiceCollection services)
+        // {
+        //     services.AddSingleton<TestServiceDi>();
+        // }
         
         public void Initialize()
         {

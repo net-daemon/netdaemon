@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace NetDaemon.Daemon
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public AppManager(IServiceProvider serviceProvider, ILogger logger)
+        public AppManager( IServiceProvider serviceProvider, ILogger logger)
         {
             _serviceProvider = serviceProvider;
             Logger = logger;
@@ -25,7 +26,7 @@ namespace NetDaemon.Daemon
         public ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances { get; } = new();
 
         /// <inheritdoc/>
-        public async Task ReloadAllApps(IInstanceDaemonApp appInstanceManager)
+        public async Task ReloadAllApps(IInstanceDaemonAppServiceCollection appServicesManager, IInstanceDaemonApp appInstanceManager)
         {
             Logger.LogTrace("Loading all apps ({Instances}, {Running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
@@ -33,8 +34,10 @@ namespace NetDaemon.Daemon
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
 
+            var appsServiceProvider = appServicesManager.BuildAppsServiceProvider(_serviceProvider);
+            
             // Get all instances
-            var applicationContexts = appInstanceManager.InstanceDaemonApps(_serviceProvider!);
+            var applicationContexts = appInstanceManager.InstanceDaemonApps(appsServiceProvider!);
 
             if (!InternalRunningAppInstances.IsEmpty)
             {
