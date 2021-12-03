@@ -52,16 +52,21 @@ public class NetDaemonHostBuilder : IHostBuilder
 
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory)
     {
-        _hostBuilderImplementation.UseServiceProviderFactory(new NetDaemonFeatureServiceProviderFactoryWrapper<TContainerBuilder>(factory));
+        _hostBuilderImplementation.UseServiceProviderFactory(CreateServiceProviderFactoryWrapper(factory));
 
         return this;
     }
 
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory)
     {
-        _hostBuilderImplementation.UseServiceProviderFactory(factory);
+        _hostBuilderImplementation.UseServiceProviderFactory(context => CreateServiceProviderFactoryWrapper(factory.Invoke(context)));
 
         return this;
+    }
+
+    private IServiceProviderFactory<TContainerBuilder> CreateServiceProviderFactoryWrapper<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory)
+    {
+        return new NetDaemonFeatureServiceProviderFactoryWrapper<TContainerBuilder>(factory);
     }
 
     public IDictionary<object, object> Properties => _hostBuilderImplementation.Properties;
