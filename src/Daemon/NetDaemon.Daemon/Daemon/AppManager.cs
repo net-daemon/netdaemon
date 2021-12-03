@@ -26,18 +26,16 @@ namespace NetDaemon.Daemon
         public ConcurrentDictionary<string, ApplicationContext> InternalRunningAppInstances { get; } = new();
 
         /// <inheritdoc/>
-        public async Task ReloadAllApps(IInstanceDaemonAppServiceCollection appServicesManager, IInstanceDaemonApp appInstanceManager)
+        public async Task ReloadAllApps(IInstanceDaemonApp appInstanceManager)
         {
             Logger.LogTrace("Loading all apps ({Instances}, {Running})", InternalAllAppInstances.Count,
                 InternalRunningAppInstances.Count);
 
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
-
-            var appsServiceProvider = appServicesManager.BuildAppsServiceProvider(_serviceProvider);
             
             // Get all instances
-            var applicationContexts = appInstanceManager.InstanceDaemonApps(appsServiceProvider!);
+            var applicationContexts = appInstanceManager.InstanceDaemonApps(_serviceProvider!);
 
             if (!InternalRunningAppInstances.IsEmpty)
             {

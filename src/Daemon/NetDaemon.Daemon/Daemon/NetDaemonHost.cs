@@ -50,7 +50,6 @@ namespace NetDaemon.Daemon
             await Task.WhenAll(_backgroundTasks.Keys).ConfigureAwait(false);
         }
 
-        private IInstanceDaemonAppServiceCollection? _appServicesManager;
         private IInstanceDaemonApp? _appInstanceManager;
 
         // Internal token source for just cancel this objects activities
@@ -313,13 +312,11 @@ namespace NetDaemon.Daemon
 
         /// <inheritdoc/>
         public async Task Initialize(
-            IInstanceDaemonAppServiceCollection appServicesManager,
             IInstanceDaemonApp appInstanceManager)
         {
             if (!IsConnected)
                 throw new NetDaemonException("NetDaemon is not connected, no use in initializing");
 
-            _appServicesManager = appServicesManager;
             _appInstanceManager = appInstanceManager;
 
             await ReloadAllApps().ConfigureAwait(false);
@@ -623,9 +620,8 @@ namespace NetDaemon.Daemon
         public async Task ReloadAllApps()
         {
             if (_appInstanceManager == null) throw new InvalidOperationException("_appInstanceManager has not yet been initialized");
-            if (_appServicesManager == null) throw new InvalidOperationException("_appServicesManager has not yet been initialized");
 
-            await _appManager.ReloadAllApps(_appServicesManager, _appInstanceManager).ConfigureAwait(false);
+            await _appManager.ReloadAllApps(_appInstanceManager).ConfigureAwait(false);
 
             await SetDaemonStateAsync(_appInstanceManager.Count, InternalRunningAppInstances.Count)
                 .ConfigureAwait(false);

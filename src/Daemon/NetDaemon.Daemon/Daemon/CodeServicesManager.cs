@@ -16,7 +16,7 @@ namespace NetDaemon.Daemon
 {
     public sealed class CodeServicesManager : IInstanceDaemonAppServiceCollection
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<CodeServicesManager> _logger;
         private readonly IYamlConfig _yamlConfig;
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace NetDaemon.Daemon
         /// <param name="daemonAppTypes">App compiled app types</param>
         /// <param name="logger">ILogger instance to use</param>
         /// <param name="yamlConfig"></param>
-        public CodeServicesManager(IEnumerable<Type> daemonAppServicesTypes, IEnumerable<Type> daemonAppTypes, ILogger logger, IYamlConfig yamlConfig)
+        public CodeServicesManager(IEnumerable<Type> daemonAppServicesTypes, IEnumerable<Type> daemonAppTypes, ILogger<CodeServicesManager> logger, IYamlConfig yamlConfig)
         {
             _logger = logger;
             DaemonAppServicesTypes = daemonAppServicesTypes;
@@ -36,23 +36,17 @@ namespace NetDaemon.Daemon
 
         [SuppressMessage("", "CA1065")]
         public int Count => DaemonAppServicesTypes.Count();
-        
+
         // Internal for testing
         internal IEnumerable<Type> DaemonAppServicesTypes { get; }
         internal IEnumerable<Type> DaemonAppTypes { get; }
 
-        /// <summary>
-        /// Generate child service provider container with all dynamic services from loaded daemon apps
-        /// </summary>
-        /// <param name="serviceProvider"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public IServiceProvider BuildAppsServiceProvider(IServiceProvider serviceProvider)
+        
+        public IServiceCollection ConfigureServices(IServiceCollection services)
         {
+            var serviceProvider = services.BuildServiceProvider();
             // Instantiate all service configuration classes
             var servicesInstances = InstantiateServicesTypes(serviceProvider);
-
-            var services = new ServiceCollection();
 
             // Add each app as a service
             foreach (var appType in DaemonAppTypes)
@@ -83,17 +77,11 @@ namespace NetDaemon.Daemon
                     configFn.Invoke(appServices, new object?[]{services});
                 }
             }
-
-            // Autofac child container magic
-            var container = serviceProvider.GetAutofacRoot();
-            var childContainer = container.BeginLifetimeScope(builder =>
-            {
-                builder.Populate(services);
-            });
-            return new AutofacServiceProvider(childContainer);
+            
+            return services;
         }
 
-        private IEnumerable<object> InstantiateServicesTypes(IServiceProvider serviceProvider)
+        private IEnumerable<object> InstantiateServicesTypes(ServiceProvider serviceProvider)
         {
             foreach (Type appServicesType in DaemonAppServicesTypes)
             {

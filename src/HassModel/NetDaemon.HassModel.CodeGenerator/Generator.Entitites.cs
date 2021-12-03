@@ -74,10 +74,10 @@ namespace NetDaemon.HassModel.CodeGenerator
         {
             // group the entities by their domain and create one attribute record for each domain
             return entities.GroupBy(x => EntityIdHelper.GetDomain(x.EntityId))
-                .Select(entityDomainGroup => GenerateAtributeRecord(entityDomainGroup.Key, entityDomainGroup));
+                .Select(entityDomainGroup => GenerateAttributeRecord(entityDomainGroup.Key, entityDomainGroup));
         }
 
-        private static RecordDeclarationSyntax GenerateAtributeRecord(string domainName, IEnumerable<HassState> entityStates)
+        private static RecordDeclarationSyntax GenerateAttributeRecord(string domainName, IEnumerable<HassState> entityStates)
         {
             // Get all attributes of all entities in this set
             var jsonProperties = entityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
@@ -107,7 +107,7 @@ namespace NetDaemon.HassModel.CodeGenerator
             var list = items.ToList();
             if (list.Count == 1) return new[] { list.First() };
 
-            return list.OrderBy(i => i.JsonName).Select((p, i) => ($"{p.CSharpName}_{i}", jsonName: p.JsonName, type: p.ClrType));
+            return list.OrderBy(item => item.JsonName).Select((p, i) => (($"{p.CSharpName}_{i}").ToString(), jsonName: p.JsonName, type: p.ClrType));
         }
 
         private static Type GetBestClrType(IEnumerable<JsonProperty> valueKinds)

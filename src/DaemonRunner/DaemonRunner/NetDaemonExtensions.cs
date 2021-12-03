@@ -14,7 +14,14 @@ using NetDaemon.Infrastructure.Config;
 using NetDaemon.Common.Exceptions;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Autofac.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using NetDaemon.Assemblies;
+using NetDaemon.Daemon;
 using NetDaemon.HassModel;
 using NetDaemon.Service.App.CodeGeneration;
 
@@ -33,18 +40,20 @@ namespace NetDaemon
                 ReadHassioConfig();
 
             return hostBuilder
-                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureServices((context, services) =>
                 {
+                    var netDaemonSettings = context.Configuration.GetSection("NetDaemon");
                     services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                    services.Configure<NetDaemonSettings>(context.Configuration.GetSection("NetDaemon"));
+                    services.Configure<NetDaemonSettings>(netDaemonSettings);
+                    services.AddSingleton<NetDaemonSettings>(netDaemonSettings.Get<NetDaemonSettings>()); // temp fix for access config in compiler
                     services.AddSingleton<IYamlConfig, YamlConfigProvider>();
                     services.AddSingleton<ICodeGenerationHandler, CodeGenerationHandler>();
                     services.AddSingleton<ICodeGenerator, CodeGenerator>();
                     services.AddSingleton<IYamlConfigReader, YamlConfigReader>();
                     services.AddSingleton<IIoWrapper, IoWrapper>();
-
-                    RegisterNetDaemonAssembly(services);
+                    
+                    // add app compiler
+                    services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
                 })
                 .ConfigureWebHostDefaults(webbuilder =>
                 {
@@ -52,8 +61,40 @@ namespace NetDaemon
                     webbuilder.UseStartup<ApiStartup>();
                 })
                 .UseNetDaemonHostSingleton()
+                .UseNetDaemonAssemblyCompiler()
+                .AddNetDaemonAppsDiServices()
                 .UseAppScopedHaContext()
                 ;
+        }
+
+        /// <summary>
+        /// Registers services from each NetDaemon App with static ConfigureServices method
+        /// </summary>
+        public static IHostBuilder AddNetDaemonAppsDiServices(this IHostBuilder hostBuilder)
+        {
+            if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
+        
+            return hostBuilder.ConfigureServices((_, services) => { AddNetDaemonAppsDiServices(services); });
+        }
+
+        /// <summary>
+        /// Registers services from each NetDaemon App with static ConfigureServices method
+        /// </summary>
+        public static IServiceCollection AddNetDaemonAppsDiServices(this IServiceCollection services)
+        {
+            var assembliesManager = services.GetNetDaemonAssemblyManager();
+            assembliesManager.ConfigureAssemblies(assemblies =>
+            {
+                var servicesCompiler = new DaemonAppServicesCompiler(new NullLogger<DaemonAppServicesCompiler>());
+                var appsCompiler = new DaemonAppCompiler(new NullLogger<DaemonAppCompiler>());
+                var appServices = servicesCompiler.GetAppServices(assemblies);
+                var apps = appsCompiler.GetApps(assemblies);
+
+                IInstanceDaemonAppServiceCollection? codeServicesManager = new CodeServicesManager(appServices, apps, new NullLogger<CodeServicesManager>(), null);
+                codeServicesManager.ConfigureServices(services);
+            });
+
+            return services;
         }
 
         public static IHostBuilder UseDefaultNetDaemonLogging(this IHostBuilder hostBuilder)
@@ -64,33 +105,6 @@ namespace NetDaemon
         public static void CleanupNetDaemon()
         {
             Log.CloseAndFlush();
-        }
-
-        private static void RegisterNetDaemonAssembly(IServiceCollection services)
-        {
-            if (UseLocalAssemblyLoading())
-                services.AddSingleton<IDaemonAssemblyCompiler, LocalDaemonAssemblyCompiler>();
-            else
-                services.AddSingleton<IDaemonAssemblyCompiler, DaemonAssemblyCompiler>();
-            
-            services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
-            services.AddSingleton<IDaemonAppServicesCompiler, DaemonAppServicesCompiler>();
-        }
-
-        /// <summary>
-        ///     Returns true if local loading of assemblies should be preferred.
-        ///     This is typically when running in container. When running in dev
-        ///     you want the local loading
-        /// </summary>
-        private static bool UseLocalAssemblyLoading()
-        {
-            var appSource = Environment.GetEnvironmentVariable("NETDAEMON__APPSOURCE");
-
-            if (string.IsNullOrEmpty(appSource))
-                return true;
-
-            return appSource.EndsWith(".csproj", true, CultureInfo.InvariantCulture)
-                || appSource.EndsWith(".dll", true, CultureInfo.InvariantCulture);
         }
 
         /// <summary>

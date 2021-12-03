@@ -9,9 +9,9 @@ namespace NetDaemon.Service.App
 {
     public class DaemonAppServicesCompiler : IDaemonAppServicesCompiler
     {
-        private readonly ILogger<DaemonAppCompiler> _logger;
+        private readonly ILogger<DaemonAppServicesCompiler> _logger;
 
-        public DaemonAppServicesCompiler(ILogger<DaemonAppCompiler> logger)
+        public DaemonAppServicesCompiler(ILogger<DaemonAppServicesCompiler> logger)
         {
             _logger = logger;
         }

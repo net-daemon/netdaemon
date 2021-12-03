@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Common;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -21,6 +22,6 @@ namespace NetDaemon.Daemon
         ///     Returns a list of instanced daemonapps
         /// </summary>
         /// <param name="serviceProvider"></param>
-        IServiceProvider BuildAppsServiceProvider(IServiceProvider serviceProvider);
+        IServiceCollection ConfigureServices(IServiceCollection services);
     }
 }
