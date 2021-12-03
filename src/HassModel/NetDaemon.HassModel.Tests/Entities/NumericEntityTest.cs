@@ -5,12 +5,24 @@ using FluentAssertions;
 using Moq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
+using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Entities
 {
     public class NumericEntityTest
     {
+
+        public void WithTestEntity()
+        {
+            TestEntity testEntity = new TestEntity(Mock.Of<IHaContext>(), "sensor.dummy");
+            var numericEntity = testEntity.AsNumeric();
+            double? state = numericEntity.State;
+            
+            numericEntity.StateAllChanges().Where(s => s.New?.State == 0.0);
+            numericEntity.StateAllChanges().Where(s => s.New?.Attributes?.Name == "LivingRoom");
+        }
+        
         [Fact]
         public void AsNumeric_Than_WithAttributesAs()
         {
@@ -59,7 +71,10 @@ namespace NetDaemon.HassModel.Tests.Entities
             var entity = new Entity(haContextMock.Object, entityId);
             
             // Act: WithAttributesAs
-            var withAttributes = entity.WithAttributesAs<TestSensorAttributes>();
+            Entity<TestSensorAttributes> withAttributes = entity.WithAttributesAs<TestSensorAttributes>();
+
+            NumericEntity<TestSensorAttributes> numericEntity = withAttributes.AsNumeric();
+
 
             // Assert
             withAttributes.State.Should().Be("12.3", because: "State  is still a string");

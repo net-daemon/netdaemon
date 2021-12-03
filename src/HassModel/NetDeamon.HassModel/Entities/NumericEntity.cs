@@ -11,13 +11,13 @@ namespace NetDaemon.HassModel.Entities
     {
         /// <summary>Copy constructor from base class</summary>
         public NumericEntity(Entity entity) : base(entity) { }
-
+    
         /// <summary>Constructor from haContext and entityId</summary>
         public NumericEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
         
         /// <summary>The current state of this Entity converted to double if possible, null if it is not</summary>
         public new double? State => double.TryParse(base.State, out var result) ? result : null;
-
+    
         /// <inheritdoc/>
         public override NumericEntityState? EntityState => base.EntityState == null ? null : new (base.EntityState);
         
@@ -28,14 +28,13 @@ namespace NetDaemon.HassModel.Entities
         /// <inheritdoc/>
         public override IObservable<NumericStateChange> StateChanges() => 
             base.StateChanges().Select(e => new NumericStateChange(e));
-        
     }
     
     /// <summary>
     /// Entity that has a numeric (double) State value
     /// </summary>
     public record NumericEntity<TEntity, TEntityState, TAttributes> : Entity<TEntity, TEntityState, TAttributes>
-        where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        where TEntity : NumericEntity<TEntity, TEntityState, TAttributes>
         where TEntityState : NumericEntityState<TAttributes>
         where TAttributes : class
     {
@@ -69,7 +68,7 @@ namespace NetDaemon.HassModel.Entities
     {
         /// <summary>Copy constructor from base class</summary>
         public NumericEntity(Entity entity) : base(entity) { }
-
+    
         /// <summary>Constructor from haContext and entityId</summary>
         public NumericEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
     }

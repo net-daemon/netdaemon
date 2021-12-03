@@ -184,7 +184,7 @@ namespace NetDaemon.HassModel.CodeGenerator
         {
             string attributesGeneric = entitySet.AttributesClassName;
 
-            var baseType = entitySet.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
+            var baseType = entitySet.IsNumeric ? typeof(NumericEntity<>) : typeof(Entity);
             var entityStateType = entitySet.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
             
             var baseClass = $"{baseType.FullName}<{entitySet.EntityClassName}, {entityStateType.FullName}<{attributesGeneric}>, {attributesGeneric}>";
