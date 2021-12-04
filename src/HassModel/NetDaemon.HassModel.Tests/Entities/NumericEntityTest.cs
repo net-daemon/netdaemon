@@ -13,19 +13,6 @@ namespace NetDaemon.HassModel.Tests.Entities
 {
     public class NumericEntityTest
     {
-
-        public void WithTestEntity()
-        {
-            TestEntity testEntity = new TestEntity(Mock.Of<IHaContext>(), "sensor.dummy");
-            var numericEntity = testEntity.AsNumeric();
-            numericEntity.WithAttributesAs<TestSensorAttributes>().AsNumeric();
-            
-            double? state = numericEntity.State;
-            
-            numericEntity.StateAllChanges().Where(s => s.New?.State == 0.0);
-            numericEntity.StateAllChanges().Where(s => s.New?.Attributes?.Name == "LivingRoom");
-        }
-        
         [Fact]
         public void AsNumeric_Than_WithAttributesAs()
         {
@@ -52,7 +39,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             
             // Assert
             withAttributes.State!.Value!.Should().Be(12.3d);
-            withAttributes.EntityState.State!.Value!.Should().Be(12.3d);
+            withAttributes.EntityState!.State!.Value!.Should().Be(12.3d);
 
             withAttributes.Attributes!.units.Should().Be("Celcius");
             withAttributes.Attributes!.setPoint.Should().Be(21.5);
@@ -89,7 +76,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             var numericWithAttributes = withAttributes.AsNumeric();
             
             numericWithAttributes.State!.Value!.Should().Be(12.3d);
-            numericWithAttributes.EntityState.State!.Value!.Should().Be(12.3d);
+            numericWithAttributes.EntityState!.State!.Value!.Should().Be(12.3d);
             
             numericWithAttributes.Attributes!.units.Should().Be("Celcius");
             numericWithAttributes.Attributes!.setPoint.Should().Be(21.5);

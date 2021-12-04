@@ -11,7 +11,6 @@ namespace NetDaemon.HassModel.Tests.TestHelpers
  
     record TestEntityAttributes
     {
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
     }
 }

@@ -74,8 +74,7 @@ namespace NetDaemon.HassModel.CodeGenerator
         private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<EntitySet> entitySet)
         {
             var haContextNames = GetNames<IHaContext>();
-            
-        
+
             var properties = entitySet.DistinctBy(s=>s.Domain).Select(set =>
             {
                 var entitiesTypeName = GetEntitiesForDomainClassName(set.Domain);

@@ -79,7 +79,6 @@ namespace NetDaemon.HassModel.Tests.Entities
                 new StateChange(target, new EntityState(){State = "same"}, 
                     new EntityState {State = "same"}));
 
-            
             stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>() ), Times.Once);
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>() ), Times.Exactly(2));
         }
@@ -94,7 +93,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             
             entity.CallService("service", data);
             
-            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds.Single() == entity.EntityId), data), Times.Once);
+            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds!.Single() == entity.EntityId), data), Times.Once);
         }
     }
 }

@@ -121,7 +121,7 @@ public class Root
                         friendly_name = "attic",
                         FriendlyName = "attic",
                         start_date = new DateTime(2010, 12, 23, 23, 12, 00),
-                        not_used = (string)null,
+                        not_used = (string?)null,
                         trueValue = true,
                         falseValue = false,
                         dict = new {},
