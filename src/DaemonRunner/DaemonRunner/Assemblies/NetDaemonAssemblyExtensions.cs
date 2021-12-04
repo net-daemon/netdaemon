@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,23 +22,22 @@ public static class NetDaemonAssemblyExtensions
 
         hostBuilder.EnsureIsDaemonHostBuilder();
 
-        hostBuilder.AddNetDaemonFeature(services =>
+        hostBuilder.ConfigureServices(services =>
         {
-            ILoggerFactory loggerFactory = new NullLoggerFactory();
-            ILogger<DaemonAssemblyCompiler> logger = loggerFactory.CreateLogger<DaemonAssemblyCompiler>();
-            IDaemonAssemblyCompiler compiler;
-
-            var settings = services.GetServiceFromCollection<NetDaemonSettings>();
-
             if (UseLocalAssemblyLoading())
-                compiler = new LocalDaemonAssemblyCompiler(logger);
+                services.AddSingleton<IDaemonAssemblyCompiler, LocalDaemonAssemblyCompiler>();
             else
-                compiler = new DaemonAssemblyCompiler(logger, settings);
+                services.AddSingleton<IDaemonAssemblyCompiler, DaemonAssemblyCompiler>();
+        });
+
+        hostBuilder.AddNetDaemonFeature((context, services) =>
+        {
+            IDaemonAssemblyCompiler compiler = context.ServiceProvider.GetRequiredService<IDaemonAssemblyCompiler>();
 
             var manager = services.GetNetDaemonAssemblyManager();
-            manager.Load(compiler);
+            var assemblies = manager.Load(compiler, context.ServiceProvider).ToList();
 
-            services.AddSingleton<INetDaemonAssemblies>(new NetDaemonAssemblyService(manager.LoadedAssemblies));
+            services.AddSingleton<INetDaemonAssemblies>(new NetDaemonAssemblyService(assemblies));
         });
                 
         return hostBuilder;
@@ -64,6 +66,16 @@ public static class NetDaemonAssemblyExtensions
         var manager = services.GetServiceFromCollectionOrRegisterDefault<INetDaemonAssemblyManager>(() => new NetDaemonAssemblyManager());
 
         return manager;
+    }
+    
+    public static IServiceCollection ConfigureNetDaemonAssemblies(this IServiceCollection services, Action<List<Assembly>, IServiceProvider> configure)
+    {
+        if (services == null) throw new ArgumentNullException(nameof(services));
+        
+        var assembliesManager = services.GetNetDaemonAssemblyManager();
+        assembliesManager.ConfigureAssemblies(configure);
+        
+        return services;
     }
 
 }

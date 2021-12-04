@@ -21,8 +21,15 @@ namespace NetDaemon.Common
 
         public override void Start()
         {
-            var appInstance = ActivatorUtilities.CreateInstance(ServiceProvider, ApplicationType);
-            ApplicationInstance = appInstance ?? throw new InvalidOperationException($"Faild to create instance {ApplicationType.Name} for of app id {Id}");
+            try
+            {
+                var appInstance = ActivatorUtilities.CreateInstance(ServiceProvider, ApplicationType);
+                ApplicationInstance = appInstance;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Faild to create instance {ApplicationType.Name} for of app id {Id}", e);
+            }
 
             ApplyConfig();
        }

@@ -32,6 +32,6 @@ namespace NetDaemon.DevelopmentApps.apps.Dependencies
 
     public class TestServiceDi
     {
-        public string Test { get; set; }
+        public string? Test { get; set; }
     }
 }

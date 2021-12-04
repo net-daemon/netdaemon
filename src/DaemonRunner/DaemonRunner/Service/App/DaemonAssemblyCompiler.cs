@@ -19,15 +19,13 @@ namespace NetDaemon.Service.App
 
         private readonly string? _sourceFolder;
         
-        // public DaemonAssemblyCompiler(ILogger<DaemonAssemblyCompiler> logger, IOptions<NetDaemonSettings> netDaemonSettings)
-        public DaemonAssemblyCompiler(ILogger<DaemonAssemblyCompiler> logger, NetDaemonSettings netDaemonSettings)
+        public DaemonAssemblyCompiler(ILogger<DaemonAssemblyCompiler> logger, IOptions<NetDaemonSettings> netDaemonSettings)
         {
             _ = netDaemonSettings ??
                 throw new NetDaemonArgumentNullException(nameof(netDaemonSettings));
             _logger = logger;
-            // NetDaemonSettings = netDaemonSettings;
-            // _sourceFolder = netDaemonSettings.Value.GetAppSourceDirectory();
-            _sourceFolder = netDaemonSettings.GetAppSourceDirectory();
+            NetDaemonSettings = netDaemonSettings;
+            _sourceFolder = netDaemonSettings.Value.GetAppSourceDirectory();
         }
 
         public IOptions<NetDaemonSettings> NetDaemonSettings { get; }

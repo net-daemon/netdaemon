@@ -5,7 +5,6 @@ using NetDaemon.HassModel.Common;
 namespace NetDaemon.DevelopmentApps.apps.Dependencies
 {
     [NetDaemonApp]
-    [DependsOn(typeof(DependentChildApp))]
     [Focus]
     public class DependentApp : IInitializable
     {

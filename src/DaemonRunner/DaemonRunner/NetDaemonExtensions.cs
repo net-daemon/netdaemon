@@ -15,9 +15,11 @@ using NetDaemon.Common.Exceptions;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.Assemblies;
 using NetDaemon.Daemon;
+using NetDaemon.DI;
 using NetDaemon.HassModel;
 using NetDaemon.Service.App.CodeGeneration;
 
@@ -41,7 +43,6 @@ namespace NetDaemon
                     var netDaemonSettings = context.Configuration.GetSection("NetDaemon");
                     services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                     services.Configure<NetDaemonSettings>(netDaemonSettings);
-                    services.AddSingleton<NetDaemonSettings>(netDaemonSettings.Get<NetDaemonSettings>()); // temp fix for access config in compiler
                     services.AddSingleton<IYamlConfig, YamlConfigProvider>();
                     services.AddSingleton<ICodeGenerationHandler, CodeGenerationHandler>();
                     services.AddSingleton<ICodeGenerator, CodeGenerator>();
@@ -78,15 +79,17 @@ namespace NetDaemon
         /// </summary>
         public static IServiceCollection AddNetDaemonAppsDiServices(this IServiceCollection services)
         {
-            var assembliesManager = services.GetNetDaemonAssemblyManager();
-            assembliesManager.ConfigureAssemblies(assemblies =>
+            services.AddSingleton<IDaemonAppServicesCompiler, DaemonAppServicesCompiler>();
+            services.ConfigureNetDaemonAssemblies((assemblies, serviceProvider) =>
             {
-                var servicesCompiler = new DaemonAppServicesCompiler(new NullLogger<DaemonAppServicesCompiler>());
-                var appsCompiler = new DaemonAppCompiler(new NullLogger<DaemonAppCompiler>());
+                
+                var servicesCompiler = serviceProvider.GetRequiredService<IDaemonAppServicesCompiler>();
+                var appsCompiler = serviceProvider.GetRequiredService<IDaemonAppCompiler>();
                 var appServices = servicesCompiler.GetAppServices(assemblies);
                 var apps = appsCompiler.GetApps(assemblies);
 
-                IInstanceDaemonAppServiceCollection? codeServicesManager = new CodeServicesManager(appServices, apps, new NullLogger<CodeServicesManager>(), null);
+                IInstanceDaemonAppServiceConfigurator? codeServicesManager = new CodeServicesManager(appServices, apps,
+                     serviceProvider.GetRequiredService<ILogger<CodeServicesManager>>());
                 codeServicesManager.ConfigureServices(services);
             });
 

@@ -3,6 +3,8 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using NetDaemon.Assemblies;
+using NetDaemon.Daemon;
 
 namespace NetDaemon.DaemonHost;
 
@@ -27,14 +29,14 @@ public static class NetDaemonHostBuilderExtensions
         return CreateNetDaemonBuilder(hostBuilder);
     }
     
-    public static IHostBuilder AddNetDaemonFeature(this IHostBuilder hostBuilder, Action<IServiceCollection> feature)
+    public static IHostBuilder AddNetDaemonFeature(this IHostBuilder hostBuilder, Action<INetDaemonFeatureContext, IServiceCollection> feature)
     {
         if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
         
         return hostBuilder.ConfigureServices((_, services) => { AddNetDaemonFeature(services, feature); });
     }
     
-    public static IServiceCollection AddNetDaemonFeature(this IServiceCollection services, Action<IServiceCollection> feature)
+    public static IServiceCollection AddNetDaemonFeature(this IServiceCollection services, Action<INetDaemonFeatureContext, IServiceCollection> feature)
     {
         if (services == null) throw new ArgumentNullException(nameof(services));
 

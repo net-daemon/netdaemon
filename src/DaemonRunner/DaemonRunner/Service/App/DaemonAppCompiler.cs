@@ -20,10 +20,6 @@ namespace NetDaemon.Service.App
             _logger = logger;
         }
 
-        public IOptions<NetDaemonSettings> NetDaemonSettings { get; }
-
-        
-
         public IEnumerable<Type> GetApps(IEnumerable<Assembly> assemblies)
         {
             _logger.LogDebug("Loading apps...");
@@ -33,7 +29,7 @@ namespace NetDaemon.Service.App
             if (!apps.Any())
                 _logger.LogWarning("No daemon apps found.");
             else
-                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count());
+                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count);
 
             return apps;
         }

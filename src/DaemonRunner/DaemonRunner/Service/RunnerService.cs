@@ -41,7 +41,7 @@ namespace NetDaemon.Service
 
         private bool _entitiesGenerated;
         private IEnumerable<Type>? _loadedDaemonApps;
-        private IEnumerable<Assembly>? _loadedDaemonAssemblies;
+        private IEnumerable<Assembly> _loadedDaemonAssemblies;
 
         private string? _sourcePath;
 
@@ -71,7 +71,7 @@ namespace NetDaemon.Service
             _daemonAppCompiler = daemonAppCompiler;
             _codeGenerationHandler = codeGenerationHandler;
             _environment = environment;
-            _loadedDaemonAssemblies = daemonAssemblies.LoadedAssemblies;
+            _loadedDaemonAssemblies = daemonAssemblies?.LoadedAssemblies ?? new List<Assembly>();
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)

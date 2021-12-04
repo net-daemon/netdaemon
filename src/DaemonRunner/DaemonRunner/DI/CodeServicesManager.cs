@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetDaemon.Common.Exceptions;
+using NetDaemon.Daemon;
 using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace NetDaemon.Daemon
+namespace NetDaemon.DI
 {
-    public sealed class CodeServicesManager : IInstanceDaemonAppServiceCollection
+    public sealed class CodeServicesManager : IInstanceDaemonAppServiceConfigurator
     {
         private readonly ILogger<CodeServicesManager> _logger;
-        private readonly IYamlConfig _yamlConfig;
 
         /// <summary>
         ///     Constructor
@@ -24,13 +24,11 @@ namespace NetDaemon.Daemon
         /// <param name="daemonAppServicesTypes">App services compiled app types</param>
         /// <param name="daemonAppTypes">App compiled app types</param>
         /// <param name="logger">ILogger instance to use</param>
-        /// <param name="yamlConfig"></param>
-        public CodeServicesManager(IEnumerable<Type> daemonAppServicesTypes, IEnumerable<Type> daemonAppTypes, ILogger<CodeServicesManager> logger, IYamlConfig yamlConfig)
+        public CodeServicesManager(IEnumerable<Type> daemonAppServicesTypes, IEnumerable<Type> daemonAppTypes, ILogger<CodeServicesManager> logger)
         {
             _logger = logger;
             DaemonAppServicesTypes = daemonAppServicesTypes;
             DaemonAppTypes = daemonAppTypes;
-            _yamlConfig = yamlConfig;
         }
 
         [SuppressMessage("", "CA1065")]
@@ -62,19 +60,30 @@ namespace NetDaemon.Daemon
                         return app;
                     }
 
-                    throw new Exception("app not found");
+                    throw new NetDaemonException($"App with class {appType.FullName} not initialized");
                 });
             }
             
             // Add daemon app services
             foreach (object appServices in servicesInstances)
             {
-                var configFn = appServices.GetType().GetMethod("ConfigureServices", BindingFlags.Public | BindingFlags.Instance);
-                
-                if (configFn != null)
+                Type serviceType = appServices.GetType();
+                try
                 {
-                    configFn.Invoke(appServices, new object?[]{services});
+                    var configFn = appServices.GetType().GetMethod("ConfigureServices", BindingFlags.Public | BindingFlags.Instance);
+                
+                    if (configFn != null)
+                    {
+                        configFn.Invoke(appServices, new object?[]{services});
+                        _logger.LogInformation("Successfully loaded app services {AppServicesId} ({Class})", serviceType.Name, serviceType.FullName);
+                    }
                 }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error loading app services {AppServicesId} ({Class})", serviceType.Name, serviceType.FullName);
+                    throw;
+                }
+                
             }
             
             return services;

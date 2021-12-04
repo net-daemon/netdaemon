@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.DependencyInjection;
-using NetDaemon.Common;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-[assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
-
-namespace NetDaemon.Daemon
+namespace NetDaemon.DI
 {
     /// <summary>
     ///     Interface for objects implementing the InstanceDaemonApps features
     /// </summary>
-    public interface IInstanceDaemonAppServiceCollection
+    public interface IInstanceDaemonAppServiceConfigurator
     {
         /// <summary>
         ///     Number of instanced daemonappServices
@@ -21,7 +15,6 @@ namespace NetDaemon.Daemon
         /// <summary>
         ///     Returns a list of instanced daemonapps
         /// </summary>
-        /// <param name="serviceProvider"></param>
         IServiceCollection ConfigureServices(IServiceCollection services);
     }
 }

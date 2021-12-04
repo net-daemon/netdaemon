@@ -36,25 +36,8 @@ namespace NetDaemon.Common
             {
                 app = new NonBaseApplicationContext(applicationType, id, serviceProvider);
             }
-
-            app.Dependencies = GetAppDependencies(applicationType);
             
             return app;
-        }
-
-        /// <summary>
-        /// Extract dependencies of app using DependsOn attributes
-        /// </summary>
-        public static IEnumerable<string> GetAppDependencies(Type applicationType)
-        {
-            var dependsOnAttrs = applicationType.GetCustomAttributes<DependsOnAttribute>().ToList();
-
-            if (dependsOnAttrs.Any())
-            {
-                return dependsOnAttrs.SelectMany(attr => attr.Dependencies).ToList();
-            }
-
-            return Array.Empty<string>();
         }
 
         /// <summary>

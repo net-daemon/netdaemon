@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace NetDaemon.DaemonHost;
 
-public class NetDaemonFeatureServiceProviderFactoryWrapper<T> : IServiceProviderFactory<T>
+public class NetDaemonFeatureServiceProviderFactoryWrapper<T> : IServiceProviderFactory<T> where T : notnull
 {
     private readonly IServiceProviderFactory<T> _serviceProviderFactoryImplementation;
 

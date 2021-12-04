@@ -50,21 +50,21 @@ public class NetDaemonHostBuilder : IHostBuilder
         return this;
     }
 
-    public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory)
+    public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
     {
         _hostBuilderImplementation.UseServiceProviderFactory(CreateServiceProviderFactoryWrapper(factory));
 
         return this;
     }
 
-    public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory)
+    public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
     {
         _hostBuilderImplementation.UseServiceProviderFactory(context => CreateServiceProviderFactoryWrapper(factory.Invoke(context)));
 
         return this;
     }
 
-    private IServiceProviderFactory<TContainerBuilder> CreateServiceProviderFactoryWrapper<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory)
+    private static IServiceProviderFactory<TContainerBuilder> CreateServiceProviderFactoryWrapper<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
     {
         return new NetDaemonFeatureServiceProviderFactoryWrapper<TContainerBuilder>(factory);
     }

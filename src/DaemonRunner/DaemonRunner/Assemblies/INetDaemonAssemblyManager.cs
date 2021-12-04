@@ -8,9 +8,7 @@ namespace NetDaemon.Assemblies;
 
 public interface INetDaemonAssemblyManager
 {
-    List<Assembly> LoadedAssemblies { get; set; }
-    
-    void Load(IDaemonAssemblyCompiler compiler);
+    IEnumerable<Assembly> Load(IDaemonAssemblyCompiler compiler, IServiceProvider serviceProvider);
 
-    void ConfigureAssemblies(Action<List<Assembly>> configure);
+    void ConfigureAssemblies(Action<List<Assembly>, IServiceProvider> configure);
 }
