@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,18 +24,14 @@ namespace NetDaemon.Common
             // this makes sure they will all be disposed along with the app
             if (applicationType == null) throw new ArgumentNullException(nameof(applicationType));
 
-            ApplicationContext app;
-
             if (typeof(INetDaemonAppBase).IsAssignableFrom(applicationType))
             {
-                app = new AppBaseApplicationContext(applicationType, id, serviceProvider);
+                return new AppBaseApplicationContext(applicationType, id, serviceProvider);
             }
             else
             {
-                app = new NonBaseApplicationContext(applicationType, id, serviceProvider);
+                return new NonBaseApplicationContext(applicationType, id, serviceProvider);
             }
-            
-            return app;
         }
 
         /// <summary>
