@@ -58,8 +58,17 @@ public class Root
         [Fact]
         public void TestNumericSensorEntityGeneration()
         {
+            // NUmeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute
             var entityStates = new HassState[]
             {
+                new()
+                {
+                    EntityId = "input_number.target_temperature",
+                    AttributesJson = new 
+                    {
+                        unit_of_measurement = "Kwh",
+                    }.AsJsonElement()
+                },                
                 new()
                 {
                     EntityId = "sensor.daily_power_consumption",
@@ -89,8 +98,11 @@ public class Root
         double? cost = dailyPower.State;
 
         SensorEntity pirSensor = entities.Sensor.Pir;
-        string? pir = pirSensor.State; 
-    }
+        string? pir = pirSensor.State;
+        
+        InputNumberEntity targetTempEntity = entities.InputNumber.TargetTemperature;
+        double? targetTempValue = targetTempEntity.State;
+     }
 }";
             AssertCodeCompiles(generatedCode.ToString(), appCode);
         }

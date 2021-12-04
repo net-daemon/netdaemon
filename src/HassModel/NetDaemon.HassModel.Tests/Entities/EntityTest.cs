@@ -79,6 +79,7 @@ namespace NetDaemon.HassModel.Tests.Entities
                 new StateChange(target, new EntityState(){State = "same"}, 
                     new EntityState {State = "same"}));
 
+            
             stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>() ), Times.Once);
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>() ), Times.Exactly(2));
         }

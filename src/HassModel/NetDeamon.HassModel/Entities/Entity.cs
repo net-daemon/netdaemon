@@ -82,41 +82,36 @@ namespace NetDaemon.HassModel.Entities
         where TEntityState : EntityState<TAttributes>
         where TAttributes : class
     {
-        private readonly Lazy<TAttributes?> _attributesLazy;
-
         /// <summary>Copy constructor from Base type</summary>
         protected Entity(Entity entity) : base(entity)
-        {
-            _attributesLazy = new(() => EntityState?.AttributesJson?.ToObject<TAttributes>());
-        }
+        { }
 
         /// <summary>Constructor from haContext and entityId</summary>
         protected Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
-        {
-            _attributesLazy = new(() => EntityState?.AttributesJson?.ToObject<TAttributes>());
-        }
+        { }
 
         /// <inheritdoc />
         public override TAttributes? Attributes => EntityState?.Attributes;
 
         /// <inheritdoc />
-        public override TEntityState? EntityState => MapNullableState(base.EntityState);
+        public override TEntityState? EntityState => MapState(base.EntityState);
 
         /// <inheritdoc />
         public override IObservable<StateChange<TEntity, TEntityState>> StateAllChanges() =>
-            base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, MapNullableState(e.Old), MapNullableState(e.New)));
+            base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>(e));
 
         /// <inheritdoc />
         public override IObservable<StateChange<TEntity, TEntityState>> StateChanges() => StateAllChanges().StateChangesOnly();
 
-        private static TEntityState? MapNullableState(EntityState? state) => 
-            state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;
+        private static TEntityState? MapState(EntityState? state) => Entities.EntityState.Map<TEntityState>(state);
     }
     
     /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
     public record Entity<TAttributes> : Entity<Entity<TAttributes>, EntityState<TAttributes>, TAttributes>
         where TAttributes : class
     {
+        // This type is needed because the base type has a recursive type parameter so it can not be used as a return value
+        
         /// <summary>Copy constructor from Base type</summary>
         public Entity(Entity entity) : base(entity) { }
         

@@ -40,11 +40,6 @@ namespace NetDaemon.HassModel.Entities
         public static NumericEntity AsNumeric(this Entity entity) => new(entity);
 
         /// <summary>Gets a NumericEntity from a given Entity</summary>
-        public static NumericEntity<TAttributes> AsNumeric<TAttributes>(this Entity<TAttributes> entity)
-            where TAttributes : class
-            => new(entity);
-        
-        /// <summary>Gets a NumericEntity from a given Entity</summary>
         public static NumericEntity<TAttributes> 
             AsNumeric<TEntity, TEntityState, TAttributes>(this Entity<TEntity, TEntityState, TAttributes> entity)
                 where TEntity : Entity<TEntity, TEntityState, TAttributes>
@@ -59,7 +54,7 @@ namespace NetDaemon.HassModel.Entities
 
         /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
         public static NumericEntity<TAttributes> WithAttributesAs<TAttributes>(this NumericEntity entity)
-            where TAttributes : class 
+            where TAttributes : class
             => new (entity);
 
         internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange

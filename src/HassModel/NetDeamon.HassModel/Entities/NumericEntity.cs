@@ -58,6 +58,7 @@ namespace NetDaemon.HassModel.Entities
         /// <inheritdoc/>
         public override IObservable<NumericStateChange<TEntity, TEntityState>> StateChanges() => 
             base.StateChanges().Select(e => new NumericStateChange<TEntity, TEntityState>(e));
+        
     }
     
     /// <summary>
@@ -66,6 +67,8 @@ namespace NetDaemon.HassModel.Entities
     public record NumericEntity<TAttributes> : NumericEntity<NumericEntity<TAttributes>, NumericEntityState<TAttributes>, TAttributes>
         where TAttributes : class
     {
+        // This type is needed because the base type has a recursive type parameter so it can not be used as a return value
+        
         /// <summary>Copy constructor from base class</summary>
         public NumericEntity(Entity entity) : base(entity) { }
     

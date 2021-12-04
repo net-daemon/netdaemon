@@ -23,7 +23,7 @@
     }
 
     /// <summary>
-    /// Represents a state change event for a strong typed entity ans state 
+    /// Represents a state change event for a strong typed entity and state 
     /// </summary>
     /// <typeparam name="TEntity">The Type</typeparam>
     /// <typeparam name="TEntityState"></typeparam>
@@ -31,20 +31,19 @@
         where TEntity : Entity 
         where TEntityState : EntityState
     {
-        internal StateChange(TEntity entity, TEntityState? old, TEntityState? @new) : base(entity, old, @new)
-        {
-            Entity = entity;
-            Old = old;
-            New = @new;
-        }
-        
-        /// <inheritdoc/>
-        public override TEntity Entity { get; }
+        internal StateChange(StateChange stateChange) : 
+            base(stateChange.Entity,
+                EntityState.Map<TEntityState>(stateChange.Old),
+                EntityState.Map<TEntityState>(stateChange.New))
+        { }
 
         /// <inheritdoc/>
-        public override TEntityState? New { get; }
+        public override TEntity Entity => (TEntity)base.Entity;
 
         /// <inheritdoc/>
-        public override TEntityState? Old { get; }
+        public override TEntityState? New => (TEntityState?)base.New;
+
+        /// <inheritdoc/>
+        public override TEntityState? Old => (TEntityState?)base.Old;
     }
 }
