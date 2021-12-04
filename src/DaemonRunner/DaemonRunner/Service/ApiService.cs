@@ -44,7 +44,7 @@ namespace NetDaemon.Service
             services.AddSingleton<INetDaemonHost>(s => s.GetRequiredService<NetDaemonHost>());
             services.AddSingleton(s => s.GetRequiredService<NetDaemonHost>().HassEventsObservable);
 
-            services.AddHttpClient().AddControllers().AddControllersAsServices();
+            services.AddHttpClient();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace NetDaemon.Daemon
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public AppManager( IServiceProvider serviceProvider, ILogger logger)
+        public AppManager(IServiceProvider serviceProvider, ILogger logger)
         {
             _serviceProvider = serviceProvider;
             Logger = logger;
@@ -33,7 +32,7 @@ namespace NetDaemon.Daemon
 
             // First unload any apps running
             await UnloadAllApps().ConfigureAwait(false);
-            
+
             // Get all instances
             var applicationContexts = appInstanceManager.InstanceDaemonApps(_serviceProvider!);
 
@@ -54,8 +53,7 @@ namespace NetDaemon.Daemon
             }
 
             // Now run initialize on all sorted by dependencies
-            var orderedApps = AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList());
-            foreach (var applicationContext in orderedApps)
+            foreach (var applicationContext in AppSorter.SortByDependency(InternalRunningAppInstances.Values.ToList()))
             {
                 await InitializeApp(applicationContext).ConfigureAwait(false);
             }
