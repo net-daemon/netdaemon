@@ -53,12 +53,28 @@ public static class NetDaemonHostBuilderExtensions
 
         return features;
     }
+    
+    public static void BuildNetDaemonFeatures(this IServiceCollection services)
+    {
+        if (services == null) throw new ArgumentNullException(nameof(services));
+        
+        var featureBuilder = services.GetNetDaemonFeatureBuilder();
+        featureBuilder.Build(services);
+    }
+
+    public static void BuildNetDaemonFeatures(this IHostBuilder hostBuilder)
+    {
+        if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
+
+        hostBuilder.ConfigureServices(services => services.BuildNetDaemonFeatures());
+    }
 
     public static void EnsureIsDaemonHostBuilder(this IHostBuilder hostBuilder)
     {
         if (hostBuilder is not NetDaemonHostBuilder)
         {
-            throw new Exception("Host builder is not a NetDaemonHostBuilder");
+            // throw new Exception("Host builder is not a NetDaemonHostBuilder");
+            Console.Error.WriteLine("Host builder is not a NetDaemonHostBuilder. To use app services registration, you need to convert your host builder into a NetDaemonHostBuilder or call 'BuildNetDaemonFeatures' before building your host.");
         }
     }
     

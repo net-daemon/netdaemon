@@ -14,14 +14,8 @@ public class NetDaemonFeatureServiceProviderFactoryWrapper<T> : IServiceProvider
 
     public T CreateBuilder(IServiceCollection services)
     {
-        PreBuildContainer(services);
+        services.BuildNetDaemonFeatures();
         return _serviceProviderFactoryImplementation.CreateBuilder(services);
-    }
-
-    private void PreBuildContainer(IServiceCollection services)
-    {
-        var featureBuilder = services.GetNetDaemonFeatureBuilder();
-        featureBuilder.Build(services);
     }
 
     public IServiceProvider CreateServiceProvider(T containerBuilder)
