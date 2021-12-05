@@ -66,7 +66,7 @@ namespace NetDaemon.HassModel.Entities
         /// <param name="data">Data to provide</param>
         public virtual void CallService(string service, object? data = null)
         {
-            if (service == null) throw new ArgumentNullException(nameof(service));
+            ArgumentNullException.ThrowIfNull(service, nameof(service));
             
             var (serviceDomain, serviceName) = service.SplitAtDot();
 

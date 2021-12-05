@@ -54,11 +54,11 @@ namespace NetDaemon.HassModel.Entities
         /// <inheritdoc/>
         public override IObservable<NumericStateChange<TEntity, TEntityState>> StateAllChanges() => 
             base.StateAllChanges().Select(e => new NumericStateChange<TEntity, TEntityState>(e));
-        
+
         /// <inheritdoc/>
-        public override IObservable<NumericStateChange<TEntity, TEntityState>> StateChanges() => 
-            base.StateChanges().Select(e => new NumericStateChange<TEntity, TEntityState>(e));
-        
+        public override IObservable<NumericStateChange<TEntity, TEntityState>> StateChanges() =>
+            StateAllChanges().StateChangesOnly();
+
     }
     
     /// <summary>
