@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -98,16 +99,24 @@ namespace NetDaemon.HassModel.CodeGenerator.Helpers
             return (T)member.WithBaseList(BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(IdentifierName(baseTypeName)))));
         }
 
-        // public static T WithSummary<T>(this T member, string summary)
-        //     where T: SyntaxNode
-        // {
-        //      // parseLeadingTrivia($"/// <summary>{summary}<summary/>");
-        //     var t = DocumentationCommentTrivia(SyntaxKind.SingleLineDocumentationCommentTrivia, 
-        //         new SyntaxList<XmlNodeSyntax>(
-        //             new XmlNodeSyntax[}XmlText().WithTextTokens(
-        //         TokenList(XmlTextLiteral(TriviaList(DocumentationCommentExterior("///")))))]));
-        //     return member.WithLeadingTrivia(Trivia(t));
-        // }
+        public  static T WithSummaryComment<T>(this T node, string? summary)
+        where T : SyntaxNode =>
+            string.IsNullOrWhiteSpace(summary) ? node : node.AppendTrivia(Comment($"///<summary>{summary.ReplaceLineEndings(" ")}</summary>"));
+
+        public static T WithParameterComments<T>(this T node, ServiceArguments arguments)
+            where T : SyntaxNode 
+            => arguments.Arguments.Aggregate(node, (n, f) => n.WithParameterComment(f.VariableName, f.Comment));
+
+        public  static T WithParameterComment<T>(this T node, string? name, string? description)
+            where T : SyntaxNode
+            => node.AppendTrivia(ParameterComment(name, description));
+
+        public static SyntaxTrivia ParameterComment(string? paramName, string? comment)
+            => Comment($"///<param name=\"{paramName?.ReplaceLineEndings(" ")}\">{comment?.ReplaceLineEndings(" ")}</param>");
+
+        public static T AppendTrivia<T>(this T node, SyntaxTrivia? trivia)
+            where T : SyntaxNode =>
+            trivia is null ? node : node.WithLeadingTrivia(node.GetLeadingTrivia().Add(trivia.Value));
 
         private static T Parse<T>(string text)
         {

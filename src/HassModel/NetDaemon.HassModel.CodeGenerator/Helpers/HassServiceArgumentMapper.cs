@@ -13,7 +13,8 @@ namespace NetDaemon.HassModel.CodeGenerator.Helpers
             {
                 HaName = field.Field!,
                 Type = type,
-                Required = field.Required == true
+                Required = field.Required == true,
+                Comment = field.Description + (string.IsNullOrWhiteSpace(field.Example?.ToString()) ? "" : $" eg: {field.Example}")
             };
         }
         private static Type GetTypeFromSelector(object? selectorObject)

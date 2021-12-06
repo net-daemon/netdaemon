@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoySoftware.HomeAssistant.Model;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.HassModel.CodeGenerator.Extensions;
 using NetDaemon.HassModel.Common;
@@ -86,7 +88,7 @@ namespace NetDaemon.HassModel.CodeGenerator
 
             var autoProperties = serviceArguments.Arguments
                 .Select(argument => Property($"{argument.TypeName!}?", argument.PropertyName!).ToPublic()
-                    .WithJsonPropertyName(argument.VariableName!))
+                    .WithJsonPropertyName(argument.VariableName!).WithSummaryComment(argument.Comment))
                 .ToArray();
 
             yield return Record(serviceArguments.TypeName, autoProperties).ToPublic();
@@ -102,15 +104,18 @@ namespace NetDaemon.HassModel.CodeGenerator
             var argsParametersString = serviceArguments is not null ? $"{serviceArguments.TypeName} data" : null ;
 
             var serviceMethodName = GetServiceMethodName(serviceName);
-            var targetParam = service.Target is not null ? $"{typeof(ServiceTarget).FullName} target" : null; 
+            var targetParam = service.Target is not null ? $"{typeof(ServiceTarget).FullName} target" : null;
             var targetArg = service.Target is not null ? "target" : "null";
-            
+            var targetComment = service.Target is not null ? ParameterComment("target", "The target for this service call") : (SyntaxTrivia?)null;
+
             // method using arguments object 
             yield return ParseMethod(
                 $@"void {serviceMethodName}({JoinArguments(targetParam, argsParametersString)})
             {{
                 {haContextVariableName}.CallService({JoinArguments($"\"{domain}\"", $"\"{serviceName}\"", targetArg, serviceArguments is not null ? "data" : null)});
-            }}").ToPublic();
+            }}").ToPublic()
+                .WithSummaryComment(service.Description)
+                .AppendTrivia(targetComment);
             
             if (serviceArguments is not null)
             {
@@ -119,7 +124,11 @@ namespace NetDaemon.HassModel.CodeGenerator
                 $@"void {serviceMethodName}({JoinArguments(targetParam, serviceArguments.GetParametersDecomposedString())})
             {{
                 {haContextVariableName}.CallService({JoinArguments($"\"{domain}\"", $"\"{serviceName}\"", targetArg, serviceArguments.GetParametersDecomposedVariable())});
-            }}").ToPublic();
+            }}")
+                    .ToPublic()
+                    .WithSummaryComment(service.Description)
+                    .AppendTrivia(targetComment)
+                    .WithParameterComments(serviceArguments);
             }
         }
 
