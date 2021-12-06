@@ -17,13 +17,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🎈 Initialize git
-        uses: home-assistant/actions/helpers/git-init@master
-        with:
-          name: GitHub
-          email: noreply@github.com
-          token: ${{ secrets.HELTO_PAT }}
-
       - name: ⏭️ Get next version
         id: version
         run: |
