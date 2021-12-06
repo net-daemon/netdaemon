@@ -31,7 +31,10 @@ namespace NetDaemon.HassModel.Entities
     
         /// <summary>Context</summary>
         public Context? Context { get; init; }
-    }
+        
+        internal static TEntityState? Map<TEntityState>(EntityState? state)
+            where TEntityState : class => 
+            state == null ? null : (TEntityState)Activator.CreateInstance(typeof(TEntityState), state)!;    }
     
     /// <summary>
     /// Generic EntityState with specific types of State and Attributes

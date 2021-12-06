@@ -40,9 +40,12 @@ namespace NetDaemon.HassModel.Entities
         public static NumericEntity AsNumeric(this Entity entity) => new(entity);
 
         /// <summary>Gets a NumericEntity from a given Entity</summary>
-        public static NumericEntity<TAttributes> AsNumeric<TAttributes>(this Entity<TAttributes> entity)
-            where TAttributes : class
-            => new(entity);
+        public static NumericEntity<TAttributes> 
+            AsNumeric<TEntity, TEntityState, TAttributes>(this Entity<TEntity, TEntityState, TAttributes> entity)
+                where TEntity : Entity<TEntity, TEntityState, TAttributes>
+                where TEntityState : EntityState<TAttributes>
+                where TAttributes : class
+                => new(entity);
 
         /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
         public static Entity<TAttributes> WithAttributesAs<TAttributes>(this Entity entity)
@@ -53,18 +56,6 @@ namespace NetDaemon.HassModel.Entities
         public static NumericEntity<TAttributes> WithAttributesAs<TAttributes>(this NumericEntity entity)
             where TAttributes : class
             => new (entity);
-
-        // /// <summary>
-        // /// Observable, All state changes. New.State != Old.State
-        // /// </summary>
-        // public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes>(this TEntity entity) 
-        //     where TEntity : Entity<TEntity, TEntityState, TAttributes>
-        //     where TEntityState : EntityState<TAttributes>
-        //     where TAttributes : class
-        // {
-        //     if (entity == null) throw new ArgumentNullException(nameof(entity));
-        //     return entity.StateAllChanges().StateChangesOnly();
-        // }
 
         internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
             => changes.Where(c => c.New?.State != c.Old?.State);

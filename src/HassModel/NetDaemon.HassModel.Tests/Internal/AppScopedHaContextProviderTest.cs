@@ -38,7 +38,7 @@ namespace NetDaemon.HassModel.Tests.Internal
             var data = new { Name = "value" };
             haContext.CallService("domain", "service", target, data);
             
-            _hassClientMock.Verify(c => c.CallService("domain", "service", data, It.Is<HassTarget>(t => t.EntityIds.Single() == "domain.entity"), false), Times.Once);
+            _hassClientMock.Verify(c => c.CallService("domain", "service", data, It.Is<HassTarget>(t => t.EntityIds!.Single() == "domain.entity"), false), Times.Once);
         }
 
         [Fact]

@@ -35,7 +35,7 @@ namespace NetDaemon.HassModel.Tests.Internal
             // ACT 1: after initialization of the cache it should show the values retieved from Hass
             await cache.InitializeAsync(CancellationToken.None);
 
-            cache.GetState(entityId).State.Should().Be("InitialState", because: "The initial value should be available");
+            cache.GetState(entityId)!.State.Should().Be("InitialState", because: "The initial value should be available");
 
             // Act 2: now fire a state change event
             var changedEventData = new HassStateChangedEventData()
@@ -51,7 +51,9 @@ namespace NetDaemon.HassModel.Tests.Internal
             stateChangeObserverMock.Setup(m => m.OnNext(It.IsAny<HassStateChangedEventData>()))
                 .Callback(() =>
                 {
+#pragma warning disable 8602
                     cache.GetState(entityId).State.Should().Be("newState");
+#pragma warning restore 8602
                 });
 
             // Act

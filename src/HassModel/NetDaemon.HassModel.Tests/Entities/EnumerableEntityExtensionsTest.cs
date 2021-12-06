@@ -30,12 +30,12 @@ namespace NetDaemon.HassModel.Tests.Entities
             
             stateChangesSubject.OnNext(new StateChange(switch1, new EntityState {State = "OldState1"}, new EntityState { State = "NewState1"}));
             
-            observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch1 && s.New.State == "NewState1")), Times.Once);
+            observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch1 && s.New!.State == "NewState1")), Times.Once);
             observerMock.VerifyNoOtherCalls();
             
             stateChangesSubject.OnNext(new StateChange(switch2, new EntityState { State = "OldState2"}, new EntityState{ State = "NewState2"}));
             
-            observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch2 && s.New.State == "NewState2")), Times.Once);
+            observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch2 && s.New!.State == "NewState2")), Times.Once);
             observerMock.VerifyNoOtherCalls();
         }
         
@@ -59,7 +59,7 @@ namespace NetDaemon.HassModel.Tests.Entities
                 new EntityState { State = "State", AttributesJson = new { name = "Do" }.AsJsonElement()}
                 ));
             
-            observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch1 && s.New.State == "State")), Times.Once);
+            observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch1 && s.New!.State == "State")), Times.Once);
             observerMock.VerifyNoOtherCalls();
             
             stateChangesSubject.OnNext(new StateChange(switch2, new EntityState { State = "OldState2"}, new EntityState{ State = "NewState2"}));

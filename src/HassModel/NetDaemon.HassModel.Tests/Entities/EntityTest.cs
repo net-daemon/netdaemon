@@ -93,7 +93,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             
             entity.CallService("service", data);
             
-            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds.Single() == entity.EntityId), data), Times.Once);
+            haContextMock.Verify(h => h.CallService("domain", "service", It.Is<ServiceTarget>(t => t.EntityIds!.Single() == entity.EntityId), data), Times.Once);
         }
     }
 }
