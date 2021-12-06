@@ -14,18 +14,6 @@ using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
 
 namespace NetDaemon.HassModel.CodeGenerator
 {
-
-    record EntitySet(string Domain, bool IsNumeric, IEnumerable<HassState> EntityStates)
-    {
-        private string prefixedDomain = (IsNumeric && Domain != "input_number" ? "numeric_" : "") + Domain;
-
-        public string EntityClassName => GetDomainEntityTypeName(prefixedDomain);
-
-        public string AttributesClassName => $"{prefixedDomain}Attributes".ToNormalizedPascalCase();
-
-        public string EntitiesForDomainClassName => $"{Domain}Entities".ToNormalizedPascalCase();
-    }
-    
     public partial class Generator
     {
         private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(IReadOnlyCollection<HassState> entities)
@@ -43,12 +31,12 @@ namespace NetDaemon.HassModel.CodeGenerator
 
             yield return GenerateRootEntitiesClass(entitySets);
 
-            foreach (var entityClass in entitySets.GroupBy(s => s.Domain) .Select(GenerateEntiesForDomainClass))
+            foreach (var entityClass in entitySets.GroupBy(s => s.EntitiesForDomainClassName).Select(g => GenerateEntiesForDomainClass(g.Key, g)))
             {
                 yield return entityClass;
             }
 
-            foreach (var entitytype in entitySets.SelectMany(GenerateEntityTypes))
+            foreach (var entitytype in entitySets.Select(GenerateEntityType))
             {
                 yield return entitytype;
             }
@@ -71,6 +59,7 @@ namespace NetDaemon.HassModel.CodeGenerator
             return Interface("IEntities").AddMembers(autoProperties).ToPublic();
         }
 
+        // The Entites class that provides properties to all Domains
         private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<EntitySet> entitySet)
         {
             var haContextNames = GetNames<IHaContext>();
@@ -87,24 +76,27 @@ namespace NetDaemon.HassModel.CodeGenerator
             return ClassWithInjected<IHaContext>("Entities").WithBase((string)"IEntities").AddMembers(properties).ToPublic();
         }
 
+        /// <summary>
+        /// Generates a record with all the attributes found in a set of entities providing unique names for each.
+        /// </summary>
         private static RecordDeclarationSyntax GenerateAtributeRecord(EntitySet entitySet)
         {
             // Get all attributes of all entities in this set
             var jsonProperties = entitySet.EntityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
-            
+
             // Group the attributes by JsonPropertyName and find the best ClrType that fits all
             var attributesByJsonName = jsonProperties
                 .GroupBy(p => p.Name)
-                .Select(group => (CSharpName: group.Key.ToNormalizedPascalCase(), 
+                .Select(group => (CSharpName: group.Key.ToNormalizedPascalCase(),
                                   JsonName: group.Key, 
                                   Type: GetBestClrType(group)));
-            
+
             // We might have different json names that after CamelCasing result in the same CSharpName 
             var uniqueProperties = attributesByJsonName
                 .GroupBy(t => t.CSharpName)
                 .SelectMany(DeduplictateCSharpName)
                 .OrderBy(p => p.CSharpName);
-            
+
             var propertyDeclarations = uniqueProperties.Select(a => Property($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
                                                                     .ToPublic()
                                                                     .WithAttribute<JsonPropertyNameAttribute>(a.JsonName));
@@ -149,9 +141,12 @@ namespace NetDaemon.HassModel.CodeGenerator
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
             };
 
-        private static TypeDeclarationSyntax GenerateEntiesForDomainClass(IEnumerable<EntitySet> entitySets)
+        /// <summary>
+        /// Generates the class with all the properties for the Entities of one domain
+        /// </summary>
+        private static TypeDeclarationSyntax GenerateEntiesForDomainClass(string className, IEnumerable<EntitySet> entitySets)
         {
-            var entityClass = ClassWithInjected<IHaContext>(entitySets.First().EntitiesForDomainClassName).ToPublic();
+            var entityClass = ClassWithInjected<IHaContext>(className).ToPublic();
 
             var entityProperty = entitySets.SelectMany(s=> s.EntityStates.Select(e => GenerateEntityProperty(e, s.EntityClassName))).ToArray();
 
@@ -173,21 +168,18 @@ namespace NetDaemon.HassModel.CodeGenerator
             return entity.Attributes?.ContainsKey("unit_of_measurement") ?? false;
         }
 
-        private static IEnumerable<TypeDeclarationSyntax> GenerateEntityTypes(EntitySet entitySet)
-        {
-//            if (entitySet.Domain == "input_number") return new[] { GenerateEntityType(entitySet.EntityClassName, true) };
-            return new[] { GenerateEntityType(entitySet) };
-        }
-        
+        /// <summary>
+        /// Generates a record derived from Entity like ClimateEntity or SensorEntity for a specific set of entities
+        /// </summary>
         private static TypeDeclarationSyntax GenerateEntityType(EntitySet entitySet)
         {
             string attributesGeneric = entitySet.AttributesClassName;
 
             var baseType = entitySet.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
             var entityStateType = entitySet.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
-            
+
             var baseClass = $"{baseType.FullName}<{entitySet.EntityClassName}, {entityStateType.FullName}<{attributesGeneric}>, {attributesGeneric}>";
-          
+
             var (className, variableName) = GetNames<IHaContext>();
             var classDeclaration = $@"record {entitySet.EntityClassName} : {baseClass}
                                     {{
@@ -196,13 +188,11 @@ namespace NetDaemon.HassModel.CodeGenerator
 
                                             public {entitySet.EntityClassName}({typeof(Entity).FullName} entity) : base(entity)
                                             {{}}
-
                                     }}";
 
             return ParseRecord(classDeclaration).ToPublic();
         }
-        
-        
+
         /// <summary>
         ///     Returns a list of domains from all entities
         /// </summary>
