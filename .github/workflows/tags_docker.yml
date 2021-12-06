@@ -17,13 +17,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🎈 Initialize git
-        uses: home-assistant/actions/helpers/git-init@master
-        with:
-          name: GitHub
-          email: noreply@github.com
-          token: ${{ secrets.HELTO_PAT }}
-
       - name: ⏭️ Get next version
         id: version
         run: |
@@ -66,31 +59,3 @@ jobs:
             --tag netdaemon/netdaemon:${{ steps.version.outputs.version }} \
             --tag ghcr.io/net-daemon/netdaemon:${{ steps.version.outputs.version }} \
             --tag ghcr.io/net-daemon/netdaemon:latest
-
-      - name: 🗄️ Make PR in depdendent repos
-        env:
-          GITHUB_TOKEN: ${{ secrets.HELTO_PAT }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          echo "VERSION: ${VERSION}"
-          branch=$(date +%s)
-          tempdir="/tmp/a_$branch"
-          mkdir "$tempdir"
-          cd "$tempdir"
-          git clone https://github.com/net-daemon/homeassistant-addon.git --depth=1
-          cd homeassistant-addon
-          git checkout -b "$branch"
-          sed -i "/  \"version\": /c\  \"version\": \"${VERSION}\"," "$tempdir/homeassistant-addon/netdaemon/config.json"
-          git add "$tempdir/homeassistant-addon/netdaemon/config.json"
-          git commit -m "Release ${VERSION}"
-          git push --set-upstream origin "$branch"
-          gh pr create --fill --title "Release ${VERSION}" --head "$branch"
-          cd ..
-          git clone https://github.com/net-daemon/netdaemon-app-template.git --depth=1
-          cd netdaemon-app-template
-          git checkout -b "$branch"
-          find . -type f -name "*.csproj" -exec sed -i -E "s/(<PackageReference Include=\"JoySoftware\.NetDaemon\.\w*.\" Version=\")(.*)(\".*)/\1${VERSION}\3/g" {} +
-          find . -type f -name "*.csproj" -exec git add {} +
-          git commit -m "Release ${VERSION}"
-          git push --set-upstream origin "$branch"
-          gh pr create --fill --title "Release ${VERSION}" --head "$branch"
