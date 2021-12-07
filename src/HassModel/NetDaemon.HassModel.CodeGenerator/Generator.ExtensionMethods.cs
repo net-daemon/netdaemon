@@ -52,10 +52,11 @@ namespace NetDaemon.HassModel.CodeGenerator
             var entityTypeName = GetDomainEntityTypeName(service.Target?.Entity?.Domain!);
 
             yield return ParseMethod(
-                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(serviceArguments is not null ? $", {serviceArguments.GetParametersString()}" : string.Empty)})
+                    $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(serviceArguments is not null ? $", {serviceArguments.GetParametersString()}" : string.Empty)})
             {{
                 entity.CallService(""{serviceName}""{(serviceArguments is not null ? $", {serviceArguments.GetParametersVariable()}" : string.Empty)});
-            }}").ToPublic().ToStatic();
+            }}").ToPublic().ToStatic()
+                .WithSummaryComment(service.Description);
 
             if (serviceArguments is not null)
             {
@@ -63,7 +64,10 @@ namespace NetDaemon.HassModel.CodeGenerator
                     $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity, {serviceArguments.GetParametersDecomposedString()})
                 {{
                     entity.CallService(""{serviceName}"", {serviceArguments.GetParametersDecomposedVariable()});
-                }}").ToPublic().ToStatic();
+                }}").ToPublic().ToStatic()
+                    .WithSummaryComment(service.Description)
+                    .WithParameterComment("entity", $"The {entityTypeName} to call this service for")
+                    .WithParameterComments(serviceArguments);
             }
         }
     }

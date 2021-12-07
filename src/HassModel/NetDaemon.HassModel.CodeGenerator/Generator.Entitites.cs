@@ -59,7 +59,7 @@ namespace NetDaemon.HassModel.CodeGenerator
             return Interface("IEntities").AddMembers(autoProperties).ToPublic();
         }
 
-        // The Entites class that provides properties to all Domains
+        // The Entities class that provides properties to all Domains
         private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<EntitySet> entitySet)
         {
             var haContextNames = GetNames<IHaContext>();
@@ -159,8 +159,11 @@ namespace NetDaemon.HassModel.CodeGenerator
 
             var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.EntityId}"");";
 
-            return ParseProperty(propertyCode).ToPublic();
+            var name = entity.AttributesAs<attributes>()?.friendly_name;
+            return ParseProperty(propertyCode).ToPublic().WithSummaryComment(name);
         }
+
+        record attributes(string friendly_name);
 
         private static bool IsNumeric(HassState entity)
         {

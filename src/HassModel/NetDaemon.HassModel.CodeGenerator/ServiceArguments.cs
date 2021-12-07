@@ -25,6 +25,8 @@ namespace NetDaemon.HassModel.CodeGenerator
         public string? VariableName => HaName?.ToNormalizedCamelCase();
 
         public string? ParameterVariableName => Required ? VariableName : $"{VariableName} = null";
+
+        public string? Comment { get; init; }
     }
 
     internal class ServiceArguments
