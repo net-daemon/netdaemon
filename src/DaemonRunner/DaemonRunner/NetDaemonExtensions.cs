@@ -84,11 +84,9 @@ namespace NetDaemon
             {
                 
                 var servicesCompiler = serviceProvider.GetRequiredService<IDaemonAppServicesCompiler>();
-                var appsCompiler = serviceProvider.GetRequiredService<IDaemonAppCompiler>();
                 var appServices = servicesCompiler.GetAppServices(assemblies);
-                var apps = appsCompiler.GetApps(assemblies);
 
-                IInstanceDaemonAppServiceConfigurator? codeServicesManager = new CodeServicesManager(appServices, apps,
+                IInstanceDaemonAppServiceConfigurator? codeServicesManager = new CodeServicesManager(appServices,
                      serviceProvider.GetRequiredService<ILogger<CodeServicesManager>>());
                 codeServicesManager.ConfigureServices(services);
             });

@@ -6,8 +6,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetDaemon.Common.Exceptions;
-using NetDaemon.Daemon;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
@@ -21,13 +19,11 @@ namespace NetDaemon.DI
         ///     Constructor
         /// </summary>
         /// <param name="daemonAppServicesTypes">App services compiled app types</param>
-        /// <param name="daemonAppTypes">App compiled app types</param>
         /// <param name="logger">ILogger instance to use</param>
-        public CodeServicesManager(IEnumerable<Type> daemonAppServicesTypes, IEnumerable<Type> daemonAppTypes, ILogger<CodeServicesManager> logger)
+        public CodeServicesManager(IEnumerable<Type> daemonAppServicesTypes, ILogger<CodeServicesManager> logger)
         {
             _logger = logger;
             DaemonAppServicesTypes = daemonAppServicesTypes;
-            DaemonAppTypes = daemonAppTypes;
         }
 
         [SuppressMessage("", "CA1065")]
@@ -35,8 +31,6 @@ namespace NetDaemon.DI
 
         // Internal for testing
         internal IEnumerable<Type> DaemonAppServicesTypes { get; }
-        internal IEnumerable<Type> DaemonAppTypes { get; }
-
         
         public IServiceCollection ConfigureServices(IServiceCollection services)
         {
@@ -44,25 +38,6 @@ namespace NetDaemon.DI
             // Instantiate all service configuration classes
             var servicesInstances = InstantiateServicesTypes(serviceProvider);
 
-            // Add each app as a service
-            foreach (var appType in DaemonAppTypes)
-            {
-                services.AddSingleton(appType, provider =>
-                {
-                    var host = provider.GetRequiredService<NetDaemonHost>();
-                    
-                    // rework get apps from host
-                    var app = host.GetNetApp(appType.Name);
-                    
-                    if (app?.GetType() == appType)
-                    {
-                        return app;
-                    }
-
-                    throw new NetDaemonException($"App with class {appType.FullName} not initialized");
-                });
-            }
-            
             // Add daemon app services
             foreach (object appServices in servicesInstances)
             {
