@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common.Exceptions;
 using NetDaemon.Daemon;
-using NetDaemon.Daemon.Config;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
@@ -95,82 +94,6 @@ namespace NetDaemon.DI
             {
                 yield return ActivatorUtilities.CreateInstance(serviceProvider, appServicesType);
             }
-        }
-
-        class AppsServiceProvider : IServiceProvider, IServiceScopeFactory, IDisposable
-        {
-            private readonly IServiceProvider _parentProvider;
-            private readonly IServiceProvider _appsProvider;
-
-            public AppsServiceProvider(IServiceProvider parentProvider, IServiceProvider appsProvider)
-            {
-                _parentProvider = parentProvider;
-                _appsProvider = appsProvider;
-            }
-            
-            public object? GetService(Type serviceType)
-            {
-                if (serviceType == typeof(IServiceScopeFactory))
-                {
-                    return this;
-                }
-                
-                var appsService = _appsProvider.GetService(serviceType);
-
-                if (appsService != null)
-                {
-                    return appsService;
-                }
-                
-                var parentService = _parentProvider.GetService(serviceType);
-
-                if (parentService != null)
-                {
-                    return parentService;
-                }
-
-                return null;
-                
-                // return _appsProvider.GetService(serviceType) ?? _parentProvider.GetService(serviceType);
-            }
-            
-            public IServiceScope CreateScope()
-            {
-                var parentProviderScope = _parentProvider.CreateScope();
-                var appsProviderScope = _appsProvider.CreateScope();
-                
-                return new AppsServiceProviderScope(parentProviderScope, appsProviderScope);
-            }
-
-            public void Dispose()
-            {
-                if (_appsProvider is IDisposable disposableAppsProvider)
-                {
-                    disposableAppsProvider.Dispose();
-                }
-            }
-        }
-
-        class AppsServiceProviderScope : IServiceScope
-        {
-            private readonly IServiceScope _parentProviderScope;
-            private readonly IServiceScope _appsProviderScope;
-
-            public AppsServiceProviderScope(IServiceScope parentProviderScope, IServiceScope appsProviderScope)
-            {
-                _parentProviderScope = parentProviderScope;
-                _appsProviderScope = appsProviderScope;
-
-                ServiceProvider = new AppsServiceProvider(_parentProviderScope.ServiceProvider, _appsProviderScope.ServiceProvider);
-            }
-
-            public void Dispose()
-            {
-                _parentProviderScope.Dispose();
-                _appsProviderScope.Dispose();
-            }
-
-            public IServiceProvider ServiceProvider { get; }
         }
     }
 }
