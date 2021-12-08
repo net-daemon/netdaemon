@@ -24,7 +24,7 @@ namespace NetDaemon.Infrastructure.Extensions
                 .Where(type => type.IsClass && 
                                !type.IsGenericType && 
                                !type.IsAbstract && 
-                               type.GetCustomAttribute<NetDaemonAppServicesAttribute>() != null
+                               type.GetCustomAttribute<NetDaemonServicesProviderAttribute>() != null
                                );
         }
     }

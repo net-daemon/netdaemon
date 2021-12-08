@@ -4,7 +4,7 @@ using NetDaemon.Common;
 
 namespace NetDaemon.DevelopmentApps.apps.Dependencies
 {
-    [NetDaemonAppServices]
+    [NetDaemonServicesProvider]
     public class DependentAppServices
     {
         private readonly ILogger<DependentAppServices> _logger;
