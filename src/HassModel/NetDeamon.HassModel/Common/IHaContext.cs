@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using JoySoftware.HomeAssistant.Model;
 using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Common
@@ -39,5 +40,12 @@ namespace NetDaemon.HassModel.Common
         /// <param name="target">The target that is targeted by this service call</param>
         /// <param name="data">Data provided to service. Should be Json-serializable to the data expected by the service</param>
         void CallService(string domain, string service, ServiceTarget? target = null, object? data = null);
+
+        /// <summary>
+        /// Get area for a single entity
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <returns></returns>
+        HassArea? GetArea(string entityId);
     }
 }

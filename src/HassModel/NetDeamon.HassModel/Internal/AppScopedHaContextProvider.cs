@@ -19,15 +19,18 @@ namespace NetDaemon.HassModel.Internal
     internal class AppScopedHaContextProvider : IHaContext, IDisposable
     {
         private readonly EntityStateCache _entityStateCache;
+        private readonly EntityAreaCache _entityAreaCache;
         private readonly IHassClient _hassClient;
         private readonly ScopedObservable<HassEvent> _scopedEventObservable;
         private readonly ScopedObservable<HassStateChangedEventData> _scopedStateObservable;
 
         public AppScopedHaContextProvider(IObservable<HassEvent> hassEventObservable,
             EntityStateCache entityStateCache,
+            EntityAreaCache entityAreaCache,
             IHassClient hassClient)
         {
             _entityStateCache = entityStateCache;
+            _entityAreaCache = entityAreaCache;
             _hassClient = hassClient;
 
             // Create ScopedObservables for this app
@@ -38,6 +41,8 @@ namespace NetDaemon.HassModel.Internal
 
         public EntityState? GetState(string entityId) => _entityStateCache.GetState(entityId).Map();
 
+        public HassArea? GetArea(string entityId) => _entityAreaCache.GetArea(entityId);
+        
         public IReadOnlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
 
         public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
