@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Moq;
@@ -34,7 +32,7 @@ public class EntityAreaCacheTests
         using var cache = new EntityAreaCache(hassClientMock.Object, testSubject);
 
         // Act
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync();
 
         // Assert
         var area = cache.GetArea("sensor.sensor1");
@@ -66,7 +64,7 @@ public class EntityAreaCacheTests
         using var cache = new EntityAreaCache(hassClientMock.Object, testSubject);
 
         // Act
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync();
 
         // Assert
         var area = cache.GetArea("sensor.sensor1");
@@ -99,7 +97,7 @@ public class EntityAreaCacheTests
         using var cache = new EntityAreaCache(hassClientMock.Object, testSubject);
 
         // Act
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync();
 
         // Assert
         var area = cache.GetArea("sensor.sensor1");
@@ -128,7 +126,7 @@ public class EntityAreaCacheTests
         using var cache = new EntityAreaCache(hassClientMock.Object, testSubject);
         
         // Act 1: Init
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync();
 
         // Act/Rearrage
         hassClientMock.Setup(m => m.GetEntities()).ReturnsAsync(new HassEntity[]
