@@ -694,13 +694,13 @@ namespace NetDaemon.Daemon
         {
             if (_hassEntities.TryGetValue(entityId, out HassEntity? entity))
             {
-                if (!string.IsNullOrEmpty(entity.AreaId))
-                    return entity.AreaId;
+                if (!string.IsNullOrEmpty(entity.AreaId) && _hassAreas.TryGetValue(entity.AreaId, out var area))
+                    return area.Name;
                 if (entity.DeviceId is null)
                     return null;
                 if (!_hassDevices.TryGetValue(entity.DeviceId, out HassDevice? device) || device.AreaId is null)
                     return null;
-                if (_hassAreas.TryGetValue(device.AreaId, out HassArea? area))
+                if (_hassAreas.TryGetValue(device.AreaId, out area))
                 {
                     return area.Name;
                 }
