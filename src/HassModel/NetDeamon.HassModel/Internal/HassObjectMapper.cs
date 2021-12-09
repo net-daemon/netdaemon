@@ -63,7 +63,6 @@ namespace NetDaemon.HassModel.Internal
         {
             return new Area()
             {
-                // Can an area not have a name?
                 Name = hassArea.Name,
             };
         }
