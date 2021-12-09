@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
-using JoySoftware.HomeAssistant.Model;
 using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Common
@@ -46,6 +44,6 @@ namespace NetDaemon.HassModel.Common
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        HassArea? GetArea(string entityId);
+        Area? GetAreaFromEntityId(string entityId);
     }
 }

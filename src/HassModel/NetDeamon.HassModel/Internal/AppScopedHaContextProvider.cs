@@ -41,7 +41,7 @@ namespace NetDaemon.HassModel.Internal
 
         public EntityState? GetState(string entityId) => _entityStateCache.GetState(entityId).Map();
 
-        public HassArea? GetArea(string entityId) => _entityAreaCache.GetArea(entityId);
+        public Area? GetAreaFromEntityId(string entityId) => _entityAreaCache.GetArea(entityId)?.Map();
         
         public IReadOnlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
 
