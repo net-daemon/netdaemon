@@ -101,7 +101,7 @@ namespace NetDaemon.HassModel.Tests.Entities
         {
             // Arrange
             var haContextMock = new Mock<IHaContext>();
-            haContextMock.Setup(t => t.GetArea("domain.testEntity")).Returns(new HassArea() { Id = "AreaId", Name = "Area Name" });
+            haContextMock.Setup(t => t.GetAreaFromEntityId("domain.testEntity")).Returns(new Area() { Name = "Area Name" });
 
             // Act
             var target = new TestEntity(haContextMock.Object, "domain.testEntity");
