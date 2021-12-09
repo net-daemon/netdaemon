@@ -33,7 +33,7 @@ namespace NetDaemon.HassModel.Entities
         /// <summary>
         /// Area name of entity
         /// </summary>
-        public string? Area => HaContext.GetArea(EntityId)?.Name;
+        public string? Area => HaContext.GetAreaFromEntityId(EntityId)?.Name;
 
         /// <summary>The current state of this Entity</summary>
         public string? State => EntityState?.State;
