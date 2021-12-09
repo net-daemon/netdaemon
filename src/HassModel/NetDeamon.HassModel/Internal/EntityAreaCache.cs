@@ -35,11 +35,6 @@ internal class EntityAreaCache : IDisposable
         return _latestAreas.TryGetValue(entityId, out var result) ? result : null;
     }
 
-    public void Dispose()
-    {
-        _eventSubscription.Dispose();
-    }
-
     private async Task LoadAreas()
     {
         var entities = await _hassClient.GetEntities().ConfigureAwait(false);
@@ -80,5 +75,10 @@ internal class EntityAreaCache : IDisposable
             // Fire and forget
             _ = LoadAreas().ConfigureAwait(false);
         }
+    }
+    
+    public void Dispose()
+    {
+        _eventSubscription.Dispose();
     }
 }
