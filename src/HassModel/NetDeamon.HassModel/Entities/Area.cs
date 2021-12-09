@@ -8,5 +8,5 @@ public record Area
     /// <summary>
     /// The area's name
     /// </summary>
-    public string Name { get; init; }
+    public string? Name { get; init; }
 }
