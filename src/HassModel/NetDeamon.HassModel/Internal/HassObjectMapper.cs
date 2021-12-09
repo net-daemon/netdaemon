@@ -58,5 +58,13 @@ namespace NetDaemon.HassModel.Internal
                 DataElement = hassEvent.DataElement,
             };
         }
+
+        public static Area Map(this HassArea hassArea)
+        {
+            return new Area()
+            {
+                Name = hassArea.Name,
+            };
+        }
     }
 }

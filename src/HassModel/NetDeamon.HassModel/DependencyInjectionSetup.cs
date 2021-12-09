@@ -27,6 +27,7 @@ namespace NetDaemon.HassModel
         internal static void AddScopedHaContext(this IServiceCollection services)
         {
             services.AddSingleton<EntityStateCache>();
+            services.AddSingleton<EntityAreaCache>();
             services.AddScoped<AppScopedHaContextProvider>();
             services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
         }
@@ -34,9 +35,10 @@ namespace NetDaemon.HassModel
         /// <summary>
         /// Performs async initialization of the HassModel services 
         /// </summary>
-        public static Task InitializeAsync(IServiceProvider sp, CancellationToken cancellationToken)
+        public static async Task InitializeAsync(IServiceProvider sp, CancellationToken cancellationToken)
         {
-            return sp.GetRequiredService<EntityStateCache>().InitializeAsync(cancellationToken);
+            await sp.GetRequiredService<EntityAreaCache>().InitializeAsync().ConfigureAwait(false);
+            await sp.GetRequiredService<EntityStateCache>().InitializeAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

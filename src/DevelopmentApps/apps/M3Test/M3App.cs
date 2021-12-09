@@ -62,8 +62,6 @@ namespace NetDaemon.DevelopmentApps.apps.M3Test
 
             var currentState = e.Entity.EntityState; // should be the same as e.New (unless the was another change in the meantime)
 
-            string area = e.Entity.Area;
-
             string? state = e.Entity.State;
 
             // attribute properties are strong typed

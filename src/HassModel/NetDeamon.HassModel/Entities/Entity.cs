@@ -30,9 +30,10 @@ namespace NetDaemon.HassModel.Entities
             EntityId = entityId;
         }
 
-        // temporary suppress, this will go away when implemented
-        [SuppressMessage("", "CA1822")]
-        public string Area => "todo";
+        /// <summary>
+        /// Area name of entity
+        /// </summary>
+        public string? Area => HaContext.GetAreaFromEntityId(EntityId)?.Name;
 
         /// <summary>The current state of this Entity</summary>
         public string? State => EntityState?.State;
