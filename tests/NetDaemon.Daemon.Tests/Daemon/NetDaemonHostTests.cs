@@ -467,16 +467,17 @@ namespace NetDaemon.Daemon.Tests.Daemon
         public void EntityShouldReturnCorrectValueForAreaAssignedToEntity()
         {
             // ARRANGE
+            DefaultDaemonHost._hassAreas["area_id"] = new HassArea { Name = "Correct name", Id = "area_id" };
             DefaultDaemonHost._hassEntities["light.lamp"] = new HassEntity
             {
                 EntityId = "light.lamp",
-                AreaId = "some area"
+                AreaId = "area_id"
             };
             // ACT
             var areaName = DefaultDaemonHost.GetAreaForEntityId("light.lamp");
 
             // ASSERT
-            Assert.Equal("some area", areaName);
+            Assert.Equal("Correct name", areaName);
         }
 
         [Fact]
