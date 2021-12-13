@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
@@ -31,7 +32,7 @@ namespace NetDaemon.Service.App
         {
             _logger.LogDebug("Loading dynamically compiled apps...");
             var assembly = Load();
-            var apps = assembly.GetAppClasses();
+            var apps = assembly.GetAppClasses().ToList();
 
             if (!apps.Any())
                 _logger.LogWarning("No .cs files found, please add files to {SourceFolder}", _sourceFolder);
@@ -41,9 +42,26 @@ namespace NetDaemon.Service.App
             return apps;
         }
 
-        public Assembly Load()
+        private Assembly? _generatedAssemby;
+
+        public IServiceCollection RegisterDynamicServices(IServiceCollection serviceCollection)
         {
-            return DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
+            var assemby = Load();
+            var methods = assemby?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
+                .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null);
+
+            foreach (var methodInfo in methods ?? Array.Empty<MethodInfo>())
+            {
+                methodInfo.Invoke(null, new object?[]{ serviceCollection });
+            }
+
+            return serviceCollection;
+        }
+ 
+        public Assembly? Load()
+        {
+            return _generatedAssemby ??= DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
         }
     }
+    
 }
