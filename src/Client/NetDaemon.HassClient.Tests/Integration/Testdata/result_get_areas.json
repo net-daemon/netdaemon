@@ -1,0 +1,19 @@
+{
+    "id": 3,
+    "type": "result",
+    "success": true,
+    "result": [
+        {
+            "name": "Bedroom",
+            "area_id": "5a30cdc2fd7f44d5a77f2d6f6d2ccd76"
+        },
+        {
+            "name": "Kitchen",
+            "area_id": "42a6048dc0404595b136545f6745c5d1"
+        },
+        {
+            "name": "Livingroom",
+            "area_id": "4e65b6fe3cea4604ab318b0f9c2b8432"
+        }
+    ]
+}
