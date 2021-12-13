@@ -95,7 +95,7 @@ public class AppTests
         var codeManager = CM(ConfigFixturePath);
         // ACT
         // ASSERT
-        Assert.Equal(15, codeManager.DaemonAppTypes.Count());
+        Assert.Equal(16, codeManager.DaemonAppTypes.Count());
     }
 
     [Fact]
