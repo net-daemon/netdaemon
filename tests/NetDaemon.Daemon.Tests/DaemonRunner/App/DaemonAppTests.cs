@@ -2,13 +2,13 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common.Configuration;
 using NetDaemon.Daemon.Config;
 using NetDaemon.Service.App;
 using static NetDaemon.Daemon.Tests.DaemonRunner.CommonTestMethods;
-using FluentAssertions;
 
 namespace NetDaemon.Daemon.Tests.DaemonRunner.App;
 
