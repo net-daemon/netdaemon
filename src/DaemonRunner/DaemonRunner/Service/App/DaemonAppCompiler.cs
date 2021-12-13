@@ -42,12 +42,12 @@ namespace NetDaemon.Service.App
             return apps!;
         }
 
-        private Assembly? _generatedAssemby;
+        private Assembly? _generatedAssembly;
 
         public IServiceCollection RegisterDynamicServices(IServiceCollection serviceCollection)
         {
-            var assemby = Load();
-            var methods = assemby?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
+            var assembly = Load();
+            var methods = assembly?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
                 .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null);
 
             foreach (var methodInfo in methods ?? Array.Empty<MethodInfo>())
@@ -60,7 +60,7 @@ namespace NetDaemon.Service.App
  
         public Assembly? Load()
         {
-            return _generatedAssemby ??= DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
+            return _generatedAssembly ??= DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
         }
     }
     
