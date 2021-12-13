@@ -48,16 +48,21 @@ namespace NetDaemon.Service.App
         {
             var assembly = Load();
             var methods = assembly?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
-                .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null);
+                .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ?? Array.Empty<MethodInfo>();
 
-            foreach (var methodInfo in methods ?? Array.Empty<MethodInfo>())
+            if (methods.Any(m => m.GetParameters().Length != 1 && m.GetParameters()[0].GetType() != typeof(IServiceProvider)))
+            {
+                throw new InvalidOperationException("Methods with [ServiceCollectionExtension] Attribute should have exactly one parameter of type IServiceCollection");
+            }
+    
+            foreach (var methodInfo in methods )
             {
                 methodInfo.Invoke(null, new object?[]{ serviceCollection });
             }
 
             return serviceCollection;
         }
- 
+
         public Assembly? Load()
         {
             return _generatedAssembly ??= DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);

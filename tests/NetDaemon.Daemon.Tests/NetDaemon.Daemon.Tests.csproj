@@ -49,6 +49,9 @@
     <Compile Remove="DaemonRunner/CodeGen/**" />
     <Compile Remove="DaemonRunner/Fixtures/**" />
     <Compile Remove="DaemonRunner/FaultyApp/**" />
+    <Content Include="DaemonRunner\Fixtures\AppWithDiSetup\RequireServiceApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="DaemonRunner/Fixtures/**">

@@ -70,7 +70,7 @@ namespace NetDaemon
                 services.AddSingleton<IDaemonAppCompiler, LocalDaemonAppCompiler>();
             else
             {
-                // Build a temporarly ServiceProvider with all the services registered up till now so we can use it to create the DaemonAppCompiler 
+                // Build a temporary ServiceProvider with all the services registered up till now so we can use it to create the DaemonAppCompiler 
                 var compiler = ActivatorUtilities.CreateInstance<DaemonAppCompiler>(services.BuildServiceProvider());
 
                 // now register that instance as a singleton fro future use
