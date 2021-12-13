@@ -1,0 +1,378 @@
+{
+  "id": 3,
+  "type": "result",
+  "success": true,
+  "result": [
+    {
+      "entity_id": "zone.test",
+      "state": "zoning",
+      "attributes": {
+        "hidden": true,
+        "latitude": 61.388466,
+        "longitude": 12.295939,
+        "radius": 200.0,
+        "friendly_name": "Test",
+        "icon": "mdi:briefcase"
+      },
+      "last_changed": "2019-02-16T18:11:44.183673+00:00",
+      "last_updated": "2019-02-16T18:11:44.183673+00:00",
+      "context": {
+        "id": "f48f9a312c68402a81230b9f14a00a23",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "zone.test2",
+      "state": "zoning",
+      "attributes": {
+        "hidden": true,
+        "latitude": 63.438067,
+        "longitude": 19.321611,
+        "radius": 300.0,
+        "friendly_name": "Test2",
+        "icon": "mdi:hospital"
+      },
+      "last_changed": "2019-02-16T18:11:44.184844+00:00",
+      "last_updated": "2019-02-16T18:11:44.184844+00:00",
+      "context": {
+        "id": "40a40e1aebe14464b2f7097c0a522810",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "zone.home",
+      "state": "zoning",
+      "attributes": {
+        "hidden": true,
+        "latitude": 61.4348599,
+        "longitude": 16.1413237,
+        "radius": 100,
+        "friendly_name": "Home",
+        "icon": "mdi:home"
+      },
+      "last_changed": "2019-02-16T18:11:44.187462+00:00",
+      "last_updated": "2019-02-16T18:11:44.187462+00:00",
+      "context": {
+        "id": "cd7715bcd37b4b528540dc4bfa634de9",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "sun.sun",
+      "state": "below_horizon",
+      "attributes": {
+        "next_dawn": "2019-02-17T05:47:33+00:00",
+        "next_dusk": "2019-02-17T16:24:13+00:00",
+        "next_midnight": "2019-02-16T23:05:52+00:00",
+        "next_noon": "2019-02-17T11:05:53+00:00",
+        "next_rising": "2019-02-17T06:35:00+00:00",
+        "next_setting": "2019-02-17T15:36:46+00:00",
+        "elevation": -39.06,
+        "azimuth": 348.2,
+        "friendly_name": "Sun"
+      },
+      "last_changed": "2019-02-16T18:11:44.204384+00:00",
+      "last_updated": "2019-02-16T22:28:30.002772+00:00",
+      "context": {
+        "id": "2f6c1d0cee6a454d853150c7df4104c5",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "group.default_view",
+      "state": "on",
+      "attributes": {
+        "entity_id": [
+          "group.climate",
+          "group.uteclimate",
+          "group.upper_floor",
+          "group.lower_floor",
+          "group.outside",
+          "sensor.my_alarm",
+          "input_select.house_mode_select",
+          "input_boolean.good_night_house",
+          "sensor.house_mode",
+          "group.frysar_temperatur",
+          "group.people_status",
+          "sensor.occupancy",
+          "weather.smhi_hemma",
+          "weather.yweather"
+        ],
+        "order": 0,
+        "view": true,
+        "friendly_name": "default_view",
+        "icon": "mdi:home",
+        "hidden": true,
+        "assumed_state": true
+      },
+      "last_changed": "2019-02-16T18:11:45.104467+00:00",
+      "last_updated": "2019-02-16T18:11:45.691968+00:00",
+      "context": {
+        "id": "d3b3e20ea93f49b190f56e08d5af5e80",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "scene.stadning",
+      "state": "scening",
+      "attributes": {
+        "entity_id": [
+          "group.dummy"
+        ],
+        "friendly_name": "St\u00e4dning"
+      },
+      "last_changed": "2019-02-16T18:11:44.703590+00:00",
+      "last_updated": "2019-02-16T18:11:44.703590+00:00",
+      "context": {
+        "id": "441f99ad4a4d44358b3aaa73e248a187",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "sensor.house_mode",
+      "state": "Kv\u00e4ll",
+      "attributes": {
+        "friendly_name": "Hus status"
+      },
+      "last_changed": "2019-02-16T18:11:49.853247+00:00",
+      "last_updated": "2019-02-16T18:11:49.853247+00:00",
+      "context": {
+        "id": "ff7c757b76f746da800158f70f1639a1",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "sensor.sally_phone_mqtt_bt",
+      "state": "home",
+      "attributes": {
+        "confidence": "100",
+        "friendly_name": "Sallys mobil BT",
+        "entity_picture": "/local/sally.jpg"
+      },
+      "last_changed": "2019-02-16T18:32:22.167753+00:00",
+      "last_updated": "2019-02-16T18:32:22.167753+00:00",
+      "context": {
+        "id": "0c9978ae1ce24a208c9a25272c44950b",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "binary_sensor.vardagsrum_pir",
+      "state": "on",
+      "attributes": {
+        "battery_level": 100,
+        "on": true,
+        "friendly_name": "R\u00f6relsedetektor vardagsrum uppe",
+        "device_class": "motion",
+        "icon": "mdi:run-fast"
+      },
+      "last_changed": "2019-02-16T21:57:39.435927+00:00",
+      "last_updated": "2019-02-16T21:57:39.435927+00:00",
+      "context": {
+        "id": "5f88441613664f2f94bfcb7202dabb3b",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "group.room_view",
+      "state": "on",
+      "attributes": {
+        "entity_id": [
+          "group.room_sally",
+          "group.room_bedroom"
+        ],
+        "order": 1,
+        "view": true,
+        "friendly_name": "room_view",
+        "icon": "mdi:home-circle",
+        "hidden": true,
+        "assumed_state": true
+      },
+      "last_changed": "2019-02-16T18:11:45.102432+00:00",
+      "last_updated": "2019-02-16T18:11:45.689337+00:00",
+      "context": {
+        "id": "3f5092353d354d16abc4383e2b859278",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "group.ligths_view",
+      "state": "on",
+      "attributes": {
+        "entity_id": [
+          "light.tomas_fonster",
+          "light.tvrummet"
+        ],
+        "order": 5,
+        "view": true,
+        "friendly_name": "ligths_view",
+        "icon": "mdi:lightbulb-outline",
+        "hidden": true,
+        "assumed_state": true
+      },
+      "last_changed": "2019-02-16T18:11:46.025370+00:00",
+      "last_updated": "2019-02-16T18:11:46.025370+00:00",
+      "context": {
+        "id": "b1806cf9774149c38d72d27c221539c1",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "switch.switch1",
+      "state": "off",
+      "attributes": {
+        "friendly_name": "switch1",
+        "assumed_state": true
+      },
+      "last_changed": "2019-02-16T18:11:45.613212+00:00",
+      "last_updated": "2019-02-16T18:11:45.613212+00:00",
+      "context": {
+        "id": "9b38bb49ad474ed1a839eb36030e89c6",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "group.all_switches",
+      "state": "on",
+      "attributes": {
+        "entity_id": [
+          "switch.switch1",
+          "switch.tv"
+        ],
+        "order": 35,
+        "auto": true,
+        "friendly_name": "all switches",
+        "hidden": true,
+        "assumed_state": true
+      },
+      "last_changed": "2019-02-16T18:11:46.665404+00:00",
+      "last_updated": "2019-02-16T18:11:46.665404+00:00",
+      "context": {
+        "id": "94d4ee3f3503466388c43b435237b0d4",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "group.all_lights",
+      "state": "on",
+      "attributes": {
+        "entity_id": [
+          "light.sallys_rum",
+          "light.tvrummet"
+        ],
+        "order": 36,
+        "auto": true,
+        "friendly_name": "all lights",
+        "hidden": true
+      },
+      "last_changed": "2019-02-16T18:11:45.806440+00:00",
+      "last_updated": "2019-02-16T18:12:02.869362+00:00",
+      "context": {
+        "id": "3cab55e957bd45d083229c9c441e806b",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "light.tvrummet_vanster",
+      "state": "on",
+      "attributes": {
+        "min_mireds": 153,
+        "max_mireds": 500,
+        "brightness": 63,
+        "color_temp": 442,
+        "is_deconz_group": false,
+        "friendly_name": "tvrummet_vanster",
+        "supported_features": 43
+      },
+      "last_changed": "2019-02-16T18:11:45.977388+00:00",
+      "last_updated": "2019-02-16T18:11:45.977388+00:00",
+      "context": {
+        "id": "ae2a620ae48d48fb91907d6f6e379419",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "light.sovrum_fonster",
+      "state": "on",
+      "attributes": {
+        "brightness": 63,
+        "is_deconz_group": false,
+        "friendly_name": "sovrum_fonster",
+        "supported_features": 41
+      },
+      "last_changed": "2019-02-16T18:11:45.978600+00:00",
+      "last_updated": "2019-02-16T18:11:45.978600+00:00",
+      "context": {
+        "id": "c7f79ba696334de7a18c895c0491d499",
+        "parent_id": null,
+        "user_id": null
+      }
+    },
+    {
+      "entity_id": "sensor.occupancy",
+      "state": "home",
+      "attributes": {
+        "last_seen": "R\u00f6relsedetektor Tomas rum 3 minutes ago",
+        "time_last_seen": "2019-02-16 23:24"
+      },
+      "last_changed": "2019-02-16T18:11:53.596418+00:00",
+      "last_updated": "2019-02-16T22:28:00.107816+00:00",
+      "context": {
+        "id": "f26aa4b08eb34fa58680bc2a0ca3b7bd",
+        "parent_id": null,
+        "user_id": "5a6c8d01ee2f4e4b90c7df8ea1ddd526"
+      }
+    },
+    {
+      "entity_id": "sensor.presence_tomas",
+      "state": "Home",
+      "attributes": {
+        "entity_picture": "/local/tomas.jpg",
+        "friendly_name": "Tomas tracker",
+        "latitude": 61.233804,
+        "longitude": 16.0312271,
+        "proxi_direction": "stationary",
+        "proxi_distance": 0,
+        "source_type": "gps",
+        "gps_accuracy": 16
+      },
+      "last_changed": "2019-02-16T18:11:53.650806+00:00",
+      "last_updated": "2019-02-16T19:01:07.960903+00:00",
+      "context": {
+        "id": "8e768b8dc56a4257bb0540f9734a06de",
+        "parent_id": null,
+        "user_id": "5a6c8d01ee2f4e4b90c7df8ea1ddd526"
+      }
+    },
+    {
+      "entity_id": "persistent_notification.http_login",
+      "state": "notifying",
+      "attributes": {
+        "title": "Login attempt failed",
+        "message": "Login attempt or request with invalid authentication from 111.22.3.4"
+      },
+      "last_changed": "2019-02-16T21:45:59.552536+00:00",
+      "last_updated": "2019-02-16T21:45:59.552536+00:00",
+      "context": {
+        "id": "e7f1576b60f1406397b9a8cfc75f1329",
+        "parent_id": null,
+        "user_id": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": 3,
+  "type": "event",
+  "event": {
+    "event_type": "call_service",
+    "data": {
+      "domain": "light",
+      "service": "turn_on",
+      "service_data": {
+        "entity_id": "light.tomas_rum_fonster"
+      }
+    },
+    "origin": "LOCAL",
+    "time_fired": "2019-02-17T12:21:24.802946+00:00",
+    "context": {
+      "id": "2bbb14fc617a4e088b3cbbe37d9fbee8",
+      "user_id": null
+    }
+  }
+}

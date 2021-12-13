@@ -1,0 +1,9 @@
+{
+  "id": 3,
+  "type": "result",
+  "success": false,
+  "error": {
+    "code": "invalid_format",
+    "message": "Message incorrectly formatted: expected str for dictionary value @ data['event_type']. Got 100"
+  }
+}
