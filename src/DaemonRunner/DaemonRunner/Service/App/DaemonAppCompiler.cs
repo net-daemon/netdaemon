@@ -32,14 +32,14 @@ namespace NetDaemon.Service.App
         {
             _logger.LogDebug("Loading dynamically compiled apps...");
             var assembly = Load();
-            var apps = assembly.GetAppClasses().ToList();
+            var apps = assembly?.GetAppClasses().ToList();
 
-            if (!apps.Any())
+            if (apps?.Any() == false)
                 _logger.LogWarning("No .cs files found, please add files to {SourceFolder}", _sourceFolder);
             else
-                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count());
+                _logger.LogDebug("Found total of {NumberOfApps} apps", apps?.Count);
 
-            return apps;
+            return apps!;
         }
 
         private Assembly? _generatedAssemby;
