@@ -17,6 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="6.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="Moq" Version="4.16.1" />
@@ -49,6 +50,9 @@
     <Compile Remove="DaemonRunner/CodeGen/**" />
     <Compile Remove="DaemonRunner/Fixtures/**" />
     <Compile Remove="DaemonRunner/FaultyApp/**" />
+    <Content Include="DaemonRunner\Fixtures\AppWithDiSetup\RequireServiceApp.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="DaemonRunner/Fixtures/**">

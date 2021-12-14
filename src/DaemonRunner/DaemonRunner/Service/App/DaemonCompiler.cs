@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
@@ -136,6 +137,7 @@ namespace NetDaemon.Service.App
                         MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(NetDaemonHost).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(IServiceCollection).Assembly.Location),
                     };
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())

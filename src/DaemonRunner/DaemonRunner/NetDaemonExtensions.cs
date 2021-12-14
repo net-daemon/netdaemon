@@ -69,7 +69,16 @@ namespace NetDaemon
             if (UseLocalAssemblyLoading())
                 services.AddSingleton<IDaemonAppCompiler, LocalDaemonAppCompiler>();
             else
-                services.AddSingleton<IDaemonAppCompiler, DaemonAppCompiler>();
+            {
+                // Build a temporary ServiceProvider with all the services registered up till now so we can use it to create the DaemonAppCompiler 
+                var compiler = ActivatorUtilities.CreateInstance<DaemonAppCompiler>(services.BuildServiceProvider());
+
+                // now register that instance as a singleton fro future use
+                services.AddSingleton<IDaemonAppCompiler>(_ => compiler);
+                
+                // and add Services from dynamic compiled code
+                compiler.RegisterDynamicServices(services);
+            }
         }
 
         /// <summary>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetDaemon.Common;
@@ -31,19 +32,41 @@ namespace NetDaemon.Service.App
         {
             _logger.LogDebug("Loading dynamically compiled apps...");
             var assembly = Load();
-            var apps = assembly.GetAppClasses();
+            var apps = assembly?.GetAppClasses().ToList();
 
-            if (!apps.Any())
+            if (apps?.Any() == false)
                 _logger.LogWarning("No .cs files found, please add files to {SourceFolder}", _sourceFolder);
             else
-                _logger.LogDebug("Found total of {NumberOfApps} apps", apps.Count());
+                _logger.LogDebug("Found total of {NumberOfApps} apps", apps?.Count);
 
-            return apps;
+            return apps!;
         }
 
-        public Assembly Load()
+        private Assembly? _generatedAssembly;
+
+        public IServiceCollection RegisterDynamicServices(IServiceCollection serviceCollection)
         {
-            return DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
+            var assembly = Load();
+            var methods = assembly?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
+                .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ?? Array.Empty<MethodInfo>();
+
+            if (methods.Any(m => m.GetParameters().Length != 1 && m.GetParameters()[0].GetType() != typeof(IServiceProvider)))
+            {
+                throw new InvalidOperationException("Methods with [ServiceCollectionExtension] Attribute should have exactly one parameter of type IServiceCollection");
+            }
+    
+            foreach (var methodInfo in methods )
+            {
+                methodInfo.Invoke(null, new object?[]{ serviceCollection });
+            }
+
+            return serviceCollection;
+        }
+
+        public Assembly? Load()
+        {
+            return _generatedAssembly ??= DaemonCompiler.GetCompiledAppAssembly(out _, _sourceFolder!, _logger);
         }
     }
+    
 }
