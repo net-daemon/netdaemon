@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Reactive.Linq;
+using System.Text.Json;
+using Moq;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers
 {
@@ -8,6 +11,15 @@ namespace NetDaemon.HassModel.Tests.TestHelpers
         {
             var jsonString = JsonSerializer.Serialize(value);
             return JsonSerializer.Deserialize<JsonElement>(jsonString);
+        }
+
+        public static Mock<IObserver<T>> SubscribeMock<T>(this IObservable<T> observable)
+        {
+            var observerMock = new Mock<IObserver<T>>();
+
+            observable.Subscribe(observerMock.Object);
+
+            return observerMock;
         }
     }
 }

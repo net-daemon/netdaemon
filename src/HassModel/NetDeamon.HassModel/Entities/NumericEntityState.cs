@@ -33,7 +33,9 @@ namespace NetDaemon.HassModel.Entities
     /// </summary>
     public record NumericStateChange : StateChange<NumericEntity, NumericEntityState> 
     {
-        internal NumericStateChange(StateChange e) : base(e) { }
+        internal NumericStateChange(NumericEntity entity, NumericEntityState? old, NumericEntityState? @new) : base(entity, old, @new)
+        {
+        }
     }
     
     /// <summary>
@@ -43,8 +45,7 @@ namespace NetDaemon.HassModel.Entities
         where TEntity : Entity
         where TEntityState : EntityState
     {
-        internal NumericStateChange(StateChange<TEntity, TEntityState> e) 
-            : base(new StateChange(e.Entity, EntityState.Map<TEntityState>(e.Old), EntityState.Map<TEntityState>(e.New) )) 
+        internal NumericStateChange(TEntity entity, TEntityState? old, TEntityState? @new) : base(entity, old, @new)
         { }
     }
 }

@@ -23,11 +23,12 @@ namespace NetDaemon.HassModel.Entities
         
         /// <inheritdoc/>
         public override IObservable<NumericStateChange> StateAllChanges() => 
-            base.StateAllChanges().Select(e => new NumericStateChange(e));
+            base.StateAllChanges().Select(e => new NumericStateChange(this, 
+                Entities.EntityState.Map<NumericEntityState>(e.Old),
+                Entities.EntityState.Map<NumericEntityState>(e.New)));
         
         /// <inheritdoc/>
-        public override IObservable<NumericStateChange> StateChanges() => 
-            base.StateChanges().Select(e => new NumericStateChange(e));
+        public override IObservable<NumericStateChange> StateChanges() => StateAllChanges().StateChangesOnly();
     }
     
     /// <summary>
@@ -53,7 +54,7 @@ namespace NetDaemon.HassModel.Entities
 
         /// <inheritdoc/>
         public override IObservable<NumericStateChange<TEntity, TEntityState>> StateAllChanges() => 
-            base.StateAllChanges().Select(e => new NumericStateChange<TEntity, TEntityState>(e));
+            base.StateAllChanges().Select(e => new NumericStateChange<TEntity, TEntityState>((TEntity)this, e.Old, e.New));
 
         /// <inheritdoc/>
         public override IObservable<NumericStateChange<TEntity, TEntityState>> StateChanges() =>
