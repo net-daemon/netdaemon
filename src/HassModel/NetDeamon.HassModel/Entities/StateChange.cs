@@ -31,10 +31,7 @@
         where TEntity : Entity 
         where TEntityState : EntityState
     {
-        internal StateChange(StateChange stateChange) : 
-            base(stateChange.Entity,
-                EntityState.Map<TEntityState>(stateChange.Old),
-                EntityState.Map<TEntityState>(stateChange.New))
+        internal StateChange(TEntity entity, TEntityState? old, TEntityState? @new) : base(entity, old, @new)
         { }
 
         /// <inheritdoc/>

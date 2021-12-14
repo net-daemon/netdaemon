@@ -45,6 +45,8 @@ namespace NetDaemon.HassModel.Tests.Entities
             withAttributes.Attributes!.setPoint.Should().Be(21.5);
             withAttributes.EntityState!.Attributes!.units.Should().Be("Celcius");
             withAttributes.EntityState!.Attributes!.setPoint.Should().Be(21.5);
+            withAttributes.StateAllChanges().Where(e => e.New?.State > 1.2 && e.Entity != null);
+
         }
 
         [Fact]
@@ -52,7 +54,7 @@ namespace NetDaemon.HassModel.Tests.Entities
         {
             var entityId = "sensor.temperature";
 
-            var haContextMock = new Mock<IHaContext>();
+            var haContextMock = new HaContextMock();
             haContextMock.Setup(m => m.GetState(entityId)).Returns(
                 new EntityState { EntityId = entityId, State = "12.3",
                     AttributesJson = JsonSerializer.Deserialize<JsonElement>(@"{""setPoint"": 21.5, ""units"": ""Celcius""}")
@@ -82,6 +84,10 @@ namespace NetDaemon.HassModel.Tests.Entities
             numericWithAttributes.Attributes!.setPoint.Should().Be(21.5);
             numericWithAttributes.EntityState!.Attributes!.units.Should().Be("Celcius");
             numericWithAttributes.EntityState!.Attributes!.setPoint.Should().Be(21.5);
+            
+            haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity, new EntityState(), new EntityState()));
+            numericWithAttributes.StateAllChanges().Where(e => e.New?.State > 1.2 && e.Entity != null).Subscribe();
+
         }
 
         record TestSensorAttributes(double setPoint, string units);
@@ -91,26 +97,81 @@ namespace NetDaemon.HassModel.Tests.Entities
         {
             var haContextMock = new HaContextMock();
             
-            var target = new NumericEntity(haContextMock.Object, "domain.testEntity");
-            var stateChangeObserverMock = new Mock<IObserver<NumericStateChange>>();
-            var stateAllChangeObserverMock = new Mock<IObserver<NumericStateChange>>();
+            var entity = new Entity(haContextMock.Object, "domain.testEntity");
+            var target = new NumericEntity(entity);
+            
+            haContextMock.Setup(m => m.GetState(entity.EntityId)).Returns(new EntityState() { State = "3.14" });
 
-            target.StateAllChanges().Subscribe(stateAllChangeObserverMock.Object);
-            target.StateChanges().Subscribe(stateChangeObserverMock.Object);
+            var stateAllChangeObserverMock = target.StateAllChanges().SubscribeMock();
+            var stateChangeObserverMock = target.StateChanges().SubscribeMock();
 
-            haContextMock.StateAllChangeSubject.OnNext(new StateChange(target,
+            haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
                                                                        old:  new EntityState { State = "1" },
                                                                        @new: new EntityState { State = "1"}));
 
-            haContextMock.StateAllChangeSubject.OnNext(new StateChange(target, 
+            haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity, 
                                                                        old:  new EntityState { State = "1" },
                                                                        @new: new EntityState { State = "2"}));
 
-            stateChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>(e => e.New!.State!.Equals(1.0)) ), Times.Never);
-            stateChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>(e => e.New!.State!.Equals(2.0)) ), Times.Once);
+            // Assert
+            stateChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>
+            (e => e.Entity.State.Equals(3.14) && 
+                  e.Old!.State.Equals(1.0) &&  
+                  e.New!.State.Equals(2.0) )), Times.Once);
+            stateChangeObserverMock.VerifyNoOtherCalls();
+
+            stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>
+            (e => e.Entity.State.Equals(3.14) && 
+                  e.Old!.State.Equals(1.0) && 
+                  e.New!.State.Equals(2.0))), Times.Once);
+           
+            stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>
+            (e => e.Entity.State.Equals(3.14) && 
+                  e.Old!.State.Equals(1.0) && 
+                  e.New!.State.Equals(1.0))), Times.Once);
+            stateAllChangeObserverMock.VerifyNoOtherCalls();            
+        }
+        
+        [Fact]
+        public void GenericNumericEntityShouldShowStateChangesFromContext()
+        {
+            // Arrange
+            var haContextMock = new HaContextMock();
             
-            stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>(e => e.Old!.State!.Equals(1.0)) ), Times.Exactly(2));
-            stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<NumericStateChange>() ), Times.Exactly(2));
+            var entity = new Entity(haContextMock.Object, "domain.testEntity");
+            var target = new NumericTestEntity(entity);
+
+            var stateChangeObserverMock = target.StateChanges().SubscribeMock();
+            var stateAllChangeObserverMock  = target.StateAllChanges().SubscribeMock();
+
+            haContextMock.Setup(m => m.GetState(entity.EntityId)).Returns(new EntityState() { State = "3.14" });
+
+            // Act
+            haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
+                old:  new EntityState { State = "1" },
+                @new: new EntityState { State = "1" }));
+
+            haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity, 
+                old:  new EntityState { State = "1" },
+                @new: new EntityState { State = "2" }));
+
+            // Assert
+            stateChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
+                (e => e.Entity.State.Equals(3.14) && 
+                      e.Old!.State.Equals(1.0) &&  
+                      e.New!.State.Equals(2.0) )), Times.Once);
+            stateChangeObserverMock.VerifyNoOtherCalls();
+
+            stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
+                (e => e.Entity.State.Equals(3.14) && 
+                      e.Old!.State.Equals(1.0) && 
+                      e.New!.State.Equals(2.0))), Times.Once);
+           
+            stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
+                (e => e.Entity.State.Equals(3.14) && 
+                      e.Old!.State.Equals(1.0) && 
+                      e.New!.State.Equals(1.0))), Times.Once);
+            stateAllChangeObserverMock.VerifyNoOtherCalls();
         }
     }
 }

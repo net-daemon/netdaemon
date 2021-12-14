@@ -9,8 +9,17 @@ namespace NetDaemon.HassModel.Tests.TestHelpers
         public TestEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
     }
  
-    record TestEntityAttributes
+    public record TestEntityAttributes
     {
         [JsonPropertyName("name")] public string Name { get; set; } = "";
+    }
+
+    public record NumericTestEntity : NumericEntity<NumericTestEntity, NumericEntityState<TestEntityAttributes>, TestEntityAttributes>
+    {
+        public NumericTestEntity(Entity entity) : base(entity)
+        { }
+
+        public NumericTestEntity(IHaContext haContext, string entityId) : base(haContext, entityId)
+        { }
     }
 }

@@ -29,7 +29,7 @@ namespace NetDaemon.HassModel.Entities
             HaContext = haContext;
             EntityId = entityId;
         }
-
+        
         /// <summary>
         /// Area name of entity
         /// </summary>
@@ -99,7 +99,9 @@ namespace NetDaemon.HassModel.Entities
 
         /// <inheritdoc />
         public override IObservable<StateChange<TEntity, TEntityState>> StateAllChanges() =>
-            base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>(e));
+            base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, 
+                Entities.EntityState.Map<TEntityState>(e.Old), 
+                Entities.EntityState.Map<TEntityState>(e.New)));
 
         /// <inheritdoc />
         public override IObservable<StateChange<TEntity, TEntityState>> StateChanges() => StateAllChanges().StateChangesOnly();
