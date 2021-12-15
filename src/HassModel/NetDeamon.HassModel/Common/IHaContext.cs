@@ -49,7 +49,7 @@ namespace NetDaemon.HassModel.Common
         /// <summary>
         /// Sends an event to Home Assistant
         /// </summary>
-        /// <param name="eventtType">The event_type for the event</param>
+        /// <param name="eventType">The event_type for the event</param>
         /// <param name="data">The data for the event, will be json serialized as the date element</param>
         void SendEvent(string eventType, object? data = null);
     }
