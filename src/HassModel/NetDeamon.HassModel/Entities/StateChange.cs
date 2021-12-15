@@ -5,7 +5,7 @@
     /// </summary>
     public record StateChange
     {
-        internal StateChange(Entity entity, EntityState? old, EntityState? @new) 
+        public StateChange(Entity entity, EntityState? old, EntityState? @new) 
         {
             Entity = entity;
             New = @new;
@@ -31,7 +31,7 @@
         where TEntity : Entity 
         where TEntityState : EntityState
     {
-        internal StateChange(TEntity entity, TEntityState? old, TEntityState? @new) : base(entity, old, @new)
+        public StateChange(TEntity entity, TEntityState? old, TEntityState? @new) : base(entity, old, @new)
         { }
 
         /// <inheritdoc/>
