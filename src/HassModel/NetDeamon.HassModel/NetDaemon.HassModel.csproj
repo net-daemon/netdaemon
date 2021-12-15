@@ -24,11 +24,6 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
       <PackageReference Include="System.Reactive" Version="5.0.0" />
     </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
-  </ItemGroup>
-
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
