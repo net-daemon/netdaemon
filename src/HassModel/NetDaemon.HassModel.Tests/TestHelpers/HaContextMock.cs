@@ -10,8 +10,10 @@ namespace NetDaemon.HassModel.Tests.Entities
         public HaContextMock()
         {
             Setup(m => m.StateAllChanges()).Returns(StateAllChangeSubject);
+            Setup(m => m.Events).Returns(EventsSubject);
         }
 
         public Subject<StateChange> StateAllChangeSubject { get;  } = new();
+        public Subject<Event> EventsSubject { get;  } = new();
     }
 }
