@@ -45,5 +45,12 @@ namespace NetDaemon.HassModel.Common
         /// <param name="entityId"></param>
         /// <returns></returns>
         Area? GetAreaFromEntityId(string entityId);
+
+        /// <summary>
+        /// Sends an event to Home Assistant
+        /// </summary>
+        /// <param name="eventType">The event_type for the event</param>
+        /// <param name="data">The data for the event, will be json serialized as the date element</param>
+        void SendEvent(string eventType, object? data = null);
     }
 }

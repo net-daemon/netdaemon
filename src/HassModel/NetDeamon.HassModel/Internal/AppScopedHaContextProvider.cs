@@ -54,6 +54,10 @@ namespace NetDaemon.HassModel.Internal
 
         public IObservable<Event> Events => _scopedEventObservable.Select(e => e.Map());
 
+        public void SendEvent(string eventType, object? data = null) => 
+            // For now we do just a fire and forget of the async SendEvent method. HassClient will handle and log exceptions 
+            _hassClient.SendEvent(eventType, data);
+
         public void Dispose()
         {
             _scopedEventObservable.Dispose();
