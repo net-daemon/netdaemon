@@ -39,6 +39,8 @@ jobs:
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel
         run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
+      - name: 🎁 Pack HassModel integration
+        run: dotnet src/HassModel/NetDaemon.HassModel.Integration/NetDaemon.HassModel.Integration.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel codegen
         run: dotnet pack src/HassModel/NetDaemon.HassModel.CodeGenerator/NetDaemon.HassModel.CodeGenerator.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack scheduling extensions
