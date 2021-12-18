@@ -88,7 +88,7 @@ namespace NetDaemon.HassModel.CodeGenerator
 
             var autoProperties = serviceArguments.Arguments
                 .Select(argument => Property($"{argument.TypeName!}?", argument.PropertyName!).ToPublic()
-                    .WithJsonPropertyName(argument.VariableName!).WithSummaryComment(argument.Comment))
+                    .WithJsonPropertyName(argument.HaName!).WithSummaryComment(argument.Comment))
                 .ToArray();
 
             yield return Record(serviceArguments.TypeName, autoProperties).ToPublic();
