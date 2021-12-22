@@ -92,7 +92,7 @@ public class Root
     public void Run(IHaContext ha)
     {
         IEntities entities = new Entities(ha);
-        NumericSensor livingBass  = entities.Number.LivingBass;
+        NumberEntity livingBass  = entities.Number.LivingBass;
         double? bass = livingBass.State;
 
         InputNumberEntity targetTempEntity = entities.InputNumber.TargetTemperature;
@@ -111,9 +111,17 @@ public class Root
         [Fact]
         public void TestNumberExtensionMethodGeneration()
         {
-            var entityStates = new HassState[] { new() {
+            var entityStates = new HassState[] { 
+                new() {
                     EntityId = "number.living_bass",
                     AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
+                },           
+                new() {
+                    EntityId = "unknown.number",
+                    AttributesJson = new { unit_of_measurement = "pcs", }.AsJsonElement()
+                },           
+                new() {
+                    EntityId = "unknown.string",
                 },           
             };
 
@@ -129,7 +137,6 @@ public class Root
                             Fields = new HassServiceField[] {
                                 new() { Field = "value", Selector = new NumberSelector(), },
                             },
-                            
                         }
                     }
                 }
