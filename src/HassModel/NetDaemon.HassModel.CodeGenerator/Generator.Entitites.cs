@@ -167,8 +167,11 @@ namespace NetDaemon.HassModel.CodeGenerator
 
         private static bool IsNumeric(HassState entity)
         {
-            if (EntityIdHelper.GetDomain(entity.EntityId) == "input_number") return true; 
-            return entity.Attributes?.ContainsKey("unit_of_measurement") ?? false;
+            var domain = EntityIdHelper.GetDomain(entity.EntityId);
+            if (EntityIdHelper.NumericDomains.Contains(domain)) return true;
+
+            // Mixed domains have both numeric and non-numeric entities, if it has a 'unit_of_measurement' we threat it as numeric
+            return EntityIdHelper.MixedDomains.Contains(domain) && entity.Attributes?.ContainsKey("unit_of_measurement") == true;
         }
 
         /// <summary>
