@@ -1,20 +1,19 @@
 ﻿using System;
 
-namespace NetDaemon.HassModel.CodeGenerator.Helpers
-{
-    internal static class EntityIdHelper
-    {
-        public static readonly string[] NumericDomains = { "input_number", "number" };
-        public static readonly string[] MixedDomains = { "sensor" };
-        
-        public static string GetDomain(string str)
-        {
-            return str[..str.IndexOf(".", StringComparison.InvariantCultureIgnoreCase)];
-        }
+namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
-        public static string GetEntity(string str)
-        {
-            return str[(str.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
-        }
+internal static class EntityIdHelper
+{
+    public static readonly string[] NumericDomains = { "input_number", "number" };
+    public static readonly string[] MixedDomains = { "sensor" };
+        
+    public static string GetDomain(string str)
+    {
+        return str[..str.IndexOf(".", StringComparison.InvariantCultureIgnoreCase)];
+    }
+
+    public static string GetEntity(string str)
+    {
+        return str[(str.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) + 1)..];
     }
 }

@@ -4,16 +4,15 @@ using JoySoftware.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator.Extensions;
 using NetDaemon.HassModel.CodeGenerator.Helpers;
 
-namespace NetDaemon.HassModel.CodeGenerator
+namespace NetDaemon.HassModel.CodeGenerator;
+
+internal record EntitySet(string Domain, bool IsNumeric, IEnumerable<HassState> EntityStates)
 {
-    internal record EntitySet(string Domain, bool IsNumeric, IEnumerable<HassState> EntityStates)
-    {
-        private readonly string prefixedDomain = (IsNumeric && EntityIdHelper.MixedDomains.Contains(Domain)  ? "numeric_" : "") + Domain;
+    private readonly string prefixedDomain = (IsNumeric && EntityIdHelper.MixedDomains.Contains(Domain)  ? "numeric_" : "") + Domain;
 
-        public string EntityClassName => NamingHelper.GetDomainEntityTypeName(prefixedDomain);
+    public string EntityClassName => NamingHelper.GetDomainEntityTypeName(prefixedDomain);
 
-        public string AttributesClassName => $"{prefixedDomain}Attributes".ToNormalizedPascalCase();
+    public string AttributesClassName => $"{prefixedDomain}Attributes".ToNormalizedPascalCase();
 
-        public string EntitiesForDomainClassName => $"{Domain}Entities".ToNormalizedPascalCase();
-    }
+    public string EntitiesForDomainClassName => $"{Domain}Entities".ToNormalizedPascalCase();
 }
