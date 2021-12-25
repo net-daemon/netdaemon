@@ -40,6 +40,8 @@ jobs:
         run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
       - name: 🎁 Pack Daemon
         run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+      - name: 🎁 Pack AppModel
+        run: dotnet pack src/AppModel/NetDaemon.AppModel/NetDaemon.AppModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
       - name: 🎁 Pack HassModel
         run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
       - name: 🎁 Pack HassModel integration

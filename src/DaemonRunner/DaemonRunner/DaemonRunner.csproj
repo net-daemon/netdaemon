@@ -42,6 +42,7 @@
     <ProjectReference Include="..\..\App\NetDaemon.App\NetDaemon.App.csproj" />
     <ProjectReference Include="..\..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
     <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using NetDaemon.Common;
 using NetDaemon.Common.Reactive;
 using NetDaemon.Daemon;
+using NetDaemon.Extensions.Scheduler;
 using NetDaemon.Infrastructure.Extensions;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -138,6 +139,7 @@ namespace NetDaemon.Service.App
                         MetadataReference.CreateFromFile(typeof(NetDaemonHost).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(System.Reactive.Linq.Observable).Assembly.Location),
                         MetadataReference.CreateFromFile(typeof(IServiceCollection).Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(INetDaemonScheduler).Assembly.Location),
                     };
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
