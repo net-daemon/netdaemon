@@ -1,0 +1,3 @@
+DuplicateKeySetting:
+  ThisIsDuplicated: Hello test!
+  ThisIsDuplicated: Another string
