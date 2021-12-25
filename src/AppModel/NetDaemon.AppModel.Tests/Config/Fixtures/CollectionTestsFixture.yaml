@@ -1,0 +1,56 @@
+TestCollections:
+  SomeEnumerable:
+    - A string
+    - Another string
+  SomeList:
+    - A list item
+    - Another list item
+  SomeReadOnlyList:
+    - Readonly list item
+    - Another readonly list item
+  SomeReadOnlyCollection:
+    - Readonly collection item
+    - Another readonly collection item
+  SomeCollection:
+    - Collection item
+    - Another collection item
+  SomeReadOnlyDictionary:
+    ReadOnlyKey1: Item1
+    ReadOnlyKey2: Item2
+  SomeDictionary:
+    ReadOnlyKey1: Item1
+    ReadOnlyKey2: Item2
+
+AnotherTestCollections:
+  - Plain list
+  - Should work
+  - too
+
+AnotherTestDictionary:
+  key1: value1
+  key2: value2
+  key3: value3
+
+AnotherTestDictionaryOfLists:
+  key1: 
+    - Item 1
+    - Item 2
+  key2: 
+    - Item 1
+    - Item 2
+
+AnotherTestListOfDictionary:
+  - 
+    Key 1: Item 1
+    Key 2: Item 2
+  - 
+    Key 1: Item 1
+    Key 2: Item 2
+
+AnotherTestArray:
+  - Item 1
+  - Item 2
+
+AnotherTestEnum:
+  - Enum1
+  - Enum2
