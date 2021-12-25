@@ -1,30 +1,22 @@
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 namespace NetDaemon.AppModel.Internal;
 
 internal class ApplicationContext :
     IApplicationContext,
-    IApplicationInstance,
-    IAsyncDisposable
+    IApplicationInstance
 {
-    public string Id { get; init; } = string.Empty;
+    public string Id { get; }
 
     public bool IsEnabled { get; } = false;
 
-    public Type Type { get; init; } = typeof(object);
+    public Type AppType { get; }
 
     public object Instance { get; }
 
     private readonly IServiceScope? _serviceScope;
     public ApplicationContext(
         string id,
-        Type type,
-        IServiceProvider serviceProvider,
-        object instance
+        Type appType,
+        IServiceProvider serviceProvider
     )
     {
         // Create a new ServiceScope for all objects we create for this app
@@ -32,14 +24,18 @@ internal class ApplicationContext :
         _serviceScope = serviceProvider.CreateScope();
         serviceProvider = _serviceScope.ServiceProvider;
 
+        // This ApplicationContext needs to be resolvable from this scoped provider
+        // The class ApplicationScope which is registered as scoped makes this possible
         var appScope = serviceProvider.GetService<ApplicationScope>();
         if (appScope != null)
         {
             appScope.ApplicationContext = this;
         }
         Id = id;
-        Type = type;
-        Instance = instance;
+        AppType = appType;
+
+        // Now create the actual app from the new scope
+        Instance = ActivatorUtilities.CreateInstance(serviceProvider, appType);
     }
 
     public async ValueTask DisposeAsync()
