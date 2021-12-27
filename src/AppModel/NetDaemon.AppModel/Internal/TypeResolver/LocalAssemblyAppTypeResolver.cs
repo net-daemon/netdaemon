@@ -7,7 +7,7 @@ namespace NetDaemon.AppModel.Internal.TypeResolver;
 /// <summary>
 ///     Resolves types from the local assebmly
 /// </summary>
-internal class LocalAssemblyTypeResolver : ITypeResolver
+internal class LocalAssemblyAppTypeResolver : IAppTypeResolver
 {
     public IReadOnlyCollection<Type> GetTypes()
     {

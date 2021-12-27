@@ -20,7 +20,7 @@ public class TypeResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var typeResolver = provider.GetService<ITypeResolver>() ?? throw new NullReferenceException("Not expected null");
+        var typeResolver = provider.GetService<IAppTypeResolver>() ?? throw new NullReferenceException("Not expected null");
 
         var t = typeResolver.GetTypes().Where(n => n.Name == "LocalApp").ToList();
         t.Should().HaveCount(1);
@@ -67,7 +67,7 @@ public class TypeResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var typeResolver = provider.GetService<ITypeResolver>() ?? throw new NullReferenceException("Not expected null");
+        var typeResolver = provider.GetService<IAppTypeResolver>() ?? throw new NullReferenceException("Not expected null");
 
         var t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);
@@ -114,7 +114,7 @@ public class TypeResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var typeResolver = provider.GetService<ITypeResolver>() ?? throw new NullReferenceException("Not expected null");
+        var typeResolver = provider.GetService<IAppTypeResolver>() ?? throw new NullReferenceException("Not expected null");
 
         var t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);

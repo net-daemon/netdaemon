@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel.Internal;
-using LocalApps;
 
 namespace NetDaemon.AppModel.Tests.Context;
 
@@ -23,7 +21,7 @@ public class ApplicationScopeTests
     {
         var scope = new ApplicationScope
         {
-            ApplicationContext = new ApplicationContext("id", typeof(object), new ServiceCollection().BuildServiceProvider(), new object())
+            ApplicationContext = new ApplicationContext("id", typeof(object), new ServiceCollection().BuildServiceProvider())
         };
         var ctx = scope.ApplicationContext;
 
