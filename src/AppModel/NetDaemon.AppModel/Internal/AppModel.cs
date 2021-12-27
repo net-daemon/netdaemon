@@ -1,19 +1,18 @@
-using System.Linq;
 using System.Reflection;
 
 namespace NetDaemon.AppModel.Internal;
 
 internal class AppModelImpl : IAppModel
 {
-    private readonly ITypeResolver _typeResolver;
+    private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
     private readonly IServiceProvider _provider;
 
     public AppModelImpl(
-        ITypeResolver typeResolver,
+        IEnumerable<IAppTypeResolver> appTypeResolvers,
         IServiceProvider provider
     )
     {
-        _typeResolver = typeResolver;
+        _appTypeResolvers = appTypeResolvers;
         _provider = provider;
     }
 
@@ -22,16 +21,19 @@ internal class AppModelImpl : IAppModel
         return ValueTask.CompletedTask;
     }
 
+    // Maybe the AppModelImpl should keep the list of created apps internal instead of returning it, so this class is also responsible
+    // for disposing them
+    
     public IReadOnlyCollection<IApplicationInstance> LoadApplications(IReadOnlyCollection<string>? skipLoadApplicationList = null)
     {
         // Todo: filter out skipped apps
         var result = new List<IApplicationInstance>();
         foreach (var appType in GetNetDaemonApplicationTypes())
         {
-            var instance = ActivatorUtilities.CreateInstance(_provider, appType);
+            // ThE app instance should be created with the Scoped ServcieProvider that is created by the  ApplicationContext  
             var id = appType.FullName ?? throw new InvalidOperationException("Type was not expected to be null");
             result.Add(
-                new ApplicationContext(id, appType, _provider, instance)
+                new ApplicationContext(id, appType, _provider)
             );
         }
         return result;
@@ -40,10 +42,11 @@ internal class AppModelImpl : IAppModel
     private List<Type> GetNetDaemonApplicationTypes()
     {
         // Get all classes with the [NetDaemonAppAttribute]
-        return _typeResolver.GetTypes().Where(n => n.IsClass &&
-                                    !n.IsGenericType &&
-                                    !n.IsAbstract &&
-                                    n.GetCustomAttribute<NetDaemonAppAttribute>() != null
-                                    ).ToList();
+        return _appTypeResolvers.SelectMany(r => r.GetTypes())
+                                .Where(n => n.IsClass &&
+                                           !n.IsGenericType &&
+                                           !n.IsAbstract &&
+                                            n.GetCustomAttribute<NetDaemonAppAttribute>() != null
+                                           ).ToList();
     }
 }
