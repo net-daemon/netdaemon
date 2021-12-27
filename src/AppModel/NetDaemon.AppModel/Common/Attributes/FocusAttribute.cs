@@ -1,5 +1,3 @@
-using System;
-
 namespace NetDaemon.AppModel.Common;
 
 /// <summary>

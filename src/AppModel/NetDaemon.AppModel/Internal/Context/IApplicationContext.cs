@@ -18,7 +18,7 @@ internal interface IApplicationContext : IAsyncDisposable
     /// <summary>
     ///     The type of the app
     /// </summary>
-    Type Type { get; }
+    Type AppType { get; }
 
     /// <summary>
     ///     The type of the app

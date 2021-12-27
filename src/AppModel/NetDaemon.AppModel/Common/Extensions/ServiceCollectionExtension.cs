@@ -11,8 +11,8 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddAppModel()
-            .AddSingleton<LocalAssemblyTypeResolver>()
-            .AddSingleton<ITypeResolver>(s => s.GetRequiredService<LocalAssemblyTypeResolver>());
+            .AddSingleton<LocalAssemblyAppTypeResolver>()
+            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<LocalAssemblyAppTypeResolver>());
         return services;
     }
 
@@ -24,8 +24,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
             .AddSingleton<SyntaxTreeResolver>()
             .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
-            .AddSingleton<DynamicCompiledAssemblyTypeResolver>()
-            .AddSingleton<ITypeResolver>(s => s.GetRequiredService<DynamicCompiledAssemblyTypeResolver>());
+            .AddSingleton<DynamicCompiledAssemblyAppTypeResolver>()
+            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<DynamicCompiledAssemblyAppTypeResolver>());
         return services;
     }
 

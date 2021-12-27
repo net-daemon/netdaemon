@@ -5,12 +5,12 @@ namespace NetDaemon.AppModel.Internal.TypeResolver;
 /// <summary>
 ///     Resolves types from dynamically compiled files given a path
 /// </summary>
-internal class DynamicCompiledAssemblyTypeResolver : ITypeResolver
+internal class DynamicCompiledAssemblyAppTypeResolver : IAppTypeResolver
 {
     private readonly ICompilerFactory _compilerFactory;
     private CollectibleAssemblyLoadContext? _currentContext;
 
-    public DynamicCompiledAssemblyTypeResolver(
+    public DynamicCompiledAssemblyAppTypeResolver(
         ICompilerFactory compilerFactory
     )
     {
