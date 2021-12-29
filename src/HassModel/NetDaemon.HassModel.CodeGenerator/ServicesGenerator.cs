@@ -1,13 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using JoySoftware.HomeAssistant.Model;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.HassModel.CodeGenerator.Extensions;
-using NetDaemon.HassModel.Common;
-using NetDaemon.HassModel.Entities;
-using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
-using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
+﻿using Microsoft.CodeAnalysis;
+
 namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class ServicesGenerator
@@ -102,7 +94,7 @@ internal static class ServicesGenerator
         var argsParametersString = serviceArguments is not null ? $"{serviceArguments.TypeName} data" : null ;
 
         var serviceMethodName = GetServiceMethodName(serviceName);
-        var targetParam = service.Target is not null ? $"{typeof(ServiceTarget).FullName} target" : null;
+        var targetParam = service.Target is not null ? $"{SimplifyTypeName(typeof(ServiceTarget))} target" : null;
         var targetArg = service.Target is not null ? "target" : "null";
         var targetComment = service.Target is not null ? ParameterComment("target", "The target for this service call") : (SyntaxTrivia?)null;
 

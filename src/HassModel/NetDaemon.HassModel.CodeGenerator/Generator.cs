@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
@@ -17,7 +13,7 @@ public static partial class Generator
     public static string GenerateCode(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
     {
         var code = CreateCompilationUnitSyntax(nameSpace, entities, services);
-            return code.ToFullString();
+        return code.ToFullString();
     }
 
     internal static CompilationUnitSyntax CreateCompilationUnitSyntax(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
@@ -26,7 +22,8 @@ public static partial class Generator
 
         var code = CompilationUnit()
             .AddUsings(UsingDirective(ParseName("System")))
-                .AddUsings(UsingDirective(ParseName("System.Collections.Generic")));
+            .AddUsings(UsingDirective(ParseName("System.Collections.Generic")))
+            .AddUsings(NamingHelper.UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray());
 
         var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).NormalizeWhitespace();
 

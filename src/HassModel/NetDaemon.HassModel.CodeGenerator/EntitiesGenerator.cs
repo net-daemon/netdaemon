@@ -87,7 +87,7 @@ internal static class EntitiesGenerator
 
         var propertyDeclarations = uniqueProperties.Select(a => Property($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
             .ToPublic()
-            .WithAttribute<JsonPropertyNameAttribute>(a.JsonName));
+            .WithJsonPropertyName(a.JsonName));
 
         return Record(entitySet.AttributesClassName, propertyDeclarations).ToPublic();
     }
@@ -172,7 +172,7 @@ internal static class EntitiesGenerator
         var baseType = entitySet.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
         var entityStateType = entitySet.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
 
-        var baseClass = $"{baseType.FullName}<{entitySet.EntityClassName}, {entityStateType.FullName}<{attributesGeneric}>, {attributesGeneric}>";
+        var baseClass = $"{SimplifyTypeName(baseType)}<{entitySet.EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
 
         var (className, variableName) = GetNames<IHaContext>();
         var classDeclaration = $@"record {entitySet.EntityClassName} : {baseClass}
@@ -180,7 +180,7 @@ internal static class EntitiesGenerator
                                             public {entitySet.EntityClassName}({className} {variableName}, string entityId) : base({variableName}, entityId)
                                             {{}}
 
-                                            public {entitySet.EntityClassName}({typeof(Entity).FullName} entity) : base(entity)
+                                            public {entitySet.EntityClassName}({SimplifyTypeName(typeof(Entity))} entity) : base(entity)
                                             {{}}
                                     }}";
 

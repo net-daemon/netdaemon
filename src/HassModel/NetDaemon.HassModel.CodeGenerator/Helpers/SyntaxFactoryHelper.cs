@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NetDaemon.HassModel.CodeGenerator.Extensions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace NetDaemon.HassModel.CodeGenerator.Helpers;
@@ -27,18 +30,26 @@ internal static class SyntaxFactoryHelper
 
     public static MemberDeclarationSyntax WithJsonPropertyName(this MemberDeclarationSyntax input, string name)
     {
-        return input.WithAttributeLists(
-            SingletonList(
-                AttributeList(
-                    SingletonSeparatedList(
-                        Attribute(IdentifierName("System.Text.Json.Serialization.JsonPropertyName"))
-                            .WithArgumentList(
-                                AttributeArgumentList(
-                                    SingletonSeparatedList(
-                                        AttributeArgument(
-                                            LiteralExpression(
-                                                SyntaxKind.StringLiteralExpression,
-                                                Literal(name))))))))));
+        return input.WithAttribute<JsonPropertyNameAttribute>(name);
+   }
+
+    private static MemberDeclarationSyntax WithAttribute<T>(this MemberDeclarationSyntax property, string value) where T: Attribute
+    {
+        var name = (NamingHelper.SimplifyTypeName(typeof(T)));
+
+        name = Regex.Replace(name, "Attribute$", "");
+        var args = ParseAttributeArgumentList($"(\"{value}\")");
+        var attribute = Attribute(ParseName(name), args);
+
+        return property.WithAttributes(attribute);
+    }
+
+    private static MemberDeclarationSyntax WithAttributes(this MemberDeclarationSyntax property, params AttributeSyntax[]? attributeSyntaxes)
+    {
+        var attributes = property.AttributeLists.Add(
+            AttributeList(SeparatedList(attributeSyntaxes)).NormalizeWhitespace());
+
+        return property.WithAttributeLists(attributes);
     }
 
     public static PropertyDeclarationSyntax Property(string typeName, string propertyName, bool init = true)

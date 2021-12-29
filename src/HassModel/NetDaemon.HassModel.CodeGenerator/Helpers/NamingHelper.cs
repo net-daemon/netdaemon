@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Linq;
+using System.Text.Json.Serialization;
 using NetDaemon.HassModel.CodeGenerator.Extensions;
+using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
@@ -59,8 +63,21 @@ internal static class NamingHelper
     {
         var variableName = GetVariableName(type.Name, variablePrefix);
 
-        return (type.FullName!, variableName);
+        return (SimplifyTypeName(type)!, variableName);
     }
+
+    public static string SimplifyTypeName(Type type)
+    {
+        // Use short name if the type is in one of the using namespaces
+        return  UsingNamespaces.Any(u => type.Namespace == u) ? type.Name : type.FullName!;
+    }
+
+    public static readonly string[] UsingNamespaces =
+    {
+        typeof(IHaContext).Namespace!,
+        typeof(JsonPropertyNameAttribute).Namespace!,
+        typeof(Entity).Namespace!,
+    };
 
     private static string GetVariableName(string typeName, string variablePrefix)
     {
