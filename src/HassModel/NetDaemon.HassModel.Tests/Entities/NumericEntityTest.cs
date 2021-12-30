@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Text.Json;
+using System.Threading;
 using FluentAssertions;
 using Moq;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
@@ -172,6 +173,27 @@ namespace NetDaemon.HassModel.Tests.Entities
                       e.Old!.State.Equals(1.0) && 
                       e.New!.State.Equals(1.0))), Times.Once);
             stateAllChangeObserverMock.VerifyNoOtherCalls();
+        }
+        
+        [Fact]
+        public void StatePropertyShouldBeCultureUnaware()
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("De-de");
+            
+            var entityId = "sensor.temperature";
+
+            var haContextMock = new HaContextMock();
+            haContextMock.Setup(m => m.GetState(entityId)).Returns(new EntityState { EntityId = entityId, State = "12.5"});
+            
+            var entity = new Entity(haContextMock.Object, entityId);
+            
+            var numericEntity = entity.AsNumeric();
+            numericEntity.State.Should().Be(12.5);
+            numericEntity.EntityState!.State.Should().Be(12.5);
+            
+            var withAttributesAs = numericEntity.WithAttributesAs<TestEntityAttributes>();
+            withAttributesAs.State.Should().Be(12.5);
+            withAttributesAs.EntityState!.State.Should().Be(12.5);
         }
     }
 }
