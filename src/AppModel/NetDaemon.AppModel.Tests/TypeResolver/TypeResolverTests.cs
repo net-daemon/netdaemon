@@ -15,7 +15,7 @@ public class TypeResolverTests
     {
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelLocalAssembly();
+        serviceCollection.AddLocalAssemblyAppTypeResolver();
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
@@ -60,7 +60,7 @@ public class TypeResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddDynamicCompiledAssemblyAppTypeResolver();
         serviceCollection
             .AddSingleton<ISyntaxTreeResolver>(s => syntaxTreeResolverMock.Object);
 
@@ -72,6 +72,55 @@ public class TypeResolverTests
         var t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);
     }
+
+    [Fact]
+    public void TestDynamicCompiledTypeResolverAndLocalAssemblyTypeResolverHasTypes()
+    {
+        var syntaxTreeResolverMock = new Mock<ISyntaxTreeResolver>();
+        // We setup the mock to return a prebuilt syntaxtree with a fake class
+        syntaxTreeResolverMock
+            .Setup(
+                n => n.GetSyntaxTrees()
+            )
+            .Returns(
+                () =>
+                {
+                    var result = new List<SyntaxTree>();
+                    var sourceText = SourceText.From(
+                        text:
+                        @"
+                        public class FakeClass
+                        {
+                            
+                        }
+                        "
+                        , encoding: Encoding.UTF8);
+                    var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
+                        ?? throw new NullReferenceException("unexpected null reference");
+
+                    result.Add(
+                        syntaxTree
+                    );
+                    return result;
+                }
+            );
+
+        var serviceCollection = new ServiceCollection();
+
+        serviceCollection.AddDynamicCompiledAssemblyAppTypeResolver();
+        serviceCollection.AddLocalAssemblyAppTypeResolver();
+        serviceCollection
+            .AddSingleton<ISyntaxTreeResolver>(s => syntaxTreeResolverMock.Object);
+
+        serviceCollection.AddLogging();
+        var provider = serviceCollection.BuildServiceProvider();
+
+        var typeResolver = provider.GetService<IEnumerable<IAppTypeResolver>>() ?? throw new NullReferenceException("Not expected null");
+
+        var t = typeResolver.SelectMany(n => n.GetTypes()).Where(n => n.Name == "FakeClass" || n.Name == "LocalApp").ToList();
+        t.Should().HaveCount(2);
+    }
+
 
     [Fact]
     public void TestDynamicCompiledTypeResolverUsedMultipleTimesHasType()
@@ -107,7 +156,7 @@ public class TypeResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddDynamicCompiledAssemblyAppTypeResolver();
         serviceCollection
             .AddSingleton<ISyntaxTreeResolver>(s => syntaxTreeResolverMock.Object);
 

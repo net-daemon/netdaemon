@@ -9,7 +9,8 @@ public static class TestHelpers
         var builder = Host.CreateDefaultBuilder()
                     .ConfigureServices((context, services) =>
                     {
-                        services.AddAppModelLocalAssembly();
+                        services.AddAppModelBase();
+                        services.AddLocalAssemblyAppTypeResolver();
                         services.AddTransient<IOptions<ApplicationLocationSetting>>(
                             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
                     })
@@ -30,7 +31,8 @@ public static class TestHelpers
         var builder = Host.CreateDefaultBuilder()
                     .ConfigureServices((context, services) =>
                     {
-                        services.AddAppModelDynamicCompliedAssembly();
+                        services.AddAppModelBase();
+                        services.AddDynamicCompiledAssemblyAppTypeResolver();
                         services.AddTransient<IOptions<ApplicationLocationSetting>>(
                             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
                     })

@@ -11,7 +11,7 @@ public class CompilerIntegrationTests
         // ARRANGE
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddDynamicCompiledAssemblyAppTypeResolver();
         serviceCollection.AddOptions<ApplicationLocationSetting>()
             .Configure(options =>
             {

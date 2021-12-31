@@ -7,29 +7,24 @@ namespace NetDaemon.AppModel.Common.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAppModelLocalAssembly(this IServiceCollection services)
+    public static IServiceCollection AddAppModel(this IServiceCollection services)
     {
         services
-            .AddAppModel()
+            .AddAppModelBase()
+            .AddLocalAssemblyAppTypeResolver()
+            .AddDynamicCompiledAssemblyAppTypeResolver();
+        return services;
+    }
+
+    internal static IServiceCollection AddLocalAssemblyAppTypeResolver(this IServiceCollection services)
+    {
+        services
             .AddSingleton<LocalAssemblyAppTypeResolver>()
             .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<LocalAssemblyAppTypeResolver>());
         return services;
     }
 
-    public static IServiceCollection AddAppModelDynamicCompliedAssembly(this IServiceCollection services)
-    {
-        services
-            .AddAppModel()
-            .AddSingleton<CompilerFactory>()
-            .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
-            .AddSingleton<SyntaxTreeResolver>()
-            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
-            .AddSingleton<DynamicCompiledAssemblyAppTypeResolver>()
-            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<DynamicCompiledAssemblyAppTypeResolver>());
-        return services;
-    }
-
-    private static IServiceCollection AddAppModel(this IServiceCollection services)
+    internal static IServiceCollection AddAppModelBase(this IServiceCollection services)
     {
         services
             .AddSingleton<AppModelImpl>()
@@ -40,6 +35,19 @@ public static class ServiceCollectionExtensions
             .AddConfigManagement();
         return services;
     }
+
+    internal static IServiceCollection AddDynamicCompiledAssemblyAppTypeResolver(this IServiceCollection services)
+    {
+        services
+            .AddSingleton<CompilerFactory>()
+            .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
+            .AddSingleton<SyntaxTreeResolver>()
+            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
+            .AddSingleton<DynamicCompiledAssemblyAppTypeResolver>()
+            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<DynamicCompiledAssemblyAppTypeResolver>());
+        return services;
+    }
+
     private static IServiceCollection AddScopedAppServices(this IServiceCollection services)
     {
         services
