@@ -58,24 +58,22 @@ public class Root
         [Fact]
         public void TestNumericSensorEntityGeneration()
         {
-            // NUmeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute
+            // Numeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute
             var entityStates = new HassState[]
             {
+                new() {
+                    EntityId = "number.living_bass",
+                    AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
+                },           
                 new()
                 {
                     EntityId = "input_number.target_temperature",
-                    AttributesJson = new 
-                    {
-                        unit_of_measurement = "Kwh",
-                    }.AsJsonElement()
+                    AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
                 },                
                 new()
                 {
                     EntityId = "sensor.daily_power_consumption",
-                    AttributesJson = new 
-                    {
-                        unit_of_measurement = "Kwh",
-                    }.AsJsonElement()
+                    AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
                 },
                 new()
                 {
@@ -94,14 +92,69 @@ public class Root
     public void Run(IHaContext ha)
     {
         IEntities entities = new Entities(ha);
+        NumberEntity livingBass  = entities.Number.LivingBass;
+        double? bass = livingBass.State;
+
+        InputNumberEntity targetTempEntity = entities.InputNumber.TargetTemperature;
+        double? targetTempValue = targetTempEntity.State;
+
         NumericSensorEntity dailyPower = entities.Sensor.DailyPowerConsumption;
         double? cost = dailyPower.State;
 
         SensorEntity pirSensor = entities.Sensor.Pir;
         string? pir = pirSensor.State;
+     }
+}";
+            AssertCodeCompiles(generatedCode.ToString(), appCode);
+        }
         
-        InputNumberEntity targetTempEntity = entities.InputNumber.TargetTemperature;
-        double? targetTempValue = targetTempEntity.State;
+        [Fact]
+        public void TestNumberExtensionMethodGeneration()
+        {
+            var entityStates = new HassState[] { 
+                new() {
+                    EntityId = "number.living_bass",
+                    AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
+                },           
+                new() {
+                    EntityId = "unknown.number",
+                    AttributesJson = new { unit_of_measurement = "pcs", }.AsJsonElement()
+                },           
+                new() {
+                    EntityId = "unknown.string",
+                },           
+            };
+
+            var hassServiceDomains = new HassServiceDomain[] {
+                new() {
+                    Domain = "number",
+                    Services = new HassService[] {
+                        new() {
+                            Service = "set_value",
+                            Target = new TargetSelector {
+                                Entity = new() { Domain = "number" }
+                            },
+                            Fields = new HassServiceField[] {
+                                new() { Field = "value", Selector = new NumberSelector(), },
+                            },
+                        }
+                    }
+                }
+            };
+            
+            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, hassServiceDomains);
+            var appCode = @"
+using NetDaemon.HassModel.Entities;
+using NetDaemon.HassModel.Common;
+using RootNameSpace;
+
+public class Root
+{
+    public void Run(IHaContext ha)
+    {
+        IEntities entities = new Entities(ha);
+
+    entities.Number.LivingBass.SetValue(12);
      }
 }";
             AssertCodeCompiles(generatedCode.ToString(), appCode);
@@ -166,36 +219,18 @@ public class Root
                 new()
                 {
                     Domain = "light",
-                    Services = new HassService[]
-                    {
-                        new()
-                        {
+                    Services = new HassService[] {
+                        new() {
                             Service = "turn_off",
-                            Target = new TargetSelector()
-                            {
-                                Entity = new() { Domain = "light" }
-                            }
+                            Target = new TargetSelector { Entity = new() { Domain = "light" } }
                         },
-                        new()
-                        {
+                        new() {
                             Service = "turn_on",
-                            Fields = new HassServiceField[]
-                            {
-                                new()
-                                {
-                                    Field = "transition",
-                                    Selector = new NumberSelector(),
-                                },
-                                new()
-                                {
-                                    Field = "brightness",
-                                    Selector = new NumberSelector { Step = 0.2f },
-                                }
+                            Fields = new HassServiceField[] {
+                                new() { Field = "transition", Selector = new NumberSelector(), },
+                                new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2f }, }
                             },
-                            Target = new TargetSelector()
-                            {
-                                Entity = new() { Domain = "light" }
-                            }
+                            Target = new TargetSelector { Entity = new() { Domain = "light" } }
                         }
                     }
                 }
