@@ -24,10 +24,11 @@ public class CompilerIntegrationTests
         using var compiler = factory?.New();
 
         // ACT
-        var context = compiler?.Compile() ?? throw new NullReferenceException("Not expected null");
+        var compilerResult = compiler?.Compile() ?? throw new NullReferenceException("Not expected null");
 
         // CHECK
-        var types = context.Assemblies.SelectMany(n => n.GetTypes()).ToList();
+        compilerResult.CompiledAssembly.FullName.Should().StartWith("daemon_apps_");
+        var types = compilerResult.AssemblyContext.Assemblies.SelectMany(n => n.GetTypes()).ToList();
         types.Where(n => n.Name == "SimpleApp").Should().HaveCount(1);
     }
 

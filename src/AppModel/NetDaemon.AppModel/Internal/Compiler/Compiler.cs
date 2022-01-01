@@ -2,9 +2,10 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
+
+internal record CompiledAssemblyResult(CollectibleAssemblyLoadContext AssemblyContext, Assembly CompiledAssembly);
 
 internal class Compiler : ICompiler
 {
@@ -20,7 +21,7 @@ internal class Compiler : ICompiler
         _logger = logger;
     }
 
-    public CollectibleAssemblyLoadContext? Compile()
+    public CompiledAssemblyResult Compile()
     {
         CollectibleAssemblyLoadContext context = new();
         var compilation = GetSharpCompilation();
@@ -31,8 +32,8 @@ internal class Compiler : ICompiler
         if (emitResult.Success)
         {
             peStream.Seek(0, SeekOrigin.Begin);
-            context!.LoadFromStream(peStream);
-            return context;
+            var assembly = context!.LoadFromStream(peStream);
+            return new CompiledAssemblyResult(context, assembly);
         }
         else
         {
@@ -44,7 +45,7 @@ internal class Compiler : ICompiler
             // Finally do cleanup and release memory
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            return null!;
+            throw new InvalidOperationException();
         }
     }
 
@@ -54,7 +55,7 @@ internal class Compiler : ICompiler
         var metaDataReference = GetDefaultReferences();
 
         return CSharpCompilation.Create(
-            $"net_{Path.GetRandomFileName()}.dll",
+            $"daemon_apps_{Path.GetRandomFileName()}.dll",
             syntaxTrees.ToArray(),
             references: metaDataReference.ToArray(),
             options: new CSharpCompilationOptions(
@@ -111,6 +112,5 @@ internal class Compiler : ICompiler
 
     public void Dispose()
     {
-
     }
 }
