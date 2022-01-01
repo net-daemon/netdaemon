@@ -128,7 +128,7 @@ public class ConfigTests
         // ACT
         var loadApps = appModel!.LoadApplications();
         // CHECK
-        loadApps.Should().HaveCount(2);
+        loadApps.Should().HaveCount(3);
     }
 
     private static IConfigurationRoot GetConfigurationRootForYaml(string path) => GetConfigurationRoot(path, true);

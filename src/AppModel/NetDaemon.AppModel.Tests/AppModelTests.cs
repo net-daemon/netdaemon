@@ -33,7 +33,7 @@ public class AppModelTests
 
 
         // CHECK
-        loadApps.Should().HaveCount(2);
+        loadApps.Should().HaveCount(3);
 
         // check the application instance is init ok
         var appInstance = (ApplicationContext)loadApps.Where(n => n.Id == "LocalApps.MyAppLocalApp").First();
