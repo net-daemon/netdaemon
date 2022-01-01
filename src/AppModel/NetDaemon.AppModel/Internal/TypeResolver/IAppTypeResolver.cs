@@ -4,7 +4,7 @@ namespace NetDaemon.AppModel.Common.TypeResolver;
 ///     Implementers of this interface returns all types from
 ///     any source like the current assembly or a dynamically compiled assembly
 /// </summary>
-public interface IAppTypeResolver
+internal interface IAppTypeResolver
 {
     /// <summary>
     ///     Returns all types
