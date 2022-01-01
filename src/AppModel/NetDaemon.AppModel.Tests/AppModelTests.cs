@@ -42,6 +42,14 @@ public class AppModelTests
     }
 
     [Fact]
+    public void TestSkipedApplications()
+    {
+        var appModel = TestHelpers.GetAppModelFromLocalAssembly("Fixtures/Local");
+        var apps = appModel.LoadApplications(new List<string>() { "LocalApps.MyAppLocalApp" }).Where(n => n.Id == "LocalApps.MyAppLocalApp");
+        apps.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task TestGetApplicationsLocalWith()
     {
         // ARRANGE

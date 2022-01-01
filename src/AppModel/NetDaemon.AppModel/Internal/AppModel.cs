@@ -23,18 +23,21 @@ internal class AppModelImpl : IAppModel
 
     // Maybe the AppModelImpl should keep the list of created apps internal instead of returning it, so this class is also responsible
     // for disposing them
-    
+
     public IReadOnlyCollection<IApplicationInstance> LoadApplications(IReadOnlyCollection<string>? skipLoadApplicationList = null)
     {
-        // Todo: filter out skipped apps
         var result = new List<IApplicationInstance>();
         foreach (var appType in GetNetDaemonApplicationTypes())
         {
-            // ThE app instance should be created with the Scoped ServcieProvider that is created by the  ApplicationContext  
+            // The app instance should be created with the Scoped ServcieProvider that is created by the  ApplicationContext  
             var id = appType.FullName ?? throw new InvalidOperationException("Type was not expected to be null");
-            result.Add(
-                new ApplicationContext(id, appType, _provider)
-            );
+            // Check if the app should be skipped before adding it
+            if (!skipLoadApplicationList?.Contains(appType.FullName) ?? true)
+            {
+                result.Add(
+                    new ApplicationContext(id, appType, _provider)
+                );
+            }
         }
         return result;
     }

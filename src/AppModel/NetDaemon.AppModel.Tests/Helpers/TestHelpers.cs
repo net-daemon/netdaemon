@@ -45,4 +45,22 @@ public static class TestHelpers
 
         return appModel!.LoadApplications();
     }
+    internal static IAppModel GetAppModelFromLocalAssembly(string path)
+    {
+        var builder = Host.CreateDefaultBuilder()
+                    .ConfigureServices((context, services) =>
+                    {
+                        services.AddAppModelLocalAssembly();
+                        services.AddTransient<IOptions<ApplicationLocationSetting>>(
+                            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
+                    })
+                    .ConfigureAppConfiguration((hostingContext, config) =>
+                    {
+                        config.AddYamlAppConfig(
+                            Path.Combine(AppContext.BaseDirectory,
+                                path));
+                    })
+                    .Build();
+        return builder.Services.GetService<IAppModel>() ?? throw new InvalidOperationException();
+    }
 }
