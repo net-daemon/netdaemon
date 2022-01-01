@@ -27,26 +27,24 @@ internal class Compiler : ICompiler
         var compilation = GetSharpCompilation();
 
         using var peStream = new MemoryStream();
-        var emitResult = compilation.Emit(peStream: peStream);
+        var emitResult = compilation.Emit(peStream);
 
         if (emitResult.Success)
         {
             peStream.Seek(0, SeekOrigin.Begin);
-            var assembly = context!.LoadFromStream(peStream);
+            var assembly = context.LoadFromStream(peStream);
             return new CompiledAssemblyResult(context, assembly);
         }
-        else
-        {
-            var error = PrettyPrintCompileError(emitResult);
 
-            _logger.LogError("Failed to compile applications\n{error}", error);
+        var error = PrettyPrintCompileError(emitResult);
 
-            context.Unload();
-            // Finally do cleanup and release memory
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            throw new InvalidOperationException();
-        }
+        _logger.LogError("Failed to compile applications\n{error}", error);
+
+        context.Unload();
+        // Finally do cleanup and release memory
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        throw new InvalidOperationException();
     }
 
     private CSharpCompilation GetSharpCompilation()
@@ -57,8 +55,8 @@ internal class Compiler : ICompiler
         return CSharpCompilation.Create(
             $"daemon_apps_{Path.GetRandomFileName()}.dll",
             syntaxTrees.ToArray(),
-            references: metaDataReference.ToArray(),
-            options: new CSharpCompilationOptions(
+            metaDataReference.ToArray(),
+            options: new(
                 OutputKind.DynamicallyLinkedLibrary,
                 optimizationLevel: OptimizationLevel.Release,
                 assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
@@ -99,12 +97,10 @@ internal class Compiler : ICompiler
     {
         var msg = new StringBuilder();
 
-        foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+        foreach (var emitResultDiagnostic in emitResult.Diagnostics.Where(emitResultDiagnostic =>
+                     emitResultDiagnostic.Severity == DiagnosticSeverity.Error))
         {
-            if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
-            {
-                msg.AppendLine(emitResultDiagnostic.ToString());
-            }
+            msg.AppendLine(emitResultDiagnostic.ToString());
         }
 
         return msg.ToString();

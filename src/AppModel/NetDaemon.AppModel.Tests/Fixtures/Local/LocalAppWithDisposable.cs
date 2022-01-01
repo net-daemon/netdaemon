@@ -1,16 +1,11 @@
-using NetDaemon.AppModel.Common;
-
 namespace LocalApps;
 
 
 [NetDaemonApp]
 public class MyAppLocalAppWithDispose : IAsyncDisposable, IDisposable
 {
-    public bool AsyncDisposeIsCalled { get; set; }
-    public bool DisposeIsCalled { get; set; }
-    public MyAppLocalAppWithDispose()
-    {
-    }
+    public bool AsyncDisposeIsCalled { get; private set; }
+    public bool DisposeIsCalled { get; private set; }
 
     public ValueTask DisposeAsync()
     {

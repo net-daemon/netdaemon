@@ -30,7 +30,7 @@ internal class AppModelImpl : IAppModel
         foreach (var appType in GetNetDaemonApplicationTypes())
         {
             var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
-            // The app instance should be created with the Scoped ServcieProvider that is created by the  ApplicationContext  
+            // The app instance should be created with the Scoped ServiceProvider that is created by the ApplicationContext  
             var id = appAttribute?.Id ?? appType.FullName ?? throw new InvalidOperationException("Type was not expected to be null");
             // Check if the app should be skipped before adding it
             if (!skipLoadApplicationList?.Contains(appType.FullName) ?? true)
@@ -48,9 +48,9 @@ internal class AppModelImpl : IAppModel
         // Get all classes with the [NetDaemonAppAttribute]
         return _appTypeResolvers.SelectMany(r => r.GetTypes())
                                 .Where(n => n.IsClass &&
-                                           !n.IsGenericType &&
-                                           !n.IsAbstract &&
-                                            n.GetCustomAttribute<NetDaemonAppAttribute>() != null
-                                           ).ToList();
+                                        !n.IsGenericType &&
+                                        !n.IsAbstract &&
+                                        n.GetCustomAttribute<NetDaemonAppAttribute>() != null
+                                ).ToList();
     }
 }

@@ -41,9 +41,9 @@ internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver
         }
 
         var compiler = _compilerFactory.New();
-        var compilerResult = compiler.Compile();
-        _currentContext = compilerResult.AssemblyContext;
-        return compilerResult.CompiledAssembly;
+        var (loadContext, compiledAssembly) = compiler.Compile();
+        _currentContext = loadContext;
+        return compiledAssembly;
     }
 }
 

@@ -25,6 +25,6 @@ public class ApplicationScopeTests
         };
         var ctx = scope.ApplicationContext;
 
-        ctx!.Should().NotBeNull();
+        ctx.Should().NotBeNull();
     }
 }

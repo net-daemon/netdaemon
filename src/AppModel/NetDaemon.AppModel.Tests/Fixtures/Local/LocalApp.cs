@@ -18,23 +18,23 @@ public class MyAppLocalApp
 
 public interface IInjectMePlease
 {
-    string IAmInjected { get; }
+    string AmInjected { get; }
 }
 public class InjectMeImplementation : IInjectMePlease
 {
-    public string IAmInjected => "ok I am hard coded, so what?";
+    public string AmInjected => "ok I am hard coded, so what?";
 }
 
 public class EntityClass
 {
-    private readonly IServiceProvider _serviceProvider;
+    public IServiceProvider ServiceProvider { get; }
 
     public EntityClass(
         IServiceProvider serviceProvider,
         string entityId
     )
     {
-        _serviceProvider = serviceProvider;
+        ServiceProvider = serviceProvider;
         EntityId = entityId;
     }
 

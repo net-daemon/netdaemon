@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using LocalApps;
 using NetDaemon.AppModel.Internal.Config;
 
 namespace NetDaemon.AppModel.Tests.Config;
@@ -15,12 +13,12 @@ public class ConfigurationBinderTests
         var config = GetObjectFromSection<CollectionBindingTestClass>("TestCollections");
         // CHECK
         config!.SomeEnumerable.Should().HaveCount(2);
-        config!.SomeList.Should().HaveCount(2);
-        config!.SomeReadOnlyList.Should().HaveCount(2);
-        config!.SomeReadOnlyCollection.Should().HaveCount(2);
-        config!.SomeCollection.Should().HaveCount(2);
-        config!.SomeReadOnlyDictionary.Should().HaveCount(2);
-        config!.SomeDictionary.Should().HaveCount(2);
+        config.SomeList.Should().HaveCount(2);
+        config.SomeReadOnlyList.Should().HaveCount(2);
+        config.SomeReadOnlyCollection.Should().HaveCount(2);
+        config.SomeCollection.Should().HaveCount(2);
+        config.SomeReadOnlyDictionary.Should().HaveCount(2);
+        config.SomeDictionary.Should().HaveCount(2);
     }
 
     [Fact]
@@ -111,18 +109,14 @@ public class ConfigurationBinderTests
     public void TestAddYamlConfigBadClassShouldThrowException()
     {
         // ARRANGE
-        var providerMock = new Mock<IServiceProvider>();
         var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
 
         configurationBuilder.AddYamlAppConfig(
             Path.Combine(AppContext.BaseDirectory,
                 "Config/Fixtures"));
-        var configRool = configurationBuilder.Build();
-        var section = configRool.GetSection("TestCollections");
+        configurationBuilder.Build();
         // ACT
         // CHECK
-        var configBinding = new ConfigurationBinding(providerMock.Object);
-
         Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<IAppModel>("TestCollections"));
         Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<AbstractShouldNotSerialize>("TestCollections"));
         Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<ClassWithoutDefaultContructorShouldNotSerialize>("TestCollections"));

@@ -7,13 +7,13 @@ public static class TestHelpers
     internal static IReadOnlyCollection<IApplicationInstance> GetLocalApplicationsFromYamlConfigPath(string path)
     {
         var builder = Host.CreateDefaultBuilder()
-                    .ConfigureServices((context, services) =>
+                    .ConfigureServices((_, services) =>
                     {
                         services.AddAppModelLocalAssembly();
                         services.AddTransient<IOptions<ApplicationLocationSetting>>(
                             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
                     })
-                    .ConfigureAppConfiguration((hostingContext, config) =>
+                    .ConfigureAppConfiguration((_, config) =>
                     {
                         config.AddYamlAppConfig(
                             Path.Combine(AppContext.BaseDirectory,
@@ -28,13 +28,13 @@ public static class TestHelpers
     internal static IReadOnlyCollection<IApplicationInstance> GetDynamicApplicationsFromYamlConfigPath(string path)
     {
         var builder = Host.CreateDefaultBuilder()
-                    .ConfigureServices((context, services) =>
+                    .ConfigureServices((_, services) =>
                     {
                         services.AddAppModelDynamicCompliedAssembly();
                         services.AddTransient<IOptions<ApplicationLocationSetting>>(
                             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
                     })
-                    .ConfigureAppConfiguration((hostingContext, config) =>
+                    .ConfigureAppConfiguration((_, config) =>
                     {
                         config.AddYamlAppConfig(
                             Path.Combine(AppContext.BaseDirectory,
@@ -48,13 +48,13 @@ public static class TestHelpers
     internal static IAppModel GetAppModelFromLocalAssembly(string path)
     {
         var builder = Host.CreateDefaultBuilder()
-                    .ConfigureServices((context, services) =>
+                    .ConfigureServices((_, services) =>
                     {
                         services.AddAppModelLocalAssembly();
                         services.AddTransient<IOptions<ApplicationLocationSetting>>(
                             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
                     })
-                    .ConfigureAppConfiguration((hostingContext, config) =>
+                    .ConfigureAppConfiguration((_, config) =>
                     {
                         config.AddYamlAppConfig(
                             Path.Combine(AppContext.BaseDirectory,

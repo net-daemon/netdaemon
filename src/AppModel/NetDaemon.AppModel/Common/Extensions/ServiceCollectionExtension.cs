@@ -1,7 +1,5 @@
-using NetDaemon.AppModel.Common.Settings;
 using NetDaemon.AppModel.Internal.Compiler;
 using NetDaemon.AppModel.Internal.Config;
-using NetDaemon.AppModel.Internal;
 using System.Reflection;
 
 namespace NetDaemon.AppModel.Common.Extensions;
@@ -55,7 +53,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<AppTypeResolver>());
         return services;
     }
-    
+
     private static IServiceCollection AddScopedAppServices(this IServiceCollection services)
     {
         services

@@ -1,9 +1,6 @@
-using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using NetDaemon.AppModel.Common.Extensions;
-using NetDaemon.AppModel.Common.TypeResolver;
 using NetDaemon.AppModel.Internal;
 using NetDaemon.AppModel.Internal.Compiler;
 
@@ -31,7 +28,7 @@ public class AssemblyResolverTests
     public void TestDynamicallyCompiledAssemblyShouldBeResolved()
     {
         var syntaxTreeResolverMock = new Mock<ISyntaxTreeResolver>();
-        // We setup the mock to return a prebuilt syntaxtree with a fake class
+        // We setup the mock to return a pre-built syntax tree with a fake class
         syntaxTreeResolverMock
             .Setup(
                 n => n.GetSyntaxTrees()
@@ -63,7 +60,7 @@ public class AssemblyResolverTests
 
         serviceCollection.AddAppModelDynamicCompliedAssembly();
         serviceCollection
-            .AddSingleton<ISyntaxTreeResolver>(s => syntaxTreeResolverMock.Object);
+            .AddSingleton(_ => syntaxTreeResolverMock.Object);
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
@@ -77,7 +74,7 @@ public class AssemblyResolverTests
     public void TestBothLocalAndDynamicallyResolvedAssembliesShouldBeResolved()
     {
         var syntaxTreeResolverMock = new Mock<ISyntaxTreeResolver>();
-        // We setup the mock to return a prebuilt syntaxtree with a fake class
+        // We setup the mock to return a prebuilt syntax tree with a fake class
         syntaxTreeResolverMock
             .Setup(
                 n => n.GetSyntaxTrees()
@@ -109,7 +106,7 @@ public class AssemblyResolverTests
         serviceCollection.AddAppModelLocalAssembly();
         serviceCollection.AddAppModelDynamicCompliedAssembly();
         serviceCollection
-            .AddSingleton<ISyntaxTreeResolver>(s => syntaxTreeResolverMock.Object);
+            .AddSingleton(_ => syntaxTreeResolverMock.Object);
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();

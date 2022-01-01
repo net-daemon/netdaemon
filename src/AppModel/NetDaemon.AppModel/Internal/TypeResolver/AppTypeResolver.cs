@@ -1,6 +1,3 @@
-using System.Reflection;
-using System.Runtime.Loader;
-
 namespace NetDaemon.AppModel.Internal.TypeResolver;
 
 internal class AppTypeResolver : IAppTypeResolver
