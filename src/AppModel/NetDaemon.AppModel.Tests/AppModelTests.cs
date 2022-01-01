@@ -42,6 +42,18 @@ public class AppModelTests
     }
 
     [Fact]
+    public void TestGetApplicationsWithIdSet()
+    {
+        // ARRANGE
+        // ACT
+        var loadApps = TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local");
+
+        // CHECK
+        var appInstance = loadApps.Where(n => n.Id == "SomeId");
+        appInstance.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public void TestSkipedApplications()
     {
         var appModel = TestHelpers.GetAppModelFromLocalAssembly("Fixtures/Local");

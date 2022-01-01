@@ -1,8 +1,3 @@
-using System.ComponentModel;
-using System.Globalization;
-using NetDaemon.AppModel.Common;
-using NetDaemon.AppModel.Tests.Config;
-
 namespace LocalApps;
 
 public class LocalTestSettings

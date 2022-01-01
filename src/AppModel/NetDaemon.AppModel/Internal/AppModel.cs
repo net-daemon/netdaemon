@@ -29,8 +29,9 @@ internal class AppModelImpl : IAppModel
         var result = new List<IApplicationInstance>();
         foreach (var appType in GetNetDaemonApplicationTypes())
         {
+            var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
             // The app instance should be created with the Scoped ServcieProvider that is created by the  ApplicationContext  
-            var id = appType.FullName ?? throw new InvalidOperationException("Type was not expected to be null");
+            var id = appAttribute?.Id ?? appType.FullName ?? throw new InvalidOperationException("Type was not expected to be null");
             // Check if the app should be skipped before adding it
             if (!skipLoadApplicationList?.Contains(appType.FullName) ?? true)
             {
