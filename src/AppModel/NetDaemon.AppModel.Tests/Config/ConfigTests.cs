@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using LocalApps;
+using NetDaemon.AppModel.Internal;
 
 namespace NetDaemon.AppModel.Tests.Config;
 
@@ -57,12 +58,12 @@ public class ConfigTests
     {
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((_, services) =>
             {
                 services.AddAppModelLocalAssembly();
                 services.AddTransient<InjectMeWithConfigPlease>();
             })
-            .ConfigureAppConfiguration((hostingContext, config) =>
+            .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddJsonAppConfig(
                     Path.Combine(AppContext.BaseDirectory,
@@ -82,12 +83,12 @@ public class ConfigTests
     {
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((_, services) =>
             {
                 services.AddAppModelLocalAssembly();
                 services.AddTransient<InjectMeWithConfigPlease>();
             })
-            .ConfigureAppConfiguration((hostingContext, config) =>
+            .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddYamlAppConfig(
                     Path.Combine(AppContext.BaseDirectory,
@@ -107,7 +108,7 @@ public class ConfigTests
     {
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
-                    .ConfigureServices((context, services) =>
+                    .ConfigureServices((_, services) =>
                     {
                         services.AddAppModelLocalAssembly();
                         services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
@@ -115,7 +116,7 @@ public class ConfigTests
                             new Converter<string, EntityClass>(s =>
                                 ActivatorUtilities.CreateInstance<EntityClass>(sp, s)));
                     })
-                    .ConfigureAppConfiguration((hostingContext, config) =>
+                    .ConfigureAppConfiguration((_, config) =>
                     {
                         config.AddYamlAppConfig(
                             Path.Combine(AppContext.BaseDirectory,
@@ -127,11 +128,15 @@ public class ConfigTests
 
         // ACT
         var loadApps = appModel!.LoadApplications();
+        var appCtx =(ApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp) appCtx.Instance;
         // CHECK
-        loadApps.Should().HaveCount(2);
+        loadApps.Should().HaveCount(3);
+        app.Settings.Entity!.EntityId.Should().Be("light.test");
+        app.Settings.Entity!.ServiceProvider.Should().NotBeNull();
     }
 
-    private static IConfigurationRoot GetConfigurationRootForYaml(string path) => GetConfigurationRoot(path, true);
+    private static IConfigurationRoot GetConfigurationRootForYaml(string path) => GetConfigurationRoot(path);
     private static IConfigurationRoot GetConfigurationRootForJson(string path) => GetConfigurationRoot(path, false);
 
     private static IConfigurationRoot GetConfigurationRoot(string path, bool yaml = true)

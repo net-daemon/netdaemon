@@ -2,9 +2,10 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
+
+internal record CompiledAssemblyResult(CollectibleAssemblyLoadContext AssemblyContext, Assembly CompiledAssembly);
 
 internal class Compiler : ICompiler
 {
@@ -20,32 +21,30 @@ internal class Compiler : ICompiler
         _logger = logger;
     }
 
-    public CollectibleAssemblyLoadContext? Compile()
+    public CompiledAssemblyResult Compile()
     {
         CollectibleAssemblyLoadContext context = new();
         var compilation = GetSharpCompilation();
 
         using var peStream = new MemoryStream();
-        var emitResult = compilation.Emit(peStream: peStream);
+        var emitResult = compilation.Emit(peStream);
 
         if (emitResult.Success)
         {
             peStream.Seek(0, SeekOrigin.Begin);
-            context!.LoadFromStream(peStream);
-            return context;
+            var assembly = context.LoadFromStream(peStream);
+            return new CompiledAssemblyResult(context, assembly);
         }
-        else
-        {
-            var error = PrettyPrintCompileError(emitResult);
 
-            _logger.LogError("Failed to compile applications\n{error}", error);
+        var error = PrettyPrintCompileError(emitResult);
 
-            context.Unload();
-            // Finally do cleanup and release memory
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            return null!;
-        }
+        _logger.LogError("Failed to compile applications\n{error}", error);
+
+        context.Unload();
+        // Finally do cleanup and release memory
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        throw new InvalidOperationException();
     }
 
     private CSharpCompilation GetSharpCompilation()
@@ -54,10 +53,10 @@ internal class Compiler : ICompiler
         var metaDataReference = GetDefaultReferences();
 
         return CSharpCompilation.Create(
-            $"net_{Path.GetRandomFileName()}.dll",
+            $"daemon_apps_{Path.GetRandomFileName()}.dll",
             syntaxTrees.ToArray(),
-            references: metaDataReference.ToArray(),
-            options: new CSharpCompilationOptions(
+            metaDataReference.ToArray(),
+            options: new(
                 OutputKind.DynamicallyLinkedLibrary,
                 optimizationLevel: OptimizationLevel.Release,
                 assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
@@ -98,12 +97,10 @@ internal class Compiler : ICompiler
     {
         var msg = new StringBuilder();
 
-        foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+        foreach (var emitResultDiagnostic in emitResult.Diagnostics.Where(emitResultDiagnostic =>
+                     emitResultDiagnostic.Severity == DiagnosticSeverity.Error))
         {
-            if (emitResultDiagnostic.Severity == DiagnosticSeverity.Error)
-            {
-                msg.AppendLine(emitResultDiagnostic.ToString());
-            }
+            msg.AppendLine(emitResultDiagnostic.ToString());
         }
 
         return msg.ToString();
@@ -111,6 +108,5 @@ internal class Compiler : ICompiler
 
     public void Dispose()
     {
-
     }
 }

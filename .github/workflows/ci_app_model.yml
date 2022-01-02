@@ -1,14 +1,12 @@
 #### Build and tests all pushes, also code coverage
-name: 🛠️ CI build check
+name: 🛠️ CI build app model (temporary)
 on:
   push:
     branches:
-      - main
-      - dev
+      - app_model
   pull_request:
     branches:
-      - main
-      - dev
+      - app_model
 jobs:
   build:
     name: 🔨 Build sources (CI)
