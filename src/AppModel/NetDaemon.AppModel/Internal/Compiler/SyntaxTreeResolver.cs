@@ -23,13 +23,13 @@ internal class SyntaxTreeResolver : ISyntaxTreeResolver
         var csFiles = Directory.EnumerateFiles(
             _settings.ApplicationFolder,
             "*.cs",
-            SearchOption.AllDirectories);
+            SearchOption.AllDirectories).ToArray();
 
-        var result = new List<SyntaxTree>(csFiles.Count());
+        var result = new List<SyntaxTree>(csFiles.Length);
 
         result.AddRange(from csFile in csFiles
                         let fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-                        let sourceText = SourceText.From(fs, encoding: Encoding.UTF8, canBeEmbedded: true)
+                        let sourceText = SourceText.From(fs, Encoding.UTF8, canBeEmbedded: true)
                         let syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile)
                         select syntaxTree);
         return result;

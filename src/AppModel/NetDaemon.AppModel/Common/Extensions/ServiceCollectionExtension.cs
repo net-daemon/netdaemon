@@ -1,18 +1,22 @@
-using NetDaemon.AppModel.Common.Settings;
 using NetDaemon.AppModel.Internal.Compiler;
 using NetDaemon.AppModel.Internal.Config;
-using NetDaemon.AppModel.Internal;
+using System.Reflection;
 
 namespace NetDaemon.AppModel.Common.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddAppsFrom(this IServiceCollection services, Assembly assembly)
+    {
+        services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
+        return services;
+    }
+
     public static IServiceCollection AddAppModelLocalAssembly(this IServiceCollection services)
     {
         services
             .AddAppModel()
-            .AddSingleton<LocalAssemblyAppTypeResolver>()
-            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<LocalAssemblyAppTypeResolver>());
+            .AddAppsFrom(Assembly.GetCallingAssembly());
         return services;
     }
 
@@ -24,8 +28,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
             .AddSingleton<SyntaxTreeResolver>()
             .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
-            .AddSingleton<DynamicCompiledAssemblyAppTypeResolver>()
-            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<DynamicCompiledAssemblyAppTypeResolver>());
+            .AddSingleton<DynamicallyCompiledAssemblyResolver>()
+            .AddSingleton<IAssemblyResolver>(s => s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
         return services;
     }
 
@@ -36,10 +40,20 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
             .AddSingleton<ConfigurationBinding>()
             .AddSingleton<IConfigurationBinding>(s => s.GetRequiredService<ConfigurationBinding>())
+            .AddAppTypeResolver()
             .AddScopedAppServices()
             .AddConfigManagement();
         return services;
     }
+
+    internal static IServiceCollection AddAppTypeResolver(this IServiceCollection services)
+    {
+        services
+            .AddSingleton<AppTypeResolver>()
+            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<AppTypeResolver>());
+        return services;
+    }
+
     private static IServiceCollection AddScopedAppServices(this IServiceCollection services)
     {
         services

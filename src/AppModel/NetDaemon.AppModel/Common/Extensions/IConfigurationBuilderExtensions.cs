@@ -4,7 +4,7 @@ using NetDaemon.AppModel.Internal.Config;
 
 namespace NetDaemon.AppModel.Common.Extensions;
 
-public static class IConfigurationBuilderExtensions
+public static class ConfigurationBuilderExtensions
 {
     public static IConfigurationBuilder AddJsonAppConfig(this IConfigurationBuilder builder, string appPath)
     {

@@ -3,7 +3,7 @@ using YamlDotNet.RepresentationModel;
 
 /*
     Attribution to the devs at https://github.com/andrewlock/NetEscapades.Configuration for providing most of the code 
-    for the file parser. Thanks alot!
+    for the file parser. Thanks a lot!
 */
 
 namespace NetDaemon.AppModel.Internal.Config;
@@ -11,7 +11,7 @@ namespace NetDaemon.AppModel.Internal.Config;
 internal class YamlConfigurationFileParser
 {
     private readonly IDictionary<string, string?> _data = new SortedDictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-    private readonly Stack<string> _context = new Stack<string>();
+    private readonly Stack<string> _context = new();
     private string _currentPath = string.Empty;
 
     public IDictionary<string, string?> Parse(Stream input)
@@ -20,15 +20,13 @@ internal class YamlConfigurationFileParser
         _context.Clear();
 
         var yaml = new YamlStream();
-        yaml.Load(new StreamReader(input, detectEncodingFromByteOrderMarks: true));
+        yaml.Load(new StreamReader(input, true));
 
-        if (yaml.Documents.Any())
-        {
-            var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+        if (yaml.Documents.Count == 0) return _data;
+        var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
 
-            // The document node is a mapping node
-            VisitYamlMappingNode(mapping);
-        }
+        // The document node is a mapping node
+        VisitYamlMappingNode(mapping);
 
         return _data;
     }
@@ -41,17 +39,17 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlNode(string context, YamlNode node)
     {
-        if (node is YamlScalarNode scalarNode)
+        switch (node)
         {
-            VisitYamlScalarNode(context, scalarNode);
-        }
-        if (node is YamlMappingNode mappingNode)
-        {
-            VisitYamlMappingNode(context, mappingNode);
-        }
-        if (node is YamlSequenceNode sequenceNode)
-        {
-            VisitYamlSequenceNode(context, sequenceNode);
+            case YamlScalarNode scalarNode:
+                VisitYamlScalarNode(context, scalarNode);
+                break;
+            case YamlMappingNode mappingNode:
+                VisitYamlMappingNode(context, mappingNode);
+                break;
+            case YamlSequenceNode sequenceNode:
+                VisitYamlSequenceNode(context, sequenceNode);
+                break;
         }
     }
 
@@ -95,7 +93,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlSequenceNode(YamlSequenceNode node)
     {
-        for (int i = 0; i < node.Children.Count; i++)
+        for (var i = 0; i < node.Children.Count; i++)
         {
             VisitYamlNode(i.ToString(), node.Children[i]);
         }
@@ -113,16 +111,9 @@ internal class YamlConfigurationFileParser
         _currentPath = ConfigurationPath.Combine(_context.Reverse());
     }
 
-    private bool IsNullValue(YamlScalarNode yamlValue)
+    private static bool IsNullValue(YamlScalarNode yamlValue)
     {
         return yamlValue.Style == YamlDotNet.Core.ScalarStyle.Plain
-            && (
-                yamlValue.Value == "~"
-                || yamlValue.Value == "null"
-                || yamlValue.Value == "Null"
-                || yamlValue.Value == "NULL"
-            );
+            && yamlValue.Value is "~" or "null" or "Null" or "NULL";
     }
-
 }
-
