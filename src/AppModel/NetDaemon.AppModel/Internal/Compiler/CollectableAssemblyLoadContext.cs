@@ -5,7 +5,7 @@ namespace NetDaemon.AppModel.Internal.Compiler;
 
 public class CollectibleAssemblyLoadContext : AssemblyLoadContext
 {
-    public CollectibleAssemblyLoadContext() : base(isCollectible: true)
+    public CollectibleAssemblyLoadContext() : base(true)
     {
     }
 
