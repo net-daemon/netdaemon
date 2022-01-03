@@ -2,19 +2,28 @@ namespace NetDaemon.Client.Internal.Net;
 
 internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipeline
 {
-    private readonly IWebSocketClient _ws;
+    /// <summary>
+    ///     Default Json serialization options, Hass expects intended
+    /// </summary>
+    private readonly JsonSerializerOptions _defaultSerializerOptions = new()
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private readonly CancellationTokenSource _internalCancelSource = new();
     private readonly Pipe _pipe = new();
+    private readonly IWebSocketClient _ws;
+
+    public WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket,
+        ILogger<IWebSocketClientTransportPipeline> logger)
+    {
+        _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
+    }
 
     private static int DefaultTimeOut => 5000;
 
     public WebSocketState WebSocketState => _ws.State;
-
-    private readonly CancellationTokenSource _internalCancelSource = new();
-
-    public WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket, ILogger<IWebSocketClientTransportPipeline> logger)
-    {
-        _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
-    }
 
     public async Task CloseAsync()
     {
@@ -33,6 +42,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
         {
             // Ignore all error in dispose
         }
+
         await _ws.DisposeAsync().ConfigureAwait(false);
     }
 
@@ -65,6 +75,22 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
         }
     }
 
+    public Task SendMessageAsync<T>(T message, CancellationToken cancelToken) where T : class
+    {
+        if (cancelToken.IsCancellationRequested || _ws.State != WebSocketState.Open || _ws.CloseStatus.HasValue)
+            throw new ApplicationException("Sending message on closed socket!");
+
+        using var combinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+            _internalCancelSource.Token,
+            cancelToken
+        );
+
+        var result = JsonSerializer.SerializeToUtf8Bytes(message, message.GetType(),
+            _defaultSerializerOptions);
+
+        return _ws.SendAsync(result, WebSocketMessageType.Text, true, combinedTokenSource.Token);
+    }
+
     /// <summary>
     ///     Continuously reads the data from the pipe and serialize to object
     ///     from the json that are read
@@ -75,9 +101,10 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
     {
         try
         {
-           var message = await JsonSerializer.DeserializeAsync<T>(_pipe.Reader.AsStream(),
-                                cancellationToken: cancelToken).ConfigureAwait(false)
-                                    ?? throw new ApplicationException("Deserialization of websocket returned empty result (null)");
+            var message = await JsonSerializer.DeserializeAsync<T>(_pipe.Reader.AsStream(),
+                              cancellationToken: cancelToken).ConfigureAwait(false)
+                          ?? throw new ApplicationException(
+                              "Deserialization of websocket returned empty result (null)");
             return message;
         }
         finally
@@ -114,10 +141,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
 
                     await _pipe.Writer.FlushAsync(cancelToken).ConfigureAwait(false);
 
-                    if (result.EndOfMessage)
-                    {
-                        break;
-                    }
+                    if (result.EndOfMessage) break;
                 }
                 else if (_ws.State == WebSocketState.CloseReceived)
                 {
@@ -138,40 +162,25 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
             await _pipe.Writer.CompleteAsync().ConfigureAwait(false);
         }
     }
-    public Task SendMessageAsync<T>(T message, CancellationToken cancelToken) where T : class
-    {
-        if (cancelToken.IsCancellationRequested || _ws.State != WebSocketState.Open || _ws.CloseStatus.HasValue)
-            throw new ApplicationException("Sending message on closed socket!");
-
-        using var combinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-            _internalCancelSource.Token,
-            cancelToken
-        );
-
-        var result = JsonSerializer.SerializeToUtf8Bytes(message, message.GetType(),
-                            _defaultSerializerOptions);
-
-        return _ws.SendAsync(result, WebSocketMessageType.Text, true, combinedTokenSource.Token);
-    }
 
     /// <summary>
     ///     Closes correctly the websocket depending on websocket state
     /// </summary>
     /// <remarks>
-    /// <para>
-    ///     Closing a websocket has special handling. When the client
-    ///     wants to close it calls CloseAsync and the websocket takes
-    ///     care of the proper close handling.
-    /// </para>
-    /// <para>
-    ///     If the remote websocket wants to close the connection dotnet
-    ///     implementation requires you to use CloseOutputAsync instead.
-    /// </para>
-    /// <para>
-    ///     We do not want to cancel operations until we get closed state
-    ///     this is why own timer cancellation token is used and we wait
-    ///     for correct state before returning and disposing any connections
-    /// </para>
+    ///     <para>
+    ///         Closing a websocket has special handling. When the client
+    ///         wants to close it calls CloseAsync and the websocket takes
+    ///         care of the proper close handling.
+    ///     </para>
+    ///     <para>
+    ///         If the remote websocket wants to close the connection dotnet
+    ///         implementation requires you to use CloseOutputAsync instead.
+    ///     </para>
+    ///     <para>
+    ///         We do not want to cancel operations until we get closed state
+    ///         this is why own timer cancellation token is used and we wait
+    ///         for correct state before returning and disposing any connections
+    ///     </para>
     /// </remarks>
     private async Task SendCorrectCloseFrameToRemoteWebSocket()
     {
@@ -184,7 +193,8 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
                 case WebSocketState.CloseReceived:
                 {
                     // after this, the socket state which change to CloseSent
-                    await _ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token).ConfigureAwait(false);
+                    await _ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token)
+                        .ConfigureAwait(false);
                     // now we wait for the server response, which will close the socket
                     while (_ws.State != WebSocketState.Closed && !timeout.Token.IsCancellationRequested)
                         await Task.Delay(100).ConfigureAwait(false);
@@ -193,7 +203,8 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
                 case WebSocketState.Open:
                 {
                     // Do full close 
-                    await _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token).ConfigureAwait(false);
+                    await _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token)
+                        .ConfigureAwait(false);
                     if (_ws.State != WebSocketState.Closed)
                         throw new ApplicationException("Expected the websocket to be closed!");
                     break;
@@ -212,13 +223,4 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
                 _internalCancelSource.Cancel();
         }
     }
-
-    /// <summary>
-    ///     Default Json serialization options, Hass expects intended
-    /// </summary>
-    private readonly JsonSerializerOptions _defaultSerializerOptions = new()
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
 }

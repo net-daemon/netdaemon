@@ -2,31 +2,32 @@ using NNetDaemon.HassClient.Tests.HomeAssistantRunnerTest;
 
 namespace NetDaemon.HassClient.Tests.HomeAssistantRunnerTest;
 
-
 public class HomeAssistantRunnerTests
 {
     private readonly HomeAssistantClientMock _clientMock = new();
 
     private readonly Mock<ILogger<IHomeAssistantRunner>> _logMock = new();
 
-    private HomeAssistantRunner DefaultRunner { get; }
-
     public HomeAssistantRunnerTests()
     {
-
-        DefaultRunner = new(_clientMock.Object, _logMock.Object);
+        DefaultRunner = new HomeAssistantRunner(_clientMock.Object, _logMock.Object);
     }
+
+    private HomeAssistantRunner DefaultRunner { get; }
+
     [Fact]
     public async Task TestSuccessfulShouldPostConnection()
     {
         using var cancelSource = new CancellationTokenSource();
 
         var connectionTask = DefaultRunner.OnConnect
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(IHomeAssistantConnection?)))
+            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout),
+                Observable.Return(default(IHomeAssistantConnection?)))
             .FirstAsync()
             .ToTask();
 
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+        var runnerTask =
+            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var connection = await connectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().NotBeNull();
@@ -35,7 +36,10 @@ public class HomeAssistantRunnerTests
             cancelSource.Cancel();
             await runnerTask.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { } // ignore cancel error
+        catch (OperationCanceledException)
+        {
+        } // ignore cancel error
+
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         connection.Should().NotBeNull();
         Assert.Null(DefaultRunner.CurrentConnection);
@@ -56,11 +60,13 @@ public class HomeAssistantRunnerTests
         ).Throws(new WebSocketException("What ever"));
 
         var disconnectionTask = DefaultRunner.OnDisconnect
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(DisconnectReason)))
+            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout),
+                Observable.Return(default(DisconnectReason)))
             .FirstAsync()
             .ToTask();
 
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+        var runnerTask =
+            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -68,7 +74,10 @@ public class HomeAssistantRunnerTests
             cancelSource.Cancel();
             await runnerTask.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { } // ignore cancel error
+        catch (OperationCanceledException)
+        {
+        } // ignore cancel error
+
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         reason.Should().Be(DisconnectReason.Error);
     }
@@ -88,11 +97,13 @@ public class HomeAssistantRunnerTests
         ).Throws(new HomeAssistantConnectionException(DisconnectReason.NotReady));
 
         var disconnectionTask = DefaultRunner.OnDisconnect
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(DisconnectReason)))
+            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout),
+                Observable.Return(default(DisconnectReason)))
             .FirstAsync()
             .ToTask();
 
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+        var runnerTask =
+            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -100,7 +111,10 @@ public class HomeAssistantRunnerTests
             cancelSource.Cancel();
             await runnerTask.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { } // ignore cancel error
+        catch (OperationCanceledException)
+        {
+        } // ignore cancel error
+
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         reason.Should().Be(DisconnectReason.NotReady);
     }
@@ -120,11 +134,13 @@ public class HomeAssistantRunnerTests
         ).Throws(new HomeAssistantConnectionException(DisconnectReason.Unauthorized));
 
         var disconnectionTask = DefaultRunner.OnDisconnect
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(DisconnectReason)))
+            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout),
+                Observable.Return(default(DisconnectReason)))
             .FirstAsync()
             .ToTask();
 
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+        var runnerTask =
+            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -132,7 +148,10 @@ public class HomeAssistantRunnerTests
             cancelSource.Cancel();
             await runnerTask.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { } // ignore cancel error
+        catch (OperationCanceledException)
+        {
+        } // ignore cancel error
+
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         reason.Should().Be(DisconnectReason.Unauthorized);
     }
@@ -143,11 +162,13 @@ public class HomeAssistantRunnerTests
         using var cancelSource = new CancellationTokenSource();
 
         var disconnectionTask = DefaultRunner.OnDisconnect
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(DisconnectReason)))
+            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout),
+                Observable.Return(default(DisconnectReason)))
             .FirstAsync()
             .ToTask();
 
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+        var runnerTask =
+            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         // await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         cancelSource.Cancel();
@@ -156,7 +177,10 @@ public class HomeAssistantRunnerTests
         {
             await runnerTask.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { } // ignore cancel error
+        catch (OperationCanceledException)
+        {
+        } // ignore cancel error
+
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         reason.Should().Be(DisconnectReason.Client);
     }
@@ -176,11 +200,13 @@ public class HomeAssistantRunnerTests
         ).Throws<OperationCanceledException>();
 
         var disconnectionTask = DefaultRunner.OnDisconnect
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(DisconnectReason)))
+            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout),
+                Observable.Return(default(DisconnectReason)))
             .FirstAsync()
             .ToTask();
 
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+        var runnerTask =
+            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -188,7 +214,10 @@ public class HomeAssistantRunnerTests
             cancelSource.Cancel();
             await runnerTask.ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { } // ignore cancel error
+        catch (OperationCanceledException)
+        {
+        } // ignore cancel error
+
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         reason.Should().Be(DisconnectReason.Remote);
     }
@@ -196,7 +225,8 @@ public class HomeAssistantRunnerTests
     [Fact]
     public async Task TestDisposeShouldDisconnectGracefully()
     {
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), CancellationToken.None);
+        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100),
+            CancellationToken.None);
 
         await Task.Delay(500);
 
@@ -204,6 +234,5 @@ public class HomeAssistantRunnerTests
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
 
         await runnerTask.ConfigureAwait(false);
-
     }
 }

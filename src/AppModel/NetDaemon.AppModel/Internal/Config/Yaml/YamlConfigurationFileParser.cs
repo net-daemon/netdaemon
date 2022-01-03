@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
 /*
@@ -10,8 +11,11 @@ namespace NetDaemon.AppModel.Internal.Config;
 
 internal class YamlConfigurationFileParser
 {
-    private readonly IDictionary<string, string?> _data = new SortedDictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
     private readonly Stack<string> _context = new();
+
+    private readonly IDictionary<string, string?> _data =
+        new SortedDictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
     private string _currentPath = string.Empty;
 
     public IDictionary<string, string?> Parse(Stream input)
@@ -23,7 +27,7 @@ internal class YamlConfigurationFileParser
         yaml.Load(new StreamReader(input, true));
 
         if (yaml.Documents.Count == 0) return _data;
-        var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+        var mapping = (YamlMappingNode) yaml.Documents[0].RootNode;
 
         // The document node is a mapping node
         VisitYamlMappingNode(mapping);
@@ -33,7 +37,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlNodePair(KeyValuePair<YamlNode, YamlNode> yamlNodePair)
     {
-        var context = ((YamlScalarNode)yamlNodePair.Key).Value ?? string.Empty;
+        var context = ((YamlScalarNode) yamlNodePair.Key).Value ?? string.Empty;
         VisitYamlNode(context, yamlNodePair.Value);
     }
 
@@ -65,10 +69,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlMappingNode(YamlMappingNode node)
     {
-        foreach (var yamlNodePair in node.Children)
-        {
-            VisitYamlNodePair(yamlNodePair);
-        }
+        foreach (var yamlNodePair in node.Children) VisitYamlNodePair(yamlNodePair);
     }
 
     private void VisitYamlMappingNode(string context, YamlMappingNode yamlValue)
@@ -93,10 +94,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlSequenceNode(YamlSequenceNode node)
     {
-        for (var i = 0; i < node.Children.Count; i++)
-        {
-            VisitYamlNode(i.ToString(), node.Children[i]);
-        }
+        for (var i = 0; i < node.Children.Count; i++) VisitYamlNode(i.ToString(), node.Children[i]);
     }
 
     private void EnterContext(string context)
@@ -113,7 +111,7 @@ internal class YamlConfigurationFileParser
 
     private static bool IsNullValue(YamlScalarNode yamlValue)
     {
-        return yamlValue.Style == YamlDotNet.Core.ScalarStyle.Plain
-            && yamlValue.Value is "~" or "null" or "Null" or "NULL";
+        return yamlValue.Style == ScalarStyle.Plain
+               && yamlValue.Value is "~" or "null" or "Null" or "NULL";
     }
 }

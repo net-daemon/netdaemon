@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace NetDaemon.AppModel.Internal.Config;
 
@@ -10,10 +10,10 @@ internal interface IConfigurationBinding
 }
 
 /// <summary>
-/// Class that allows binding strongly typed objects to configuration values.
+///     Class that allows binding strongly typed objects to configuration values.
 /// </summary>
 /// <remarks>
-/// This is a scaled down and modified version of .NET 6 implementation.
+///     This is a scaled down and modified version of .NET 6 implementation.
 /// </remarks>
 internal class ConfigurationBinding : IConfigurationBinding
 {
@@ -25,9 +25,9 @@ internal class ConfigurationBinding : IConfigurationBinding
     }
 
     /// <summary>
-    /// Attempts to bind the configuration instance to a new instance of type T.
-    /// If  configuration section has a value, that will be used.
-    /// Otherwise binding by matching property names against configuration keys recursively.
+    ///     Attempts to bind the configuration instance to a new instance of type T.
+    ///     If  configuration section has a value, that will be used.
+    ///     Otherwise binding by matching property names against configuration keys recursively.
     /// </summary>
     /// <typeparam name="T">The type of the new instance to bind.</typeparam>
     /// <param name="configuration">The configuration instance to bind.</param>
@@ -35,17 +35,14 @@ internal class ConfigurationBinding : IConfigurationBinding
     public T? ToObject<T>(IConfiguration configuration)
     {
         var result = GetObject(configuration, typeof(T));
-        if (result == null)
-        {
-            return default;
-        }
-        return (T)result;
+        if (result == null) return default;
+        return (T) result;
     }
 
     /// <summary>
-    /// Attempts to bind the configuration instance to a new instance of type T.
-    /// If  configuration section has a value, that will be used.
-    /// Otherwise binding by matching property names against configuration keys recursively.
+    ///     Attempts to bind the configuration instance to a new instance of type T.
+    ///     If  configuration section has a value, that will be used.
+    ///     Otherwise binding by matching property names against configuration keys recursively.
     /// </summary>
     /// <param name="configuration">The configuration instance to bind.</param>
     /// <param name="type">The type of the new instance to bind.</param>
@@ -59,9 +56,7 @@ internal class ConfigurationBinding : IConfigurationBinding
     {
         if (instance == null) return;
         foreach (var property in GetAllProperties(instance.GetType().GetTypeInfo()))
-        {
             BindProperty(property, instance, configuration);
-        }
     }
 
     private void BindProperty(PropertyInfo property, object? instance, IConfiguration config)
@@ -69,33 +64,26 @@ internal class ConfigurationBinding : IConfigurationBinding
         // We don't support set only, non public, or indexer properties
         if (property.GetMethod?.IsPublic != true ||
             property.GetMethod.GetParameters().Length > 0)
-        {
             return;
-        }
 
         var propertyValue = property.GetValue(instance);
         var hasSetter = property.SetMethod?.IsPublic == true;
 
         if (propertyValue == null && !hasSetter)
-        {
             // Property doesn't have a value and we cannot set it so there is no
             // point in going further down the graph
             return;
-        }
 
         propertyValue = BindInstance(property.PropertyType, propertyValue, config.GetSection(property.Name));
 
-        if (propertyValue != null && hasSetter)
-        {
-            property.SetValue(instance, propertyValue);
-        }
+        if (propertyValue != null && hasSetter) property.SetValue(instance, propertyValue);
     }
 
     private object BindToCollection(TypeInfo typeInfo, IConfiguration config)
     {
         var type = typeof(List<>).MakeGenericType(typeInfo.GenericTypeArguments[0]);
         var instance = Activator.CreateInstance(type) ??
-            throw new InvalidOperationException();
+                       throw new InvalidOperationException();
         BindCollection(instance, type, config);
         return instance;
     }
@@ -105,22 +93,19 @@ internal class ConfigurationBinding : IConfigurationBinding
     {
         var typeInfo = type.GetTypeInfo();
 
-        if (!typeInfo.IsInterface)
-        {
-            return null;
-        }
+        if (!typeInfo.IsInterface) return null;
 
         var collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyList<>), type);
         if (collectionInterface != null)
-        {
             // IEnumerable<T> is guaranteed to have exactly one parameter
             return BindToCollection(typeInfo, config);
-        }
 
         collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyDictionary<,>), type);
         if (collectionInterface != null)
         {
-            var dictionaryType = typeof(Dictionary<,>).MakeGenericType(typeInfo.GenericTypeArguments[0], typeInfo.GenericTypeArguments[1]);
+            var dictionaryType =
+                typeof(Dictionary<,>).MakeGenericType(typeInfo.GenericTypeArguments[0],
+                    typeInfo.GenericTypeArguments[1]);
             var instance = Activator.CreateInstance(dictionaryType);
             BindDictionary(instance, dictionaryType, config);
             return instance;
@@ -129,24 +114,22 @@ internal class ConfigurationBinding : IConfigurationBinding
         collectionInterface = FindOpenGenericInterface(typeof(IDictionary<,>), type);
         if (collectionInterface != null)
         {
-            var instance = Activator.CreateInstance(typeof(Dictionary<,>).MakeGenericType(typeInfo.GenericTypeArguments[0], typeInfo.GenericTypeArguments[1]));
+            var instance = Activator.CreateInstance(
+                typeof(Dictionary<,>).MakeGenericType(typeInfo.GenericTypeArguments[0],
+                    typeInfo.GenericTypeArguments[1]));
             BindDictionary(instance, collectionInterface, config);
             return instance;
         }
 
         collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyCollection<>), type);
         if (collectionInterface != null)
-        {
             // IReadOnlyCollection<T> is guaranteed to have exactly one parameter
             return BindToCollection(typeInfo, config);
-        }
 
         collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
         if (collectionInterface != null)
-        {
             // ICollection<T> is guaranteed to have exactly one parameter
             return BindToCollection(typeInfo, config);
-        }
 
         collectionInterface = FindOpenGenericInterface(typeof(IEnumerable<>), type);
         return collectionInterface != null ? BindToCollection(typeInfo, config) : null;
@@ -155,19 +138,13 @@ internal class ConfigurationBinding : IConfigurationBinding
     private object? BindInstance(Type type, object? instance, IConfiguration config)
     {
         // if binding IConfigurationSection, break early
-        if (type == typeof(IConfigurationSection))
-        {
-            return config;
-        }
+        if (type == typeof(IConfigurationSection)) return config;
 
         var section = config as IConfigurationSection;
         var configValue = section?.Value;
-        if (configValue != null && TryConvertValue(type, configValue, out object? convertedValue, out Exception? error))
+        if (configValue != null && TryConvertValue(type, configValue, out var convertedValue, out var error))
         {
-            if (error != null)
-            {
-                throw error;
-            }
+            if (error != null) throw error;
 
             // Leaf nodes are always reinitialized
             return convertedValue;
@@ -180,10 +157,7 @@ internal class ConfigurationBinding : IConfigurationBinding
         {
             // We are already done if binding to a new collection instance worked
             instance = AttemptBindToCollectionInterfaces(type, config);
-            if (instance != null)
-            {
-                return instance;
-            }
+            if (instance != null) return instance;
 
             instance = CreateInstance(type);
         }
@@ -196,21 +170,17 @@ internal class ConfigurationBinding : IConfigurationBinding
         }
         else if (type.IsArray)
         {
-            instance = BindArray((Array)instance, config);
+            instance = BindArray((Array) instance, config);
         }
         else
         {
             // See if its an ICollection
             collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
             if (collectionInterface != null)
-            {
                 BindCollection(instance, collectionInterface, config);
-            }
             // Something else
             else
-            {
                 BindNonScalar(config, instance);
-            }
         }
 
         return instance;
@@ -220,26 +190,18 @@ internal class ConfigurationBinding : IConfigurationBinding
     {
         var typeInfo = type.GetTypeInfo();
 
-        if (typeInfo.IsInterface || typeInfo.IsAbstract)
-        {
-            throw new InvalidOperationException();
-        }
+        if (typeInfo.IsInterface || typeInfo.IsAbstract) throw new InvalidOperationException();
 
         if (type.IsArray)
         {
-            if (typeInfo.GetArrayRank() > 1)
-            {
-                throw new InvalidOperationException();
-            }
+            if (typeInfo.GetArrayRank() > 1) throw new InvalidOperationException();
             var typ = typeInfo.GetElementType()!;
             return Array.CreateInstance(typ, 0);
         }
 
-        var hasDefaultConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
-        if (!hasDefaultConstructor)
-        {
-            throw new InvalidOperationException();
-        }
+        var hasDefaultConstructor =
+            typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
+        if (!hasDefaultConstructor) throw new InvalidOperationException();
 
         try
         {
@@ -261,30 +223,28 @@ internal class ConfigurationBinding : IConfigurationBinding
         var keyTypeIsEnum = keyType.GetTypeInfo().IsEnum;
 
         if (keyType != typeof(string) && !keyTypeIsEnum)
-        {
             // We only support string and enum keys
             return;
-        }
 
         var setter = typeInfo.GetDeclaredProperty("Item") ??
-            throw new InvalidOperationException();
+                     throw new InvalidOperationException();
 
         foreach (var child in config.GetChildren())
         {
             var item = BindInstance(
-                type: valueType,
-                instance: null,
-                config: child);
+                valueType,
+                null,
+                child);
             if (item == null) continue;
             if (keyType == typeof(string))
             {
                 var key = child.Key;
-                setter.SetValue(dictionary, item, new object[] { key });
+                setter.SetValue(dictionary, item, new object[] {key});
             }
             else if (keyTypeIsEnum)
             {
                 var key = Convert.ToInt32(Enum.Parse(keyType, child.Key));
-                setter.SetValue(dictionary, item, new object[] { key });
+                setter.SetValue(dictionary, item, new object[] {key});
             }
         }
     }
@@ -296,26 +256,21 @@ internal class ConfigurationBinding : IConfigurationBinding
         // ICollection<T> is guaranteed to have exactly one parameter
         var itemType = typeInfo.GenericTypeArguments[0];
         var addMethod = typeInfo.GetDeclaredMethod("Add") ??
-            throw new InvalidOperationException();
+                        throw new InvalidOperationException();
 
         foreach (var section in config.GetChildren())
-        {
             try
             {
                 var item = BindInstance(
-                    type: itemType,
-                    instance: null,
-                    config: section);
-                if (item != null)
-                {
-                    addMethod.Invoke(collection, new[] { item });
-                }
+                    itemType,
+                    null,
+                    section);
+                if (item != null) addMethod.Invoke(collection, new[] {item});
             }
             catch
             {
                 // ignored
             }
-        }
     }
 
     private Array BindArray(Array source, IConfiguration config)
@@ -323,34 +278,26 @@ internal class ConfigurationBinding : IConfigurationBinding
         var children = config.GetChildren().ToArray();
         var arrayLength = source.Length;
         var elementType = source.GetType().GetElementType() ??
-            throw new InvalidOperationException();
+                          throw new InvalidOperationException();
 
         var newArray = Array.CreateInstance(elementType, arrayLength + children.Length);
 
         // binding to array has to preserve already initialized arrays with values
-        if (arrayLength > 0)
-        {
-            Array.Copy(source, newArray, arrayLength);
-        }
+        if (arrayLength > 0) Array.Copy(source, newArray, arrayLength);
 
-        for (int i = 0; i < children.Length; i++)
-        {
+        for (var i = 0; i < children.Length; i++)
             try
             {
                 var item = BindInstance(
-                    type: elementType,
-                    instance: null,
-                    config: children[i]);
-                if (item != null)
-                {
-                    newArray.SetValue(item, arrayLength + i);
-                }
+                    elementType,
+                    null,
+                    children[i]);
+                if (item != null) newArray.SetValue(item, arrayLength + i);
             }
             catch
             {
                 // ignored
             }
-        }
 
         return newArray;
     }
@@ -367,15 +314,13 @@ internal class ConfigurationBinding : IConfigurationBinding
 
         if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return true;
-            }
+            if (string.IsNullOrEmpty(value)) return true;
             var typ = Nullable.GetUnderlyingType(type) ??
-                throw new InvalidOperationException();
+                      throw new InvalidOperationException();
 
             return TryConvertValue(typ, value, out result, out error);
         }
+
         var converter = TypeDescriptor.GetConverter(type);
         if (converter.CanConvertFrom(typeof(string)))
         {
@@ -387,6 +332,7 @@ internal class ConfigurationBinding : IConfigurationBinding
             {
                 error = new InvalidOperationException();
             }
+
             return true;
         }
 
@@ -395,7 +341,7 @@ internal class ConfigurationBinding : IConfigurationBinding
 
         // Construct ´Converter<T, string>´
         var genConverterEmptyType = typeof(Converter<,>);
-        Type[] typeArgs = { typeof(string), type };
+        Type[] typeArgs = {typeof(string), type};
         var converterType = genConverterEmptyType.MakeGenericType(typeArgs);
 
         if (_provider.GetService(converterType) is not Converter<string, object> conv)
@@ -411,18 +357,12 @@ internal class ConfigurationBinding : IConfigurationBinding
         var actualTypeInfo = actual.GetTypeInfo();
         if (actualTypeInfo.IsGenericType &&
             actual.GetGenericTypeDefinition() == expected)
-        {
             return actual;
-        }
 
         foreach (var interfaceType in actualTypeInfo.ImplementedInterfaces)
-        {
             if (interfaceType.GetTypeInfo().IsGenericType &&
                 interfaceType.GetGenericTypeDefinition() == expected)
-            {
                 return interfaceType;
-            }
-        }
         return null;
     }
 
@@ -430,14 +370,13 @@ internal class ConfigurationBinding : IConfigurationBinding
     {
         var allProperties = new List<PropertyInfo>();
 
-        TypeInfo currentType = type;
+        var currentType = type;
         do
         {
             allProperties.AddRange(currentType.DeclaredProperties);
             currentType = currentType.BaseType?.GetTypeInfo() ??
-                throw new InvalidOperationException();
-        }
-        while (currentType != typeof(object).GetTypeInfo());
+                          throw new InvalidOperationException();
+        } while (currentType != typeof(object).GetTypeInfo());
 
         return allProperties;
     }

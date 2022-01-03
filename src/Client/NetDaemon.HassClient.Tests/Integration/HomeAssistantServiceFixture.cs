@@ -3,6 +3,7 @@ namespace NetDaemon.HassClient.Tests.Integration;
 public class HomeAssistantServiceFixture : IAsyncLifetime
 {
     public HomeAssistantMock? HaMock { get; set; }
+
     public async Task DisposeAsync()
     {
         if (HaMock is not null)

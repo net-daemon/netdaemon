@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using LocalApps;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel.Internal;
 
 namespace NetDaemon.AppModel.Tests.Config;
@@ -45,12 +45,11 @@ public class ConfigTests
         var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
 
         configurationBuilder.AddYamlFile(Path.Combine(AppContext.BaseDirectory,
-                        "Config/FailedConfig", "Fail.yaml"), false, false);
+            "Config/FailedConfig", "Fail.yaml"), false, false);
 
         // ACT
         // CHECK
         Assert.Throws<InvalidDataException>(() => configurationBuilder.Build());
-
     }
 
     [Fact]
@@ -108,58 +107,62 @@ public class ConfigTests
     {
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
-                    .ConfigureServices((_, services) =>
-                    {
-                        services.AddAppModelLocalAssembly();
-                        services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
-                        services.AddSingleton(sp =>
-                            new Converter<string, EntityClass>(s =>
-                                ActivatorUtilities.CreateInstance<EntityClass>(sp, s)));
-                    })
-                    .ConfigureAppConfiguration((_, config) =>
-                    {
-                        config.AddYamlAppConfig(
-                            Path.Combine(AppContext.BaseDirectory,
-                                "Fixtures/Local"));
-                    })
-                    .Build();
+            .ConfigureServices((_, services) =>
+            {
+                services.AddAppModelLocalAssembly();
+                services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
+                services.AddSingleton(sp =>
+                    new Converter<string, EntityClass>(s =>
+                        ActivatorUtilities.CreateInstance<EntityClass>(sp, s)));
+            })
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                config.AddYamlAppConfig(
+                    Path.Combine(AppContext.BaseDirectory,
+                        "Fixtures/Local"));
+            })
+            .Build();
 
         var appModel = builder.Services.GetService<IAppModel>();
 
         // ACT
         var loadApps = appModel!.LoadApplications();
-        var appCtx = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp)appCtx.Instance;
+        var appCtx = (ApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp) appCtx.Instance;
         // CHECK
         loadApps.Should().HaveCount(3);
         app.Settings.Entity!.EntityId.Should().Be("light.test");
         app.Settings.Entity!.ServiceProvider.Should().NotBeNull();
     }
 
-    private static IConfigurationRoot GetConfigurationRootForYaml(string path) => GetConfigurationRoot(path);
-    private static IConfigurationRoot GetConfigurationRootForJson(string path) => GetConfigurationRoot(path, false);
+    private static IConfigurationRoot GetConfigurationRootForYaml(string path)
+    {
+        return GetConfigurationRoot(path);
+    }
+
+    private static IConfigurationRoot GetConfigurationRootForJson(string path)
+    {
+        return GetConfigurationRoot(path, false);
+    }
 
     private static IConfigurationRoot GetConfigurationRoot(string path, bool yaml = true)
     {
         var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
 
         if (yaml)
-        {
             configurationBuilder.AddYamlAppConfig(
                 Path.Combine(AppContext.BaseDirectory,
                     path));
-        }
         else
-        {
             configurationBuilder.AddJsonAppConfig(
                 Path.Combine(AppContext.BaseDirectory,
                     path));
-        }
         return configurationBuilder.Build();
     }
 }
 
 #region -- Test classes --
+
 internal class InjectMeWithConfigPlease
 {
     public InjectMeWithConfigPlease(IAppConfig<TestSettings> settings)
@@ -174,4 +177,5 @@ internal class TestSettings
 {
     public string AString { get; set; } = string.Empty;
 }
+
 #endregion

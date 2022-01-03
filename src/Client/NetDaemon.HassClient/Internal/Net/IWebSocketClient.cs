@@ -1,4 +1,5 @@
 namespace NetDaemon.Client.Internal.Net;
+
 internal interface IWebSocketClient : IAsyncDisposable
 {
     WebSocketState State { get; }

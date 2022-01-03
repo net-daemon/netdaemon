@@ -1,14 +1,14 @@
 ﻿{
-    "Logging": {
-        "LogLevel": {
-            "Default": "Debug",
-            "Microsoft": "Warning"
-        }
-    },
-    "HomeAssistant": {
-        "Host": "ENTER YOUR IP TO Development Home Assistant here",
-        "Port": 8124,
-        "Ssl": false,
-        "Token": "ENTER YOUR TOKEN"
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft": "Warning"
     }
+  },
+  "HomeAssistant": {
+    "Host": "ENTER YOUR IP TO Development Home Assistant here",
+    "Port": 8124,
+    "Ssl": false,
+    "Token": "ENTER YOUR TOKEN"
+  }
 }

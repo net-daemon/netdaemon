@@ -1,38 +1,38 @@
 [
-    {
-        "id": 36,
-        "type": "event",
-        "event": {
-            "event_type": "device_registry_updated",
-            "data": {
-                "action": "update",
-                "device_id": "cc3fc35a71134624839dbda54e75b194"
-            },
-            "origin": "LOCAL",
-            "time_fired": "2020-05-05T10:14:11.881770+00:00",
-            "context": {
-                "id": "7ca81c93474e41d59df5277de646bfc5",
-                "parent_id": null,
-                "user_id": null
-            }
-        }
-    },
-    {
-        "id": 48,
-        "type": "event",
-        "event": {
-            "event_type": "area_registry_updated",
-            "data": {
-                "action": "create",
-                "area_id": "ac987a9fcafd4edc8a0b73c39eba558d"
-            },
-            "origin": "LOCAL",
-            "time_fired": "2020-05-05T10:18:58.387635+00:00",
-            "context": {
-                "id": "6376f6154e9d486aa2c977f0c85a307e",
-                "parent_id": null,
-                "user_id": null
-            }
-        }
+  {
+    "id": 36,
+    "type": "event",
+    "event": {
+      "event_type": "device_registry_updated",
+      "data": {
+        "action": "update",
+        "device_id": "cc3fc35a71134624839dbda54e75b194"
+      },
+      "origin": "LOCAL",
+      "time_fired": "2020-05-05T10:14:11.881770+00:00",
+      "context": {
+        "id": "7ca81c93474e41d59df5277de646bfc5",
+        "parent_id": null,
+        "user_id": null
+      }
     }
+  },
+  {
+    "id": 48,
+    "type": "event",
+    "event": {
+      "event_type": "area_registry_updated",
+      "data": {
+        "action": "create",
+        "area_id": "ac987a9fcafd4edc8a0b73c39eba558d"
+      },
+      "origin": "LOCAL",
+      "time_fired": "2020-05-05T10:18:58.387635+00:00",
+      "context": {
+        "id": "6376f6154e9d486aa2c977f0c85a307e",
+        "parent_id": null,
+        "user_id": null
+      }
+    }
+  }
 ]

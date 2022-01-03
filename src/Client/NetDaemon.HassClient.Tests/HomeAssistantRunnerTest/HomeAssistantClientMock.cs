@@ -33,5 +33,4 @@ internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>
             }
         );
     }
-
 }

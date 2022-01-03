@@ -1,6 +1,6 @@
+using System.Reflection;
 using NetDaemon.AppModel.Internal.Compiler;
 using NetDaemon.AppModel.Internal.Config;
-using System.Reflection;
 
 namespace NetDaemon.AppModel;
 
@@ -57,8 +57,8 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddScopedAppServices(this IServiceCollection services)
     {
         services
-        .AddScoped<ApplicationScope>()
-        .AddScoped(s => s.GetRequiredService<ApplicationScope>().ApplicationContext);
+            .AddScoped<ApplicationScope>()
+            .AddScoped(s => s.GetRequiredService<ApplicationScope>().ApplicationContext);
         return services;
     }
 

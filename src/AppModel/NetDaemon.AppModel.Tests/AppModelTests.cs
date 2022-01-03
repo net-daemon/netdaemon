@@ -1,6 +1,6 @@
+using LocalApps;
 using NetDaemon.AppModel.Internal;
 using NetDaemon.AppModel.Tests.Helpers;
-using LocalApps;
 
 namespace NetDaemon.AppModel.Tests.Internal;
 
@@ -21,7 +21,8 @@ public class AppModelTests
     public void TestGetDynamicallyCompiledApplicationsWithCompilerError()
     {
         // ACT and CHECK
-        Assert.Throws<InvalidOperationException>(() => TestHelpers.GetDynamicApplicationsFromYamlConfigPath("Fixtures/DynamicError"));
+        Assert.Throws<InvalidOperationException>(() =>
+            TestHelpers.GetDynamicApplicationsFromYamlConfigPath("Fixtures/DynamicError"));
     }
 
     [Fact]
@@ -36,8 +37,8 @@ public class AppModelTests
         loadApps.Should().HaveCount(3);
 
         // check the application instance is init ok
-        var appInstance = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp)appInstance.Instance;
+        var appInstance = (ApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp) appInstance.Instance;
         app.Settings.AString.Should().Be("Hello world!");
     }
 
@@ -57,7 +58,8 @@ public class AppModelTests
     public void TestSkippedApplications()
     {
         var appModel = TestHelpers.GetAppModelFromLocalAssembly("Fixtures/Local");
-        var apps = appModel.LoadApplications(new List<string> { "LocalApps.MyAppLocalApp" }).Where(n => n.Id == "LocalApps.MyAppLocalApp");
+        var apps = appModel.LoadApplications(new List<string> {"LocalApps.MyAppLocalApp"})
+            .Where(n => n.Id == "LocalApps.MyAppLocalApp");
         apps.Should().BeEmpty();
     }
 
@@ -71,11 +73,10 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var appInstance = (IApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
-        var app = (MyAppLocalAppWithDispose)appInstance.Instance;
+        var appInstance = (IApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        var app = (MyAppLocalAppWithDispose) appInstance.Instance;
         await appInstance.DisposeAsync().ConfigureAwait(false);
         app.AsyncDisposeIsCalled.Should().BeTrue();
         app.DisposeIsCalled.Should().BeTrue();
     }
 }
-

@@ -18,9 +18,6 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     #endregion
 
-    public IObservable<HassEvent> OnHomeAssistantEvent => _hassMessageSubject.Where(n => n.Type == "event").Select(n => n.Event!);
-    public IObservable<HassMessage> OnHassMessage => _hassMessageSubject;
-
     /// <summary>
     ///     Default constructor
     /// </summary>
@@ -38,11 +35,15 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         _logger = logger;
 
         if (_transportPipeline.WebSocketState != WebSocketState.Open)
-            throw new ApplicationException($"Expected WebSocket state 'Open' got '{_transportPipeline.WebSocketState}'");
+            throw new ApplicationException(
+                $"Expected WebSocket state 'Open' got '{_transportPipeline.WebSocketState}'");
 
         _handleNewMessagesTask = Task.Factory.StartNew(async () => await HandleNewMessages().ConfigureAwait(false),
             TaskCreationOptions.LongRunning);
     }
+
+    public IObservable<HassEvent> OnHomeAssistantEvent =>
+        _hassMessageSubject.Where(n => n.Type == "event").Select(n => n.Event!);
 
     public async Task ProcessHomeAssistantEventsAsync(CancellationToken cancelToken)
     {
@@ -55,25 +56,22 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         await combinedTokenSource.Token.AsTask().ConfigureAwait(false);
     }
 
-    private async Task SubscribeToAllHomeAssistantEvents(CancellationToken cancelToken)
-    {
-        _ = await SendCommandAndReturnResponseAsync<SubscribeEventCommand, object?>(new SubscribeEventCommand(), cancelToken).ConfigureAwait(false);
-    }
-
     public Task SendCommandAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
         command.Id = Interlocked.Increment(ref _messageId);
         return _transportPipeline.SendMessageAsync(command, cancelToken);
     }
 
-    public async Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken) where T : CommandMessage
+    public async Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken)
+        where T : CommandMessage
     {
         var result = await SendCommandAndReturnResponseRawAsync(command, cancelToken).ConfigureAwait(false);
 
         return result is not null ? result.Value.ToObject<TResult>() : default;
     }
 
-    public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage
+    public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
+        where T : CommandMessage
     {
         command.Id = Interlocked.Increment(ref _messageId);
 
@@ -85,39 +83,13 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
         await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
         var result = await resultEvent.ConfigureAwait(false) ??
-            throw new ApplicationException("Send command ({command.Type}) did not get response in timely fashion");
+                     throw new ApplicationException(
+                         "Send command ({command.Type}) did not get response in timely fashion");
 
         if (!result?.Success ?? false)
             throw new ApplicationException($"Failed command ({command.Type}) error: {result?.Error}");
 
         return result?.ResultElement;
-    }
-
-    private async Task HandleNewMessages()
-    {
-        try
-        {
-            while (!_internalCancelSource.IsCancellationRequested)
-            {
-                var msg = await _transportPipeline.GetNextMessageAsync<HassMessage>(_internalCancelSource.Token).ConfigureAwait(false);
-                _hassMessageSubject.OnNext(msg);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Normal case just exit
-        }
-        finally
-        {
-            _logger.LogTrace("Stop processing new messages");
-            // make sure we always cancel any blocking operations
-            if (!_internalCancelSource.IsCancellationRequested)
-                _internalCancelSource.Cancel();
-        }
-    }
-    private Task CloseAsync()
-    {
-        return _transportPipeline.CloseAsync();
     }
 
     public async ValueTask DisposeAsync()
@@ -145,8 +117,49 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     }
 
     public Task<T?> GetApiCallAsync<T>(string apiPath, CancellationToken cancelToken)
-    => _apiManager.GetApiCallAsync<T>(apiPath, cancelToken);
+    {
+        return _apiManager.GetApiCallAsync<T>(apiPath, cancelToken);
+    }
 
     public Task<T?> PostApiCallAsync<T>(string apiPath, CancellationToken cancelToken, object? data = null)
-    => _apiManager.PostApiCallAsync<T>(apiPath, cancelToken, data);
+    {
+        return _apiManager.PostApiCallAsync<T>(apiPath, cancelToken, data);
+    }
+
+    public IObservable<HassMessage> OnHassMessage => _hassMessageSubject;
+
+    private async Task SubscribeToAllHomeAssistantEvents(CancellationToken cancelToken)
+    {
+        _ = await SendCommandAndReturnResponseAsync<SubscribeEventCommand, object?>(new SubscribeEventCommand(),
+            cancelToken).ConfigureAwait(false);
+    }
+
+    private async Task HandleNewMessages()
+    {
+        try
+        {
+            while (!_internalCancelSource.IsCancellationRequested)
+            {
+                var msg = await _transportPipeline.GetNextMessageAsync<HassMessage>(_internalCancelSource.Token)
+                    .ConfigureAwait(false);
+                _hassMessageSubject.OnNext(msg);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal case just exit
+        }
+        finally
+        {
+            _logger.LogTrace("Stop processing new messages");
+            // make sure we always cancel any blocking operations
+            if (!_internalCancelSource.IsCancellationRequested)
+                _internalCancelSource.Cancel();
+        }
+    }
+
+    private Task CloseAsync()
+    {
+        return _transportPipeline.CloseAsync();
+    }
 }
