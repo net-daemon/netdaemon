@@ -1,28 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using JoySoftware.HomeAssistant.Model;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.HassModel.CodeGenerator.Helpers;
-using NetDaemon.HassModel.CodeGenerator.Extensions;
-using NetDaemon.HassModel.Common;
-using NetDaemon.HassModel.Entities;
-using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
-using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
+﻿using System.Text.Json.Serialization;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class EntitiesGenerator
 {
-    public static IEnumerable<TypeDeclarationSyntax> Generate(IReadOnlyCollection<HassState> entities)
+    public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyCollection<HassState> entities)
     {
         var entitySets = entities.GroupBy(e => (EntityIdHelper.GetDomain(e.EntityId), IsNumeric(e)))
             .Select(g => new EntitySet(g.Key.Item1, g.Key.Item2, g))
             .OrderBy(s => s.Domain)
             .ToList();
-            
+          
         var entityIds = entities.Select(x => x.EntityId).ToList();
 
         var entityDomains = GetDomainsFromEntities(entityIds).OrderBy(s => s).ToList();

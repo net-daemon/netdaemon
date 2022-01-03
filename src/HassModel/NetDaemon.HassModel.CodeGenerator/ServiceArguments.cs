@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using JoySoftware.HomeAssistant.Model;
-using NetDaemon.HassModel.CodeGenerator.Helpers;
-using NetDaemon.HassModel.CodeGenerator.Extensions;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 

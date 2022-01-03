@@ -1,16 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using JoySoftware.HomeAssistant.Model;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.HassModel.CodeGenerator.Helpers;
-using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
-using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;
-
-namespace NetDaemon.HassModel.CodeGenerator;
+﻿namespace NetDaemon.HassModel.CodeGenerator;
 
 public static class ExtensionMethodsGenerator
 {
-    public static IEnumerable<ClassDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<HassState> entities)
+    public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<HassState> entities)
     {
         var entityDomains = entities.GroupBy(e => EntityIdHelper.GetDomain(e.EntityId)).Select(x => x.Key);
 

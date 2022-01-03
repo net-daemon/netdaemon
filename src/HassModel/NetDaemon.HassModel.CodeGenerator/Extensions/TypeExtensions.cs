@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace NetDaemon.HassModel.CodeGenerator.Extensions;
+﻿namespace NetDaemon.HassModel.CodeGenerator.Extensions;
 
 internal static class TypeExtensions
 {

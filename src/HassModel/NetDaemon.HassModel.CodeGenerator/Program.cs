@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
-using System.Linq;
 using JoySoftware.HomeAssistant.Client;
 using Microsoft.Extensions.Configuration;
-using NetDaemon.HassModel.CodeGenerator;
-using NetDaemon.HassModel.CodeGenerator.Helpers;
 
 #pragma warning disable CA1303
 #pragma warning disable CA2007
