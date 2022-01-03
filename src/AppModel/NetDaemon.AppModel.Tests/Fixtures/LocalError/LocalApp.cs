@@ -8,6 +8,3 @@ public class MyAppLocalAppWithError
         throw new InvalidOperationException("Some error");
     }
 }
-
-
-

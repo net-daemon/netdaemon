@@ -27,7 +27,7 @@ internal class YamlConfigurationFileParser
         yaml.Load(new StreamReader(input, true));
 
         if (yaml.Documents.Count == 0) return _data;
-        var mapping = (YamlMappingNode) yaml.Documents[0].RootNode;
+        var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
 
         // The document node is a mapping node
         VisitYamlMappingNode(mapping);
@@ -37,7 +37,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlNodePair(KeyValuePair<YamlNode, YamlNode> yamlNodePair)
     {
-        var context = ((YamlScalarNode) yamlNodePair.Key).Value ?? string.Empty;
+        var context = ((YamlScalarNode)yamlNodePair.Key).Value ?? string.Empty;
         VisitYamlNode(context, yamlNodePair.Value);
     }
 

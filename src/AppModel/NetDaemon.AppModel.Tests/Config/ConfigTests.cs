@@ -127,8 +127,8 @@ public class ConfigTests
 
         // ACT
         var loadApps = appModel!.LoadApplications();
-        var appCtx = (ApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp) appCtx.Instance;
+        var appCtx = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp)appCtx.Instance;
         // CHECK
         loadApps.Should().HaveCount(3);
         app.Settings.Entity!.EntityId.Should().Be("light.test");
