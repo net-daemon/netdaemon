@@ -1,5 +1,3 @@
-
-
 namespace NetDaemon.HassClient.Tests.Net;
 
 public class WebSocketClientTests

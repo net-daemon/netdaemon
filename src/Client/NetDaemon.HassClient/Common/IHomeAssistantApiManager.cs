@@ -1,4 +1,3 @@
-
 namespace NetDaemon.Client.Common;
 
 public interface IHomeAssistantApiManager

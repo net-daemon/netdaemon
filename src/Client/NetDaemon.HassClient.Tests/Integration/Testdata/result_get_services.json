@@ -1,1287 +1,1287 @@
 {
-    "id": 3,
-    "result": {
-        "homeassistant": {
-            "save_persistent_states": {
-                "name": "Save Persistent States",
-                "description": "Save the persistent states (for entities derived from RestoreEntity) immediately. Maintain the normal periodic saving interval.",
-                "fields": {}
-            },
-            "turn_off": {
-                "name": "Generic turn off",
-                "description": "Generic service to turn devices off under any domain.",
-                "fields": {},
-                "target": {
-                    "entity": {}
-                }
-            },
-            "turn_on": {
-                "name": "Generic turn on",
-                "description": "Generic service to turn devices on under any domain.",
-                "fields": {},
-                "target": {
-                    "entity": {}
-                }
-            },
-            "toggle": {
-                "name": "Generic toggle",
-                "description": "Generic service to toggle devices on/off under any domain",
-                "fields": {},
-                "target": {
-                    "entity": {}
-                }
-            },
-            "stop": {
-                "name": "Stop",
-                "description": "Stop the Home Assistant service.",
-                "fields": {}
-            },
-            "restart": {
-                "name": "Restart",
-                "description": "Restart the Home Assistant service.",
-                "fields": {}
-            },
-            "check_config": {
-                "name": "Check configuration",
-                "description": "Check the Home Assistant configuration files for errors. Errors will be displayed in the Home Assistant log.",
-                "fields": {}
-            },
-            "update_entity": {
-                "name": "Update entity",
-                "description": "Force one or more entities to update its data",
-                "fields": {},
-                "target": {
-                    "entity": {}
-                }
-            },
-            "reload_core_config": {
-                "name": "Reload core configuration",
-                "description": "Reload the core configuration.",
-                "fields": {}
-            },
-            "set_location": {
-                "name": "Set location",
-                "description": "Update the Home Assistant location.",
-                "fields": {
-                    "latitude": {
-                        "name": "Latitude",
-                        "description": "Latitude of your location.",
-                        "required": true,
-                        "example": 32.87336,
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "longitude": {
-                        "name": "Longitude",
-                        "description": "Longitude of your location.",
-                        "required": true,
-                        "example": 117.22743,
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            },
-            "reload_config_entry": {
-                "name": "Reload config entry",
-                "description": "Reload a config entry that matches a target.",
-                "fields": {
-                    "entry_id": {
-                        "advanced": true,
-                        "name": "Config entry id",
-                        "description": "A configuration entry id",
-                        "required": false,
-                        "example": "8955375327824e14ba89e4b29cc3ec9a",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {},
-                    "device": {}
-                }
-            }
-        },
-        "persistent_notification": {
-            "create": {
-                "name": "Create",
-                "description": "Show a notification in the frontend.",
-                "fields": {
-                    "message": {
-                        "name": "Message",
-                        "description": "Message body of the notification. [Templates accepted]",
-                        "required": true,
-                        "example": "Please check your configuration.yaml.",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "title": {
-                        "name": "Title",
-                        "description": "Optional title for your notification. [Templates accepted]",
-                        "example": "Test notification",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "notification_id": {
-                        "name": "Notification ID",
-                        "description": "Target ID of the notification, will replace a notification with the same ID.",
-                        "example": 1234,
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            },
-            "dismiss": {
-                "name": "Dismiss",
-                "description": "Remove a notification from the frontend.",
-                "fields": {
-                    "notification_id": {
-                        "name": "Notification ID",
-                        "description": "Target ID of the notification, which should be removed.",
-                        "required": true,
-                        "example": 1234,
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            },
-            "mark_read": {
-                "name": "Mark read",
-                "description": "Mark a notification read.",
-                "fields": {
-                    "notification_id": {
-                        "name": "Notification ID",
-                        "description": "Target ID of the notification, which should be mark read.",
-                        "required": true,
-                        "example": 1234,
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            }
-        },
-        "logger": {
-            "set_default_level": {
-                "name": "Set default level",
-                "description": "Set the default log level for integrations.",
-                "fields": {
-                    "level": {
-                        "name": "Level",
-                        "description": "Default severity level for all integrations.",
-                        "selector": {
-                            "select": {
-                                "options": [
-                                    "debug",
-                                    "info",
-                                    "warning",
-                                    "error",
-                                    "fatal",
-                                    "critical"
-                                ]
-                            }
-                        }
-                    }
-                }
-            },
-            "set_level": {
-                "name": "Set level",
-                "description": "Set log level for integrations.",
-                "fields": {}
-            }
-        },
-        "recorder": {
-            "purge": {
-                "name": "Purge",
-                "description": "Start purge task - to clean up old data from your database.",
-                "fields": {
-                    "keep_days": {
-                        "name": "Days to keep",
-                        "description": "Number of history days to keep in database after purge.",
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 365,
-                                "unit_of_measurement": "days"
-                            }
-                        }
-                    },
-                    "repack": {
-                        "name": "Repack",
-                        "description": "Attempt to save disk space by rewriting the entire database file.",
-                        "default": false,
-                        "selector": {
-                            "boolean": null
-                        }
-                    },
-                    "apply_filter": {
-                        "name": "Apply filter",
-                        "description": "Apply entity_id and event_type filter in addition to time based purge.",
-                        "default": false,
-                        "selector": {
-                            "boolean": null
-                        }
-                    }
-                }
-            },
-            "purge_entities": {
-                "name": "Purge Entities",
-                "description": "Start purge task to remove specific entities from your database.",
-                "fields": {
-                    "domains": {
-                        "name": "Domains to remove",
-                        "description": "List the domains that need to be removed from the recorder database.",
-                        "example": "sun",
-                        "required": false,
-                        "default": [],
-                        "selector": {
-                            "object": null
-                        }
-                    },
-                    "entity_globs": {
-                        "name": "Entity Globs to remove",
-                        "description": "List the regular expressions to select entities for removal from the recorder database.",
-                        "example": "domain*.object_id*",
-                        "required": false,
-                        "default": [],
-                        "selector": {
-                            "object": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {}
-                }
-            },
-            "enable": {
-                "name": "Enable",
-                "description": "Start the recording of events and state changes",
-                "fields": {}
-            },
-            "disable": {
-                "name": "Disable",
-                "description": "Stop the recording of events and state changes",
-                "fields": {}
-            }
-        },
-        "system_log": {
-            "clear": {
-                "name": "Clear all",
-                "description": "Clear all log entries.",
-                "fields": {}
-            },
-            "write": {
-                "name": "Write",
-                "description": "Write log entry.",
-                "fields": {
-                    "message": {
-                        "name": "Message",
-                        "description": "Message to log.",
-                        "required": true,
-                        "example": "Something went wrong",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "level": {
-                        "name": "Level",
-                        "description": "Log level.",
-                        "default": "error",
-                        "selector": {
-                            "select": {
-                                "options": [
-                                    "debug",
-                                    "info",
-                                    "warning",
-                                    "error",
-                                    "critical"
-                                ]
-                            }
-                        }
-                    },
-                    "logger": {
-                        "name": "Logger",
-                        "description": "Logger name under which to log the message. Defaults to \u0027system_log.external\u0027.",
-                        "example": "mycomponent.myplatform",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            }
-        },
-        "cloud": {
-            "remote_connect": {
-                "name": "Remote connect",
-                "description": "Make instance UI available outside over NabuCasa cloud",
-                "fields": {}
-            },
-            "remote_disconnect": {
-                "name": "Remote disconnect",
-                "description": "Disconnect UI from NabuCasa cloud",
-                "fields": {}
-            }
-        },
-        "person": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the person configuration.",
-                "fields": {}
-            }
-        },
-        "frontend": {
-            "set_theme": {
-                "name": "Set theme",
-                "description": "Set a theme unless the client selected per-device theme.",
-                "fields": {
-                    "name": {
-                        "name": "Name",
-                        "description": "Name of a predefined theme, \u0027default\u0027 or \u0027none\u0027.",
-                        "required": true,
-                        "example": "default",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "mode": {
-                        "name": "Mode",
-                        "description": "The mode the theme is for.",
-                        "default": "light",
-                        "selector": {
-                            "select": {
-                                "options": [
-                                    "dark",
-                                    "light"
-                                ]
-                            }
-                        }
-                    }
-                }
-            },
-            "reload_themes": {
-                "name": "Reload themes",
-                "description": "Reload themes from YAML configuration.",
-                "fields": {}
-            }
-        },
-        "logbook": {
-            "log": {
-                "name": "Log",
-                "description": "Create a custom entry in your logbook.",
-                "fields": {
-                    "name": {
-                        "name": "Name",
-                        "description": "Custom name for an entity, can be referenced with entity_id.",
-                        "required": true,
-                        "example": "Kitchen",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "message": {
-                        "name": "Message",
-                        "description": "Message of the custom logbook entry.",
-                        "required": true,
-                        "example": "is being used",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "entity_id": {
-                        "name": "Entity ID",
-                        "description": "Entity to reference in custom logbook entry.",
-                        "selector": {
-                            "entity": null
-                        }
-                    },
-                    "domain": {
-                        "name": "Domain",
-                        "description": "Icon of domain to display in custom logbook entry.",
-                        "example": "light",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            }
-        },
-        "switch": {
-            "turn_off": {
-                "name": "Turn off",
-                "description": "Turn a switch off",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "switch"
-                    }
-                }
-            },
-            "turn_on": {
-                "name": "Turn on",
-                "description": "Turn a switch on",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "switch"
-                    }
-                }
-            },
-            "toggle": {
-                "name": "Toggle",
-                "description": "Toggles a switch state",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "switch"
-                    }
-                }
-            }
-        },
-        "scene": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the scene configuration.",
-                "fields": {}
-            },
-            "apply": {
-                "name": "Apply",
-                "description": "Activate a scene with configuration.",
-                "fields": {
-                    "entities": {
-                        "name": "Entities state",
-                        "description": "The entities and the state that they need to be.",
-                        "required": true,
-                        "example": {
-                            "light.kitchen": "on",
-                            "light.ceiling": {
-                                "state": "on",
-                                "brightness": 80
-                            }
-                        },
-                        "selector": {
-                            "object": null
-                        }
-                    },
-                    "transition": {
-                        "name": "Transition",
-                        "description": "Transition duration it takes to bring devices to the state defined in the scene.",
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 300,
-                                "unit_of_measurement": "seconds"
-                            }
-                        }
-                    }
-                }
-            },
-            "create": {
-                "name": "Create",
-                "description": "Creates a new scene.",
-                "fields": {
-                    "scene_id": {
-                        "name": "Scene entity ID",
-                        "description": "The entity_id of the new scene.",
-                        "required": true,
-                        "example": "all_lights",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "entities": {
-                        "name": "Entities state",
-                        "description": "The entities to control with the scene.",
-                        "example": {
-                            "light.tv_back_light": "on",
-                            "light.ceiling": {
-                                "state": "on",
-                                "brightness": 200
-                            }
-                        },
-                        "selector": {
-                            "object": null
-                        }
-                    },
-                    "snapshot_entities": {
-                        "name": "Snapshot entities",
-                        "description": "The entities of which a snapshot is to be taken",
-                        "example": [
-                            "light.ceiling",
-                            "light.kitchen"
-                        ],
-                        "selector": {
-                            "object": null
-                        }
-                    }
-                }
-            },
-            "turn_on": {
-                "name": "Activate",
-                "description": "Activate a scene.",
-                "fields": {
-                    "transition": {
-                        "name": "Transition",
-                        "description": "Transition duration it takes to bring devices to the state defined in the scene.",
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 300,
-                                "unit_of_measurement": "seconds"
-                            }
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "scene"
-                    }
-                }
-            }
-        },
-        "group": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload group configuration, entities, and notify services.",
-                "fields": {}
-            },
-            "set": {
-                "name": "Set",
-                "description": "Create/Update a user group.",
-                "fields": {
-                    "object_id": {
-                        "name": "Object ID",
-                        "description": "Group id and part of entity id.",
-                        "required": true,
-                        "example": "test_group",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "name": {
-                        "name": "Name",
-                        "description": "Name of group",
-                        "example": "My test group",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "icon": {
-                        "name": "Icon",
-                        "description": "Name of icon for the group.",
-                        "example": "mdi:camera",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "entities": {
-                        "name": "Entities",
-                        "description": "List of all members in the group. Not compatible with \u0027delta\u0027.",
-                        "example": "domain.entity_id1, domain.entity_id2",
-                        "selector": {
-                            "object": null
-                        }
-                    },
-                    "add_entities": {
-                        "name": "Add Entities",
-                        "description": "List of members that will change on group listening.",
-                        "example": "domain.entity_id1, domain.entity_id2",
-                        "selector": {
-                            "object": null
-                        }
-                    },
-                    "all": {
-                        "name": "All",
-                        "description": "Enable this option if the group should only turn on when all entities are on.",
-                        "selector": {
-                            "boolean": null
-                        }
-                    }
-                }
-            },
-            "remove": {
-                "name": "Remove",
-                "description": "Remove a user group.",
-                "fields": {
-                    "object_id": {
-                        "name": "Object ID",
-                        "description": "Group id and part of entity id.",
-                        "required": true,
-                        "example": "test_group",
-                        "selector": {
-                            "object": null
-                        }
-                    }
-                }
-            }
-        },
-        "input_boolean": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the input_boolean configuration",
-                "fields": {}
-            },
-            "turn_on": {
-                "name": "Turn on",
-                "description": "Turn on an input boolean",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_boolean"
-                    }
-                }
-            },
-            "turn_off": {
-                "name": "Turn off",
-                "description": "Turn off an input boolean",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_boolean"
-                    }
-                }
-            },
-            "toggle": {
-                "name": "Toggle",
-                "description": "Toggle an input boolean",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_boolean"
-                    }
-                }
-            }
-        },
-        "script": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload all the available scripts",
-                "fields": {}
-            },
-            "turn_on": {
-                "name": "Turn on",
-                "description": "Turn on script",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "script"
-                    }
-                }
-            },
-            "turn_off": {
-                "name": "Turn off",
-                "description": "Turn off script",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "script"
-                    }
-                }
-            },
-            "toggle": {
-                "name": "Toggle",
-                "description": "Toggle script",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "script"
-                    }
-                }
-            }
-        },
-        "automation": {
-            "trigger": {
-                "name": "Trigger",
-                "description": "Trigger the actions of an automation.",
-                "fields": {
-                    "skip_condition": {
-                        "name": "Skip conditions",
-                        "description": "Whether or not the conditions will be skipped.",
-                        "default": true,
-                        "selector": {
-                            "boolean": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "automation"
-                    }
-                }
-            },
-            "toggle": {
-                "name": "Toggle",
-                "description": "Toggle (enable / disable) an automation.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "automation"
-                    }
-                }
-            },
-            "turn_on": {
-                "name": "Turn on",
-                "description": "Enable an automation.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "automation"
-                    }
-                }
-            },
-            "turn_off": {
-                "name": "Turn off",
-                "description": "Disable an automation.",
-                "fields": {
-                    "stop_actions": {
-                        "name": "Stop actions",
-                        "description": "Stop currently running actions.",
-                        "default": true,
-                        "selector": {
-                            "boolean": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "automation"
-                    }
-                }
-            },
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the automation configuration.",
-                "fields": {}
-            }
-        },
-        "zone": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the YAML-based zone configuration.",
-                "fields": {}
-            }
-        },
-        "timer": {
-            "reload": {
-                "name": "",
-                "description": "",
-                "fields": {}
-            },
-            "start": {
-                "name": "Start",
-                "description": "Start a timer",
-                "fields": {
-                    "duration": {
-                        "description": "Duration the timer requires to finish. [optional]",
-                        "default": 0,
-                        "example": "00:01:00 or 60",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "timer"
-                    }
-                }
-            },
-            "pause": {
-                "name": "Pause",
-                "description": "Pause a timer.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "timer"
-                    }
-                }
-            },
-            "cancel": {
-                "name": "Cancel",
-                "description": "Cancel a timer.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "timer"
-                    }
-                }
-            },
-            "finish": {
-                "name": "Finish",
-                "description": "Finish a timer.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "timer"
-                    }
-                }
-            }
-        },
-        "counter": {
-            "increment": {
-                "name": "Increment",
-                "description": "Increment a counter.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "counter"
-                    }
-                }
-            },
-            "decrement": {
-                "name": "Decrement",
-                "description": "Decrement a counter.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "counter"
-                    }
-                }
-            },
-            "reset": {
-                "name": "Reset",
-                "description": "Reset a counter.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "counter"
-                    }
-                }
-            },
-            "configure": {
-                "name": "Configure",
-                "description": "Change counter parameters.",
-                "fields": {
-                    "minimum": {
-                        "name": "Minimum",
-                        "description": "New minimum value for the counter or None to remove minimum.",
-                        "selector": {
-                            "number": {
-                                "min": -9223372036854775807,
-                                "max": 9223372036854775807,
-                                "mode": "box"
-                            }
-                        }
-                    },
-                    "maximum": {
-                        "name": "Maximum",
-                        "description": "New maximum value for the counter or None to remove maximum.",
-                        "selector": {
-                            "number": {
-                                "min": -9223372036854775807,
-                                "max": 9223372036854775807,
-                                "mode": "box"
-                            }
-                        }
-                    },
-                    "step": {
-                        "name": "Step",
-                        "description": "New value for step.",
-                        "selector": {
-                            "number": {
-                                "min": 1,
-                                "max": 9223372036854775807,
-                                "mode": "box"
-                            }
-                        }
-                    },
-                    "initial": {
-                        "name": "Initial",
-                        "description": "New value for initial.",
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 9223372036854775807,
-                                "mode": "box"
-                            }
-                        }
-                    },
-                    "value": {
-                        "name": "Value",
-                        "description": "New state value.",
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 9223372036854775807,
-                                "mode": "box"
-                            }
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "counter"
-                    }
-                }
-            }
-        },
-        "input_number": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the input_number configuration.",
-                "fields": {}
-            },
-            "set_value": {
-                "name": "Set",
-                "description": "Set the value of an input number entity.",
-                "fields": {
-                    "value": {
-                        "name": "Value",
-                        "description": "The target value the entity should be set to.",
-                        "required": true,
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 9223372036854775807,
-                                "step": 0.001,
-                                "mode": "box"
-                            }
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_number"
-                    }
-                }
-            },
-            "increment": {
-                "name": "Increment",
-                "description": "Increment the value of an input number entity by its stepping.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_number"
-                    }
-                }
-            },
-            "decrement": {
-                "name": "Decrement",
-                "description": "Decrement the value of an input number entity by its stepping.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_number"
-                    }
-                }
-            }
-        },
-        "input_text": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the input_text configuration.",
-                "fields": {}
-            },
-            "set_value": {
-                "name": "Set",
-                "description": "Set the value of an input text entity.",
-                "fields": {
-                    "value": {
-                        "name": "Value",
-                        "description": "The target value the entity should be set to.",
-                        "required": true,
-                        "example": "This is an example text",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_text"
-                    }
-                }
-            }
-        },
-        "input_datetime": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the input_datetime configuration.",
-                "fields": {}
-            },
-            "set_datetime": {
-                "name": "Set",
-                "description": "This can be used to dynamically set the date and/or time.",
-                "fields": {
-                    "date": {
-                        "name": "Date",
-                        "description": "The target date the entity should be set to.",
-                        "example": "\u00222019-04-20\u0022",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "time": {
-                        "name": "Time",
-                        "description": "The target time the entity should be set to.",
-                        "example": "\u002205:04:20\u0022",
-                        "selector": {
-                            "time": null
-                        }
-                    },
-                    "datetime": {
-                        "name": "Date \u0026 Time",
-                        "description": "The target date \u0026 time the entity should be set to.",
-                        "example": "\u00222019-04-20 05:04:20\u0022",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "timestamp": {
-                        "name": "Timestamp",
-                        "description": "The target date \u0026 time the entity should be set to as expressed by a UNIX timestamp.",
-                        "selector": {
-                            "number": {
-                                "min": 0,
-                                "max": 9223372036854775807,
-                                "mode": "box"
-                            }
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_datetime"
-                    }
-                }
-            }
-        },
-        "template": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload all template entities.",
-                "fields": {}
-            }
-        },
-        "tts": {
-            "google_translate_say": {
-                "name": "Say an TTS message with google_translate",
-                "description": "Say something using text-to-speech on a media player with google_translate.",
-                "fields": {
-                    "entity_id": {
-                        "name": "Entity",
-                        "description": "Name(s) of media player entities.\\",
-                        "required": true,
-                        "selector": {
-                            "entity": {
-                                "domain": "media_player"
-                            }
-                        }
-                    },
-                    "message": {
-                        "name": "Message",
-                        "description": "Text to speak on devices.",
-                        "example": "My name is hanna",
-                        "required": true,
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "cache": {
-                        "name": "Cache",
-                        "description": "Control file cache of this message.",
-                        "default": false,
-                        "selector": {
-                            "boolean": null
-                        }
-                    },
-                    "language": {
-                        "name": "Language",
-                        "description": "Language to use for speech generation.",
-                        "example": "ru",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "options": {
-                        "name": "Options",
-                        "description": "A dictionary containing platform-specific options. Optional depending on the platform.",
-                        "advanced": true,
-                        "example": "platform specific",
-                        "selector": {
-                            "object": null
-                        }
-                    }
-                }
-            },
-            "clear_cache": {
-                "name": "Clear TTS cache",
-                "description": "Remove all text-to-speech cache files and RAM cache.",
-                "fields": {}
-            }
-        },
-        "input_select": {
-            "reload": {
-                "name": "Reload",
-                "description": "Reload the input_select configuration.",
-                "fields": {}
-            },
-            "select_option": {
-                "name": "Select",
-                "description": "Select an option of an input select entity.",
-                "fields": {
-                    "option": {
-                        "name": "Option",
-                        "description": "Option to be selected.",
-                        "required": true,
-                        "example": "\u0022Item A\u0022",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_select"
-                    }
-                }
-            },
-            "select_next": {
-                "name": "Next",
-                "description": "Select the next options of an input select entity.",
-                "fields": {
-                    "cycle": {
-                        "name": "Cycle",
-                        "description": "If the option should cycle from the last to the first.",
-                        "default": true,
-                        "selector": {
-                            "boolean": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_select"
-                    }
-                }
-            },
-            "select_previous": {
-                "name": "Previous",
-                "description": "Select the previous options of an input select entity.",
-                "fields": {
-                    "cycle": {
-                        "name": "Cycle",
-                        "description": "If the option should cycle from the first to the last.",
-                        "default": true,
-                        "selector": {
-                            "boolean": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_select"
-                    }
-                }
-            },
-            "select_first": {
-                "name": "First",
-                "description": "Select the first option of an input select entity.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_select"
-                    }
-                }
-            },
-            "select_last": {
-                "name": "Last",
-                "description": "Select the last option of an input select entity.",
-                "fields": {},
-                "target": {
-                    "entity": {
-                        "domain": "input_select"
-                    }
-                }
-            },
-            "set_options": {
-                "name": "Set options",
-                "description": "Set the options of an input select entity.",
-                "fields": {
-                    "options": {
-                        "name": "Options",
-                        "description": "Options for the input select entity.",
-                        "required": true,
-                        "example": "[\u0022Item A\u0022, \u0022Item B\u0022, \u0022Item C\u0022]",
-                        "selector": {
-                            "object": null
-                        }
-                    }
-                },
-                "target": {
-                    "entity": {
-                        "domain": "input_select"
-                    }
-                }
-            }
-        },
-        "notify": {
-            "persistent_notification": {
-                "name": "Send a persistent notification",
-                "description": "Sends a notification to the visible in the front-end.",
-                "fields": {
-                    "message": {
-                        "description": "Message body of the notification.",
-                        "required": true,
-                        "example": "The garage door has been open for 10 minutes.",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "title": {
-                        "description": "Title for your notification.",
-                        "example": "Your Garage Door Friend",
-                        "selector": {
-                            "text": null
-                        }
-                    }
-                }
-            },
-            "notify": {
-                "name": "Send a notification with notify",
-                "description": "Sends a notification message using the notify service.",
-                "fields": {
-                    "message": {
-                        "name": "Message",
-                        "description": "Message body of the notification.",
-                        "required": true,
-                        "example": "The garage door has been open for 10 minutes.",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "title": {
-                        "name": "Title",
-                        "description": "Title for your notification.",
-                        "example": "Your Garage Door Friend",
-                        "selector": {
-                            "text": null
-                        }
-                    },
-                    "target": {
-                        "description": "An array of targets to send the notification to. Optional depending on the platform.",
-                        "example": "platform specific",
-                        "selector": {
-                            "object": null
-                        }
-                    },
-                    "data": {
-                        "name": "Data",
-                        "description": "Extended information for notification. Optional depending on the platform.",
-                        "example": "platform specific",
-                        "selector": {
-                            "object": null
-                        }
-                    }
-                }
-            }
+  "id": 3,
+  "result": {
+    "homeassistant": {
+      "save_persistent_states": {
+        "name": "Save Persistent States",
+        "description": "Save the persistent states (for entities derived from RestoreEntity) immediately. Maintain the normal periodic saving interval.",
+        "fields": {}
+      },
+      "turn_off": {
+        "name": "Generic turn off",
+        "description": "Generic service to turn devices off under any domain.",
+        "fields": {},
+        "target": {
+          "entity": {}
         }
+      },
+      "turn_on": {
+        "name": "Generic turn on",
+        "description": "Generic service to turn devices on under any domain.",
+        "fields": {},
+        "target": {
+          "entity": {}
+        }
+      },
+      "toggle": {
+        "name": "Generic toggle",
+        "description": "Generic service to toggle devices on/off under any domain",
+        "fields": {},
+        "target": {
+          "entity": {}
+        }
+      },
+      "stop": {
+        "name": "Stop",
+        "description": "Stop the Home Assistant service.",
+        "fields": {}
+      },
+      "restart": {
+        "name": "Restart",
+        "description": "Restart the Home Assistant service.",
+        "fields": {}
+      },
+      "check_config": {
+        "name": "Check configuration",
+        "description": "Check the Home Assistant configuration files for errors. Errors will be displayed in the Home Assistant log.",
+        "fields": {}
+      },
+      "update_entity": {
+        "name": "Update entity",
+        "description": "Force one or more entities to update its data",
+        "fields": {},
+        "target": {
+          "entity": {}
+        }
+      },
+      "reload_core_config": {
+        "name": "Reload core configuration",
+        "description": "Reload the core configuration.",
+        "fields": {}
+      },
+      "set_location": {
+        "name": "Set location",
+        "description": "Update the Home Assistant location.",
+        "fields": {
+          "latitude": {
+            "name": "Latitude",
+            "description": "Latitude of your location.",
+            "required": true,
+            "example": 32.87336,
+            "selector": {
+              "text": null
+            }
+          },
+          "longitude": {
+            "name": "Longitude",
+            "description": "Longitude of your location.",
+            "required": true,
+            "example": 117.22743,
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      },
+      "reload_config_entry": {
+        "name": "Reload config entry",
+        "description": "Reload a config entry that matches a target.",
+        "fields": {
+          "entry_id": {
+            "advanced": true,
+            "name": "Config entry id",
+            "description": "A configuration entry id",
+            "required": false,
+            "example": "8955375327824e14ba89e4b29cc3ec9a",
+            "selector": {
+              "text": null
+            }
+          }
+        },
+        "target": {
+          "entity": {},
+          "device": {}
+        }
+      }
     },
-    "success": true,
-    "type": "result"
+    "persistent_notification": {
+      "create": {
+        "name": "Create",
+        "description": "Show a notification in the frontend.",
+        "fields": {
+          "message": {
+            "name": "Message",
+            "description": "Message body of the notification. [Templates accepted]",
+            "required": true,
+            "example": "Please check your configuration.yaml.",
+            "selector": {
+              "text": null
+            }
+          },
+          "title": {
+            "name": "Title",
+            "description": "Optional title for your notification. [Templates accepted]",
+            "example": "Test notification",
+            "selector": {
+              "text": null
+            }
+          },
+          "notification_id": {
+            "name": "Notification ID",
+            "description": "Target ID of the notification, will replace a notification with the same ID.",
+            "example": 1234,
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      },
+      "dismiss": {
+        "name": "Dismiss",
+        "description": "Remove a notification from the frontend.",
+        "fields": {
+          "notification_id": {
+            "name": "Notification ID",
+            "description": "Target ID of the notification, which should be removed.",
+            "required": true,
+            "example": 1234,
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      },
+      "mark_read": {
+        "name": "Mark read",
+        "description": "Mark a notification read.",
+        "fields": {
+          "notification_id": {
+            "name": "Notification ID",
+            "description": "Target ID of the notification, which should be mark read.",
+            "required": true,
+            "example": 1234,
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      }
+    },
+    "logger": {
+      "set_default_level": {
+        "name": "Set default level",
+        "description": "Set the default log level for integrations.",
+        "fields": {
+          "level": {
+            "name": "Level",
+            "description": "Default severity level for all integrations.",
+            "selector": {
+              "select": {
+                "options": [
+                  "debug",
+                  "info",
+                  "warning",
+                  "error",
+                  "fatal",
+                  "critical"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "set_level": {
+        "name": "Set level",
+        "description": "Set log level for integrations.",
+        "fields": {}
+      }
+    },
+    "recorder": {
+      "purge": {
+        "name": "Purge",
+        "description": "Start purge task - to clean up old data from your database.",
+        "fields": {
+          "keep_days": {
+            "name": "Days to keep",
+            "description": "Number of history days to keep in database after purge.",
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 365,
+                "unit_of_measurement": "days"
+              }
+            }
+          },
+          "repack": {
+            "name": "Repack",
+            "description": "Attempt to save disk space by rewriting the entire database file.",
+            "default": false,
+            "selector": {
+              "boolean": null
+            }
+          },
+          "apply_filter": {
+            "name": "Apply filter",
+            "description": "Apply entity_id and event_type filter in addition to time based purge.",
+            "default": false,
+            "selector": {
+              "boolean": null
+            }
+          }
+        }
+      },
+      "purge_entities": {
+        "name": "Purge Entities",
+        "description": "Start purge task to remove specific entities from your database.",
+        "fields": {
+          "domains": {
+            "name": "Domains to remove",
+            "description": "List the domains that need to be removed from the recorder database.",
+            "example": "sun",
+            "required": false,
+            "default": [],
+            "selector": {
+              "object": null
+            }
+          },
+          "entity_globs": {
+            "name": "Entity Globs to remove",
+            "description": "List the regular expressions to select entities for removal from the recorder database.",
+            "example": "domain*.object_id*",
+            "required": false,
+            "default": [],
+            "selector": {
+              "object": null
+            }
+          }
+        },
+        "target": {
+          "entity": {}
+        }
+      },
+      "enable": {
+        "name": "Enable",
+        "description": "Start the recording of events and state changes",
+        "fields": {}
+      },
+      "disable": {
+        "name": "Disable",
+        "description": "Stop the recording of events and state changes",
+        "fields": {}
+      }
+    },
+    "system_log": {
+      "clear": {
+        "name": "Clear all",
+        "description": "Clear all log entries.",
+        "fields": {}
+      },
+      "write": {
+        "name": "Write",
+        "description": "Write log entry.",
+        "fields": {
+          "message": {
+            "name": "Message",
+            "description": "Message to log.",
+            "required": true,
+            "example": "Something went wrong",
+            "selector": {
+              "text": null
+            }
+          },
+          "level": {
+            "name": "Level",
+            "description": "Log level.",
+            "default": "error",
+            "selector": {
+              "select": {
+                "options": [
+                  "debug",
+                  "info",
+                  "warning",
+                  "error",
+                  "critical"
+                ]
+              }
+            }
+          },
+          "logger": {
+            "name": "Logger",
+            "description": "Logger name under which to log the message. Defaults to \u0027system_log.external\u0027.",
+            "example": "mycomponent.myplatform",
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      }
+    },
+    "cloud": {
+      "remote_connect": {
+        "name": "Remote connect",
+        "description": "Make instance UI available outside over NabuCasa cloud",
+        "fields": {}
+      },
+      "remote_disconnect": {
+        "name": "Remote disconnect",
+        "description": "Disconnect UI from NabuCasa cloud",
+        "fields": {}
+      }
+    },
+    "person": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the person configuration.",
+        "fields": {}
+      }
+    },
+    "frontend": {
+      "set_theme": {
+        "name": "Set theme",
+        "description": "Set a theme unless the client selected per-device theme.",
+        "fields": {
+          "name": {
+            "name": "Name",
+            "description": "Name of a predefined theme, \u0027default\u0027 or \u0027none\u0027.",
+            "required": true,
+            "example": "default",
+            "selector": {
+              "text": null
+            }
+          },
+          "mode": {
+            "name": "Mode",
+            "description": "The mode the theme is for.",
+            "default": "light",
+            "selector": {
+              "select": {
+                "options": [
+                  "dark",
+                  "light"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "reload_themes": {
+        "name": "Reload themes",
+        "description": "Reload themes from YAML configuration.",
+        "fields": {}
+      }
+    },
+    "logbook": {
+      "log": {
+        "name": "Log",
+        "description": "Create a custom entry in your logbook.",
+        "fields": {
+          "name": {
+            "name": "Name",
+            "description": "Custom name for an entity, can be referenced with entity_id.",
+            "required": true,
+            "example": "Kitchen",
+            "selector": {
+              "text": null
+            }
+          },
+          "message": {
+            "name": "Message",
+            "description": "Message of the custom logbook entry.",
+            "required": true,
+            "example": "is being used",
+            "selector": {
+              "text": null
+            }
+          },
+          "entity_id": {
+            "name": "Entity ID",
+            "description": "Entity to reference in custom logbook entry.",
+            "selector": {
+              "entity": null
+            }
+          },
+          "domain": {
+            "name": "Domain",
+            "description": "Icon of domain to display in custom logbook entry.",
+            "example": "light",
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      }
+    },
+    "switch": {
+      "turn_off": {
+        "name": "Turn off",
+        "description": "Turn a switch off",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "switch"
+          }
+        }
+      },
+      "turn_on": {
+        "name": "Turn on",
+        "description": "Turn a switch on",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "switch"
+          }
+        }
+      },
+      "toggle": {
+        "name": "Toggle",
+        "description": "Toggles a switch state",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "switch"
+          }
+        }
+      }
+    },
+    "scene": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the scene configuration.",
+        "fields": {}
+      },
+      "apply": {
+        "name": "Apply",
+        "description": "Activate a scene with configuration.",
+        "fields": {
+          "entities": {
+            "name": "Entities state",
+            "description": "The entities and the state that they need to be.",
+            "required": true,
+            "example": {
+              "light.kitchen": "on",
+              "light.ceiling": {
+                "state": "on",
+                "brightness": 80
+              }
+            },
+            "selector": {
+              "object": null
+            }
+          },
+          "transition": {
+            "name": "Transition",
+            "description": "Transition duration it takes to bring devices to the state defined in the scene.",
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 300,
+                "unit_of_measurement": "seconds"
+              }
+            }
+          }
+        }
+      },
+      "create": {
+        "name": "Create",
+        "description": "Creates a new scene.",
+        "fields": {
+          "scene_id": {
+            "name": "Scene entity ID",
+            "description": "The entity_id of the new scene.",
+            "required": true,
+            "example": "all_lights",
+            "selector": {
+              "text": null
+            }
+          },
+          "entities": {
+            "name": "Entities state",
+            "description": "The entities to control with the scene.",
+            "example": {
+              "light.tv_back_light": "on",
+              "light.ceiling": {
+                "state": "on",
+                "brightness": 200
+              }
+            },
+            "selector": {
+              "object": null
+            }
+          },
+          "snapshot_entities": {
+            "name": "Snapshot entities",
+            "description": "The entities of which a snapshot is to be taken",
+            "example": [
+              "light.ceiling",
+              "light.kitchen"
+            ],
+            "selector": {
+              "object": null
+            }
+          }
+        }
+      },
+      "turn_on": {
+        "name": "Activate",
+        "description": "Activate a scene.",
+        "fields": {
+          "transition": {
+            "name": "Transition",
+            "description": "Transition duration it takes to bring devices to the state defined in the scene.",
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 300,
+                "unit_of_measurement": "seconds"
+              }
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "scene"
+          }
+        }
+      }
+    },
+    "group": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload group configuration, entities, and notify services.",
+        "fields": {}
+      },
+      "set": {
+        "name": "Set",
+        "description": "Create/Update a user group.",
+        "fields": {
+          "object_id": {
+            "name": "Object ID",
+            "description": "Group id and part of entity id.",
+            "required": true,
+            "example": "test_group",
+            "selector": {
+              "text": null
+            }
+          },
+          "name": {
+            "name": "Name",
+            "description": "Name of group",
+            "example": "My test group",
+            "selector": {
+              "text": null
+            }
+          },
+          "icon": {
+            "name": "Icon",
+            "description": "Name of icon for the group.",
+            "example": "mdi:camera",
+            "selector": {
+              "text": null
+            }
+          },
+          "entities": {
+            "name": "Entities",
+            "description": "List of all members in the group. Not compatible with \u0027delta\u0027.",
+            "example": "domain.entity_id1, domain.entity_id2",
+            "selector": {
+              "object": null
+            }
+          },
+          "add_entities": {
+            "name": "Add Entities",
+            "description": "List of members that will change on group listening.",
+            "example": "domain.entity_id1, domain.entity_id2",
+            "selector": {
+              "object": null
+            }
+          },
+          "all": {
+            "name": "All",
+            "description": "Enable this option if the group should only turn on when all entities are on.",
+            "selector": {
+              "boolean": null
+            }
+          }
+        }
+      },
+      "remove": {
+        "name": "Remove",
+        "description": "Remove a user group.",
+        "fields": {
+          "object_id": {
+            "name": "Object ID",
+            "description": "Group id and part of entity id.",
+            "required": true,
+            "example": "test_group",
+            "selector": {
+              "object": null
+            }
+          }
+        }
+      }
+    },
+    "input_boolean": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the input_boolean configuration",
+        "fields": {}
+      },
+      "turn_on": {
+        "name": "Turn on",
+        "description": "Turn on an input boolean",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_boolean"
+          }
+        }
+      },
+      "turn_off": {
+        "name": "Turn off",
+        "description": "Turn off an input boolean",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_boolean"
+          }
+        }
+      },
+      "toggle": {
+        "name": "Toggle",
+        "description": "Toggle an input boolean",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_boolean"
+          }
+        }
+      }
+    },
+    "script": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload all the available scripts",
+        "fields": {}
+      },
+      "turn_on": {
+        "name": "Turn on",
+        "description": "Turn on script",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "script"
+          }
+        }
+      },
+      "turn_off": {
+        "name": "Turn off",
+        "description": "Turn off script",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "script"
+          }
+        }
+      },
+      "toggle": {
+        "name": "Toggle",
+        "description": "Toggle script",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "script"
+          }
+        }
+      }
+    },
+    "automation": {
+      "trigger": {
+        "name": "Trigger",
+        "description": "Trigger the actions of an automation.",
+        "fields": {
+          "skip_condition": {
+            "name": "Skip conditions",
+            "description": "Whether or not the conditions will be skipped.",
+            "default": true,
+            "selector": {
+              "boolean": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "automation"
+          }
+        }
+      },
+      "toggle": {
+        "name": "Toggle",
+        "description": "Toggle (enable / disable) an automation.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "automation"
+          }
+        }
+      },
+      "turn_on": {
+        "name": "Turn on",
+        "description": "Enable an automation.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "automation"
+          }
+        }
+      },
+      "turn_off": {
+        "name": "Turn off",
+        "description": "Disable an automation.",
+        "fields": {
+          "stop_actions": {
+            "name": "Stop actions",
+            "description": "Stop currently running actions.",
+            "default": true,
+            "selector": {
+              "boolean": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "automation"
+          }
+        }
+      },
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the automation configuration.",
+        "fields": {}
+      }
+    },
+    "zone": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the YAML-based zone configuration.",
+        "fields": {}
+      }
+    },
+    "timer": {
+      "reload": {
+        "name": "",
+        "description": "",
+        "fields": {}
+      },
+      "start": {
+        "name": "Start",
+        "description": "Start a timer",
+        "fields": {
+          "duration": {
+            "description": "Duration the timer requires to finish. [optional]",
+            "default": 0,
+            "example": "00:01:00 or 60",
+            "selector": {
+              "text": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "timer"
+          }
+        }
+      },
+      "pause": {
+        "name": "Pause",
+        "description": "Pause a timer.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "timer"
+          }
+        }
+      },
+      "cancel": {
+        "name": "Cancel",
+        "description": "Cancel a timer.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "timer"
+          }
+        }
+      },
+      "finish": {
+        "name": "Finish",
+        "description": "Finish a timer.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "timer"
+          }
+        }
+      }
+    },
+    "counter": {
+      "increment": {
+        "name": "Increment",
+        "description": "Increment a counter.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "counter"
+          }
+        }
+      },
+      "decrement": {
+        "name": "Decrement",
+        "description": "Decrement a counter.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "counter"
+          }
+        }
+      },
+      "reset": {
+        "name": "Reset",
+        "description": "Reset a counter.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "counter"
+          }
+        }
+      },
+      "configure": {
+        "name": "Configure",
+        "description": "Change counter parameters.",
+        "fields": {
+          "minimum": {
+            "name": "Minimum",
+            "description": "New minimum value for the counter or None to remove minimum.",
+            "selector": {
+              "number": {
+                "min": -9223372036854775807,
+                "max": 9223372036854775807,
+                "mode": "box"
+              }
+            }
+          },
+          "maximum": {
+            "name": "Maximum",
+            "description": "New maximum value for the counter or None to remove maximum.",
+            "selector": {
+              "number": {
+                "min": -9223372036854775807,
+                "max": 9223372036854775807,
+                "mode": "box"
+              }
+            }
+          },
+          "step": {
+            "name": "Step",
+            "description": "New value for step.",
+            "selector": {
+              "number": {
+                "min": 1,
+                "max": 9223372036854775807,
+                "mode": "box"
+              }
+            }
+          },
+          "initial": {
+            "name": "Initial",
+            "description": "New value for initial.",
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 9223372036854775807,
+                "mode": "box"
+              }
+            }
+          },
+          "value": {
+            "name": "Value",
+            "description": "New state value.",
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 9223372036854775807,
+                "mode": "box"
+              }
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "counter"
+          }
+        }
+      }
+    },
+    "input_number": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the input_number configuration.",
+        "fields": {}
+      },
+      "set_value": {
+        "name": "Set",
+        "description": "Set the value of an input number entity.",
+        "fields": {
+          "value": {
+            "name": "Value",
+            "description": "The target value the entity should be set to.",
+            "required": true,
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 9223372036854775807,
+                "step": 0.001,
+                "mode": "box"
+              }
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_number"
+          }
+        }
+      },
+      "increment": {
+        "name": "Increment",
+        "description": "Increment the value of an input number entity by its stepping.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_number"
+          }
+        }
+      },
+      "decrement": {
+        "name": "Decrement",
+        "description": "Decrement the value of an input number entity by its stepping.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_number"
+          }
+        }
+      }
+    },
+    "input_text": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the input_text configuration.",
+        "fields": {}
+      },
+      "set_value": {
+        "name": "Set",
+        "description": "Set the value of an input text entity.",
+        "fields": {
+          "value": {
+            "name": "Value",
+            "description": "The target value the entity should be set to.",
+            "required": true,
+            "example": "This is an example text",
+            "selector": {
+              "text": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_text"
+          }
+        }
+      }
+    },
+    "input_datetime": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the input_datetime configuration.",
+        "fields": {}
+      },
+      "set_datetime": {
+        "name": "Set",
+        "description": "This can be used to dynamically set the date and/or time.",
+        "fields": {
+          "date": {
+            "name": "Date",
+            "description": "The target date the entity should be set to.",
+            "example": "\u00222019-04-20\u0022",
+            "selector": {
+              "text": null
+            }
+          },
+          "time": {
+            "name": "Time",
+            "description": "The target time the entity should be set to.",
+            "example": "\u002205:04:20\u0022",
+            "selector": {
+              "time": null
+            }
+          },
+          "datetime": {
+            "name": "Date \u0026 Time",
+            "description": "The target date \u0026 time the entity should be set to.",
+            "example": "\u00222019-04-20 05:04:20\u0022",
+            "selector": {
+              "text": null
+            }
+          },
+          "timestamp": {
+            "name": "Timestamp",
+            "description": "The target date \u0026 time the entity should be set to as expressed by a UNIX timestamp.",
+            "selector": {
+              "number": {
+                "min": 0,
+                "max": 9223372036854775807,
+                "mode": "box"
+              }
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_datetime"
+          }
+        }
+      }
+    },
+    "template": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload all template entities.",
+        "fields": {}
+      }
+    },
+    "tts": {
+      "google_translate_say": {
+        "name": "Say an TTS message with google_translate",
+        "description": "Say something using text-to-speech on a media player with google_translate.",
+        "fields": {
+          "entity_id": {
+            "name": "Entity",
+            "description": "Name(s) of media player entities.\\",
+            "required": true,
+            "selector": {
+              "entity": {
+                "domain": "media_player"
+              }
+            }
+          },
+          "message": {
+            "name": "Message",
+            "description": "Text to speak on devices.",
+            "example": "My name is hanna",
+            "required": true,
+            "selector": {
+              "text": null
+            }
+          },
+          "cache": {
+            "name": "Cache",
+            "description": "Control file cache of this message.",
+            "default": false,
+            "selector": {
+              "boolean": null
+            }
+          },
+          "language": {
+            "name": "Language",
+            "description": "Language to use for speech generation.",
+            "example": "ru",
+            "selector": {
+              "text": null
+            }
+          },
+          "options": {
+            "name": "Options",
+            "description": "A dictionary containing platform-specific options. Optional depending on the platform.",
+            "advanced": true,
+            "example": "platform specific",
+            "selector": {
+              "object": null
+            }
+          }
+        }
+      },
+      "clear_cache": {
+        "name": "Clear TTS cache",
+        "description": "Remove all text-to-speech cache files and RAM cache.",
+        "fields": {}
+      }
+    },
+    "input_select": {
+      "reload": {
+        "name": "Reload",
+        "description": "Reload the input_select configuration.",
+        "fields": {}
+      },
+      "select_option": {
+        "name": "Select",
+        "description": "Select an option of an input select entity.",
+        "fields": {
+          "option": {
+            "name": "Option",
+            "description": "Option to be selected.",
+            "required": true,
+            "example": "\u0022Item A\u0022",
+            "selector": {
+              "text": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_select"
+          }
+        }
+      },
+      "select_next": {
+        "name": "Next",
+        "description": "Select the next options of an input select entity.",
+        "fields": {
+          "cycle": {
+            "name": "Cycle",
+            "description": "If the option should cycle from the last to the first.",
+            "default": true,
+            "selector": {
+              "boolean": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_select"
+          }
+        }
+      },
+      "select_previous": {
+        "name": "Previous",
+        "description": "Select the previous options of an input select entity.",
+        "fields": {
+          "cycle": {
+            "name": "Cycle",
+            "description": "If the option should cycle from the first to the last.",
+            "default": true,
+            "selector": {
+              "boolean": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_select"
+          }
+        }
+      },
+      "select_first": {
+        "name": "First",
+        "description": "Select the first option of an input select entity.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_select"
+          }
+        }
+      },
+      "select_last": {
+        "name": "Last",
+        "description": "Select the last option of an input select entity.",
+        "fields": {},
+        "target": {
+          "entity": {
+            "domain": "input_select"
+          }
+        }
+      },
+      "set_options": {
+        "name": "Set options",
+        "description": "Set the options of an input select entity.",
+        "fields": {
+          "options": {
+            "name": "Options",
+            "description": "Options for the input select entity.",
+            "required": true,
+            "example": "[\u0022Item A\u0022, \u0022Item B\u0022, \u0022Item C\u0022]",
+            "selector": {
+              "object": null
+            }
+          }
+        },
+        "target": {
+          "entity": {
+            "domain": "input_select"
+          }
+        }
+      }
+    },
+    "notify": {
+      "persistent_notification": {
+        "name": "Send a persistent notification",
+        "description": "Sends a notification to the visible in the front-end.",
+        "fields": {
+          "message": {
+            "description": "Message body of the notification.",
+            "required": true,
+            "example": "The garage door has been open for 10 minutes.",
+            "selector": {
+              "text": null
+            }
+          },
+          "title": {
+            "description": "Title for your notification.",
+            "example": "Your Garage Door Friend",
+            "selector": {
+              "text": null
+            }
+          }
+        }
+      },
+      "notify": {
+        "name": "Send a notification with notify",
+        "description": "Sends a notification message using the notify service.",
+        "fields": {
+          "message": {
+            "name": "Message",
+            "description": "Message body of the notification.",
+            "required": true,
+            "example": "The garage door has been open for 10 minutes.",
+            "selector": {
+              "text": null
+            }
+          },
+          "title": {
+            "name": "Title",
+            "description": "Title for your notification.",
+            "example": "Your Garage Door Friend",
+            "selector": {
+              "text": null
+            }
+          },
+          "target": {
+            "description": "An array of targets to send the notification to. Optional depending on the platform.",
+            "example": "platform specific",
+            "selector": {
+              "object": null
+            }
+          },
+          "data": {
+            "name": "Data",
+            "description": "Extended information for notification. Optional depending on the platform.",
+            "example": "platform specific",
+            "selector": {
+              "object": null
+            }
+          }
+        }
+      }
+    }
+  },
+  "success": true,
+  "type": "result"
 }

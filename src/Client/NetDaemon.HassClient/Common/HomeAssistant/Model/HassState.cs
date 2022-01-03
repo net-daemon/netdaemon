@@ -6,11 +6,9 @@ public record HassState
 
     public IReadOnlyDictionary<string, object>? Attributes
     {
-        get => AttributesJson?.ToObject<Dictionary<string, object>>() ?? new();
+        get => AttributesJson?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
         init => AttributesJson = value.ToJsonElement();
     }
-
-    public T? AttributesAs<T>() => AttributesJson.HasValue ? AttributesJson.Value.ToObject<T>() : default;
 
     [JsonPropertyName("entity_id")] public string EntityId { get; init; } = "";
 
@@ -18,4 +16,9 @@ public record HassState
     [JsonPropertyName("last_updated")] public DateTime LastUpdated { get; init; } = DateTime.MinValue;
     [JsonPropertyName("state")] public string? State { get; init; } = "";
     [JsonPropertyName("context")] public HassContext? Context { get; init; }
+
+    public T? AttributesAs<T>()
+    {
+        return AttributesJson.HasValue ? AttributesJson.Value.ToObject<T>() : default;
+    }
 }

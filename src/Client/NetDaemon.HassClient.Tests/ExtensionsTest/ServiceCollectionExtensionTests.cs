@@ -1,8 +1,9 @@
 using NetDaemon.Client.Common.Extensions;
+
 namespace NetDaemon.HassClient.Tests.ExtensionsTest;
+
 public class ServiceCollectionExtensionTests
 {
-
     [Fact]
     public void TestServiceCollectionExtension()
     {

@@ -1,18 +1,17 @@
 namespace NetDaemon.HassClient.Tests.Net;
 
-
 public class WebSocketTransportPipelineTests
 {
+    public WebSocketTransportPipelineTests()
+    {
+        LogMock = new Mock<ILogger<IWebSocketClientTransportPipeline>>();
+        WsMock = new WebSocketClientMock();
+        DefaultPipeline = new WebSocketClientTransportPipeline(WsMock.Object, LogMock.Object);
+    }
+
     private Mock<ILogger<IWebSocketClientTransportPipeline>> LogMock { get; }
     private WebSocketClientMock WsMock { get; }
     private WebSocketClientTransportPipeline DefaultPipeline { get; }
-    
-    public WebSocketTransportPipelineTests()
-    {
-        LogMock = new();
-        WsMock = new();
-        DefaultPipeline = new(WsMock.Object, LogMock.Object);
-    }
 
     [Fact]
     public async Task TestGetNextMessageAsyncGetsCorrectMessage()
@@ -36,7 +35,8 @@ public class WebSocketTransportPipelineTests
         WsMock.SetupGet(n => n.State).Returns(WebSocketState.Closed);
 
         // ACT AND ASSERT
-        await Assert.ThrowsAsync<ApplicationException>(async () => await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
+        await Assert.ThrowsAsync<ApplicationException>(async () =>
+            await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]
@@ -51,28 +51,30 @@ public class WebSocketTransportPipelineTests
         WsMock.AddResponse(sb.ToString());
 
         // ACT
-        var msg = await DefaultPipeline.GetNextMessageAsync<ChunkedMessagesTestClass>(CancellationToken.None).ConfigureAwait(false);
+        var msg = await DefaultPipeline.GetNextMessageAsync<ChunkedMessagesTestClass>(CancellationToken.None)
+            .ConfigureAwait(false);
 
         msg.BigChunkedMessage
             .Should()
             .HaveLength(8180);
 
         WsMock.Verify(n =>
-            n.ReceiveAsync(
-                It.IsAny<Memory<byte>>(),
-                It.IsAny<CancellationToken>()),
-                Times.AtLeast(2));
+                n.ReceiveAsync(
+                    It.IsAny<Memory<byte>>(),
+                    It.IsAny<CancellationToken>()),
+            Times.AtLeast(2));
     }
 
     [Fact]
     public async Task TestSendMessageAsync()
     {
         // ACT
-        await DefaultPipeline.SendMessageAsync<object>(new { someMessage = "hello" }, CancellationToken.None).ConfigureAwait(false);
+        await DefaultPipeline.SendMessageAsync<object>(new {someMessage = "hello"}, CancellationToken.None)
+            .ConfigureAwait(false);
 
         // ASSERT
         WsMock.Verify(n => n.SendAsync(
-             new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"someMessage\":\"hello\"}")),
+            new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"someMessage\":\"hello\"}")),
             It.IsAny<WebSocketMessageType>(),
             It.IsAny<bool>(),
             It.IsAny<CancellationToken>()
@@ -86,7 +88,9 @@ public class WebSocketTransportPipelineTests
         WsMock.SetupGet(n => n.State).Returns(WebSocketState.Closed);
 
         // ACT AND ASSERT
-        await Assert.ThrowsAsync<ApplicationException>(async () => await DefaultPipeline.SendMessageAsync<object>(new { test = "test" }, CancellationToken.None).ConfigureAwait(false));
+        await Assert.ThrowsAsync<ApplicationException>(async () =>
+            await DefaultPipeline.SendMessageAsync<object>(new {test = "test"}, CancellationToken.None)
+                .ConfigureAwait(false));
     }
 
     [Fact]
@@ -94,37 +98,42 @@ public class WebSocketTransportPipelineTests
     {
         // ARRANGE
         WsMock.Setup(n => n.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Memory<byte> _, CancellationToken _) =>
-                {
-                    // Simulate a close from remote
-                    WsMock.SetupGet(n => n.State).Returns(WebSocketState.CloseReceived);
-                    return new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true);
-                });
+            .ReturnsAsync((Memory<byte> _, CancellationToken _) =>
+            {
+                // Simulate a close from remote
+                WsMock.SetupGet(n => n.State).Returns(WebSocketState.CloseReceived);
+                return new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true);
+            });
 
 
         // ACT AND ASSERT
 
         // The operation should be cancelled when remote closes websocket
-        await Assert.ThrowsAsync<OperationCanceledException>(async () => await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
 
         // CloseOutput should always be called when 
         // a close frame are sent from the remote websocket
-        WsMock.Verify(n => n.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        WsMock.Verify(n =>
+            n.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
     }
+
     [Fact]
     public async Task TestDisposeAsyncCallsCloseWhenOpen()
     {
         //ACT
         await DefaultPipeline.DisposeAsync().ConfigureAwait(false);
         WsMock.Verify(n => n.DisposeAsync());
-        WsMock.Verify(n => n.CloseAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        WsMock.Verify(n =>
+            n.CloseAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
     }
 
     [Fact]
     public async Task TestDisposeAsyncShouldNotThrowExceptionsOnError()
     {
         // ARRANGE
-        WsMock.Setup(n => n.CloseAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        WsMock.Setup(n =>
+                n.CloseAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Throws(new ApplicationException("what ever"));
 
         //ACT AND ASSERT
@@ -143,7 +152,8 @@ public class WebSocketTransportPipelineTests
     {
         //ACT
         await DefaultPipeline.CloseAsync().ConfigureAwait(false);
-        WsMock.Verify(n => n.CloseAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        WsMock.Verify(n =>
+            n.CloseAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
     }
 }
 
