@@ -14,7 +14,7 @@ public class HelloWorldApp
             data: new
             {
                 message = "This is a message from appmodel and new client!",
-                title = "AppModel rocks!"
+                title = "Hello AppModel!"
             });
     }
 }

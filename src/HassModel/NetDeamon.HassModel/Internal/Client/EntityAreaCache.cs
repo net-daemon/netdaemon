@@ -1,28 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NetDaemon.Client.Common;
-using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
-using System.Threading;
+using NetDaemon.Client.Common.HomeAssistant.Model;
 
 namespace NetDaemon.HassModel.Internal.Client;
 
 internal class EntityAreaCache : IDisposable
 {
-    private bool _initialized;
     private readonly IDisposable _eventSubscription;
     private readonly IHomeAssistantRunner _hassRunner;
-    private Dictionary<string, HassArea> _latestAreas = new();
 
     private CancellationToken _cancellationToken;
+    private bool _initialized;
+    private Dictionary<string, HassArea> _latestAreas = new();
 
     public EntityAreaCache(IHomeAssistantRunner hassRunner, IObservable<HassEvent> events)
     {
         _hassRunner = hassRunner;
 
         _eventSubscription = events.Subscribe(HandleEvent);
+    }
+
+    public void Dispose()
+    {
+        _eventSubscription.Dispose();
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
@@ -50,44 +55,26 @@ internal class EntityAreaCache : IDisposable
         var areas = await _hassRunner.CurrentConnection.GetAreasAsync(_cancellationToken).ConfigureAwait(false);
         var areaDict = areas?.ToDictionary(k => k.Id!, v => v);
 
-        if (deviceDict is null || areaDict is null)
-        {
-            return;
-        }
+        if (deviceDict is null || areaDict is null) return;
 
         var latestAreas = new Dictionary<string, HassArea>();
 
         if (entities is not null)
-        {
             foreach (var entity in entities)
-            {
                 if (!string.IsNullOrEmpty(entity.AreaId) && areaDict.TryGetValue(entity.AreaId, out var hassArea))
-                {
                     latestAreas[entity.EntityId!] = hassArea;
-                }
                 else if (!string.IsNullOrEmpty(entity.DeviceId)
                          && deviceDict.TryGetValue(entity.DeviceId, out var device)
                          && !string.IsNullOrEmpty(device.AreaId)
                          && areaDict.TryGetValue(device.AreaId, out hassArea))
-                {
                     latestAreas[entity.EntityId!] = hassArea;
-                }
-            }
-        }
         _latestAreas = latestAreas;
     }
 
     private void HandleEvent(HassEvent hassEvent)
     {
         if (hassEvent.EventType is "device_registry_updated" or "area_registry_updated")
-        {
             // Fire and forget
             _ = LoadAreas().ConfigureAwait(false);
-        }
-    }
-
-    public void Dispose()
-    {
-        _eventSubscription.Dispose();
     }
 }

@@ -3,7 +3,7 @@ using Moq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Tests.Entities
+namespace NetDaemon.HassModel.Tests.TestHelpers.HassClient
 {
     internal class HaContextMock : Mock<IHaContext>
     {
@@ -13,7 +13,7 @@ namespace NetDaemon.HassModel.Tests.Entities
             Setup(m => m.Events).Returns(EventsSubject);
         }
 
-        public Subject<StateChange> StateAllChangeSubject { get;  } = new();
-        public Subject<Event> EventsSubject { get;  } = new();
+        public Subject<StateChange> StateAllChangeSubject { get; } = new();
+        public Subject<Event> EventsSubject { get; } = new();
     }
 }

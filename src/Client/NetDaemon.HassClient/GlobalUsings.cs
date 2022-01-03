@@ -32,4 +32,5 @@ global using NetDaemon.Client.Common.Settings;
 
 // Make the internal visible to test project
 [assembly: InternalsVisibleTo("NetDaemon.HassClient.Tests")]
+[assembly: InternalsVisibleTo("NetDaemon.HassModel.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

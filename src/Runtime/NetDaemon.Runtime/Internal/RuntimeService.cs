@@ -59,11 +59,23 @@ internal class RuntimeService : BackgroundService
     private async Task OnHomeAssistantClientConnected(IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        _logger.LogInformation("Successfully connected to Home Assistant");
-        if (!_hassModelIsInitialized)
-            await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
-        _hassModelIsInitialized = true;
-        _applicationInstances = _appModel.LoadApplications();
+        try
+        {
+            _logger.LogInformation("Successfully connected to Home Assistant");
+            if (!_hassModelIsInitialized)
+                await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
+            _hassModelIsInitialized = true;
+            _applicationInstances = _appModel.LoadApplications();
+            foreach (var appInstance in _applicationInstances)
+            {
+                _logger.LogInformation("Successfully loaded app {id}", appInstance.Id);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to intitialize apps");
+            throw;
+        }
     }
 
     private async Task OnHomeAssistantClientDisconnected(DisconnectReason reason)
