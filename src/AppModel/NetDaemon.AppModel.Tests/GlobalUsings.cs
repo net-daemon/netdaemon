@@ -6,6 +6,4 @@ global using FluentAssertions;
 global using Moq;
 global using Xunit;
 
-global using NetDaemon.AppModel.Common;
-global using NetDaemon.AppModel.Common.Extensions;
-global using NetDaemon.AppModel.Common.Settings;
+global using NetDaemon.AppModel;

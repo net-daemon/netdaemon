@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using NetDaemon.AppModel.Internal.Config;
 
-namespace NetDaemon.AppModel.Common.Extensions;
+namespace NetDaemon.AppModel;
 
 public static class ConfigurationBuilderExtensions
 {
@@ -22,12 +22,12 @@ public static class ConfigurationBuilderExtensions
         return builder;
     }
 
-    public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange)
+    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange)
     {
         return AddYamlFile(builder, provider: null, path: path, optional: optional, reloadOnChange: reloadOnChange);
     }
 
-    public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, IFileProvider? provider, string path, bool optional, bool reloadOnChange)
+    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, IFileProvider? provider, string path, bool optional, bool reloadOnChange)
     {
         if (provider == null && Path.IsPathRooted(path))
         {

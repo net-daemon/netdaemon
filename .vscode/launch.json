@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET Core Launch (console)",
+      "name": "Debug OldModel",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
@@ -14,6 +14,20 @@
       "program": "${workspaceFolder}/src/Service/bin/Debug/net6.0/Service.dll",
       "args": [],
       "cwd": "${workspaceFolder}/src/Service",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Debug AppModel",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "justMyCode": false,
+      // If you have changed target frameworks, make sure to update the program path.
+      "program": "${workspaceFolder}/src/Host/NetDaemon.Host.Default/bin/Debug/net6.0/NetDaemon.Host.Default.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Host/NetDaemon.Host.Default",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
       "stopAtEntry": false

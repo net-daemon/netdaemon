@@ -2,7 +2,7 @@ using NetDaemon.AppModel.Internal.Compiler;
 using NetDaemon.AppModel.Internal.Config;
 using System.Reflection;
 
-namespace NetDaemon.AppModel.Common.Extensions;
+namespace NetDaemon.AppModel;
 
 public static class ServiceCollectionExtensions
 {

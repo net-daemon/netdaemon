@@ -1,9 +1,8 @@
-﻿using System.Text.Json;
-using JoySoftware.HomeAssistant.Model;
+﻿using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Internal
+namespace NetDaemon.HassModel.Internal.Client
 {
     internal static class HassObjectMapper
     {
@@ -32,8 +31,8 @@ namespace NetDaemon.HassModel.Internal
                         Id = hassState.Context.Id,
                         UserId = hassState.Context.UserId,
                         ParentId = hassState.Context.UserId,
-                        }
-                    };
+                    }
+            };
         }
 
         public static HassTarget? Map(this ServiceTarget? target)
@@ -50,7 +49,7 @@ namespace NetDaemon.HassModel.Internal
 
         public static Event Map(this HassEvent hassEvent)
         {
-            return new ()
+            return new()
             {
                 Origin = hassEvent.Origin,
                 EventType = hassEvent.EventType,

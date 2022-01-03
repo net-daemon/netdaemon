@@ -16,7 +16,7 @@
     </PackageDescription>
     <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
     <tags>Home Assistant</tags>
-    <RootNamespace>JoySoftware.NetDaemon.AppModel</RootNamespace>
+    <RootNamespace>NetDaemon.AppModel</RootNamespace>
   </PropertyGroup>
 
    <ItemGroup>

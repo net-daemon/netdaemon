@@ -9,7 +9,7 @@ using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
-namespace NetDaemon.HassModel.Internal
+namespace NetDaemon.HassModel.Internal.HassClient
 {
     /// <summary>
     /// Implements IHaContext and IEventProvider to be used in a scope like a NetDaemon App
@@ -42,7 +42,7 @@ namespace NetDaemon.HassModel.Internal
         public EntityState? GetState(string entityId) => _entityStateCache.GetState(entityId).Map();
 
         public Area? GetAreaFromEntityId(string entityId) => _entityAreaCache.GetArea(entityId)?.Map();
-        
+
         public IReadOnlyList<Entity> GetAllEntities() => _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
 
         public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
@@ -54,7 +54,7 @@ namespace NetDaemon.HassModel.Internal
 
         public IObservable<Event> Events => _scopedEventObservable.Select(e => e.Map());
 
-        public void SendEvent(string eventType, object? data = null) => 
+        public void SendEvent(string eventType, object? data = null) =>
             // For now we do just a fire and forget of the async SendEvent method. HassClient will handle and log exceptions 
             _hassClient.SendEvent(eventType, data);
 

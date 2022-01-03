@@ -6,36 +6,43 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.Model;
+using NetDaemon.Client.Common;
+using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.Common.HomeAssistant.Extensions;
+
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Internal
+namespace NetDaemon.HassModel.Internal.Client
 {
     [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class EntityStateCache : IDisposable
     {
-        private readonly IHassClient _hassClient;
+        private readonly IHomeAssistantRunner _hassRunner;
         private readonly Subject<HassStateChangedEventData> _innerSubject = new();
         private readonly IDisposable _eventSubscription;
         private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
 
         private bool _initialized;
 
-        public EntityStateCache(IHassClient hassClient, IObservable<HassEvent> events)
+        public EntityStateCache(IHomeAssistantRunner hassRunner, IObservable<HassEvent> events)
         {
-            _hassClient = hassClient;
+            _hassRunner = hassRunner;
 
             _eventSubscription = events.Subscribe(HandleEvent);
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            var hassStates = await _hassClient.GetAllStates(cancellationToken).ConfigureAwait(false);
-            
-            foreach (var hassClientState in hassStates)
+            _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException();
+
+            var hassStates = await _hassRunner.CurrentConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);
+
+            if (hassStates is not null)
             {
-                _latestStates[hassClientState.EntityId] = hassClientState;
+                foreach (var hassClientState in hassStates)
+                {
+                    _latestStates[hassClientState.EntityId] = hassClientState;
+                }
             }
             _initialized = true;
         }
@@ -44,8 +51,11 @@ namespace NetDaemon.HassModel.Internal
 
         private void HandleEvent(HassEvent hassEvent)
         {
-            if (hassEvent.Data is not HassStateChangedEventData hassStateChangedEventData) return;
-            
+            if (hassEvent.EventType != "state_changed") return;
+
+            var hassStateChangedEventData = hassEvent.ToStateChangedEvent()
+                ?? throw new InvalidOperationException("Error when parsing state changed event");
+
             // Make sure to first add the new state to the cache before calling other subscribers.
             _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
             _innerSubject.OnNext(hassStateChangedEventData);
