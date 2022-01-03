@@ -5,7 +5,10 @@ using NetDaemon.AppModel.Common.TypeResolver;
 using NetDaemon.AppModel.Internal.Compiler;
 
 namespace NetDaemon.AppModel.Tests.Internal.TypeResolver;
-internal class LocalApp { }
+
+internal class LocalApp
+{
+}
 
 public class TypeResolverTests
 {
@@ -19,7 +22,8 @@ public class TypeResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var typeResolver = provider.GetService<IAppTypeResolver>() ?? throw new NullReferenceException("Not expected null");
+        var typeResolver = provider.GetService<IAppTypeResolver>() ??
+                           throw new NullReferenceException("Not expected null");
 
         var t = typeResolver.GetTypes().Where(n => n.Name == "LocalApp").ToList();
         t.Should().HaveCount(1);
@@ -39,16 +43,15 @@ public class TypeResolverTests
                 {
                     var result = new List<SyntaxTree>();
                     var sourceText = SourceText.From(
-                        text:
                         @"
                         public class FakeClass
                         {
                             
                         }
                         "
-                        , encoding: Encoding.UTF8);
+                        , Encoding.UTF8);
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
-                        ?? throw new NullReferenceException("unexpected null reference");
+                                     ?? throw new NullReferenceException("unexpected null reference");
 
                     result.Add(
                         syntaxTree
@@ -66,7 +69,8 @@ public class TypeResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var typeResolver = provider.GetService<IAppTypeResolver>() ?? throw new NullReferenceException("Not expected null");
+        var typeResolver = provider.GetService<IAppTypeResolver>() ??
+                           throw new NullReferenceException("Not expected null");
 
         var t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);
@@ -86,16 +90,15 @@ public class TypeResolverTests
                 {
                     var result = new List<SyntaxTree>();
                     var sourceText = SourceText.From(
-                        text:
                         @"
                         public class FakeClass
                         {
                             
                         }
                         "
-                        , encoding: Encoding.UTF8);
+                        , Encoding.UTF8);
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
-                        ?? throw new NullReferenceException("unexpected null reference");
+                                     ?? throw new NullReferenceException("unexpected null reference");
 
                     result.Add(
                         syntaxTree
@@ -113,7 +116,8 @@ public class TypeResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var typeResolver = provider.GetService<IAppTypeResolver>() ?? throw new NullReferenceException("Not expected null");
+        var typeResolver = provider.GetService<IAppTypeResolver>() ??
+                           throw new NullReferenceException("Not expected null");
 
         var t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);

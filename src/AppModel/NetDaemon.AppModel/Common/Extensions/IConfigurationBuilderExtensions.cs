@@ -10,7 +10,7 @@ public static class ConfigurationBuilderExtensions
     {
         Directory.EnumerateFiles(appPath, "*.json", SearchOption.AllDirectories)
             .ToList()
-            .ForEach(x => builder.AddJsonFile(x, optional: false, reloadOnChange: false));
+            .ForEach(x => builder.AddJsonFile(x, false, false));
         return builder;
     }
 
@@ -18,22 +18,25 @@ public static class ConfigurationBuilderExtensions
     {
         Directory.EnumerateFiles(appPath, "*.y*", SearchOption.AllDirectories)
             .ToList()
-            .ForEach(x => builder.AddYamlFile(x, optional: false, reloadOnChange: false));
+            .ForEach(x => builder.AddYamlFile(x, false, false));
         return builder;
     }
 
-    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange)
+    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional,
+        bool reloadOnChange)
     {
-        return AddYamlFile(builder, provider: null, path: path, optional: optional, reloadOnChange: reloadOnChange);
+        return AddYamlFile(builder, null, path, optional, reloadOnChange);
     }
 
-    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, IFileProvider? provider, string path, bool optional, bool reloadOnChange)
+    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, IFileProvider? provider,
+        string path, bool optional, bool reloadOnChange)
     {
         if (provider == null && Path.IsPathRooted(path))
         {
             provider = new PhysicalFileProvider(Path.GetDirectoryName(path));
             path = Path.GetFileName(path);
         }
+
         var source = new YamlConfigurationSource
         {
             FileProvider = provider,

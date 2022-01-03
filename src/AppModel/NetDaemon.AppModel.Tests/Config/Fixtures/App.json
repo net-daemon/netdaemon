@@ -1,5 +1,5 @@
 {
-    "TestConfig": {
-        "AString": "Hello test!"
-    }
+  "TestConfig": {
+    "AString": "Hello test!"
+  }
 }

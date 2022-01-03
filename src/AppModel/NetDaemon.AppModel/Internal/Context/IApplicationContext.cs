@@ -1,7 +1,7 @@
 namespace NetDaemon.AppModel.Internal;
 
 /// <summary>
-/// Provides application runtime data to apps
+///     Provides application runtime data to apps
 /// </summary>
 internal interface IApplicationContext : IAsyncDisposable
 {

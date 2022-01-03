@@ -21,7 +21,8 @@ public class ApplicationScopeTests
     {
         var scope = new ApplicationScope
         {
-            ApplicationContext = new ApplicationContext("id", typeof(object), new ServiceCollection().BuildServiceProvider())
+            ApplicationContext =
+                new ApplicationContext("id", typeof(object), new ServiceCollection().BuildServiceProvider())
         };
         var ctx = scope.ApplicationContext;
 

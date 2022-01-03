@@ -13,6 +13,6 @@ internal class AppTypeResolver : IAppTypeResolver
     {
         return _assemblyResolvers
             .Select(n => n.GetResolvedAssembly())
-                .SelectMany(s => s.GetTypes()).ToList();
+            .SelectMany(s => s.GetTypes()).ToList();
     }
 }

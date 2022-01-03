@@ -6,7 +6,9 @@ using NetDaemon.AppModel.Internal.Compiler;
 
 namespace NetDaemon.AppModel.Tests.Internal.TypeResolver;
 
-internal class ResolvedLocalApp { }
+internal class ResolvedLocalApp
+{
+}
 
 public class AssemblyResolverTests
 {
@@ -20,7 +22,8 @@ public class AssemblyResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ?? throw new NullReferenceException("Not expected null");
+        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ??
+                                throw new NullReferenceException("Not expected null");
         assemblyResolvers.Should().HaveCount(1);
     }
 
@@ -38,16 +41,15 @@ public class AssemblyResolverTests
                 {
                     var result = new List<SyntaxTree>();
                     var sourceText = SourceText.From(
-                        text:
                         @"
                         public class FakeClass
                         {
                             
                         }
                         "
-                        , encoding: Encoding.UTF8);
+                        , Encoding.UTF8);
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
-                        ?? throw new NullReferenceException("unexpected null reference");
+                                     ?? throw new NullReferenceException("unexpected null reference");
 
                     result.Add(
                         syntaxTree
@@ -65,9 +67,9 @@ public class AssemblyResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ?? throw new NullReferenceException("Not expected null");
+        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ??
+                                throw new NullReferenceException("Not expected null");
         assemblyResolvers.Should().HaveCount(1);
-
     }
 
     [Fact]
@@ -84,16 +86,15 @@ public class AssemblyResolverTests
                 {
                     var result = new List<SyntaxTree>();
                     var sourceText = SourceText.From(
-                        text:
                         @"
                         public class FakeClass
                         {
                             
                         }
                         "
-                        , encoding: Encoding.UTF8);
+                        , Encoding.UTF8);
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
-                        ?? throw new NullReferenceException("unexpected null reference");
+                                     ?? throw new NullReferenceException("unexpected null reference");
 
                     result.Add(
                         syntaxTree
@@ -111,7 +112,8 @@ public class AssemblyResolverTests
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
 
-        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ?? throw new NullReferenceException("Not expected null");
+        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ??
+                                throw new NullReferenceException("Not expected null");
         assemblyResolvers.Should().HaveCount(2);
     }
 }

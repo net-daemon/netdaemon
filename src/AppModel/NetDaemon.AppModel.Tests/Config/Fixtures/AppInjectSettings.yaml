@@ -1,2 +1,2 @@
 NetDaemon.AppModel.Tests.Config.TestSettings:
-    AString: Hello test yaml!
+  AString: Hello test yaml!

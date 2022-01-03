@@ -24,22 +24,23 @@ internal class AppModelImpl : IAppModel
     // Maybe the AppModelImpl should keep the list of created apps internal instead of returning it, so this class is also responsible
     // for disposing them
 
-    public IReadOnlyCollection<IApplicationInstance> LoadApplications(IReadOnlyCollection<string>? skipLoadApplicationList = null)
+    public IReadOnlyCollection<IApplicationInstance> LoadApplications(
+        IReadOnlyCollection<string>? skipLoadApplicationList = null)
     {
         var result = new List<IApplicationInstance>();
         foreach (var appType in GetNetDaemonApplicationTypes())
         {
             var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
             // The app instance should be created with the Scoped ServiceProvider that is created by the ApplicationContext  
-            var id = appAttribute?.Id ?? appType.FullName ?? throw new InvalidOperationException("Type was not expected to be null");
+            var id = appAttribute?.Id ?? appType.FullName ??
+                throw new InvalidOperationException("Type was not expected to be null");
             // Check if the app should be skipped before adding it
             if (!skipLoadApplicationList?.Contains(appType.FullName) ?? true)
-            {
                 result.Add(
                     new ApplicationContext(id, appType, _provider)
                 );
-            }
         }
+
         return result;
     }
 
@@ -47,10 +48,10 @@ internal class AppModelImpl : IAppModel
     {
         // Get all classes with the [NetDaemonAppAttribute]
         return _appTypeResolvers.SelectMany(r => r.GetTypes())
-                                .Where(n => n.IsClass &&
-                                        !n.IsGenericType &&
-                                        !n.IsAbstract &&
-                                        n.GetCustomAttribute<NetDaemonAppAttribute>() != null
-                                ).ToList();
+            .Where(n => n.IsClass &&
+                        !n.IsGenericType &&
+                        !n.IsAbstract &&
+                        n.GetCustomAttribute<NetDaemonAppAttribute>() != null
+            ).ToList();
     }
 }

@@ -9,5 +9,8 @@ public class CollectibleAssemblyLoadContext : AssemblyLoadContext
     {
     }
 
-    protected override Assembly? Load(AssemblyName assemblyName) => null;
+    protected override Assembly? Load(AssemblyName assemblyName)
+    {
+        return null;
+    }
 }

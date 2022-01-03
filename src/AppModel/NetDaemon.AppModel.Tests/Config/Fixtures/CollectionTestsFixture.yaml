@@ -32,19 +32,17 @@ AnotherTestDictionary:
   key3: value3
 
 AnotherTestDictionaryOfLists:
-  key1: 
+  key1:
     - Item 1
     - Item 2
-  key2: 
+  key2:
     - Item 1
     - Item 2
 
 AnotherTestListOfDictionary:
-  - 
-    Key 1: Item 1
+  - Key 1: Item 1
     Key 2: Item 2
-  - 
-    Key 1: Item 1
+  - Key 1: Item 1
     Key 2: Item 2
 
 AnotherTestArray:

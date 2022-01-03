@@ -1,6 +1,5 @@
 namespace LocalApps;
 
-
 [NetDaemonApp]
 public class MyAppLocalAppWithDispose : IAsyncDisposable, IDisposable
 {

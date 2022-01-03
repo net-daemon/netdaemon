@@ -1,8 +1,8 @@
 TestConfig:
-    AString: Hello test!
+  AString: Hello test!
 
 TestConfigConverter:
-    Entity: light.testlight
-    AnArray:
-        - Hello
-        - World
+  Entity: light.testlight
+  AnArray:
+    - Hello
+    - World
