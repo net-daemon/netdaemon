@@ -24,6 +24,9 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
 
     private ILogger<IHomeAssistantRunner> _logger { get; }
 
+
+    private IHomeAssistantConnection? _currentConnection;
+    public IHomeAssistantConnection? CurrentConnection => _currentConnection;
     public Task RunAsync(string host, int port, bool ssl, string token, TimeSpan timeout, CancellationToken cancelToken)
     {
         _runTask = InternalRunAsync(host, port, ssl, token, timeout, cancelToken);
@@ -32,8 +35,6 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
 
     private async Task InternalRunAsync(string host, int port, bool ssl, string token, TimeSpan timeout, CancellationToken cancelToken)
     {
-        IHomeAssistantConnection? currentConnection = null;
-
         var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalTokenSource.Token, cancelToken);
         bool isRetry = false;
         while (!combinedToken.IsCancellationRequested)
@@ -46,10 +47,10 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             try
             {
-                currentConnection = await _client.ConnectAsync(host, port, ssl, token, combinedToken.Token).ConfigureAwait(false);
+                _currentConnection = await _client.ConnectAsync(host, port, ssl, token, combinedToken.Token).ConfigureAwait(false);
                 // Start the event processing before publish the connection
-                var eventsTask = currentConnection.ProcessHomeAssistantEventsAsync(combinedToken.Token);
-                _onConnectSubject.OnNext(currentConnection);
+                var eventsTask = _currentConnection.ProcessHomeAssistantEventsAsync(combinedToken.Token);
+                _onConnectSubject.OnNext(_currentConnection);
                 await eventsTask.ConfigureAwait(false);
             }
             catch (HomeAssistantConnectionException de)
@@ -87,16 +88,16 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             finally
             {
-                if (currentConnection is not null)
+                if (_currentConnection is not null)
                 {
                     // Just try to dispose the connection silently
                     try
                     {
-                        await currentConnection.DisposeAsync().ConfigureAwait(false);
+                        await _currentConnection.DisposeAsync().ConfigureAwait(false);
                     }
                     finally
                     {
-                        currentConnection = null;
+                        _currentConnection = null;
                     }
                 }
             }

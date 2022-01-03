@@ -1,4 +1,4 @@
-using NetDaemon.AppModel.Common;
+using NetDaemon.AppModel;
 
 namespace Apps;
 
