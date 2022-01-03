@@ -1,0 +1,9 @@
+AppModelApps.MyConfig:
+  SomeInt: 123456789
+  Notifications:
+    -
+      Title: Notification 1
+      Message: Hello from Appmodel
+    -
+      Title: Notification 2
+      Message: Another cheer from Appmodel

@@ -29,6 +29,7 @@ public class HomeAssistantRunnerTests
         var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var connection = await connectionTask.ConfigureAwait(false);
+        DefaultRunner.CurrentConnection.Should().NotBeNull();
         try
         {
             cancelSource.Cancel();
@@ -37,6 +38,7 @@ public class HomeAssistantRunnerTests
         catch (OperationCanceledException) { } // ignore cancel error
         await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         connection.Should().NotBeNull();
+        Assert.Null(DefaultRunner.CurrentConnection);
     }
 
     [Fact]

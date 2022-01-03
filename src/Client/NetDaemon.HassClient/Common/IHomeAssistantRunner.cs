@@ -22,4 +22,10 @@ public interface IHomeAssistantRunner : IAsyncDisposable
     ///     Event when connection is lost
     /// </summary>
     IObservable<DisconnectReason> OnDisconnect { get; }
+
+    /// <summary>
+    ///     The current connection to Home Assistant
+    /// </summary>
+    /// <value></value>
+    IHomeAssistantConnection? CurrentConnection { get; }
 }

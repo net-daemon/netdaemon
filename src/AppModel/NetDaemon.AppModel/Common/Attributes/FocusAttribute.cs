@@ -1,4 +1,4 @@
-namespace NetDaemon.AppModel.Common;
+namespace NetDaemon.AppModel;
 
 /// <summary>
 /// Marks a class to be loaded exclusively while in development environment

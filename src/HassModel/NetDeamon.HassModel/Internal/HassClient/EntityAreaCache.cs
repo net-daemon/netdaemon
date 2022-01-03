@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 
-namespace NetDaemon.HassModel.Internal;
+namespace NetDaemon.HassModel.Internal.HassClient;
 
 internal class EntityAreaCache : IDisposable
 {
@@ -49,7 +49,7 @@ internal class EntityAreaCache : IDisposable
         }
 
         var latestAreas = new Dictionary<string, HassArea>();
-        
+
         foreach (var entity in entities)
         {
             if (!string.IsNullOrEmpty(entity.AreaId) && areaDict.TryGetValue(entity.AreaId, out var hassArea))
@@ -76,7 +76,7 @@ internal class EntityAreaCache : IDisposable
             _ = LoadAreas().ConfigureAwait(false);
         }
     }
-    
+
     public void Dispose()
     {
         _eventSubscription.Dispose();

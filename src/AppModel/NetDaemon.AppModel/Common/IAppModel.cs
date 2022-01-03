@@ -1,4 +1,4 @@
-namespace NetDaemon.AppModel.Common;
+namespace NetDaemon.AppModel;
 public interface IAppModel : IAsyncDisposable
 {
     /// <summary>
@@ -13,7 +13,4 @@ public interface IAppModel : IAsyncDisposable
     /// </remark>
     /// <param name="skipLoadApplicationCollection">List of application id:s that will not be loaded</param>
     IReadOnlyCollection<IApplicationInstance> LoadApplications(IReadOnlyCollection<string>? skipLoadApplicationCollection = null);
-
-    // IReadOnlyCollection<IApplicationInstance> EnableApplication(IApplicationInstance app);
-    // IReadOnlyCollection<IApplicationInstance> DisableApplication(IApplicationInstance app);
 }

@@ -1,0 +1,18 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft": "Warning"
+    }
+  },
+  "HomeAssistant": {
+    "Host": "ENTER YOUR IP TO Development Home Assistant here",
+    "Port": 8124,
+    "Ssl": false,
+    "Token": "ENTER YOUR TOKEN"
+  },
+  "NetDaemon": {
+    "Admin": false,
+    "ApplicationFolder": "/workspaces/netdaemon/src/DevelopmentApps/v3apps"
+  }
+}

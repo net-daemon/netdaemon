@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Threading;
 using FluentAssertions;
 using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Moq;
-using NetDaemon.HassModel.Internal;
+using NetDaemon.HassModel.Internal.HassClient;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal
@@ -45,9 +44,9 @@ namespace NetDaemon.HassModel.Tests.Internal
                 NewState = new HassState()
                 {
                     State = "newState"
-                } 
+                }
             };
-            
+
             stateChangeObserverMock.Setup(m => m.OnNext(It.IsAny<HassStateChangedEventData>()))
                 .Callback(() =>
                 {
@@ -57,15 +56,16 @@ namespace NetDaemon.HassModel.Tests.Internal
                 });
 
             // Act
-            testSubject.OnNext(new HassEvent {
-                Data = changedEventData 
+            testSubject.OnNext(new HassEvent
+            {
+                Data = changedEventData
             });
-           
+
             // Assert
             stateChangeObserverMock.Verify(m => m.OnNext(It.IsAny<HassStateChangedEventData>()));
             cache.GetState(entityId)!.State.Should().Be("newState");
-        }        
-        
+        }
+
         [Fact]
         public async void AllEntityIds_returnsInitialPlusChangedEntities()
         {
@@ -94,15 +94,15 @@ namespace NetDaemon.HassModel.Tests.Internal
                 NewState = new HassState()
                 {
                     State = "newState"
-                } 
+                }
             };
-            
+
             // Act
             testSubject.OnNext(new HassEvent { Data = changedEventData });
-           
+
             // Assert
             cache.AllEntityIds.Should().BeEquivalentTo("sensor.sensor1", "sensor.sensor2");
-        }        
-        
+        }
+
     }
 }

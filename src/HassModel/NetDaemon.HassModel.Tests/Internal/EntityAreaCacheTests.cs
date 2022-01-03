@@ -5,6 +5,7 @@ using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using Moq;
 using NetDaemon.HassModel.Internal;
+using NetDaemon.HassModel.Internal.HassClient;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;

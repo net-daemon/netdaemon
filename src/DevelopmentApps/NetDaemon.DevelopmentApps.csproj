@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\App\NetDaemon.App\NetDaemon.App.csproj" />
+    <ProjectReference Include="..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
     <ProjectReference Include="..\Daemon\NetDaemon.Daemon\NetDaemon.Daemon.csproj" />
     <ProjectReference Include="..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
     <ProjectReference Include="..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />

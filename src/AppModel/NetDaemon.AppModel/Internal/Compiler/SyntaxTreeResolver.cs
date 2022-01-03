@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using NetDaemon.AppModel.Common.Settings;
+using NetDaemon.AppModel;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
 
