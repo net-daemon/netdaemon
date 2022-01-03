@@ -39,7 +39,7 @@ internal class RuntimeService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _homeAssistantRunner.OnConnect
-            .Select(async s => await OnHomeAssistantClientConnected(s, stoppingToken).ConfigureAwait(false))
+            .Select(async _ => await OnHomeAssistantClientConnected(stoppingToken).ConfigureAwait(false))
             .Subscribe();
         _homeAssistantRunner.OnDisconnect
             .Select(async s => await OnHomeAssistantClientDisconnected(s).ConfigureAwait(false))
@@ -56,8 +56,7 @@ internal class RuntimeService : BackgroundService
         _hostLifetime.StopApplication();
     }
 
-    private async Task OnHomeAssistantClientConnected(IHomeAssistantConnection connection,
-        CancellationToken cancelToken)
+    private async Task OnHomeAssistantClientConnected(CancellationToken cancelToken)
     {
         try
         {
