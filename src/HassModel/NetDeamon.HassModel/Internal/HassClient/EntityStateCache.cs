@@ -10,7 +10,7 @@ using JoySoftware.HomeAssistant.Client;
 using JoySoftware.HomeAssistant.Model;
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Internal
+namespace NetDaemon.HassModel.Internal.HassClient
 {
     [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
     internal class EntityStateCache : IDisposable
@@ -32,7 +32,7 @@ namespace NetDaemon.HassModel.Internal
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             var hassStates = await _hassClient.GetAllStates(cancellationToken).ConfigureAwait(false);
-            
+
             foreach (var hassClientState in hassStates)
             {
                 _latestStates[hassClientState.EntityId] = hassClientState;
@@ -45,7 +45,7 @@ namespace NetDaemon.HassModel.Internal
         private void HandleEvent(HassEvent hassEvent)
         {
             if (hassEvent.Data is not HassStateChangedEventData hassStateChangedEventData) return;
-            
+
             // Make sure to first add the new state to the cache before calling other subscribers.
             _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
             _innerSubject.OnNext(hassStateChangedEventData);

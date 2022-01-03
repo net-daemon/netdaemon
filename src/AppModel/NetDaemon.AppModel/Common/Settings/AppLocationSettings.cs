@@ -1,4 +1,4 @@
-namespace NetDaemon.AppModel.Common.Settings;
+namespace NetDaemon.AppModel;
 
 public record ApplicationLocationSetting
 {

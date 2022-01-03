@@ -8,6 +8,7 @@ using NetDaemon.HassModel.Entities;
 using FluentAssertions;
 using JoySoftware.HomeAssistant.Model;
 using NetDaemon.HassModel.Tests.TestHelpers;
+using NetDaemon.HassModel.Tests.TestHelpers.HassClient;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Entities

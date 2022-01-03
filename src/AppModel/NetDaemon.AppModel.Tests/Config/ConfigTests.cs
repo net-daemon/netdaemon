@@ -112,7 +112,7 @@ public class ConfigTests
                     {
                         services.AddAppModelLocalAssembly();
                         services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
-                        services.AddScoped(sp =>
+                        services.AddSingleton(sp =>
                             new Converter<string, EntityClass>(s =>
                                 ActivatorUtilities.CreateInstance<EntityClass>(sp, s)));
                     })
@@ -128,8 +128,8 @@ public class ConfigTests
 
         // ACT
         var loadApps = appModel!.LoadApplications();
-        var appCtx =(ApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp) appCtx.Instance;
+        var appCtx = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp)appCtx.Instance;
         // CHECK
         loadApps.Should().HaveCount(3);
         app.Settings.Entity!.EntityId.Should().Be("light.test");
