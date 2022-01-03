@@ -9,17 +9,19 @@ public class LocalTestSettings
 [NetDaemonApp]
 public class MyAppLocalApp
 {
-    public LocalTestSettings Settings { get; }
     public MyAppLocalApp(IAppConfig<LocalTestSettings> settings)
     {
         Settings = settings.Value;
     }
+
+    public LocalTestSettings Settings { get; }
 }
 
 public interface IInjectMePlease
 {
     string AmInjected { get; }
 }
+
 public class InjectMeImplementation : IInjectMePlease
 {
     public string AmInjected => "ok I am hard coded, so what?";
@@ -27,8 +29,6 @@ public class InjectMeImplementation : IInjectMePlease
 
 public class EntityClass
 {
-    public IServiceProvider ServiceProvider { get; }
-
     public EntityClass(
         IServiceProvider serviceProvider,
         string entityId
@@ -37,6 +37,8 @@ public class EntityClass
         ServiceProvider = serviceProvider;
         EntityId = entityId;
     }
+
+    public IServiceProvider ServiceProvider { get; }
 
     public string EntityId { get; }
 }

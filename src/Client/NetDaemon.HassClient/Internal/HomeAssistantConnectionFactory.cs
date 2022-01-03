@@ -2,8 +2,8 @@ namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantConnectionFactory : IHomeAssistantConnectionFactory
 {
-    private readonly ILogger<IHomeAssistantConnection> _logger;
     private readonly IHomeAssistantApiManager _apiManager;
+    private readonly ILogger<IHomeAssistantConnection> _logger;
 
     public HomeAssistantConnectionFactory(
         ILogger<IHomeAssistantConnection> logger,

@@ -1,5 +1,5 @@
 {
-    "NetDaemon.AppModel.Tests.Config.TestSettings": {
-        "AString": "Hello test!"
-    }
+  "NetDaemon.AppModel.Tests.Config.TestSettings": {
+    "AString": "Hello test!"
+  }
 }

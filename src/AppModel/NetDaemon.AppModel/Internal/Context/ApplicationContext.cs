@@ -4,15 +4,8 @@ internal class ApplicationContext :
     IApplicationContext,
     IApplicationInstance
 {
-    public string Id { get; }
-
-    public bool IsEnabled { get; } = false;
-
-    public Type AppType { get; }
-
-    public object Instance { get; }
-
     private readonly IServiceScope? _serviceScope;
+
     public ApplicationContext(
         string id,
         Type appType,
@@ -27,10 +20,7 @@ internal class ApplicationContext :
         // This ApplicationContext needs to be resolvable from this scoped provider
         // The class ApplicationScope which is registered as scoped makes this possible
         var appScope = serviceProvider.GetService<ApplicationScope>();
-        if (appScope != null)
-        {
-            appScope.ApplicationContext = this;
-        }
+        if (appScope != null) appScope.ApplicationContext = this;
         Id = id;
         AppType = appType;
 
@@ -38,22 +28,22 @@ internal class ApplicationContext :
         Instance = ActivatorUtilities.CreateInstance(serviceProvider, appType);
     }
 
+    public string Id { get; }
+
+    public bool IsEnabled { get; } = false;
+
+    public Type AppType { get; }
+
+    public object Instance { get; }
+
     public async ValueTask DisposeAsync()
     {
-        if (Instance is IAsyncDisposable asyncDisposable)
-        {
-            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-        }
+        if (Instance is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 
-        if (Instance is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
+        if (Instance is IDisposable disposable) disposable.Dispose();
 
         if (_serviceScope is IAsyncDisposable serviceScopeAsyncDisposable)
-        {
             await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
-        }
         GC.SuppressFinalize(this);
     }
 }

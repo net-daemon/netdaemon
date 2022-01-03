@@ -1,8 +1,6 @@
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using NetDaemon.AppModel;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
 
@@ -28,10 +26,10 @@ internal class SyntaxTreeResolver : ISyntaxTreeResolver
         var result = new List<SyntaxTree>(csFiles.Length);
 
         result.AddRange(from csFile in csFiles
-                        let fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-                        let sourceText = SourceText.From(fs, Encoding.UTF8, canBeEmbedded: true)
-                        let syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile)
-                        select syntaxTree);
+            let fs = new FileStream(csFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            let sourceText = SourceText.From(fs, Encoding.UTF8, canBeEmbedded: true)
+            let syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: csFile)
+            select syntaxTree);
         return result;
     }
 }

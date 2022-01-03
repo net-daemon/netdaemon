@@ -1,20 +1,21 @@
-
 using System.Reactive.Linq;
 
 namespace NetDaemon.HassClient.Debug;
+
 internal class DebugService : BackgroundService
 {
     private const int TimeoutInSeconds = 5;
 
-    private readonly IHostApplicationLifetime _hostLifetime;
-    private readonly IHomeAssistantRunner _homeAssistantRunner;
-    private IHomeAssistantConnection? _connection;
-
     private readonly HomeAssistantSettings _haSettings;
+    private readonly IHomeAssistantRunner _homeAssistantRunner;
+
+    private readonly IHostApplicationLifetime _hostLifetime;
 
     private readonly ILogger<DebugService> _logger;
 
     private CancellationToken? _cancelToken;
+    private IHomeAssistantConnection? _connection;
+
     public DebugService(
         IHostApplicationLifetime hostLifetime,
         IHomeAssistantRunner homeAssistantRunner,
@@ -36,12 +37,12 @@ internal class DebugService : BackgroundService
     {
         _cancelToken = stoppingToken;
         await _homeAssistantRunner.RunAsync(
-                    _haSettings.Host,
-                    _haSettings.Port,
-                    _haSettings.Ssl,
-                    _haSettings.Token,
-                    TimeSpan.FromSeconds(TimeoutInSeconds),
-                    stoppingToken).ConfigureAwait(false);
+            _haSettings.Host,
+            _haSettings.Port,
+            _haSettings.Ssl,
+            _haSettings.Token,
+            TimeSpan.FromSeconds(TimeoutInSeconds),
+            stoppingToken).ConfigureAwait(false);
 
         // Stop application if this is exited
         _hostLifetime.StopApplication();
@@ -68,16 +69,16 @@ internal class DebugService : BackgroundService
         // var state = await connection.PostApiCall<HassState>($"states/{HttpUtility.UrlEncode("light.test")}", _cancelToken ?? CancellationToken.None, new { state = "on", attributes = new { myattribute = "hello" } }).ConfigureAwait(false);
         //_logger.LogInformation("Added entity: {entity}", state);
     }
+
     private void OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
-        _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds", TimeoutInSeconds, reason);
+        _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds",
+            TimeoutInSeconds, reason);
         // Here you would typically cancel and dispose any functions  
         // using the connection
-        if (_connection is not null)
-        {
-            _connection = null;
-        }
+        if (_connection is not null) _connection = null;
     }
+
     private void HandleEvent(HassEvent hassEvent)
     {
         _logger.LogDebug("New event ({eventType})", hassEvent.EventType);

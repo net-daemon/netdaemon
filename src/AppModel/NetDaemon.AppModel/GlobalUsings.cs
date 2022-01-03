@@ -7,7 +7,6 @@ global using System.Reactive.Linq;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
-
 global using NetDaemon.AppModel.Common;
 global using NetDaemon.AppModel.Internal;
 global using NetDaemon.AppModel.Common.TypeResolver;

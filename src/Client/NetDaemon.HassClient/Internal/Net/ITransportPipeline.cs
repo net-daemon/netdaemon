@@ -1,10 +1,16 @@
 namespace NetDaemon.Client.Internal.Net;
+
 /// <summary>
 ///     The pipeline makes a transport layer on top of WebSocketClient.
 ///     This pipeline handles json serialization
 /// </summary>
 internal interface IWebSocketClientTransportPipeline : IAsyncDisposable
 {
+    /// <summary>
+    ///     State of the underlying websocket
+    /// </summary>
+    WebSocketState WebSocketState { get; }
+
     /// <summary>
     ///     Gets next message from pipeline
     /// </summary>
@@ -21,9 +27,4 @@ internal interface IWebSocketClientTransportPipeline : IAsyncDisposable
     ///     Close the pipeline, it will also close the underlying websocket
     /// </summary>
     Task CloseAsync();
-
-    /// <summary>
-    ///     State of the underlying websocket
-    /// </summary>
-    WebSocketState WebSocketState { get; }
 }

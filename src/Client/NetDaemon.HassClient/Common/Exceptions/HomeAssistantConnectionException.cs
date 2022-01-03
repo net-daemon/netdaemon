@@ -5,9 +5,11 @@ namespace NetDaemon.Client.Common.Exceptions;
 [SuppressMessage("", "RCS1194")]
 public class HomeAssistantConnectionException : Exception
 {
-    public DisconnectReason Reason { get; set; }
-    public HomeAssistantConnectionException(DisconnectReason reason) : base($"Home assistant disconnected reason:{reason}")
+    public HomeAssistantConnectionException(DisconnectReason reason) : base(
+        $"Home assistant disconnected reason:{reason}")
     {
         Reason = reason;
     }
+
+    public DisconnectReason Reason { get; set; }
 }

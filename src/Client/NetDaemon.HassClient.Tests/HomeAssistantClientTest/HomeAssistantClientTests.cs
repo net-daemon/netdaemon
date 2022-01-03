@@ -4,9 +4,9 @@ namespace NetDaemon.HassClient.Tests.HomeAssistantClientTest;
 
 public class HomeAssistantClientTests
 {
+    private readonly HomeAssistantConnectionMock _haConnectionMock = new();
     private readonly TransportPipelineMock _pipeline = new();
     private readonly WebSocketClientMock _wsMock = new();
-    private readonly HomeAssistantConnectionMock _haConnectionMock = new();
 
     /// <summary>
     ///     Return a mocked Home Assistant Client
@@ -23,10 +23,10 @@ public class HomeAssistantClientTests
         connFactoryMock.Setup(n =>
             n.New(It.IsAny<IWebSocketClientTransportPipeline>())).Returns(_haConnectionMock.Object);
         return new HomeAssistantClient(
-                    loggerMock.Object,
-                    wsClientFactoryMock.Object,
-                    transportPipelineFactoryMock.Object,
-                    connFactoryMock.Object);
+            loggerMock.Object,
+            wsClientFactoryMock.Object,
+            transportPipelineFactoryMock.Object,
+            connFactoryMock.Object);
     }
 
     [Fact]
@@ -34,7 +34,8 @@ public class HomeAssistantClientTests
     {
         var client = GetDefaultConnectOkHomeAssistantClient();
 
-        var connection = await client.ConnectAsync("host", 1, true, "token", CancellationToken.None).ConfigureAwait(false);
+        var connection = await client.ConnectAsync("host", 1, true, "token", CancellationToken.None)
+            .ConfigureAwait(false);
 
         connection.Should().NotBeNull();
     }
@@ -45,13 +46,14 @@ public class HomeAssistantClientTests
         var client = GetDefaultAuthorizedHomeAssistantClient();
 
         _haConnectionMock.AddConfigResponseMessage(
-            new()
+            new HassConfig
             {
                 State = "ANY_STATE_BUT_RUNNING"
             }
         );
 
-        await Assert.ThrowsAsync<HomeAssistantConnectionException>(async () => await client.ConnectAsync("host", 1, true, "token", CancellationToken.None).ConfigureAwait(false));
+        await Assert.ThrowsAsync<HomeAssistantConnectionException>(async () =>
+            await client.ConnectAsync("host", 1, true, "token", CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]
@@ -62,10 +64,10 @@ public class HomeAssistantClientTests
         ).Returns(WebSocketState.Closed);
         var loggerMock = new Mock<ILogger<IHomeAssistantConnection>>();
         Assert.Throws<ApplicationException>(() =>
-          _ = new HomeAssistantConnection(
-          loggerMock.Object,
-          _pipeline.Object,
-          new Mock<IHomeAssistantApiManager>().Object));
+            _ = new HomeAssistantConnection(
+                loggerMock.Object,
+                _pipeline.Object,
+                new Mock<IHomeAssistantApiManager>().Object));
     }
 
     /// <summary>
@@ -90,7 +92,7 @@ public class HomeAssistantClientTests
     }
 
     /// <summary>
-    ///     Return a pre authenticated and running state 
+    ///     Return a pre authenticated and running state
     ///     HomeAssistantClient
     /// </summary>
     internal HomeAssistantClient GetDefaultConnectOkHomeAssistantClient()
@@ -113,12 +115,11 @@ public class HomeAssistantClientTests
         );
         // The add the fake config state that says running
         _haConnectionMock.AddConfigResponseMessage(
-            new()
+            new HassConfig
             {
                 State = "RUNNING"
             }
         );
         return GetDefaultHomeAssistantClient();
-
     }
 }

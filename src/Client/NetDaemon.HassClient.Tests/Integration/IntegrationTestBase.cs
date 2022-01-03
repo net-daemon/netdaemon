@@ -41,11 +41,11 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
                 loggerConnection.Object,
                 new HomeAssistantApiManager(
                     appSettingsOptions,
-                    (mock?.HomeAssistantHost.Services.GetRequiredService<IHttpClientFactory>() ?? throw new NullReferenceException())
+                    (mock?.HomeAssistantHost.Services.GetRequiredService<IHttpClientFactory>() ??
+                     throw new NullReferenceException())
                     .CreateClient()
                 )
             )
-
         );
         var connection = await client.ConnectAsync(
             settings.Host,
