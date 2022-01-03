@@ -25,7 +25,8 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     /// <param name="cancelToken">token to cancel operation</param>
     /// <typeparam name="T">Type of command</typeparam>
     /// <typeparam name="TResult">The result of the command</typeparam>
-    Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken) where T : CommandMessage;
+    Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken)
+        where T : CommandMessage;
 
     /// <summary>
     ///     Sends a command message to Home Assistant without handling the result
@@ -33,7 +34,8 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     /// <param name="command">Command message to send</param>
     /// <param name="cancelToken">token to cancel operation</param>
     /// <typeparam name="T">Type of command</typeparam>
-    Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage;
+    Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
+        where T : CommandMessage;
 
     /// <summary>
     ///     Start processing Home Assistant events

@@ -14,7 +14,10 @@ internal class AssemblyResolver : IAssemblyResolver
         _assembly = assembly;
     }
 
-    public Assembly GetResolvedAssembly() => _assembly;
+    public Assembly GetResolvedAssembly()
+    {
+        return _assembly;
+    }
 }
 
 internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver
@@ -46,4 +49,3 @@ internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver
         return compiledAssembly;
     }
 }
-

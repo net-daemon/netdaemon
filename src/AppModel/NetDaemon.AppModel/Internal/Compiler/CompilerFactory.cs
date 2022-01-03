@@ -2,8 +2,8 @@ namespace NetDaemon.AppModel.Internal.Compiler;
 
 internal class CompilerFactory : ICompilerFactory
 {
-    private readonly ISyntaxTreeResolver _syntaxResolver;
     private readonly ILogger<Compiler> _logger;
+    private readonly ISyntaxTreeResolver _syntaxResolver;
 
     public CompilerFactory(
         ISyntaxTreeResolver syntaxResolver,
@@ -14,5 +14,8 @@ internal class CompilerFactory : ICompilerFactory
         _logger = logger;
     }
 
-    public ICompiler New() => new Compiler(_syntaxResolver, _logger);
+    public ICompiler New()
+    {
+        return new Compiler(_syntaxResolver, _logger);
+    }
 }

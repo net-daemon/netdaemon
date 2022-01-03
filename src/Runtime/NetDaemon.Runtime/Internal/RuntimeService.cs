@@ -67,9 +67,7 @@ internal class RuntimeService : BackgroundService
             _hassModelIsInitialized = true;
             _applicationInstances = _appModel.LoadApplications();
             foreach (var appInstance in _applicationInstances)
-            {
                 _logger.LogInformation("Successfully loaded app {id}", appInstance.Id);
-            }
         }
         catch (Exception e)
         {

@@ -6,7 +6,10 @@ internal class WebSocketClientTransportPipelineFactory : IWebSocketClientTranspo
 
     public WebSocketClientTransportPipelineFactory(
         ILogger<IWebSocketClientTransportPipeline> logger
-    ) => _logger = logger;
+    )
+    {
+        _logger = logger;
+    }
 
     public IWebSocketClientTransportPipeline New(IWebSocketClient webSocketClient)
     {

@@ -1,4 +1,5 @@
 namespace NetDaemon.Client.Common.HomeAssistant.Extensions;
+
 public static class HomeAssistantConnectionExtensions
 {
     /// <summary>
@@ -6,61 +7,79 @@ public static class HomeAssistantConnectionExtensions
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<IReadOnlyCollection<HassState>?> GetStatesAsync(this IHomeAssistantConnection connection, CancellationToken cancelToken)
-    => await connection
+    public static async Task<IReadOnlyCollection<HassState>?> GetStatesAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassState>>
-                   (new("get_states"), cancelToken).ConfigureAwait(false);
+                (new SimpleCommand("get_states"), cancelToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     ///     Get all services from Home Assistant
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<JsonElement?> GetServicesAsync(this IHomeAssistantConnection connection, CancellationToken cancelToken)
-    => await connection
+    public static async Task<JsonElement?> GetServicesAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
             .SendCommandAndReturnResponseRawAsync<SimpleCommand>
-                   (new("get_services"), cancelToken).ConfigureAwait(false);
+                (new SimpleCommand("get_services"), cancelToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     ///     Get all areas from Home Assistant
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<IReadOnlyCollection<HassArea>?> GetAreasAsync(this IHomeAssistantConnection connection, CancellationToken cancelToken)
-    => await connection
+    public static async Task<IReadOnlyCollection<HassArea>?> GetAreasAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
-                   (new("config/area_registry/list"), cancelToken).ConfigureAwait(false);
+                (new SimpleCommand("config/area_registry/list"), cancelToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     ///     Get all devices from Home Assistant
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<IReadOnlyCollection<HassDevice>?> GetDevicesAsync(this IHomeAssistantConnection connection, CancellationToken cancelToken)
-    => await connection
+    public static async Task<IReadOnlyCollection<HassDevice>?> GetDevicesAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>
-                   (new("config/device_registry/list"), cancelToken).ConfigureAwait(false);
+                (new SimpleCommand("config/device_registry/list"), cancelToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     ///     Get all entities from Home Assistant
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<IReadOnlyCollection<HassEntity>?> GetEntitiesAsync(this IHomeAssistantConnection connection, CancellationToken cancelToken)
-    => await connection
+    public static async Task<IReadOnlyCollection<HassEntity>?> GetEntitiesAsync(
+        this IHomeAssistantConnection connection, CancellationToken cancelToken)
+    {
+        return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
-                   (new("config/entity_registry/list"), cancelToken).ConfigureAwait(false);
+                (new SimpleCommand("config/entity_registry/list"), cancelToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     ///     Get all configuration from Home Assistant
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<HassConfig> GetConfigAsync(this IHomeAssistantConnection connection, CancellationToken cancelToken)
-    => await connection
-        .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
-                    (new("get_config"), cancelToken).ConfigureAwait(false) ??
-                        throw new NullReferenceException("Unexpected null return from command");
+    public static async Task<HassConfig> GetConfigAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
+                   .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
+                       (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
+               throw new NullReferenceException("Unexpected null return from command");
+    }
 
     /// <summary>
     ///     Get all configuration from Home Assistant
@@ -82,7 +101,7 @@ public static class HomeAssistantConnectionExtensions
     {
         await connection
             .SendCommandAndReturnResponseAsync<CallServiceCommand, object?>
-                        (
+            (
                 new CallServiceCommand
                 {
                     Domain = domain,
@@ -99,10 +118,11 @@ public static class HomeAssistantConnectionExtensions
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="timeout">Timeout to wait for pong back</param>
     /// <param name="cancelToken">cancellation token</param>
-    public static async Task<bool> PingAsync(this IHomeAssistantConnection connection, TimeSpan timeout, CancellationToken cancelToken)
+    public static async Task<bool> PingAsync(this IHomeAssistantConnection connection, TimeSpan timeout,
+        CancellationToken cancelToken)
     {
         var allHassMessages = connection as IHomeAssistantHassMessages
-            ?? throw new InvalidCastException("Unexpected failure to cast");
+                              ?? throw new InvalidCastException("Unexpected failure to cast");
         try
         {
             var resultEvent = allHassMessages.OnHassMessage
@@ -113,7 +133,7 @@ public static class HomeAssistantConnectionExtensions
 
             await connection
                 .SendCommandAsync<SimpleCommand>
-                        (new("ping"), cancelToken).ConfigureAwait(false);
+                    (new SimpleCommand("ping"), cancelToken).ConfigureAwait(false);
 
             await resultEvent.ConfigureAwait(false);
         }
@@ -121,6 +141,7 @@ public static class HomeAssistantConnectionExtensions
         {
             return false;
         }
+
         return true;
     }
 }

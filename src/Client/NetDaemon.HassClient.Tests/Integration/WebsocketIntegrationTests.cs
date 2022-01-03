@@ -33,9 +33,9 @@ public class WebsocketIntegrationTests : IntegrationTestBase
                 "domain",
                 "service",
                 null,
-                new()
+                new HassTarget
                 {
-                    EntityIds = new[] { "light.test" }
+                    EntityIds = new[] {"light.test"}
                 },
                 TokenSource.Token)
             .ConfigureAwait(false);
@@ -91,7 +91,8 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             Ssl = false,
             Token = "token does not matter"
         };
-        await Assert.ThrowsAsync<WebSocketException>(async () => await GetConnectedClientContext(settings).ConfigureAwait(false));
+        await Assert.ThrowsAsync<WebSocketException>(async () =>
+            await GetConnectedClientContext(settings).ConfigureAwait(false));
     }
 
     [Fact]
@@ -128,7 +129,6 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         await ctx.HomeAssistantConnction
             .PingAsync(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), TokenSource.Token)
             .ConfigureAwait(false);
-
     }
 
     [Fact]
@@ -152,13 +152,6 @@ public class WebsocketIntegrationTests : IntegrationTestBase
                 TokenSource.Token
             )
             .ConfigureAwait(false));
-
-    }
-
-    private record AttributeTest
-    {
-        [JsonPropertyName("battery_level")]
-        public int BatteryLevel { get; init; }
     }
 
     [Fact]
@@ -181,7 +174,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         haEvent?
             .EventType
             .Should()
-                .BeEquivalentTo("state_changed");
+            .BeEquivalentTo("state_changed");
 
         // We test the state changed 
         var changedEvent = haEvent?.ToStateChangedEvent();
@@ -216,11 +209,11 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .ProcessHomeAssistantEventsAsync(tokenSource.Token);
 
         await ctx.HomeAssistantConnction
-           .SendCommandAndReturnResponseAsync<SimpleCommand, object?>(
-               new SimpleCommand("fake_service_event"),
-               TokenSource.Token
-           )
-           .ConfigureAwait(false);
+            .SendCommandAndReturnResponseAsync<SimpleCommand, object?>(
+                new SimpleCommand("fake_service_event"),
+                TokenSource.Token
+            )
+            .ConfigureAwait(false);
 
         var haEvent = await subscribeTask.ConfigureAwait(false);
 
@@ -228,7 +221,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         haEvent?
             .EventType
             .Should()
-                .BeEquivalentTo("call_service");
+            .BeEquivalentTo("call_service");
         // Test the conversion to service event
         var stateChangedEvent = haEvent?.ToCallServiceEvent();
         stateChangedEvent?.Domain
@@ -236,4 +229,8 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .BeEquivalentTo("light");
     }
 
+    private record AttributeTest
+    {
+        [JsonPropertyName("battery_level")] public int BatteryLevel { get; init; }
+    }
 }

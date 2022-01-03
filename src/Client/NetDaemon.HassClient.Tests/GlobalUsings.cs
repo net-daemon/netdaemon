@@ -10,11 +10,9 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Microsoft.AspNetCore.Hosting.Server;
 global using Microsoft.AspNetCore.Hosting.Server.Features;
-
 global using FluentAssertions;
 global using Moq;
 global using Xunit;
-
 global using NetDaemon.Client.Common;
 global using NetDaemon.Client.Common.HomeAssistant.Model;
 global using NetDaemon.Client.Internal;

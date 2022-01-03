@@ -18,7 +18,3 @@ catch (Exception e)
     Console.WriteLine($"Failed to start host... {e}");
     throw;
 }
-finally
-{
-    // todo: clean up logs etc later
-}

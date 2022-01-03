@@ -41,12 +41,6 @@ public class ConfigurationBinderTests
         config!.Should().HaveCount(2);
     }
 
-    internal enum TestEnum
-    {
-        Enum1,
-        Enum2
-    }
-
     [Fact]
     public void TestAddYamlConfigGetsEnumCorrectly()
     {
@@ -87,8 +81,55 @@ public class ConfigurationBinderTests
         config!.Should().HaveCount(2);
     }
 
+    [Fact]
+    public void TestAddYamlConfigBadClassShouldThrowException()
+    {
+        // ARRANGE
+        var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
+
+        configurationBuilder.AddYamlAppConfig(
+            Path.Combine(AppContext.BaseDirectory,
+                "Config/Fixtures"));
+        configurationBuilder.Build();
+        // ACT
+        // CHECK
+        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<IAppModel>("TestCollections"));
+        Assert.Throws<InvalidOperationException>(() =>
+            GetObjectFromSection<AbstractShouldNotSerialize>("TestCollections"));
+        Assert.Throws<InvalidOperationException>(() =>
+            GetObjectFromSection<ClassWithoutDefaultContructorShouldNotSerialize>("TestCollections"));
+        Assert.Throws<InvalidOperationException>(() =>
+            GetObjectFromSection<ClassThatThrowsOnConstructor>("TestCollections"));
+        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<string[,]>("TestCollections"));
+        GetObjectFromSection<IDictionary<int, int>>("TestCollections").Should().BeEmpty();
+    }
+
+    private static T? GetObjectFromSection<T>(string sectionName)
+    {
+        var providerMock = new Mock<IServiceProvider>();
+        var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
+        configurationBuilder.AddYamlAppConfig(
+            Path.Combine(AppContext.BaseDirectory,
+                "Config/Fixtures"));
+        var configRoot = configurationBuilder.Build();
+        var section = configRoot.GetSection(sectionName);
+        // ACT
+        var configBinding = new ConfigurationBinding(providerMock.Object);
+        return configBinding.ToObject<T>(section);
+    }
+
+    internal enum TestEnum
+    {
+        Enum1,
+        Enum2
+    }
+
     #region -- failing class declarations --
-    internal abstract class AbstractShouldNotSerialize { }
+
+    internal abstract class AbstractShouldNotSerialize
+    {
+    }
+
     internal class ClassWithoutDefaultContructorShouldNotSerialize
     {
         private ClassWithoutDefaultContructorShouldNotSerialize()
@@ -103,40 +144,8 @@ public class ConfigurationBinderTests
             throw new InvalidOperationException();
         }
     }
+
     #endregion
-
-    [Fact]
-    public void TestAddYamlConfigBadClassShouldThrowException()
-    {
-        // ARRANGE
-        var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
-
-        configurationBuilder.AddYamlAppConfig(
-            Path.Combine(AppContext.BaseDirectory,
-                "Config/Fixtures"));
-        configurationBuilder.Build();
-        // ACT
-        // CHECK
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<IAppModel>("TestCollections"));
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<AbstractShouldNotSerialize>("TestCollections"));
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<ClassWithoutDefaultContructorShouldNotSerialize>("TestCollections"));
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<ClassThatThrowsOnConstructor>("TestCollections"));
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<string[,]>("TestCollections"));
-        GetObjectFromSection<IDictionary<int, int>>("TestCollections").Should().BeEmpty();
-    }
-    private static T? GetObjectFromSection<T>(string sectionName)
-    {
-        var providerMock = new Mock<IServiceProvider>();
-        var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
-        configurationBuilder.AddYamlAppConfig(
-            Path.Combine(AppContext.BaseDirectory,
-                "Config/Fixtures"));
-        var configRoot = configurationBuilder.Build();
-        var section = configRoot.GetSection(sectionName);
-        // ACT
-        var configBinding = new ConfigurationBinding(providerMock.Object);
-        return configBinding.ToObject<T>(section);
-    }
 }
 
 public record CollectionBindingTestClass

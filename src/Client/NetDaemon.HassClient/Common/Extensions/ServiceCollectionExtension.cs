@@ -29,21 +29,24 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddPipelineFactory(this IServiceCollection services)
     {
         services.AddSingleton<WebSocketClientTransportPipelineFactory>();
-        services.AddSingleton<IWebSocketClientTransportPipelineFactory>(s => s.GetRequiredService<WebSocketClientTransportPipelineFactory>());
+        services.AddSingleton<IWebSocketClientTransportPipelineFactory>(s =>
+            s.GetRequiredService<WebSocketClientTransportPipelineFactory>());
         return services;
     }
 
     private static IServiceCollection AddConnectionFactory(this IServiceCollection services)
     {
         services.AddSingleton<HomeAssistantConnectionFactory>();
-        services.AddSingleton<IHomeAssistantConnectionFactory>(s => s.GetRequiredService<HomeAssistantConnectionFactory>());
+        services.AddSingleton<IHomeAssistantConnectionFactory>(s =>
+            s.GetRequiredService<HomeAssistantConnectionFactory>());
         return services;
     }
 
     private static IServiceCollection AddHttpClientAndFactory(this IServiceCollection services)
     {
         services.AddSingleton(s => s.GetRequiredService<IHttpClientFactory>().CreateClient());
-        services.AddHttpClient<IHomeAssistantApiManager, HomeAssistantApiManager>().ConfigurePrimaryHttpMessageHandler(ConfigureHttpMessageHandler);
+        services.AddHttpClient<IHomeAssistantApiManager, HomeAssistantApiManager>()
+            .ConfigurePrimaryHttpMessageHandler(ConfigureHttpMessageHandler);
         return services;
     }
 

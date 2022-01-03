@@ -3,7 +3,7 @@ namespace NetDaemon.Client.Internal.Extensions;
 internal static class CancellationTokenExtensions
 {
     /// <summary>
-    /// Allows using a Cancellation Token as if it were a task.
+    ///     Allows using a Cancellation Token as if it were a task.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that can be canceled, but never completed.</returns>
