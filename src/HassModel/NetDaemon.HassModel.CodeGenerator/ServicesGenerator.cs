@@ -1,12 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-
-namespace NetDaemon.HassModel.CodeGenerator;
+﻿namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class ServicesGenerator
 {
-    public static IEnumerable<TypeDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains)
+    public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyList<HassServiceDomain> serviceDomains)
     {
-        var domains = serviceDomains.Select(x => x.Domain!);
+        var domains = serviceDomains.Select(x => x.Domain!).ToArray();
 
         yield return GenerateRootServicesInterface(domains);
 

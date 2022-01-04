@@ -1,16 +1,14 @@
-﻿using System.Text.Json.Serialization;
-
-namespace NetDaemon.HassModel.CodeGenerator;
+﻿namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class EntitiesGenerator
 {
-    public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyCollection<HassState> entities)
+    public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyList<HassState> entities)
     {
         var entitySets = entities.GroupBy(e => (EntityIdHelper.GetDomain(e.EntityId), IsNumeric(e)))
             .Select(g => new EntitySet(g.Key.Item1, g.Key.Item2, g))
             .OrderBy(s => s.Domain)
             .ToList();
-          
+
         var entityIds = entities.Select(x => x.EntityId).ToList();
 
         var entityDomains = GetDomainsFromEntities(entityIds).OrderBy(s => s).ToList();

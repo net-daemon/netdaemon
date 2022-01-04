@@ -1,13 +1,14 @@
-global using NetDaemon.HassModel.CodeGenerator;
 global using System;
 global using System.Collections.Generic;
 global using System.Linq;
 global using System.Text.Json;
 global using JoySoftware.HomeAssistant.Model;
 global using Microsoft.CodeAnalysis.CSharp.Syntax;
+global using NetDaemon.HassModel.CodeGenerator;
 global using NetDaemon.HassModel.CodeGenerator.Helpers;
 global using NetDaemon.HassModel.CodeGenerator.Extensions;
 global using NetDaemon.HassModel.Common;
 global using NetDaemon.HassModel.Entities;
+global using Microsoft.CodeAnalysis;
 global using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;
 global using static NetDaemon.HassModel.CodeGenerator.Helpers.SyntaxFactoryHelper;

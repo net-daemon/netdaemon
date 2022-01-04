@@ -1,14 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using Microsoft.CodeAnalysis;
+﻿using System.Runtime.CompilerServices;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
-[SuppressMessage("ReSharper", "CoVariantArrayConversion")]
-public static partial class Generator
+public static class Generator
 {
     public static string GenerateCode(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
     {
@@ -18,23 +15,24 @@ public static partial class Generator
 
     internal static CompilationUnitSyntax CreateCompilationUnitSyntax(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
     {
-        var orderedEntities = entities.OrderBy(x => x.EntityId);
+        var orderedEntities = entities.OrderBy(x => x.EntityId).ToArray();
+        var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
 
         var code = CompilationUnit()
             .AddUsings(UsingDirective(ParseName("System")))
             .AddUsings(UsingDirective(ParseName("System.Collections.Generic")))
-            .AddUsings(NamingHelper.UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray());
+            .AddUsings(UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray());
 
         var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).NormalizeWhitespace();
 
-        namespaceDeclaration = namespaceDeclaration.AddMembers(EntitiesGenerator.Generate(orderedEntities.ToList()).ToArray());
-        namespaceDeclaration = namespaceDeclaration.AddMembers(ServicesGenerator.Generate(services.OrderBy(x => x.Domain)).ToArray());
-        namespaceDeclaration = namespaceDeclaration.AddMembers(ExtensionMethodsGenerator.Generate(services.OrderBy(x => x.Domain), entities).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(EntitiesGenerator.Generate(orderedEntities).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(ServicesGenerator.Generate(orderedServiceDomains).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(ExtensionMethodsGenerator.Generate(orderedServiceDomains, entities).ToArray());
 
         code = code.AddMembers(namespaceDeclaration);
 
         code = code.NormalizeWhitespace(Tab.ToString(), eol: "\n");
-        
+
         return code;
     }
 }

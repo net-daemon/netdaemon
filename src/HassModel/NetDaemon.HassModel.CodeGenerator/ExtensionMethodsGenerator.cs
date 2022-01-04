@@ -17,7 +17,7 @@ public static class ExtensionMethodsGenerator
     private static ClassDeclarationSyntax GenarteClass(IGrouping<string?, IReadOnlyCollection<HassService>?> domainServicesGroup)
     {
         var domain = domainServicesGroup.Key!;
-            
+
         var domainServices = domainServicesGroup
             .SelectMany(services => services!)
             .Where(s => s.Target?.Entity?.Domain != null)

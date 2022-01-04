@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text.Json.Serialization;
-using NetDaemon.HassModel.CodeGenerator.Extensions;
-using NetDaemon.HassModel.Common;
-using NetDaemon.HassModel.Entities;
+﻿using System.Text.Json.Serialization;
 
 namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
