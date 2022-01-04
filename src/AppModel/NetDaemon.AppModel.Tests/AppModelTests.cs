@@ -65,7 +65,7 @@ public class AppModelTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                services.AddAppFromLocalAssembly();
                 services.AddTransient<IOptions<ApplicationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/LocalError")));
                 services.AddTransient(n => loggerMock.Object);

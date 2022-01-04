@@ -17,7 +17,7 @@ public class TypeResolverTests
     {
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelLocalAssembly();
+        serviceCollection.AddAppFromLocalAssembly();
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
@@ -62,7 +62,7 @@ public class TypeResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
 
@@ -109,7 +109,7 @@ public class TypeResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
 

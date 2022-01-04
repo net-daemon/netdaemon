@@ -59,7 +59,7 @@ public class ConfigTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                services.AddAppFromLocalAssembly();
                 services.AddTransient<InjectMeWithConfigPlease>();
             })
             .ConfigureAppConfiguration((_, config) =>
@@ -84,7 +84,7 @@ public class ConfigTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                services.AddAppFromLocalAssembly();
                 services.AddTransient<InjectMeWithConfigPlease>();
             })
             .ConfigureAppConfiguration((_, config) =>
@@ -109,7 +109,7 @@ public class ConfigTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                services.AddAppFromLocalAssembly();
                 services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
                 services.AddSingleton(sp =>
                     new Converter<string, EntityClass>(s =>

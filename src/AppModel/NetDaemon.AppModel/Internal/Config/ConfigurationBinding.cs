@@ -36,7 +36,7 @@ internal class ConfigurationBinding : IConfigurationBinding
     {
         var result = GetObject(configuration, typeof(T));
         if (result == null) return default;
-        return (T) result;
+        return (T)result;
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ internal class ConfigurationBinding : IConfigurationBinding
         }
         else if (type.IsArray)
         {
-            instance = BindArray((Array) instance, config);
+            instance = BindArray((Array)instance, config);
         }
         else
         {
@@ -239,12 +239,12 @@ internal class ConfigurationBinding : IConfigurationBinding
             if (keyType == typeof(string))
             {
                 var key = child.Key;
-                setter.SetValue(dictionary, item, new object[] {key});
+                setter.SetValue(dictionary, item, new object[] { key });
             }
             else if (keyTypeIsEnum)
             {
                 var key = Convert.ToInt32(Enum.Parse(keyType, child.Key));
-                setter.SetValue(dictionary, item, new object[] {key});
+                setter.SetValue(dictionary, item, new object[] { key });
             }
         }
     }
@@ -265,7 +265,7 @@ internal class ConfigurationBinding : IConfigurationBinding
                     itemType,
                     null,
                     section);
-                if (item != null) addMethod.Invoke(collection, new[] {item});
+                if (item != null) addMethod.Invoke(collection, new[] { item });
             }
             catch
             {
@@ -341,7 +341,7 @@ internal class ConfigurationBinding : IConfigurationBinding
 
         // Construct ´Converter<T, string>´
         var genConverterEmptyType = typeof(Converter<,>);
-        Type[] typeArgs = {typeof(string), type};
+        Type[] typeArgs = { typeof(string), type };
         var converterType = genConverterEmptyType.MakeGenericType(typeArgs);
 
         if (_provider.GetService(converterType) is not Converter<string, object> conv)

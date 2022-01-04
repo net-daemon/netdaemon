@@ -17,7 +17,7 @@ public class AssemblyResolverTests
     {
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelLocalAssembly();
+        serviceCollection.AddAppFromLocalAssembly();
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
@@ -60,7 +60,7 @@ public class AssemblyResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
 
@@ -104,8 +104,8 @@ public class AssemblyResolverTests
             );
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddAppModelLocalAssembly();
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddAppFromLocalAssembly();
+        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
 

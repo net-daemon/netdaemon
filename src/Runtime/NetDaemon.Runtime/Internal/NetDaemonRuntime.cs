@@ -4,7 +4,7 @@ using NetDaemon.HassModel;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal class RuntimeService : BackgroundService
+internal class NetDaemonRuntime : IRuntime
 {
     private const int TimeoutInSeconds = 5;
     private readonly IAppModel _appModel;
@@ -12,16 +12,16 @@ internal class RuntimeService : BackgroundService
     private readonly HomeAssistantSettings _haSettings;
     private readonly IHomeAssistantRunner _homeAssistantRunner;
 
-    private readonly IHostApplicationLifetime _hostLifetime;
-
     private readonly ILogger<RuntimeService> _logger;
     private readonly IServiceProvider _serviceProvider;
     private IReadOnlyCollection<IApplicationInstance>? _applicationInstances;
     private IHomeAssistantConnection? _connection;
     private bool _hassModelIsInitialized;
 
-    public RuntimeService(
-        IHostApplicationLifetime hostLifetime,
+    // These internals are used primarly for testing purposes
+    internal IReadOnlyCollection<IApplicationInstance>? ApplicationInstances => _applicationInstances;
+
+    public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
         IAppModel appModel,
@@ -29,14 +29,13 @@ internal class RuntimeService : BackgroundService
         ILogger<RuntimeService> logger)
     {
         _haSettings = settings.Value;
-        _hostLifetime = hostLifetime;
         _homeAssistantRunner = homeAssistantRunner;
         _appModel = appModel;
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _homeAssistantRunner.OnConnect
             .Select(async _ => await OnHomeAssistantClientConnected(stoppingToken).ConfigureAwait(false))
@@ -44,16 +43,20 @@ internal class RuntimeService : BackgroundService
         _homeAssistantRunner.OnDisconnect
             .Select(async s => await OnHomeAssistantClientDisconnected(s).ConfigureAwait(false))
             .Subscribe();
-        await _homeAssistantRunner.RunAsync(
-            _haSettings.Host,
-            _haSettings.Port,
-            _haSettings.Ssl,
-            _haSettings.Token,
-            TimeSpan.FromSeconds(TimeoutInSeconds),
-            stoppingToken).ConfigureAwait(false);
-
-        // Stop application if this is exited
-        _hostLifetime.StopApplication();
+        try
+        {
+            await _homeAssistantRunner.RunAsync(
+                _haSettings.Host,
+                _haSettings.Port,
+                _haSettings.Ssl,
+                _haSettings.Token,
+                TimeSpan.FromSeconds(TimeoutInSeconds),
+                stoppingToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore and just stop
+        }
     }
 
     private async Task OnHomeAssistantClientConnected(CancellationToken cancelToken)

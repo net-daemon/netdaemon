@@ -74,6 +74,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Host.Default", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Host", "Host", "{A6D03AB9-6C8E-42BE-ACF6-7FA6A1C539C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Runtime.Tests", "src\Runtime\NetDaemon.Runtime.Tests\NetDaemon.Runtime.Tests.csproj", "{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -336,6 +338,18 @@ Global
 		{DA86C13F-E31D-412E-94E6-B59F4AC0465D}.Release|x64.Build.0 = Release|Any CPU
 		{DA86C13F-E31D-412E-94E6-B59F4AC0465D}.Release|x86.ActiveCfg = Release|Any CPU
 		{DA86C13F-E31D-412E-94E6-B59F4AC0465D}.Release|x86.Build.0 = Release|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Debug|x64.Build.0 = Debug|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Debug|x86.Build.0 = Debug|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Release|x64.ActiveCfg = Release|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Release|x64.Build.0 = Release|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Release|x86.ActiveCfg = Release|Any CPU
+		{2DA63F1B-A78A-4C0F-8C51-DE2251702DC0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
