@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Extensions.Hosting;
 
 namespace NetDaemon.AppModel.Tests.Helpers;
@@ -9,7 +10,8 @@ public static class TestHelpers
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppFromLocalAssembly();
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
                 services.AddTransient<IOptions<ApplicationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
             })
@@ -51,7 +53,8 @@ public static class TestHelpers
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppFromLocalAssembly();
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetCallingAssembly());
                 services.AddTransient<IOptions<ApplicationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
             })

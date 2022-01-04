@@ -15,18 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
         return services;
     }
-
-    public static IServiceCollection AddAppFromLocalAssembly(this IServiceCollection services)
-    {
-        // We make sure we only add AppModel services once
-        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
-            services.AddAppModel();
-
-        services
-            .AddAppsFromAssembly(Assembly.GetCallingAssembly());
-        return services;
-    }
-
+    
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
     {
         // We make sure we only add AppModel services once

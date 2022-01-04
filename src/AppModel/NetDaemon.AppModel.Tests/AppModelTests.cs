@@ -1,3 +1,4 @@
+using System.Reflection;
 using LocalApps;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,6 @@ public class AppModelTests
         // ACT
         var loadApps = TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local");
 
-
         // CHECK
         loadApps.Should().HaveCount(3);
 
@@ -65,7 +65,8 @@ public class AppModelTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppFromLocalAssembly();
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
                 services.AddTransient<IOptions<ApplicationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/LocalError")));
                 services.AddTransient(n => loggerMock.Object);
