@@ -11,11 +11,6 @@ internal interface IApplicationContext : IAsyncDisposable
     string Id { get; }
 
     /// <summary>
-    ///     Gets whether this app is enabled.
-    /// </summary>
-    bool IsEnabled { get; }
-
-    /// <summary>
     ///     The type of the app
     /// </summary>
     Type AppType { get; }

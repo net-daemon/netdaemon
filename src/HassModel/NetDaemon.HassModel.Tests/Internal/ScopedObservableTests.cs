@@ -4,13 +4,15 @@ using System.Reactive.Subjects;
 using Moq;
 using Xunit;
 using Microsoft.Extensions.Logging;
+using NetDaemon.HassModel.Tests.TestHelpers;
+using System.Threading.Tasks;
 
 namespace NetDaemon.HassModel.Tests.Internal
 {
     public class ScopedObservableTests
     {
         [Fact]
-        public void WhenScopeIsDisposedSubscribersAreDetached()
+        public async Task WhenScopeIsDisposedSubscribersAreDetached()
         {
             var testSubject = new Subject<string>();
             var loggerMock = new Mock<ILogger>();
@@ -27,14 +29,34 @@ namespace NetDaemon.HassModel.Tests.Internal
             var scope2ObserverMock = new Mock<IObserver<string>>();
             scoped2.Subscribe(scope2ObserverMock.Object);
 
+            var invocationWaitTasks = new Task[]
+            {
+                scope1AObserverMock.WaitForInvocationAndVerify(
+                o => o.OnNext("Event1")
+                ),
+                scope1BObserverMock.WaitForInvocationAndVerify(
+                o => o.OnNext("Event1")
+                ),
+                scope2ObserverMock.WaitForInvocationAndVerify(
+                o => o.OnNext("Event1")
+                )
+            };
+
             // Now start firing events
             testSubject.OnNext("Event1");
+            await Task.WhenAll(invocationWaitTasks).ConfigureAwait(false);
             scope1AObserverMock.Verify(o => o.OnNext("Event1"), Times.Once);
             scope1BObserverMock.Verify(o => o.OnNext("Event1"), Times.Once);
             scope2ObserverMock.Verify(o => o.OnNext("Event1"), Times.Once);
 
+            var task = scope2ObserverMock.WaitForInvocationAndVerify(
+                o => o.OnNext("Event1")
+                );
+
             scoped1.Dispose();
             testSubject.OnNext("Event2");
+            await task.ConfigureAwait(false);
+
             scope1AObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
             scope1BObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
             scope2ObserverMock.Verify(o => o.OnNext("Event2"), Times.Once);

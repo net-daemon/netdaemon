@@ -1,8 +1,7 @@
 namespace NetDaemon.AppModel.Internal;
 
 internal class ApplicationContext :
-    IApplicationContext,
-    IApplicationInstance
+    IApplicationContext
 {
     private readonly IServiceScope? _serviceScope;
 
@@ -29,8 +28,6 @@ internal class ApplicationContext :
     }
 
     public string Id { get; }
-
-    public bool IsEnabled { get; } = false;
 
     public Type AppType { get; }
 

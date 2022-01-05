@@ -14,12 +14,13 @@ internal class NetDaemonRuntime : IRuntime
 
     private readonly ILogger<RuntimeService> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private IReadOnlyCollection<IApplicationInstance>? _applicationInstances;
+    private IAppModelContext? _applicationModelContext;
     private IHomeAssistantConnection? _connection;
     private bool _hassModelIsInitialized;
 
     // These internals are used primarly for testing purposes
-    internal IReadOnlyCollection<IApplicationInstance>? ApplicationInstances => _applicationInstances;
+    internal IReadOnlyCollection<IApplication>? ApplicationInstances =>
+        _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
     public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
@@ -67,8 +68,9 @@ internal class NetDaemonRuntime : IRuntime
             if (!_hassModelIsInitialized)
                 await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
             _hassModelIsInitialized = true;
-            _applicationInstances = _appModel.LoadApplications();
-            foreach (var appInstance in _applicationInstances)
+            _applicationModelContext =
+                await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+            foreach (var appInstance in _applicationModelContext.Applications)
                 _logger.LogInformation("Successfully loaded app {id}", appInstance.Id);
         }
         catch (Exception e)
@@ -88,11 +90,11 @@ internal class NetDaemonRuntime : IRuntime
 
     private async Task DisposeApplicationsAsync()
     {
-        if (_applicationInstances is not null)
+        if (_applicationModelContext is not null)
         {
-            foreach (var applicationInstance in _applicationInstances)
+            foreach (var applicationInstance in _applicationModelContext.Applications)
                 await applicationInstance.DisposeAsync().ConfigureAwait(false);
-            _applicationInstances = null;
+            _applicationModelContext = null;
         }
     }
 }
