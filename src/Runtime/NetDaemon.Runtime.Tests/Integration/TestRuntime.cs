@@ -1,4 +1,5 @@
 using System.Reflection;
+using LocalApps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
@@ -24,7 +25,9 @@ public class TestRuntime
 
 
         var runnerTask = host.RunAsync();
-        while (!haRunner.ConnectMock.HasObservers) { await Task.Delay(10); }
+
+        await haRunner.ConnectMock.WaitForObservers().ConfigureAwait(false);
+
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
         var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
         var instances = service?.ApplicationInstances;
@@ -33,8 +36,6 @@ public class TestRuntime
         timedCancellationSource.Cancel();
         await runnerTask.ConfigureAwait(false);
     }
-    // public ISetup<T> Setup(Expression<Action<T>> expression);
-    // public ISetup<T, TResult> Setup<TResult>(Expression<Func<T, TResult>> expression);
 
     [Fact]
     public async Task TestApplicationReactToNewEvents()
@@ -52,7 +53,7 @@ public class TestRuntime
         var host = hostBuilder.ConfigureServices((_, services) =>
            services
                .AddSingleton(haRunner.Object)
-               .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
+               .AddAppsFromType(typeof(LocalApp))
         ).Build();
 
 
@@ -94,7 +95,7 @@ public class TestRuntime
         var host = hostBuilder.ConfigureServices((_, services) =>
            services
                .AddSingleton(haRunner.Object)
-               .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
+               .AddAppsFromType(typeof(LocalApp))
         ).Build();
 
 

@@ -15,7 +15,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
         return services;
     }
-    
+
+    public static IServiceCollection AddAppsFromType(this IServiceCollection services, Type type)
+    {
+        return services.AddAppsFromAssembly(type.Assembly);
+    }
+
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
     {
         // We make sure we only add AppModel services once

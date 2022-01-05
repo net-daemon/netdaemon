@@ -39,8 +39,8 @@ public class AppModelTests
         loadApps.Should().HaveCount(3);
 
         // check the application instance is init ok
-        var appInstance = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp)appInstance.Instance;
+        var appContext = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp)appContext.Instance;
         app.Settings.AString.Should().Be("Hello world!");
     }
 
@@ -52,8 +52,8 @@ public class AppModelTests
         var loadApps = TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local");
 
         // CHECK
-        var appInstance = loadApps.Where(n => n.Id == "SomeId");
-        appInstance.Should().NotBeEmpty();
+        var appContext = loadApps.Where(n => n.Id == "SomeId");
+        appContext.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -116,9 +116,9 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var appInstance = (IApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
-        var app = (MyAppLocalAppWithDispose)appInstance.Instance;
-        await appInstance.DisposeAsync().ConfigureAwait(false);
+        var appContext = (IApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        var app = (MyAppLocalAppWithDispose)appContext.Instance;
+        await appContext.DisposeAsync().ConfigureAwait(false);
         app.AsyncDisposeIsCalled.Should().BeTrue();
         app.DisposeIsCalled.Should().BeTrue();
     }
