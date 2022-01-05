@@ -12,8 +12,6 @@ public static class TestHelpers
             {
                 // get apps from test project
                 services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
-                services.AddTransient<IOptions<ApplicationLocationSetting>>(
-                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
             })
             .ConfigureAppConfiguration((_, config) =>
             {
