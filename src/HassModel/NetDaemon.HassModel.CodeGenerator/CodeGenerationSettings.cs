@@ -1,8 +1,7 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator
+﻿namespace NetDaemon.HassModel.CodeGenerator;
+
+public class CodeGenerationSettings
 {
-    public class CodeGenerationSettings
-    {
-        public string OutputFile { get; init; } = "HomeAssistantGenerated.cs";
-        public string Namespace { get; init; } = "HomeAssistantGenerated";
-    }
+    public string OutputFile { get; init; } = "HomeAssistantGenerated.cs";
+    public string Namespace { get; init; } = "HomeAssistantGenerated";
 }

@@ -1,43 +1,38 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using JoySoftware.HomeAssistant.Model;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using System.Runtime.CompilerServices;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
-namespace NetDaemon.HassModel.CodeGenerator
+namespace NetDaemon.HassModel.CodeGenerator;
+
+public static class Generator
 {
-    [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
-    public static partial class Generator
+    public static string GenerateCode(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
     {
-        public static string GenerateCode(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
-        {
-            var code = CreateCompilationUnitSyntax(nameSpace, entities, services);
-            return code.ToFullString();
-        }
+        var code = CreateCompilationUnitSyntax(nameSpace, entities, services);
+        return code.ToFullString();
+    }
 
-        internal static CompilationUnitSyntax CreateCompilationUnitSyntax(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
-        {
-            var orderedEntities = entities.OrderBy(x => x.EntityId);
+    internal static CompilationUnitSyntax CreateCompilationUnitSyntax(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
+    {
+        var orderedEntities = entities.OrderBy(x => x.EntityId).ToArray();
+        var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
 
-            var code = CompilationUnit()
-                .AddUsings(UsingDirective(ParseName("System")))
-                .AddUsings(UsingDirective(ParseName("System.Collections.Generic")));
+        var code = CompilationUnit()
+            .AddUsings(UsingDirective(ParseName("System")))
+            .AddUsings(UsingDirective(ParseName("System.Collections.Generic")))
+            .AddUsings(UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray());
 
-            var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).NormalizeWhitespace();
+        var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).NormalizeWhitespace();
 
-            namespaceDeclaration = namespaceDeclaration.AddMembers(GenerateEntityTypes(orderedEntities.ToList()).ToArray());
-            namespaceDeclaration = namespaceDeclaration.AddMembers(GenerateServiceTypes(services.OrderBy(x => x.Domain)).ToArray());
-            namespaceDeclaration = namespaceDeclaration.AddMembers(GenerateExtensionMethodClasses(services.OrderBy(x => x.Domain), entities).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(EntitiesGenerator.Generate(orderedEntities).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(ServicesGenerator.Generate(orderedServiceDomains).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(ExtensionMethodsGenerator.Generate(orderedServiceDomains, entities).ToArray());
 
-            code = code.AddMembers(namespaceDeclaration);
+        code = code.AddMembers(namespaceDeclaration);
 
-            code = code.NormalizeWhitespace(Tab.ToString(), eol: "\n");
-            return code;
-        }
+        code = code.NormalizeWhitespace(Tab.ToString(), eol: "\n");
+
+        return code;
     }
 }
