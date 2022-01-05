@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Xunit;
-
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
+using NetDaemon.HassModel.Tests.TestHelpers;
+using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
@@ -56,7 +56,7 @@ public class AppScopedHaContextProviderUsingClientTest
     }
 
     [Fact]
-    public void TestStateChange()
+    public async Task TestStateChange()
     {
         var haContext = CreateTarget();
         var stateAllChangesObserverMock = new Mock<IObserver<StateChange>>();
@@ -65,8 +65,20 @@ public class AppScopedHaContextProviderUsingClientTest
         haContext.StateAllChanges().Subscribe(stateAllChangesObserverMock.Object);
         haContext.StateChanges().Subscribe(stateChangesObserverMock.Object);
 
-        var reader = new Utf8JsonReader(
-            Encoding.UTF8.GetBytes(@"
+        var invocationTasks = new[]
+        {
+            stateChangesObserverMock.WaitForInvocationAndVerify(
+                o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity"))
+            ),
+            stateAllChangesObserverMock.WaitForInvocationAndVerify(
+                o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity"))
+            )
+        };
+
+        _hassEventSubjectMock.OnNext(new HassEvent
+        {
+            EventType = "state_changed",
+            DataElement = @"
                     {
                         ""entity_id"": ""TestDomain.TestEntity"",
                         ""new_state"": {
@@ -76,24 +88,19 @@ public class AppScopedHaContextProviderUsingClientTest
                             ""state"": ""oldState""
                         } 
                     }
-                    "));
-        _hassEventSubjectMock.OnNext(new HassEvent
-        {
-            EventType = "state_changed",
-            DataElement = JsonElement.ParseValue(ref reader)
+                    ".AsJsonElement()
         });
 
-        stateAllChangesObserverMock.Verify(
-            o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once);
-        stateChangesObserverMock.Verify(
-            o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once());
+        // Wait for all invocations to complete and be verified
+        await Task.WhenAll(invocationTasks);
 
         haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newState");
         // the state should come from the state cache so we do not expect a call to HassClient.GetState 
     }
 
+
     [Fact]
-    public void Events_PassesMappedEvents()
+    public async Task Events_PassesMappedEvents()
     {
         // Arrange
         var haContext = CreateTarget();
@@ -101,8 +108,12 @@ public class AppScopedHaContextProviderUsingClientTest
 
         haContext.Events.Subscribe(eventObserverMock.Object);
 
+        var eventTask = haContext.Events.WaitForEvent();
+
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
+
+        await eventTask.ConfigureAwait(false);
 
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
@@ -114,17 +125,21 @@ public class AppScopedHaContextProviderUsingClientTest
     }
 
     [Fact]
-    public void EventsAndFilter_ShowsOnlyMatchingEventsAsCorrectType()
+    public async Task EventsAndFilter_ShowsOnlyMatchingEventsAsCorrectType()
     {
         // Arrange
         var haContext = CreateTarget();
         Mock<IObserver<Event<TestEventData>>> typedEventObserverMock = new();
 
+        var eventTask = haContext.Events.WaitForEvent();
         haContext.Events.Filter<TestEventData>("test_event").Subscribe(typedEventObserverMock.Object);
 
-        // Act
+
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         _hassEventSubjectMock.OnNext(_sampleHassEvent with {EventType = "other_type"});
+
+        await eventTask.ConfigureAwait(false);
+
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
@@ -136,7 +151,7 @@ public class AppScopedHaContextProviderUsingClientTest
     }
 
     [Fact]
-    public void EventsStopAfterDispose()
+    public async Task EventsStopAfterDispose()
     {
         // Arrange
         var haContext = CreateTarget();
@@ -144,7 +159,12 @@ public class AppScopedHaContextProviderUsingClientTest
         haContext.Events.Subscribe(eventObserverMock.Object);
 
         // Act
-        _hassEventSubjectMock.OnNext(_sampleHassEvent);
+        await using var x = MockInvocationWaiter.Wait(
+            eventObserverMock,
+            m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+        {
+            _hassEventSubjectMock.OnNext(_sampleHassEvent);
+        }
 
         eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
 
@@ -159,7 +179,7 @@ public class AppScopedHaContextProviderUsingClientTest
     private IHaContext CreateTarget()
     {
         var serviceCollection = new ServiceCollection();
-
+        serviceCollection.AddLogging();
         serviceCollection.AddSingleton(_hassConnectionMock.Object);
         serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
 

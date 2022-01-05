@@ -7,9 +7,7 @@ namespace NetDaemon.Runtime;
 
 public static class HostBuilderExtensions
 {
-    private const string HassioConfigPath = "/data/options.json";
-
-    public static IHostBuilder UseNetDaemon(this IHostBuilder hostBuilder)
+    public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
     {
         return hostBuilder
             .UseAppScopedHaContext2()
@@ -21,7 +19,8 @@ public static class HostBuilderExtensions
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                 services.AddHostedService<RuntimeService>();
                 services.AddHomeAssistantClient();
-                services.AddAppModelDynamicCompliedAssembly();
+
+                services.AddSingleton<IRuntime, NetDaemonRuntime>();
             })
             .ConfigureAppConfiguration((ctx, config) =>
             {
