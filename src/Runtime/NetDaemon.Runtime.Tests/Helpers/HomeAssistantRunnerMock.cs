@@ -66,22 +66,38 @@ internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>
 internal class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
 {
     public Subject<HassEvent> HomeAssistantEventMock { get; }
-    private readonly Channel<HassConfig> _responseConfigMessageChannel = Channel.CreateBounded<HassConfig>(10);
 
     public HomeAssistantConnectionMock()
     {
         HomeAssistantEventMock = new();
-        Setup(n => n.SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>(
-            It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>())).Returns(
-            async (SimpleCommand _, CancellationToken _) =>
-                await _responseConfigMessageChannel.Reader.ReadAsync(CancellationToken.None));
         SetupGet(n => n.OnHomeAssistantEvent).Returns(HomeAssistantEventMock);
     }
 
-    internal void AddConfigResponseMessage(HassConfig config)
+    internal void AddStateChangeEvent(HassState oldState, HassState newState)
     {
-        _responseConfigMessageChannel.Writer.TryWrite(config);
+        var data = new HassStateChangedEventData
+        {
+            EntityId = newState.EntityId,
+            NewState = newState,
+            OldState = oldState
+        };
+
+        try
+        {
+            HomeAssistantEventMock.OnNext(
+                new HassEvent
+                {
+                    EventType = "state_changed",
+                    DataElement = data.ToJsonElement()
+                }
+            );
+        }
+        catch (Exception e)
+        {
+            System.Console.WriteLine(e.Message);
+        }
     }
+
 }
 
 internal class FakeOptions : IOptions<ApplicationLocationSetting>

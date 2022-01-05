@@ -8,6 +8,7 @@ using System.Linq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.Infrastructure.ObservableHelpers;
+using Microsoft.Extensions.Logging;
 
 namespace NetDaemon.HassModel.Internal.HassClient
 {
@@ -21,22 +22,25 @@ namespace NetDaemon.HassModel.Internal.HassClient
         private readonly EntityStateCache _entityStateCache;
         private readonly EntityAreaCache _entityAreaCache;
         private readonly IHassClient _hassClient;
+        private readonly ILogger<AppScopedHaContextProvider> _logger;
         private readonly ScopedObservable<HassEvent> _scopedEventObservable;
         private readonly ScopedObservable<HassStateChangedEventData> _scopedStateObservable;
 
         public AppScopedHaContextProvider(IObservable<HassEvent> hassEventObservable,
             EntityStateCache entityStateCache,
             EntityAreaCache entityAreaCache,
-            IHassClient hassClient)
+            IHassClient hassClient,
+            ILogger<AppScopedHaContextProvider> logger)
         {
             _entityStateCache = entityStateCache;
             _entityAreaCache = entityAreaCache;
             _hassClient = hassClient;
+            _logger = logger;
 
-            // Create ScopedObservables for this app
+            // Create ScopedObservables for app
             // This makes sure we will unsubscribe when this ContextProvider is Disposed
-            _scopedEventObservable = new ScopedObservable<HassEvent>(hassEventObservable);
-            _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges);
+            _scopedEventObservable = new ScopedObservable<HassEvent>(hassEventObservable, _logger);
+            _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges, _logger);
         }
 
         public EntityState? GetState(string entityId) => _entityStateCache.GetState(entityId).Map();

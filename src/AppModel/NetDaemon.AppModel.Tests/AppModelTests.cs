@@ -80,7 +80,6 @@ public class AppModelTests
             .Build();
         var appModel = builder.Services.GetService<IAppModel>();
 
-
         // ACT
         var loadApps = appModel!.LoadApplications();
 

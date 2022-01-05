@@ -33,6 +33,93 @@ public class TestRuntime
         timedCancellationSource.Cancel();
         await runnerTask.ConfigureAwait(false);
     }
+    // public ISetup<T> Setup(Expression<Action<T>> expression);
+    // public ISetup<T, TResult> Setup<TResult>(Expression<Func<T, TResult>> expression);
+
+    [Fact]
+    public async Task TestApplicationReactToNewEvents()
+    {
+        var timedCancellationSource = new CancellationTokenSource(5000);
+        var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
+
+        var invocationTask = haRunner.ClientMock.ConnectionMock.WaitForInvocation(n =>
+            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(
+                It.IsAny<CallServiceCommand>(),
+                It.IsAny<CancellationToken>()
+        ));
+
+        var hostBuilder = GetDefaultHostBuilder("Fixtures");
+        var host = hostBuilder.ConfigureServices((_, services) =>
+           services
+               .AddSingleton(haRunner.Object)
+               .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
+        ).Build();
+
+
+        var runnerTask = host.RunAsync();
+        while (!haRunner.ConnectMock.HasObservers) { await Task.Delay(10); }
+        haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
+        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
+        var instances = service?.ApplicationInstances;
+
+        haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
+            new HassState
+            {
+                EntityId = "binary_sensor.mypir",
+                State = "off"
+            },
+
+            new HassState
+            {
+                EntityId = "binary_sensor.mypir",
+                State = "on"
+            });
+
+        await invocationTask.ConfigureAwait(false);
+
+        haRunner.ClientMock.ConnectionMock.Verify(
+            n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        timedCancellationSource.Cancel();
+        await runnerTask.ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task TestApplicationReactToNewEventsAndThrowException()
+    {
+        var timedCancellationSource = new CancellationTokenSource(5000);
+        var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
+
+        var hostBuilder = GetDefaultHostBuilder("Fixtures");
+        var host = hostBuilder.ConfigureServices((_, services) =>
+           services
+               .AddSingleton(haRunner.Object)
+               .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
+        ).Build();
+
+
+        var runnerTask = host.RunAsync();
+        while (!haRunner.ConnectMock.HasObservers) { await Task.Delay(10); }
+        haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
+        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
+        var instances = service?.ApplicationInstances;
+
+        haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
+            new HassState
+            {
+                EntityId = "binary_sensor.mypir_creates_fault",
+                State = "off"
+            },
+
+            new HassState
+            {
+                EntityId = "binary_sensor.mypir_creates_fault",
+                State = "on"
+            });
+
+        timedCancellationSource.Cancel();
+        await runnerTask.ConfigureAwait(false);
+    }
 
     private static IHostBuilder GetDefaultHostBuilder(string path)
     {
