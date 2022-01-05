@@ -6,24 +6,23 @@ namespace NetDaemon.AppModel;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAppsFrom(this IServiceCollection services, Assembly assembly)
+    public static IServiceCollection AddAppsFromAssembly(this IServiceCollection services, Assembly assembly)
     {
+        // We make sure we only add AppModel services once
+        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
+            services.AddAppModel();
+
         services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
         return services;
     }
-
-    public static IServiceCollection AddAppModelLocalAssembly(this IServiceCollection services)
+    
+    public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
     {
-        services
-            .AddAppModel()
-            .AddAppsFrom(Assembly.GetCallingAssembly());
-        return services;
-    }
+        // We make sure we only add AppModel services once
+        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
+            services.AddAppModel();
 
-    public static IServiceCollection AddAppModelDynamicCompliedAssembly(this IServiceCollection services)
-    {
         services
-            .AddAppModel()
             .AddSingleton<CompilerFactory>()
             .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
             .AddSingleton<SyntaxTreeResolver>()
@@ -46,7 +45,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddAppTypeResolver(this IServiceCollection services)
+    private static IServiceCollection AddAppTypeResolver(this IServiceCollection services)
     {
         services
             .AddSingleton<AppTypeResolver>()

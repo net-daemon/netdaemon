@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -17,7 +18,8 @@ public class AssemblyResolverTests
     {
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelLocalAssembly();
+        // get apps from test project
+        serviceCollection.AddAppsFromAssembly(Assembly.GetCallingAssembly());
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();
@@ -60,7 +62,7 @@ public class AssemblyResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
 
@@ -104,8 +106,9 @@ public class AssemblyResolverTests
             );
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddAppModelLocalAssembly();
-        serviceCollection.AddAppModelDynamicCompliedAssembly();
+        // get apps from test project
+        serviceCollection.AddAppsFromAssembly(Assembly.GetCallingAssembly());
+        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
 

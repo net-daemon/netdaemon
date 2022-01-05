@@ -1,3 +1,4 @@
+using System.Reflection;
 using LocalApps;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -59,7 +60,8 @@ public class ConfigTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetCallingAssembly());
                 services.AddTransient<InjectMeWithConfigPlease>();
             })
             .ConfigureAppConfiguration((_, config) =>
@@ -84,7 +86,8 @@ public class ConfigTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetCallingAssembly());
                 services.AddTransient<InjectMeWithConfigPlease>();
             })
             .ConfigureAppConfiguration((_, config) =>
@@ -109,7 +112,8 @@ public class ConfigTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppModelLocalAssembly();
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
                 services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
                 services.AddSingleton(sp =>
                     new Converter<string, EntityClass>(s =>
@@ -127,8 +131,8 @@ public class ConfigTests
 
         // ACT
         var loadApps = appModel!.LoadApplications();
-        var appCtx = (ApplicationContext) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp) appCtx.Instance;
+        var appCtx = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp)appCtx.Instance;
         // CHECK
         loadApps.Should().HaveCount(3);
         app.Settings.Entity!.EntityId.Should().Be("light.test");
