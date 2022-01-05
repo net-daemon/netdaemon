@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
-
+using Microsoft.Extensions.Logging;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
@@ -22,6 +22,7 @@ namespace NetDaemon.HassModel.Internal.Client;
 internal class AppScopedHaContextProvider : IHaContext, IDisposable
 {
     private readonly IHomeAssistantApiManager _apiManager;
+    private readonly ILogger<IHaContext> _logger;
     private readonly EntityAreaCache _entityAreaCache;
     private readonly EntityStateCache _entityStateCache;
 
@@ -35,17 +36,20 @@ internal class AppScopedHaContextProvider : IHaContext, IDisposable
         EntityStateCache entityStateCache,
         EntityAreaCache entityAreaCache,
         IHomeAssistantRunner hassRunner,
-        IHomeAssistantApiManager apiManager)
+        IHomeAssistantApiManager apiManager,
+        ILogger<IHaContext> logger
+        )
     {
         _entityStateCache = entityStateCache;
         _entityAreaCache = entityAreaCache;
         _hassRunner = hassRunner;
         _apiManager = apiManager;
+        _logger = logger;
 
         // Create ScopedObservables for this app
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
-        _scopedEventObservable = new ScopedObservable<HassEvent>(hassEventObservable);
-        _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges);
+        _scopedEventObservable = new ScopedObservable<HassEvent>(hassEventObservable, _logger);
+        _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges, _logger);
     }
 
     public void Dispose()
@@ -81,7 +85,9 @@ internal class AppScopedHaContextProvider : IHaContext, IDisposable
         return _scopedStateObservable.Select(e => e.Map(this));
     }
 
-    public IObservable<Event> Events => _scopedEventObservable.Select(e => e.Map());
+    public IObservable<Event> Events => _scopedEventObservable
+        .Select(e => e.Map());
+
 
     public void SendEvent(string eventType, object? data = null)
     {

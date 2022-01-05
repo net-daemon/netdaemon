@@ -5,14 +5,17 @@ namespace NetDaemon.AppModel.Internal;
 internal class AppModelImpl : IAppModel
 {
     private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
+    private readonly ILogger<IAppModel> _logger;
     private readonly IServiceProvider _provider;
 
     public AppModelImpl(
         IEnumerable<IAppTypeResolver> appTypeResolvers,
+        ILogger<IAppModel> logger,
         IServiceProvider provider
     )
     {
         _appTypeResolvers = appTypeResolvers;
+        _logger = logger;
         _provider = provider;
     }
 
@@ -20,9 +23,6 @@ internal class AppModelImpl : IAppModel
     {
         return ValueTask.CompletedTask;
     }
-
-    // Maybe the AppModelImpl should keep the list of created apps internal instead of returning it, so this class is also responsible
-    // for disposing them
 
     public IReadOnlyCollection<IApplicationInstance> LoadApplications(
         IReadOnlyCollection<string>? skipLoadApplicationList = null)
@@ -36,9 +36,18 @@ internal class AppModelImpl : IAppModel
                 throw new InvalidOperationException("Type was not expected to be null");
             // Check if the app should be skipped before adding it
             if (!skipLoadApplicationList?.Contains(appType.FullName) ?? true)
-                result.Add(
-                    new ApplicationContext(id, appType, _provider)
-                );
+            {
+                try
+                {
+                    result.Add(
+                        new ApplicationContext(id, appType, _provider)
+                    );
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error loading app {id}", id);
+                }
+            }
         }
 
         return result;

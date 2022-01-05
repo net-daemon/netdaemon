@@ -142,7 +142,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             {
                 var msg = await _transportPipeline.GetNextMessageAsync<HassMessage>(_internalCancelSource.Token)
                     .ConfigureAwait(false);
-                _hassMessageSubject.OnNext(msg);
+                try
+                {
+                    _hassMessageSubject.OnNext(msg);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed processing new message from Home Assistant");
+                }
             }
         }
         catch (OperationCanceledException)
