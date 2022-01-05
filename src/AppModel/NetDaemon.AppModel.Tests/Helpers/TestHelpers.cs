@@ -5,7 +5,7 @@ namespace NetDaemon.AppModel.Tests.Helpers;
 
 public static class TestHelpers
 {
-    internal static IReadOnlyCollection<IApplicationInstance> GetLocalApplicationsFromYamlConfigPath(string path)
+    internal static async Task<IReadOnlyCollection<IApplication>> GetLocalApplicationsFromYamlConfigPath(string path)
     {
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
@@ -21,11 +21,11 @@ public static class TestHelpers
             })
             .Build();
         var appModel = builder.Services.GetService<IAppModel>();
-
-        return appModel!.LoadApplications();
+        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        return appModelContext.Applications;
     }
 
-    internal static IReadOnlyCollection<IApplicationInstance> GetDynamicApplicationsFromYamlConfigPath(string path)
+    internal static async Task<IReadOnlyCollection<IApplication>> GetDynamicApplicationsFromYamlConfigPath(string path)
     {
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
@@ -42,8 +42,8 @@ public static class TestHelpers
             })
             .Build();
         var appModel = builder.Services.GetService<IAppModel>();
-
-        return appModel!.LoadApplications();
+        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        return appModelContext.Applications;
     }
 
     internal static IAppModel GetAppModelFromLocalAssembly(string path)
