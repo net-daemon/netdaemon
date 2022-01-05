@@ -106,7 +106,7 @@ public class ConfigTests
     }
 
     [Fact]
-    public void TestAddYamlConfigWithTypeConverterGetsSettingsCorrectly2()
+    public async Task TestAddYamlConfigWithTypeConverterGetsSettingsCorrectly2()
     {
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
@@ -130,13 +130,13 @@ public class ConfigTests
         var appModel = builder.Services.GetService<IAppModel>();
 
         // ACT
-        var loadApps = appModel!.LoadApplications();
-        var appCtx = (ApplicationContext)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var app = (MyAppLocalApp)appCtx.Instance;
+        var loadApps = (await appModel!.InitializeAsync(CancellationToken.None)).Applications;
+        var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var app = (MyAppLocalApp?)application?.ApplicationContext?.Instance;
         // CHECK
         loadApps.Should().HaveCount(3);
-        app.Settings.Entity!.EntityId.Should().Be("light.test");
-        app.Settings.Entity!.ServiceProvider.Should().NotBeNull();
+        app!.Settings.Entity!.EntityId.Should().Be("light.test");
+        app!.Settings.Entity!.ServiceProvider.Should().NotBeNull();
     }
 
     private static IConfigurationRoot GetConfigurationRootForYaml(string path)
