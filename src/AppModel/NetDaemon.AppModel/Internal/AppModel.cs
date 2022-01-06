@@ -1,5 +1,5 @@
 using System.Reflection;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace NetDaemon.AppModel.Internal;
 
 internal class AppModelImpl : IAppModel
@@ -23,7 +23,8 @@ internal class AppModelImpl : IAppModel
 
     public Task<IAppModelContext> InitializeAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<IAppModelContext>(
-            ActivatorUtilities.CreateInstance<AppModelContext>(_provider));
+        return Task.FromResult(
+            _provider.GetRequiredService<IAppModelContext>()
+            );
     }
 }

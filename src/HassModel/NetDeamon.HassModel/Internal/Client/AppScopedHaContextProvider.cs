@@ -56,7 +56,8 @@ internal class AppScopedHaContextProvider : IHaContext, IDisposable
     {
         _scopedEventObservable.Dispose();
         _scopedStateObservable.Dispose();
-        _tokenSource.Cancel();
+        if (!_tokenSource.IsCancellationRequested)
+            _tokenSource.Cancel();
         _tokenSource.Dispose();
     }
 

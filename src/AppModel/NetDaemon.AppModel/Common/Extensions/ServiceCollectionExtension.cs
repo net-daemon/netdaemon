@@ -44,6 +44,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
             .AddSingleton<ConfigurationBinding>()
             .AddSingleton<IConfigurationBinding>(s => s.GetRequiredService<ConfigurationBinding>())
+            .AddTransient<AppModelContext>()
+            .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
             .AddAppTypeResolver()
             .AddScopedAppServices()
             .AddConfigManagement();

@@ -43,19 +43,19 @@ public class TestRuntime
         var timedCancellationSource = new CancellationTokenSource(5000);
         var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
 
-        var invocationTask = haRunner.ClientMock.ConnectionMock.WaitForInvocation(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(
-                It.IsAny<CallServiceCommand>(),
-                It.IsAny<CancellationToken>()
-        ));
-
         var hostBuilder = GetDefaultHostBuilder("Fixtures");
         var host = hostBuilder.ConfigureServices((_, services) =>
            services
                .AddSingleton(haRunner.Object)
                .AddAppsFromType(typeof(LocalApp))
+               .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
+        var invocationTask = haRunner.ClientMock.ConnectionMock.WaitForInvocation(n =>
+            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(
+                It.IsAny<CallServiceCommand>(),
+                It.IsAny<CancellationToken>()
+        ));
 
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) { await Task.Delay(10); }

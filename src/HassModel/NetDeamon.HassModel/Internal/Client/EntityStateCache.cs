@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
@@ -16,18 +17,18 @@ namespace NetDaemon.HassModel.Internal.Client;
 [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
 internal class EntityStateCache : IDisposable
 {
-    private readonly IDisposable _eventSubscription;
+    private IDisposable? _eventSubscription;
     private readonly IHomeAssistantRunner _hassRunner;
+    private readonly IServiceProvider _provider;
     private readonly Subject<HassStateChangedEventData> _innerSubject = new();
     private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
 
     private bool _initialized;
 
-    public EntityStateCache(IHomeAssistantRunner hassRunner, IObservable<HassEvent> events)
+    public EntityStateCache(IHomeAssistantRunner hassRunner, IServiceProvider provider)
     {
         _hassRunner = hassRunner;
-
-        _eventSubscription = events.Subscribe(HandleEvent);
+        _provider = provider;
     }
 
     public IEnumerable<string> AllEntityIds => _latestStates.Select(s => s.Key);
@@ -37,12 +38,15 @@ internal class EntityStateCache : IDisposable
     public void Dispose()
     {
         _innerSubject.Dispose();
-        _eventSubscription.Dispose();
+        _eventSubscription?.Dispose();
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException();
+
+        var events = _provider.GetRequiredService<IObservable<HassEvent>>();
+        _eventSubscription = events.Subscribe(HandleEvent);
 
         var hassStates = await _hassRunner.CurrentConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);
 
