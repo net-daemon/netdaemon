@@ -12,6 +12,7 @@ namespace NetDaemon.Common
     public abstract class ApplicationContext : IAsyncDisposable, IApplicationMetadata, IApplicationContext
     {
         private readonly IServiceScope? _serviceScope;
+        private bool _disposed;
 
         private Action? _configProvider;
 
@@ -152,12 +153,16 @@ namespace NetDaemon.Common
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
+            if (_disposed) return;
+            
+            _disposed = true;
+            
             if (ApplicationInstance is IAsyncDisposable asyncDisposable)
             {
                 await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             }
 
-            if (ApplicationInstance is IDisposable disposable)
+            else if (ApplicationInstance is IDisposable disposable)
             {
                 disposable.Dispose();
             }
