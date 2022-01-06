@@ -16,7 +16,6 @@ internal class NetDaemonRuntime : IRuntime
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
     private IHomeAssistantConnection? _connection;
-    private bool _hassModelIsInitialized;
 
     // These internals are used primarly for testing purposes
     internal IReadOnlyCollection<IApplication>? ApplicationInstances =>
@@ -65,9 +64,7 @@ internal class NetDaemonRuntime : IRuntime
         try
         {
             _logger.LogInformation("Successfully connected to Home Assistant");
-            if (!_hassModelIsInitialized)
-                await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
-            _hassModelIsInitialized = true;
+            await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
             _applicationModelContext =
                 await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
             foreach (var appInstance in _applicationModelContext.Applications)

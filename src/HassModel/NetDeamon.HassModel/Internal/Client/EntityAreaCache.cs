@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
@@ -11,28 +12,32 @@ namespace NetDaemon.HassModel.Internal.Client;
 
 internal class EntityAreaCache : IDisposable
 {
-    private readonly IDisposable _eventSubscription;
+    private IDisposable? _eventSubscription;
     private readonly IHomeAssistantRunner _hassRunner;
-
+    private readonly IServiceProvider _provider;
     private CancellationToken _cancellationToken;
     private bool _initialized;
     private Dictionary<string, HassArea> _latestAreas = new();
 
-    public EntityAreaCache(IHomeAssistantRunner hassRunner, IObservable<HassEvent> events)
+    public EntityAreaCache(IHomeAssistantRunner hassRunner, IServiceProvider provider)
     {
         _hassRunner = hassRunner;
+        _provider = provider;
 
-        _eventSubscription = events.Subscribe(HandleEvent);
     }
 
     public void Dispose()
     {
-        _eventSubscription.Dispose();
+        _eventSubscription?.Dispose();
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         _cancellationToken = cancellationToken;
+
+        var events = _provider.GetRequiredService<IObservable<HassEvent>>();
+        _eventSubscription = events.Subscribe(HandleEvent);
+
         await LoadAreas().ConfigureAwait(false);
 
         _initialized = true;

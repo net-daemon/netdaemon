@@ -11,6 +11,7 @@ using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Internal.Client;
 using NetDaemon.HassModel.Tests.TestHelpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
@@ -38,7 +39,11 @@ public class EntityStateCacheUsingClientTest
                 new() {EntityId = entityId, State = "InitialState"}
             });
 
-        using var cache = new EntityStateCache(haRunnerMock.Object, testSubject);
+        var serviceColletion = new ServiceCollection();
+        _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
+        var sp = serviceColletion.BuildServiceProvider();
+
+        using var cache = new EntityStateCache(haRunnerMock.Object, sp);
 
         var stateChangeObserverMock = new Mock<IObserver<HassStateChangedEventData>>();
         cache.StateAllChanges.Subscribe(stateChangeObserverMock.Object);
@@ -99,7 +104,11 @@ public class EntityStateCacheUsingClientTest
                 new() {EntityId = "sensor.sensor1", State = "InitialState"}
             });
 
-        using var cache = new EntityStateCache(haRunnerMock.Object, testSubject);
+        var serviceColletion = new ServiceCollection();
+        _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
+        var sp = serviceColletion.BuildServiceProvider();
+
+        using var cache = new EntityStateCache(haRunnerMock.Object, sp);
 
         var stateChangeObserverMock = new Mock<IObserver<HassStateChangedEventData>>();
         cache.StateAllChanges.Subscribe(stateChangeObserverMock.Object);

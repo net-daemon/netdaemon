@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -50,7 +51,10 @@ public class EntityAreaCacheUsingClientTests
                 new() {EntityId = "sensor.sensor1", AreaId = "AreaId"}
             });
 
-        using var cache = new EntityAreaCache(haRunnerMock.Object, testSubject);
+        var serviceColletion = new ServiceCollection();
+        _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
+
+        using var cache = new EntityAreaCache(haRunnerMock.Object, serviceColletion.BuildServiceProvider());
 
         // Act
         await cache.InitializeAsync(CancellationToken.None);
@@ -100,7 +104,10 @@ public class EntityAreaCacheUsingClientTests
                 new() {EntityId = "sensor.sensor1", AreaId = "AreaId"}
             });
 
-        using var cache = new EntityAreaCache(haRunnerMock.Object, testSubject);
+        var serviceColletion = new ServiceCollection();
+        _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
+
+        using var cache = new EntityAreaCache(haRunnerMock.Object, serviceColletion.BuildServiceProvider());
 
         // Act
         await cache.InitializeAsync(CancellationToken.None);
@@ -151,7 +158,9 @@ public class EntityAreaCacheUsingClientTests
                 new() {EntityId = "sensor.sensor1", DeviceId = "DeviceId", AreaId = "AreaId2"}
             });
 
-        using var cache = new EntityAreaCache(haRunnerMock.Object, testSubject);
+        var serviceColletion = new ServiceCollection();
+        _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
+        using var cache = new EntityAreaCache(haRunnerMock.Object, serviceColletion.BuildServiceProvider());
 
         // Act
         await cache.InitializeAsync(CancellationToken.None);
@@ -198,7 +207,11 @@ public class EntityAreaCacheUsingClientTests
                 new() {EntityId = "sensor.sensor1", AreaId = "AreaId"}
             });
 
-        using var cache = new EntityAreaCache(haRunnerMock.Object, testSubject);
+        var serviceColletion = new ServiceCollection();
+        _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
+        var sp = serviceColletion.BuildServiceProvider();
+
+        using var cache = new EntityAreaCache(haRunnerMock.Object, serviceColletion.BuildServiceProvider());
 
         // Act 1: Init
         await cache.InitializeAsync(CancellationToken.None);
