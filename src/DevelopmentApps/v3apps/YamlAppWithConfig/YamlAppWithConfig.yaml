@@ -1,5 +1,6 @@
 AppModelApps.MyConfig:
   SomeInt: 123456789
+  WhoCooks: input_select.who_cooks
   Notifications:
     -
       Title: Notification 1

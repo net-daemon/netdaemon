@@ -42,11 +42,10 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<AppModelImpl>()
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
-            .AddSingleton<ConfigurationBinding>()
-            .AddSingleton<IConfigurationBinding>(s => s.GetRequiredService<ConfigurationBinding>())
             .AddTransient<AppModelContext>()
             .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
             .AddAppTypeResolver()
+            .AddScopedConfigurationBinder()
             .AddScopedAppServices()
             .AddConfigManagement();
         return services;
@@ -57,6 +56,14 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<AppTypeResolver>()
             .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<AppTypeResolver>());
+        return services;
+    }
+
+    private static IServiceCollection AddScopedConfigurationBinder(this IServiceCollection services)
+    {
+        services
+            .AddScoped<ConfigurationBinding>()
+            .AddScoped<IConfigurationBinding>(s => s.GetRequiredService<ConfigurationBinding>());
         return services;
     }
 
