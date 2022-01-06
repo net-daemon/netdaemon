@@ -73,7 +73,7 @@ public class ConfigTests
             .Build();
 
         // ACT
-        var cfgClass = builder.Services.GetService<InjectMeWithConfigPlease>();
+        var cfgClass = builder.Services.CreateScope().ServiceProvider.GetService<InjectMeWithConfigPlease>();
 
         // CHECK
         cfgClass!.Settings.Value.AString.Should().Be("Hello test!");
@@ -88,7 +88,7 @@ public class ConfigTests
             {
                 // get apps from test project
                 services.AddAppsFromAssembly(Assembly.GetCallingAssembly());
-                services.AddTransient<InjectMeWithConfigPlease>();
+                services.AddScoped<InjectMeWithConfigPlease>();
             })
             .ConfigureAppConfiguration((_, config) =>
             {
@@ -98,8 +98,9 @@ public class ConfigTests
             })
             .Build();
 
+
         // ACT
-        var cfgClass = builder.Services.GetService<InjectMeWithConfigPlease>();
+        var cfgClass = builder.Services.CreateScope().ServiceProvider.GetService<InjectMeWithConfigPlease>();
 
         // CHECK
         cfgClass!.Settings.Value.AString.Should().Be("Hello test yaml!");
@@ -114,10 +115,8 @@ public class ConfigTests
             {
                 // get apps from test project
                 services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
-                services.AddSingleton<IInjectMePlease, InjectMeImplementation>();
-                services.AddSingleton(sp =>
-                    new Converter<string, EntityClass>(s =>
-                        ActivatorUtilities.CreateInstance<EntityClass>(sp, s)));
+                services.AddScoped<IInjectMePlease, InjectMeImplementation>();
+
             })
             .ConfigureAppConfiguration((_, config) =>
             {
@@ -127,7 +126,9 @@ public class ConfigTests
             })
             .Build();
 
-        var appModel = builder.Services.GetService<IAppModel>();
+        var scope = builder.Services.CreateScope();
+
+        var appModel = scope.ServiceProvider.GetService<IAppModel>();
 
         // ACT
         var loadApps = (await appModel!.InitializeAsync(CancellationToken.None)).Applications;
@@ -137,6 +138,9 @@ public class ConfigTests
         loadApps.Should().HaveCount(3);
         app!.Settings.Entity!.EntityId.Should().Be("light.test");
         app!.Settings.Entity!.ServiceProvider.Should().NotBeNull();
+        // Check special from derivied class
+        app!.Settings.Entity2!.EntityId.Should().Be("light.test2");
+        app!.Settings.Entity2!.ServiceProvider.Should().NotBeNull();
     }
 
     private static IConfigurationRoot GetConfigurationRootForYaml(string path)

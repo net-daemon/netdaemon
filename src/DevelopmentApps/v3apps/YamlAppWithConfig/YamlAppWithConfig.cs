@@ -11,6 +11,7 @@ public class AppWithYamlConfig
     private readonly MyConfig? _config;
     public AppWithYamlConfig(
         IHaContext ha,
+        ILogger<AppWithYamlConfig> logger,
         IAppConfig<MyConfig> config
     )
     {
@@ -25,6 +26,7 @@ public class AppWithYamlConfig
                     title = notification.Title
                 });
         }
+        logger.LogInformation("{who} cooks today!", _config?.WhoCooks?.State);
     }
 }
 
@@ -35,6 +37,33 @@ public record Notification
 }
 public record MyConfig
 {
+    public InputSelectEntity? WhoCooks { get; set; }
     public int SomeInt { get; set; }
     public IEnumerable<Notification>? Notifications { get; set; }
+}
+
+public record InputSelectEntity : NetDaemon.HassModel.Entities.Entity<InputSelectEntity, NetDaemon.HassModel.Entities.EntityState<InputSelectAttributes>, InputSelectAttributes>
+{
+    public InputSelectEntity(NetDaemon.HassModel.Common.IHaContext haContext, string entityId) : base(haContext, entityId)
+    {
+    }
+
+    public InputSelectEntity(NetDaemon.HassModel.Entities.Entity entity) : base(entity)
+    {
+    }
+}
+
+public record InputSelectAttributes
+{
+    [System.Text.Json.Serialization.JsonPropertyNameAttribute("editable")]
+    public bool? Editable { get; init; }
+
+    [System.Text.Json.Serialization.JsonPropertyNameAttribute("friendly_name")]
+    public string? FriendlyName { get; init; }
+
+    [System.Text.Json.Serialization.JsonPropertyNameAttribute("icon")]
+    public string? Icon { get; init; }
+
+    [System.Text.Json.Serialization.JsonPropertyNameAttribute("options")]
+    public object? Options { get; init; }
 }

@@ -339,15 +339,14 @@ internal class ConfigurationBinding : IConfigurationBinding
         // No standard converter is available so lets´s try find
         // a registered service that converts to the type from string
 
-        // Construct ´Converter<T, string>´
-        var genConverterEmptyType = typeof(Converter<,>);
-        Type[] typeArgs = { typeof(string), type };
-        var converterType = genConverterEmptyType.MakeGenericType(typeArgs);
-
-        if (_provider.GetService(converterType) is not Converter<string, object> conv)
-            return false;
-
-        result = conv(value);
+        try
+        {
+            result = ActivatorUtilities.CreateInstance(_provider, type, value);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException($"Failed to convert from string to type {type.FullName}, please check you have one string in constructor!", e);
+        }
 
         return true;
     }

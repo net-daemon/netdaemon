@@ -4,6 +4,7 @@ public class LocalTestSettings
 {
     public string AString { get; set; } = string.Empty;
     public EntityClass? Entity { get; set; } = null;
+    public DeriviedClass? Entity2 { get; set; } = null;
 }
 
 [NetDaemonApp]
@@ -26,7 +27,13 @@ public class InjectMeImplementation : IInjectMePlease
 {
     public string AmInjected => "ok I am hard coded, so what?";
 }
+public class DeriviedClass : EntityClass
+{
+    public DeriviedClass(IServiceProvider serviceProvider, string entityId) : base(serviceProvider, entityId)
+    {
 
+    }
+}
 public class EntityClass
 {
     public EntityClass(

@@ -1,3 +1,4 @@
 LocalApps.LocalTestSettings:
   AString: Hello world!
   Entity: light.test
+  Entity2: light.test2
