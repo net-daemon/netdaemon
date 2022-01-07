@@ -24,10 +24,10 @@ jobs:
           echo Current version:    $latest
           echo "::set-output name=version::$latest"
 
-      - name: 📆 Set version number
-        run: |
-          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}" \\' ${{github.workspace}}/Dockerfile
+      # - name: 📆 Set version number
+      #   run: |
+      #     sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+      #     sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}" \\' ${{github.workspace}}/Dockerfile
 
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -57,5 +57,5 @@ jobs:
             --compress \
             --tag netdaemon/netdaemon:latest \
             --tag netdaemon/netdaemon:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon:latest
+            --tag ghcr.io/net-daemon/netdaemon3:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon3:latest

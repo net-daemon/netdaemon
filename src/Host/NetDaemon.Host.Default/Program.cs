@@ -8,7 +8,6 @@ using NetDaemon.AppModel;
 try
 {
     await Host.CreateDefaultBuilder(args)
-        // .UseDefaultNetDaemonLogging()
         .UseNetDaemonRuntime()
         .ConfigureServices((_, services) =>
             services

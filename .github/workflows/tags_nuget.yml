@@ -28,15 +28,9 @@ jobs:
         with:
           dotnet-version: "6.0.x" # SDK Version
 
-      - name: 🔖 Set version number
-        run: |
-          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-      - name: 🎁 Pack DaemonRunner
-        run: dotnet pack src/DaemonRunner/DaemonRunner/DaemonRunner.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
-      - name: 🎁 Pack App
-        run: dotnet pack src/App/NetDaemon.App/NetDaemon.App.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
-      - name: 🎁 Pack Daemon
-        run: dotnet pack src/Daemon/NetDaemon.Daemon/NetDaemon.Daemon.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
+      # - name: 🔖 Set version number
+      #   run: |
+      #     sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}\";" ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
       - name: 🎁 Pack AppModel
         run: dotnet pack src/AppModel/NetDaemon.AppModel/NetDaemon.AppModel.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel
@@ -47,7 +41,5 @@ jobs:
         run: dotnet pack src/HassModel/NetDaemon.HassModel.CodeGenerator/NetDaemon.HassModel.CodeGenerator.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack scheduling extensions
         run: dotnet pack src/Extensions/NetDaemon.Extensions.Scheduling/NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
-      - name: 🎁 Pack Test
-        run: dotnet pack src/Fakes/NetDaemon.Fakes/NetDaemon.Fakes.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 📨 Push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true
