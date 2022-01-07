@@ -1,6 +1,6 @@
 using System.Reactive.Linq;
 using NetDaemon.AppModel;
-using NetDaemon.HassModel;
+using NetDaemon.HassModel.Common;
 
 namespace NetDaemon.Runtime.Internal;
 
@@ -13,6 +13,7 @@ internal class NetDaemonRuntime : IRuntime
     private readonly IHomeAssistantRunner _homeAssistantRunner;
 
     private readonly ILogger<RuntimeService> _logger;
+    private readonly ICacheManager _cacheManager;
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
     internal IHomeAssistantConnection? InternalConnection;
@@ -26,13 +27,15 @@ internal class NetDaemonRuntime : IRuntime
         IOptions<HomeAssistantSettings> settings,
         IAppModel appModel,
         IServiceProvider serviceProvider,
-        ILogger<RuntimeService> logger)
+        ILogger<RuntimeService> logger,
+        ICacheManager cacheManager)
     {
         _haSettings = settings.Value;
         _homeAssistantRunner = homeAssistantRunner;
         _appModel = appModel;
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _cacheManager = cacheManager;
     }
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -68,7 +71,7 @@ internal class NetDaemonRuntime : IRuntime
         {
             InternalConnection = haConnection;
             _logger.LogInformation("Successfully connected to Home Assistant");
-            await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
+            await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
             _applicationModelContext =
                 await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);

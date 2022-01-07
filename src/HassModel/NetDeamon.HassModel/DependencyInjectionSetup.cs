@@ -45,6 +45,7 @@ namespace NetDaemon.HassModel
             services.AddSingleton<Internal.Client.EntityStateCache>();
             services.AddSingleton<Internal.Client.EntityAreaCache>();
             services.AddScoped<Internal.Client.AppScopedHaContextProvider>();
+            services.AddTransient<ICacheManager, Internal.Client.CacheManager>();
             services.AddTransient<IHaContext>(s => s.GetRequiredService<Internal.Client.AppScopedHaContextProvider>());
         }
 
@@ -55,15 +56,6 @@ namespace NetDaemon.HassModel
         {
             await sp.GetRequiredService<Internal.HassClient.EntityAreaCache>().InitializeAsync().ConfigureAwait(false);
             await sp.GetRequiredService<Internal.HassClient.EntityStateCache>().InitializeAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Performs async initialization of the HassModel services using new client
-        /// </summary>
-        public static async Task InitializeAsync2(IServiceProvider sp, CancellationToken cancellationToken)
-        {
-            await sp.GetRequiredService<Internal.Client.EntityAreaCache>().InitializeAsync(cancellationToken).ConfigureAwait(false);
-            await sp.GetRequiredService<Internal.Client.EntityStateCache>().InitializeAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }
