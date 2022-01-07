@@ -70,7 +70,7 @@ if  [[ $is_custom_app_source == false ]]; then
     fi
     
     cd "${daemondir}"
-    exec dotnet Service.dll
+    exec dotnet NetDaemon.Host.Default.dll
 else 
     # We allow for custom projects and solutions to be used
     echo -e "\\033[32mRun the custom daemon at ${NETDAEMON__APPSOURCE}..\\033[0m" >&2

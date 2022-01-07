@@ -16,10 +16,10 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
-      - name: 📆 Set version number
-        run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "feature build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="feature" \\' ${{github.workspace}}/Dockerfile
+      # - name: 📆 Set version number
+      #   run: |
+      #     sed -i '/        private const string Version = /c\        private const string Version =  "feature build";' ${{github.workspace}}/src/DaemonRunner/DaemonRunner/Service/RunnerService.cs
+      #     sed -i '/    io.hass.version=/c\    io.hass.version="feature" \\' ${{github.workspace}}/Dockerfile
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: 🔧 Set up Docker Buildx
@@ -47,5 +47,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag "netdaemon/netdaemon:feature-${{ github.event.inputs.tag }}" \
-            --tag "ghcr.io/net-daemon/netdaemon:feature-${{ github.event.inputs.tag }}"
+            --tag "netdaemon/netdaemon3:feature-${{ github.event.inputs.tag }}" \
+            --tag "ghcr.io/net-daemon/netdaemon3:feature-${{ github.event.inputs.tag }}"
