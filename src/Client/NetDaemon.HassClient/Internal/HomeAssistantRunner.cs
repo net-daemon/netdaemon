@@ -26,7 +26,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
     private ILogger<IHomeAssistantRunner> _logger { get; }
     public IObservable<IHomeAssistantConnection> OnConnect => _onConnectSubject;
     public IObservable<DisconnectReason> OnDisconnect => _onDisconnectSubject;
-    public IHomeAssistantConnection? CurrentConnection { get; private set; }
+    public IHomeAssistantConnection? CurrentConnection { get; internal set; }
 
     public Task RunAsync(string host, int port, bool ssl, string token, TimeSpan timeout, CancellationToken cancelToken)
     {
