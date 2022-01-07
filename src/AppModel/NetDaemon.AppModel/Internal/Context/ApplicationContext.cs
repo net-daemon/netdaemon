@@ -1,9 +1,10 @@
 namespace NetDaemon.AppModel.Internal;
 
-internal class ApplicationContext :
+internal sealed class ApplicationContext :
     IApplicationContext
 {
     private readonly IServiceScope? _serviceScope;
+    private bool _isDisposed;
 
     public ApplicationContext(
         string id,
@@ -35,12 +36,16 @@ internal class ApplicationContext :
 
     public async ValueTask DisposeAsync()
     {
+        // prevent multiple Disposes because the Service Scope will also dispose this  
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
         if (Instance is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 
-        if (Instance is IDisposable disposable) disposable.Dispose();
+        else if (Instance is IDisposable disposable) disposable.Dispose();
 
         if (_serviceScope is IAsyncDisposable serviceScopeAsyncDisposable)
             await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
-        GC.SuppressFinalize(this);
     }
 }
