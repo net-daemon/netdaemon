@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
+using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Internal.Client;
 using NetDaemon.Runtime.Internal;
 using NetDaemon.Runtime.Tests.Helpers;
@@ -27,7 +28,8 @@ public class NetDaemonRuntimeTests
             new FakeHassSettingsOptions(),
             appModelMock.Object,
             serviceProviderMock.Object,
-            loggerMock.Object
+            loggerMock.Object,
+            Mock.Of<ICacheManager>()
         );
         var cancelSource = new CancellationTokenSource(5000);
         await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
@@ -75,7 +77,8 @@ public class NetDaemonRuntimeTests
             new FakeHassSettingsOptions(),
             appModelMock.Object,
             serviceProvider,
-            loggerMock.Object
+            loggerMock.Object,
+            Mock.Of<ICacheManager>()
         );
         await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
 
@@ -127,7 +130,8 @@ public class NetDaemonRuntimeTests
             new FakeHassSettingsOptions(),
             appModelMock.Object,
             serviceProvider,
-            loggerMock.Object
+            loggerMock.Object,
+            Mock.Of<ICacheManager>()
         );
         await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
 
