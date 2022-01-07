@@ -40,7 +40,7 @@ public class AppModelTests
 
         // check the application instance is init ok
         var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var instance = (MyAppLocalApp?)application?.ApplicationContext?.Instance;
+        var instance = (MyAppLocalApp?)application.ApplicationContext?.Instance;
         instance!.Settings.AString.Should().Be("Hello world!");
     }
 
@@ -91,15 +91,52 @@ public class AppModelTests
 
         // check the application instance is init ok
         var application = (Application)apps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        application!.State.Should().Be(ApplicationState.Disabled);
-        Assert.Null((MyAppLocalApp?)application?.ApplicationContext?.Instance);
+        application.State.Should().Be(ApplicationState.Disabled);
+        Assert.Null((MyAppLocalApp?)application.ApplicationContext?.Instance);
 
         // set state to enabled
-        await application!.SetStateAsync(ApplicationState.Enabled).ConfigureAwait(false);
-        application!.State.Should().Be(ApplicationState.Running);
-        Assert.NotNull((MyAppLocalApp?)application?.ApplicationContext?.Instance);
+        await application.SetStateAsync(ApplicationState.Enabled).ConfigureAwait(false);
+        application.State.Should().Be(ApplicationState.Running);
+        Assert.NotNull((MyAppLocalApp?)application.ApplicationContext?.Instance);
 
         fakeStateManager!.State.Should().Be(ApplicationState.Running);
+    }
+    
+    [Fact]
+    public async Task TestGetApplicationsLocalWithEnabled()
+    {
+        // ARRANGE
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
+            })
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                config.AddYamlAppConfig(
+                    Path.Combine(AppContext.BaseDirectory,
+                        "Fixtures/Local"));
+            })
+            .Build();
+
+        var appModel = builder.Services.GetService<IAppModel>();
+        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // ACT
+        var apps = appModelContext.Applications;
+
+        // CHECK
+
+        // check the application instance is init ok
+        var application = (Application)apps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        application.State.Should().Be(ApplicationState.Running);
+        Assert.NotNull((MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance);
+
+        // set state to enabled
+        await application.SetStateAsync(ApplicationState.Disabled).ConfigureAwait(false);
+        application.State.Should().Be(ApplicationState.Disabled);
+        Assert.Null((MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance);
     }
 
     [Fact]
@@ -140,7 +177,7 @@ public class AppModelTests
                 services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
                 services.AddTransient<IOptions<ApplicationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/LocalError")));
-                services.AddTransient(n => loggerMock.Object);
+                services.AddTransient(_ => loggerMock.Object);
             })
             .ConfigureAppConfiguration((_, config) =>
             {
@@ -181,10 +218,10 @@ public class AppModelTests
 
         // check the application instance is init ok
         var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
-        var app = (MyAppLocalAppWithDispose?)application?.ApplicationContext?.Instance;
-        application!.State.Should().Be(ApplicationState.Running);
-        await application!.DisposeAsync().ConfigureAwait(false);
+        var app = (MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance;
+        application.State.Should().Be(ApplicationState.Running);
+        await application.DisposeAsync().ConfigureAwait(false);
         app!.AsyncDisposeIsCalled.Should().BeTrue();
-        app!.DisposeIsCalled.Should().BeTrue();
+        app.DisposeIsCalled.Should().BeTrue();
     }
 }

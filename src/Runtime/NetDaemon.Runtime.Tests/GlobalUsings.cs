@@ -21,4 +21,7 @@ global using NetDaemon.Client.Internal.Extensions;
 global using NetDaemon.Client.Internal.HomeAssistant.Commands;
 global using NetDaemon.Client.Common.Settings;
 global using NetDaemon.Client.Common.HomeAssistant.Extensions;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("NetDaemon.Runtime.Tests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

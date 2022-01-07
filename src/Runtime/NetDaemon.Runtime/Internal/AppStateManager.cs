@@ -10,10 +10,6 @@ using NetDaemon.Client.Common.HomeAssistant.Extensions;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal interface IHandleHomeAssistantAppStateUpdates
-{
-    void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext);
-}
 internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates
 {
     private readonly IServiceProvider _provider;
@@ -117,7 +113,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     // Ignore if entity just created or deleted
                     return;
                 }
-                if (changedEvent.NewState == changedEvent.OldState)
+                if (changedEvent.NewState.State == changedEvent.OldState.State)
                 {
                     // We only care about changed state
                     return;

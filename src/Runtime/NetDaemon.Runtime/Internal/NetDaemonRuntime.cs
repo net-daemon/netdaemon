@@ -18,7 +18,7 @@ internal class NetDaemonRuntime : IRuntime
     private IHomeAssistantConnection? _connection;
 
     // These internals are used primarily for testing purposes
-    internal IReadOnlyCollection<IApplication>? ApplicationInstances =>
+    internal IReadOnlyCollection<IApplication> ApplicationInstances =>
         _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
     public NetDaemonRuntime(
@@ -78,7 +78,7 @@ internal class NetDaemonRuntime : IRuntime
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to intitialize apps");
+            _logger.LogError(e, "Failed to initialize apps");
             throw;
         }
     }

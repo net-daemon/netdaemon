@@ -159,8 +159,10 @@ public class AppScopedHaContextProviderTest
 
         // Act
         ((IDisposable) haContext).Dispose();
+        var eventTask = _hassEventSubjectMock.WaitForEvent();
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-
+        await eventTask.ConfigureAwait(false);
+        
         // Assert
         eventObserverMock.VerifyNoOtherCalls();
     }
