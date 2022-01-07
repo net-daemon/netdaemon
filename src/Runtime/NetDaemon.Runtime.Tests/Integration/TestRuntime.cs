@@ -18,9 +18,9 @@ public class TestRuntime
 
         var hostBuilder = GetDefaultHostBuilder("Fixtures");
         var host = hostBuilder.ConfigureServices((_, services) =>
-           services
-               .AddSingleton(haRunner.Object)
-               .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
+            services
+                .AddSingleton(haRunner.Object)
+                .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
         ).Build();
 
 
@@ -29,8 +29,8 @@ public class TestRuntime
         await haRunner.ConnectMock.WaitForObservers().ConfigureAwait(false);
 
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
-        var instances = service?.ApplicationInstances;
+        var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        var instances = service.ApplicationInstances;
 
         instances!.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
         timedCancellationSource.Cancel();
@@ -45,23 +45,22 @@ public class TestRuntime
 
         var hostBuilder = GetDefaultHostBuilder("Fixtures");
         var host = hostBuilder.ConfigureServices((_, services) =>
-           services
-               .AddSingleton(haRunner.Object)
-               .AddAppsFromType(typeof(LocalApp))
-               .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
+            services
+                .AddSingleton(haRunner.Object)
+                .AddAppsFromType(typeof(LocalApp))
+                .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
         var invocationTask = haRunner.ClientMock.ConnectionMock.WaitForInvocation(n =>
             n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(
                 It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()
-        ));
+            ));
 
         var runnerTask = host.RunAsync();
-        while (!haRunner.ConnectMock.HasObservers) { await Task.Delay(10); }
+        while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
-        var instances = service?.ApplicationInstances;
+        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState
@@ -69,7 +68,6 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir",
                 State = "off"
             },
-
             new HassState
             {
                 EntityId = "binary_sensor.mypir",
@@ -79,7 +77,8 @@ public class TestRuntime
         await invocationTask.ConfigureAwait(false);
 
         haRunner.ClientMock.ConnectionMock.Verify(
-            n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+            n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
+                It.IsAny<CancellationToken>()), Times.Once);
 
         timedCancellationSource.Cancel();
         await runnerTask.ConfigureAwait(false);
@@ -93,17 +92,16 @@ public class TestRuntime
 
         var hostBuilder = GetDefaultHostBuilder("Fixtures");
         var host = hostBuilder.ConfigureServices((_, services) =>
-           services
-               .AddSingleton(haRunner.Object)
-               .AddAppsFromType(typeof(LocalApp))
+            services
+                .AddSingleton(haRunner.Object)
+                .AddAppsFromType(typeof(LocalApp))
         ).Build();
 
 
         var runnerTask = host.RunAsync();
-        while (!haRunner.ConnectMock.HasObservers) { await Task.Delay(10); }
+        while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
-        var instances = service?.ApplicationInstances;
+        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState
@@ -111,7 +109,6 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir_creates_fault",
                 State = "off"
             },
-
             new HassState
             {
                 EntityId = "binary_sensor.mypir_creates_fault",
@@ -125,21 +122,21 @@ public class TestRuntime
     private static IHostBuilder GetDefaultHostBuilder(string path)
     {
         return Host.CreateDefaultBuilder()
-           .UseNetDaemonRuntime()
-           .ConfigureServices((_, services) =>
-           {
-               services.Configure<HostOptions>(hostOptions =>
-               {
-                   hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-               });
-               services.AddTransient<IOptions<ApplicationLocationSetting>>(
-                   _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
-           })
-           .ConfigureAppConfiguration((_, config) =>
-           {
-               config.AddYamlAppConfig(
-                   Path.Combine(AppContext.BaseDirectory,
-                       path));
-           });
+            .UseNetDaemonRuntime()
+            .ConfigureServices((_, services) =>
+            {
+                services.Configure<HostOptions>(hostOptions =>
+                {
+                    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+                });
+                services.AddTransient<IOptions<ApplicationLocationSetting>>(
+                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
+            })
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                config.AddYamlAppConfig(
+                    Path.Combine(AppContext.BaseDirectory,
+                        path));
+            });
     }
 }

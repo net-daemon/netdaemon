@@ -1,5 +1,3 @@
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 namespace NetDaemon.AppModel.Internal;
 
 internal class AppModelImpl : IAppModel

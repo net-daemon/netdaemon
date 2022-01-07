@@ -15,10 +15,10 @@ internal class NetDaemonRuntime : IRuntime
     private readonly ILogger<RuntimeService> _logger;
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
-    private IHomeAssistantConnection? _connection;
+    internal IHomeAssistantConnection? InternalConnection;
 
-    // These internals are used primarly for testing purposes
-    internal IReadOnlyCollection<IApplication>? ApplicationInstances =>
+    // These internals are used primarily for testing purposes
+    internal IReadOnlyCollection<IApplication> ApplicationInstances =>
         _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
     public NetDaemonRuntime(
@@ -66,6 +66,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         try
         {
+            InternalConnection = haConnection;
             _logger.LogInformation("Successfully connected to Home Assistant");
             await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
 
@@ -78,7 +79,7 @@ internal class NetDaemonRuntime : IRuntime
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to intitialize apps");
+            _logger.LogError(e, "Failed to initialize apps");
             throw;
         }
     }
@@ -87,7 +88,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds",
             TimeoutInSeconds, reason);
-        if (_connection is not null) _connection = null;
+        if (InternalConnection is not null) InternalConnection = null;
         await DisposeApplicationsAsync().ConfigureAwait(false);
     }
 
@@ -99,5 +100,10 @@ internal class NetDaemonRuntime : IRuntime
                 await applicationInstance.DisposeAsync().ConfigureAwait(false);
             _applicationModelContext = null;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeApplicationsAsync().ConfigureAwait(false);
     }
 }

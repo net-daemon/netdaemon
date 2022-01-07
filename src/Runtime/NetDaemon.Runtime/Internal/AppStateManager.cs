@@ -10,10 +10,6 @@ using NetDaemon.Client.Common.HomeAssistant.Extensions;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal interface IHandleHomeAssistantAppStateUpdates
-{
-    void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext);
-}
 internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates
 {
     private readonly IServiceProvider _provider;
@@ -47,8 +43,31 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
 
     public Task SaveStateAsync(string applicationId, ApplicationState state)
     {
+        // Since IHaContext is scoped and StateManager is singleton we get the
+        // IHaContext everytime we need to check state
+        using var scope = _provider.CreateScope();
+
+        var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
+        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+
+        switch (state)
+        {
+            case ApplicationState.Enabled:
+                haContext.SetEntityState(entityId, "on", new { app_state = "enabled" });
+                break;
+            case ApplicationState.Running:
+                haContext.SetEntityState(entityId, "on", new { app_state = "running" });
+                break;
+            case ApplicationState.Error:
+                haContext.SetEntityState(entityId, "on", new { app_state = "error" });
+                break;
+            case ApplicationState.Disabled:
+                haContext.SetEntityState(entityId, "off", new { app_state = "disabled" });
+                break;
+        }
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     ///     Converts any unicode string to a safe Home Assistant name
@@ -94,7 +113,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     // Ignore if entity just created or deleted
                     return;
                 }
-                if (changedEvent.NewState == changedEvent.OldState)
+                if (changedEvent.NewState.State == changedEvent.OldState.State)
                 {
                     // We only care about changed state
                     return;
@@ -104,7 +123,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ?? throw new InvalidOperationException());
                     if (entityId == changedEvent.NewState.EntityId)
                     {
-                        await app.SetState(
+                        await app.SetStateAsync(
                             changedEvent?.NewState?.State == "on" ?
                                 ApplicationState.Enabled : ApplicationState.Disabled
                         );

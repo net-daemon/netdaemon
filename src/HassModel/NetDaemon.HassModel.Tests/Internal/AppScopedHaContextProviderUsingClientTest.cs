@@ -37,7 +37,7 @@ public class AppScopedHaContextProviderUsingClientTest
         var haContext = CreateTarget();
 
         var target = ServiceTarget.FromEntity("domain.entity");
-        var data = new {Name = "value"};
+        var data = new { Name = "value" };
         haContext.CallService("domain", "service", target, data);
 
         var expectedCommand = new CallServiceCommand
@@ -110,8 +110,13 @@ public class AppScopedHaContextProviderUsingClientTest
 
         var eventTask = haContext.Events.WaitForEvent();
 
+        await using var x = MockInvocationWaiter.Wait(
+           eventObserverMock,
+           e => e.OnNext(It.IsAny<Event>()));
+        {
+            _hassEventSubjectMock.OnNext(_sampleHassEvent);
+        }
         // Act
-        _hassEventSubjectMock.OnNext(_sampleHassEvent);
 
         await eventTask.ConfigureAwait(false);
 
@@ -136,14 +141,14 @@ public class AppScopedHaContextProviderUsingClientTest
 
 
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        _hassEventSubjectMock.OnNext(_sampleHassEvent with {EventType = "other_type"});
+        _hassEventSubjectMock.OnNext(_sampleHassEvent with { EventType = "other_type" });
 
         await eventTask.ConfigureAwait(false);
 
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
-        var @event = (Event<TestEventData>) typedEventObserverMock.Invocations.Single().Arguments[0];
+        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.Single().Arguments[0];
 
         @event.Data!.command.Should().Be("flip");
         @event.Data!.endpoint_id.Should().Be(2);
@@ -169,7 +174,7 @@ public class AppScopedHaContextProviderUsingClientTest
         eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
 
         // Act
-        ((IDisposable) haContext).Dispose();
+        ((IDisposable)haContext).Dispose();
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
 
         // Assert
