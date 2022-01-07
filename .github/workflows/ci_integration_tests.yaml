@@ -1,15 +1,15 @@
 name: Integration tests with Home Assistant
-on:
-  pull_request:
-    branches:
-      - main
-      - dev
-  push:
-    branches:
-      - main
-      - dev
-  schedule:
-    - cron: "0 2 * * *" # run at 2 AM UTC
+# on:
+# pull_request:
+#   branches:
+#     - main
+#     - dev
+# push:
+#   branches:
+#     - main
+#     - dev
+# schedule:
+#   - cron: "0 2 * * *" # run at 2 AM UTC
 
 jobs:
   init:

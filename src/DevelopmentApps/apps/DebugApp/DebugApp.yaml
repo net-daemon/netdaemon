@@ -1,2 +1,0 @@
-debug_app:
-  class: NetDaemon.DevelopmentApps.apps.DebugApp.DebugApp

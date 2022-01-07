@@ -1,2 +1,0 @@
-InterfaceApp:
-  class: NetDaemon.DevelopmentApps.apps.DebugApp.InterfaceApp

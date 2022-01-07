@@ -1,6 +1,0 @@
-YamlEntitiesApp:
-  class: NetDaemon.DevelopmentApps.apps.YamlEntities.YamlEntitiesApp
-  TargetClimate: climate.dummy_thermostat
-  TempSensors:
-  - sensor.1
-  - sensor.2

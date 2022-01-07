@@ -1,5 +1,0 @@
-{
-    "log_level": "trace",
-    "app_source": "/config/netdaemon",
-    "generate_entities": true
-}
