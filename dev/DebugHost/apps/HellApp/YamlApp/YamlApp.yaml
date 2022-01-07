@@ -1,0 +1,2 @@
+Apps.TestConfig:
+    MySensor: sensor.test_sensor
