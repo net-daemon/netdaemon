@@ -38,5 +38,6 @@
         <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
         <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
         <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+        <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
     </ItemGroup>
 </Project>

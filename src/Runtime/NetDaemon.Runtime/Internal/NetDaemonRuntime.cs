@@ -38,7 +38,7 @@ internal class NetDaemonRuntime : IRuntime
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _homeAssistantRunner.OnConnect
-            .Select(async _ => await OnHomeAssistantClientConnected(stoppingToken).ConfigureAwait(false))
+            .Select(async c => await OnHomeAssistantClientConnected(c, stoppingToken).ConfigureAwait(false))
             .Subscribe();
         _homeAssistantRunner.OnDisconnect
             .Select(async s => await OnHomeAssistantClientDisconnected(s).ConfigureAwait(false))
@@ -59,16 +59,22 @@ internal class NetDaemonRuntime : IRuntime
         }
     }
 
-    private async Task OnHomeAssistantClientConnected(CancellationToken cancelToken)
+    private async Task OnHomeAssistantClientConnected(
+        IHomeAssistantConnection haConnection,
+        CancellationToken cancelToken
+        )
     {
         try
         {
             _logger.LogInformation("Successfully connected to Home Assistant");
             await DependencyInjectionSetup.InitializeAsync2(_serviceProvider, cancelToken).ConfigureAwait(false);
+
             _applicationModelContext =
                 await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
-            foreach (var appInstance in _applicationModelContext.Applications)
-                _logger.LogInformation("Successfully loaded app {id}", appInstance.Id);
+
+            // Handle state change for apps if registered
+            var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
+            appStateHandler?.Initialize(haConnection, _applicationModelContext);
         }
         catch (Exception e)
         {
