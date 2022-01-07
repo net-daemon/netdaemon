@@ -1,6 +1,0 @@
-
-app_full_name:
-    class: TheAppNameSpace.FullNameApp
-
-app_full_name2:
-    class: TheAppNameSpace2.FullNameApp
