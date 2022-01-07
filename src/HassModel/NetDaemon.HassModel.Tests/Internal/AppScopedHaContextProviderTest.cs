@@ -14,6 +14,7 @@ using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
+using Xunit.Sdk;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
@@ -121,14 +122,13 @@ public class AppScopedHaContextProviderTest
         var haContext = CreateTarget();
         Mock<IObserver<Event<TestEventData>>> typedEventObserverMock = new();
 
-        var eventTask = haContext.Events.WaitForEvent();
         haContext.Events.Filter<TestEventData>("test_event").Subscribe(typedEventObserverMock.Object);
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         _hassEventSubjectMock.OnNext(_sampleHassEvent with {EventType = "other_type"});
 
-        await eventTask.ConfigureAwait(false);
+        await Task.Yield(); // make sure other tasks run before we assert 
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);

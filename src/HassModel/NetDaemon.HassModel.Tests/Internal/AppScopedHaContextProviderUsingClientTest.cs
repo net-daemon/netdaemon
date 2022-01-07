@@ -136,14 +136,12 @@ public class AppScopedHaContextProviderUsingClientTest
         var haContext = await CreateTargetAsync();
         Mock<IObserver<Event<TestEventData>>> typedEventObserverMock = new();
 
-        var eventTask = haContext.Events.WaitForEvent();
         haContext.Events.Filter<TestEventData>("test_event").Subscribe(typedEventObserverMock.Object);
 
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         _hassEventSubjectMock.OnNext(_sampleHassEvent with { EventType = "other_type" });
 
-        await eventTask.ConfigureAwait(false);
-
+        await Task.Yield(); // make sure other tasks run before we assert 
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
