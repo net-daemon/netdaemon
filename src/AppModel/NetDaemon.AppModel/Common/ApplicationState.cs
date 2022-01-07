@@ -5,6 +5,20 @@ namespace NetDaemon.AppModel;
 /// </summary>
 public enum ApplicationState
 {
+    /// <summary>
+    ///     Application is enabled
+    /// </summary>
     Enabled,
-    Disabled
+    /// <summary>
+    ///     Application is disabled
+    /// </summary>
+    Disabled,
+    /// <summary>
+    ///     The application is in running state
+    /// </summary>
+    Running,
+    /// <summary>
+    ///     Application is in error state
+    /// </summary>
+    Error
 }

@@ -14,4 +14,10 @@ public interface IApplication : IAsyncDisposable
     ///     Current state of the application
     /// </summary>
     ApplicationState State { get; }
+
+    /// <summary>
+    ///     Sets state for application
+    /// </summary>
+    /// <param name="state">The state to set</param>
+    Task SetState(ApplicationState state);
 }

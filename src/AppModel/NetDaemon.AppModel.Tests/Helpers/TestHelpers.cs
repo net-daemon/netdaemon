@@ -45,24 +45,4 @@ public static class TestHelpers
         var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
         return appModelContext.Applications;
     }
-
-    internal static IAppModel GetAppModelFromLocalAssembly(string path)
-    {
-        var builder = Host.CreateDefaultBuilder()
-            .ConfigureServices((_, services) =>
-            {
-                // get apps from test project
-                services.AddAppsFromAssembly(Assembly.GetCallingAssembly());
-                services.AddTransient<IOptions<ApplicationLocationSetting>>(
-                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
-            })
-            .ConfigureAppConfiguration((_, config) =>
-            {
-                config.AddYamlAppConfig(
-                    Path.Combine(AppContext.BaseDirectory,
-                        path));
-            })
-            .Build();
-        return builder.Services.GetService<IAppModel>() ?? throw new InvalidOperationException();
-    }
 }

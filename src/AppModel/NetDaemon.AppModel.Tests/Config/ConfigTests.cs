@@ -135,7 +135,6 @@ public class ConfigTests
         var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
         var app = (MyAppLocalApp?)application?.ApplicationContext?.Instance;
         // CHECK
-        loadApps.Should().HaveCount(3);
         app!.Settings.Entity!.EntityId.Should().Be("light.test");
         app!.Settings.Entity!.ServiceProvider.Should().NotBeNull();
         // Check special from derivied class
