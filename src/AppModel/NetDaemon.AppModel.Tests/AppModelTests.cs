@@ -95,7 +95,7 @@ public class AppModelTests
         Assert.Null((MyAppLocalApp?)application?.ApplicationContext?.Instance);
 
         // set state to enabled
-        await application!.SetState(ApplicationState.Enabled).ConfigureAwait(false);
+        await application!.SetStateAsync(ApplicationState.Enabled).ConfigureAwait(false);
         application!.State.Should().Be(ApplicationState.Running);
         Assert.NotNull((MyAppLocalApp?)application?.ApplicationContext?.Instance);
 
@@ -124,7 +124,7 @@ public class AppModelTests
         var app = new Application("", typeof(object), loggerMock.Object, providerMock.Object);
 
         // CHECK
-        await Assert.ThrowsAsync<ArgumentException>(() => app.SetState(ApplicationState.Running));
+        await Assert.ThrowsAsync<ArgumentException>(() => app.SetStateAsync(ApplicationState.Running));
     }
 
     [Fact]

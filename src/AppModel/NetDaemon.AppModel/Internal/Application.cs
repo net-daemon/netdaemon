@@ -27,7 +27,7 @@ internal class Application : IApplication
 
     public async Task InitializeAsync()
     {
-        if (await ShouldInstanceApplication(Id).ConfigureAwait(false))
+        if (await ShouldInstanceApplicationAsync(Id).ConfigureAwait(false))
         {
             await InstanceApplication().ConfigureAwait(false);
         }
@@ -38,13 +38,13 @@ internal class Application : IApplication
         try
         {
             ApplicationContext = new ApplicationContext(Id, _applicationType, _provider);
-            await SaveStateIfStateManagerExist(ApplicationState.Running);
+            await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
             _logger.LogInformation("Successfully loaded app {id}", Id);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error loading app {id}", Id);
-            await SetState(ApplicationState.Error);
+            await SetStateAsync(ApplicationState.Error);
         }
     }
 
@@ -65,12 +65,15 @@ internal class Application : IApplication
         }
     }
 
-    public async Task SetState(ApplicationState state)
+    public async Task SetStateAsync(ApplicationState state)
     {
         switch (state)
         {
             case ApplicationState.Enabled:
-                await SaveStateIfStateManagerExist(state);
+                // first we save state "Enabled", this will also
+                // endup being state "Running" if instancing is successful
+                // or "Error" if instancing the app fails
+                await SaveStateIfStateManagerExistAsync(state);
                 if (ApplicationContext is null)
                     await InstanceApplication().ConfigureAwait(false);
                 break;
@@ -80,19 +83,19 @@ internal class Application : IApplication
                     await ApplicationContext.DisposeAsync().ConfigureAwait(false);
                     ApplicationContext = null;
                     _logger.LogInformation("Successfully unloaded app {id}", Id);
-                    await SaveStateIfStateManagerExist(state).ConfigureAwait(false);
+                    await SaveStateIfStateManagerExistAsync(state).ConfigureAwait(false);
                 }
                 break;
             case ApplicationState.Error:
                 _isErrorState = true;
-                await SaveStateIfStateManagerExist(state);
+                await SaveStateIfStateManagerExistAsync(state);
                 break;
             case ApplicationState.Running:
                 throw new ArgumentException("Running state can only be set internally", nameof(state));
         }
     }
 
-    private async Task SaveStateIfStateManagerExist(ApplicationState appState)
+    private async Task SaveStateIfStateManagerExistAsync(ApplicationState appState)
     {
         if (_appStateManager is not null)
             await _appStateManager.SaveStateAsync(Id, appState).ConfigureAwait(false);
@@ -103,7 +106,7 @@ internal class Application : IApplication
         if (ApplicationContext is not null) await ApplicationContext.DisposeAsync().ConfigureAwait(false);
     }
 
-    private async Task<bool> ShouldInstanceApplication(string id)
+    private async Task<bool> ShouldInstanceApplicationAsync(string id)
     {
         if (_appStateManager is null)
             return true;
