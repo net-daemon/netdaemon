@@ -1,9 +1,7 @@
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
-using NetDaemon.Runtime.Internal;
 
 namespace NetDaemon.Runtime.Tests.Internal;
 
@@ -15,7 +13,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -41,7 +39,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -67,7 +65,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -77,7 +75,7 @@ public class AppStateManagerTests
         // ACT
         // ASSERT
         haContextMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(
-            (EntityState?)null
+            (EntityState?) null
         );
         (await appStateManager.GetStateAsync("hellpapp"))
             .Should().Be(ApplicationState.Enabled);
@@ -91,7 +89,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -101,7 +99,7 @@ public class AppStateManagerTests
         haContextMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(
             new EntityState
             {
-                EntityId = "switch.helloapp",
+                EntityId = "switch.helloapp"
             });
         // ACT
         await appStateManager.SaveStateAsync("helloapp", ApplicationState.Enabled);
@@ -109,10 +107,11 @@ public class AppStateManagerTests
 
         haContextMock.Verify(n => n.CallService("netdaemon", "entity_update", null, It.IsAny<object?>()), Times.Once);
         var invocation = haContextMock.Invocations.First(n => n.Method.Name == "CallService").Arguments[3];
-        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should().Be("switch.netdaemon_helloapp");
+        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should()
+            .Be("switch.netdaemon_helloapp");
         invocation.GetType().GetProperty("state")!.GetValue(invocation, null)!.Should().Be("on");
-        var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null);
-        attributes!.GetType()!.GetProperty("app_state")!.GetValue(attributes!, null).Should().Be("enabled");
+        var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null)!;
+        attributes.GetType().GetProperty("app_state")!.GetValue(attributes, null).Should().Be("enabled");
     }
 
     [Fact]
@@ -121,7 +120,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -131,7 +130,7 @@ public class AppStateManagerTests
         haContextMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(
             new EntityState
             {
-                EntityId = "switch.helloapp",
+                EntityId = "switch.helloapp"
             });
         // ACT
         await appStateManager.SaveStateAsync("helloapp", ApplicationState.Running);
@@ -139,10 +138,11 @@ public class AppStateManagerTests
 
         haContextMock.Verify(n => n.CallService("netdaemon", "entity_update", null, It.IsAny<object?>()), Times.Once);
         var invocation = haContextMock.Invocations.First(n => n.Method.Name == "CallService").Arguments[3];
-        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should().Be("switch.netdaemon_helloapp");
+        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should()
+            .Be("switch.netdaemon_helloapp");
         invocation.GetType().GetProperty("state")!.GetValue(invocation, null)!.Should().Be("on");
-        var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null);
-        attributes!.GetType()!.GetProperty("app_state")!.GetValue(attributes!, null).Should().Be("running");
+        var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null)!;
+        attributes.GetType().GetProperty("app_state")!.GetValue(attributes, null).Should().Be("running");
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -161,7 +161,7 @@ public class AppStateManagerTests
         haContextMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(
             new EntityState
             {
-                EntityId = "switch.helloapp",
+                EntityId = "switch.helloapp"
             });
         // ACT
         await appStateManager.SaveStateAsync("helloapp", ApplicationState.Error);
@@ -169,10 +169,11 @@ public class AppStateManagerTests
 
         haContextMock.Verify(n => n.CallService("netdaemon", "entity_update", null, It.IsAny<object?>()), Times.Once);
         var invocation = haContextMock.Invocations.First(n => n.Method.Name == "CallService").Arguments[3];
-        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should().Be("switch.netdaemon_helloapp");
+        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should()
+            .Be("switch.netdaemon_helloapp");
         invocation.GetType().GetProperty("state")!.GetValue(invocation, null)!.Should().Be("on");
         var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null);
-        attributes!.GetType()!.GetProperty("app_state")!.GetValue(attributes!, null).Should().Be("error");
+        attributes?.GetType().GetProperty("app_state")!.GetValue(attributes, null).Should().Be("error");
     }
 
     [Fact]
@@ -181,7 +182,7 @@ public class AppStateManagerTests
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var provider = new ServiceCollection()
-            .AddScoped(n => haContextMock.Object)
+            .AddScoped(_ => haContextMock.Object)
             .AddNetDameonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -191,7 +192,7 @@ public class AppStateManagerTests
         haContextMock.Setup(n => n.GetState(It.IsAny<string>())).Returns(
             new EntityState
             {
-                EntityId = "switch.helloapp",
+                EntityId = "switch.helloapp"
             });
         // ACT
         await appStateManager.SaveStateAsync("helloapp", ApplicationState.Disabled);
@@ -199,9 +200,10 @@ public class AppStateManagerTests
 
         haContextMock.Verify(n => n.CallService("netdaemon", "entity_update", null, It.IsAny<object?>()), Times.Once);
         var invocation = haContextMock.Invocations.First(n => n.Method.Name == "CallService").Arguments[3];
-        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should().Be("switch.netdaemon_helloapp");
+        invocation.GetType().GetProperty("entity_id")!.GetValue(invocation, null)!.Should()
+            .Be("switch.netdaemon_helloapp");
         invocation.GetType().GetProperty("state")!.GetValue(invocation, null)!.Should().Be("off");
-        var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null);
-        attributes!.GetType()!.GetProperty("app_state")!.GetValue(attributes!, null).Should().Be("disabled");
+        var attributes = invocation.GetType().GetProperty("attributes")!.GetValue(invocation, null)!;
+        attributes.GetType().GetProperty("app_state")!.GetValue(attributes, null).Should().Be("disabled");
     }
 }

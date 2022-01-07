@@ -17,7 +17,7 @@ internal class NetDaemonRuntime : IRuntime
     private IAppModelContext? _applicationModelContext;
     private IHomeAssistantConnection? _connection;
 
-    // These internals are used primarly for testing purposes
+    // These internals are used primarily for testing purposes
     internal IReadOnlyCollection<IApplication>? ApplicationInstances =>
         _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
