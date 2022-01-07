@@ -14,17 +14,17 @@ internal class ApplicationContext :
         // Create a new ServiceScope for all objects we create for this app
         // this makes sure they will all be disposed along with the app
         _serviceScope = serviceProvider.CreateScope();
-        serviceProvider = _serviceScope.ServiceProvider;
+        var scopedProvider = _serviceScope.ServiceProvider;
 
         // This ApplicationContext needs to be resolvable from this scoped provider
         // The class ApplicationScope which is registered as scoped makes this possible
-        var appScope = serviceProvider.GetService<ApplicationScope>();
+        var appScope = scopedProvider.GetService<ApplicationScope>();
         if (appScope != null) appScope.ApplicationContext = this;
         Id = id;
         AppType = appType;
 
         // Now create the actual app from the new scope
-        Instance = ActivatorUtilities.CreateInstance(serviceProvider, appType);
+        Instance = ActivatorUtilities.CreateInstance(scopedProvider, appType);
     }
 
     public string Id { get; }

@@ -8,7 +8,6 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 
     private readonly IReadOnlyCollection<Type> _applicationTypes;
     private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
-    private readonly IAppStateManager? _appStateManager;
     private readonly ILogger<IAppModelContext> _logger;
     private readonly IServiceProvider _provider;
     private bool isDisposed;
@@ -22,7 +21,6 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
         _provider = provider;
         _appTypeResolvers = appTypeResolvers;
         // Can be missing so it is not injected in the constructor
-        _appStateManager = provider.GetService<IAppStateManager>();
         _applicationTypes = GetNetDaemonApplicationTypes();
     }
 

@@ -38,8 +38,8 @@ internal class Application : IApplication
         try
         {
             ApplicationContext = new ApplicationContext(Id, _applicationType, _provider);
-            if (_appStateManager is not null)
-                await _appStateManager.SaveStateAsync(Id, ApplicationState.Running).ConfigureAwait(false);
+            await SaveStateIfStateManagerExist(ApplicationState.Running);
+            _logger.LogInformation("Successfully loaded app {id}", Id);
         }
         catch (Exception e)
         {
@@ -67,12 +67,10 @@ internal class Application : IApplication
 
     public async Task SetState(ApplicationState state)
     {
-        if (_appStateManager is not null)
-            await _appStateManager.SaveStateAsync(Id, state).ConfigureAwait(false);
-
         switch (state)
         {
             case ApplicationState.Enabled:
+                await SaveStateIfStateManagerExist(state);
                 if (ApplicationContext is null)
                     await InstanceApplication().ConfigureAwait(false);
                 break;
@@ -81,14 +79,23 @@ internal class Application : IApplication
                 {
                     await ApplicationContext.DisposeAsync().ConfigureAwait(false);
                     ApplicationContext = null;
+                    _logger.LogInformation("Successfully unloaded app {id}", Id);
+                    await SaveStateIfStateManagerExist(state).ConfigureAwait(false);
                 }
                 break;
             case ApplicationState.Error:
                 _isErrorState = true;
+                await SaveStateIfStateManagerExist(state);
                 break;
             case ApplicationState.Running:
                 throw new ArgumentException("Running state can only be set internally", nameof(state));
         }
+    }
+
+    private async Task SaveStateIfStateManagerExist(ApplicationState appState)
+    {
+        if (_appStateManager is not null)
+            await _appStateManager.SaveStateAsync(Id, appState).ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()

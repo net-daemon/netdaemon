@@ -28,6 +28,27 @@ public static class IntegrationHaContextExtensions
             .Subscribe(e => callBack.Invoke(e.Data!.service_data));
     }
 
+    /// <summary>
+    ///     Set application state 
+    /// </summary>
+    /// <param name="haContext">IHaContext to use</param>
+    /// <param name="entityId">EntityId of the entity to create</param>
+    /// <param name="state">Entity state</param>
+    /// <param name="attributes">Entity attributes</param>
+    public static void SetEntityState(this IHaContext haContext, string entityId, string state, object? attributes = null)
+    {
+        ArgumentNullException.ThrowIfNull(haContext);
+        var currentState = haContext.GetState(entityId);
+        var service = currentState is null ? "entity_create" : "entity_update";
+        // We have an integration that will help persist 
+        haContext.CallService("netdaemon", service,
+                data: new
+                {
+                    entity_id = entityId,
+                    state,
+                    attributes
+                });
+    }
     private record HassServiceEventData<T>(string domain, string service, T service_data);
 }
 

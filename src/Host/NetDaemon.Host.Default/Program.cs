@@ -10,7 +10,10 @@ try
     await Host.CreateDefaultBuilder(args)
         // .UseDefaultNetDaemonLogging()
         .UseNetDaemonRuntime()
-        .ConfigureServices((_, services) => services.AddAppsFromSource()
+        .ConfigureServices((_, services) =>
+            services
+                .AddAppsFromSource()
+                .AddNetDameonStateManager()
         )
         .Build()
         .RunAsync()
