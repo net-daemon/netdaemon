@@ -2,12 +2,13 @@ using System.Reflection;
 
 namespace NetDaemon.AppModel.Internal;
 
-internal class AppModelContext : IAppModelContext
+internal class AppModelContext : IAppModelContext, IAsyncInitializable
 {
     private readonly List<Application> _applications = new();
 
     private readonly IReadOnlyCollection<Type> _applicationTypes;
     private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
+    private readonly IAppStateManager? _appStateManager;
     private readonly ILogger<IAppModelContext> _logger;
     private readonly IServiceProvider _provider;
     private bool isDisposed;
@@ -20,11 +21,16 @@ internal class AppModelContext : IAppModelContext
         _logger = logger;
         _provider = provider;
         _appTypeResolvers = appTypeResolvers;
+        // Can be missing so it is not injected in the constructor
+        _appStateManager = provider.GetService<IAppStateManager>();
         _applicationTypes = GetNetDaemonApplicationTypes();
-        LoadApplications();
     }
 
     public IReadOnlyCollection<IApplication> Applications => _applications;
+    public async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        await LoadApplications();
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -36,26 +42,16 @@ internal class AppModelContext : IAppModelContext
         isDisposed = true;
     }
 
-    private void LoadApplications()
+    private async Task LoadApplications()
     {
         foreach (var appType in _applicationTypes)
         {
             var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
-            // The app instance should be created with the Scoped ServiceProvider that is created by the ApplicationContext  
             var id = appAttribute?.Id ?? appType.FullName ??
                 throw new InvalidOperationException("Type was not expected to be null");
-            try
-            {
-                _applications.Add(
-                    new Application(id,
-                        new ApplicationContext(id, appType, _provider)
-                    )
-                );
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error loading app {id}", id);
-            }
+            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType);
+            await app.InitializeAsync().ConfigureAwait(false);
+            _applications.Add(app);
         }
     }
 

@@ -21,10 +21,11 @@ internal class AppModelImpl : IAppModel
             await CurrentContext.DisposeAsync().ConfigureAwait(false);
     }
 
-    public Task<IAppModelContext> InitializeAsync(CancellationToken cancellationToken)
+    public async Task<IAppModelContext> InitializeAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult(
-            _provider.GetRequiredService<IAppModelContext>()
-            );
+        var appModelContext = _provider.GetRequiredService<IAppModelContext>();
+        var initContext = (IAsyncInitializable)appModelContext;
+        await initContext.InitializeAsync(CancellationToken.None);
+        return appModelContext;
     }
 }
