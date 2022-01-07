@@ -15,7 +15,7 @@ internal class CacheManager : ICacheManager
         _entityStateCache = entityStateCache;
     }
 
-    public async Task Initialize(CancellationToken cancellationToken)
+    public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await _entityAreaCache.InitializeAsync(cancellationToken).ConfigureAwait(false);
         await _entityStateCache.InitializeAsync(cancellationToken).ConfigureAwait(false);

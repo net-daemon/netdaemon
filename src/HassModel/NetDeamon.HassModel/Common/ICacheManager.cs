@@ -13,5 +13,5 @@ public interface ICacheManager
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Initialize(CancellationToken cancellationToken);
+    Task InitializeAsync(CancellationToken cancellationToken);
 }
