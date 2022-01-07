@@ -1,7 +1,7 @@
 namespace LocalApps;
 
 [NetDaemonApp]
-public class MyAppLocalAppWithDispose : IAsyncDisposable, IDisposable
+public class MyAppLocalAppWithAsyncDispose : IAsyncDisposable, IDisposable
 {
     public bool AsyncDisposeIsCalled { get; private set; }
     public bool DisposeIsCalled { get; private set; }
@@ -12,6 +12,18 @@ public class MyAppLocalAppWithDispose : IAsyncDisposable, IDisposable
         GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;
     }
+
+    public void Dispose()
+    {
+        DisposeIsCalled = true;
+        GC.SuppressFinalize(this);
+    }
+}
+
+[NetDaemonApp]
+public class MyAppLocalAppWithDispose : IDisposable
+{
+    public bool DisposeIsCalled { get; private set; }
 
     public void Dispose()
     {

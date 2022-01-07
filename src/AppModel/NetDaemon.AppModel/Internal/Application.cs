@@ -5,14 +5,14 @@ internal class Application : IApplication
     private readonly IAppStateManager? _appStateManager;
     private readonly IServiceProvider _provider;
     private readonly Type _applicationType;
-    private readonly ILogger<IApplication> _logger;
+    private readonly ILogger<Application> _logger;
 
     private bool _isErrorState;
 
     public Application(
         string id,
         Type applicationType,
-        ILogger<IApplication> logger,
+        ILogger<Application> logger,
         IServiceProvider provider
     )
     {
@@ -37,7 +37,7 @@ internal class Application : IApplication
     {
         try
         {
-            ApplicationContext = new ApplicationContext(Id, _applicationType, _provider);
+            ApplicationContext = new ApplicationContext(_applicationType, _provider);
             await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
             _logger.LogInformation("Successfully loaded app {id}", Id);
         }

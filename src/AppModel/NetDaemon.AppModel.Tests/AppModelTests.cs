@@ -36,7 +36,7 @@ public class AppModelTests
         var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local").ConfigureAwait(false);
 
         // CHECK
-        loadApps.Should().HaveCount(4);
+        loadApps.Should().HaveCount(5);
 
         // check the application instance is init ok
         var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
@@ -155,7 +155,7 @@ public class AppModelTests
     public async Task TestSetStateToRunningShouldThrowException()
     {
         // ARRANGE
-        var loggerMock = new Mock<ILogger<IApplication>>();
+        var loggerMock = new Mock<ILogger<Application>>();
         var providerMock = new Mock<IServiceProvider>();
         // ACT
         var app = new Application("", typeof(object), loggerMock.Object, providerMock.Object);
@@ -167,7 +167,7 @@ public class AppModelTests
     [Fact]
     public async Task TestGetApplicationsShouldReturnNonErrorOnes()
     {
-        var loggerMock = new Mock<ILogger<IApplication>>();
+        var loggerMock = new Mock<ILogger<Application>>();
 
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
@@ -208,7 +208,7 @@ public class AppModelTests
     }
 
     [Fact]
-    public async Task TestGetApplicationsLocalWith()
+    public async Task TestGetApplicationsLocalWithDisposable()
     {
         // ARRANGE
         // ACT
@@ -221,7 +221,24 @@ public class AppModelTests
         var app = (MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance;
         application.State.Should().Be(ApplicationState.Running);
         await application.DisposeAsync().ConfigureAwait(false);
+        app!.DisposeIsCalled.Should().BeTrue();
+    }
+    
+    [Fact]
+    public async Task TestGetApplicationsLocalWithAsyncDisposable()
+    {
+        // ARRANGE
+        // ACT
+        var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local");
+
+        // CHECK
+
+        // check the application instance is init ok
+        var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithAsyncDispose");
+        var app = (MyAppLocalAppWithAsyncDispose?)application?.ApplicationContext?.Instance;
+        application!.State.Should().Be(ApplicationState.Running);
+        await application!.DisposeAsync().ConfigureAwait(false);
         app!.AsyncDisposeIsCalled.Should().BeTrue();
-        app.DisposeIsCalled.Should().BeTrue();
+        app.DisposeIsCalled.Should().BeFalse();
     }
 }
