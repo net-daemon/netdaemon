@@ -155,7 +155,7 @@ public class AppModelTests
     public async Task TestSetStateToRunningShouldThrowException()
     {
         // ARRANGE
-        var loggerMock = new Mock<ILogger<IApplication>>();
+        var loggerMock = new Mock<ILogger<Application>>();
         var providerMock = new Mock<IServiceProvider>();
         // ACT
         var app = new Application("", typeof(object), loggerMock.Object, providerMock.Object);
@@ -167,7 +167,7 @@ public class AppModelTests
     [Fact]
     public async Task TestGetApplicationsShouldReturnNonErrorOnes()
     {
-        var loggerMock = new Mock<ILogger<IApplication>>();
+        var loggerMock = new Mock<ILogger<Application>>();
 
         // ARRANGE
         var builder = Host.CreateDefaultBuilder()
