@@ -170,7 +170,7 @@ public class NetDaemonRuntimeTests
     {
         public FakeApplicationLocationSettingsOptions()
         {
-            Value = new AppConfigurationLocationSetting();
+            Value = new AppConfigurationLocationSetting() {ApplicationConfigurationFolder = "/test"};
         }
 
         public AppConfigurationLocationSetting Value { get; }

@@ -9,21 +9,17 @@ internal class NetDaemonRuntime : IRuntime
     private const string Version = "custom_compiled";
     private const int TimeoutInSeconds = 5;
     private readonly IAppModel _appModel;
+    private readonly ICacheManager _cacheManager;
 
     private readonly HomeAssistantSettings _haSettings;
     private readonly IHomeAssistantRunner _homeAssistantRunner;
     private readonly IOptions<AppConfigurationLocationSetting> _locationSettings;
-    private CancellationToken? _stoppingToken;
 
     private readonly ILogger<RuntimeService> _logger;
-    private readonly ICacheManager _cacheManager;
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
+    private CancellationToken? _stoppingToken;
     internal IHomeAssistantConnection? InternalConnection;
-
-    // These internals are used primarily for testing purposes
-    internal IReadOnlyCollection<IApplication> ApplicationInstances =>
-        _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
     public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
@@ -42,6 +38,10 @@ internal class NetDaemonRuntime : IRuntime
         _logger = logger;
         _cacheManager = cacheManager;
     }
+
+    // These internals are used primarily for testing purposes
+    internal IReadOnlyCollection<IApplication> ApplicationInstances =>
+        _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -70,21 +70,30 @@ internal class NetDaemonRuntime : IRuntime
         {
             // Ignore and just stop
         }
+
         _logger.LogInformation("Exiting NetDaemon runtime.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeApplicationsAsync().ConfigureAwait(false);
     }
 
     private async Task OnHomeAssistantClientConnected(
         IHomeAssistantConnection haConnection,
         CancellationToken cancelToken
-        )
+    )
     {
         try
         {
             InternalConnection = haConnection;
 
             _logger.LogInformation("Successfully connected to Home Assistant");
-            _logger.LogDebug("Loading applications from folder {path}",
-                Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+            if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
+                _logger.LogDebug("Loading applications from folder {path}.",
+                    Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+            else
+                _logger.LogDebug("Loading applications with no configuration folder");
 
             await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
@@ -121,10 +130,5 @@ internal class NetDaemonRuntime : IRuntime
                 await applicationInstance.DisposeAsync().ConfigureAwait(false);
             _applicationModelContext = null;
         }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeApplicationsAsync().ConfigureAwait(false);
     }
 }
