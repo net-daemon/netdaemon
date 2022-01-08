@@ -6,41 +6,41 @@ namespace NetDaemon.AppModel;
 
 public static class ConfigurationBuilderExtensions
 {
-    public static IConfigurationBuilder AddJsonAppConfig(this IConfigurationBuilder builder, string appPath)
+    public static IConfigurationBuilder AddJsonAppConfig(this IConfigurationBuilder builder, string appConfigPath)
     {
-        Directory.EnumerateFiles(appPath, "*.json", SearchOption.AllDirectories)
+        Directory.EnumerateFiles(appConfigPath, "*.json", SearchOption.AllDirectories)
             .ToList()
             .ForEach(x => builder.AddJsonFile(x, false, false));
         return builder;
     }
 
-    public static IConfigurationBuilder AddYamlAppConfig(this IConfigurationBuilder builder, string appPath)
+    public static IConfigurationBuilder AddYamlAppConfig(this IConfigurationBuilder builder, string appConfigPath)
     {
-        Directory.EnumerateFiles(appPath, "*.y*", SearchOption.AllDirectories)
+        Directory.EnumerateFiles(appConfigPath, "*.y*", SearchOption.AllDirectories)
             .ToList()
             .ForEach(x => builder.AddYamlFile(x, false, false));
         return builder;
     }
 
-    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional,
+    internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string filePath, bool optional,
         bool reloadOnChange)
     {
-        return AddYamlFile(builder, null, path, optional, reloadOnChange);
+        return AddYamlFile(builder, null, filePath, optional, reloadOnChange);
     }
 
     internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, IFileProvider? provider,
-        string path, bool optional, bool reloadOnChange)
+        string filePath, bool optional, bool reloadOnChange)
     {
-        if (provider == null && Path.IsPathRooted(path))
+        if (provider == null && Path.IsPathRooted(filePath))
         {
-            provider = new PhysicalFileProvider(Path.GetDirectoryName(path));
-            path = Path.GetFileName(path);
+            provider = new PhysicalFileProvider(Path.GetDirectoryName(filePath));
+            filePath = Path.GetFileName(filePath);
         }
 
         var source = new YamlConfigurationSource
         {
             FileProvider = provider,
-            Path = path,
+            Path = filePath,
             Optional = optional,
             ReloadOnChange = reloadOnChange
         };

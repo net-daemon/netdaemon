@@ -31,7 +31,7 @@ public static class TestHelpers
             .ConfigureServices((_, services) =>
             {
                 services.AddAppsFromSource();
-                services.AddTransient<IOptions<ApplicationLocationSetting>>(
+                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
             })
             .ConfigureAppConfiguration((_, config) =>

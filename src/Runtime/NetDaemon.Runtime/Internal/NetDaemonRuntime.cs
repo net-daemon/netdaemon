@@ -6,11 +6,14 @@ namespace NetDaemon.Runtime.Internal;
 
 internal class NetDaemonRuntime : IRuntime
 {
+    private const string Version = "custom_compiled";
     private const int TimeoutInSeconds = 5;
     private readonly IAppModel _appModel;
 
     private readonly HomeAssistantSettings _haSettings;
     private readonly IHomeAssistantRunner _homeAssistantRunner;
+    private readonly IOptions<AppConfigurationLocationSetting> _locationSettings;
+    private CancellationToken? _stoppingToken;
 
     private readonly ILogger<RuntimeService> _logger;
     private readonly ICacheManager _cacheManager;
@@ -25,6 +28,7 @@ internal class NetDaemonRuntime : IRuntime
     public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
+        IOptions<AppConfigurationLocationSetting> locationSettings,
         IAppModel appModel,
         IServiceProvider serviceProvider,
         ILogger<RuntimeService> logger,
@@ -32,6 +36,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         _haSettings = settings.Value;
         _homeAssistantRunner = homeAssistantRunner;
+        _locationSettings = locationSettings;
         _appModel = appModel;
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -40,6 +45,10 @@ internal class NetDaemonRuntime : IRuntime
 
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
+
+        _stoppingToken = stoppingToken;
+
         _homeAssistantRunner.OnConnect
             .Select(async c => await OnHomeAssistantClientConnected(c, stoppingToken).ConfigureAwait(false))
             .Subscribe();
@@ -53,6 +62,7 @@ internal class NetDaemonRuntime : IRuntime
                 _haSettings.Port,
                 _haSettings.Ssl,
                 _haSettings.Token,
+                _haSettings.WebsocketPath,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
                 stoppingToken).ConfigureAwait(false);
         }
@@ -60,6 +70,7 @@ internal class NetDaemonRuntime : IRuntime
         {
             // Ignore and just stop
         }
+        _logger.LogInformation("Exiting NetDaemon runtime.");
     }
 
     private async Task OnHomeAssistantClientConnected(
@@ -70,7 +81,11 @@ internal class NetDaemonRuntime : IRuntime
         try
         {
             InternalConnection = haConnection;
+
             _logger.LogInformation("Successfully connected to Home Assistant");
+            _logger.LogDebug("Loading applications from folder {path}",
+                Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+
             await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
             _applicationModelContext =
@@ -89,8 +104,11 @@ internal class NetDaemonRuntime : IRuntime
 
     private async Task OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
-        _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds",
-            TimeoutInSeconds, reason);
+        if (_stoppingToken?.IsCancellationRequested ?? false)
+            _logger.LogInformation("HassClient disconnected cause of user stopping.");
+        else
+            _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds",
+                reason.ToString(), TimeoutInSeconds);
         if (InternalConnection is not null) InternalConnection = null;
         await DisposeApplicationsAsync().ConfigureAwait(false);
     }

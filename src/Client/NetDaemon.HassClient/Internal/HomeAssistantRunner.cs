@@ -23,19 +23,28 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         _logger = logger;
     }
 
-    private ILogger<IHomeAssistantRunner> _logger { get; }
+    private readonly ILogger<IHomeAssistantRunner> _logger;
     public IObservable<IHomeAssistantConnection> OnConnect => _onConnectSubject;
     public IObservable<DisconnectReason> OnDisconnect => _onDisconnectSubject;
     public IHomeAssistantConnection? CurrentConnection { get; internal set; }
 
-    public Task RunAsync(string host, int port, bool ssl, string token, TimeSpan timeout, CancellationToken cancelToken)
+    public Task RunAsync(string host, int port, bool ssl, string token, TimeSpan timeout,
+        CancellationToken cancelToken)
     {
-        _runTask = InternalRunAsync(host, port, ssl, token, timeout, cancelToken);
+        return RunAsync(host, port, ssl, token, HomeAssistantSettings.DefaultWebSocketPath, timeout, cancelToken);
+    }
+    public Task RunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout, CancellationToken cancelToken)
+    {
+        _runTask = InternalRunAsync(host, port, ssl, token, websocketPath, timeout, cancelToken);
         return _runTask;
     }
 
+    private bool is_disposed = false;
     public async ValueTask DisposeAsync()
     {
+        if (!is_disposed)
+            return;
+
         _internalTokenSource.Cancel();
         if (_runTask?.IsCompleted == false)
             try
@@ -53,9 +62,10 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         _onConnectSubject.Dispose();
         _onDisconnectSubject.Dispose();
         _internalTokenSource.Dispose();
+        is_disposed = true;
     }
 
-    private async Task InternalRunAsync(string host, int port, bool ssl, string token, TimeSpan timeout,
+    private async Task InternalRunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout,
         CancellationToken cancelToken)
     {
         var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalTokenSource.Token, cancelToken);
@@ -71,7 +81,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
 
             try
             {
-                CurrentConnection = await _client.ConnectAsync(host, port, ssl, token, combinedToken.Token)
+                CurrentConnection = await _client.ConnectAsync(host, port, ssl, token, websocketPath, combinedToken.Token)
                     .ConfigureAwait(false);
                 // Start the event processing before publish the connection
                 var eventsTask = CurrentConnection.ProcessHomeAssistantEventsAsync(combinedToken.Token);
@@ -106,7 +116,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             catch (Exception e)
             {
-                _logger.LogError("Error running HassClient", e);
+                _logger.LogError(e,"Error running HassClient");
                 _onDisconnectSubject.OnNext(DisconnectReason.Error);
             }
             finally

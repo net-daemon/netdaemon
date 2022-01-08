@@ -26,21 +26,15 @@ COPY ./src /usr/src
 RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.csproj -o "/daemon"
 
 # Final stage, create the runtime container
-FROM ghcr.io/net-daemon/netdaemon_base:latest
+FROM ghcr.io/net-daemon/netdaemon_base
 
-# Install S6 and the Admin site
-RUN apt update && apt install -y \
-    nodejs \
-    yarn \
-    jq \
-    make
-
-COPY ./Docker/rootfs/etc /etc
-
+# # Install S6 and the Admin site
+# COPY ./Docker/rootfs/etc/services.d/NetDaemonAdmin /etc/services.d/NetDaemonAdmin
+COPY ./Docker/rootfs/etc/services.d/NetDaemonApp /etc/services.d/NetDaemonApp
 
 # COPY admin
-COPY --from=builder /admin /admin
+# COPY --from=builder /admin /admin
 COPY --from=netbuilder /daemon /daemon
 
-#   NETDAEMON__WARN_IF_CUSTOM_APP_SOURCE=
+ENV NETDAEMON__APPLICATION_CONFIGURATION_FOLDER=/data
 

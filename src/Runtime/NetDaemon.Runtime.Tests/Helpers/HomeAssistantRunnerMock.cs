@@ -100,12 +100,12 @@ internal class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
 
 }
 
-internal class FakeOptions : IOptions<ApplicationLocationSetting>
+internal class FakeOptions : IOptions<AppConfigurationLocationSetting>
 {
     public FakeOptions(string path)
     {
-        Value = new ApplicationLocationSetting { ApplicationFolder = path };
+        Value = new AppConfigurationLocationSetting { ApplicationConfigurationFolder = path };
     }
 
-    public ApplicationLocationSetting Value { get; init; }
+    public AppConfigurationLocationSetting Value { get; init; }
 }

@@ -122,6 +122,7 @@ public class TestRuntime
     private static IHostBuilder GetDefaultHostBuilder(string path)
     {
         return Host.CreateDefaultBuilder()
+            .UseNetDaemonAppSettings()
             .UseNetDaemonRuntime()
             .ConfigureServices((_, services) =>
             {
@@ -129,7 +130,7 @@ public class TestRuntime
                 {
                     hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
                 });
-                services.AddTransient<IOptions<ApplicationLocationSetting>>(
+                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
             })
             .ConfigureAppConfiguration((_, config) =>

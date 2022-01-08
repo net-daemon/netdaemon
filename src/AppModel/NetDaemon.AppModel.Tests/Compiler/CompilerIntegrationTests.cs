@@ -11,10 +11,10 @@ public class CompilerIntegrationTests
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddAppsFromSource();
-        serviceCollection.AddOptions<ApplicationLocationSetting>()
+        serviceCollection.AddOptions<AppConfigurationLocationSetting>()
             .Configure(options =>
             {
-                options.ApplicationFolder = Path.Combine(AppContext.BaseDirectory, "Compiler", "Fixtures");
+                options.ApplicationConfigurationFolder = Path.Combine(AppContext.BaseDirectory, "Compiler", "Fixtures");
             });
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();

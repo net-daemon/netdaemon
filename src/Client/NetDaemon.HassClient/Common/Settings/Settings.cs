@@ -24,4 +24,8 @@ public class HomeAssistantSettings
     ///     Token to authorize
     /// </summary>
     public string Token { get; set; } = "";
+
+    public string WebsocketPath { get; set; } = DefaultWebSocketPath;
+
+    internal const string DefaultWebSocketPath = "api/websocket";
 }
