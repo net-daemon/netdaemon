@@ -29,7 +29,7 @@ public class TestRuntime
         await haRunner.ConnectMock.WaitForObservers().ConfigureAwait(false);
 
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
         var instances = service.ApplicationInstances;
 
         instances!.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
@@ -60,7 +60,7 @@ public class TestRuntime
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        _ = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState
@@ -97,11 +97,10 @@ public class TestRuntime
                 .AddAppsFromType(typeof(LocalApp))
         ).Build();
 
-
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        _ = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState
@@ -122,6 +121,7 @@ public class TestRuntime
     private static IHostBuilder GetDefaultHostBuilder(string path)
     {
         return Host.CreateDefaultBuilder()
+            .UseNetDaemonAppSettings()
             .UseNetDaemonRuntime()
             .ConfigureServices((_, services) =>
             {
@@ -129,7 +129,7 @@ public class TestRuntime
                 {
                     hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
                 });
-                services.AddTransient<IOptions<ApplicationLocationSetting>>(
+                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
             })
             .ConfigureAppConfiguration((_, config) =>

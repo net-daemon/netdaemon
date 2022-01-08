@@ -28,4 +28,16 @@ public interface IHomeAssistantRunner : IAsyncDisposable
     /// <param name="timeout">Wait time between connects</param>
     /// <param name="cancelToken">Cancel token</param>
     Task RunAsync(string host, int port, bool ssl, string token, TimeSpan timeout, CancellationToken cancelToken);
+    
+    /// <summary>
+    ///     Maintains a connection to the Home Assistant server
+    /// </summary>
+    /// <param name="host">Host of Home Assistant instance</param>
+    /// <param name="port">Port of Home Assistant instance</param>
+    /// <param name="ssl">Use ssl</param>
+    /// <param name="token">Home Assistant secret token</param>
+    /// <param name="websocketPath">The releative path to home assistant websocket endpoint</param>
+    /// <param name="timeout">Wait time between connects</param>
+    /// <param name="cancelToken">Cancel token</param>
+    Task RunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout, CancellationToken cancelToken);
 }

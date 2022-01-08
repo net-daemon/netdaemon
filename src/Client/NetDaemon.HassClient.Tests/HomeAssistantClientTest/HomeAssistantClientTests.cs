@@ -34,7 +34,7 @@ public class HomeAssistantClientTests
     {
         var client = GetDefaultConnectOkHomeAssistantClient();
 
-        var connection = await client.ConnectAsync("host", 1, true, "token", CancellationToken.None)
+        var connection = await client.ConnectAsync("host", 1, true, "token", "path", CancellationToken.None)
             .ConfigureAwait(false);
 
         connection.Should().NotBeNull();
@@ -53,7 +53,7 @@ public class HomeAssistantClientTests
         );
 
         await Assert.ThrowsAsync<HomeAssistantConnectionException>(async () =>
-            await client.ConnectAsync("host", 1, true, "token", CancellationToken.None).ConfigureAwait(false));
+            await client.ConnectAsync("host", 1, true, "token", "path", CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]

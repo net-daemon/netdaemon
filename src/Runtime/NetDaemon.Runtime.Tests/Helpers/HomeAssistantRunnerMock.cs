@@ -22,9 +22,13 @@ internal class HomeAssistantRunnerMock : Mock<IHomeAssistantRunner>
             It.IsAny<int>(),
             It.IsAny<bool>(),
             It.IsAny<string>(),
+            It.IsAny<string>(),
             It.IsAny<TimeSpan>(),
             It.IsAny<CancellationToken>())).Returns(
-                async () => { await Task.Delay(-1, cancelToken); }
+            async () =>
+            {
+                await Task.Delay(-1, cancelToken);
+            }
             );
     }
 }
@@ -100,12 +104,12 @@ internal class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
 
 }
 
-internal class FakeOptions : IOptions<ApplicationLocationSetting>
+internal class FakeOptions : IOptions<AppConfigurationLocationSetting>
 {
     public FakeOptions(string path)
     {
-        Value = new ApplicationLocationSetting { ApplicationFolder = path };
+        Value = new AppConfigurationLocationSetting { ApplicationConfigurationFolder = path };
     }
 
-    public ApplicationLocationSetting Value { get; init; }
+    public AppConfigurationLocationSetting Value { get; init; }
 }

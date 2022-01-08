@@ -175,7 +175,7 @@ public class AppModelTests
             {
                 // get apps from test project
                 services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
-                services.AddTransient<IOptions<ApplicationLocationSetting>>(
+                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/LocalError")));
                 services.AddTransient(_ => loggerMock.Object);
             })

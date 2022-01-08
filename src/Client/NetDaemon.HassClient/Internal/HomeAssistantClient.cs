@@ -20,11 +20,18 @@ internal class HomeAssistantClient : IHomeAssistantClient
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IHomeAssistantConnection> ConnectAsync(string host, int port, bool ssl, string token,
+    public Task<IHomeAssistantConnection> ConnectAsync(string host, int port, bool ssl, string token,
         CancellationToken cancelToken)
     {
-        var websocketUri = GetHomeAssistantWebSocketUri(host, port, ssl);
+        return ConnectAsync(host, port, ssl, token, HomeAssistantSettings.DefaultWebSocketPath, cancelToken);
+    }
 
+    public async Task<IHomeAssistantConnection> ConnectAsync(string host, int port, bool ssl, string token,
+        string websocketPath,
+        CancellationToken cancelToken)
+    {
+        var websocketUri = GetHomeAssistantWebSocketUri(host, port, ssl, websocketPath);
+        _logger.LogInformation("Connecting to Home Assistant websocket on {path}", websocketUri);
         var ws = _webSocketClientFactory.New();
 
         try
@@ -48,14 +55,14 @@ internal class HomeAssistantClient : IHomeAssistantClient
         }
         catch (Exception e)
         {
-            _logger.LogDebug("Error connecting to Home Assistant", e);
+            _logger.LogDebug(e, "Error connecting to Home Assistant");
             throw;
         }
     }
 
-    private static Uri GetHomeAssistantWebSocketUri(string host, int port, bool ssl)
+    private static Uri GetHomeAssistantWebSocketUri(string host, int port, bool ssl, string websocketPath)
     {
-        return new Uri($"{(ssl ? "wss" : "ws")}://{host}:{port}/api/websocket");
+        return new Uri($"{(ssl ? "wss" : "ws")}://{host}:{port}/{websocketPath}");
     }
 
     private static async Task<bool> CheckIfRunning(IHomeAssistantConnection connection, CancellationToken cancelToken)

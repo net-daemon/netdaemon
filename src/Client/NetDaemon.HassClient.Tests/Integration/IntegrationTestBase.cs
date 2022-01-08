@@ -52,6 +52,7 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
             settings.Port,
             settings.Ssl,
             settings.Token,
+            settings.WebsocketPath,
             TokenSource.Token
         ).ConfigureAwait(false);
 

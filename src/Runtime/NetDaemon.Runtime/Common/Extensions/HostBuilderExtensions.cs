@@ -7,20 +7,13 @@ namespace NetDaemon.Runtime;
 
 public static class HostBuilderExtensions
 {
-    public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
+    public static IHostBuilder UseNetDaemonAppSettings(this IHostBuilder hostBuilder)
     {
         return hostBuilder
-            .UseAppScopedHaContext2()
             .ConfigureServices((context, services) =>
             {
-                services.AddLogging();
-                services.Configure<ApplicationLocationSetting>(context.Configuration.GetSection("NetDaemon"));
-
+                services.Configure<AppConfigurationLocationSetting>(context.Configuration.GetSection("NetDaemon"));
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                services.AddHostedService<RuntimeService>();
-                services.AddHomeAssistantClient();
-
-                services.AddSingleton<IRuntime, NetDaemonRuntime>();
             })
             .ConfigureAppConfiguration((ctx, config) =>
             {
@@ -29,9 +22,23 @@ public static class HostBuilderExtensions
                 config.AddJsonFile($"appsettings.{ctx.HostingEnvironment.EnvironmentName}.json", true);
                 config.AddEnvironmentVariables();
                 var c = config.Build();
-                var locationSetting = c.GetSection("NetDaemon").Get<ApplicationLocationSetting>();
+                var locationSetting = c.GetSection("NetDaemon").Get<AppConfigurationLocationSetting>();
                 config.AddYamlAppConfig(
-                    locationSetting.ApplicationFolder);
+                    locationSetting.ApplicationConfigurationFolder);
+            });
+    }
+
+    public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
+    {
+        return hostBuilder
+            .UseAppScopedHaContext2()
+            .ConfigureServices((context, services) =>
+            {
+                services.AddLogging();
+                services.AddHostedService<RuntimeService>();
+                services.AddHomeAssistantClient();
+
+                services.AddSingleton<IRuntime, NetDaemonRuntime>();
             });
     }
 }

@@ -27,7 +27,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var connection = await connectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().NotBeNull();
@@ -55,6 +55,7 @@ public class HomeAssistantRunnerTests
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
+                It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
             )
         ).Throws(new WebSocketException("What ever"));
@@ -66,7 +67,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -92,6 +93,7 @@ public class HomeAssistantRunnerTests
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
+                It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
             )
         ).Throws(new HomeAssistantConnectionException(DisconnectReason.NotReady));
@@ -103,7 +105,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -129,6 +131,7 @@ public class HomeAssistantRunnerTests
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
+                It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
             )
         ).Throws(new HomeAssistantConnectionException(DisconnectReason.Unauthorized));
@@ -140,7 +143,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -168,7 +171,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         // await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         cancelSource.Cancel();
@@ -195,6 +198,7 @@ public class HomeAssistantRunnerTests
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
+                It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
             )
         ).Throws<OperationCanceledException>();
@@ -206,7 +210,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -225,7 +229,7 @@ public class HomeAssistantRunnerTests
     [Fact]
     public async Task TestDisposeShouldDisconnectGracefully()
     {
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", TimeSpan.FromMilliseconds(100),
+        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100),
             CancellationToken.None);
 
         await Task.Delay(500);
