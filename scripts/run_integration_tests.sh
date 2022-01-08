@@ -1,1 +1,0 @@
-cp tests/Integration/HA/config
