@@ -87,7 +87,7 @@ public class TestRuntime
     [Fact]
     public async Task TestApplicationReactToNewEventsAndThrowException()
     {
-        var timedCancellationSource = new CancellationTokenSource(5000);
+        var timedCancellationSource = new CancellationTokenSource(50000);
         var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
 
         var hostBuilder = GetDefaultHostBuilder("Fixtures");

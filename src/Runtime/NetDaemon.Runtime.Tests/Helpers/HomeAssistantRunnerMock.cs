@@ -22,9 +22,13 @@ internal class HomeAssistantRunnerMock : Mock<IHomeAssistantRunner>
             It.IsAny<int>(),
             It.IsAny<bool>(),
             It.IsAny<string>(),
+            It.IsAny<string>(),
             It.IsAny<TimeSpan>(),
             It.IsAny<CancellationToken>())).Returns(
-                async () => { await Task.Delay(-1, cancelToken); }
+            async () =>
+            {
+                await Task.Delay(-1, cancelToken);
+            }
             );
     }
 }
