@@ -39,13 +39,13 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         return _runTask;
     }
 
-    private bool is_disposed = false;
+    private bool isDisposed = false;
     public async ValueTask DisposeAsync()
     {
-        if (!is_disposed)
+        if (isDisposed)
             return;
-
         _internalTokenSource.Cancel();
+
         if (_runTask?.IsCompleted == false)
             try
             {
@@ -62,7 +62,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         _onConnectSubject.Dispose();
         _onDisconnectSubject.Dispose();
         _internalTokenSource.Dispose();
-        is_disposed = true;
+        isDisposed = true;
     }
 
     private async Task InternalRunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout,

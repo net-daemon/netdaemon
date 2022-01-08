@@ -29,7 +29,7 @@ public class TestRuntime
         await haRunner.ConnectMock.WaitForObservers().ConfigureAwait(false);
 
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
         var instances = service.ApplicationInstances;
 
         instances!.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
@@ -60,7 +60,7 @@ public class TestRuntime
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        _ = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState
@@ -87,7 +87,7 @@ public class TestRuntime
     [Fact]
     public async Task TestApplicationReactToNewEventsAndThrowException()
     {
-        var timedCancellationSource = new CancellationTokenSource(50000);
+        var timedCancellationSource = new CancellationTokenSource(5000);
         var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
 
         var hostBuilder = GetDefaultHostBuilder("Fixtures");
@@ -97,11 +97,10 @@ public class TestRuntime
                 .AddAppsFromType(typeof(LocalApp))
         ).Build();
 
-
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
-        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        _ = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState

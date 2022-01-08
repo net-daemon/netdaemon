@@ -15,10 +15,11 @@ internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
+                It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
             )
         ).Returns(
-            (string _, int _, bool _, string _, CancellationToken _) =>
+            (string _, int _, bool _, string _, string _, CancellationToken _) =>
             {
                 return Task.FromResult(_haConnectionMock.Object);
             }
