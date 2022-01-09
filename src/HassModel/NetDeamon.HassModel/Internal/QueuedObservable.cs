@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Channels;
@@ -26,6 +27,7 @@ namespace NetDaemon.Infrastructure.ObservableHelpers
             _logger = logger;
         }
 
+        [SuppressMessage("", "CA1031")]
         private async Task HandleNewEvents()
         {
             while (!_tokenSource.IsCancellationRequested)
