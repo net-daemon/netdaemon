@@ -65,16 +65,6 @@ public class AppScopedHaContextProviderUsingClientTest
         haContext.StateAllChanges().Subscribe(stateAllChangesObserverMock.Object);
         haContext.StateChanges().Subscribe(stateChangesObserverMock.Object);
 
-        var invocationTasks = new[]
-        {
-            stateChangesObserverMock.WaitForInvocationAndVerify(
-                o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity"))
-            ),
-            stateAllChangesObserverMock.WaitForInvocationAndVerify(
-                o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity"))
-            )
-        };
-
         _hassEventSubjectMock.OnNext(new HassEvent
         {
             EventType = "state_changed",
@@ -91,9 +81,6 @@ public class AppScopedHaContextProviderUsingClientTest
                     ".AsJsonElement()
         });
 
-        // Wait for all invocations to complete and be verified
-        await Task.WhenAll(invocationTasks);
-
         haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newState");
         // the state should come from the state cache so we do not expect a call to HassClient.GetState 
     }
@@ -108,17 +95,8 @@ public class AppScopedHaContextProviderUsingClientTest
 
         haContext.Events.Subscribe(eventObserverMock.Object);
 
-        var eventTask = haContext.Events.WaitForEvent();
-
-        await using var x = MockInvocationWaiter.Wait(
-           eventObserverMock,
-           e => e.OnNext(It.IsAny<Event>()));
-        {
-            _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        }
         // Act
-
-        await eventTask.ConfigureAwait(false);
+        _hassEventSubjectMock.OnNext(_sampleHassEvent);
 
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
@@ -161,12 +139,7 @@ public class AppScopedHaContextProviderUsingClientTest
         haContext.Events.Subscribe(eventObserverMock.Object);
 
         // Act
-        await using var x = MockInvocationWaiter.Wait(
-            eventObserverMock,
-            m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
-        {
-            _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        }
+        _hassEventSubjectMock.OnNext(_sampleHassEvent);
 
         eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
 

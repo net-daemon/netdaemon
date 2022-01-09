@@ -24,7 +24,7 @@ namespace NetDaemon.Infrastructure.ObservableHelpers
             _subscription = innerObservable.Subscribe(_subject);
         }
 
-        public IDisposable Subscribe(IObserver<T> observer) => _subject.AsConcurrent(t => TrackObservableSubscriptionTasks(t)).Subscribe(observer);
+        public IDisposable Subscribe(IObserver<T> observer) => _subject.Subscribe(observer);
 
         public void Dispose()
         {
@@ -34,32 +34,32 @@ namespace NetDaemon.Infrastructure.ObservableHelpers
             _subject.Dispose();
         }
 
-        private readonly ConcurrentDictionary<Task, object?> _backgroundTasks = new();
-        private void TrackObservableSubscriptionTasks(Task task, string? description = null)
-        {
-            _backgroundTasks.TryAdd(task, null);
-
-            [SuppressMessage("", "CA1031")]
-            async Task Wrap()
-            {
-                try
-                {
-                    await task.ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, description == null ? null : "Exception in subscription: " + description);
-                }
-                finally
-                {
-                    _backgroundTasks.TryRemove(task, out var _);
-                }
-            }
-            // We do not handle task here cause exceptions
-            // are handled in the Wrap local functions and
-            // all tasks should be cancelable
-            _ = Wrap();
-        }
+        // private readonly ConcurrentDictionary<Task, object?> _backgroundTasks = new();
+        // private void TrackObservableSubscriptionTasks(Task task, string? description = null)
+        // {
+        //     _backgroundTasks.TryAdd(task, null);
+        //
+        //     [SuppressMessage("", "CA1031")]
+        //     async Task Wrap()
+        //     {
+        //         try
+        //         {
+        //             await task.ConfigureAwait(false);
+        //         }
+        //         catch (Exception e)
+        //         {
+        //             _logger.LogError(e, description == null ? null : "Exception in subscription: " + description);
+        //         }
+        //         finally
+        //         {
+        //             _backgroundTasks.TryRemove(task, out var _);
+        //         }
+        //     }
+        //     // We do not handle task here cause exceptions
+        //     // are handled in the Wrap local functions and
+        //     // all tasks should be cancelable
+        //     _ = Wrap();
+        // }
     }
 }
 

@@ -26,8 +26,6 @@ public class TestRuntime
 
         var runnerTask = host.RunAsync();
 
-        await haRunner.ConnectMock.WaitForObservers().ConfigureAwait(false);
-
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
         var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
         var instances = service.ApplicationInstances;
@@ -51,12 +49,6 @@ public class TestRuntime
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
-        var invocationTask = haRunner.ClientMock.ConnectionMock.WaitForInvocation(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(
-                It.IsAny<CallServiceCommand>(),
-                It.IsAny<CancellationToken>()
-            ));
-
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
@@ -73,8 +65,6 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir",
                 State = "on"
             });
-
-        await invocationTask.ConfigureAwait(false);
 
         haRunner.ClientMock.ConnectionMock.Verify(
             n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),

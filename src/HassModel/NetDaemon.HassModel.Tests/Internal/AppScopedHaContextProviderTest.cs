@@ -47,7 +47,7 @@ public class AppScopedHaContextProviderTest
     }
 
     [Fact]
-    public async Task TestStateChange()
+    public void TestStateChange()
     {
         var haContext = CreateTarget();
         var stateAllChangesObserverMock = new Mock<IObserver<StateChange>>();
@@ -56,16 +56,6 @@ public class AppScopedHaContextProviderTest
         haContext.StateAllChanges().Subscribe(stateAllChangesObserverMock.Object);
         haContext.StateChanges().Subscribe(stateChangesObserverMock.Object);
 
-        var invocationTasks = new[]
-            {
-                stateChangesObserverMock.WaitForInvocationAndVerify(
-                    o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity"))
-                ),
-                stateAllChangesObserverMock.WaitForInvocationAndVerify(
-                    o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity"))
-                )
-            }
-            ;
         _hassEventSubjectMock.OnNext(new HassEvent
         {
             EventType = "state_change",
@@ -76,9 +66,6 @@ public class AppScopedHaContextProviderTest
                 OldState = new HassState {State = "oldState"}
             }
         });
-
-        // Wait for all invocations to complete and be verified
-        await Task.WhenAll(invocationTasks);
 
         stateAllChangesObserverMock.Verify(
             o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once);
@@ -91,7 +78,7 @@ public class AppScopedHaContextProviderTest
     }
 
     [Fact]
-    public async Task Events_PassesMappedEvents()
+    public void Events_PassesMappedEvents()
     {
         // Arrange
         var haContext = CreateTarget();
@@ -99,12 +86,8 @@ public class AppScopedHaContextProviderTest
 
         haContext.Events.Subscribe(eventObserverMock.Object);
 
-        var eventTask = haContext.Events.WaitForEvent();
-
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-
-        await eventTask.ConfigureAwait(false);
 
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
@@ -140,7 +123,7 @@ public class AppScopedHaContextProviderTest
     }
 
     [Fact]
-    public async Task EventsStopAfterDispose()
+    public void EventsStopAfterDispose()
     {
         // Arrange
         var haContext = CreateTarget();
@@ -148,20 +131,13 @@ public class AppScopedHaContextProviderTest
         haContext.Events.Subscribe(eventObserverMock.Object);
 
         // Act
-        await using var x = MockInvocationWaiter.Wait(
-            eventObserverMock,
-            m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
-        {
-            _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        }
+        _hassEventSubjectMock.OnNext(_sampleHassEvent);
 
         eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
 
         // Act
         ((IDisposable) haContext).Dispose();
-        var eventTask = _hassEventSubjectMock.WaitForEvent();
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        await eventTask.ConfigureAwait(false);
         
         // Assert
         eventObserverMock.VerifyNoOtherCalls();
