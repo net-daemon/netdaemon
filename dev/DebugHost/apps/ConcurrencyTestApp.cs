@@ -18,38 +18,38 @@ public class ConcurrencyTestApp
             .SubscribeAsync(async s =>
             {
 
-                logger.LogInformation("{time}: Subcription 1 starts", DateTime.Now);
-                await Task.Delay(1000);
-                logger.LogInformation("{time}: Subcription 1 delay 1 s", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 1 starts", DateTime.Now);
+                await Task.Delay(1000).ConfigureAwait(false);
+                logger.LogInformation("{Now}: Subcription 1 delay 1 s", DateTime.Now);
             });
         context.StateChanges()
             .Where(n => n.Entity.EntityId == "input_select.who_cooks")
             .SubscribeAsync(async s =>
             {
-                logger.LogInformation("{time}: Subcription 2 starts", DateTime.Now);
-                await Task.Delay(2000);
+                logger.LogInformation("{Now}: Subcription 2 starts", DateTime.Now);
+                await Task.Delay(2000).ConfigureAwait(false);
                 // throw new InvalidOperationException("Ohhh nooo");
-                logger.LogInformation("{time}: Subcription 2 delay 2 s", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 2 delay 2 s", DateTime.Now);
             });
 
         context.StateChanges()
             .Where(n => n.Entity.EntityId == "input_select.who_cooks")
             .Subscribe(s =>
             {
-                logger.LogInformation("{time}: Subcription 3 starts", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 3 starts", DateTime.Now);
                 Task.Delay(3000).Wait();
                 // throw new InvalidOperationException("Ohhh nooo");
-                logger.LogInformation("{time}: Subcription 3 delay 3 s", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 3 delay 3 s", DateTime.Now);
             });
 
         context.StateChanges()
             .Where(n => n.Entity.EntityId == "input_select.who_cooks")
             .Subscribe(s =>
             {
-                logger.LogInformation("{time}: Subcription 4 starts", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 4 starts", DateTime.Now);
                 Task.Delay(4000).Wait();
                 // throw new InvalidOperationException("Ohhh nooo");
-                logger.LogInformation("{time}: Subcription 4 delay 4 s", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 4 delay 4 s", DateTime.Now);
             });
     }
 }
@@ -64,17 +64,17 @@ public class ConcurrencyTestApp2
             .SubscribeAsyncConcurrent(async s =>
             {
 
-                logger.LogInformation("{time}: Subcription 5 starts", DateTime.Now);
-                await Task.Delay(1000);
-                logger.LogInformation("{time}: Subcription 5 delay 1 s", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 5 starts", DateTime.Now);
+                await Task.Delay(1000).ConfigureAwait(false);
+                logger.LogInformation("{Now}: Subcription 5 delay 1 s", DateTime.Now);
             });
         context.StateChanges()
             .Where(n => n.Entity.EntityId == "input_select.who_cooks")
             .Subscribe(s =>
             {
-                logger.LogInformation("{time}: Subcription 6 starts", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 6 starts", DateTime.Now);
                 Task.Delay(2000).Wait();
-                logger.LogInformation("{time}: Subcription 6 delay 2 s", DateTime.Now);
+                logger.LogInformation("{Now}: Subcription 6 delay 2 s", DateTime.Now);
             });
     }
 }

@@ -98,7 +98,7 @@ public class AppScopedHaContextProviderUsingClientTest
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        await Task.Yield(); // make sure other tasks run before we assert 
+        await Task.Yield(); // make sure other tasks run before we assert
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
         var @event = eventObserverMock.Invocations.Single().Arguments[0] as Event;
