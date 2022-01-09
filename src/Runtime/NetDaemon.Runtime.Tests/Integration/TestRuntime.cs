@@ -3,6 +3,7 @@ using LocalApps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Infrastructure.ObservableHelpers;
 using NetDaemon.Runtime.Internal;
 using NetDaemon.Runtime.Tests.Helpers;
 
@@ -65,7 +66,7 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir",
                 State = "on"
             });
-
+        // await runnerTask.ConfigureAwait(false);
         haRunner.ClientMock.ConnectionMock.Verify(
             n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
@@ -121,6 +122,8 @@ public class TestRuntime
                 });
                 services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
+                services.AddScoped<NonQueuedObservableMock<HassEvent>>();
+                services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());
             })
             .ConfigureAppConfiguration((_, config) =>
             {

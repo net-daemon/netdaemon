@@ -3,7 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.HassModel.Common;
+using NetDaemon.Infrastructure.ObservableHelpers;
+
 namespace NetDaemon.HassModel
 {
     /// <summary>
@@ -47,6 +50,8 @@ namespace NetDaemon.HassModel
             services.AddScoped<Internal.Client.AppScopedHaContextProvider>();
             services.AddTransient<ICacheManager, Internal.Client.CacheManager>();
             services.AddTransient<IHaContext>(s => s.GetRequiredService<Internal.Client.AppScopedHaContextProvider>());
+            services.AddScoped<QueuedObservable<HassEvent>>();
+            services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<QueuedObservable<HassEvent>>());
         }
 
         /// <summary>

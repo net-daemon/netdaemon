@@ -13,6 +13,7 @@ using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
+using NetDaemon.Infrastructure.ObservableHelpers;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;
@@ -97,7 +98,7 @@ public class AppScopedHaContextProviderUsingClientTest
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-
+        await Task.Yield(); // make sure other tasks run before we assert 
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
         var @event = eventObserverMock.Invocations.Single().Arguments[0] as Event;
@@ -170,8 +171,11 @@ public class AppScopedHaContextProviderUsingClientTest
 
         var provider = serviceCollection.BuildServiceProvider();
         await provider.GetRequiredService<ICacheManager>().InitializeAsync(CancellationToken.None);
-
+        
+        serviceCollection.AddScoped<NonQueuedObservableMock<HassEvent>>();
+        serviceCollection.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());
         var haContext = provider.GetRequiredService<IHaContext>();
+        
         return haContext;
     }
 
