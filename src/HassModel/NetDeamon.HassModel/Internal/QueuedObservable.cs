@@ -41,7 +41,7 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 
     public void Initialize(IObservable<T> innerObservable)
     {
-        _subscription = innerObservable.Subscribe(e => _queue.Writer.TryWrite(e));
+        _subscription = innerObservable.Subscribe(e => _queue.Writer.TryWrite(e), onCompleted: () => _queue.Writer.Complete());
         _eventHandlingTask = Task.Run(async () => await HandleNewEvents().ConfigureAwait(false));
     }
 
@@ -59,6 +59,7 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
                 _logger.LogError(e, "Exception in subscription: ");
             }
         }
+        _subject.OnCompleted();
     }
 
     public async ValueTask DisposeAsync()
