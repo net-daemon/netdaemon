@@ -1,4 +1,4 @@
-namespace NetDaemon.AppModel.Internal;
+namespace NetDaemon.AppModel;
 
 public interface IAsyncInitializable
 {

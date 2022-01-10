@@ -16,9 +16,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAppsFromType(this IServiceCollection services, Type type)
+    public static IServiceCollection AddAppFromType(this IServiceCollection services, Type type)
     {
-        return services.AddAppsFromAssembly(type.Assembly);
+        return services.AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
     }
 
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
