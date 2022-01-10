@@ -3,6 +3,7 @@ using LocalApps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Infrastructure.ObservableHelpers;
 using NetDaemon.Runtime.Internal;
 using NetDaemon.Runtime.Tests.Helpers;
 
@@ -25,8 +26,6 @@ public class TestRuntime
 
 
         var runnerTask = host.RunAsync();
-
-        await haRunner.ConnectMock.WaitForObservers().ConfigureAwait(false);
 
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
         var service = (NetDaemonRuntime)host.Services.GetService<IRuntime>()!;
@@ -51,12 +50,6 @@ public class TestRuntime
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
-        var invocationTask = haRunner.ClientMock.ConnectionMock.WaitForInvocation(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(
-                It.IsAny<CallServiceCommand>(),
-                It.IsAny<CancellationToken>()
-            ));
-
         var runnerTask = host.RunAsync();
         while (!haRunner.ConnectMock.HasObservers) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
@@ -73,9 +66,7 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir",
                 State = "on"
             });
-
-        await invocationTask.ConfigureAwait(false);
-
+        // await runnerTask.ConfigureAwait(false);
         haRunner.ClientMock.ConnectionMock.Verify(
             n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
@@ -131,6 +122,8 @@ public class TestRuntime
                 });
                 services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
+                services.AddScoped<NonQueuedObservableMock<HassEvent>>();
+                services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());
             })
             .ConfigureAppConfiguration((_, config) =>
             {

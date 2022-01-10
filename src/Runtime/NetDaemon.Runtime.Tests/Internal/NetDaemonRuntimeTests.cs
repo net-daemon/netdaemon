@@ -35,7 +35,6 @@ public class NetDaemonRuntimeTests
         var cancelSource = new CancellationTokenSource(5000);
         await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
 
-        await connectSubject.WaitForObservers().ConfigureAwait(false);
         connectSubject.HasObservers.Should().BeTrue();
         disconnectSubject.HasObservers.Should().BeTrue();
     }
@@ -84,13 +83,10 @@ public class NetDaemonRuntimeTests
         );
         await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
 
-        var waitForInvocationTask =
-            appModelMock.WaitForInvocation(n => n.InitializeAsync(It.IsAny<CancellationToken>()));
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
 
-        await waitForInvocationTask.ConfigureAwait(false);
         appModelMock.Verify(n => n.InitializeAsync(It.IsAny<CancellationToken>()));
     }
 
@@ -139,13 +135,10 @@ public class NetDaemonRuntimeTests
         await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
 
         // First make sure we add an connection
-        var waitForInvocationTask =
-            appModelMock.WaitForInvocation(n => n.InitializeAsync(It.IsAny<CancellationToken>()));
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
 
-        await waitForInvocationTask.ConfigureAwait(false);
         Assert.NotNull(runtime.InternalConnection);
 
         // Then fake a disconnect

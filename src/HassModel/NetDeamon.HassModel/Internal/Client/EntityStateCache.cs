@@ -20,6 +20,7 @@ internal class EntityStateCache : IDisposable
     private IDisposable? _eventSubscription;
     private readonly IHomeAssistantRunner _hassRunner;
     private readonly IServiceProvider _provider;
+    private readonly Subject<HassEvent> _eventSubject = new();
     private readonly Subject<HassStateChangedEventData> _innerSubject = new();
     private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
 
@@ -33,12 +34,13 @@ internal class EntityStateCache : IDisposable
 
     public IEnumerable<string> AllEntityIds => _latestStates.Select(s => s.Key);
 
-    public IObservable<HassStateChangedEventData> StateAllChanges => _innerSubject;
+    public IObservable<HassEvent> AllEvents => _eventSubject;
 
     public void Dispose()
     {
         _innerSubject.Dispose();
         _eventSubscription?.Dispose();
+        _eventSubject.Dispose();
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
@@ -58,15 +60,16 @@ internal class EntityStateCache : IDisposable
 
     private void HandleEvent(HassEvent hassEvent)
     {
-        if (hassEvent.EventType != "state_changed") return;
+        if (hassEvent.EventType == "state_changed")
+        {
+            var hassStateChangedEventData = hassEvent.ToStateChangedEvent()
+                                            ?? throw new InvalidOperationException(
+                                                "Error when parsing state changed event");
 
-        var hassStateChangedEventData = hassEvent.ToStateChangedEvent()
-                                        ?? throw new InvalidOperationException(
-                                            "Error when parsing state changed event");
-
-        // Make sure to first add the new state to the cache before calling other subscribers.
-        _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
-        _innerSubject.OnNext(hassStateChangedEventData);
+            // Make sure to first add the new state to the cache before calling other subscribers.
+            _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
+        };
+        _eventSubject.OnNext(hassEvent);
     }
 
     public HassState? GetState(string entityId)

@@ -9,6 +9,7 @@ using System.Reflection;
 try
 {
     await Host.CreateDefaultBuilder(args)
+        .UseNetDaemonAppSettings()
         .UseNetDaemonRuntime()
         .ConfigureServices((_, services) =>
             services

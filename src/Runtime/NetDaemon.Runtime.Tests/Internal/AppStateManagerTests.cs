@@ -235,7 +235,7 @@ public class AppStateManagerTests
     }
     
     [Fact]
-    public async Task TestAppEnabledShouldCallSetStateAsyncDisabled()
+    public void TestAppEnabledShouldCallSetStateAsyncDisabled()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
@@ -261,7 +261,6 @@ public class AppStateManagerTests
         
         // ACT
         homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
-        var invocationTask = appMock.WaitForInvocation(n => n.SetStateAsync(It.IsAny<ApplicationState>()));
         hassEvent.OnNext(new HassEvent()
         {
             EventType = "state_changed",
@@ -280,13 +279,12 @@ public class AppStateManagerTests
                 }
             }.ToJsonElement()
         });
-        await invocationTask.ConfigureAwait(false);
         // ASSERT
         appMock.Verify(n => n.SetStateAsync(ApplicationState.Enabled), Times.Once);
     }
     
     [Fact]
-    public async Task TestAppDisabledShouldCallSetStateAsyncEnabled()
+    public void TestAppDisabledShouldCallSetStateAsyncEnabled()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
@@ -312,7 +310,6 @@ public class AppStateManagerTests
         
         // ACT
         homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
-        var invocationTask = appMock.WaitForInvocation(n => n.SetStateAsync(It.IsAny<ApplicationState>()));
         hassEvent.OnNext(new HassEvent()
         {
             EventType = "state_changed",
@@ -331,13 +328,12 @@ public class AppStateManagerTests
                 }
             }.ToJsonElement()
         });
-        await invocationTask.ConfigureAwait(false);
         // ASSERT
         appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Once);
     }    
     
     [Fact]
-    public async Task TestAppNoChangeShouldNotCallSetStateAsync()
+    public void TestAppNoChangeShouldNotCallSetStateAsync()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
@@ -363,7 +359,6 @@ public class AppStateManagerTests
         
         // ACT
         homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
-        var invocationTask = appMock.WaitForInvocation(n => n.SetStateAsync(It.IsAny<ApplicationState>()));
         hassEvent.OnNext(new HassEvent()
         {
             EventType = "state_changed",
@@ -382,19 +377,13 @@ public class AppStateManagerTests
                 }
             }.ToJsonElement()
         });
-        try
-        {
-            await invocationTask.ConfigureAwait(false);
-        }
-        catch (TimeoutException )
-        {
-            // Ignore
-        }
+
         // ASSERT
         appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Never);
     }    
+    
     [Fact]
-    public async Task TestAppOneStateIsNullShouldNotCallSetStateAsync()
+    public void TestAppOneStateIsNullShouldNotCallSetStateAsync()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
@@ -420,7 +409,6 @@ public class AppStateManagerTests
         
         // ACT
         homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
-        var invocationTask = appMock.WaitForInvocation(n => n.SetStateAsync(It.IsAny<ApplicationState>()));
         hassEvent.OnNext(new HassEvent()
         {
             EventType = "state_changed",
@@ -434,14 +422,7 @@ public class AppStateManagerTests
                 }
             }.ToJsonElement()
         });
-        try
-        {
-            await invocationTask.ConfigureAwait(false);
-        }
-        catch (TimeoutException )
-        {
-            // Ignore
-        }
+        
         // ASSERT
         appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Never);
     }

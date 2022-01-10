@@ -45,8 +45,8 @@ public class EntityStateCacheUsingClientTest
 
         using var cache = new EntityStateCache(haRunnerMock.Object, sp);
 
-        var stateChangeObserverMock = new Mock<IObserver<HassStateChangedEventData>>();
-        cache.StateAllChanges.Subscribe(stateChangeObserverMock.Object);
+        var eventObserverMock = new Mock<IObserver<HassEvent>>();
+        cache.AllEvents.Subscribe(eventObserverMock.Object);
 
         // ACT 1: after initialization of the cache it should show the values retieved from Hass
         await cache.InitializeAsync(CancellationToken.None);
@@ -64,7 +64,7 @@ public class EntityStateCacheUsingClientTest
             }
         };
 
-        stateChangeObserverMock.Setup(m => m.OnNext(It.IsAny<HassStateChangedEventData>()))
+        eventObserverMock.Setup(m => m.OnNext(It.IsAny<HassEvent>()))
             .Callback(() =>
             {
 #pragma warning disable 8602
@@ -80,7 +80,7 @@ public class EntityStateCacheUsingClientTest
         });
 
         // Assert
-        stateChangeObserverMock.Verify(m => m.OnNext(It.IsAny<HassStateChangedEventData>()));
+        eventObserverMock.Verify(m => m.OnNext(It.IsAny<HassEvent>()));
         cache.GetState(entityId)!.State.Should().Be("newState");
     }
 
@@ -110,8 +110,8 @@ public class EntityStateCacheUsingClientTest
 
         using var cache = new EntityStateCache(haRunnerMock.Object, sp);
 
-        var stateChangeObserverMock = new Mock<IObserver<HassStateChangedEventData>>();
-        cache.StateAllChanges.Subscribe(stateChangeObserverMock.Object);
+        var stateChangeObserverMock = new Mock<IObserver<HassEvent>>();
+        cache.AllEvents.Subscribe(stateChangeObserverMock.Object);
 
         // ACT 1: after initialization of the cache it should show the values retieved from Hass
         await cache.InitializeAsync(CancellationToken.None);

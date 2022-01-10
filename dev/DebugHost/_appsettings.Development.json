@@ -13,6 +13,6 @@
   },
   "NetDaemon": {
     "Admin": false,
-    "ApplicationFolder": "./apps"
+    "ApplicationConfigurationFolder": "./apps"
   }
 }

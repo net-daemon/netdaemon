@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
@@ -19,46 +21,34 @@ namespace NetDaemon.HassModel.Internal.Client;
 ///     (We could eg. also have an implementation that does not deal with scopes or caching etc to be used en Console apps)
 /// </summary>
 [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
-internal class AppScopedHaContextProvider : IHaContext, IDisposable
+internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 {
     private readonly IHomeAssistantApiManager _apiManager;
-    private readonly ILogger<IHaContext> _logger;
     private readonly EntityAreaCache _entityAreaCache;
     private readonly EntityStateCache _entityStateCache;
 
     private readonly IHomeAssistantRunner _hassRunner;
-    private readonly ScopedObservable<HassEvent> _scopedEventObservable;
-    private readonly ScopedObservable<HassStateChangedEventData> _scopedStateObservable;
+    private readonly IQueuedObservable<HassEvent> _queuedObservable;
 
     private readonly CancellationTokenSource _tokenSource = new();
 
-    public AppScopedHaContextProvider(IObservable<HassEvent> hassEventObservable,
+    public AppScopedHaContextProvider(
         EntityStateCache entityStateCache,
         EntityAreaCache entityAreaCache,
         IHomeAssistantRunner hassRunner,
         IHomeAssistantApiManager apiManager,
-        ILogger<IHaContext> logger
+        IQueuedObservable<HassEvent> queuedObservable
         )
     {
         _entityStateCache = entityStateCache;
         _entityAreaCache = entityAreaCache;
         _hassRunner = hassRunner;
         _apiManager = apiManager;
-        _logger = logger;
 
         // Create ScopedObservables for this app
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
-        _scopedEventObservable = new ScopedObservable<HassEvent>(hassEventObservable, _logger);
-        _scopedStateObservable = new ScopedObservable<HassStateChangedEventData>(_entityStateCache.StateAllChanges, _logger);
-    }
-
-    public void Dispose()
-    {
-        _scopedEventObservable.Dispose();
-        _scopedStateObservable.Dispose();
-        if (!_tokenSource.IsCancellationRequested)
-            _tokenSource.Cancel();
-        _tokenSource.Dispose();
+        _queuedObservable = queuedObservable;
+        _queuedObservable.Initialize(_entityStateCache.AllEvents);
     }
 
     public EntityState? GetState(string entityId)
@@ -83,10 +73,13 @@ internal class AppScopedHaContextProvider : IHaContext, IDisposable
 
     public IObservable<StateChange> StateAllChanges()
     {
-        return _scopedStateObservable.Select(e => e.Map(this));
+        return _queuedObservable.Where(n =>
+            n.EventType == "state_changed")
+            .Select(n => n.ToStateChangedEvent()!)
+            .Select(e => e.Map(this));
     }
 
-    public IObservable<Event> Events => _scopedEventObservable
+    public IObservable<Event> Events => _queuedObservable
         .Select(e => e.Map());
 
 
@@ -94,5 +87,13 @@ internal class AppScopedHaContextProvider : IHaContext, IDisposable
     {
         // For now we do just a fire and forget of the async SendEvent method. HassClient will handle and log exceptions 
         _apiManager.SendEventAsync(eventType, _tokenSource.Token, data);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _queuedObservable.DisposeAsync().ConfigureAwait(false);
+        if (!_tokenSource.IsCancellationRequested)
+            _tokenSource.Cancel();
+        _tokenSource.Dispose();
     }
 }

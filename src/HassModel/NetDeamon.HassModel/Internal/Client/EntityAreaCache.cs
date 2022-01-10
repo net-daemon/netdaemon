@@ -12,10 +12,10 @@ namespace NetDaemon.HassModel.Internal.Client;
 
 internal class EntityAreaCache : IDisposable
 {
-    private IDisposable? _eventSubscription;
     private readonly IHomeAssistantRunner _hassRunner;
     private readonly IServiceProvider _provider;
     private CancellationToken _cancellationToken;
+    private IDisposable? _eventSubscription;
     private bool _initialized;
     private Dictionary<string, HassArea> _latestAreas = new();
 
@@ -23,7 +23,6 @@ internal class EntityAreaCache : IDisposable
     {
         _hassRunner = hassRunner;
         _provider = provider;
-
     }
 
     public void Dispose()
@@ -52,7 +51,7 @@ internal class EntityAreaCache : IDisposable
 
     private async Task LoadAreas()
     {
-        _ = _hassRunner?.CurrentConnection ?? throw new InvalidOperationException();
+        _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException();
 
         var entities = await _hassRunner.CurrentConnection.GetEntitiesAsync(_cancellationToken).ConfigureAwait(false);
         var devices = await _hassRunner.CurrentConnection.GetDevicesAsync(_cancellationToken).ConfigureAwait(false);
