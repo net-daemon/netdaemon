@@ -13,7 +13,6 @@ using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
-using NetDaemon.Infrastructure.ObservableHelpers;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;
@@ -94,7 +93,7 @@ public class AppScopedHaContextProviderUsingClientTest
         var provider = await CreateServiceProvider();
         var serviceScope = provider.CreateScope();
 
-        var haContext = (IHaContext?)serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
+        var haContext = serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
 
         Mock<IObserver<Event>> eventObserverMock = new();
 
@@ -183,11 +182,11 @@ public class AppScopedHaContextProviderUsingClientTest
         var haRunnerMock = new Mock<IHomeAssistantRunner>();
 
         haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
-        serviceCollection.AddSingleton(n => haRunnerMock.Object);
+        serviceCollection.AddSingleton(_ => haRunnerMock.Object);
 
         var apiManagerMock = new Mock<IHomeAssistantApiManager>();
 
-        serviceCollection.AddSingleton(n => apiManagerMock.Object);
+        serviceCollection.AddSingleton(_ => apiManagerMock.Object);
         serviceCollection.AddScopedHaContext2();
 
         var provider = serviceCollection.BuildServiceProvider();
