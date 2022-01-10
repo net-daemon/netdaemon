@@ -65,7 +65,12 @@ namespace NetDaemon.HassModel.Tests.Internal
             queue.Initialize(source);
             var subscriber = new Mock<IObserver<int>>();
             queue.Subscribe(subscriber.Object);
+            
+            // It is not enough that DisposeAsync waits on task
+            // since it can be aborted by the cancellation token                                                                                                             
+            var waitOnCallTask = subscriber.WaitForInvocation(n => n.OnNext(1));
             source.OnNext(1);
+            await waitOnCallTask.ConfigureAwait(false);
 
             await queue.DisposeAsync().ConfigureAwait(false);
             subscriber.Verify(s => s.OnNext(1));

@@ -14,15 +14,10 @@ public static class ObservableExtensions
     ///     Allows calling async function but does this in a serial way. Long running tasks will block
     ///     other subscriptions
     /// </summary>
-    // public static IDisposable SubscribeAsync<T>(this IObservable<T> source,  Func<T, Task> onNextAsync(T s)) =>
-    //     source
-    //         .Select(number => Observable.FromAsync(onNextAsync))
-    //         .Concat()
-    //         .Subscribe();
-    public static IDisposable SubscribeAsync<T>(this IObservable<T> source, Func<T, Task> onNextAsync)
+    public static IDisposable SubscribeAsync<T>(this IObservable<T> source, Func<T, Task> onNextAsync, Action<Exception>? onError = null)
     {
         return source
-            .Select(e => Observable.FromAsync(() => HandleTask(onNextAsync, e)))
+            .Select(e => Observable.FromAsync(() => HandleTask(onNextAsync, e, onError)))
             .Concat()
             .Subscribe();
     }
@@ -36,41 +31,11 @@ public static class ObservableExtensions
         Action<Exception>? onError = null)
     {
         return source
-            .Select(async e => await Observable.FromAsync(() => HandleTask(onNextAsync, e)))
+            .Select(async e => await Observable.FromAsync(() => HandleTask(onNextAsync, e, onError)))
             .Merge()
             .Subscribe();
-    }
-    // public static IDisposable SubscribeAsyncConcurrent<T>(this IObservable<T> source, Func<T, Task> onNextAsync, Action<Exception>? onError=null) =>
-    //     source
-    //         .Select(async e => await Observable.FromAsync(async () =>
-    //         {
-    //             try
-    //             {
-    //                 await onNextAsync(e).ConfigureAwait(false);
-    //             }
-    //             catch (Exception ex)
-    //             {
-    //                 if (onError is not null)
-    //                 {
-    //                     onError(ex);
-    //                 }
-    //                 else
-    //                 {
-    //                     var logger = LoggerFactory.Create(x =>
-    //                     {
-    //                         x.AddConsole();
-    //                     }).CreateLogger<IHaContext>();
-    //                     
-    //                     logger.LogError(ex,
-    //                          "SubscribeConcurrent throws an unhandled Exception, please use error callback function to do proper logging");
-    //                     throw;
-    //                 }
-    //             }
-    //             
-    //         }))
-    //         .Merge()
-    //         .Subscribe();
-
+    }    
+    
     private static async Task HandleTask<T>(Func<T, Task> onNextAsync, T e, Action<Exception>? onError = null)
     {
         try
