@@ -5,8 +5,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
@@ -89,11 +87,12 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         _apiManager.SendEventAsync(eventType, _tokenSource.Token, data);
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        await _queuedObservable.DisposeAsync().ConfigureAwait(false);
         if (!_tokenSource.IsCancellationRequested)
             _tokenSource.Cancel();
         _tokenSource.Dispose();
+        
+        return ValueTask.CompletedTask;
     }
 }
