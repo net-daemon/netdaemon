@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Channels;
@@ -44,6 +45,7 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
         _eventHandlingTask = Task.Run(async () => await HandleNewEvents().ConfigureAwait(false));
     }
 
+    [SuppressMessage("", "CA1031")]
     private async Task HandleNewEvents()
     {
         await foreach(var @event in  _queue.Reader.ReadAllAsync(_tokenSource.Token).ConfigureAwait(false))
