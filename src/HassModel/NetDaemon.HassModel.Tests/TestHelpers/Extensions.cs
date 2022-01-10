@@ -33,4 +33,21 @@ internal static class Extensions
 
         return observerMock;
     }
+
+    public static async Task WaitForInvocationAndVerify<T>(this Mock<T> mock, Expression<Action<T>> expression)
+        where T : class
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        mock.Setup(expression).Callback(() => tcs.SetResult(true));
+        await Task.WhenAny(tcs.Task, Task.Delay(5000));
+        mock.Verify(expression);
+    }    
+    
+    public static async Task WaitForInvocation<T>(this Mock<T> mock, Expression<Action<T>> expression)
+        where T : class
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        mock.Setup(expression).Callback(() => tcs.SetResult(true));
+        await Task.WhenAny(tcs.Task, Task.Delay(5000));
+    }
 }

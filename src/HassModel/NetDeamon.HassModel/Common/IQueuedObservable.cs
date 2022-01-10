@@ -7,9 +7,9 @@ namespace NetDaemon.Infrastructure.ObservableHelpers;
 /// </summary>
 /// <remarks>
 ///     The default implementation will implement a queue and async behaviour
-///     For testing a synchronous version will be added 
+///     For testing a synchronous version will be added
 /// </remarks>
-public interface IQueuedObservable<T> : IObservable<T>, IDisposable
+public interface IQueuedObservable<T> : IObservable<T>, IAsyncDisposable
 {
     /// <summary>
     ///     Initializes the observer with the inner observer

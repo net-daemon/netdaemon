@@ -145,7 +145,7 @@ public class AppScopedHaContextProviderUsingClientTest
         eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
 
         // Act
-        ((IDisposable)haContext).Dispose();
+        await ((IAsyncDisposable)haContext).DisposeAsync();
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
 
         // Assert
