@@ -101,11 +101,13 @@ public class AppScopedHaContextProviderUsingClientTest
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false); // make sure other tasks run before we assert
+        _hassEventSubjectMock.OnCompleted();
+        
+        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false);
         
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()), Times.Once);
-        var @event = eventObserverMock.Invocations.Single().Arguments[0] as Event;
+        var @event = eventObserverMock.Invocations.First().Arguments[0] as Event;
         @event!.Origin.Should().Be(_sampleHassEvent.Origin);
         @event.EventType.Should().Be(_sampleHassEvent.EventType);
         @event.TimeFired.Should().Be(_sampleHassEvent.TimeFired);
@@ -126,12 +128,14 @@ public class AppScopedHaContextProviderUsingClientTest
 
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         _hassEventSubjectMock.OnNext(_sampleHassEvent with { EventType = "other_type" });
+        _hassEventSubjectMock.OnCompleted();
 
-        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false); // make sure other tasks run before we assert
+        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false);
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
-        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.Single().Arguments[0];
+        typedEventObserverMock.Verify(e => e.OnCompleted(), Times.Once);
+        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.First().Arguments[0];
 
         @event.Data!.command.Should().Be("flip");
         @event.Data!.endpoint_id.Should().Be(2);
@@ -152,10 +156,12 @@ public class AppScopedHaContextProviderUsingClientTest
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-
-        eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+        _hassEventSubjectMock.OnCompleted();
 
         await ((IAsyncDisposable)serviceScope).DisposeAsync();
+        eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+        eventObserverMock.Verify(m => m.OnCompleted());
+
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
