@@ -20,6 +20,7 @@ namespace NetDaemon.Infrastructure.ObservableHelpers;
 /// </remarks>
 internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 {
+    private bool _isDisposed;
     private readonly ILogger<IHaContext> _logger;
 
     private readonly Channel<T> _queue = Channel.CreateBounded<T>(100);
@@ -40,16 +41,15 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 
     public void Initialize(IObservable<T> innerObservable)
     {
-        _subscription = innerObservable.Subscribe(e => _queue.Writer.TryWrite(e));
+        _subscription = innerObservable.Subscribe(e => _queue.Writer.TryWrite(e), onCompleted: () => _queue.Writer.Complete());
         _eventHandlingTask = Task.Run(async () => await HandleNewEvents().ConfigureAwait(false));
     }
 
     [SuppressMessage("", "CA1031")]
     private async Task HandleNewEvents()
     {
-        while (!_tokenSource.IsCancellationRequested)
+        await foreach(var @event in  _queue.Reader.ReadAllAsync(_tokenSource.Token).ConfigureAwait(false))
         {
-            var @event = await _queue.Reader.ReadAsync(_tokenSource.Token).ConfigureAwait(false);
             try
             {
                 _subject.OnNext(@event);
@@ -59,26 +59,24 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
                 _logger.LogError(e, "Exception in subscription: ");
             }
         }
+        _subject.OnCompleted();
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+            
         // When disposed unsubscribe from inner observable
-        // this will make all subscribers of our Subject stop receiving events
         _subscription?.Dispose();
-        _tokenSource.Cancel();
-
+            
+        // mark the channel complete, this will break the processing loop when the last event in the channel is processed
+        _queue.Writer.Complete();
+        
+        // now await for the processing loop to be ready so we know all pending events are processed
         if (_eventHandlingTask != null)
-        {
-            try
-            {
-                await _eventHandlingTask.ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Ignore, it should happen
-            }
-        }
+            await _eventHandlingTask.ConfigureAwait(false);
+            
         _tokenSource.Dispose();        
         _subject.Dispose();
     }
