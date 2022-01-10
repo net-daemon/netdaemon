@@ -12,12 +12,10 @@ public class ConcurrencyTestApp
 {
     public ConcurrencyTestApp(IHaContext context, ILogger<ConcurrencyTestApp> logger)
     {
-
         context.StateChanges()
             .Where(n => n.Entity.EntityId == "input_select.who_cooks")
             .SubscribeAsync(async s =>
             {
-
                 logger.LogInformation("{Now}: Subcription 1 starts", DateTime.Now);
                 await Task.Delay(1000).ConfigureAwait(false);
                 logger.LogInformation("{Now}: Subcription 1 delay 1 s", DateTime.Now);
@@ -58,7 +56,6 @@ public class ConcurrencyTestApp2
 {
     public ConcurrencyTestApp2(IHaContext context, ILogger<ConcurrencyTestApp2> logger)
     {
-
         context.StateChanges()
             .Where(n => n.Entity.EntityId == "input_select.who_cooks")
             .SubscribeAsyncConcurrent(async s =>

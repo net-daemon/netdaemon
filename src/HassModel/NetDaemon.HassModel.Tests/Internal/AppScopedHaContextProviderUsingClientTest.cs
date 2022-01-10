@@ -100,7 +100,7 @@ public class AppScopedHaContextProviderUsingClientTest
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         await Task.Yield(); // make sure other tasks run before we assert
         // Assert
-        eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
+        eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()), Times.Once);
         var @event = eventObserverMock.Invocations.Single().Arguments[0] as Event;
         @event!.Origin.Should().Be(_sampleHassEvent.Origin);
         @event.EventType.Should().Be(_sampleHassEvent.EventType);
@@ -123,7 +123,7 @@ public class AppScopedHaContextProviderUsingClientTest
         await Task.Yield(); // make sure other tasks run before we assert 
 
         // Assert
-        typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
+        typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()));
         var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.Single().Arguments[0];
 
         @event.Data!.command.Should().Be("flip");
@@ -168,12 +168,12 @@ public class AppScopedHaContextProviderUsingClientTest
 
         serviceCollection.AddSingleton(n => apiManagerMock.Object);
         serviceCollection.AddScopedHaContext2();
+        serviceCollection.AddScoped<NonQueuedObservableMock<HassEvent>>();
+        serviceCollection.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());
 
         var provider = serviceCollection.BuildServiceProvider();
         await provider.GetRequiredService<ICacheManager>().InitializeAsync(CancellationToken.None);
         
-        serviceCollection.AddScoped<NonQueuedObservableMock<HassEvent>>();
-        serviceCollection.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());
         var haContext = provider.GetRequiredService<IHaContext>();
         
         return haContext;

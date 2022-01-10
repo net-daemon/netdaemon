@@ -34,7 +34,6 @@ internal class EntityStateCache : IDisposable
 
     public IEnumerable<string> AllEntityIds => _latestStates.Select(s => s.Key);
 
-    // public IObservable<HassStateChangedEventData> StateAllChanges => _innerSubject;
     public IObservable<HassEvent> AllEvents => _eventSubject;
 
     public void Dispose()
@@ -69,7 +68,6 @@ internal class EntityStateCache : IDisposable
 
             // Make sure to first add the new state to the cache before calling other subscribers.
             _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
-            
         };
         _eventSubject.OnNext(hassEvent);
     }
