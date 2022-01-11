@@ -17,7 +17,7 @@ public class NetDaemonRuntimeTests
         var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
         var appModelMock = new Mock<IAppModel>();
         var serviceProviderMock = new Mock<IServiceProvider>();
-        var loggerMock = new Mock<ILogger<RuntimeService>>();
+        var loggerMock = new Mock<ILogger<NetDaemonRuntime>>();
 
         var connectSubject = new Subject<IHomeAssistantConnection>();
         var disconnectSubject = new Subject<DisconnectReason>();
@@ -46,7 +46,7 @@ public class NetDaemonRuntimeTests
         var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
         var homeAssistantConnectionMock = new Mock<IHomeAssistantConnection>();
         var appModelMock = new Mock<IAppModel>();
-        var loggerMock = new Mock<ILogger<RuntimeService>>();
+        var loggerMock = new Mock<ILogger<NetDaemonRuntime>>();
         var scopedContext = new Mock<AppScopedHaContextProvider>();
 
         var connectSubject = new Subject<IHomeAssistantConnection>();
@@ -97,7 +97,7 @@ public class NetDaemonRuntimeTests
         var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
         var homeAssistantConnectionMock = new Mock<IHomeAssistantConnection>();
         var appModelMock = new Mock<IAppModel>();
-        var loggerMock = new Mock<ILogger<RuntimeService>>();
+        var loggerMock = new Mock<ILogger<NetDaemonRuntime>>();
         var scopedContext = new Mock<AppScopedHaContextProvider>();
 
         var connectSubject = new Subject<IHomeAssistantConnection>();
