@@ -15,7 +15,7 @@ internal class NetDaemonRuntime : IRuntime
     private readonly IHomeAssistantRunner _homeAssistantRunner;
     private readonly IOptions<AppConfigurationLocationSetting> _locationSettings;
 
-    private readonly ILogger<RuntimeService> _logger;
+    private readonly ILogger<NetDaemonRuntime> _logger;
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
     private CancellationToken? _stoppingToken;
@@ -27,7 +27,7 @@ internal class NetDaemonRuntime : IRuntime
         IOptions<AppConfigurationLocationSetting> locationSettings,
         IAppModel appModel,
         IServiceProvider serviceProvider,
-        ILogger<RuntimeService> logger,
+        ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
     {
         _haSettings = settings.Value;

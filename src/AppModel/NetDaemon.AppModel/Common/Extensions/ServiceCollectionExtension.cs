@@ -18,6 +18,10 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAppFromType(this IServiceCollection services, Type type)
     {
+        // We make sure we only add AppModel services once
+        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
+            services.AddAppModel();
+
         return services.AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
     }
 
