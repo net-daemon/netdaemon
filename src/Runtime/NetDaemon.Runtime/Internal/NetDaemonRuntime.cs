@@ -106,7 +106,7 @@ internal class NetDaemonRuntime : IRuntime
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to initialize apps");
+            _logger.LogError(e, "   Failed to initialize apps");
             throw;
         }
     }

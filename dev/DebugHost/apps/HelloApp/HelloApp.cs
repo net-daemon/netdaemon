@@ -7,6 +7,7 @@ using NetDaemon.HassModel.Common;
 namespace Apps;
 
 [NetDaemonApp]
+[Focus]
 public class HelloApp
 {
     public HelloApp(IHaContext ha, ILogger<HelloApp> logger)

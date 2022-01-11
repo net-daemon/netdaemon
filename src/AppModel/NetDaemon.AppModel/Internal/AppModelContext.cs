@@ -1,4 +1,5 @@
 using System.Reflection;
+using NetDaemon.AppModel.Internal.Extensions;
 
 namespace NetDaemon.AppModel.Internal;
 
@@ -10,7 +11,7 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
     private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
     private readonly ILogger<IAppModelContext> _logger;
     private readonly IServiceProvider _provider;
-    private bool isDisposed;
+    private bool _isDisposed;
 
     public AppModelContext(
         ILogger<IAppModelContext> logger,
@@ -25,29 +26,36 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
     }
 
     public IReadOnlyCollection<IApplication> Applications => _applications;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed)
+            return;
+
+        foreach (var appInstance in _applications) await appInstance.DisposeAsync().ConfigureAwait(false);
+        _applications.Clear();
+        _isDisposed = true;
+    }
+
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await LoadApplications();
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        if (isDisposed)
-            return;
-
-        foreach (var appInstance in _applications) await appInstance.DisposeAsync().ConfigureAwait(false);
-        _applications.Clear();
-        isDisposed = true;
-    }
-
     private async Task LoadApplications()
     {
+        var loadOnlyFocusedApps = _applicationTypes.IsNetDaemonFocusAttributeUsed();
         foreach (var appType in _applicationTypes)
         {
             var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
             var id = appAttribute?.Id ?? appType.FullName ??
                 throw new InvalidOperationException("Type was not expected to be null");
-            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType);
+            var loadMode = AppLoadMode.UseStateManager;
+            if (loadOnlyFocusedApps)
+                loadMode = appType.HasNetDaemonFocusAttribute()
+                    ? AppLoadMode.AlwaysEnabled
+                    : AppLoadMode.AlwaysDisabled;
+            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType, loadMode);
             await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
         }

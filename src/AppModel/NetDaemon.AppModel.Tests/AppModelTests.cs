@@ -158,7 +158,8 @@ public class AppModelTests
         var loggerMock = new Mock<ILogger<Application>>();
         var providerMock = new Mock<IServiceProvider>();
         // ACT
-        var app = new Application("", typeof(object), loggerMock.Object, providerMock.Object);
+        var app = new Application("", typeof(object), AppLoadMode.UseStateManager, loggerMock.Object,
+            providerMock.Object);
 
         // CHECK
         await Assert.ThrowsAsync<ArgumentException>(() => app.SetStateAsync(ApplicationState.Running));
