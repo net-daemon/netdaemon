@@ -3,6 +3,7 @@ using LocalApps;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using NetDaemon.AppModel.Common.TypeResolver;
 using NetDaemon.AppModel.Internal;
 using NetDaemon.AppModel.Internal.Compiler;
 
@@ -21,22 +22,6 @@ public class AssemblyResolverTests
 
         // get apps from test project
         serviceCollection.AddAppsFromAssembly(Assembly.GetCallingAssembly());
-
-        serviceCollection.AddLogging();
-        var provider = serviceCollection.BuildServiceProvider();
-
-        var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ??
-                                throw new NullReferenceException("Not expected null");
-        assemblyResolvers.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public void TestLocalAssemblyFromShouldBeResolved()
-    {
-        var serviceCollection = new ServiceCollection();
-
-        // get apps from test project
-        serviceCollection.AddAppsFromType(typeof(MyAppLocalApp));
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();

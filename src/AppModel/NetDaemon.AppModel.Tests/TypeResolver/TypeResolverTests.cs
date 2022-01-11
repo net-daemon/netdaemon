@@ -1,4 +1,5 @@
 using System.Reflection;
+using LocalApps;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -124,5 +125,22 @@ public class TypeResolverTests
         t.Should().HaveCount(1);
         t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);
+    }
+    
+    [Fact]
+    public void TestAddAppFromTypeShouldLoadSigleApp()
+    {
+        var serviceCollection = new ServiceCollection();
+
+        // get apps from test project
+        serviceCollection.AddAppFromType(typeof(MyAppLocalApp));
+
+        serviceCollection.AddLogging();
+        var provider = serviceCollection.BuildServiceProvider();
+
+        var appResolvers = provider.GetRequiredService<IEnumerable<IAppTypeResolver>>() ??
+                           throw new NullReferenceException("Not expected null");
+        appResolvers.Should().HaveCount(1);
+        appResolvers.First().GetTypes().Should().BeEquivalentTo(new[] { typeof(MyAppLocalApp) });
     }
 }
