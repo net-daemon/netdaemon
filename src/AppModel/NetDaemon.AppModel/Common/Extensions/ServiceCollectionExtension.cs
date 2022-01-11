@@ -10,7 +10,11 @@ public static class ServiceCollectionExtensions
     {
         // We make sure we only add AppModel services once
         if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
-            services.AddAppModel();
+        {
+            services
+                .AddAppModel()
+                .AddAppTypeResolver();
+        }
 
         services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
         return services;
@@ -29,7 +33,11 @@ public static class ServiceCollectionExtensions
     {
         // We make sure we only add AppModel services once
         if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
-            services.AddAppModel();
+        {
+            services
+                .AddAppModel()
+                .AddAppTypeResolver();
+        }
 
         services
             .AddSingleton<CompilerFactory>()
@@ -48,7 +56,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
             .AddTransient<AppModelContext>()
             .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
-            .AddAppTypeResolver()
             .AddScopedConfigurationBinder()
             .AddScopedAppServices()
             .AddConfigManagement();
