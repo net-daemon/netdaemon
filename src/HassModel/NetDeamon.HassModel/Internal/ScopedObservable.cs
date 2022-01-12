@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Reactive.Subjects;
-using System.Reactive.Linq;
-using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using NetDaemon.HassModel.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace NetDaemon.Infrastructure.ObservableHelpers
+namespace NetDaemon.HassModel.Internal
 {
     /// <summary>
     /// Wraps an Observable so all subscribers can be unsubscribed by disposing

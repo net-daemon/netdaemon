@@ -1,7 +1,13 @@
 ﻿using System.Globalization;
 using System.IO;
-using JoySoftware.HomeAssistant.Client;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NetDaemon.Client.Common;
+using NetDaemon.Client.Common.Extensions;
+using NetDaemon.Client.Common.HomeAssistant.Extensions;
+using NetDaemon.Client.Common.HomeAssistant.Model;
 
 #pragma warning disable CA1303
 #pragma warning disable CA2007
@@ -9,13 +15,10 @@ using Microsoft.Extensions.Configuration;
 var configurationRoot = GetConfigurationRoot();
 var haSettings = configurationRoot.GetSection("HomeAssistant")?.Get<HomeAssistantSettings>() ?? new HomeAssistantSettings();
 var generationSettings = configurationRoot.GetSection("CodeGeneration").Get<CodeGenerationSettings>() ?? new CodeGenerationSettings();
-if (args?.Length > 0)
+
+if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
 {
-    foreach (var arg in args)
-    {
-        if (arg.ToLower(CultureInfo.InvariantCulture) == "-help")
-        {
-            Console.WriteLine(@"
+    Console.WriteLine(@"
     Usage: nd-codegen [options] -ns namespace -o outfile
     Options:
         -host       : Host of the netdaemon instance
@@ -25,32 +28,20 @@ if (args?.Length > 0)
 
     These settings is valid when installed codegen as global dotnet tool.
             ");
-            return 0;
-        }
-    }
+    return 0;
 }
 
-Console.WriteLine($"Connecting to Home Assistant at {haSettings.Host}:{haSettings.Port}");
-await using var client = new HassClient();
+var (hassStates, hassServiceDomains) = await GetHaData(haSettings);
+var code = Generator.GenerateCode(generationSettings.Namespace, hassStates, hassServiceDomains);
 
-var connected = await client.ConnectAsync(haSettings.Host, haSettings.Port, haSettings.Ssl, haSettings.Token, false).ConfigureAwait(false);
-
-if (!connected)
-{
-    await Console.Error.WriteLineAsync("Failed to Connect to Home Assistant").ConfigureAwait(false);
-    return -1;
-}
-
-var services = await client.GetServices().ConfigureAwait(false);
-var states = await client.GetAllStates().ConfigureAwait(false);
-
-var code = Generator.GenerateCode(generationSettings.Namespace, states, services);
 File.WriteAllText(generationSettings.OutputFile, code);
 
 Console.WriteLine("Code Generated successfully!");
 Console.WriteLine(Path.GetFullPath(generationSettings.OutputFile));
 
 return 0;
+
+
 
 IConfigurationRoot GetConfigurationRoot()
 {
@@ -79,4 +70,22 @@ IConfigurationRoot GetConfigurationRoot()
         });
 
     return builder.Build();
+}
+
+async Task<(IReadOnlyCollection<HassState>? states, IReadOnlyCollection<HassServiceDomain> serviceDmains)> GetHaData(HomeAssistantSettings homeAssistantSettings)
+{
+    Console.WriteLine($"Connecting to Home Assistant at {homeAssistantSettings.Host}:{homeAssistantSettings.Port}");
+
+    var serviceCollection = new ServiceCollection();
+    serviceCollection.AddHomeAssistantClient();
+    var client = serviceCollection.BuildServiceProvider().GetRequiredService<IHomeAssistantClient>();
+
+    await using var connection = await client.ConnectAsync(homeAssistantSettings.Host, homeAssistantSettings.Port, homeAssistantSettings.Ssl, homeAssistantSettings.Token, CancellationToken.None).ConfigureAwait(false);
+
+    var services = await connection.GetServicesAsync(CancellationToken.None).ConfigureAwait(false);
+    var serviceDmains = services!.Value.ToServicesResult();
+
+    var states = await connection.GetStatesAsync(CancellationToken.None).ConfigureAwait(false);
+
+    return (states, serviceDmains);
 }

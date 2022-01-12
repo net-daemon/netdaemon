@@ -2,7 +2,7 @@
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Internal.Client;
+namespace NetDaemon.HassModel.Internal;
 
 internal static class HassObjectMapper
 {

@@ -10,11 +10,11 @@ using Xunit;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
-using NetDaemon.HassModel.Internal.Client;
+using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
-public class EntityAreaCacheUsingClientTests
+public class EntityAreaCachTests
 {
     [Fact]
     public async Task EntityIdWithArea_Returns_HassArea()

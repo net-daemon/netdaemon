@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Entities
 {

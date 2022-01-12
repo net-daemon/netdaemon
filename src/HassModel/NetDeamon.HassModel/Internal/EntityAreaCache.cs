@@ -8,7 +8,7 @@ using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
 
-namespace NetDaemon.HassModel.Internal.Client;
+namespace NetDaemon.HassModel.Internal;
 
 internal class EntityAreaCache : IDisposable
 {

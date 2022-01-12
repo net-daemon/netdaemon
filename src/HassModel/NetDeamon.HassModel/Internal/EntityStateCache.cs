@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
 
-namespace NetDaemon.HassModel.Internal.Client;
+namespace NetDaemon.HassModel.Internal;
 
 [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
 internal class EntityStateCache : IDisposable

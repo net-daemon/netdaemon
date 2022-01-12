@@ -1,11 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
+using NetDaemon.Client.Common.HomeAssistant.Model;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
-public static class Generator
+internal static class Generator
 {
     public static string GenerateCode(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
     {

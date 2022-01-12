@@ -12,7 +12,7 @@ using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
-namespace NetDaemon.HassModel.Internal.Client;
+namespace NetDaemon.HassModel.Internal;
 
 /// <summary>
 ///     Implements IHaContext and IEventProvider to be used in a scope like a NetDaemon App
