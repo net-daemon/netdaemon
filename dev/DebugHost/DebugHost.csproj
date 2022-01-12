@@ -27,6 +27,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\src\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
         <ProjectReference Include="..\..\src\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
         <ProjectReference Include="..\..\src\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
         <ProjectReference Include="..\..\src\\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />

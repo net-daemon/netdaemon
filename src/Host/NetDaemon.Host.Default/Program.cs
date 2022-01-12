@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Runtime;
 using NetDaemon.AppModel;
+using NetDaemon.Extensions.Logging;
 
 #pragma warning disable CA1812
 
@@ -9,6 +10,7 @@ try
 {
     await Host.CreateDefaultBuilder(args)
         .UseNetDaemonAppSettings()
+        .UseNetDaemonDefaultLogging()
         .UseNetDaemonRuntime()
         .ConfigureServices((_, services) =>
             services

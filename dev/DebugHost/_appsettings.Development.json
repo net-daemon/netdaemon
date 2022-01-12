@@ -3,7 +3,8 @@
     "LogLevel": {
       "Default": "Debug",
       "Microsoft": "Warning"
-    }
+    },
+    "ConsoleThemeType": "System"
   },
   "HomeAssistant": {
     "Host": "ENTER YOUR IP TO Development Home Assistant here",
