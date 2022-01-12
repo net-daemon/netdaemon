@@ -1,5 +1,4 @@
 using System.Reflection;
-using NetDaemon.AppModel.Internal.Extensions;
 
 namespace NetDaemon.AppModel.Internal;
 
@@ -7,9 +6,7 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 {
     private readonly List<Application> _applications = new();
 
-    private readonly IReadOnlyCollection<Type> _applicationTypes;
     private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
-    private readonly ILogger<IAppModelContext> _logger;
     private readonly IServiceProvider _provider;
     private bool _isDisposed;
 
@@ -18,11 +15,8 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
         IEnumerable<IAppTypeResolver> appTypeResolvers,
         IServiceProvider provider)
     {
-        _logger = logger;
         _provider = provider;
         _appTypeResolvers = appTypeResolvers;
-        // Can be missing so it is not injected in the constructor
-        _applicationTypes = GetNetDaemonApplicationTypes();
     }
 
     public IReadOnlyCollection<IApplication> Applications => _applications;
@@ -44,19 +38,24 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 
     private async Task LoadApplications()
     {
-        var loadOnlyFocusedApps = _applicationTypes.IsNetDaemonFocusAttributeUsed();
-        foreach (var appType in _applicationTypes)
+        var applicationTypes = GetNetDaemonApplicationTypes().ToArray();
+        var loadOnlyFocusedApps = ShouldLoadOnlyFocusedApps(applicationTypes);
+        foreach (var appType in applicationTypes)
         {
+            if (loadOnlyFocusedApps && !HasFocusAttribute(appType))
+                continue; // We do not load applications that does not have focus attr and we are in focus mode
+
             var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
             var id = appAttribute?.Id ?? appType.FullName ??
                 throw new InvalidOperationException("Type was not expected to be null");
-            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType, loadOnlyFocusedApps);
+
+            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType);
             await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
         }
     }
 
-    private List<Type> GetNetDaemonApplicationTypes()
+    private IEnumerable<Type> GetNetDaemonApplicationTypes()
     {
         // Get all classes with the [NetDaemonAppAttribute]
         return _appTypeResolvers.SelectMany(r => r.GetTypes())
@@ -64,6 +63,16 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
                         !n.IsGenericType &&
                         !n.IsAbstract &&
                         n.GetCustomAttribute<NetDaemonAppAttribute>() != null
-            ).ToList();
+            );
+    }
+
+    private static bool ShouldLoadOnlyFocusedApps(IEnumerable<Type> types)
+    {
+        return types.Any(n => n.GetCustomAttribute<FocusAttribute>() is not null);
+    }
+
+    private static bool HasFocusAttribute(Type type)
+    {
+        return type.GetCustomAttribute<FocusAttribute>() is not null;
     }
 }

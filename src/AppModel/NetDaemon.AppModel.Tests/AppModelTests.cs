@@ -141,7 +141,7 @@ public class AppModelTests
         var loggerMock = new Mock<ILogger<Application>>();
         var providerMock = new Mock<IServiceProvider>();
         // ACT
-        var app = new Application("", typeof(object), false, loggerMock.Object,
+        var app = new Application("", typeof(object), loggerMock.Object,
             providerMock.Object);
 
         // CHECK
@@ -178,7 +178,7 @@ public class AppModelTests
 
 
         // CHECK
-        loadApps.Where(n => n.Id == "LocalAppsWithErrors.MyAppLocalAppWithError").First()
+        loadApps.First(n => n.Id == "LocalAppsWithErrors.MyAppLocalAppWithError")
             .State.Should().Be(ApplicationState.Error);
 
         // Verify that the error is logged
@@ -219,9 +219,9 @@ public class AppModelTests
 
         // check the application instance is init ok
         var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithAsyncDispose");
-        var app = (MyAppLocalAppWithAsyncDispose?) application?.ApplicationContext?.Instance;
+        var app = (MyAppLocalAppWithAsyncDispose?) application.ApplicationContext?.Instance;
         application!.State.Should().Be(ApplicationState.Running);
-        await application!.DisposeAsync().ConfigureAwait(false);
+        await application.DisposeAsync().ConfigureAwait(false);
         app!.AsyncDisposeIsCalled.Should().BeTrue();
         app.DisposeIsCalled.Should().BeFalse();
     }
@@ -229,7 +229,8 @@ public class AppModelTests
     // Focus tests
     [Theory]
     [InlineData(ApplicationState.Enabled)]
-    public async Task TestFocusShouldAlwaysLoadAppIfIndependeintOfStateManager(ApplicationState applicationState)
+    [InlineData(ApplicationState.Disabled)]
+    public async Task TestFocusShouldAlwaysLoadAppIfIndependentOfStateManager(ApplicationState applicationState)
     {
         // ARRANGE
         var fakeAppStateManager = new Mock<IAppStateManager>();
@@ -252,12 +253,12 @@ public class AppModelTests
         var apps = appModelContext.Applications;
 
         // CHECK
-        apps.Should().HaveCount(2);
+        apps.Should().HaveCount(1);
         var application = (Application) apps.First(n => n.Id == "Apps.MyFocusApp");
-        Assert.NotNull(application.ApplicationContext?.Instance);
-
-        application = (Application) apps.First(n => n.Id == "Apps.NonFocusApp");
-        Assert.Null(application.ApplicationContext?.Instance);
+        if (applicationState == ApplicationState.Disabled)
+            Assert.Null(application.ApplicationContext?.Instance);
+        else
+            Assert.NotNull(application.ApplicationContext?.Instance);
     }
 
     internal class FakeAppStateManager : IAppStateManager

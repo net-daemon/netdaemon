@@ -1,13 +1,9 @@
-using NetDaemon.AppModel.Internal.Extensions;
-
 namespace NetDaemon.AppModel.Internal;
 
 internal class Application : IApplication
 {
     private readonly Type _applicationType;
     private readonly IAppStateManager? _appStateManager;
-    private readonly bool _hasFocus;
-    private readonly bool _loadOnlyFocusedApps;
     private readonly ILogger<Application> _logger;
     private readonly IServiceProvider _provider;
 
@@ -16,23 +12,20 @@ internal class Application : IApplication
     public Application(
         string id,
         Type applicationType,
-        bool loadOnlyFocusedApps,
         ILogger<Application> logger,
         IServiceProvider provider
     )
     {
         Id = id;
         _applicationType = applicationType;
-        _loadOnlyFocusedApps = loadOnlyFocusedApps;
         _logger = logger;
         _provider = provider;
         // Can be missing so it is not injected in the constructor
         _appStateManager = provider.GetService<IAppStateManager>();
-        _hasFocus = applicationType.HasNetDaemonFocusAttribute();
     }
 
     // Used in tests
-    internal ApplicationContext? ApplicationContext { get; set; }
+    internal ApplicationContext? ApplicationContext { get; private set; }
 
     public string Id { get; }
 
@@ -102,8 +95,6 @@ internal class Application : IApplication
     {
         try
         {
-            if (_loadOnlyFocusedApps && !_hasFocus)
-                return; // We do not instance apps when we should load only focus apps and not have focus attribute
             ApplicationContext = new ApplicationContext(_applicationType, _provider);
 
             await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
