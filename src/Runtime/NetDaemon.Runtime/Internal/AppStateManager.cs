@@ -1,4 +1,3 @@
-
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
@@ -6,7 +5,6 @@ using System.Text;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Integration;
-using NetDaemon.Client.Common.HomeAssistant.Extensions;
 
 namespace NetDaemon.Runtime.Internal;
 
@@ -21,51 +19,92 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         _provider = provider;
     }
 
-    public Task<ApplicationState> GetStateAsync(string applicationId)
+    public async Task<ApplicationState> GetStateAsync(string applicationId)
     {
         // Since IHaContext is scoped and StateManager is singleton we get the
         // IHaContext everytime we need to check state
-        using var scope = _provider.CreateScope();
-
-        var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
-        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
-
-        var appState = haContext.GetState(entityId);
-
-        if (appState is null)
+        var scope = _provider.CreateScope();
+        try
         {
-            haContext.SetEntityState(entityId, "on");
-            return Task.FromResult(ApplicationState.Enabled);
+            var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
+            var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+            var appState = haContext.GetState(entityId);
+
+            if (appState is null)
+            {
+                haContext.SetEntityState(entityId, "on");
+                return ApplicationState.Enabled;
+            }
+
+            return appState.State == "on" ? ApplicationState.Enabled : ApplicationState.Disabled;
         }
-        return appState.State == "on" ?
-            Task.FromResult(ApplicationState.Enabled) : Task.FromResult(ApplicationState.Disabled);
+        finally
+        {
+            if (scope is IAsyncDisposable serviceScopeAsyncDisposable)
+                await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
-    public Task SaveStateAsync(string applicationId, ApplicationState state)
+    public async Task SaveStateAsync(string applicationId, ApplicationState state)
     {
         // Since IHaContext is scoped and StateManager is singleton we get the
         // IHaContext everytime we need to check state
-        using var scope = _provider.CreateScope();
-
-        var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
-        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
-
-        switch (state)
+        var scope = _provider.CreateScope();
+        try
         {
-            case ApplicationState.Enabled:
-                haContext.SetEntityState(entityId, "on", new { app_state = "enabled" });
-                break;
-            case ApplicationState.Running:
-                haContext.SetEntityState(entityId, "on", new { app_state = "running" });
-                break;
-            case ApplicationState.Error:
-                haContext.SetEntityState(entityId, "on", new { app_state = "error" });
-                break;
-            case ApplicationState.Disabled:
-                haContext.SetEntityState(entityId, "off", new { app_state = "disabled" });
-                break;
+            var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
+            var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+
+            switch (state)
+            {
+                case ApplicationState.Enabled:
+                    haContext.SetEntityState(entityId, "on", new {app_state = "enabled"});
+                    break;
+                case ApplicationState.Running:
+                    haContext.SetEntityState(entityId, "on", new {app_state = "running"});
+                    break;
+                case ApplicationState.Error:
+                    haContext.SetEntityState(entityId, "on", new {app_state = "error"});
+                    break;
+                case ApplicationState.Disabled:
+                    haContext.SetEntityState(entityId, "off", new {app_state = "disabled"});
+                    break;
+            }
         }
-        return Task.CompletedTask;
+        finally
+        {
+            if (scope is IAsyncDisposable serviceScopeAsyncDisposable)
+                await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
+    {
+        haConnection.OnHomeAssistantEvent
+            .Where(n => n.EventType == "state_changed")
+            .Select(async s =>
+            {
+                var changedEvent = s.ToStateChangedEvent() ?? throw new InvalidOperationException();
+
+                if (changedEvent.NewState is null || changedEvent.OldState is null)
+                    // Ignore if entity just created or deleted
+                    return;
+                if (changedEvent.NewState.State == changedEvent.OldState.State)
+                    // We only care about changed state
+                    return;
+                foreach (var app in appContext.Applications)
+                {
+                    var entityId =
+                        ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ?? throw new InvalidOperationException());
+                    if (entityId == changedEvent.NewState.EntityId)
+                    {
+                        await app.SetStateAsync(
+                            changedEvent?.NewState?.State == "on" ? ApplicationState.Enabled : ApplicationState.Disabled
+                        );
+                        break;
+                    }
+                }
+            }).Subscribe();
     }
 
 
@@ -73,15 +112,14 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     ///     Converts any unicode string to a safe Home Assistant name
     /// </summary>
     /// <param name="applicationId">The unicode string to convert</param>
-    [SuppressMessage(category: "Microsoft.Globalization", checkId: "CA1308")]
+    [SuppressMessage("Microsoft.Globalization", "CA1308")]
     [SuppressMessage("", "CA1062")]
     public static string ToSafeHomeAssistantEntityIdFromApplicationId(string applicationId)
     {
-        string normalizedString = applicationId.Normalize(NormalizationForm.FormD);
+        var normalizedString = applicationId.Normalize(NormalizationForm.FormD);
         StringBuilder stringBuilder = new(applicationId.Length);
 
-        foreach (char c in normalizedString)
-        {
+        foreach (var c in normalizedString)
             switch (CharUnicodeInfo.GetUnicodeCategory(c))
             {
                 case UnicodeCategory.LowercaseLetter:
@@ -96,40 +134,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     stringBuilder.Append('_');
                     break;
             }
-        }
+
         return $"switch.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
-    }
-
-    public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
-    {
-        haConnection.OnHomeAssistantEvent
-            .Where(n => n.EventType == "state_changed")
-            .Select(async s =>
-            {
-                var changedEvent = s.ToStateChangedEvent() ?? throw new InvalidOperationException();
-
-                if (changedEvent.NewState is null || changedEvent.OldState is null)
-                {
-                    // Ignore if entity just created or deleted
-                    return;
-                }
-                if (changedEvent.NewState.State == changedEvent.OldState.State)
-                {
-                    // We only care about changed state
-                    return;
-                }
-                foreach (var app in appContext.Applications)
-                {
-                    var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ?? throw new InvalidOperationException());
-                    if (entityId == changedEvent.NewState.EntityId)
-                    {
-                        await app.SetStateAsync(
-                            changedEvent?.NewState?.State == "on" ?
-                                ApplicationState.Enabled : ApplicationState.Disabled
-                        );
-                        break;
-                    }
-                }
-            }).Subscribe();
     }
 }
