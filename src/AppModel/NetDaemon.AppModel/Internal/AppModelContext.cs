@@ -50,12 +50,7 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
             var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
             var id = appAttribute?.Id ?? appType.FullName ??
                 throw new InvalidOperationException("Type was not expected to be null");
-            var loadMode = AppLoadMode.UseStateManager;
-            if (loadOnlyFocusedApps)
-                loadMode = appType.HasNetDaemonFocusAttribute()
-                    ? AppLoadMode.AlwaysEnabled
-                    : AppLoadMode.AlwaysDisabled;
-            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType, loadMode);
+            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType, loadOnlyFocusedApps);
             await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
         }

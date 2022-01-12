@@ -1,10 +1,13 @@
+using NetDaemon.AppModel.Internal.Extensions;
+
 namespace NetDaemon.AppModel.Internal;
 
 internal class Application : IApplication
 {
     private readonly Type _applicationType;
-    private readonly AppLoadMode _appLoadMode;
     private readonly IAppStateManager? _appStateManager;
+    private readonly bool _hasFocus;
+    private readonly bool _loadOnlyFocusedApps;
     private readonly ILogger<Application> _logger;
     private readonly IServiceProvider _provider;
 
@@ -13,19 +16,19 @@ internal class Application : IApplication
     public Application(
         string id,
         Type applicationType,
-        AppLoadMode appLoadMode,
+        bool loadOnlyFocusedApps,
         ILogger<Application> logger,
         IServiceProvider provider
     )
     {
         Id = id;
         _applicationType = applicationType;
-        _appLoadMode = appLoadMode;
+        _loadOnlyFocusedApps = loadOnlyFocusedApps;
         _logger = logger;
         _provider = provider;
-
         // Can be missing so it is not injected in the constructor
         _appStateManager = provider.GetService<IAppStateManager>();
+        _hasFocus = applicationType.HasNetDaemonFocusAttribute();
     }
 
     // Used in tests
@@ -52,7 +55,7 @@ internal class Application : IApplication
                 await LoadApplication(state);
                 break;
             case ApplicationState.Disabled:
-                    await UnloadApplication(state);
+                await UnloadApplication(state);
                 break;
             case ApplicationState.Error:
                 _isErrorState = true;
@@ -63,9 +66,14 @@ internal class Application : IApplication
         }
     }
 
-    async Task UnloadApplication(ApplicationState state)
+    public async ValueTask DisposeAsync()
     {
-        if (ApplicationContext is not null && _appLoadMode != AppLoadMode.AlwaysEnabled)
+        if (ApplicationContext is not null) await ApplicationContext.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private async Task UnloadApplication(ApplicationState state)
+    {
+        if (ApplicationContext is not null)
         {
             await ApplicationContext.DisposeAsync().ConfigureAwait(false);
             ApplicationContext = null;
@@ -77,16 +85,11 @@ internal class Application : IApplication
     private async Task LoadApplication(ApplicationState state)
     {
         // first we save state "Enabled", this will also
-        // endup being state "Running" if instancing is successful
+        // end up being state "Running" if instancing is successful
         // or "Error" if instancing the app fails
         await SaveStateIfStateManagerExistAsync(state);
-        if (ApplicationContext is null || _appLoadMode == AppLoadMode.AlwaysEnabled)
+        if (ApplicationContext is null)
             await InstanceApplication().ConfigureAwait(false);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (ApplicationContext is not null) await ApplicationContext.DisposeAsync().ConfigureAwait(false);
     }
 
     public async Task InitializeAsync()
@@ -99,6 +102,8 @@ internal class Application : IApplication
     {
         try
         {
+            if (_loadOnlyFocusedApps && !_hasFocus)
+                return; // We do not instance apps when we should load only focus apps and not have focus attribute
             ApplicationContext = new ApplicationContext(_applicationType, _provider);
 
             await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
@@ -119,10 +124,8 @@ internal class Application : IApplication
 
     private async Task<bool> ShouldInstanceApplicationAsync(string id)
     {
-        if (_appStateManager is null || _appLoadMode == AppLoadMode.AlwaysEnabled)
+        if (_appStateManager is null)
             return true;
-        if (_appLoadMode == AppLoadMode.AlwaysDisabled)
-            return false;
         return await _appStateManager.GetStateAsync(id).ConfigureAwait(false)
                == ApplicationState.Enabled;
     }

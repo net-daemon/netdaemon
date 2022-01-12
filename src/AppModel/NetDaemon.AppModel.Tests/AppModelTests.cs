@@ -39,26 +39,9 @@ public class AppModelTests
         loadApps.Should().HaveCount(5);
 
         // check the application instance is init ok
-        var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
-        var instance = (MyAppLocalApp?)application.ApplicationContext?.Instance;
+        var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var instance = (MyAppLocalApp?) application.ApplicationContext?.Instance;
         instance!.Settings.AString.Should().Be("Hello world!");
-    }
-
-    internal class FakeAppStateManager : IAppStateManager
-    {
-        public ApplicationState? State { get; set; }
-        public Task<ApplicationState> GetStateAsync(string applicationId)
-        {
-            if (applicationId == "LocalApps.MyAppLocalApp")
-                return Task.FromResult(ApplicationState.Disabled);
-            return Task.FromResult(ApplicationState.Enabled);
-        }
-
-        public Task SaveStateAsync(string applicationId, ApplicationState state)
-        {
-            State = state;
-            return Task.CompletedTask;
-        }
     }
 
     [Fact]
@@ -80,7 +63,7 @@ public class AppModelTests
             })
             .Build();
 
-        var fakeStateManager = (FakeAppStateManager?)builder.Services.GetService<IAppStateManager>();
+        var fakeStateManager = (FakeAppStateManager?) builder.Services.GetService<IAppStateManager>();
         var appModel = builder.Services.GetService<IAppModel>();
         var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
 
@@ -90,18 +73,18 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var application = (Application)apps.First(n => n.Id == "LocalApps.MyAppLocalApp");
+        var application = (Application) apps.First(n => n.Id == "LocalApps.MyAppLocalApp");
         application.State.Should().Be(ApplicationState.Disabled);
-        Assert.Null((MyAppLocalApp?)application.ApplicationContext?.Instance);
+        Assert.Null((MyAppLocalApp?) application.ApplicationContext?.Instance);
 
         // set state to enabled
         await application.SetStateAsync(ApplicationState.Enabled).ConfigureAwait(false);
         application.State.Should().Be(ApplicationState.Running);
-        Assert.NotNull((MyAppLocalApp?)application.ApplicationContext?.Instance);
+        Assert.NotNull((MyAppLocalApp?) application.ApplicationContext?.Instance);
 
         fakeStateManager!.State.Should().Be(ApplicationState.Running);
     }
-    
+
     [Fact]
     public async Task TestGetApplicationsLocalWithEnabled()
     {
@@ -129,14 +112,14 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var application = (Application)apps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        var application = (Application) apps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
         application.State.Should().Be(ApplicationState.Running);
-        Assert.NotNull((MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance);
+        Assert.NotNull((MyAppLocalAppWithDispose?) application.ApplicationContext?.Instance);
 
         // set state to enabled
         await application.SetStateAsync(ApplicationState.Disabled).ConfigureAwait(false);
         application.State.Should().Be(ApplicationState.Disabled);
-        Assert.Null((MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance);
+        Assert.Null((MyAppLocalAppWithDispose?) application.ApplicationContext?.Instance);
     }
 
     [Fact]
@@ -158,7 +141,7 @@ public class AppModelTests
         var loggerMock = new Mock<ILogger<Application>>();
         var providerMock = new Mock<IServiceProvider>();
         // ACT
-        var app = new Application("", typeof(object), AppLoadMode.UseStateManager, loggerMock.Object,
+        var app = new Application("", typeof(object), false, loggerMock.Object,
             providerMock.Object);
 
         // CHECK
@@ -218,13 +201,13 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
-        var app = (MyAppLocalAppWithDispose?)application.ApplicationContext?.Instance;
+        var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        var app = (MyAppLocalAppWithDispose?) application.ApplicationContext?.Instance;
         application.State.Should().Be(ApplicationState.Running);
         await application.DisposeAsync().ConfigureAwait(false);
         app!.DisposeIsCalled.Should().BeTrue();
     }
-    
+
     [Fact]
     public async Task TestGetApplicationsLocalWithAsyncDisposable()
     {
@@ -235,11 +218,63 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithAsyncDispose");
-        var app = (MyAppLocalAppWithAsyncDispose?)application?.ApplicationContext?.Instance;
+        var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithAsyncDispose");
+        var app = (MyAppLocalAppWithAsyncDispose?) application?.ApplicationContext?.Instance;
         application!.State.Should().Be(ApplicationState.Running);
         await application!.DisposeAsync().ConfigureAwait(false);
         app!.AsyncDisposeIsCalled.Should().BeTrue();
         app.DisposeIsCalled.Should().BeFalse();
+    }
+
+    // Focus tests
+    [Theory]
+    [InlineData(ApplicationState.Enabled)]
+    public async Task TestFocusShouldAlwaysLoadAppIfIndependeintOfStateManager(ApplicationState applicationState)
+    {
+        // ARRANGE
+        var fakeAppStateManager = new Mock<IAppStateManager>();
+        fakeAppStateManager.Setup(n => n.GetStateAsync(It.IsAny<string>())).ReturnsAsync(() => applicationState);
+
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                services.AddAppsFromSource();
+                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
+                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithFocus")));
+                services.AddSingleton(fakeAppStateManager.Object);
+            })
+            .Build();
+
+        var appModel = builder.Services.GetService<IAppModel>();
+        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // ACT
+        var apps = appModelContext.Applications;
+
+        // CHECK
+        apps.Should().HaveCount(2);
+        var application = (Application) apps.First(n => n.Id == "Apps.MyFocusApp");
+        Assert.NotNull(application.ApplicationContext?.Instance);
+
+        application = (Application) apps.First(n => n.Id == "Apps.NonFocusApp");
+        Assert.Null(application.ApplicationContext?.Instance);
+    }
+
+    internal class FakeAppStateManager : IAppStateManager
+    {
+        public ApplicationState? State { get; set; }
+
+        public Task<ApplicationState> GetStateAsync(string applicationId)
+        {
+            if (applicationId == "LocalApps.MyAppLocalApp")
+                return Task.FromResult(ApplicationState.Disabled);
+            return Task.FromResult(ApplicationState.Enabled);
+        }
+
+        public Task SaveStateAsync(string applicationId, ApplicationState state)
+        {
+            State = state;
+            return Task.CompletedTask;
+        }
     }
 }
