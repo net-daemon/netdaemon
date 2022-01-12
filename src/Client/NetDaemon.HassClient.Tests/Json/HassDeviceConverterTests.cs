@@ -20,7 +20,7 @@ public class JsonConverterTests
             ""connections"": [],
             ""manufacturer"": ""Google Inc."",
             ""model"": 123123,
-            ""name"": ""My TV"",
+            ""name"": 123,
             ""sw_version"": null,
             ""id"": ""42cdda32a2a3428e86c2e27699d79ead"",
             ""via_device_id"": null,
