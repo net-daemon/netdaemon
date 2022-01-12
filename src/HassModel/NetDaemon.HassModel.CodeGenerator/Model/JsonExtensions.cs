@@ -20,7 +20,7 @@ internal static class JsonExtensions
         Type[] executingAssemblyTypes = Assembly.GetExecutingAssembly().GetTypes();
 
         if (element.ValueKind != JsonValueKind.Object)
-            throw new ApplicationException("Not expected result from the GetServices result");
+            throw new InvalidOperationException("Not expected result from the GetServices result");
 
         foreach (var property in element.EnumerateObject())
         {
