@@ -21,7 +21,7 @@ then
     exit 1
 fi
 
-if [[! -z "${NETDAEMON__APPLICATION_ASSEMBLY}" ]] && [[! "${NETDAEMON__APPLICATION_ASSEMBLY}" == *.dll ]];
+if [[ ! -z "${NETDAEMON__APPLICATION_ASSEMBLY}" ]] && [[ "${NETDAEMON__APPLICATION_ASSEMBLY}" != *".dll" ]];
 then
     echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
     exit 1
