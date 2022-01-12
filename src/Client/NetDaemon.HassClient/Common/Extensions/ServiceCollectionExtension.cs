@@ -1,7 +1,14 @@
 namespace NetDaemon.Client.Common.Extensions;
 
+/// <summary>
+///     ServiceCollectionExtensions
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    ///     Adds home assistant client to the service collection
+    /// </summary>
+    /// <param name="services">Services</param>
     public static IServiceCollection AddHomeAssistantClient(this IServiceCollection services)
     {
         services.AddSingleton<HomeAssistantClient>()
