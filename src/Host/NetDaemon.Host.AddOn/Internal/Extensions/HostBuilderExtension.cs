@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Extensions.Logging;
 using NetDaemon.Host.AddOn.Internal.Config;
 
 namespace NetDaemon.Runtime.Internal.Extensions;
@@ -15,6 +16,7 @@ public static class HostBuilderExtensions
 
         return hostBuilder
             .UseNetDaemonAddOnSettings()
+            .UseNetDaemonDefaultLogging()
             .UseNetDaemonRuntime()
             .ConfigureServices((context, services) =>
             {
