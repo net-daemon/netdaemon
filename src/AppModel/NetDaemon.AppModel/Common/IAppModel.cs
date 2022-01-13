@@ -1,5 +1,8 @@
 namespace NetDaemon.AppModel;
 
+/// <summary>
+///     Application model
+/// </summary>
 public interface IAppModel : IAsyncDisposable
 {
     /// <summary>

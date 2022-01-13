@@ -4,8 +4,16 @@ using NetDaemon.AppModel.Internal.Config;
 
 namespace NetDaemon.AppModel;
 
+/// <summary>
+///     ServiceCollection extensions
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    ///     Adds applications from the specified assembly
+    /// </summary>
+    /// <param name="services">Services</param>
+    /// <param name="assembly">The assembly loading apps from</param>
     public static IServiceCollection AddAppsFromAssembly(this IServiceCollection services, Assembly assembly)
     {
         // We make sure we only add AppModel services once
@@ -20,6 +28,11 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    ///     Add a single app
+    /// </summary>
+    /// <param name="services">Services</param>
+    /// <param name="type">The type of the app to add</param>
     public static IServiceCollection AddAppFromType(this IServiceCollection services, Type type)
     {
         // We make sure we only add AppModel services once
@@ -29,6 +42,10 @@ public static class ServiceCollectionExtensions
         return services.AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
     }
 
+    /// <summary>
+    ///     Add apps from c# source code using the configuration source to find path
+    /// </summary>
+    /// <param name="services">Services</param>
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
     {
         // We make sure we only add AppModel services once

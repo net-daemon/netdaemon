@@ -1,5 +1,8 @@
 namespace NetDaemon.Client.Common;
 
+/// <summary>
+///     The reason websocket connection disconnected
+/// </summary>
 public enum DisconnectReason
 {
     /// <summary>

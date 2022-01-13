@@ -1,5 +1,8 @@
 namespace NetDaemon.AppModel;
 
+/// <summary>
+///     The setting for the location of configuration files for applications
+/// </summary>
 public record AppConfigurationLocationSetting
 {
     /// <summary>

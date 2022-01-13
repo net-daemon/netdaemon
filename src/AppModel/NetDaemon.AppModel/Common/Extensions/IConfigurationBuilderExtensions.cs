@@ -4,8 +4,16 @@ using NetDaemon.AppModel.Internal.Config;
 
 namespace NetDaemon.AppModel;
 
+/// <summary>
+///     Extensions for IConfigurationBuilder
+/// </summary>
 public static class ConfigurationBuilderExtensions
 {
+    /// <summary>
+    ///     Adds json configurations for apps given the path
+    /// </summary>
+    /// <param name="builder">Builder</param>
+    /// <param name="appConfigPath">Path to the folder containing configurations</param>
     public static IConfigurationBuilder AddJsonAppConfig(this IConfigurationBuilder builder, string appConfigPath)
     {
         Directory.EnumerateFiles(appConfigPath, "*.json", SearchOption.AllDirectories)
@@ -14,6 +22,11 @@ public static class ConfigurationBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    ///     Adds yaml configurations for apps given the path
+    /// </summary>
+    /// <param name="builder">Builder</param>
+    /// <param name="appConfigPath">Path to the folder containing configurations</param>
     public static IConfigurationBuilder AddYamlAppConfig(this IConfigurationBuilder builder, string appConfigPath)
     {
         Directory.EnumerateFiles(appConfigPath, "*.y*", SearchOption.AllDirectories)

@@ -1,5 +1,8 @@
 namespace NetDaemon.Client.Common.HomeAssistant.Extensions;
 
+/// <summary>
+///     HomeAssistantConnection extensions
+/// </summary>
 public static class HomeAssistantConnectionExtensions
 {
     /// <summary>

@@ -25,6 +25,9 @@ public class HomeAssistantSettings
     /// </summary>
     public string Token { get; set; } = "";
 
+    /// <summary>
+    ///     Path to websocket API, this can be different for add-on and core
+    /// </summary>
     public string WebsocketPath { get; set; } = DefaultWebSocketPath;
 
     internal const string DefaultWebSocketPath = "api/websocket";
