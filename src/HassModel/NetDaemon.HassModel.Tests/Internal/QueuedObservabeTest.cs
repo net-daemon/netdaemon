@@ -97,8 +97,11 @@ public class QueuedObservabeTest
         await Task.WhenAll(waitTasks);
 
         await scoped1.DisposeAsync();
+        
+        var waitTask2 = scope2ObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event2"));
         testSubject.OnNext("Event2");
-
+        await waitTask2.ConfigureAwait(false);
+        
         scope1AObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
         scope1BObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
         scope2ObserverMock.Verify(o => o.OnNext("Event2"), Times.Once);
