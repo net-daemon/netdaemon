@@ -33,6 +33,10 @@ jobs:
           sed -i '/        private const string Version = /c\        private const string Version =  "${{ steps.version.outputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
       - name: 🎁 Pack AppModel
         run: dotnet pack src/AppModel/NetDaemon.AppModel/NetDaemon.AppModel.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
+      - name: 🎁 Pack Client
+        run: dotnet pack src/Client/NetDaemon.HassClient/NetDaemon.Client.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
+      - name: 🎁 Pack Runtime
+        run: dotnet pack src/Runtime/NetDaemon.Runtime/NetDaemon.Runtime.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel
         run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel integration
@@ -42,6 +46,6 @@ jobs:
       - name: 🎁 Pack scheduling extensions
         run: dotnet pack src/Extensions/NetDaemon.Extensions.Scheduling/NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack logging extensions
-        run: dotnet pack src/Extensions/NetDaemon.Extensions.Logging/NetDaemon.Extensions.Logging.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.Logging/NetDaemon.Extensions.Logging.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 📨 Push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true
