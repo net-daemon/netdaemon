@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Linq;
-using JoySoftware.HomeAssistant.Client;
 using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Common

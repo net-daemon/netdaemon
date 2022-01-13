@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using NetDaemon.HassModel.Common;
 
-namespace NetDaemon.HassModel.Internal.Client;
+namespace NetDaemon.HassModel.Internal;
 
 internal class CacheManager : ICacheManager
 {

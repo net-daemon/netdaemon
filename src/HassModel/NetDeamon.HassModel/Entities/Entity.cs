@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Entities
 {

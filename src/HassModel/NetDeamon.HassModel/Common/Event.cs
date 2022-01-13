@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Common
 {
