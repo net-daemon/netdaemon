@@ -1,4 +1,6 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator;
+﻿using NetDaemon.Client.Common.HomeAssistant.Model;
+
+namespace NetDaemon.HassModel.CodeGenerator;
 
 internal record EntitySet(string Domain, bool IsNumeric, IEnumerable<HassState> EntityStates)
 {

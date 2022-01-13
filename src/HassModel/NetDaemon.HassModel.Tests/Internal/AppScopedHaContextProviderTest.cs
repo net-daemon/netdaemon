@@ -1,26 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using JoySoftware.HomeAssistant.Client;
-using JoySoftware.HomeAssistant.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using NetDaemon.Client.Common;
+using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
-using Xunit.Sdk;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
 public class AppScopedHaContextProviderTest
 {
-    private readonly Mock<IHassClient> _hassClientMock = new();
+    private readonly Mock<IHomeAssistantConnection> _hassConnectionMock = new();
     private readonly Subject<HassEvent> _hassEventSubjectMock = new();
 
     private readonly HassEvent _sampleHassEvent = new()
@@ -28,28 +27,37 @@ public class AppScopedHaContextProviderTest
         Origin = "Test",
         EventType = "test_event",
         TimeFired = new DateTime(2020, 12, 2),
-        DataElement = JsonSerializer.Deserialize<JsonElement>(@"{""command"" : ""flip"",
-                                                                     ""endpoint_id"" : 2}")
+        DataElement = JsonSerializer.Deserialize<JsonElement>(@"{""command"" : ""flip"", ""endpoint_id"" : 2}")
     };
 
     [Fact]
-    public void TestCallService()
+    public async void TestCallService()
     {
-        var haContext = CreateTarget();
+        var haContext = await CreateTargetAsync();
 
         var target = ServiceTarget.FromEntity("domain.entity");
-        var data = new {Name = "value"};
+        var data = new { Name = "value" };
         haContext.CallService("domain", "service", target, data);
 
-        _hassClientMock.Verify(
-            c => c.CallService("domain", "service", data,
-                It.Is<HassTarget>(t => t.EntityIds!.Single() == "domain.entity"), false), Times.Once);
+        var expectedCommand = new CallServiceCommand
+        {
+            Domain = "domain",
+            Service = "service",
+            ServiceData = data,
+            Target = new HassTarget
+            {
+                EntityIds = target.EntityIds
+            }
+        };
+        _hassConnectionMock.Verify(
+            c => c.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(expectedCommand,
+                It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public void TestStateChange()
+    public async Task TestStateChange()
     {
-        var haContext = CreateTarget();
+        var haContext = await CreateTargetAsync();
         var stateAllChangesObserverMock = new Mock<IObserver<StateChange>>();
         var stateChangesObserverMock = new Mock<IObserver<StateChange>>();
 
@@ -58,64 +66,75 @@ public class AppScopedHaContextProviderTest
 
         _hassEventSubjectMock.OnNext(new HassEvent
         {
-            EventType = "state_change",
-            Data = new HassStateChangedEventData
-            {
-                EntityId = "TestDomain.TestEntity",
-                NewState = new HassState {State = "newState"},
-                OldState = new HassState {State = "oldState"}
-            }
+            EventType = "state_changed",
+            DataElement = @"
+                    {
+                        ""entity_id"": ""TestDomain.TestEntity"",
+                        ""new_state"": {
+                            ""state"": ""newState""
+                        },
+                        ""old_state"": {
+                            ""state"": ""oldState""
+                        } 
+                    }
+                    ".AsJsonElement()
         });
-
-        stateAllChangesObserverMock.Verify(
-            o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once);
-        stateChangesObserverMock.Verify(
-            o => o.OnNext(It.Is<StateChange>(s => s.Entity.EntityId == "TestDomain.TestEntity")), Times.Once());
 
         haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newState");
         // the state should come from the state cache so we do not expect a call to HassClient.GetState 
-        _hassClientMock.Verify(m => m.GetState(It.IsAny<string>()), Times.Never);
     }
 
+
     [Fact]
-    public void Events_PassesMappedEvents()
+    public async Task Events_PassesMappedEvents()
     {
         // Arrange
-        var haContext = CreateTarget();
+        var provider = await CreateServiceProvider();
+        var serviceScope = provider.CreateScope();
+
+        var haContext = serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
+
         Mock<IObserver<Event>> eventObserverMock = new();
 
         haContext.Events.Subscribe(eventObserverMock.Object);
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-
+        _hassEventSubjectMock.OnCompleted();
+        
+        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false);
+        
         // Assert
-        eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()));
-        var @event = eventObserverMock.Invocations.Single().Arguments[0] as Event;
+        eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()), Times.Once);
+        var @event = eventObserverMock.Invocations.First().Arguments[0] as Event;
         @event!.Origin.Should().Be(_sampleHassEvent.Origin);
-        @event!.EventType.Should().Be(_sampleHassEvent.EventType);
-        @event!.TimeFired.Should().Be(_sampleHassEvent.TimeFired);
-        @event!.DataElement.Should().Be(_sampleHassEvent.DataElement);
+        @event.EventType.Should().Be(_sampleHassEvent.EventType);
+        @event.TimeFired.Should().Be(_sampleHassEvent.TimeFired);
+        @event.DataElement.Should().Be(_sampleHassEvent.DataElement);
     }
 
     [Fact]
     public async Task EventsAndFilter_ShowsOnlyMatchingEventsAsCorrectType()
     {
         // Arrange
-        var haContext = CreateTarget();
+        var provider = await CreateServiceProvider();
+        var serviceScope = provider.CreateScope();
+
+        var haContext = serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
         Mock<IObserver<Event<TestEventData>>> typedEventObserverMock = new();
 
         haContext.Events.Filter<TestEventData>("test_event").Subscribe(typedEventObserverMock.Object);
 
-        // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        _hassEventSubjectMock.OnNext(_sampleHassEvent with {EventType = "other_type"});
+        _hassEventSubjectMock.OnNext(_sampleHassEvent with { EventType = "other_type" });
+        _hassEventSubjectMock.OnCompleted();
 
-        await Task.Yield(); // make sure other tasks run before we assert 
+        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false);
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
-        var @event = (Event<TestEventData>) typedEventObserverMock.Invocations.Single().Arguments[0];
+        typedEventObserverMock.Verify(e => e.OnCompleted(), Times.Once);
+        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.First().Arguments[0];
 
         @event.Data!.command.Should().Be("flip");
         @event.Data!.endpoint_id.Should().Be(2);
@@ -123,41 +142,63 @@ public class AppScopedHaContextProviderTest
     }
 
     [Fact]
-    public void EventsStopAfterDispose()
+    public async Task EventsStopAfterDispose()
     {
         // Arrange
-        var haContext = CreateTarget();
+        var provider = await CreateServiceProvider();
+        var serviceScope = provider.CreateScope();
+
+        var haContext = serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
+        
         Mock<IObserver<Event>> eventObserverMock = new();
         haContext.Events.Subscribe(eventObserverMock.Object);
 
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
+        _hassEventSubjectMock.OnCompleted();
 
+        await ((IAsyncDisposable)serviceScope).DisposeAsync();
         eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+        eventObserverMock.Verify(m => m.OnCompleted());
+
 
         // Act
-        ((IDisposable) haContext).Dispose();
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
-        
+
         // Assert
         eventObserverMock.VerifyNoOtherCalls();
     }
 
-    private IHaContext CreateTarget()
+    private async Task<IHaContext> CreateTargetAsync()
+    {
+        var provider = await CreateServiceProvider();
+        var haContext = provider.CreateScope().ServiceProvider.GetRequiredService<IHaContext>();
+        
+        return haContext;
+    }
+
+    private async Task<ServiceProvider> CreateServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        _hassClientMock.Setup(m => m.GetAllStates(It.IsAny<CancellationToken>())).ReturnsAsync(new List<HassState>());
-
-        serviceCollection.AddSingleton(_hassClientMock.Object);
+        serviceCollection.AddSingleton(_hassConnectionMock.Object);
         serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
+
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
+        serviceCollection.AddSingleton(_ => haRunnerMock.Object);
+
+        var apiManagerMock = new Mock<IHomeAssistantApiManager>();
+
+        serviceCollection.AddSingleton(_ => apiManagerMock.Object);
         serviceCollection.AddScopedHaContext();
 
         var provider = serviceCollection.BuildServiceProvider();
-        DependencyInjectionSetup.InitializeAsync(provider, CancellationToken.None);
 
-        var haContext = provider.GetRequiredService<IHaContext>();
-        return haContext;
+        await provider.GetRequiredService<ICacheManager>().InitializeAsync(CancellationToken.None);
+
+        return provider;
     }
 
     public record TestEventData(string command, int endpoint_id, string otherField);

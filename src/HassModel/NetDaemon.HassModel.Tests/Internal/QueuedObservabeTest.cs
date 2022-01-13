@@ -6,8 +6,8 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel.Internal;
 using NetDaemon.HassModel.Tests.TestHelpers;
-using NetDaemon.Infrastructure.ObservableHelpers;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;

@@ -20,7 +20,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="JoySoftware.HassClient" Version="21.46.0-beta" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
       <PackageReference Include="System.Reactive" Version="5.0.0" />
     </ItemGroup>

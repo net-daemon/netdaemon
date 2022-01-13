@@ -1,11 +1,9 @@
 ﻿using System;
-using NetDaemon.Infrastructure.ObservableHelpers;
 using System.Reactive.Subjects;
 using Moq;
 using Xunit;
 using Microsoft.Extensions.Logging;
-using NetDaemon.HassModel.Tests.TestHelpers;
-using System.Threading.Tasks;
+using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Tests.Internal
 {

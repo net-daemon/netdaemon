@@ -1,7 +1,7 @@
 using System.Buffers;
 using System.Text.Json;
 
-namespace NetDaemon.HassModel
+namespace NetDaemon.HassModel.Internal
 {
     /// <summary>
     ///     Useful extension methods used

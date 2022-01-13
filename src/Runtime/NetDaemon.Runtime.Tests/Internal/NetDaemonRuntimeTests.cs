@@ -3,9 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
 using NetDaemon.HassModel.Common;
-using NetDaemon.HassModel.Internal.Client;
+using NetDaemon.HassModel.Internal;
 using NetDaemon.Runtime.Internal;
-using NetDaemon.Runtime.Tests.Helpers;
 
 namespace NetDaemon.Runtime.Tests.Internal;
 
@@ -65,7 +64,7 @@ public class NetDaemonRuntimeTests
             .Returns(homeAssistantConnectionMock.Object);
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddScopedHaContext2();
+        serviceCollection.AddScopedHaContext();
         var hassEventSubject = new Subject<HassEvent>();
         serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
         serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);
@@ -116,7 +115,7 @@ public class NetDaemonRuntimeTests
             .Returns(homeAssistantConnectionMock.Object);
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddScopedHaContext2();
+        serviceCollection.AddScopedHaContext();
         var hassEventSubject = new Subject<HassEvent>();
         serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
         serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);

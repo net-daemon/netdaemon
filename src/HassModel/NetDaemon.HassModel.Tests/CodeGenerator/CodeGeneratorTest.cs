@@ -2,11 +2,12 @@
 using System.IO;
 using System.Linq;
 using FluentAssertions;
-using JoySoftware.HomeAssistant.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
+using NetDaemon.HassModel.CodeGenerator.Model;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
 

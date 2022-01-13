@@ -6,8 +6,9 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.HassModel.Common;
+using NetDaemon.Infrastructure.ObservableHelpers;
 
-namespace NetDaemon.Infrastructure.ObservableHelpers;
+namespace NetDaemon.HassModel.Internal;
 
 /// <summary>
 ///     Wraps an Observable and queues all events in tasks

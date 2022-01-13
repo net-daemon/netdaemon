@@ -31,7 +31,7 @@ public static class HostBuilderExtensions
     public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
     {
         return hostBuilder
-            .UseAppScopedHaContext2()
+            .UseAppScopedHaContext()
             .ConfigureServices((context, services) =>
             {
                 services.AddLogging();

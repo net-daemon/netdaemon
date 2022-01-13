@@ -1,6 +1,8 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator;
+﻿using NetDaemon.Client.Common.HomeAssistant.Model;
 
-public static class ExtensionMethodsGenerator
+namespace NetDaemon.HassModel.CodeGenerator;
+
+internal static class ExtensionMethodsGenerator
 {
     public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<HassState> entities)
     {
