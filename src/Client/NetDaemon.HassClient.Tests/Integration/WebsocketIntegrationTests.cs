@@ -35,7 +35,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
                 null,
                 new HassTarget
                 {
-                    EntityIds = new[] {"light.test"}
+                    EntityIds = new[] { "light.test" }
                 },
                 TokenSource.Token)
             .ConfigureAwait(false);
@@ -227,6 +227,25 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         stateChangedEvent?.Domain
             .Should()
             .BeEquivalentTo("light");
+    }
+
+    [Fact]
+    public async Task TestStaticConnectApi()
+    {
+        var port = HaFixture.HaMock?.ServerPort ?? throw new InvalidOperationException();
+        var tokenSource = new CancellationTokenSource(5000);
+        await using var connection = await HomeAssistantClientConnector
+            .ConnectClientAsync("127.0.0.1", port, false, "ABCDEFGHIJKLMNOPQ", tokenSource.Token)
+            .ConfigureAwait(false);
+
+        Assert.NotNull(connection);
+
+        // We just check any use-case to make sure we can communicate
+        var states = await connection
+            .GetStatesAsync(TokenSource.Token)
+            .ConfigureAwait(false);
+
+        states.Should().HaveCount(19);
     }
 
     private record AttributeTest
