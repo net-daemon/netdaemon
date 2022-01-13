@@ -33,6 +33,8 @@ jobs:
           sed -i '/        private const string Version = /c\        private const string Version =  "${{ steps.version.outputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
       - name: 🎁 Pack AppModel
         run: dotnet pack src/AppModel/NetDaemon.AppModel/NetDaemon.AppModel.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
+      - name: 🎁 Pack Runtime
+        run: dotnet pack src/Runtime/NetDaemon.Runtime/NetDaemon.Runtime.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel
         run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack HassModel integration
