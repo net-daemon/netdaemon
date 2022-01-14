@@ -3,12 +3,12 @@ namespace NetDaemon.Client.Internal;
 internal class HomeAssistantClient : IHomeAssistantClient
 {
     private readonly IHomeAssistantConnectionFactory _connectionFactory;
-    private readonly ILogger<HomeAssistantClient> _logger;
+    private readonly ILogger<IHomeAssistantClient> _logger;
     private readonly IWebSocketClientTransportPipelineFactory _transportPipelineFactory;
     private readonly IWebSocketClientFactory _webSocketClientFactory;
 
     public HomeAssistantClient(
-        ILogger<HomeAssistantClient> logger,
+        ILogger<IHomeAssistantClient> logger,
         IWebSocketClientFactory webSocketClientFactory,
         IWebSocketClientTransportPipelineFactory transportPipelineFactory,
         IHomeAssistantConnectionFactory connectionFactory

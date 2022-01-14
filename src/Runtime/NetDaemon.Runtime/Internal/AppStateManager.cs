@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
@@ -11,6 +12,7 @@ namespace NetDaemon.Runtime.Internal;
 internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates
 {
     private readonly IServiceProvider _provider;
+    private readonly ConcurrentDictionary<string, ApplicationState> _stateCache = new();
 
     public AppStateManager(
         IServiceProvider provider
@@ -21,13 +23,15 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
 
     public async Task<ApplicationState> GetStateAsync(string applicationId)
     {
+        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+        if (_stateCache.TryGetValue(entityId, out var applicationState)) return applicationState;
         // Since IHaContext is scoped and StateManager is singleton we get the
         // IHaContext everytime we need to check state
         var scope = _provider.CreateScope();
         try
         {
             var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
-            var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+
             var appState = haContext.GetState(entityId);
 
             if (appState is null)
@@ -36,7 +40,10 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 return ApplicationState.Enabled;
             }
 
-            return appState.State == "on" ? ApplicationState.Enabled : ApplicationState.Disabled;
+            var appStateFromHomeAssistant =
+                appState.State == "on" ? ApplicationState.Enabled : ApplicationState.Disabled;
+            _stateCache[entityId] = appStateFromHomeAssistant;
+            return appStateFromHomeAssistant;
         }
         finally
         {
@@ -98,8 +105,14 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                         ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ?? throw new InvalidOperationException());
                     if (entityId == changedEvent.NewState.EntityId)
                     {
+                        var appState = changedEvent?.NewState?.State == "on"
+                            ? ApplicationState.Enabled
+                            : ApplicationState.Disabled;
+
+                        _stateCache[entityId] = appState;
+
                         await app.SetStateAsync(
-                            changedEvent?.NewState?.State == "on" ? ApplicationState.Enabled : ApplicationState.Disabled
+                            appState
                         );
                         break;
                     }
