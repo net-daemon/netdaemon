@@ -31,7 +31,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
         CancellationToken cancelToken)
     {
         var websocketUri = GetHomeAssistantWebSocketUri(host, port, ssl, websocketPath);
-        _logger.LogInformation("Connecting to Home Assistant websocket on {path}", websocketUri);
+        _logger.LogDebug("Connecting to Home Assistant websocket on {path}", websocketUri);
         var ws = _webSocketClientFactory.New();
 
         try

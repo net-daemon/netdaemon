@@ -104,7 +104,6 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             catch (OperationCanceledException)
             {
-                _logger.LogDebug("Run cancelled");
                 if (_internalTokenSource.IsCancellationRequested)
                     // We have internal cancellation due to dispose
                     // just return without any further due
