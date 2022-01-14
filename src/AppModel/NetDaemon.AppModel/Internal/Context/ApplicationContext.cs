@@ -26,7 +26,7 @@ internal sealed class ApplicationContext
 
     public async Task InitializeAsync()
     {
-        if (Instance is IInitializableAsync initAsyncApp)
+        if (Instance is IAsyncInitializable initAsyncApp)
             await initAsyncApp.InitializeAsync(_cancelTokenSource.Token).ConfigureAwait(false);
     }
 
@@ -37,11 +37,16 @@ internal sealed class ApplicationContext
 
         _isDisposed = true;
 
+        if (_cancelTokenSource.IsCancellationRequested == false)
+            _cancelTokenSource.Cancel();
+
         if (Instance is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 
         else if (Instance is IDisposable disposable) disposable.Dispose();
 
         if (_serviceScope is IAsyncDisposable serviceScopeAsyncDisposable)
             await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
+
+        _cancelTokenSource.Dispose();
     }
 }

@@ -3,7 +3,7 @@
 /// <summary>
 ///     Allows apps to initialize non-blocking async operations
 /// </summary>
-public interface IInitializableAsync
+public interface IAsyncInitializable
 {
     /// <summary>
     ///     Initialize async non-blocking async operations

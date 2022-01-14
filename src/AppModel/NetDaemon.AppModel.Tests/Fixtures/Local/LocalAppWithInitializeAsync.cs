@@ -1,7 +1,7 @@
 namespace LocalApps;
 
 [NetDaemonApp]
-public class MyAppLocalAppWithInitializeAsync : IInitializableAsync
+public class MyAppLocalAppWithInitialize : IAsyncInitializable
 {
     public bool InitializeAsyncCalled { get; private set; }
 
