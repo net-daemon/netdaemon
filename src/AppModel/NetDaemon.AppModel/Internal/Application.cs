@@ -2,6 +2,7 @@ namespace NetDaemon.AppModel.Internal;
 
 internal class Application : IApplication
 {
+    private const int MaxTimeInInitializeAsyncInMs = 5000;
     private readonly Type _applicationType;
     private readonly IAppStateManager? _appStateManager;
     private readonly ILogger<Application> _logger;
@@ -96,6 +97,15 @@ internal class Application : IApplication
         try
         {
             ApplicationContext = new ApplicationContext(_applicationType, _provider);
+
+            // Init async and warn user if taking too long.
+            var initAsyncTask = ApplicationContext.InitializeAsync();
+            var timeoutTask = Task.Delay(MaxTimeInInitializeAsyncInMs);
+            await Task.WhenAny(initAsyncTask, timeoutTask).ConfigureAwait(false);
+            if (timeoutTask.IsCompleted)
+                _logger.LogWarning(
+                    "InitializeAsync is taking too long to execute in application {app}, this function should not be blocking",
+                    Id);
 
             await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
             _logger.LogInformation("Successfully loaded app {id}", Id);

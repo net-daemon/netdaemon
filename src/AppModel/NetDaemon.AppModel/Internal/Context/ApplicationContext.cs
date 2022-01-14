@@ -2,6 +2,7 @@ namespace NetDaemon.AppModel.Internal;
 
 internal sealed class ApplicationContext
 {
+    private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
     private bool _isDisposed;
 
@@ -22,6 +23,12 @@ internal sealed class ApplicationContext
     }
 
     public object Instance { get; }
+
+    public async Task InitializeAsync()
+    {
+        if (Instance is IInitializableAsync initAsyncApp)
+            await initAsyncApp.InitializeAsync(_cancelTokenSource.Token).ConfigureAwait(false);
+    }
 
     public async ValueTask DisposeAsync()
     {
