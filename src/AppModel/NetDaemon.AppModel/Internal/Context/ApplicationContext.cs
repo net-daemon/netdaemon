@@ -2,6 +2,7 @@ namespace NetDaemon.AppModel.Internal;
 
 internal sealed class ApplicationContext
 {
+    private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
     private bool _isDisposed;
 
@@ -23,6 +24,12 @@ internal sealed class ApplicationContext
 
     public object Instance { get; }
 
+    public async Task InitializeAsync()
+    {
+        if (Instance is IAsyncInitializable initAsyncApp)
+            await initAsyncApp.InitializeAsync(_cancelTokenSource.Token).ConfigureAwait(false);
+    }
+
     public async ValueTask DisposeAsync()
     {
         // prevent multiple Disposes because the Service Scope will also dispose this  
@@ -30,11 +37,16 @@ internal sealed class ApplicationContext
 
         _isDisposed = true;
 
+        if (_cancelTokenSource.IsCancellationRequested == false)
+            _cancelTokenSource.Cancel();
+
         if (Instance is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 
         else if (Instance is IDisposable disposable) disposable.Dispose();
 
         if (_serviceScope is IAsyncDisposable serviceScopeAsyncDisposable)
             await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
+
+        _cancelTokenSource.Dispose();
     }
 }

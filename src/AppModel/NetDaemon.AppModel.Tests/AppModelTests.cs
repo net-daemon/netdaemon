@@ -36,7 +36,7 @@ public class AppModelTests
         var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local").ConfigureAwait(false);
 
         // CHECK
-        loadApps.Should().HaveCount(5);
+        loadApps.Should().HaveCount(6);
 
         // check the application instance is init ok
         var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
@@ -226,6 +226,22 @@ public class AppModelTests
         app.DisposeIsCalled.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task TestGetApplicationsWithInitializeAsync()
+    {
+        // ARRANGE
+        // ACT
+        var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local");
+
+        // CHECK
+
+        // check the application instance is init ok
+        var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithInitializeAsync");
+        var app = (MyAppLocalAppWithInitializeAsync?) application.ApplicationContext?.Instance;
+        application.State.Should().Be(ApplicationState.Running);
+        app!.InitializeAsyncCalled.Should().BeTrue();
+    }
+    
     // Focus tests
     [Theory]
     [InlineData(ApplicationState.Enabled)]
