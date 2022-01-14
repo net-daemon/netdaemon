@@ -28,6 +28,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
+        <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj" />
         <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
     </ItemGroup>
     <PropertyGroup>

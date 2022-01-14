@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
 using NetDaemon.Extensions.Logging;
+using NetDaemon.Extensions.Scheduler;
 using NetDaemon.Host.AddOn.Internal.Config;
 
 namespace NetDaemon.Runtime.Internal.Extensions;
@@ -22,6 +23,7 @@ public static class HostBuilderExtensions
             {
                 services
                     .AddAppsFromSource()
+                    .AddNetDaemonScheduler()
                     .AddNetDameonStateManager();
             });
     }
