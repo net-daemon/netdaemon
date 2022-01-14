@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using NetDaemon.Runtime;
 using NetDaemon.AppModel;
 using NetDaemon.Extensions.Logging;
+using NetDaemon.Extensions.Scheduler;
 
 #pragma warning disable CA1812
 
@@ -16,6 +17,7 @@ try
             services
                 .AddAppsFromSource()
                 .AddNetDameonStateManager()
+                .AddNetDaemonScheduler()
         )
         .Build()
         .RunAsync()
