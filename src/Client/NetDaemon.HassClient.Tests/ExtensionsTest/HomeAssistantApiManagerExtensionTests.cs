@@ -11,4 +11,14 @@ public class HomeAssistantApiManagerExtensionTests
         apiManagerMock.Verify(n => n.PostApiCallAsync<object>("events/eventId", It.IsAny<CancellationToken>(), data),
             Times.Once);
     }
+
+    [Fact]
+    public async Task GetStateAsyncShouldCallCorrectFunctions()
+    {
+        var apiManagerMock = new Mock<IHomeAssistantApiManager>();
+        await apiManagerMock.Object.GetEntityStateAsync("entityId", CancellationToken.None).ConfigureAwait(false);
+        apiManagerMock.Verify(
+            n => n.PostApiCallAsync<HassState>("states/entityId", It.IsAny<CancellationToken>(), null),
+            Times.Once);
+    }
 }
