@@ -116,7 +116,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             catch (Exception e)
             {
-                _logger.LogError(e,"Error running HassClient");
+                _logger.LogDebug(e,"Error running HassClient");
                 _onDisconnectSubject.OnNext(DisconnectReason.Error);
             }
             finally
