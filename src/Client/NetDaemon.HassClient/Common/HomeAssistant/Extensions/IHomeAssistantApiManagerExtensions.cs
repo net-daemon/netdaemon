@@ -21,4 +21,32 @@ public static class IHomeAssistantApiManagerExtensions
 
         await apiManager.PostApiCallAsync<object>(apiUrl, cancellationToken, data);
     }
+
+    /// <summary>
+    ///     Get the current state for a entity
+    /// </summary>
+    /// <param name="apiManager">ApiManager to extend</param>
+    /// <param name="entityId">Id of the event</param>
+    /// <param name="cancellationToken">token to cancel async operation</param>
+    public static async Task<HassState?> GetEntityStateAsync(this IHomeAssistantApiManager apiManager, string entityId,
+        CancellationToken cancellationToken)
+    {
+        var apiUrl = $"states/{HttpUtility.UrlEncode(entityId)}";
+
+        return await apiManager.PostApiCallAsync<HassState>(apiUrl, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Get the current state for a entity
+    /// </summary>
+    /// <param name="apiManager">ApiManager to extend</param>
+    /// <param name="entityId">Id of the event</param>
+    /// <param name="cancellationToken">token to cancel async operation</param>
+    public static async Task<HassState?> SetEntityStateAsync(this IHomeAssistantApiManager apiManager, string entityId,
+        CancellationToken cancellationToken)
+    {
+        var apiUrl = $"states/{HttpUtility.UrlEncode(entityId)}";
+
+        return await apiManager.PostApiCallAsync<HassState>(apiUrl, cancellationToken);
+    }
 }
