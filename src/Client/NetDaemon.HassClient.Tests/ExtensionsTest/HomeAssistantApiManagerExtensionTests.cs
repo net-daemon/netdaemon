@@ -13,12 +13,30 @@ public class HomeAssistantApiManagerExtensionTests
     }
 
     [Fact]
-    public async Task GetStateAsyncShouldCallCorrectFunctions()
+    public async Task GetEntityStateAsyncShouldCallCorrectFunctions()
     {
         var apiManagerMock = new Mock<IHomeAssistantApiManager>();
         await apiManagerMock.Object.GetEntityStateAsync("entityId", CancellationToken.None).ConfigureAwait(false);
         apiManagerMock.Verify(
-            n => n.PostApiCallAsync<HassState>("states/entityId", It.IsAny<CancellationToken>(), null),
+            n => n.GetApiCallAsync<HassState>("states/entityId", It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task SetEntityStateAsyncShouldCallCorrectFunctions()
+    {
+        var apiManagerMock = new Mock<IHomeAssistantApiManager>();
+        await apiManagerMock.Object
+            .SetEntityStateAsync("entityId", "state", new {attr = "attr"}, CancellationToken.None)
+            .ConfigureAwait(false);
+        apiManagerMock.Verify(
+            n => n.PostApiCallAsync<HassState>("states/entityId", It.IsAny<CancellationToken>(), It.IsAny<object?>()),
+            Times.Once);
+
+        var argData = apiManagerMock.Invocations.First().Arguments[2]!;
+        argData.GetType().GetProperty("state")!.GetValue(argData, null)!.Should()
+            .Be("state");
+        var attributes = argData.GetType().GetProperty("attributes")!.GetValue(argData, null)!;
+        attributes.GetType().GetProperty("attr")!.GetValue(attributes, null).Should().Be("attr");
     }
 }
