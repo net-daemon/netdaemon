@@ -237,7 +237,7 @@ public class AppModelTests
 
         // check the application instance is init ok
         var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithInitializeAsync");
-        var app = (MyAppLocalAppWithInitialize?) application.ApplicationContext?.Instance;
+        var app = (MyAppLocalAppWithInitializeAsync?) application.ApplicationContext?.Instance;
         application.State.Should().Be(ApplicationState.Running);
         app!.InitializeAsyncCalled.Should().BeTrue();
     }
