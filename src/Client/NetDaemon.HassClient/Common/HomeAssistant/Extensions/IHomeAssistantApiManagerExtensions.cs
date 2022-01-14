@@ -33,7 +33,7 @@ public static class IHomeAssistantApiManagerExtensions
     {
         var apiUrl = $"states/{HttpUtility.UrlEncode(entityId)}";
 
-        return await apiManager.PostApiCallAsync<HassState>(apiUrl, cancellationToken);
+        return await apiManager.GetApiCallAsync<HassState>(apiUrl, cancellationToken);
     }
 
     /// <summary>
@@ -41,12 +41,23 @@ public static class IHomeAssistantApiManagerExtensions
     /// </summary>
     /// <param name="apiManager">ApiManager to extend</param>
     /// <param name="entityId">Id of the event</param>
+    /// <param name="state">The state to set</param>
+    /// <param name="attributes">attributes</param>
     /// <param name="cancellationToken">token to cancel async operation</param>
+    /// <remarks>
+    ///     This sets the state of a device within Home Assistant
+    ///     and will not communicate with the actual device. To communicate with the device
+    ///     use service calls. To persist devices use the NetDaemon integrations and it's sercice calls
+    /// </remarks>
     public static async Task<HassState?> SetEntityStateAsync(this IHomeAssistantApiManager apiManager, string entityId,
-        CancellationToken cancellationToken)
+        string state, object? attributes, CancellationToken cancellationToken)
     {
         var apiUrl = $"states/{HttpUtility.UrlEncode(entityId)}";
 
-        return await apiManager.PostApiCallAsync<HassState>(apiUrl, cancellationToken);
+        var data = new
+        {
+            state, attributes
+        };
+        return await apiManager.PostApiCallAsync<HassState>(apiUrl, cancellationToken, data);
     }
 }
