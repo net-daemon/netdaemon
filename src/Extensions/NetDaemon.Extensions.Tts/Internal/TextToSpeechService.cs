@@ -34,13 +34,11 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
     [SuppressMessage("", "CA1031", Justification = "We need to log unexpected errors")]
     private async Task ProcessTtsMessages()
     {
-        while (_cancellationTokenSource.IsCancellationRequested == false)
+        await foreach(var ttsMessage in  _ttsMessageChannel.Reader.ReadAllAsync(_cancellationTokenSource.Token).ConfigureAwait(false))
         {
             try
             {
-                var ttsMessage = await _ttsMessageChannel.Reader.ReadAsync(_cancellationTokenSource.Token)
-                    .ConfigureAwait(false);
-                var target = new HassTarget() {EntityIds = new[] {ttsMessage.EntityId}};
+                var hassTarget = new HassTarget() {EntityIds = new[] {ttsMessage.EntityId}};
                 var data = new
                 {
                     message = ttsMessage.Message,
@@ -48,7 +46,7 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
                     options = ttsMessage.Options
                 };
                 await _homeAssistantConnection
-                    .CallServiceAsync("tts", ttsMessage.Service, data, target, _cancellationTokenSource.Token)
+                    .CallServiceAsync("tts", ttsMessage.Service, data, hassTarget, _cancellationTokenSource.Token)
                     .ConfigureAwait(false);
                 // Wait for media player to report state 
                 await Task.Delay(InternalTimeForTtsDelay, _cancellationTokenSource.Token).ConfigureAwait(false);
