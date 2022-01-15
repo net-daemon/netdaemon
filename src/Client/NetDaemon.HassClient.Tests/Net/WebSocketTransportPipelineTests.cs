@@ -4,12 +4,9 @@ public class WebSocketTransportPipelineTests
 {
     public WebSocketTransportPipelineTests()
     {
-        LogMock = new Mock<ILogger<IWebSocketClientTransportPipeline>>();
         WsMock = new WebSocketClientMock();
-        DefaultPipeline = new WebSocketClientTransportPipeline(WsMock.Object, LogMock.Object);
+        DefaultPipeline = new WebSocketClientTransportPipeline(WsMock.Object);
     }
-
-    private Mock<ILogger<IWebSocketClientTransportPipeline>> LogMock { get; }
     private WebSocketClientMock WsMock { get; }
     private WebSocketClientTransportPipeline DefaultPipeline { get; }
 

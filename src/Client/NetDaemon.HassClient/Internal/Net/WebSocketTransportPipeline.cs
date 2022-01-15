@@ -15,8 +15,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
     private readonly Pipe _pipe = new();
     private readonly IWebSocketClient _ws;
 
-    public WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket,
-        ILogger<IWebSocketClientTransportPipeline> logger)
+    public WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket)
     {
         _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
     }

@@ -7,7 +7,7 @@ namespace NetDaemon.Runtime.Internal;
 internal class NetDaemonRuntime : IRuntime
 {
     private const string Version = "custom_compiled";
-    private const int TimeoutInSeconds = 5;
+    private const int TimeoutInSeconds = 30;
     private readonly IAppModel _appModel;
     private readonly ICacheManager _cacheManager;
 
@@ -114,10 +114,23 @@ internal class NetDaemonRuntime : IRuntime
     private async Task OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
         if (_stoppingToken?.IsCancellationRequested ?? false)
+        {
             _logger.LogInformation("HassClient disconnected cause of user stopping.");
+        }
         else
-            _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds",
-                reason.ToString(), TimeoutInSeconds);
+        {
+            var reasonString = reason switch
+            {
+                DisconnectReason.Remote => "home assistant closed the connection",
+                DisconnectReason.Error => "unknown error, set loglevel to debug to view details",
+                DisconnectReason.Unauthorized => "token not authorized",
+                DisconnectReason.NotReady => "home assistant not ready yet",
+                _ => "unknown error"
+            };
+            _logger.LogInformation("HassClient disconnected cause of {Reason}, connect retry in {TimeoutInSeconds} seconds",
+                reasonString, TimeoutInSeconds);
+        }
+
         if (InternalConnection is not null) InternalConnection = null;
         await DisposeApplicationsAsync().ConfigureAwait(false);
     }
