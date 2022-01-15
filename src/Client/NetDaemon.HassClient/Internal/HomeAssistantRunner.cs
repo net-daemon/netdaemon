@@ -39,7 +39,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         return _runTask;
     }
 
-    private bool _isDisposed = false;
+    private bool _isDisposed;
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed)
@@ -104,19 +104,17 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             catch (OperationCanceledException)
             {
-                _logger.LogDebug("Run cancelled");
                 if (_internalTokenSource.IsCancellationRequested)
                     // We have internal cancellation due to dispose
                     // just return without any further due
                     return;
-                if (cancelToken.IsCancellationRequested)
-                    _onDisconnectSubject.OnNext(DisconnectReason.Client);
-                else
-                    _onDisconnectSubject.OnNext(DisconnectReason.Remote);
+                _onDisconnectSubject.OnNext(cancelToken.IsCancellationRequested
+                    ? DisconnectReason.Client
+                    : DisconnectReason.Remote);
             }
             catch (Exception e)
             {
-                _logger.LogError(e,"Error running HassClient");
+                _logger.LogDebug(e,"Error running HassClient");
                 _onDisconnectSubject.OnNext(DisconnectReason.Error);
             }
             finally
