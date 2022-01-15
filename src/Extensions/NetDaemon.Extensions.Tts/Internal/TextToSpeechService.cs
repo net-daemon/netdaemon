@@ -1,18 +1,19 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NetDaemon.Extensions.Tts.Internal;
 
 [SuppressMessage("", "CA1812", Justification = "Instanced in DI")]
 internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
 {
-    private readonly IHomeAssistantConnection _homeAssistantConnection;
+    private readonly IServiceProvider _provider;
     private readonly ILogger<ITextToSpeechService> _logger;
     private readonly Channel<TtsMessage> _ttsMessageChannel = Channel.CreateBounded<TtsMessage>(200);
     private readonly Task _processTtsTask;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    public TextToSpeechService(IHomeAssistantConnection homeAssistantConnection, ILogger<ITextToSpeechService> logger)
+    public TextToSpeechService(IServiceProvider provider, ILogger<ITextToSpeechService> logger)
     {
-        _homeAssistantConnection = homeAssistantConnection;
+        _provider = provider;
         _logger = logger;
         _processTtsTask = Task.Run(async () => await ProcessTtsMessages().ConfigureAwait(false));
     }
@@ -38,6 +39,8 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
         {
             try
             {
+                var homeAssistantConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
+                
                 var hassTarget = new HassTarget() {EntityIds = new[] {ttsMessage.EntityId}};
                 var data = new
                 {
@@ -45,12 +48,12 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
                     language = ttsMessage.Language,
                     options = ttsMessage.Options
                 };
-                await _homeAssistantConnection
+                await homeAssistantConnection
                     .CallServiceAsync("tts", ttsMessage.Service, data, hassTarget, _cancellationTokenSource.Token)
                     .ConfigureAwait(false);
                 // Wait for media player to report state 
                 await Task.Delay(InternalTimeForTtsDelay, _cancellationTokenSource.Token).ConfigureAwait(false);
-                var state = await _homeAssistantConnection
+                var state = await homeAssistantConnection
                     .GetEntityStateAsync(ttsMessage.EntityId, _cancellationTokenSource.Token).ConfigureAwait(false);
                 if (state?.Attributes is not null &&
                     state.Attributes.TryGetValue("media_duration", out var durationAttribute))
