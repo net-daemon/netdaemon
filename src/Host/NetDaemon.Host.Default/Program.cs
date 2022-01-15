@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.Extensions.Hosting;
-using NetDaemon.Runtime;
 using NetDaemon.AppModel;
 using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Scheduler;
+using NetDaemon.Extensions.Tts;
+using NetDaemon.Runtime;
 
 #pragma warning disable CA1812
 
@@ -13,6 +14,7 @@ try
         .UseNetDaemonAppSettings()
         .UseNetDaemonDefaultLogging()
         .UseNetDaemonRuntime()
+        .UseNetDaemonTextToSpeech()
         .ConfigureServices((_, services) =>
             services
                 .AddAppsFromSource()

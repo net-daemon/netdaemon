@@ -1,0 +1,9 @@
+﻿global using System;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Threading;
+global using System.Threading.Channels;
+global using System.Threading.Tasks;
+global using Microsoft.Extensions.Logging;
+global using NetDaemon.Client.Common;
+global using NetDaemon.Client.Common.HomeAssistant.Extensions;
+global using NetDaemon.Client.Common.HomeAssistant.Model;

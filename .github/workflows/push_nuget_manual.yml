@@ -46,5 +46,7 @@ jobs:
         run: dotnet pack src/Extensions/NetDaemon.Extensions.Scheduling/NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
       - name: 🎁 Pack logging extensions
         run: dotnet pack src/Extensions/NetDaemon.Extensions.Logging/NetDaemon.Extensions.Logging.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+      - name: 🎁 Pack TTS extensions
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.Tts/NetDaemon.Extensions.Tts.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
       - name: 📨 Push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true

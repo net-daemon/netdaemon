@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
 using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Scheduler;
+using NetDaemon.Extensions.Tts;
 using NetDaemon.Host.AddOn.Internal.Config;
 
 namespace NetDaemon.Runtime.Internal.Extensions;
@@ -19,6 +20,7 @@ public static class HostBuilderExtensions
             .UseNetDaemonAddOnSettings()
             .UseNetDaemonDefaultLogging()
             .UseNetDaemonRuntime()
+            .UseNetDaemonTextToSpeech()
             .ConfigureServices((context, services) =>
             {
                 services
@@ -31,10 +33,7 @@ public static class HostBuilderExtensions
     private static IHostBuilder UseNetDaemonAddOnSettings(this IHostBuilder hostBuilder)
     {
         return hostBuilder
-            .ConfigureServices((context, services) =>
-            {
-                services.AddNetDaemonAddOnConfiguration();
-            })
+            .ConfigureServices((context, services) => { services.AddNetDaemonAddOnConfiguration(); })
             .ConfigureAppConfiguration((ctx, config) =>
             {
                 config.SetBasePath(Directory.GetCurrentDirectory());
