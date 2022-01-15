@@ -1,7 +1,5 @@
 ﻿using System;
 using Microsoft.Extensions.Hosting;
-using NetDaemon.AppModel;
-using NetDaemon.Runtime;
 using NetDaemon.Runtime.Internal.Extensions;
 
 #pragma warning disable CA1812

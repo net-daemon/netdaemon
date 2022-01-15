@@ -4,6 +4,7 @@ using NetDaemon.Runtime;
 using NetDaemon.AppModel;
 using System.Reflection;
 using NetDaemon.Extensions.Logging;
+using NetDaemon.Extensions.Tts;
 
 #pragma warning disable CA1812
 
@@ -13,6 +14,7 @@ try
         .UseNetDaemonAppSettings()
         .UseNetDaemonDefaultLogging()
         .UseNetDaemonRuntime()
+        .UseNetDaemonTextToSpeech()
         .ConfigureServices((_, services) =>
             services
                 .AddAppsFromAssembly(Assembly.GetEntryAssembly()!)
