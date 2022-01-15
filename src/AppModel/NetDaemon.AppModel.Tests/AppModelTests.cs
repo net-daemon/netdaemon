@@ -20,13 +20,13 @@ public class AppModelTests
         loadApps.Should().HaveCount(1);
     }
 
-    // [Fact]
-    // public async Task TestGetDynamicallyCompiledApplicationsWithCompilerError()
-    // {
-    //     // ACT and CHECK
-    //     await Assert.ThrowsAsync<InvalidOperationException>(() =>
-    //         TestHelpers.GetDynamicApplicationsFromYamlConfigPath("Fixtures/DynamicError"));
-    // }
+    [Fact]
+    public async Task TestGetDynamicallyCompiledApplicationsWithCompilerError()
+    {
+        // ACT and CHECK
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            TestHelpers.GetDynamicApplicationsFromYamlConfigPath("Fixtures/DynamicError"));
+    }
 
     [Fact]
     public async Task TestGetApplicationsLocal()
