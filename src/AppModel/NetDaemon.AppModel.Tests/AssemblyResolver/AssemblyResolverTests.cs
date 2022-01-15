@@ -1,11 +1,10 @@
 using System.Reflection;
-using LocalApps;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using NetDaemon.AppModel.Common.TypeResolver;
 using NetDaemon.AppModel.Internal;
 using NetDaemon.AppModel.Internal.Compiler;
+using NetDaemon.AppModel.Tests.Helpers;
 
 namespace NetDaemon.AppModel.Tests.Internal.TypeResolver;
 
@@ -64,11 +63,13 @@ public class AssemblyResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
-
+        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
+            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
         serviceCollection.AddLogging();
+        serviceCollection.AddAppsFromSource();
         var provider = serviceCollection.BuildServiceProvider();
 
         var assemblyResolvers = provider.GetService<IEnumerable<IAssemblyResolver>>() ??
@@ -109,10 +110,14 @@ public class AssemblyResolverTests
 
         var serviceCollection = new ServiceCollection();
         // get apps from test project
+        serviceCollection.AddLogging();
+        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
+            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
         serviceCollection.AddAppsFromAssembly(Assembly.GetCallingAssembly());
-        serviceCollection.AddAppsFromSource();
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
+        serviceCollection.AddAppsFromSource();
 
         serviceCollection.AddLogging();
         var provider = serviceCollection.BuildServiceProvider();

@@ -30,9 +30,10 @@ public static class TestHelpers
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppsFromSource();
+                services.AddLogging();
                 services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
+                services.AddAppsFromSource();
             })
             .ConfigureAppConfiguration((_, config) =>
             {

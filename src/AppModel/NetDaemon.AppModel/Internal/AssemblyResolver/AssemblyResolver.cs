@@ -20,9 +20,10 @@ internal class AssemblyResolver : IAssemblyResolver
     }
 }
 
-internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver
+internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver, IDisposable
 {
     private readonly ICompilerFactory _compilerFactory;
+    private Assembly? _compiledAssembly;
     private CollectibleAssemblyLoadContext? _currentContext;
 
     public DynamicallyCompiledAssemblyResolver(
@@ -34,7 +35,20 @@ internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver
 
     public Assembly GetResolvedAssembly()
     {
-        // Check if we have  
+        // We reuse an already compiled assembly since we only 
+        // compile once per start
+        if (_compiledAssembly is not null)
+            return _compiledAssembly;
+
+        var compiler = _compilerFactory.New();
+        var (loadContext, compiledAssembly) = compiler.Compile();
+        _currentContext = loadContext;
+        _compiledAssembly = compiledAssembly;
+        return compiledAssembly;
+    }
+
+    public void Dispose()
+    {
         if (_currentContext is not null)
         {
             _currentContext.Unload();
@@ -42,10 +56,5 @@ internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
-
-        var compiler = _compilerFactory.New();
-        var (loadContext, compiledAssembly) = compiler.Compile();
-        _currentContext = loadContext;
-        return compiledAssembly;
     }
 }

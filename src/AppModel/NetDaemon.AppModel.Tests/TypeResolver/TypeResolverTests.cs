@@ -4,7 +4,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using NetDaemon.AppModel.Common.TypeResolver;
+using NetDaemon.AppModel.Internal;
 using NetDaemon.AppModel.Internal.Compiler;
+using NetDaemon.AppModel.Tests.Helpers;
 
 namespace NetDaemon.AppModel.Tests.Internal.TypeResolver;
 
@@ -63,12 +65,20 @@ public class TypeResolverTests
             );
 
         var serviceCollection = new ServiceCollection();
-
-        serviceCollection.AddAppsFromSource();
-        serviceCollection
-            .AddSingleton(_ => syntaxTreeResolverMock.Object);
-
         serviceCollection.AddLogging();
+        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
+            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+        serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
+        serviceCollection.AddAppModel();
+        serviceCollection.AddAppTypeResolver();
+        serviceCollection.AddSingleton<CompilerFactory>();
+        serviceCollection.AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>());
+        serviceCollection.AddSingleton<DynamicallyCompiledAssemblyResolver>();
+        serviceCollection.AddSingleton<IAssemblyResolver>(s =>
+            s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
+
+
         var provider = serviceCollection.BuildServiceProvider();
 
         var typeResolver = provider.GetService<IAppTypeResolver>() ??
@@ -111,11 +121,20 @@ public class TypeResolverTests
 
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddAppsFromSource();
-        serviceCollection
-            .AddSingleton(_ => syntaxTreeResolverMock.Object);
-
         serviceCollection.AddLogging();
+        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
+            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+        serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
+        serviceCollection.AddAppModel();
+        serviceCollection.AddAppTypeResolver();
+        serviceCollection.AddSingleton<CompilerFactory>();
+        serviceCollection.AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>());
+        serviceCollection.AddSingleton<DynamicallyCompiledAssemblyResolver>();
+        serviceCollection.AddSingleton<IAssemblyResolver>(s =>
+            s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
+
+
         var provider = serviceCollection.BuildServiceProvider();
 
         var typeResolver = provider.GetService<IAppTypeResolver>() ??
@@ -126,7 +145,7 @@ public class TypeResolverTests
         t = typeResolver.GetTypes().Where(n => n.Name == "FakeClass").ToList();
         t.Should().HaveCount(1);
     }
-    
+
     [Fact]
     public void TestAddAppFromTypeShouldLoadSigleApp()
     {
@@ -141,6 +160,6 @@ public class TypeResolverTests
         var appResolvers = provider.GetRequiredService<IEnumerable<IAppTypeResolver>>() ??
                            throw new NullReferenceException("Not expected null");
         appResolvers.Should().HaveCount(1);
-        appResolvers.First().GetTypes().Should().BeEquivalentTo(new[] { typeof(MyAppLocalApp) });
+        appResolvers.First().GetTypes().Should().BeEquivalentTo(new[] {typeof(MyAppLocalApp)});
     }
 }
