@@ -241,7 +241,7 @@ public class AppModelTests
         application.State.Should().Be(ApplicationState.Running);
         app!.InitializeAsyncCalled.Should().BeTrue();
     }
-    
+
     // Focus tests
     [Theory]
     [InlineData(ApplicationState.Enabled)]
@@ -255,9 +255,9 @@ public class AppModelTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddAppsFromSource();
                 services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
                     _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithFocus")));
+                services.AddAppsFromSource();
                 services.AddSingleton(fakeAppStateManager.Object);
             })
             .Build();
@@ -275,6 +275,37 @@ public class AppModelTests
             Assert.Null(application.ApplicationContext?.Instance);
         else
             Assert.NotNull(application.ApplicationContext?.Instance);
+    }
+
+    [Fact]
+    public async Task TestInjectedClassShouldHaveCorrectValue()
+    {
+        // ARRANGE
+        var fakeAppStateManager = new Mock<IAppStateManager>();
+        fakeAppStateManager.Setup(n => n.GetStateAsync(It.IsAny<string>()))
+            .ReturnsAsync(() => ApplicationState.Enabled);
+
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                services.AddSingleton(fakeAppStateManager.Object);
+                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
+                    _ => new FakeOptions(
+                        Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithServiceCollection")));
+                services.AddAppsFromSource();
+            })
+            .Build();
+
+        var appModel = builder.Services.GetService<IAppModel>();
+        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // ACT
+        var apps = appModelContext.Applications;
+
+        // CHECK
+        apps.Should().HaveCount(1);
+        var application = (Application) apps.First(n => n.Id == "Apps.InjectedApp");
+        Assert.NotNull(application.ApplicationContext?.Instance);
     }
 
     internal class FakeAppStateManager : IAppStateManager

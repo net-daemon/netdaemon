@@ -18,11 +18,9 @@ public static class ServiceCollectionExtensions
     {
         // We make sure we only add AppModel services once
         if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
-        {
             services
                 .AddAppModel()
                 .AddAppTypeResolver();
-        }
 
         services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
         return services;
@@ -50,23 +48,43 @@ public static class ServiceCollectionExtensions
     {
         // We make sure we only add AppModel services once
         if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
-        {
             services
                 .AddAppModel()
                 .AddAppTypeResolver();
-        }
 
         services
             .AddSingleton<CompilerFactory>()
             .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
             .AddSingleton<SyntaxTreeResolver>()
-            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
-            .AddSingleton<DynamicallyCompiledAssemblyResolver>()
-            .AddSingleton<IAssemblyResolver>(s => s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
+            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>());
+        
+        // We need to compile it here so we can dynamically add the service providers
+        var assemblyResolver =
+            ActivatorUtilities.CreateInstance<DynamicallyCompiledAssemblyResolver>(services.BuildServiceProvider());
+        services.RegisterDynamicFunctions(assemblyResolver.GetResolvedAssembly());
+        // And not register the assembly resolver that will have the assembly allready compiled
+        services.AddSingleton(assemblyResolver);
+        services.AddSingleton<IAssemblyResolver>(s => s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
         return services;
     }
 
-    private static IServiceCollection AddAppModel(this IServiceCollection services)
+    private static IServiceCollection RegisterDynamicFunctions(this IServiceCollection services, Assembly assembly)
+    {
+        var methods = assembly?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
+                          .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ??
+                      Array.Empty<MethodInfo>();
+
+        if (methods.Any(
+                m => m.GetParameters().Length != 1 && m.GetParameters()[0].GetType() != typeof(IServiceProvider)))
+            throw new InvalidOperationException(
+                "Methods with [ServiceCollectionExtension] Attribute should have exactly one parameter of type IServiceCollection");
+
+        foreach (var methodInfo in methods) methodInfo.Invoke(null, new object?[] {services});
+
+        return services;
+    }
+
+    internal static IServiceCollection AddAppModel(this IServiceCollection services)
     {
         services
             .AddSingleton<AppModelImpl>()
@@ -79,7 +97,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddAppTypeResolver(this IServiceCollection services)
+    internal static IServiceCollection AddAppTypeResolver(this IServiceCollection services)
     {
         services
             .AddSingleton<AppTypeResolver>()

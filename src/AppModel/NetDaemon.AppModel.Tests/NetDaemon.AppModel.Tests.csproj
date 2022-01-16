@@ -40,6 +40,7 @@
         <Compile Remove="Compiler/Fixtures/**" />
         <Compile Remove="Fixtures/Dynamic/**" />
         <Compile Remove="Fixtures/DynamicWithFocus/**" />
+        <Compile Remove="Fixtures/DynamicWithServiceCollection/**" />
         <Compile Remove="Fixtures/DynamicError/**" />
     </ItemGroup>
     <ItemGroup>
