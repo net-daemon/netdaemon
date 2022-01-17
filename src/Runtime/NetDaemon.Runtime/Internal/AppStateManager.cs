@@ -144,7 +144,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
             if (e.Code == HttpStatusCode.NotFound)
             {
                 // The app state input_boolean does not exist, lets create a helper
-                var name = entityId[14..]; // remove the "switch." part
+                var name = entityId[14..]; // remove the "input_boolean." part
                 await haConnection.CreateInputBooleanHelperAsync(name, _cancelTokenSource.Token);
                 _stateCache[entityId] = ApplicationState.Enabled;
                 await haConnection.CallServiceAsync("input_boolean", "turn_on",
