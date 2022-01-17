@@ -1,16 +1,18 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Net;
 using System.Reactive.Linq;
 using System.Text;
 using NetDaemon.AppModel;
-using NetDaemon.HassModel.Common;
-using NetDaemon.HassModel.Integration;
+using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.Internal.Exceptions;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates
+internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates, IDisposable
 {
+    private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceProvider _provider;
     private readonly ConcurrentDictionary<string, ApplicationState> _stateCache = new();
 
@@ -25,64 +27,41 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     {
         var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
         if (_stateCache.TryGetValue(entityId, out var applicationState)) return applicationState;
-        // Since IHaContext is scoped and StateManager is singleton we get the
-        // IHaContext everytime we need to check state
-        var scope = _provider.CreateScope();
-        try
-        {
-            var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
 
-            var appState = haContext.GetState(entityId);
-
-            if (appState is null)
-            {
-                haContext.SetEntityState(entityId, "on");
-                return ApplicationState.Enabled;
-            }
-
-            var appStateFromHomeAssistant =
-                appState.State == "on" ? ApplicationState.Enabled : ApplicationState.Disabled;
-            _stateCache[entityId] = appStateFromHomeAssistant;
-            return appStateFromHomeAssistant;
-        }
-        finally
-        {
-            if (scope is IAsyncDisposable serviceScopeAsyncDisposable)
-                await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
-        }
+        return (await GetOrCreateStateForApp(entityId).ConfigureAwait(false))?.State == "on"
+            ? ApplicationState.Enabled
+            : ApplicationState.Disabled;
     }
 
     public async Task SaveStateAsync(string applicationId, ApplicationState state)
     {
-        // Since IHaContext is scoped and StateManager is singleton we get the
-        // IHaContext everytime we need to check state
-        var scope = _provider.CreateScope();
-        try
-        {
-            var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
-            var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
+                           throw new InvalidOperationException();
+        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
 
-            switch (state)
-            {
-                case ApplicationState.Enabled:
-                    haContext.SetEntityState(entityId, "on", new {app_state = "enabled"});
-                    break;
-                case ApplicationState.Running:
-                    haContext.SetEntityState(entityId, "on", new {app_state = "running"});
-                    break;
-                case ApplicationState.Error:
-                    haContext.SetEntityState(entityId, "on", new {app_state = "error"});
-                    break;
-                case ApplicationState.Disabled:
-                    haContext.SetEntityState(entityId, "off", new {app_state = "disabled"});
-                    break;
-            }
-        }
-        finally
+        _stateCache[entityId] = state;
+
+        var currentState = (await GetOrCreateStateForApp(entityId).ConfigureAwait(false))?.State
+                           ?? throw new InvalidOperationException();
+
+        switch (state)
         {
-            if (scope is IAsyncDisposable serviceScopeAsyncDisposable)
-                await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);
+            case ApplicationState.Enabled when currentState == "off":
+                await haConnection.CallServiceAsync("input_boolean", "turn_on",
+                    new HassTarget {EntityIds = new[] {entityId}},
+                    cancelToken: _cancelTokenSource.Token);
+                break;
+            case ApplicationState.Disabled when currentState == "on":
+                await haConnection.CallServiceAsync("input_boolean", "turn_off",
+                    new HassTarget {EntityIds = new[] {entityId}},
+                    cancelToken: _cancelTokenSource.Token);
+                break;
         }
+    }
+
+    public void Dispose()
+    {
+        _cancelTokenSource.Dispose();
     }
 
     public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
@@ -108,8 +87,6 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                         var appState = changedEvent?.NewState?.State == "on"
                             ? ApplicationState.Enabled
                             : ApplicationState.Disabled;
-
-                        _stateCache[entityId] = appState;
 
                         await app.SetStateAsync(
                             appState
@@ -148,6 +125,35 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     break;
             }
 
-        return $"switch.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
+        return $"input_boolean.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
+    }
+
+    private async Task<HassState?> GetOrCreateStateForApp(string entityId)
+    {
+        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
+                           throw new InvalidOperationException();
+        try
+        {
+            var state = await haConnection.GetEntityStateAsync(entityId, _cancelTokenSource.Token)
+                .ConfigureAwait(false);
+            return state;
+        }
+        catch (HomeAssistantApiCallException e)
+        {
+            // Missing entity will throw a http status not found
+            if (e.Code == HttpStatusCode.NotFound)
+            {
+                // The app state input_boolean does not exist, lets create a helper
+                var name = entityId[14..]; // remove the "switch." part
+                await haConnection.CreateInputBooleanHelperAsync(name, _cancelTokenSource.Token);
+                _stateCache[entityId] = ApplicationState.Enabled;
+                await haConnection.CallServiceAsync("input_boolean", "turn_on",
+                    new HassTarget {EntityIds = new[] {entityId}},
+                    cancelToken: _cancelTokenSource.Token).ConfigureAwait(false);
+                return new HassState {State = "on"};
+            }
+
+            throw;
+        }
     }
 }

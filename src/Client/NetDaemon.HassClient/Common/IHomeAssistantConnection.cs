@@ -19,7 +19,7 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     Task SendCommandAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage;
 
     /// <summary>
-    ///     Sends a command message to Home Assistant without handling the result
+    ///     Sends a command message to Home Assistant and return the result
     /// </summary>
     /// <param name="command">Command message to send</param>
     /// <param name="cancelToken">token to cancel operation</param>
