@@ -1,3 +1,5 @@
+using NetDaemon.Client.Internal.Exceptions;
+
 namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantApiManager : IHomeAssistantApiManager
@@ -39,8 +41,8 @@ internal class HomeAssistantApiManager : IHomeAssistantApiManager
                 .ConfigureAwait(false);
         }
 
-        throw new ApplicationException(
-            $"Call to API unsuccessful, code {result.StatusCode}: reason: {result.ReasonPhrase}");
+        throw new HomeAssistantApiCallException(
+            $"Call to API unsuccessful, code {result.StatusCode}: reason: {result.ReasonPhrase}", result.StatusCode);
     }
 
     public async Task<T?> PostApiCallAsync<T>(string apiPath, CancellationToken cancelToken, object? data = null)
