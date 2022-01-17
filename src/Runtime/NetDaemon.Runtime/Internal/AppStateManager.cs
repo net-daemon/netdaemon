@@ -59,11 +59,6 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         }
     }
 
-    public void Dispose()
-    {
-        _cancelTokenSource.Dispose();
-    }
-
     public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
         haConnection.OnHomeAssistantEvent
@@ -155,5 +150,10 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
 
             throw;
         }
+    }
+    
+    public void Dispose()
+    {
+        _cancelTokenSource.Dispose();
     }
 }
