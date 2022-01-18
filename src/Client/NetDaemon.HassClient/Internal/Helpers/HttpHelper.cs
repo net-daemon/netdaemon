@@ -5,7 +5,7 @@ internal static class HttpHelper
     [SuppressMessage("", "CA2000")]
     public static HttpClient CreateHttpClient()
     {
-        return new(CreateHttpMessageHandler());
+        return new HttpClient(CreateHttpMessageHandler());
     }
 
     public static HttpMessageHandler CreateHttpMessageHandler()

@@ -41,7 +41,7 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
                 loggerConnection.Object,
                 new HomeAssistantApiManager(
                     appSettingsOptions,
-                    (mock?.HomeAssistantHost.Services.GetRequiredService<IHttpClientFactory>() ??
+                    (mock.HomeAssistantHost.Services.GetRequiredService<IHttpClientFactory>() ??
                      throw new NullReferenceException())
                     .CreateClient()
                 )
@@ -61,7 +61,7 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
             HomeAssistantLogger = loggerClient,
             TransportPipelineLogger = loggerTransport,
             HomeAssistantConnectionLogger = loggerConnection,
-            HomeAssistantConnction = connection
+            HomeAssistantConnection = connection
         };
     }
 }

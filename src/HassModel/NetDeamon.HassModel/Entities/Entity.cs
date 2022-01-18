@@ -1,6 +1,5 @@
 ﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Internal;

@@ -5,7 +5,7 @@ namespace NetDaemon.Runtime;
 
 public static class ServiceBuilderExtensions
 {
-    public static IServiceCollection AddNetDameonStateManager(this IServiceCollection services)
+    public static IServiceCollection AddNetDaemonStateManager(this IServiceCollection services)
     {
         services.AddSingleton<AppStateManager>();
         services.AddSingleton<IAppStateManager>(s => s.GetRequiredService<AppStateManager>());

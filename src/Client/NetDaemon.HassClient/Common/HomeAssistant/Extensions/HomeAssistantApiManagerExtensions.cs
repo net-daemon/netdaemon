@@ -5,7 +5,7 @@ namespace NetDaemon.Client.Common.HomeAssistant.Extensions;
 /// <summary>
 ///     Adds extensions to the IHomeAssistantApiManager
 /// </summary>
-public static class IHomeAssistantApiManagerExtensions
+public static class HomeAssistantApiManagerExtensions
 {
     /// <summary>
     ///     Sends a custom event to Home Assistant
@@ -47,7 +47,7 @@ public static class IHomeAssistantApiManagerExtensions
     /// <remarks>
     ///     This sets the state of a device within Home Assistant
     ///     and will not communicate with the actual device. To communicate with the device
-    ///     use service calls. To persist devices use the NetDaemon integrations and it's sercice calls
+    ///     use service calls. To persist devices use the NetDaemon integrations and it's service calls
     /// </remarks>
     public static async Task<HassState?> SetEntityStateAsync(this IHomeAssistantApiManager apiManager, string entityId,
         string state, object? attributes, CancellationToken cancellationToken)

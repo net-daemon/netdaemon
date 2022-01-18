@@ -11,11 +11,9 @@ namespace NetDaemon.HassModel.Internal
     {
         private readonly IDisposable _subscription;
         private readonly Subject<T> _subject = new();
-        private readonly ILogger _logger;
 
-        public ScopedObservable(IObservable<T> innerObservable, ILogger logger)
+        public ScopedObservable(IObservable<T> innerObservable)
         {
-            _logger = logger;
             _subscription = innerObservable.Subscribe(_subject);
         }
 

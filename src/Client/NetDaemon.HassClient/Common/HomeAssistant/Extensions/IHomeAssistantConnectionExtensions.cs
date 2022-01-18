@@ -27,7 +27,7 @@ public static class HomeAssistantConnectionExtensions
         CancellationToken cancelToken)
     {
         return await connection
-            .SendCommandAndReturnResponseRawAsync<SimpleCommand>
+            .SendCommandAndReturnResponseRawAsync
                 (new SimpleCommand("get_services"), cancelToken).ConfigureAwait(false);
     }
 
@@ -135,7 +135,7 @@ public static class HomeAssistantConnectionExtensions
                 .ToTask(cancelToken);
 
             await connection
-                .SendCommandAsync<SimpleCommand>
+                .SendCommandAsync
                     (new SimpleCommand("ping"), cancelToken).ConfigureAwait(false);
 
             await resultEvent.ConfigureAwait(false);

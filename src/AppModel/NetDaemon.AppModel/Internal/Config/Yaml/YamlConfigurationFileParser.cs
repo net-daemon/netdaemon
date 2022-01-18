@@ -37,8 +37,9 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlNodePair(KeyValuePair<YamlNode, YamlNode> yamlNodePair)
     {
-        var context = ((YamlScalarNode)yamlNodePair.Key).Value ?? string.Empty;
-        VisitYamlNode(context, yamlNodePair.Value);
+        var (key, value) = yamlNodePair;
+        var context = ((YamlScalarNode)key).Value ?? string.Empty;
+        VisitYamlNode(context, value);
     }
 
     private void VisitYamlNode(string context, YamlNode node)

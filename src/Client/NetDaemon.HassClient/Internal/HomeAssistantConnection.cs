@@ -86,10 +86,10 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                      throw new ApplicationException(
                          "Send command ({command.Type}) did not get response in timely fashion");
 
-        if (!result?.Success ?? false)
-            throw new ApplicationException($"Failed command ({command.Type}) error: {result?.Error}");
+        if (!result.Success ?? false)
+            throw new ApplicationException($"Failed command ({command.Type}) error: {result.Error}");
 
-        return result?.ResultElement;
+        return result.ResultElement;
     }
 
     public async ValueTask DisposeAsync()
@@ -100,7 +100,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         }
         catch (Exception e)
         {
-            _logger.LogDebug("Failed to close HomeAssistantConnection", e);
+            _logger.LogDebug(e, "Failed to close HomeAssistantConnection");
         }
 
         if (!_internalCancelSource.IsCancellationRequested)

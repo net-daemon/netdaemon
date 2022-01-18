@@ -10,7 +10,7 @@ public class ApiIntegrationTests : IntegrationTestBase
     public async Task TestGetApiCall()
     {
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
-        var entity = await ctx.HomeAssistantConnction.GetApiCallAsync<HassEntity>("devices", TokenSource.Token)
+        var entity = await ctx.HomeAssistantConnection.GetApiCallAsync<HassEntity>("devices", TokenSource.Token)
             .ConfigureAwait(false);
 
         Assert.NotNull(entity?.EntityId);
@@ -24,7 +24,7 @@ public class ApiIntegrationTests : IntegrationTestBase
     public async Task TestPostApiCall()
     {
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
-        var entity = await ctx.HomeAssistantConnction.PostApiCallAsync<HassEntity>(
+        var entity = await ctx.HomeAssistantConnection.PostApiCallAsync<HassEntity>(
             "devices",
             TokenSource.Token,
             new {somedata = "hello"}

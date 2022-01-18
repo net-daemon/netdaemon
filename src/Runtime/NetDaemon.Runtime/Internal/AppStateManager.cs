@@ -77,17 +77,16 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 {
                     var entityId =
                         ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ?? throw new InvalidOperationException());
-                    if (entityId == changedEvent.NewState.EntityId)
-                    {
-                        var appState = changedEvent?.NewState?.State == "on"
-                            ? ApplicationState.Enabled
-                            : ApplicationState.Disabled;
+                    if (entityId != changedEvent.NewState.EntityId) continue;
 
-                        await app.SetStateAsync(
-                            appState
-                        );
-                        break;
-                    }
+                    var appState = changedEvent.NewState?.State == "on"
+                        ? ApplicationState.Enabled
+                        : ApplicationState.Disabled;
+
+                    await app.SetStateAsync(
+                        appState
+                    );
+                    break;
                 }
             }).Subscribe();
     }
@@ -136,22 +135,18 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         catch (HomeAssistantApiCallException e)
         {
             // Missing entity will throw a http status not found
-            if (e.Code == HttpStatusCode.NotFound)
-            {
-                // The app state input_boolean does not exist, lets create a helper
-                var name = entityId[14..]; // remove the "input_boolean." part
-                await haConnection.CreateInputBooleanHelperAsync(name, _cancelTokenSource.Token);
-                _stateCache[entityId] = ApplicationState.Enabled;
-                await haConnection.CallServiceAsync("input_boolean", "turn_on",
-                    new HassTarget {EntityIds = new[] {entityId}},
-                    cancelToken: _cancelTokenSource.Token).ConfigureAwait(false);
-                return new HassState {State = "on"};
-            }
-
-            throw;
+            if (e.Code != HttpStatusCode.NotFound) throw;
+            // The app state input_boolean does not exist, lets create a helper
+            var name = entityId[14..]; // remove the "input_boolean." part
+            await haConnection.CreateInputBooleanHelperAsync(name, _cancelTokenSource.Token);
+            _stateCache[entityId] = ApplicationState.Enabled;
+            await haConnection.CallServiceAsync("input_boolean", "turn_on",
+                new HassTarget {EntityIds = new[] {entityId}},
+                cancelToken: _cancelTokenSource.Token).ConfigureAwait(false);
+            return new HassState {State = "on"};
         }
     }
-    
+
     public void Dispose()
     {
         _cancelTokenSource.Dispose();

@@ -11,7 +11,7 @@ public class HomeAssistantClientTests
     /// <summary>
     ///     Return a mocked Home Assistant Client
     /// </summary>
-    internal HomeAssistantClient GetDefaultHomeAssistantClient()
+    private HomeAssistantClient GetDefaultHomeAssistantClient()
     {
         var connFactoryMock = new Mock<IHomeAssistantConnectionFactory>();
         var loggerMock = new Mock<ILogger<HomeAssistantClient>>();
@@ -73,7 +73,7 @@ public class HomeAssistantClientTests
     /// <summary>
     ///     Return a pre-authenticated OK HomeAssistantClient
     /// </summary>
-    internal HomeAssistantClient GetDefaultAuthorizedHomeAssistantClient()
+    private HomeAssistantClient GetDefaultAuthorizedHomeAssistantClient()
     {
         // First add the authorization responses from pipeline
         _pipeline.AddResponse(
@@ -95,9 +95,9 @@ public class HomeAssistantClientTests
     ///     Return a pre authenticated and running state
     ///     HomeAssistantClient
     /// </summary>
-    internal HomeAssistantClient GetDefaultConnectOkHomeAssistantClient()
+    private HomeAssistantClient GetDefaultConnectOkHomeAssistantClient()
     {
-        // For a successful connection we need success on autorization
+        // For a successful connection we need success on authorization
         // and success on getting a config message that has state="RUNNING"
 
         // First add the authorization responses from pipeline

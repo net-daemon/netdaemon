@@ -209,7 +209,7 @@ public class TypeResolverTests
     }
 
     [Fact]
-    public void TestAddAppFromTypeShouldLoadSigleApp()
+    public void TestAddAppFromTypeShouldLoadSingleApp()
     {
         var serviceCollection = new ServiceCollection();
 

@@ -40,9 +40,15 @@ internal sealed class ApplicationContext
         if (_cancelTokenSource.IsCancellationRequested == false)
             _cancelTokenSource.Cancel();
 
-        if (Instance is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-
-        else if (Instance is IDisposable disposable) disposable.Dispose();
+        switch (Instance)
+        {
+            case IAsyncDisposable asyncDisposable:
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                break;
+            case IDisposable disposable:
+                disposable.Dispose();
+                break;
+        }
 
         if (_serviceScope is IAsyncDisposable serviceScopeAsyncDisposable)
             await serviceScopeAsyncDisposable.DisposeAsync().ConfigureAwait(false);

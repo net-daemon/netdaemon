@@ -13,10 +13,9 @@ namespace NetDaemon.HassModel.Tests.Internal
         public void WhenScopeIsDisposedSubscribersAreDetached()
         {
             var testSubject = new Subject<string>();
-            var loggerMock = new Mock<ILogger>();
             // Create 2 ScopedObservables for the same subject
-            var scoped1 = new ScopedObservable<string>(testSubject, loggerMock.Object);
-            var scoped2 = new ScopedObservable<string>(testSubject, loggerMock.Object);
+            var scoped1 = new ScopedObservable<string>(testSubject);
+            var scoped2 = new ScopedObservable<string>(testSubject);
 
             // First scope has 2 subscribers, second has 1
             var scope1AObserverMock = new Mock<IObserver<string>>();

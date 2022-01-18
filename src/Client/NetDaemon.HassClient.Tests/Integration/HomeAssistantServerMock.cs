@@ -77,12 +77,9 @@ public class HassMockStartup : IHostedService
 
     public HassMockStartup(IConfiguration configuration)
     {
-        Configuration = configuration;
     }
 
     private static int DefaultTimeOut => 5000;
-
-    private IConfiguration Configuration { get; }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {

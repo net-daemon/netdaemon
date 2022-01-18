@@ -22,9 +22,9 @@ internal static class ConfigManager
         if (!Debugger.IsAttached)
             return JsonSerializer.Deserialize<AddOnConfig>(File.ReadAllBytes(AddOnConfigPath))
                    ?? throw new InvalidOperationException("Failed to read addon config");
-        else
-            // If we are in a debugging session we are obviously not in an add-on
-            // in this case we fake the data so we will be able to debug addon host
-            return new AddOnConfig {LogLevel = "trace", ApplicationConfigFolderPath = "./"};
+        
+        // If we are in a debugging session we are obviously not in an add-on
+        // in this case we fake the data so we will be able to debug addon host
+        return new AddOnConfig {LogLevel = "trace", ApplicationConfigFolderPath = "./"};
     }
 }

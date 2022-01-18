@@ -220,7 +220,7 @@ public class AppModelTests
         // check the application instance is init ok
         var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithAsyncDispose");
         var app = (MyAppLocalAppWithAsyncDispose?) application.ApplicationContext?.Instance;
-        application!.State.Should().Be(ApplicationState.Running);
+        application.State.Should().Be(ApplicationState.Running);
         await application.DisposeAsync().ConfigureAwait(false);
         app!.AsyncDisposeIsCalled.Should().BeTrue();
         app.DisposeIsCalled.Should().BeFalse();

@@ -5,7 +5,7 @@ using Serilog;
 namespace NetDaemon.Extensions.Logging;
 
 /// <summary>
-///     Adds extension to the IHostbuilder to add default NetDaemon logging capabilities
+///     Adds extension to the IHostBuilder to add default NetDaemon logging capabilities
 /// </summary>
 public static class ServiceCollectionExtensions
 {

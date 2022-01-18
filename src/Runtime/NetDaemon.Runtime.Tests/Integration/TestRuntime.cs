@@ -31,7 +31,7 @@ public class TestRuntime
         var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
         var instances = service.ApplicationInstances;
 
-        instances!.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
+        instances.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
         timedCancellationSource.Cancel();
         await runnerTask.ConfigureAwait(false);
     }
