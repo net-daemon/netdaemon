@@ -44,35 +44,22 @@ internal class DebugService : BackgroundService
             TimeSpan.FromSeconds(TimeoutInSeconds),
             stoppingToken).ConfigureAwait(false);
 
-        // Stop application if this is exited
+        // Stop application if this is exited and use _cancelToken as token
         _hostLifetime.StopApplication();
     }
 
-    private async Task OnHomeAssistantClientConnected(IHomeAssistantConnection connection)
+    private Task OnHomeAssistantClientConnected(IHomeAssistantConnection connection)
     {
         _logger.LogInformation("HassClient connected and processing events");
         connection.OnHomeAssistantEvent.Subscribe(HandleEvent);
-        //var services = await connection.GetServicesAsync(_cancelToken ?? CancellationToken.None);
 
-        await connection.CallServiceAsync(
-            "notify",
-            "persistent_notification",
-            new
-            {
-                message = "CallServiceAsync works like a charm",
-                title = "From HassClient!"
-            },
-            cancelToken: _cancelToken
-        );
-
-        // Example set state and create new entity
-        // var state = await connection.PostApiCall<HassState>($"states/{HttpUtility.UrlEncode("light.test")}", _cancelToken ?? CancellationToken.None, new { state = "on", attributes = new { myattribute = "hello" } }).ConfigureAwait(false);
-        //_logger.LogInformation("Added entity: {entity}", state);
+        // Add your code to test here
+        return Task.CompletedTask;
     }
 
     private void OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
-        _logger.LogInformation("HassClient disconnected cause of {reason}, connect retry in {timeout} seconds",
+        _logger.LogInformation("HassClient disconnected cause of {Reason}, connect retry in {Timeout} seconds",
             TimeoutInSeconds, reason);
         // Here you would typically cancel and dispose any functions  
         // using the connection
@@ -81,12 +68,12 @@ internal class DebugService : BackgroundService
 
     private void HandleEvent(HassEvent hassEvent)
     {
-        _logger.LogDebug("New event ({eventType})", hassEvent.EventType);
+        _logger.LogDebug("New event ({EventType})", hassEvent.EventType);
         switch (hassEvent.EventType)
         {
             case "state_changed":
                 var state = hassEvent.ToStateChangedEvent();
-                _logger.LogInformation("state changed: {state}", state);
+                _logger.LogInformation("state changed: {State}", state);
                 break;
         }
     }

@@ -18,8 +18,8 @@ try
         .ConfigureServices((_, services) =>
             services
                 .AddAppsFromAssembly(Assembly.GetEntryAssembly()!)
-                // Remove this is you are not running the integtration!
-                .AddNetDameonStateManager()
+                // Remove this is you are not running the integration!
+                .AddNetDaemonStateManager()
         )
         .Build()
         .RunAsync()

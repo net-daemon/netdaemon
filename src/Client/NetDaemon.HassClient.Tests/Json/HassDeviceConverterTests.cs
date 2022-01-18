@@ -12,7 +12,7 @@ public class JsonConverterTests
     };
 
     [Fact]
-    public void TestConvertionWithNumericValue()
+    public void TestConversionWithNumericValue()
     {
         const string jsonDevice = @"
         {
@@ -33,7 +33,7 @@ public class JsonConverterTests
     }
 
     [Fact]
-    public void TestConvertionWithStringValue()
+    public void TestConversionWithStringValue()
     {
         const string jsonDevice = @"
         {

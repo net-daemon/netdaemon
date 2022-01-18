@@ -11,7 +11,6 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
     private bool _isDisposed;
 
     public AppModelContext(
-        ILogger<IAppModelContext> logger,
         IEnumerable<IAppTypeResolver> appTypeResolvers,
         IServiceProvider provider)
     {

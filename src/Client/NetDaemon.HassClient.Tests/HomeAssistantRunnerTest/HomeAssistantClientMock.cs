@@ -20,10 +20,7 @@ internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>
             )
         ).Returns(
             (string _, int _, bool _, string _, string _, CancellationToken _) =>
-            {
-                return Task.FromResult(_haConnectionMock.Object);
-            }
-        );
+                Task.FromResult(_haConnectionMock.Object));
 
         _haConnectionMock.Setup(n =>
             n.ProcessHomeAssistantEventsAsync(It.IsAny<CancellationToken>())

@@ -136,10 +136,10 @@ public class ConfigTests
         var app = (MyAppLocalApp?)application?.ApplicationContext?.Instance;
         // CHECK
         app!.Settings.Entity!.EntityId.Should().Be("light.test");
-        app!.Settings.Entity!.ServiceProvider.Should().NotBeNull();
-        // Check special from derivied class
-        app!.Settings.Entity2!.EntityId.Should().Be("light.test2");
-        app!.Settings.Entity2!.ServiceProvider.Should().NotBeNull();
+        app.Settings.Entity!.ServiceProvider.Should().NotBeNull();
+        // Check special from derived class
+        app.Settings.Entity2!.EntityId.Should().Be("light.test2");
+        app.Settings.Entity2!.ServiceProvider.Should().NotBeNull();
     }
 
     private static IConfigurationRoot GetConfigurationRootForYaml(string path)

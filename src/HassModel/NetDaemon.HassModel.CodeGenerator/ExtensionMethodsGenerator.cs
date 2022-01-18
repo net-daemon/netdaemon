@@ -13,10 +13,10 @@ internal static class ExtensionMethodsGenerator
                 sd.Services?.Any() == true
                 && sd.Services.Any(s => entityDomains.Contains(s.Target?.Entity?.Domain)))
             .GroupBy(x => x.Domain, x => x.Services)
-            .Select(GenarteClass);
+            .Select(GenerateClass);
     }
 
-    private static ClassDeclarationSyntax GenarteClass(IGrouping<string?, IReadOnlyCollection<HassService>?> domainServicesGroup)
+    private static ClassDeclarationSyntax GenerateClass(IGrouping<string?, IReadOnlyCollection<HassService>?> domainServicesGroup)
     {
         var domain = domainServicesGroup.Key!;
 

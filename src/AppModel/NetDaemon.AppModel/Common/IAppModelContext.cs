@@ -1,12 +1,12 @@
 namespace NetDaemon.AppModel;
 
 /// <summary>
-///     Manage AppModel state and lifecykle
+///     Manage AppModel state and lifecycle
 /// </summary>
 public interface IAppModelContext : IAsyncDisposable
 {
     /// <summary>
-    ///     Current instanciated and running applications
+    ///     Current instantiated and running applications
     /// </summary>
     IReadOnlyCollection<IApplication> Applications { get; }
 }

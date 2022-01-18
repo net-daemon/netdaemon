@@ -40,8 +40,8 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
             try
             {
                 var homeAssistantConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
-                
-                var hassTarget = new HassTarget() {EntityIds = new[] {ttsMessage.EntityId}};
+
+                var hassTarget = new HassTarget {EntityIds = new[] {ttsMessage.EntityId}};
                 var data = new
                 {
                     message = ttsMessage.Message,
@@ -55,17 +55,17 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
                 await Task.Delay(InternalTimeForTtsDelay, _cancellationTokenSource.Token).ConfigureAwait(false);
                 var state = await homeAssistantConnection
                     .GetEntityStateAsync(ttsMessage.EntityId, _cancellationTokenSource.Token).ConfigureAwait(false);
-                if (state?.Attributes is not null &&
-                    state.Attributes.TryGetValue("media_duration", out var durationAttribute))
-                {
-                    var durationElement = (JsonElement) durationAttribute;
-                    var duration = durationElement.GetDouble();
-                    // We wait the remaining duration plus 500 ms to make sure the speech is done
-                    int delayInMilliSeconds = (int) Math.Round(duration * 1000) -
-                        InternalTimeForTtsDelay + 500;
-                    if (delayInMilliSeconds > 0)
-                        await Task.Delay(delayInMilliSeconds, _cancellationTokenSource.Token).ConfigureAwait(false);
-                }
+
+                if (state?.Attributes is null ||
+                    !state.Attributes.TryGetValue("media_duration", out var durationAttribute)) continue;
+
+                var durationElement = (JsonElement) durationAttribute;
+                var duration = durationElement.GetDouble();
+                // We wait the remaining duration plus 500 ms to make sure the speech is done
+                var delayInMilliSeconds = (int) Math.Round(duration * 1000) -
+                    InternalTimeForTtsDelay + 500;
+                if (delayInMilliSeconds > 0)
+                    await Task.Delay(delayInMilliSeconds, _cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

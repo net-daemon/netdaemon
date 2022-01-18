@@ -32,7 +32,7 @@ public static class HostBuilderExtensions
     {
         return hostBuilder
             .UseAppScopedHaContext()
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((_, services) =>
             {
                 services.AddLogging();
                 services.AddHostedService<RuntimeService>();

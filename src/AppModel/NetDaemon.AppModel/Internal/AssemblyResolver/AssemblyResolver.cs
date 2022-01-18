@@ -49,12 +49,10 @@ internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver, IDisposa
 
     public void Dispose()
     {
-        if (_currentContext is not null)
-        {
-            _currentContext.Unload();
-            // Finally do cleanup and release memory
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
+        if (_currentContext is null) return;
+        _currentContext.Unload();
+        // Finally do cleanup and release memory
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
     }
 }

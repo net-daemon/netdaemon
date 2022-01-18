@@ -105,9 +105,12 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             catch (OperationCanceledException)
             {
                 if (_internalTokenSource.IsCancellationRequested)
+                {
                     // We have internal cancellation due to dispose
                     // just return without any further due
                     return;
+                }
+
                 _onDisconnectSubject.OnNext(cancelToken.IsCancellationRequested
                     ? DisconnectReason.Client
                     : DisconnectReason.Remote);
@@ -120,6 +123,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             finally
             {
                 if (CurrentConnection is not null)
+                {
                     // Just try to dispose the connection silently
                     try
                     {
@@ -129,6 +133,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
                     {
                         CurrentConnection = null;
                     }
+                }
             }
 
             isRetry = true;

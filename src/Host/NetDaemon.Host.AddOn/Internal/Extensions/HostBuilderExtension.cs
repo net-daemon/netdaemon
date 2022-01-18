@@ -21,20 +21,20 @@ public static class HostBuilderExtensions
             .UseNetDaemonDefaultLogging()
             .UseNetDaemonRuntime()
             .UseNetDaemonTextToSpeech()
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((_, services) =>
             {
                 services
                     .AddAppsFromSource()
                     .AddNetDaemonScheduler()
-                    .AddNetDameonStateManager();
+                    .AddNetDaemonStateManager();
             });
     }
 
     private static IHostBuilder UseNetDaemonAddOnSettings(this IHostBuilder hostBuilder)
     {
         return hostBuilder
-            .ConfigureServices((context, services) => { services.AddNetDaemonAddOnConfiguration(); })
-            .ConfigureAppConfiguration((ctx, config) =>
+            .ConfigureServices((_, services) => { services.AddNetDaemonAddOnConfiguration(); })
+            .ConfigureAppConfiguration((_, config) =>
             {
                 config.SetBasePath(Directory.GetCurrentDirectory());
                 config.AddJsonFile("appsettings.json");

@@ -11,12 +11,6 @@ internal sealed class NonQueuedObservableMock<T> : IQueuedObservable<T>
 {
     private IDisposable? _subscription;
     private readonly Subject<T> _subject = new();
-    private readonly ILogger<IHaContext> _logger;
-
-    public NonQueuedObservableMock(ILogger<IHaContext> logger)
-    {
-        _logger = logger;
-    }
 
     public IDisposable Subscribe(IObserver<T> observer) => _subject.Subscribe(observer);
 

@@ -29,7 +29,7 @@ internal static class EntitiesGenerator
             yield return entitytype;
         }
 
-        foreach (var attributeRecord in entitySets.Select(GenerateAtributeRecord))
+        foreach (var attributeRecord in entitySets.Select(GenerateAttributeRecord))
         {
             yield return attributeRecord;
         }
@@ -67,7 +67,7 @@ internal static class EntitiesGenerator
     /// <summary>
     /// Generates a record with all the attributes found in a set of entities providing unique names for each.
     /// </summary>
-    private static RecordDeclarationSyntax GenerateAtributeRecord(EntitySet entitySet)
+    private static RecordDeclarationSyntax GenerateAttributeRecord(EntitySet entitySet)
     {
         // Get all attributes of all entities in this set
         var jsonProperties = entitySet.EntityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
@@ -82,7 +82,7 @@ internal static class EntitiesGenerator
         // We might have different json names that after CamelCasing result in the same CSharpName 
         var uniqueProperties = attributesByJsonName
             .GroupBy(t => t.CSharpName)
-            .SelectMany(DeduplictateCSharpName)
+            .SelectMany(DuplicateCSharpName)
             .OrderBy(p => p.CSharpName);
 
         var propertyDeclarations = uniqueProperties.Select(a => Property($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
@@ -92,7 +92,7 @@ internal static class EntitiesGenerator
         return Record(entitySet.AttributesClassName, propertyDeclarations).ToPublic();
     }
 
-    private static IEnumerable<(string CSharpName, string JsonName, Type ClrType)> DeduplictateCSharpName(IEnumerable<(string CSharpName, string JsonName, Type ClrType)> items)
+    private static IEnumerable<(string CSharpName, string JsonName, Type ClrType)> DuplicateCSharpName(IEnumerable<(string CSharpName, string JsonName, Type ClrType)> items)
     {
         var list = items.ToList();
         if (list.Count == 1) return new[] { list.First() };

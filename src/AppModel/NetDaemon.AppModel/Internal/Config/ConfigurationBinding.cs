@@ -358,11 +358,8 @@ internal class ConfigurationBinding : IConfigurationBinding
             actual.GetGenericTypeDefinition() == expected)
             return actual;
 
-        foreach (var interfaceType in actualTypeInfo.ImplementedInterfaces)
-            if (interfaceType.GetTypeInfo().IsGenericType &&
-                interfaceType.GetGenericTypeDefinition() == expected)
-                return interfaceType;
-        return null;
+        return actualTypeInfo.ImplementedInterfaces.FirstOrDefault(interfaceType =>
+            interfaceType.GetTypeInfo().IsGenericType && interfaceType.GetGenericTypeDefinition() == expected);
     }
 
     private static IEnumerable<PropertyInfo> GetAllProperties(TypeInfo type)

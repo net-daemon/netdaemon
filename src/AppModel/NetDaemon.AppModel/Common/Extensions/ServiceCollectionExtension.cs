@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAppFromType(this IServiceCollection services, Type type)
     {
         // We make sure we only add AppModel services once
-        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
+        if (services.All(n => n.ImplementationType != typeof(AppModelImpl)))
             services.AddAppModel();
 
         return services.AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
     {
         // We make sure we only add AppModel services once
-        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
+        if (services.All(n => n.ImplementationType != typeof(AppModelImpl)))
             services
                 .AddAppModel()
                 .AddAppTypeResolver();
@@ -62,7 +62,7 @@ public static class ServiceCollectionExtensions
         var assemblyResolver =
             ActivatorUtilities.CreateInstance<DynamicallyCompiledAssemblyResolver>(services.BuildServiceProvider());
         services.RegisterDynamicFunctions(assemblyResolver.GetResolvedAssembly());
-        // And not register the assembly resolver that will have the assembly allready compiled
+        // And not register the assembly resolver that will have the assembly already compiled
         services.AddSingleton(assemblyResolver);
         services.AddSingleton<IAssemblyResolver>(s => s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
         return services;
@@ -70,7 +70,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection RegisterDynamicFunctions(this IServiceCollection services, Assembly assembly)
     {
-        var methods = assembly?.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
+        var methods = assembly.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
                           .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ??
                       Array.Empty<MethodInfo>();
 

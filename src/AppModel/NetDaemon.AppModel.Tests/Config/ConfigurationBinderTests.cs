@@ -97,7 +97,7 @@ public class ConfigurationBinderTests
         Assert.Throws<InvalidOperationException>(() =>
             GetObjectFromSection<AbstractShouldNotSerialize>("TestCollections"));
         Assert.Throws<InvalidOperationException>(() =>
-            GetObjectFromSection<ClassWithoutDefaultContructorShouldNotSerialize>("TestCollections"));
+            GetObjectFromSection<ClassWithoutDefaultConstructorShouldNotSerialize>("TestCollections"));
         Assert.Throws<InvalidOperationException>(() =>
             GetObjectFromSection<ClassThatThrowsOnConstructor>("TestCollections"));
         Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<string[,]>("TestCollections"));
@@ -130,9 +130,9 @@ public class ConfigurationBinderTests
     {
     }
 
-    internal class ClassWithoutDefaultContructorShouldNotSerialize
+    internal class ClassWithoutDefaultConstructorShouldNotSerialize
     {
-        private ClassWithoutDefaultContructorShouldNotSerialize()
+        private ClassWithoutDefaultConstructorShouldNotSerialize()
         {
         }
     }

@@ -18,7 +18,7 @@ try
         .ConfigureServices((_, services) =>
             services
                 .AddAppsFromSource()
-                .AddNetDameonStateManager()
+                .AddNetDaemonStateManager()
                 .AddNetDaemonScheduler()
         )
         .Build()

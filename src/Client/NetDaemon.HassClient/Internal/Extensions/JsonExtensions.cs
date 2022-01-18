@@ -2,7 +2,7 @@
 
 internal static class JsonExtensions
 {
-    public static T? ToObject<T>(this JsonElement element, JsonSerializerOptions? options = null)
+    public static T ToObject<T>(this JsonElement element, JsonSerializerOptions? options = null)
     {
         var bufferWriter = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(bufferWriter))

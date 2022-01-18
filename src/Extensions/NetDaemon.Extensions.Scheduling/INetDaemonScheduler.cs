@@ -8,14 +8,14 @@ namespace NetDaemon.Extensions.Scheduler
     public interface INetDaemonScheduler
     {
         /// <summary>
-        ///     Shedules an action every (timespan)
+        ///     Schedules an action every (timespan)
         /// </summary>
         /// <param name="period">The period to schedule</param>
         /// <param name="action">Action to run</param>
         IDisposable RunEvery(TimeSpan period, Action action);
 
         /// <summary>
-        ///     Shedules an action every (timespan)
+        ///     Schedules an action every (timespan)
         /// </summary>
         /// <param name="period">The period to schedule</param>
         /// <param name="startTime">The time to start the schedule</param>
@@ -23,7 +23,7 @@ namespace NetDaemon.Extensions.Scheduler
         IDisposable RunEvery(TimeSpan period, DateTimeOffset startTime, Action action);
 
         /// <summary>
-        ///     Delays excecution of an action (timespan) time
+        ///     Delays execution of an action (timespan) time
         /// </summary>
         /// <param name="timespan">Timespan to delay</param>
         /// <param name="action">Action to run</param>

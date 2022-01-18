@@ -2,7 +2,7 @@
 
 public record HassState
 {
-    [JsonPropertyName("attributes")] public JsonElement? AttributesJson { get; set; }
+    [JsonPropertyName("attributes")] public JsonElement? AttributesJson { get; init; }
 
     public IReadOnlyDictionary<string, object>? Attributes
     {
