@@ -59,6 +59,12 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         }
     }
 
+    internal Task InitializeAsync()
+    {
+        _stateCache.Clear();
+        return Task.CompletedTask;
+    }
+
     public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
         haConnection.OnHomeAssistantEvent
