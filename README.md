@@ -14,7 +14,7 @@ NetDaemon runtime version 3 is built from scratch. The reason is to make the pro
 ## What has changed from V2?
 ### Breaking changes
 - We now no longer support apps using the old base class `NetDaemonRxApp`. HassModel is the only supported model moving forward.
-- We changed the way configuration works. Configuration from yaml is not injected using `IAppConfig<MyConfigClass<`. See the template [v3 branch](https://github.com/net-daemon/netdaemon-app-template/tree/v3) for examples how to use it.
+- We changed the way configuration works. Configuration from yaml is now injected using `IAppConfig<MyConfigClass<`. See the template [v3 branch](https://github.com/net-daemon/netdaemon-app-template/tree/v3) for examples how to use it.
 - Some public interfaces like `INetDaemon`is no longer used. 
 - Different namespaces are used, like `NetDaemon.AppModel`and `NetDaemon.Runtime`. Please see the template [v3 branch](https://github.com/net-daemon/netdaemon-app-template/tree/v3).
 - We now use `input_booleans` instead of `switch`for handling app state. If you are not using the service callbacks you will now no longer have to use the integration to handle app states persistent.
