@@ -1,5 +1,15 @@
-#!/usr/bin/with-contenv bash
-echo "Starting NetDaemon Runner"
+#!/usr/bin/with-contenv /usr/bin/bashio
+echo "Starting NetDaemon Runner for add-on"
+
+# Set configuration values to environment variables
+export Netdaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
+export Logging__Loglevel__Default=$(bashio::config 'log_level') 
+export NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
+export Homeassistant__TOKEN=$SUPERVISOR_TOKEN
+export Homeassistant__HOST=supervisor
+export Homeassistant__Ssl=false
+export Homeassistant__WebsocketPath="core/websocket"
+export Homeassistant__Port=80
 
 declare daemondir="/daemon"
 declare is_custom_app_source=false
@@ -14,43 +24,40 @@ if [ ! -f "/data/options.json" ]; then
     exit 1
 fi
 
-# Get the settings for application source
-export NETDAEMON__APPLICATION_ASSEMBLY=$( jq -r .app_assembly /data/options.json )
-
-if [[ "${NETDAEMON__APPLICATION_ASSEMBLY}" == *.csproj ]]; 
+if [[ "${Netdaemon__ApplicationAssembly}" == *.csproj ]]; 
 then
     echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
     exit 1
 fi
 
-if [[ "${NETDAEMON__APPLICATION_ASSEMBLY}" == *.csproj ]]; 
+if [[ "${Netdaemon__ApplicationAssembly}" == *.csproj ]]; 
 then
     echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
     exit 1
 fi
 
-if [[ ! -z "${NETDAEMON__APPLICATION_ASSEMBLY}" ]] && [[ "${NETDAEMON__APPLICATION_ASSEMBLY}" != *".dll" ]];
+if [[ ! -z "${Netdaemon__ApplicationAssembly}" ]] && [[ "${Netdaemon__ApplicationAssembly}" != *".dll" ]];
 then
     echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
     exit 1
 fi
 
-if [[ "${NETDAEMON__APPLICATION_ASSEMBLY}" == *.dll ]]; 
+if [[ "${Netdaemon__ApplicationAssembly}" == *.dll ]]; 
 then 
     is_custom_app_source=true
 
     # make path relative to data folder (/config/netdaemon if addon) 
     # if the path is a relative path
-    if [[ "${NETDAEMON__APPLICATION_ASSEMBLY}" != /* ]];
+    if [[ "${Netdaemon__ApplicationAssembly}" != /* ]];
     then
-        export NETDAEMON__APPLICATION_ASSEMBLY="/config/netdaemon3/${NETDAEMON__APPLICATION_ASSEMBLY}"
+        export Netdaemon__ApplicationAssembly="/config/netdaemon3/${Netdaemon__ApplicationAssembly}"
     fi 
 
     # The provided application source is ether a project or pre-compiled .Net application
-    if [ ! -f ${NETDAEMON__APPLICATION_ASSEMBLY} ];
+    if [ ! -f ${Netdaemon__ApplicationAssembly} ];
     then
         
-        echo -e "\\033[31mThe assembly ${NETDAEMON__APPLICATION_ASSEMBLY} cannot be found. Please check the settings.\\033[0m" >&2
+        echo -e "\\033[31mThe assembly ${Netdaemon__ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
         exit 1
     fi
 fi
@@ -58,17 +65,17 @@ fi
 if  [[ $is_custom_app_source == false ]]; then
     echo -e "\\033[32mRunning NetDaemon at ${daemondir}...\\033[0m" >&2
     cd "${daemondir}"
-    exec dotnet NetDaemon.Host.AddOn.dll
+    exec dotnet NetDaemon.Host.Default.dll
 else 
     # This is a pre-built deamon
-    echo -e "\\033[32mRunning the pre-built NetDaemon at ${NETDAEMON__APPLICATION_ASSEMBLY}...\\033[0m" >&2
-    cd "$(dirname "${NETDAEMON__APPLICATION_ASSEMBLY}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+    echo -e "\\033[32mRunning the pre-built NetDaemon at ${Netdaemon__ApplicationAssembly}...\\033[0m" >&2
+    cd "$(dirname "${Netdaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
-    if [[ "${PWD}" != "$(dirname "${NETDAEMON__APPLICATION_ASSEMBLY}")" ]]; then
+    if [[ "${PWD}" != "$(dirname "${Netdaemon__ApplicationAssembly}")" ]]; then
         echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
         exit 1
     fi
-    runme="$(basename "${NETDAEMON__APPLICATION_ASSEMBLY}")" 
+    runme="$(basename "${Netdaemon__ApplicationAssembly}")" 
     exec dotnet $runme
 fi
 
