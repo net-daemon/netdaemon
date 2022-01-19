@@ -97,11 +97,6 @@ internal class NetDaemonRuntime : IRuntime
 
             await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
-            // Init the state manager if it exist
-            var appStateManager = _serviceProvider.GetService<AppStateManager>();
-            if (appStateManager is not null)
-                await appStateManager.InitializeAsync().ConfigureAwait(false);
-
             _applicationModelContext =
                 await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
 

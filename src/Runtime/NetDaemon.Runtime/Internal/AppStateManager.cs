@@ -59,14 +59,9 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         }
     }
 
-    internal Task InitializeAsync()
-    {
-        _stateCache.Clear();
-        return Task.CompletedTask;
-    }
-
     public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
+        ClearExistingCacheOnNewConnection();
         haConnection.OnHomeAssistantEvent
             .Where(n => n.EventType == "state_changed")
             .Select(async s =>
@@ -126,6 +121,11 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
             }
 
         return $"input_boolean.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
+    }
+
+    private void ClearExistingCacheOnNewConnection()
+    {
+        _stateCache.Clear();
     }
 
     private async Task<HassState?> GetOrCreateStateForApp(string entityId)
