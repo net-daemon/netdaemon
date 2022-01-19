@@ -7,7 +7,6 @@ using NetDaemon.Runtime.Internal.Extensions;
 try
 {
     await Host.CreateDefaultBuilder(args)
-        // .UseDefaultNetDaemonLogging()
         .UseNetDaemonAddon()
         .Build()
         .RunAsync()
