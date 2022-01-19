@@ -8,6 +8,7 @@ using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Scheduler;
 using NetDaemon.Extensions.Tts;
 using NetDaemon.Host.AddOn.Internal.Config;
+using NetDaemon.Host.AddOn.Internal.Helpers;
 
 namespace NetDaemon.Runtime.Internal.Extensions;
 
@@ -34,7 +35,7 @@ public static class HostBuilderExtensions
     private static IHostBuilder UseNetDaemonAddOnSettings(this IHostBuilder hostBuilder)
     {
         var logLevel = LogLevel.Information;
-        
+
         return hostBuilder
             .ConfigureServices((_, services) => { services.AddNetDaemonAddOnConfiguration(); })
             .ConfigureAppConfiguration((_, config) =>
@@ -43,18 +44,11 @@ public static class HostBuilderExtensions
                 config.AddJsonFile("appsettings.json");
 
                 var addOnConfig = ConfigManager.Get();
-                logLevel = addOnConfig.LogLevel switch
-                {
-                    "information" => LogLevel.Information,
-                    "debug" => LogLevel.Debug,
-                    "trace" => LogLevel.Trace,
-                    "error" => LogLevel.Error,
-                    "warning" => LogLevel.Warning,
-                    _ => LogLevel.Information
-                };
+
+                logLevel = LogLevelParser.ParseLogLevelFromSetting(addOnConfig.LogLevel);
+
                 config.AddYamlAppConfig(
                     addOnConfig.ApplicationConfigFolderPath);
-                
             })
             .ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
     }
