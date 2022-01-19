@@ -14,10 +14,16 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
       - name: 📆 Set version number
         run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "dev";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="dev" \\' ${{github.workspace}}/Dockerfile.AddOn
+          sed -i '/        private const string Version = /c\        private const string Version =  "${{ steps.version.outputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}" \\' ${{github.workspace}}/Dockerfile.AddOn
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: 🔧 Set up Docker Buildx
