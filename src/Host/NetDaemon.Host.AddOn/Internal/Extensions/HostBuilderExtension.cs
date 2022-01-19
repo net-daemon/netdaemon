@@ -45,7 +45,7 @@ public static class HostBuilderExtensions
                 var addOnConfig = ConfigManager.Get();
                 logLevel = addOnConfig.LogLevel switch
                 {
-                    "info" => LogLevel.Information,
+                    "information" => LogLevel.Information,
                     "debug" => LogLevel.Debug,
                     "trace" => LogLevel.Trace,
                     "error" => LogLevel.Error,
