@@ -90,7 +90,7 @@ internal class NetDaemonRuntime : IRuntime
 
             _logger.LogInformation("Successfully connected to Home Assistant");
             if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
-                _logger.LogDebug("Loading applications from folder {path}.",
+                _logger.LogDebug("Loading applications from folder {Path}",
                     Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
             else
                 _logger.LogDebug("Loading applications with no configuration folder");
@@ -115,7 +115,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         if (_stoppingToken?.IsCancellationRequested ?? false)
         {
-            _logger.LogInformation("HassClient disconnected cause of user stopping.");
+            _logger.LogInformation("HassClient disconnected cause of user stopping");
         }
         else
         {
@@ -127,7 +127,7 @@ internal class NetDaemonRuntime : IRuntime
                 DisconnectReason.NotReady => "home assistant not ready yet",
                 _ => "unknown error"
             };
-            _logger.LogInformation("HassClient disconnected cause of {Reason}, connect retry in {TimeoutInSeconds} seconds",
+            _logger.LogInformation("Home Assistant disconnected due to {Reason}, connect retry in {TimeoutInSeconds} seconds",
                 reasonString, TimeoutInSeconds);
         }
 
