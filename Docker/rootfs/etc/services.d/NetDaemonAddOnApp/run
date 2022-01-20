@@ -2,14 +2,15 @@
 echo "Starting NetDaemon Runner for add-on"
 
 # Set configuration values to environment variables
-export Netdaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
+export NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
 export Logging__Loglevel__Default=$(bashio::config 'log_level') 
 export NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
-export Homeassistant__TOKEN=$SUPERVISOR_TOKEN
-export Homeassistant__HOST=supervisor
+export Homeassistant__Token=$SUPERVISOR_TOKEN
+export Homeassistant__Host="supervisor"
 export Homeassistant__Ssl=false
 export Homeassistant__WebsocketPath="core/websocket"
 export Homeassistant__Port=80
+
 
 declare daemondir="/daemon"
 declare is_custom_app_source=false
