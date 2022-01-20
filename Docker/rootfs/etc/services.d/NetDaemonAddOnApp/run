@@ -1,51 +1,41 @@
 #!/usr/bin/with-contenv /usr/bin/bashio
-echo "Starting NetDaemon Runner for add-on"
 
 # Set configuration values to environment variables
+export HomeAssistant__Host="supervisor"
+export HomeAssistant__WebsocketPath="core/websocket"
+export HomeAssistant__Port=80
+export HomeAssistant__Token=$SUPERVISOR_TOKEN
+
 export NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
 export Logging__Loglevel__Default=$(bashio::config 'log_level') 
 export NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
-export Homeassistant__Token=$SUPERVISOR_TOKEN
-export Homeassistant__Host="supervisor"
-export Homeassistant__Ssl=false
-export Homeassistant__WebsocketPath="core/websocket"
-export Homeassistant__Port=80
-
 
 declare daemondir="/daemon"
-declare is_custom_app_source=false
 
 if [ ! -d "/data" ]; then
-    echo -e "\\033[31mMissing mapping to apps, please map '/data' to your apps folder\\033[0m" >&2
-    exit 1
+    bashio::exit.nok "Missing mapping to apps, please map '/data' to your apps folder"
 fi
 
 if [ ! -f "/data/options.json" ]; then
-    echo -e "\\033[31mThis container only supports running as Home Assistant add-on!\\033[0m" >&2
-    exit 1
+    bashio::exit.nok "This container only supports running as Home Assistant add-on!"
 fi
 
-if [[ "${Netdaemon__ApplicationAssembly}" == *.csproj ]]; 
+if ! bashio::config.has_value "app_assembly"
 then
-    echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
-    exit 1
-fi
+    bashio::log.info "Starting NetDaemon V3 Runtime ..."
+    cd "${daemondir}"
+    exec dotnet NetDaemon.Host.Default.dll
+else
+    # We have provided an application assembly setting
+    if [[ "${Netdaemon__ApplicationAssembly}" == *.csproj ]]; 
+    then
+        bashio::exit.nok "csproj deployments are not supported in v3, use compiled option instead!"
+    fi
 
-if [[ "${Netdaemon__ApplicationAssembly}" == *.csproj ]]; 
-then
-    echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
-    exit 1
-fi
-
-if [[ ! -z "${Netdaemon__ApplicationAssembly}" ]] && [[ "${Netdaemon__ApplicationAssembly}" != *".dll" ]];
-then
-    echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
-    exit 1
-fi
-
-if [[ "${Netdaemon__ApplicationAssembly}" == *.dll ]]; 
-then 
-    is_custom_app_source=true
+    if [[ "${Netdaemon__ApplicationAssembly}" != *".dll" ]];
+    then
+        bashio::exit.nok "Assembly needs to point to a .dll file!"
+    fi
 
     # make path relative to data folder (/config/netdaemon if addon) 
     # if the path is a relative path
@@ -55,28 +45,17 @@ then
     fi 
 
     # The provided application source is ether a project or pre-compiled .Net application
-    if [ ! -f ${Netdaemon__ApplicationAssembly} ];
+    if ! bashio::fs.file_exists "${Netdaemon__ApplicationAssembly}"; 
     then
-        
-        echo -e "\\033[31mThe assembly ${Netdaemon__ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
-        exit 1
+        bashio::exit.nok "The assembly ${Netdaemon__ApplicationAssembly} cannot be found. Please check the settings."
     fi
-fi
-
-if  [[ $is_custom_app_source == false ]]; then
-    echo -e "\\033[32mRunning NetDaemon at ${daemondir}...\\033[0m" >&2
-    cd "${daemondir}"
-    exec dotnet NetDaemon.Host.Default.dll
-else 
-    # This is a pre-built deamon
-    echo -e "\\033[32mRunning the pre-built NetDaemon at ${Netdaemon__ApplicationAssembly}...\\033[0m" >&2
-    cd "$(dirname "${Netdaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+    
+    bashio::log.info "Starting NetDaemon V3 pre-built Runtime using assembly ${Netdaemon__ApplicationAssembly}..."
+    cd "$(dirname "${Netdaemon__ApplicationAssembly}")" ||  bashio::exit.nok "Could not change directory to run project"
 
     if [[ "${PWD}" != "$(dirname "${Netdaemon__ApplicationAssembly}")" ]]; then
-        echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
-        exit 1
+        bashio::exit.nok "Could not change directory to run custom project"
     fi
     runme="$(basename "${Netdaemon__ApplicationAssembly}")" 
     exec dotnet $runme
 fi
-
