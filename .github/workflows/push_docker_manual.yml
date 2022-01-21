@@ -17,9 +17,9 @@ jobs:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
       - name: 📆 Set version number
-        run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "feature-${{ github.event.inputs.tag }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="feature-${{ github.event.inputs.tag }}" \\' ${{github.workspace}}/Dockerfile.AddOn
+        uses: net-daemon/netdaemon/.github/workflows/common/set_netdaemon_version.yml
+        with:
+          version: feature-${{ github.event.inputs.tag }}
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: 🔧 Set up Docker Buildx
