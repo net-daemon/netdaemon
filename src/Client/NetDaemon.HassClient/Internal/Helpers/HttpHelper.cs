@@ -11,21 +11,19 @@ internal static class HttpHelper
     public static HttpMessageHandler CreateHttpMessageHandler(IServiceProvider? serviceProvider = null)
     {
         var settings = serviceProvider?.GetService<IOptions<HomeAssistantSettings>>()?.Value;
-        var bypassCertificateErrorsForHash = settings?.ByPassErrorCheckForCertificateHash;
-        return string.IsNullOrEmpty(bypassCertificateErrorsForHash)
+        var bypassCertificateErrors = settings?.InsecureBypassCertificateErrors ?? false;
+        return !bypassCertificateErrors
             ? new HttpClientHandler()
-            : CreateHttpMessageHandler(bypassCertificateErrorsForHash);
+            : CreateHttpMessageHandler();
     }
 
-    private static HttpMessageHandler CreateHttpMessageHandler(string certificate)
+    private static HttpMessageHandler CreateHttpMessageHandler()
     {
         return new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (_, cert, _, sslPolicyErrors) =>
             {
-                if (sslPolicyErrors == SslPolicyErrors.None) return true; //Is valid
-
-                return cert?.GetCertHashString() == certificate.ToUpperInvariant();
+                return sslPolicyErrors == SslPolicyErrors.None || true;
             }
         };
     }

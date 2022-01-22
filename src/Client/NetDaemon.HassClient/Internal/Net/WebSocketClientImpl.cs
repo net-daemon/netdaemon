@@ -11,20 +11,18 @@ internal class WebSocketClientImpl : IWebSocketClient
     /// <summary>
     ///     Constructor
     /// </summary>
-    /// <param name="bypassCertificateErrorWithHash">
+    /// <param name="bypassCertificateErrors">
     ///     Provide the hash string for certificate that the websocket should ignore
     ///     errors from
     /// </param>
-    public WebSocketClientImpl(string? bypassCertificateErrorWithHash = null)
+    public WebSocketClientImpl(bool bypassCertificateErrors = false)
     {
         _ws = new ClientWebSocket();
 
-        if (!string.IsNullOrEmpty(bypassCertificateErrorWithHash))
+        if (bypassCertificateErrors)
             _ws.Options.RemoteCertificateValidationCallback = (_, cert, _, sslPolicyErrors) =>
             {
-                if (sslPolicyErrors == SslPolicyErrors.None) return true; //Is valid
-
-                return cert?.GetCertHashString() == bypassCertificateErrorWithHash?.ToUpperInvariant();
+                return sslPolicyErrors == SslPolicyErrors.None || true;
             };
     }
 

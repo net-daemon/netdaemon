@@ -22,7 +22,7 @@ public class HttpHandlerHelperTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton(Options.Create(new HomeAssistantSettings
-            {ByPassErrorCheckForCertificateHash = "some hash"}));
+            {InsecureBypassCertificateErrors = true}));
         
         var provider = services.BuildServiceProvider();
 

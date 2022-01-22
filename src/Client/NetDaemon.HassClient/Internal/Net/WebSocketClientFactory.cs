@@ -13,6 +13,6 @@ internal class WebSocketClientFactory : IWebSocketClientFactory
     }
     public IWebSocketClient New()
     {
-        return new WebSocketClientImpl(_settings.ByPassErrorCheckForCertificateHash);
+        return new WebSocketClientImpl(_settings.InsecureBypassCertificateErrors);
     }
 }

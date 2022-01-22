@@ -11,7 +11,7 @@
     "Port": 8124,
     "Ssl": false,
     "Token": "ENTER YOUR TOKEN",
-    "ByPassErrorCheckForCertificateHash": ""
+    "InsecureBypassCertificateErrors": false
   },
   "NetDaemon": {
     "Admin": false,
