@@ -46,7 +46,7 @@ public static class HomeAssistantClientConnector
         var apiManager = new HomeAssistantApiManager(optionsSettings, new HttpClient());
         var connectionFactory = new HomeAssistantConnectionFactory(loggerConnect, apiManager);
         var pipeLineFactory = new WebSocketClientTransportPipelineFactory();
-        var websocketClientFactory = new WebSocketClientFactory();
+        var websocketClientFactory = new WebSocketClientFactory(Options.Create(settings));
         var client = new HomeAssistantClient(loggerClient, websocketClientFactory, pipeLineFactory, connectionFactory);
 
         return await client.ConnectAsync(host, port, ssl, token, websocketPath, cancelToken).ConfigureAwait(false);

@@ -19,7 +19,7 @@ internal class WebSocketClientImpl : IWebSocketClient
     {
         _ws = new ClientWebSocket();
 
-        if (string.IsNullOrEmpty(bypassCertificateErrorWithHash))
+        if (!string.IsNullOrEmpty(bypassCertificateErrorWithHash))
             _ws.Options.RemoteCertificateValidationCallback = (_, cert, _, sslPolicyErrors) =>
             {
                 if (sslPolicyErrors == SslPolicyErrors.None) return true; //Is valid

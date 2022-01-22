@@ -23,7 +23,12 @@ public class HomeAssistantSettings
     /// <summary>
     ///     Token to authorize
     /// </summary>
-    public string Token { get; set; } = "";
+    public string Token { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Set this to a hash of a certificate that will bypass error checks
+    /// </summary>
+    public string ByPassErrorCheckForCertificateHash { get; set; } = string.Empty;
 
     /// <summary>
     ///     Path to websocket API, this can be different for add-on and core

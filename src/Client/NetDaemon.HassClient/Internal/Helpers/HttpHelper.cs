@@ -8,9 +8,10 @@ internal static class HttpHelper
         return new HttpClient(CreateHttpMessageHandler());
     }
 
-    public static HttpMessageHandler CreateHttpMessageHandler()
+    public static HttpMessageHandler CreateHttpMessageHandler(IServiceProvider? serviceProvider = null)
     {
-        var bypassCertificateErrorsForHash = Environment.GetEnvironmentVariable("HASSCLIENT_BYPASS_CERT_ERR");
+        var settings = serviceProvider?.GetService<IOptions<HomeAssistantSettings>>()?.Value;
+        var bypassCertificateErrorsForHash = settings?.ByPassErrorCheckForCertificateHash;
         return string.IsNullOrEmpty(bypassCertificateErrorsForHash)
             ? new HttpClientHandler()
             : CreateHttpMessageHandler(bypassCertificateErrorsForHash);

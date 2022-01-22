@@ -19,8 +19,17 @@ public class HttpHandlerHelperTests
     [Fact]
     public void TestHttpHandlerHelperCreateHttpMessageHandlerIgnoreCertErrors()
     {
-        Environment.SetEnvironmentVariable("HASSCLIENT_BYPASS_CERT_ERR", "somehash");
-        var client = HttpHelper.CreateHttpMessageHandler();
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(Options.Create(new HomeAssistantSettings
+            {ByPassErrorCheckForCertificateHash = "some hash"}));
+        
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var client = HttpHelper.CreateHttpMessageHandler(provider);
+
+        // Assert
         client.Should().BeOfType<HttpClientHandler>();
     }
 }
