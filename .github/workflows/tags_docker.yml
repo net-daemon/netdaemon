@@ -21,9 +21,10 @@ jobs:
           echo Current version:    $latest
           echo "::set-output name=version::$latest"
       - name: 📆 Set version number
-        uses: net-daemon/netdaemon/.github/workflows/common/set_netdaemon_version.yml
-        with:
-          version: ${{ steps.version.outputs.version }}  
+        run: |
+          echo setting source version:    ${{ steps.version.outputs.version }}
+          sed -i '/    private const string Version = /c\    private const string Version = "${{ steps.version.outputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}"' ${{github.workspace}}/Dockerfile.AddOn
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: 🔧 Set up Docker Buildx
@@ -77,8 +78,9 @@ jobs:
 
       - name: 📆 Set version number
         run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "${{ steps.version.outputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}" \\' ${{github.workspace}}/Dockerfile.AddOn
+          echo setting source version:    ${{ steps.version.outputs.version }}
+          sed -i '/    private const string Version = /c\    private const string Version = "${{ steps.version.outputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}"' ${{github.workspace}}/Dockerfile.AddOn
 
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
