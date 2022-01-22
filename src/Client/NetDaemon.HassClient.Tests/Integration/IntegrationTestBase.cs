@@ -35,7 +35,7 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
 
         var client = new HomeAssistantClient(
             loggerClient.Object,
-            new WebSocketClientFactory(),
+            new WebSocketClientFactory(Options.Create(settings)),
             new WebSocketClientTransportPipelineFactory(),
             new HomeAssistantConnectionFactory(
                 loggerConnection.Object,

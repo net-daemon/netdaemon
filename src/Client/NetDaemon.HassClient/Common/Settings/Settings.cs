@@ -23,7 +23,16 @@ public class HomeAssistantSettings
     /// <summary>
     ///     Token to authorize
     /// </summary>
-    public string Token { get; set; } = "";
+    public string Token { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Set to true all certificate errors are ignored, please use at own risk
+    /// </summary>
+    /// <remarks>
+    ///     We do not recommend to use this to bypass certificate errors.
+    ///     Use other means to handle it by using valid certificates
+    /// </remarks>
+    public bool InsecureBypassCertificateErrors { get; set; } = false;
 
     /// <summary>
     ///     Path to websocket API, this can be different for add-on and core
