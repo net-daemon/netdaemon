@@ -1,0 +1,15 @@
+on:
+  workflow_call:
+inputs:
+      version:
+        required: true
+        type: string
+jobs:
+  set_version_in_source:
+    name: 📆 Set version in code and docker files
+    runs-on: ubuntu-latest
+    steps:
+      run: |
+        echo setting source version:    ${{ inputs.version }}
+        sed -i '/    private const string Version = /c\    private const string Version = "${{ inputs.version }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+        sed -i '/    io.hass.version=/c\    io.hass.version="${{ inputs.version }}"' ${{github.workspace}}/Dockerfile.AddOn
