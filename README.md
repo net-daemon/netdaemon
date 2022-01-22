@@ -39,7 +39,7 @@ Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or i
 
 ## Install NetDaemon
 
-https://netdaemon.xyz/docs/started/installation
+https://netdaemon.xyz/docs/v3/started/installation
 
 ## Example apps
 
