@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
 using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.Common.Settings;
 
 #pragma warning disable CA1303
 #pragma warning disable CA2007
@@ -21,10 +23,11 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
     Console.WriteLine(@"
     Usage: nd-codegen [options] -ns namespace -o outfile
     Options:
-        -host       : Host of the netdaemon instance
-        -port       : Port of the NetDaemon instance
-        -ssl        : true if NetDaemon instance use ssl
-        -token      : A long lived HomeAssistant token
+        -host        : Host of the netdaemon instance
+        -port        : Port of the NetDaemon instance
+        -ssl         : true if NetDaemon instance use ssl
+        -token       : A long lived HomeAssistant token
+        -bypass-cert : Ignore certificate errors (insecure)
 
     These settings is valid when installed codegen as global dotnet tool.
             ");
@@ -67,6 +70,7 @@ IConfigurationRoot GetConfigurationRoot()
             ["-port"] = "HomeAssistant:Port",
             ["-ssl"] = "HomeAssistant:Ssl",
             ["-token"] = "HomeAssistant:Token",
+            ["-bypass-cert"] = "HomeAssistant:InsecureBypassCertificateErrors",
         });
 
     return builder.Build();
@@ -77,6 +81,7 @@ async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServi
     Console.WriteLine($"Connecting to Home Assistant at {homeAssistantSettings.Host}:{homeAssistantSettings.Port}");
 
     var serviceCollection = new ServiceCollection();
+    serviceCollection.AddSingleton(Options.Create(homeAssistantSettings));
     serviceCollection.AddHomeAssistantClient();
     var client = serviceCollection.BuildServiceProvider().GetRequiredService<IHomeAssistantClient>();
 

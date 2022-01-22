@@ -8,23 +8,22 @@ internal static class HttpHelper
         return new HttpClient(CreateHttpMessageHandler());
     }
 
-    public static HttpMessageHandler CreateHttpMessageHandler()
+    public static HttpMessageHandler CreateHttpMessageHandler(IServiceProvider? serviceProvider = null)
     {
-        var bypassCertificateErrorsForHash = Environment.GetEnvironmentVariable("HASSCLIENT_BYPASS_CERT_ERR");
-        return string.IsNullOrEmpty(bypassCertificateErrorsForHash)
+        var settings = serviceProvider?.GetService<IOptions<HomeAssistantSettings>>()?.Value;
+        var bypassCertificateErrors = settings?.InsecureBypassCertificateErrors ?? false;
+        return !bypassCertificateErrors
             ? new HttpClientHandler()
-            : CreateHttpMessageHandler(bypassCertificateErrorsForHash);
+            : CreateHttpMessageHandler();
     }
 
-    private static HttpMessageHandler CreateHttpMessageHandler(string certificate)
+    private static HttpMessageHandler CreateHttpMessageHandler()
     {
         return new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (_, cert, _, sslPolicyErrors) =>
             {
-                if (sslPolicyErrors == SslPolicyErrors.None) return true; //Is valid
-
-                return cert?.GetCertHashString() == certificate.ToUpperInvariant();
+                return sslPolicyErrors == SslPolicyErrors.None || true;
             }
         };
     }

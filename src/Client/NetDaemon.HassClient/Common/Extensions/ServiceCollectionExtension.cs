@@ -60,6 +60,6 @@ public static class ServiceCollectionExtensions
     private static HttpMessageHandler ConfigureHttpMessageHandler(IServiceProvider provider)
     {
         var handler = provider.GetService<HttpMessageHandler>();
-        return handler ?? HttpHelper.CreateHttpMessageHandler();
+        return handler ?? HttpHelper.CreateHttpMessageHandler(provider);
     }
 }
