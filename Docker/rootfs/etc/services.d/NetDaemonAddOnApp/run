@@ -27,35 +27,35 @@ then
     exec dotnet NetDaemon.Host.Default.dll
 else
     # We have provided an application assembly setting
-    if [[ "${Netdaemon__ApplicationAssembly}" == *.csproj ]]; 
+    if [[ "${NetDaemon__ApplicationAssembly}" == *.csproj ]]; 
     then
         bashio::exit.nok "csproj deployments are not supported in v3, use compiled option instead!"
     fi
 
-    if [[ "${Netdaemon__ApplicationAssembly}" != *".dll" ]];
+    if [[ "${NetDaemon__ApplicationAssembly}" != *".dll" ]];
     then
         bashio::exit.nok "Assembly needs to point to a .dll file!"
     fi
 
     # make path relative to data folder (/config/netdaemon if addon) 
     # if the path is a relative path
-    if [[ "${Netdaemon__ApplicationAssembly}" != /* ]];
+    if [[ "${NetDaemon__ApplicationAssembly}" != /* ]];
     then
-        export Netdaemon__ApplicationAssembly="/config/netdaemon3/${Netdaemon__ApplicationAssembly}"
+        export NetDaemon__ApplicationAssembly="/config/netdaemon3/${NetDaemon__ApplicationAssembly}"
     fi 
 
     # The provided application source is ether a project or pre-compiled .Net application
-    if ! bashio::fs.file_exists "${Netdaemon__ApplicationAssembly}"; 
+    if ! bashio::fs.file_exists "${NetDaemon__ApplicationAssembly}"; 
     then
-        bashio::exit.nok "The assembly ${Netdaemon__ApplicationAssembly} cannot be found. Please check the settings."
+        bashio::exit.nok "The assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings."
     fi
     
-    bashio::log.info "Starting NetDaemon V3 pre-built Runtime using assembly ${Netdaemon__ApplicationAssembly}..."
-    cd "$(dirname "${Netdaemon__ApplicationAssembly}")" ||  bashio::exit.nok "Could not change directory to run project"
+    bashio::log.info "Starting NetDaemon V3 pre-built Runtime using assembly ${NetDaemon__ApplicationAssembly}..."
+    cd "$(dirname "${NetDaemon__ApplicationAssembly}")" ||  bashio::exit.nok "Could not change directory to run project"
 
-    if [[ "${PWD}" != "$(dirname "${Netdaemon__ApplicationAssembly}")" ]]; then
+    if [[ "${PWD}" != "$(dirname "${NetDaemon__ApplicationAssembly}")" ]]; then
         bashio::exit.nok "Could not change directory to run custom project"
     fi
-    runme="$(basename "${Netdaemon__ApplicationAssembly}")" 
+    runme="$(basename "${NetDaemon__ApplicationAssembly}")" 
     exec dotnet $runme
 fi
