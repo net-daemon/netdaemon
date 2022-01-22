@@ -1,5 +1,5 @@
 #### Publish tags to docker hub
-name: 📦 Deploy dev and appmodel docker
+name: 📦 Deploy dev docker
 on:
   push:
     branches:
@@ -14,9 +14,9 @@ jobs:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
       - name: 📆 Set version number
-        run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "dev";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="dev" \\' ${{github.workspace}}/Dockerfile.AddOn
+        uses: net-daemon/netdaemon/.github/workflows/common/set_netdaemon_version.yml
+        with:
+          version: dev
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: 🔧 Set up Docker Buildx
