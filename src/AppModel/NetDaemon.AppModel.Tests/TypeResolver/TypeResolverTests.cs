@@ -70,8 +70,8 @@ public class TypeResolverTests
             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
                 Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
         serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
-        serviceCollection.AddAppModel();
-        serviceCollection.AddAppTypeResolver();
+        serviceCollection.AddAppModelIfNotExist();
+        serviceCollection.AddAppTypeResolverIfNotExist();
         serviceCollection.AddSingleton<CompilerFactory>();
         serviceCollection.AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>());
         serviceCollection.AddSingleton<DynamicallyCompiledAssemblyResolver>();
@@ -126,8 +126,8 @@ public class TypeResolverTests
             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
                 Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
         serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
-        serviceCollection.AddAppModel();
-        serviceCollection.AddAppTypeResolver();
+        serviceCollection.AddAppModelIfNotExist();
+        serviceCollection.AddAppTypeResolverIfNotExist();
         serviceCollection.AddSingleton<CompilerFactory>();
         serviceCollection.AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>());
         serviceCollection.AddSingleton<DynamicallyCompiledAssemblyResolver>();
@@ -184,8 +184,8 @@ public class TypeResolverTests
             _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
                 Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
         serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
-        serviceCollection.AddAppModel();
-        serviceCollection.AddAppTypeResolver();
+        serviceCollection.AddAppModelIfNotExist();
+        serviceCollection.AddAppTypeResolverIfNotExist();
         serviceCollection.AddSingleton<CompilerFactory>();
         serviceCollection.AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>());
         serviceCollection.AddSingleton<DynamicallyCompiledAssemblyResolver>();

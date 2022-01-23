@@ -16,14 +16,10 @@ public static class ServiceCollectionExtensions
     /// <param name="assembly">The assembly loading apps from</param>
     public static IServiceCollection AddAppsFromAssembly(this IServiceCollection services, Assembly assembly)
     {
-        // We make sure we only add AppModel services once
-        if (!services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
-            services
-                .AddAppModel()
-                .AddAppTypeResolver();
-
-        services.AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
-        return services;
+        return services
+            .AddAppModelIfNotExist()
+            .AddAppTypeResolverIfNotExist()
+            .AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
     }
 
     /// <summary>
@@ -33,11 +29,9 @@ public static class ServiceCollectionExtensions
     /// <param name="type">The type of the app to add</param>
     public static IServiceCollection AddAppFromType(this IServiceCollection services, Type type)
     {
-        // We make sure we only add AppModel services once
-        if (services.All(n => n.ImplementationType != typeof(AppModelImpl)))
-            services.AddAppModel();
-
-        return services.AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
+        return services
+            .AddAppModelIfNotExist()
+            .AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
     }
 
     /// <summary>
@@ -47,17 +41,15 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
     {
         // We make sure we only add AppModel services once
-        if (services.All(n => n.ImplementationType != typeof(AppModelImpl)))
-            services
-                .AddAppModel()
-                .AddAppTypeResolver();
-
+      
         services
+            .AddAppModelIfNotExist()
+            .AddAppTypeResolverIfNotExist()
             .AddSingleton<CompilerFactory>()
             .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
             .AddSingleton<SyntaxTreeResolver>()
             .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>());
-        
+
         // We need to compile it here so we can dynamically add the service providers
         var assemblyResolver =
             ActivatorUtilities.CreateInstance<DynamicallyCompiledAssemblyResolver>(services.BuildServiceProvider());
@@ -84,8 +76,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddAppModel(this IServiceCollection services)
+    internal static IServiceCollection AddAppModelIfNotExist(this IServiceCollection services)
     {
+        // Check if we already registered
+        if (services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
+            return services;
+
         services
             .AddSingleton<AppModelImpl>()
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
@@ -97,8 +93,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddAppTypeResolver(this IServiceCollection services)
+    internal static IServiceCollection AddAppTypeResolverIfNotExist(this IServiceCollection services)
     {
+        // Check if we already registered
+        if (services.Any(n => n.ImplementationType == typeof(AppTypeResolver)))
+            return services;
+
         services
             .AddSingleton<AppTypeResolver>()
             .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<AppTypeResolver>());
