@@ -1,6 +1,8 @@
-
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
+http:
+  # ssl_certificate: /config/ssl/homeassistant.local.pem
+  # ssl_key: /config/ssl/homeassistant.local-key.pem
 
 # Text to speech
 tts:
@@ -20,8 +22,13 @@ input_select:
     options:
       - Visitors
       - Visitors with kids
-      - Home Alone  
+      - Home Alone
 
+input_text:
+  test_result:
+    name: Test results
+    initial: No tests is run yet
+    
 template:
   - trigger:
       - platform: webhook
@@ -36,5 +43,5 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-logger:
-  default: debug
+#logger:
+#  default: debug
