@@ -4,6 +4,7 @@
 export HomeAssistant__Host="supervisor"
 export HomeAssistant__WebsocketPath="core/websocket"
 export HomeAssistant__Port=80
+export HomeAssistant__Ssl=false
 export HomeAssistant__Token=$SUPERVISOR_TOKEN
 
 export NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
