@@ -7,19 +7,19 @@ if [ ! -d "/data" ]; then
     exit 1
 fi
 
-if [ -z $NetDaemon_ApplicationAssembly ]
+if [ -z $NetDaemon__ApplicationAssembly ]
 then
     echo -e "\\033[32mStarting NetDaemon V3 runtime ...\\033[0m" >&2
     cd "${daemondir}"
     exec dotnet NetDaemon.Host.Default.dll    
 else
-    if $NetDaemon_ApplicationAssembly == *.csproj ]]; 
+    if $NetDaemon__ApplicationAssembly == *.csproj ]]; 
     then
         echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
         exit 1
     fi
 
-    if $NetDaemon_ApplicationAssembly != *".dll" 
+    if $NetDaemon__ApplicationAssembly != *".dll" 
     then
         echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
         exit 1
@@ -27,26 +27,26 @@ else
 
     # make path relative to data folder (/config/netdaemon if addon) 
     # if the path is a relative path
-    if [[ "${NetDaemon_ApplicationAssembly}" != /* ]];
+    if [[ "${NetDaemon__ApplicationAssembly}" != /* ]];
     then
-        export NetDaemon_ApplicationAssembly="/data/${NetDaemon_ApplicationAssembly}"
+        export NetDaemon__ApplicationAssembly="/data/${NetDaemon__ApplicationAssembly}"
     fi 
 
     # The provided application source is ether a project or pre-compiled .Net application
-    if [ ! -f ${NetDaemon_ApplicationAssembly} ];
+    if [ ! -f ${NetDaemon__ApplicationAssembly} ];
     then
         
-        echo -e "\\033[31mThe assembly ${NetDaemon_ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
+        echo -e "\\033[31mThe assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
         exit 1
     fi
-    echo -e "\\033[32mStarting NetDaemon V3 pre-built runtime using assembly ${NetDaemon_ApplicationAssembly}...\\033[0m" >&2
-    cd "$(dirname "${NetDaemon_ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+    echo -e "\\033[32mStarting NetDaemon V3 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
+    cd "$(dirname "${NetDaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
-    if [[ "${PWD}" != "$(dirname "${NetDaemon_ApplicationAssembly}")" ]]; then
+    if [[ "${PWD}" != "$(dirname "${NetDaemon__ApplicationAssembly}")" ]]; then
         echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
         exit 1
     fi
-    runme="$(basename "${NetDaemon_ApplicationAssembly}")" 
+    runme="$(basename "${NetDaemon__ApplicationAssembly}")" 
     exec dotnet $runme
 fi
 
