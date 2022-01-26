@@ -40,5 +40,6 @@ ENV \
     HomeAssistant__Host=localhost \
     HomeAssistant__Port=8123 \
     HomeAssistant__Token=NOT_SET \
-    NetDaemon__ApplicationConfigurationFolder=/data 
+    NetDaemon__ApplicationConfigurationFolder=/data \
+    NetDaemon__ApplicationSourceFolder=/data 
 

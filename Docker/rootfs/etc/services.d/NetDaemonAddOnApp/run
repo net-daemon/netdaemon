@@ -11,6 +11,15 @@ export NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
 export Logging__Loglevel__Default=$(bashio::config 'log_level') 
 export NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
 
+if ! bashio::config.has_value "app_source_folder"
+then
+  # We set it to same as config folder if not exist. This is for backwards compability
+  # and can be removed at latest 2022-06-01
+  export NetDaemon__ApplicationSourceFolder=$(bashio::config 'app_config_folder')
+else
+  export NetDaemon__ApplicationSourceFolder=$(bashio::config 'app_source_folder')
+fi
+
 declare daemondir="/daemon"
 
 if [ ! -d "/data" ]; then
