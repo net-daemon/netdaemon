@@ -13,7 +13,7 @@ internal class NetDaemonRuntime : IRuntime
 
     private readonly HomeAssistantSettings _haSettings;
     private readonly IHomeAssistantRunner _homeAssistantRunner;
-    private readonly IOptions<AppConfigurationLocationSetting> _locationSettings;
+    private readonly IOptions<AppSourceLocationSetting> _sourceLocationSettings;
 
     private readonly ILogger<NetDaemonRuntime> _logger;
     private readonly IServiceProvider _serviceProvider;
@@ -24,7 +24,7 @@ internal class NetDaemonRuntime : IRuntime
     public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
-        IOptions<AppConfigurationLocationSetting> locationSettings,
+        IOptions<AppSourceLocationSetting> sourceLocationSettings,
         IAppModel appModel,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
@@ -32,7 +32,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         _haSettings = settings.Value;
         _homeAssistantRunner = homeAssistantRunner;
-        _locationSettings = locationSettings;
+        _sourceLocationSettings = sourceLocationSettings;
         _appModel = appModel;
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -89,9 +89,9 @@ internal class NetDaemonRuntime : IRuntime
             InternalConnection = haConnection;
 
             _logger.LogInformation("Successfully connected to Home Assistant");
-            if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
+            if (!string.IsNullOrEmpty(_sourceLocationSettings.Value.ApplicationSourceFolder))
                 _logger.LogDebug("Loading applications from folder {Path}",
-                    Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+                    Path.GetFullPath(_sourceLocationSettings.Value.ApplicationSourceFolder));
             else
                 _logger.LogDebug("Loading applications with no configuration folder");
 

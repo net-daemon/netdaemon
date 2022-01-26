@@ -1,11 +1,11 @@
 namespace NetDaemon.AppModel.Tests.Helpers;
 
-internal class FakeOptions : IOptions<AppConfigurationLocationSetting>
+internal class FakeOptions<T> : IOptions<T> where T: class
 {
-    public FakeOptions(string path)
+    public FakeOptions(T settings)
     {
-        Value = new AppConfigurationLocationSetting {ApplicationConfigurationFolder = path};
+        Value = settings;
     }
 
-    public AppConfigurationLocationSetting Value { get; init; }
+    public T Value { get; init; }
 }

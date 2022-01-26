@@ -120,7 +120,17 @@ public class TestRuntime
                     hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
                 });
                 services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
+                    _ => new FakeOptions<AppConfigurationLocationSetting>(
+                        new AppConfigurationLocationSetting
+                        {
+                          ApplicationConfigurationFolder = Path.Combine(AppContext.BaseDirectory, path)
+                        }));
+                services.AddTransient<IOptions<AppSourceLocationSetting>>(
+                    _ => new FakeOptions<AppSourceLocationSetting>(
+                        new AppSourceLocationSetting
+                        {
+                            ApplicationSourceFolder = Path.Combine(AppContext.BaseDirectory, path)
+                        }));
                 services.AddScoped<NonQueuedObservableMock<HassEvent>>();
                 services.AddScoped<IQueuedObservable<HassEvent>>(s =>
                     s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());

@@ -65,9 +65,12 @@ public class AssemblyResolverTests
 
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);
-        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
-                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+        serviceCollection.AddTransient<IOptions<AppSourceLocationSetting>>(
+            _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+            {
+                ApplicationSourceFolder = Path.Combine(AppContext.BaseDirectory,
+                    Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))
+            }));
         serviceCollection.AddLogging();
         serviceCollection.AddAppsFromSource();
         var provider = serviceCollection.BuildServiceProvider();
@@ -112,8 +115,17 @@ public class AssemblyResolverTests
         // get apps from test project
         serviceCollection.AddLogging();
         serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
-                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+            _ => new FakeOptions<AppConfigurationLocationSetting>(new AppConfigurationLocationSetting
+            {
+                ApplicationConfigurationFolder = Path.Combine(AppContext.BaseDirectory,
+                    Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))
+            }));
+        serviceCollection.AddTransient<IOptions<AppSourceLocationSetting>>(
+            _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+            {
+                ApplicationSourceFolder = Path.Combine(AppContext.BaseDirectory,
+                    Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))
+            }));
         serviceCollection.AddAppsFromAssembly(Assembly.GetCallingAssembly());
         serviceCollection
             .AddSingleton(_ => syntaxTreeResolverMock.Object);

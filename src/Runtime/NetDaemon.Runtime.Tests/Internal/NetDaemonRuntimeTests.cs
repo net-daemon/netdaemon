@@ -25,7 +25,7 @@ public class NetDaemonRuntimeTests
         var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
-            new FakeApplicationLocationSettingsOptions(),
+            new FakeSourceLocationSettingsOptions(),
             appModelMock.Object,
             serviceProviderMock.Object,
             loggerMock.Object,
@@ -74,7 +74,7 @@ public class NetDaemonRuntimeTests
         await using var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
-            new FakeApplicationLocationSettingsOptions(),
+            new FakeSourceLocationSettingsOptions(),
             appModelMock.Object,
             serviceProvider,
             loggerMock.Object,
@@ -125,7 +125,7 @@ public class NetDaemonRuntimeTests
         await using var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
-            new FakeApplicationLocationSettingsOptions(),
+            new  FakeSourceLocationSettingsOptions(),
             appModelMock.Object,
             serviceProvider,
             loggerMock.Object,
@@ -158,13 +158,13 @@ public class NetDaemonRuntimeTests
         public HomeAssistantSettings Value { get; }
     }    
     
-    private class FakeApplicationLocationSettingsOptions : IOptions<AppConfigurationLocationSetting>
+    private class FakeSourceLocationSettingsOptions : IOptions<AppSourceLocationSetting>
     {
-        public FakeApplicationLocationSettingsOptions()
+        public FakeSourceLocationSettingsOptions()
         {
-            Value = new AppConfigurationLocationSetting {ApplicationConfigurationFolder = "/test"};
+            Value = new AppSourceLocationSetting {ApplicationSourceFolder = "/test"};
         }
 
-        public AppConfigurationLocationSetting Value { get; }
+        public AppSourceLocationSetting Value { get; }
     }
 }

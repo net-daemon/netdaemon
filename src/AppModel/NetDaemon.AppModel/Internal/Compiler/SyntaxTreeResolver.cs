@@ -6,10 +6,10 @@ namespace NetDaemon.AppModel.Internal.Compiler;
 
 internal class SyntaxTreeResolver : ISyntaxTreeResolver
 {
-    private readonly AppConfigurationLocationSetting _settings;
+    private readonly AppSourceLocationSetting _settings;
 
     public SyntaxTreeResolver(
-        IOptions<AppConfigurationLocationSetting> settings
+        IOptions<AppSourceLocationSetting> settings
     )
     {
         _settings = settings.Value;
@@ -19,7 +19,7 @@ internal class SyntaxTreeResolver : ISyntaxTreeResolver
     {
         // Get the paths for all .cs files recursively in app folder
         var csFiles = Directory.EnumerateFiles(
-            _settings.ApplicationConfigurationFolder,
+            _settings.ApplicationSourceFolder,
             "*.cs",
             SearchOption.AllDirectories).ToArray();
 

@@ -13,6 +13,7 @@ public static class HostBuilderExtensions
             .ConfigureServices((context, services) =>
             {
                 services.Configure<AppConfigurationLocationSetting>(context.Configuration.GetSection("NetDaemon"));
+                services.Configure<AppSourceLocationSetting>(context.Configuration.GetSection("NetDaemon"));
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
             })
             .ConfigureAppConfiguration((ctx, config) =>

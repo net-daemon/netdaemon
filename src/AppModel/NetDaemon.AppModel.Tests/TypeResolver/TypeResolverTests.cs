@@ -67,8 +67,13 @@ public class TypeResolverTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
         serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
-                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+            _ => new FakeOptions<AppConfigurationLocationSetting>(new AppConfigurationLocationSetting
+            { ApplicationConfigurationFolder= Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))}));
+        serviceCollection.AddTransient<IOptions<AppSourceLocationSetting>>(
+            _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+            { ApplicationSourceFolder= Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))}));
         serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
         serviceCollection.AddAppModelIfNotExist();
         serviceCollection.AddAppTypeResolverIfNotExist();
@@ -122,9 +127,10 @@ public class TypeResolverTests
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLogging();
-        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
-                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+        serviceCollection.AddTransient<IOptions<AppSourceLocationSetting>>(
+            _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+            { ApplicationSourceFolder= Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))}));
         serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
         serviceCollection.AddAppModelIfNotExist();
         serviceCollection.AddAppTypeResolverIfNotExist();
@@ -180,9 +186,11 @@ public class TypeResolverTests
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddLogging();
-        serviceCollection.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-            _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory,
-                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))));
+        
+        serviceCollection.AddTransient<IOptions<AppSourceLocationSetting>>(
+            _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+            { ApplicationSourceFolder= Path.Combine(AppContext.BaseDirectory,
+                Path.Combine(AppContext.BaseDirectory, "Fixtures/Dynamic"))}));
         serviceCollection.AddSingleton(_ => syntaxTreeResolverMock.Object);
         serviceCollection.AddAppModelIfNotExist();
         serviceCollection.AddAppTypeResolverIfNotExist();

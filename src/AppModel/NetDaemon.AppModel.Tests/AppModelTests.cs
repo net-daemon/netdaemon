@@ -159,8 +159,10 @@ public class AppModelTests
             {
                 // get apps from test project
                 services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
-                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/LocalError")));
+                services.AddTransient<IOptions<AppSourceLocationSetting>>(
+                    _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+                    { ApplicationSourceFolder= Path.Combine(AppContext.BaseDirectory,
+                        Path.Combine(AppContext.BaseDirectory, "Fixtures/LocalError"))}));
                 services.AddTransient(_ => loggerMock.Object);
             })
             .ConfigureAppConfiguration((_, config) =>
@@ -255,8 +257,10 @@ public class AppModelTests
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithFocus")));
+                services.AddTransient<IOptions<AppSourceLocationSetting>>(
+                    _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+                    { ApplicationSourceFolder= Path.Combine(AppContext.BaseDirectory,
+                        Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithFocus"))}));
                 services.AddAppsFromSource();
                 services.AddSingleton(fakeAppStateManager.Object);
             })
@@ -289,9 +293,10 @@ public class AppModelTests
             .ConfigureServices((_, services) =>
             {
                 services.AddSingleton(fakeAppStateManager.Object);
-                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-                    _ => new FakeOptions(
-                        Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithServiceCollection")));
+                services.AddTransient<IOptions<AppSourceLocationSetting>>(
+                    _ => new FakeOptions<AppSourceLocationSetting>(new AppSourceLocationSetting
+                    { ApplicationSourceFolder= Path.Combine(AppContext.BaseDirectory,
+                        Path.Combine(AppContext.BaseDirectory, "Fixtures/DynamicWithServiceCollection"))}));
                 services.AddAppsFromSource();
             })
             .Build();
