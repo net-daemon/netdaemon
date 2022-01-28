@@ -27,6 +27,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj"/>
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj"/>
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj"/>
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj"/>
