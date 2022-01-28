@@ -11,7 +11,7 @@ if [ -z $NetDaemon__ApplicationAssembly ]
 then
     echo -e "\\033[32mStarting NetDaemon V3 runtime ...\\033[0m" >&2
     cd "${daemondir}"
-    exec dotnet NetDaemon.Host.Default.dll    
+    exec dotnet NetDaemon.Host.Default.dll
 else
     if [[ $NetDaemon__ApplicationAssembly == *.csproj ]];
     then
@@ -19,7 +19,7 @@ else
         exit 1
     fi
 
-    if [[ $NetDaemon__ApplicationAssembly != *".dll"  ]];
+    if [[ $NetDaemon__ApplicationAssembly != *".dll" ]];
     then
         echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
         exit 1
