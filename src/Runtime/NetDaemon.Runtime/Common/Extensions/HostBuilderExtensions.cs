@@ -23,8 +23,11 @@ public static class HostBuilderExtensions
                 config.AddEnvironmentVariables();
                 var c = config.Build();
                 var locationSetting = c.GetSection("NetDaemon").Get<AppConfigurationLocationSetting>();
+
+                var fullPath = Path.GetFullPath(locationSetting.ApplicationConfigurationFolder);
+
                 config.AddYamlAppConfig(
-                    locationSetting.ApplicationConfigurationFolder);
+                    fullPath);
             });
     }
 

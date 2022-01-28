@@ -17,9 +17,10 @@ internal class SyntaxTreeResolver : ISyntaxTreeResolver
 
     public IReadOnlyCollection<SyntaxTree> GetSyntaxTrees()
     {
+        var fullPath = Path.GetFullPath(_settings.ApplicationConfigurationFolder);
         // Get the paths for all .cs files recursively in app folder
         var csFiles = Directory.EnumerateFiles(
-            _settings.ApplicationConfigurationFolder,
+            fullPath,
             "*.cs",
             SearchOption.AllDirectories).ToArray();
 
