@@ -1,0 +1,21 @@
+#### Build and tests all pushes, also code coverage
+name: 🔎 CI Lint
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+jobs:
+  build:
+    name: 🔎 Check EditorConfig (CI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout the repository
+        uses: actions/checkout@main
+
+      - name: 🔎 Run editorconfig-checker
+        uses: editorconfig-checker/action-editorconfig-checker@v1
