@@ -17,6 +17,8 @@ try
         .UseNetDaemonTextToSpeech()
         .ConfigureServices((_, services) =>
             services
+                // change type of compilation here
+                // .AddAppsFromSource(true)
                 .AddAppsFromAssembly(Assembly.GetEntryAssembly()!)
                 // Remove this is you are not running the integration!
                 .AddNetDaemonStateManager()

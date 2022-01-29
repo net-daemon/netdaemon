@@ -38,17 +38,17 @@ public static class ServiceCollectionExtensions
     ///     Add apps from c# source code using the configuration source to find path
     /// </summary>
     /// <param name="services">Services</param>
-    public static IServiceCollection AddAppsFromSource(this IServiceCollection services)
+    public static IServiceCollection AddAppsFromSource(this IServiceCollection services, bool useDebug = false)
     {
         // We make sure we only add AppModel services once
-      
         services
             .AddAppModelIfNotExist()
             .AddAppTypeResolverIfNotExist()
-            .AddSingleton<CompilerFactory>()
-            .AddSingleton<ICompilerFactory>(s => s.GetRequiredService<CompilerFactory>())
+            .AddSingleton<Compiler>()
+            .AddSingleton<ICompiler>(s => s.GetRequiredService<Compiler>())
             .AddSingleton<SyntaxTreeResolver>()
-            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>());
+            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
+            .AddOptions<DebugSettings>().Configure(settings => settings.UseDebug = useDebug);
 
         // We need to compile it here so we can dynamically add the service providers
         var assemblyResolver =

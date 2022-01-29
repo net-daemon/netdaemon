@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime;
+using System.Runtime.Loader;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,35 +18,40 @@ internal record CompiledAssemblyResult(CollectibleAssemblyLoadContext AssemblyCo
 internal class Compiler : ICompiler
 {
     private readonly ILogger<Compiler> _logger;
+    private readonly bool _useDebug;
     private readonly ISyntaxTreeResolver _syntaxResolver;
 
     public Compiler(
         ISyntaxTreeResolver syntaxResolver,
-        ILogger<Compiler> logger
-    )
+        ILogger<Compiler> logger,
+        IOptions<DebugSettings> debugSettings)
     {
         _syntaxResolver = syntaxResolver;
         _logger = logger;
+        _useDebug = debugSettings.Value.UseDebug;
     }
 
     public CompiledAssemblyResult Compile()
     {
         CollectibleAssemblyLoadContext context = new();
+
         var compilation = GetSharpCompilation();
 
         using var peStream = new MemoryStream();
-        var emitResult = compilation.Emit(peStream);
+        using MemoryStream? symStream = _useDebug ? new MemoryStream() : null;
+
+        var emitResult = compilation.Emit(peStream, symStream);
 
         if (emitResult.Success)
         {
             peStream.Seek(0, SeekOrigin.Begin);
-            var assembly = context.LoadFromStream(peStream);
+            symStream?.Seek(0, SeekOrigin.Begin);
+            var assembly = context.LoadFromStream(peStream, symStream);
             return new CompiledAssemblyResult(context, assembly);
         }
 
         var error = PrettyPrintCompileError(emitResult);
-
-        _logger.LogError("Failed to compile applications\n{error}", error);
+        _logger.LogError("Failed to compile applications\n{Error}", error);
 
         context.Unload();
         // Finally do cleanup and release memory
@@ -69,8 +75,9 @@ internal class Compiler : ICompiler
             metaDataReference.ToArray(),
             new CSharpCompilationOptions(
                 OutputKind.DynamicallyLinkedLibrary,
-                optimizationLevel: OptimizationLevel.Release,
-                assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
+                optimizationLevel: _useDebug ? OptimizationLevel.Debug : OptimizationLevel.Release,
+                assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
+                platform: Platform.AnyCpu
             )
         );
     }
