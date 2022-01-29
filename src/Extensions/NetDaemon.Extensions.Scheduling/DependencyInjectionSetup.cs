@@ -1,4 +1,6 @@
+using System.Reactive.Concurrency;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace NetDaemon.Extensions.Scheduler;
 
@@ -14,6 +16,7 @@ public static class DependencyInjectionSetup
     public static IServiceCollection AddNetDaemonScheduler(this IServiceCollection services)
     {
         services.AddScoped<INetDaemonScheduler, NetDaemonScheduler>();
+        services.AddScoped<IScheduler>(s => new DisposableScheduler(DefaultScheduler.Instance.WrapWithLogger(s.GetRequiredService<ILogger<IScheduler>>())));
         return services;
     }
 }
