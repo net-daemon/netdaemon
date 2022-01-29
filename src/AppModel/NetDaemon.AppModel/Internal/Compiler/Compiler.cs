@@ -24,11 +24,11 @@ internal class Compiler : ICompiler
     public Compiler(
         ISyntaxTreeResolver syntaxResolver,
         ILogger<Compiler> logger,
-        IOptions<DebugSettings> debugSettings)
+        IOptions<CompileSettings> compileSettings)
     {
         _syntaxResolver = syntaxResolver;
         _logger = logger;
-        _useDebug = debugSettings.Value.UseDebug;
+        _useDebug = compileSettings.Value.UseDebug;
     }
 
     public CompiledAssemblyResult Compile()

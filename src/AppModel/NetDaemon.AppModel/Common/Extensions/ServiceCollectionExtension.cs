@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICompiler>(s => s.GetRequiredService<Compiler>())
             .AddSingleton<SyntaxTreeResolver>()
             .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
-            .AddOptions<DebugSettings>().Configure(settings => settings.UseDebug = useDebug);
+            .AddOptions<CompileSettings>().Configure(settings => settings.UseDebug = useDebug);
 
         // We need to compile it here so we can dynamically add the service providers
         var assemblyResolver =

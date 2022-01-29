@@ -3,7 +3,7 @@
 /// <summary>
 ///     Used to set debug or release mode for dynamic compiled apps
 /// </summary>
-internal record DebugSettings
+internal record CompileSettings
 {
     public bool UseDebug { get; set; } = false;
 }
