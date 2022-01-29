@@ -138,11 +138,12 @@ public class AppModelTests
     public async Task TestSetStateToRunningShouldThrowException()
     {
         // ARRANGE
+        var factoryMock = new Mock<IAppInstanceFactory>();
         var loggerMock = new Mock<ILogger<Application>>();
         var providerMock = new Mock<IServiceProvider>();
+        
         // ACT
-        var app = new Application("", typeof(object), loggerMock.Object,
-            providerMock.Object);
+        var app = new Application("", factoryMock.Object, typeof(object), loggerMock.Object, providerMock.Object);
 
         // CHECK
         await Assert.ThrowsAsync<ArgumentException>(() => app.SetStateAsync(ApplicationState.Running));

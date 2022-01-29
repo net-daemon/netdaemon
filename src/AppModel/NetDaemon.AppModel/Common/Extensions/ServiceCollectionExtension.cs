@@ -97,6 +97,8 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<AppModelImpl>()
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
+            .AddSingleton<AppInstanceFactory>()
+            .AddSingleton<IAppInstanceFactory>(s => s.GetRequiredService<AppInstanceFactory>())
             .AddTransient<AppModelContext>()
             .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
             .AddScopedConfigurationBinder()

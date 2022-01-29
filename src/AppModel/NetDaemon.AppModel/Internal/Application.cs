@@ -3,6 +3,7 @@ namespace NetDaemon.AppModel.Internal;
 internal class Application : IApplication
 {
     private const int MaxTimeInInitializeAsyncInMs = 5000;
+    private readonly IAppInstanceFactory _appInstanceFactory;
     private readonly Type _applicationType;
     private readonly IAppStateManager? _appStateManager;
     private readonly ILogger<Application> _logger;
@@ -12,12 +13,14 @@ internal class Application : IApplication
 
     public Application(
         string id,
+        IAppInstanceFactory appInstanceFactory,
         Type applicationType,
         ILogger<Application> logger,
         IServiceProvider provider
     )
     {
         Id = id;
+        _appInstanceFactory = appInstanceFactory;
         _applicationType = applicationType;
         _logger = logger;
         _provider = provider;
@@ -96,7 +99,7 @@ internal class Application : IApplication
     {
         try
         {
-            ApplicationContext = new ApplicationContext(_applicationType, _provider);
+            ApplicationContext = new ApplicationContext(_appInstanceFactory, _applicationType, _provider);
 
             // Init async and warn user if taking too long.
             var initAsyncTask = ApplicationContext.InitializeAsync();
