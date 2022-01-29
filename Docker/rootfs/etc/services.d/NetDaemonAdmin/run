@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-if [[ "${NETDAEMON__ADMIN}" == "true" ]]; then
+if [[ "${NetDaemon__Admin}" == "true" ]]; then
     echo "Starting NetDaemon Admin"
     cd /admin || exit 1
     exec node ./host/admin.js
