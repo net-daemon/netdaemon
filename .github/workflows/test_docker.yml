@@ -7,9 +7,14 @@ on:
       - dev
 
 jobs:
-  deploy:
-    name: 👀 Test image build (CI)
+  test:
+    name: 👀 Test image build ${{ matrix.dockerfile }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile:
+          - Dockerfile
+          - Dockerfile.AddOn
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
@@ -27,6 +32,5 @@ jobs:
             --platform linux/arm,linux/arm64,linux/amd64 \
             --output "type=image,push=false" \
             --no-cache \
-            --file ./Dockerfile . \
-            --compress \
+            --file ./${{ matrix.dockerfile }} . \
             --tag netdaemon/netdaemon3:dev
