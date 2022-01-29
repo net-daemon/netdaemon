@@ -224,4 +224,21 @@ public class TypeResolverTests
         appResolvers.Should().HaveCount(1);
         appResolvers.First().GetTypes().Should().BeEquivalentTo(new[] {typeof(MyAppLocalApp)});
     }
+    
+    [Fact]
+    public void TestAddAppFromTypeGenericShouldLoadSingleApp()
+    {
+        var serviceCollection = new ServiceCollection();
+
+        // get apps from test project
+        serviceCollection.AddAppFromType<MyAppLocalApp>();
+
+        serviceCollection.AddLogging();
+        var provider = serviceCollection.BuildServiceProvider();
+
+        var appResolvers = provider.GetRequiredService<IEnumerable<IAppTypeResolver>>() ??
+                           throw new NullReferenceException("Not expected null");
+        appResolvers.Should().HaveCount(1);
+        appResolvers.First().GetTypes().Should().BeEquivalentTo(new[] {typeof(MyAppLocalApp)});
+    }
 }

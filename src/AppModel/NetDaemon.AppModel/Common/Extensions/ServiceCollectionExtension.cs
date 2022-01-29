@@ -21,6 +21,18 @@ public static class ServiceCollectionExtensions
             .AddAppTypeResolverIfNotExist()
             .AddSingleton<IAssemblyResolver>(new AssemblyResolver(assembly));
     }
+    
+    /// <summary>
+    ///     Add a single app
+    /// </summary>
+    /// <param name="services">Services</param>
+    /// <typeparam name="TAppType">The type of the app to add</typeparam>
+    public static IServiceCollection AddAppFromType<TAppType>(this IServiceCollection services)
+    {
+        return services
+            .AddAppModelIfNotExist()
+            .AddAppFromType(typeof(TAppType));
+    }
 
     /// <summary>
     ///     Add a single app
