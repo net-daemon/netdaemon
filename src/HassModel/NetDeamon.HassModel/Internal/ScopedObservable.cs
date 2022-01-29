@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 
@@ -28,4 +28,3 @@ namespace NetDaemon.HassModel.Internal
         }
     }
 }
-

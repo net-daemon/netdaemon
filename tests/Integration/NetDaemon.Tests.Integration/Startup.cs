@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
 using NetDaemon.Runtime;

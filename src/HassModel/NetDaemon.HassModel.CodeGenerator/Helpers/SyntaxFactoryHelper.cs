@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -25,7 +25,7 @@ internal static class SyntaxFactoryHelper
     public static MemberDeclarationSyntax WithJsonPropertyName(this MemberDeclarationSyntax input, string name)
     {
         return input.WithAttribute<JsonPropertyNameAttribute>(name);
-   }
+    }
 
     private static MemberDeclarationSyntax WithAttribute<T>(this MemberDeclarationSyntax property, string value) where T: Attribute
     {
@@ -56,14 +56,14 @@ internal static class SyntaxFactoryHelper
         var (typeName, variableName) = NamingHelper.GetNames<TInjected>();
 
         var classCode = $@"class {className}
-                          {{
-                              private readonly {typeName} _{variableName};
+                        {{
+                            private readonly {typeName} _{variableName};
 
-                              public {className}( {typeName} {variableName})
-                              {{
-                                  _{variableName} = {variableName};
-                              }}
-                          }}";
+                            public {className}( {typeName} {variableName})
+                            {{
+                                _{variableName} = {variableName};
+                            }}
+                        }}";
 
         return ParseClass(classCode);
     }

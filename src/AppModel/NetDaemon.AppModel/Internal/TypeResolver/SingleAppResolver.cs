@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.AppModel.Internal.TypeResolver;
+namespace NetDaemon.AppModel.Internal.TypeResolver;
 
 internal class SingleAppResolver : IAppTypeResolver
 {

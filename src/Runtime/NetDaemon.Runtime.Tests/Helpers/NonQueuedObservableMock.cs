@@ -1,4 +1,4 @@
-﻿using System.Reactive.Subjects;
+using System.Reactive.Subjects;
 using NetDaemon.HassModel.Common;
 using NetDaemon.Infrastructure.ObservableHelpers;
 

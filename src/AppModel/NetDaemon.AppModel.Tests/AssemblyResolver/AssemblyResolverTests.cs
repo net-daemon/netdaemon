@@ -52,7 +52,7 @@ public class AssemblyResolverTests
                         "
                         , Encoding.UTF8);
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
-                                     ?? throw new NullReferenceException("unexpected null reference");
+                                    ?? throw new NullReferenceException("unexpected null reference");
 
                     result.Add(
                         syntaxTree
@@ -99,7 +99,7 @@ public class AssemblyResolverTests
                         "
                         , Encoding.UTF8);
                     var syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceText, path: "fakepath.cs")
-                                     ?? throw new NullReferenceException("unexpected null reference");
+                                    ?? throw new NullReferenceException("unexpected null reference");
 
                     result.Add(
                         syntaxTree

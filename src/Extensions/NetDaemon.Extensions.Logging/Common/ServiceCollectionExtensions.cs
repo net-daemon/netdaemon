@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
 using NetDaemon.Extensions.Logging.Internal;
 using Serilog;
 

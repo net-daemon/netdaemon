@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Moq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;

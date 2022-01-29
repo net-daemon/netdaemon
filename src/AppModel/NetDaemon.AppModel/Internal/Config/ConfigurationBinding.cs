@@ -83,7 +83,7 @@ internal class ConfigurationBinding : IConfigurationBinding
     {
         var type = typeof(List<>).MakeGenericType(typeInfo.GenericTypeArguments[0]);
         var instance = Activator.CreateInstance(type) ??
-                       throw new InvalidOperationException();
+                        throw new InvalidOperationException();
         BindCollection(instance, type, config);
         return instance;
     }
@@ -227,7 +227,7 @@ internal class ConfigurationBinding : IConfigurationBinding
             return;
 
         var setter = typeInfo.GetDeclaredProperty("Item") ??
-                     throw new InvalidOperationException();
+                    throw new InvalidOperationException();
 
         foreach (var child in config.GetChildren())
         {
@@ -278,7 +278,7 @@ internal class ConfigurationBinding : IConfigurationBinding
         var children = config.GetChildren().ToArray();
         var arrayLength = source.Length;
         var elementType = source.GetType().GetElementType() ??
-                          throw new InvalidOperationException();
+                        throw new InvalidOperationException();
 
         var newArray = Array.CreateInstance(elementType, arrayLength + children.Length);
 
@@ -316,7 +316,7 @@ internal class ConfigurationBinding : IConfigurationBinding
         {
             if (string.IsNullOrEmpty(value)) return true;
             var typ = Nullable.GetUnderlyingType(type) ??
-                      throw new InvalidOperationException();
+                    throw new InvalidOperationException();
 
             return TryConvertValue(typ, value, out result, out error);
         }
@@ -371,7 +371,7 @@ internal class ConfigurationBinding : IConfigurationBinding
         {
             allProperties.AddRange(currentType.DeclaredProperties);
             currentType = currentType.BaseType?.GetTypeInfo() ??
-                          throw new InvalidOperationException();
+                        throw new InvalidOperationException();
         } while (currentType != typeof(object).GetTypeInfo());
 
         return allProperties;

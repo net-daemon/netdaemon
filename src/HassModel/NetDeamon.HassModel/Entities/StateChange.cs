@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.HassModel.Entities;
+namespace NetDaemon.HassModel.Entities;
 
 /// <summary>
 /// Represents a state change event for an entity

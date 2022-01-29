@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Extensions.Tts.Internal;
+namespace NetDaemon.Extensions.Tts.Internal;
 
 internal record TtsMessage
 {

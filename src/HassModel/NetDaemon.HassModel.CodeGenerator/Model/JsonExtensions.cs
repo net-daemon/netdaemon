@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Reflection;
 
 namespace NetDaemon.HassModel.CodeGenerator.Model;

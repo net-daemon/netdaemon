@@ -83,8 +83,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
         await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
         var result = await resultEvent.ConfigureAwait(false) ??
-                     throw new ApplicationException(
-                         "Send command ({command.Type}) did not get response in timely fashion");
+                    throw new ApplicationException(
+                        "Send command ({command.Type}) did not get response in timely fashion");
 
         if (!result.Success ?? false)
             throw new ApplicationException($"Failed command ({command.Type}) error: {result.Error}");

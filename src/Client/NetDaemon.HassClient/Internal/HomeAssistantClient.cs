@@ -71,9 +71,9 @@ internal class HomeAssistantClient : IHomeAssistantClient
         connectTimeoutTokenSource.CancelAfter(5000);
         // Now send the auth message to Home Assistant
         var config = await connection
-                         .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
-                             (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
-                     throw new NullReferenceException("Unexpected null return from command");
+                        .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
+                            (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
+                    throw new NullReferenceException("Unexpected null return from command");
 
         return config.State == "RUNNING";
     }

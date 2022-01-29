@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.HassModel.Common
+namespace NetDaemon.HassModel.Common
 {
     /// <summary>
     ///     Context

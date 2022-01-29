@@ -1,4 +1,4 @@
-﻿using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 

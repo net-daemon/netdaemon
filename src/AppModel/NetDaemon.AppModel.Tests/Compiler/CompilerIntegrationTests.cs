@@ -23,8 +23,8 @@ public class CompilerIntegrationTests
 
         // ACT
         var (collectibleAssemblyLoadContext, compiledAssembly) = compiler?.Compile()
-                                                                 ?? throw new NullReferenceException(
-                                                                     "Not expected null");
+                                                                ?? throw new NullReferenceException(
+                                                                    "Not expected null");
 
         // CHECK
         compiledAssembly.FullName.Should().StartWith("daemon_apps_");
@@ -51,8 +51,8 @@ public class CompilerIntegrationTests
 
         // ACT
         var (collectibleAssemblyLoadContext, compiledAssembly) = compiler?.Compile()
-                                                                 ?? throw new NullReferenceException(
-                                                                     "Not expected null");
+                                                                ?? throw new NullReferenceException(
+                                                                    "Not expected null");
 
         // CHECK
         compiledAssembly.FullName.Should().StartWith("daemon_apps_");

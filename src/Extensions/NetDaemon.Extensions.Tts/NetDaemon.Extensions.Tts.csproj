@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
+    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     </ItemGroup>
     <PropertyGroup>
         <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>

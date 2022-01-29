@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.Internal.Extensions;
+namespace NetDaemon.Client.Internal.Extensions;
 
 internal static class JsonExtensions
 {

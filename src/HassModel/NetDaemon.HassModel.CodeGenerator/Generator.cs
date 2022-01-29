@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using NetDaemon.Client.Common.HomeAssistant.Model;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 

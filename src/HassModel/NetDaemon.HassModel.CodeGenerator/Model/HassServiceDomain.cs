@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator.Model;
+namespace NetDaemon.HassModel.CodeGenerator.Model;
 
 internal record HassServiceDomain
 {

@@ -44,4 +44,3 @@ else
 
     exec dotnet "$(basename "${NetDaemon__ApplicationAssembly}")"
 fi
-

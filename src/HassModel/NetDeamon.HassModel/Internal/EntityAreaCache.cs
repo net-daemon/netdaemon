@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -68,9 +68,9 @@ internal class EntityAreaCache : IDisposable
                 if (!string.IsNullOrEmpty(entity.AreaId) && areaDict.TryGetValue(entity.AreaId, out var hassArea))
                     latestAreas[entity.EntityId!] = hassArea;
                 else if (!string.IsNullOrEmpty(entity.DeviceId)
-                         && deviceDict.TryGetValue(entity.DeviceId, out var device)
-                         && !string.IsNullOrEmpty(device.AreaId)
-                         && areaDict.TryGetValue(device.AreaId, out hassArea))
+                        && deviceDict.TryGetValue(entity.DeviceId, out var device)
+                        && !string.IsNullOrEmpty(device.AreaId)
+                        && areaDict.TryGetValue(device.AreaId, out hassArea))
                     latestAreas[entity.EntityId!] = hassArea;
         _latestAreas = latestAreas;
     }

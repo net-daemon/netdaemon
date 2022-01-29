@@ -1,4 +1,4 @@
-﻿using NetDaemon.HassClient.Debug;
+using NetDaemon.HassClient.Debug;
 
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>

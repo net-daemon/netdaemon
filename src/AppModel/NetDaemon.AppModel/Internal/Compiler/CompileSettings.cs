@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.AppModel.Internal.Compiler;
+namespace NetDaemon.AppModel.Internal.Compiler;
 
 /// <summary>
 ///     Used to set debug or release mode for dynamic compiled apps

@@ -1,4 +1,4 @@
-﻿using NetDaemon.Runtime.Internal.Model;
+using NetDaemon.Runtime.Internal.Model;
 
 namespace NetDaemon.Runtime.Internal;
 

@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.AppModel;
+namespace NetDaemon.AppModel;
 
 /// <summary>
 ///     Allows apps to initialize non-blocking async operations

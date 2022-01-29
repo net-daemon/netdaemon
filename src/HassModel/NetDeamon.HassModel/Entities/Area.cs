@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.HassModel.Entities;
+namespace NetDaemon.HassModel.Entities;
 
 /// <summary>
 /// Area detail class

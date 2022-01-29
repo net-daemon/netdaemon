@@ -79,9 +79,9 @@ public static class HomeAssistantConnectionExtensions
         CancellationToken cancelToken)
     {
         return await connection
-                   .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
-                       (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
-               throw new NullReferenceException("Unexpected null return from command");
+                    .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
+                        (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
+                throw new NullReferenceException("Unexpected null return from command");
     }
 
     /// <summary>
@@ -125,7 +125,7 @@ public static class HomeAssistantConnectionExtensions
         CancellationToken cancelToken)
     {
         var allHassMessages = connection as IHomeAssistantHassMessages
-                              ?? throw new InvalidCastException("Unexpected failure to cast");
+                            ?? throw new InvalidCastException("Unexpected failure to cast");
         try
         {
             var resultEvent = allHassMessages.OnHassMessage

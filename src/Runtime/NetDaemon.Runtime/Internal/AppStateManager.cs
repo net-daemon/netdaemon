@@ -36,13 +36,13 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     public async Task SaveStateAsync(string applicationId, ApplicationState state)
     {
         var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
-                           throw new InvalidOperationException();
+                            throw new InvalidOperationException();
         var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
 
         _stateCache[entityId] = state;
 
         var currentState = (await GetOrCreateStateForApp(entityId).ConfigureAwait(false))?.State
-                           ?? throw new InvalidOperationException();
+                            ?? throw new InvalidOperationException();
 
         switch (state)
         {
@@ -131,7 +131,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     private async Task<HassState?> GetOrCreateStateForApp(string entityId)
     {
         var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
-                           throw new InvalidOperationException();
+                            throw new InvalidOperationException();
         try
         {
             var state = await haConnection.GetEntityStateAsync(entityId, _cancelTokenSource.Token)

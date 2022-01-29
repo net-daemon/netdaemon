@@ -1,4 +1,4 @@
-﻿using System.Reactive.Subjects;
+using System.Reactive.Subjects;
 using Moq;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;

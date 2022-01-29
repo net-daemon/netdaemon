@@ -43,7 +43,7 @@ internal class WebSocketClientMock : Mock<IWebSocketClient>
                 {
                     // The message is read from channel unless we are in a multi-span message
                     var msg = _currentMultiSpanMessage ??
-                              await _responseMessageChannel.Reader.ReadAsync(token).ConfigureAwait(false);
+                            await _responseMessageChannel.Reader.ReadAsync(token).ConfigureAwait(false);
 
                     if (msg.Length - _currentReadPosition > buffer.Length)
                     {

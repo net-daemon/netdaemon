@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 

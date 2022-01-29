@@ -1,4 +1,4 @@
-﻿using NetDaemon.AppModel;
+using NetDaemon.AppModel;
 
 namespace NetDaemon.Runtime.Internal;
 

@@ -48,4 +48,3 @@ Please check out the apps being developed for netdaemon3. Since documentation is
 | User                                                               | Description                                 |
 | ------------------------------------------------------------------ | ------------------------------------------- |
 | [@helto4real](https://github.com/helto4real/NetDaemon3Automations) | Tomas netdaemon3 apps running in production |
-

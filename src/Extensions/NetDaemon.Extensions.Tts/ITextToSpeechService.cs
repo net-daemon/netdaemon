@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Extensions.Tts;
+namespace NetDaemon.Extensions.Tts;
 
 /// <summary>
 ///     Provides Text To Speech service

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Text.Json;
@@ -113,29 +113,29 @@ namespace NetDaemon.HassModel.Tests.Entities
             var stateChangeObserverMock = target.StateChanges().SubscribeMock();
 
             haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
-                                                                       old: new EntityState { State = "1" },
-                                                                       @new: new EntityState { State = "1" }));
+                                                                        old: new EntityState { State = "1" },
+                                                                        @new: new EntityState { State = "1" }));
 
             haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
-                                                                       old: new EntityState { State = "1" },
-                                                                       @new: new EntityState { State = "2" }));
+                                                                        old: new EntityState { State = "1" },
+                                                                        @new: new EntityState { State = "2" }));
 
             // Assert
             stateChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>
             (e => e.Entity.State.Equals(3.14) &&
-                  e.Old!.State.Equals(1.0) &&
-                  e.New!.State.Equals(2.0))), Times.Once);
+                e.Old!.State.Equals(1.0) &&
+                e.New!.State.Equals(2.0))), Times.Once);
             stateChangeObserverMock.VerifyNoOtherCalls();
 
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>
             (e => e.Entity.State.Equals(3.14) &&
-                  e.Old!.State.Equals(1.0) &&
-                  e.New!.State.Equals(2.0))), Times.Once);
+                e.Old!.State.Equals(1.0) &&
+                e.New!.State.Equals(2.0))), Times.Once);
 
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange>
             (e => e.Entity.State.Equals(3.14) &&
-                  e.Old!.State.Equals(1.0) &&
-                  e.New!.State.Equals(1.0))), Times.Once);
+                e.Old!.State.Equals(1.0) &&
+                e.New!.State.Equals(1.0))), Times.Once);
             stateAllChangeObserverMock.VerifyNoOtherCalls();
         }
 
@@ -165,19 +165,19 @@ namespace NetDaemon.HassModel.Tests.Entities
             // Assert
             stateChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
                 (e => e.Entity.State.Equals(3.14) &&
-                      e.Old!.State.Equals(1.0) &&
-                      e.New!.State.Equals(2.0))), Times.Once);
+                    e.Old!.State.Equals(1.0) &&
+                    e.New!.State.Equals(2.0))), Times.Once);
             stateChangeObserverMock.VerifyNoOtherCalls();
 
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
                 (e => e.Entity.State.Equals(3.14) &&
-                      e.Old!.State.Equals(1.0) &&
-                      e.New!.State.Equals(2.0))), Times.Once);
+                    e.Old!.State.Equals(1.0) &&
+                    e.New!.State.Equals(2.0))), Times.Once);
 
             stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<NumericStateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
                 (e => e.Entity.State.Equals(3.14) &&
-                      e.Old!.State.Equals(1.0) &&
-                      e.New!.State.Equals(1.0))), Times.Once);
+                    e.Old!.State.Equals(1.0) &&
+                    e.New!.State.Equals(1.0))), Times.Once);
             stateAllChangeObserverMock.VerifyNoOtherCalls();
         }
 

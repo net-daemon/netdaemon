@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 using System;
 using System.Reactive.Linq;
 using NetDaemon.HassModel.Common;
@@ -58,7 +58,7 @@ namespace NetDaemon.HassModel.Entities
         /// Observable, All state changes. New.State!=Old.State
         /// </summary>
         public virtual IObservable<StateChange> StateChanges() =>
-             StateAllChanges().StateChangesOnly();
+            StateAllChanges().StateChangesOnly();
 
         /// <summary>
         /// Calls a service using this entity as the target

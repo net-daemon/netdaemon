@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.Internal.HomeAssistant.Messages;
+namespace NetDaemon.Client.Internal.HomeAssistant.Messages;
 
 internal record HassAuthMessage : HassMessageBase
 {

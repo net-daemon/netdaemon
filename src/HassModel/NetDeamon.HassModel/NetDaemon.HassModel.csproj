@@ -13,15 +13,15 @@
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-          A application model for writing automations for the free open source home automations software Home Assisstant written in .net 5.
+        A application model for writing automations for the free open source home automations software Home Assisstant written in .net 5.
         </PackageDescription>
         <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
         <tags>Home Assistant</tags>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
-      <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
@@ -35,7 +35,7 @@
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
+    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>

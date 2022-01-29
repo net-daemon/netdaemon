@@ -1,4 +1,4 @@
-﻿{
+{
     "HomeAssistant": {
         "Host": "ENTER YOUR IP TO Development Home Assistant here",
         "Port": 8124,

@@ -63,8 +63,8 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection RegisterDynamicFunctions(this IServiceCollection services, Assembly assembly)
     {
         var methods = assembly.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
-                          .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ??
-                      Array.Empty<MethodInfo>();
+                        .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ??
+                    Array.Empty<MethodInfo>();
 
         if (methods.Any(
                 m => m.GetParameters().Length != 1 && m.GetParameters()[0].GetType() != typeof(IServiceProvider)))

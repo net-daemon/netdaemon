@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
+namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
 internal record CreateHelperCommandBase : CommandMessage
 {

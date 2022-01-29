@@ -131,6 +131,6 @@ internal class Application : IApplication
         if (_appStateManager is null)
             return true;
         return await _appStateManager.GetStateAsync(id).ConfigureAwait(false)
-               == ApplicationState.Enabled;
+                == ApplicationState.Enabled;
     }
 }

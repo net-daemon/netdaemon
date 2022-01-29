@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -104,7 +104,7 @@ public class Root
 
         SensorEntity pirSensor = entities.Sensor.Pir;
         string? pir = pirSensor.State;
-     }
+    }
 }";
             AssertCodeCompiles(generatedCode.ToString(), appCode);
         }
@@ -156,7 +156,7 @@ public class Root
         IEntities entities = new Entities(ha);
 
     entities.Number.LivingBass.SetValue(12);
-     }
+    }
 }";
             AssertCodeCompiles(generatedCode.ToString(), appCode);
         }

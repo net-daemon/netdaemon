@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NetDaemon.Extensions.Tts.Internal;

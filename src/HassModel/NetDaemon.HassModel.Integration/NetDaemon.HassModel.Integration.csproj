@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+    <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
     </ItemGroup>
 
     <ItemGroup>

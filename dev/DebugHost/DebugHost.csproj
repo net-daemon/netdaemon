@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -44,6 +44,6 @@
         </Content>
     </ItemGroup>
     <ItemGroup>
-      <Compile Remove="apps\TtsTest.cs" />
+    <Compile Remove="apps\TtsTest.cs" />
     </ItemGroup>
 </Project>

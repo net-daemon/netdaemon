@@ -1,4 +1,4 @@
-﻿using System.Reactive.Subjects;
+using System.Reactive.Subjects;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;

@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator;
+namespace NetDaemon.HassModel.CodeGenerator;
 
 public class CodeGenerationSettings
 {

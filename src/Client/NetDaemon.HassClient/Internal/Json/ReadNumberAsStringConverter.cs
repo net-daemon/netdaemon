@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.Internal.Json;
+namespace NetDaemon.Client.Internal.Json;
 
 internal class ReadNumberAsStringConverter : JsonConverter<string>
 {

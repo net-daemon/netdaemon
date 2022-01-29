@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.AppModel;
+namespace NetDaemon.AppModel;
 
 /// <summary>
 ///     Indicates method in dynamically compile code should be called as a ServiceCollectionExtension to setup services

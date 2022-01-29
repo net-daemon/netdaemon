@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace NetDaemon.HassModel.CodeGenerator.Model;

@@ -21,4 +21,3 @@ You will find the docs on [github here](https://github.com/net-daemon/docs).
 ## Features and Issues
 
 Check if there are features to implement or file issued at [https://github.com/net-daemon/netdaemon/issues](https://github.com/net-daemon/netdaemon/issues)
-

@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator.Helpers;
+namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
 internal static class HassServiceArgumentMapper
 {

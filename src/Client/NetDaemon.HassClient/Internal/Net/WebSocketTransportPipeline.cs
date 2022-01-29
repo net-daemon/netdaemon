@@ -101,9 +101,9 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
         try
         {
             var message = await JsonSerializer.DeserializeAsync<T>(_pipe.Reader.AsStream(),
-                              cancellationToken: cancelToken).ConfigureAwait(false)
-                          ?? throw new ApplicationException(
-                              "Deserialization of websocket returned empty result (null)");
+                            cancellationToken: cancelToken).ConfigureAwait(false)
+                        ?? throw new ApplicationException(
+                            "Deserialization of websocket returned empty result (null)");
             return message;
         }
         finally

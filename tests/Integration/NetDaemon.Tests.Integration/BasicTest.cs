@@ -66,7 +66,7 @@ public class BasicTests : IClassFixture<MakeSureNetDaemonIsRunningFixture>
     private string GetDifferentOptionThanCurrentlySelected()
     {
         var currentState = _haContext.GetState("input_select.who_cooks")?.State
-                           ?? throw new InvalidOperationException();
+                            ?? throw new InvalidOperationException();
 
         var useOption = currentState switch
         {

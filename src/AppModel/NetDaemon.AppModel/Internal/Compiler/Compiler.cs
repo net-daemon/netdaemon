@@ -114,7 +114,7 @@ internal class Compiler : ICompiler
         var msg = new StringBuilder();
 
         foreach (var emitResultDiagnostic in emitResult.Diagnostics.Where(emitResultDiagnostic =>
-                     emitResultDiagnostic.Severity == DiagnosticSeverity.Error))
+                    emitResultDiagnostic.Severity == DiagnosticSeverity.Error))
             msg.AppendLine(emitResultDiagnostic.ToString());
 
         return msg.ToString();
