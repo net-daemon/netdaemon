@@ -63,6 +63,6 @@ public class AppInstanceFactoryTests
 
     private class AppDependency
     {
-        public string Value { get; init; }
+        public string? Value { get; init; }
     }
 }
