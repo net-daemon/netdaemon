@@ -1,5 +1,8 @@
 using System;
+using System.Reactive.Concurrency;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Reactive.Testing;
 using Moq;
 using Xunit;
@@ -219,4 +222,47 @@ public class SchedulerExtensionTest
         // ACT & ASSERT
         Assert.Equal(testScheduler.Now, netDaemonScheduler.Now);
     }
+
+    [Fact]
+    public void SchedulePeriodicStopsAfterDisposeOfScheduler()
+    {
+        var startDate = new DateTimeOffset(2022, 01, 12, 13, 8, 2, TimeSpan.FromHours(5));
+        int called = 0; 
+        var inner = new TestScheduler();
+        inner.AdvanceTo(startDate.Ticks);
+
+        var disposable = new NetDaemonScheduler(NullLogger<NetDaemonScheduler>.Instance, inner);
+        var sub = disposable.RunEvery(TimeSpan.FromMinutes(1), () => called++);
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(1);
+
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(2);
+        
+        disposable.Dispose();
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(2);
+    }    
+
+    
+    [Fact]
+    public void SchedulePeriodicStopsAfterDisposeOfSubscriber()
+    {
+        var startDate = new DateTimeOffset(2022, 01, 12, 13, 8, 2, TimeSpan.FromHours(5));
+        int called = 0; 
+        var inner = new TestScheduler();
+        inner.AdvanceTo(startDate.Ticks);
+
+        var disposable = new NetDaemonScheduler(NullLogger<NetDaemonScheduler>.Instance, inner);
+        var sub = disposable.RunEvery(TimeSpan.FromMinutes(1), () => called++);
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(1);
+
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(2);
+        
+        sub.Dispose();
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(2);
+    }    
 }

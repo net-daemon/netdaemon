@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
-    <RootNamespace>NetDaemon</RootNamespace>
+    <RootNamespace>NetDaemon.Extensions.Scheduler</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.Extensions.Scheduling</PackageId>
     <Version>21.47.1</Version>
     <Authors>helto4real</Authors>
@@ -21,6 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="Roslynator.Analyzers" Version="3.3.0">
