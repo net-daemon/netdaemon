@@ -4,6 +4,8 @@ using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using Cronos;
 
+namespace NetDaemon.Extensions.Scheduler;
+
 /// <summary>
 /// Adds Cron Scheduling capabilities to <see cref="System.Reactive.Concurrency.IScheduler"/>
 /// </summary>
@@ -18,6 +20,8 @@ public static class CronExtensions
     /// <returns>Disposable object that allows the schedule to be cancelled</returns>
     public static IDisposable ScheduleCron(this IScheduler scheduler, string cron, Action action)
     {
+        ArgumentNullException.ThrowIfNull(scheduler);
+
         // When this gets cancelled we only need to actually dispose of the most recent scheduled action
         // (there will only be one at a time) so we store that in a box we will pass down
         StrongBox<IDisposable?> disposableBox = new();
