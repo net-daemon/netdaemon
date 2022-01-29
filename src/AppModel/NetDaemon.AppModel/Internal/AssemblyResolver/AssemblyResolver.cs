@@ -22,15 +22,15 @@ internal class AssemblyResolver : IAssemblyResolver
 
 internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver, IDisposable
 {
-    private readonly ICompilerFactory _compilerFactory;
+    private readonly ICompiler _compiler;
     private Assembly? _compiledAssembly;
     private CollectibleAssemblyLoadContext? _currentContext;
 
     public DynamicallyCompiledAssemblyResolver(
-        ICompilerFactory compilerFactory
+        ICompiler compiler
     )
     {
-        _compilerFactory = compilerFactory;
+        _compiler = compiler;
     }
 
     public Assembly GetResolvedAssembly()
@@ -40,8 +40,7 @@ internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver, IDisposa
         if (_compiledAssembly is not null)
             return _compiledAssembly;
 
-        var compiler = _compilerFactory.New();
-        var (loadContext, compiledAssembly) = compiler.Compile();
+        var (loadContext, compiledAssembly) = _compiler.Compile();
         _currentContext = loadContext;
         _compiledAssembly = compiledAssembly;
         return compiledAssembly;
