@@ -7,38 +7,33 @@ if [ ! -d "/data" ]; then
     exit 1
 fi
 
-if [ -z $NetDaemon__ApplicationAssembly ]
-then
+if [[ -z "${NetDaemon__ApplicationAssembly}" ]]; then
     echo -e "\\033[32mStarting NetDaemon V3 runtime ...\\033[0m" >&2
-    cd "${daemondir}"
+    cd "${daemondir}" || exit 1
     exec dotnet NetDaemon.Host.Default.dll
 else
-    if [[ $NetDaemon__ApplicationAssembly == *.csproj ]];
-    then
+    if [[ "${NetDaemon__ApplicationAssembly}" == *".csproj" ]]; then
         echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
         exit 1
     fi
 
-    if [[ $NetDaemon__ApplicationAssembly != *".dll" ]];
-    then
+    if [[ "${NetDaemon__ApplicationAssembly}" != *".dll" ]]; then
         echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
         exit 1
     fi
 
     # make path relative to data folder (/config/netdaemon if addon) 
     # if the path is a relative path
-    if [[ "${NetDaemon__ApplicationAssembly}" != /* ]];
-    then
+    if [[ "${NetDaemon__ApplicationAssembly}" != "/"* ]]; then
         export NetDaemon__ApplicationAssembly="/data/${NetDaemon__ApplicationAssembly}"
     fi 
 
     # The provided application source is ether a project or pre-compiled .Net application
-    if [ ! -f ${NetDaemon__ApplicationAssembly} ];
-    then
-        
+    if [[ ! -f "${NetDaemon__ApplicationAssembly}" ]]; then
         echo -e "\\033[31mThe assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
         exit 1
     fi
+
     echo -e "\\033[32mStarting NetDaemon V3 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
     cd "$(dirname "${NetDaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
@@ -46,7 +41,7 @@ else
         echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
         exit 1
     fi
-    runme="$(basename "${NetDaemon__ApplicationAssembly}")" 
-    exec dotnet $runme
+
+    exec dotnet "$(basename "${NetDaemon__ApplicationAssembly}")"
 fi
 

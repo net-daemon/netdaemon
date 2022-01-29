@@ -18,10 +18,11 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-amd64 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
-RUN echo "I am running on $BUILDPLATFORM" 
-RUN echo "building for $TARGETPLATFORM" 
+RUN echo "I am running on ${BUILDPLATFORM}" 
+RUN echo "building for ${TARGETPLATFORM}" 
 
-RUN export TARGETPLATFORM=$TARGETPLATFORM
+RUN export TARGETPLATFORM="${TARGETPLATFORM}"
+
 # Copy the source to docker container
 COPY ./src /usr/src
 RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.csproj -o "/daemon"
