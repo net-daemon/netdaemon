@@ -1,10 +1,10 @@
 ﻿namespace NetDaemon.AppModel.Internal.TypeResolver;
 
-internal class SingleAppResolver : IAppTypeResolver
+internal class SingleAppTypeResolver : IAppTypeResolver
 {
     private readonly Type _appType;
 
-    public SingleAppResolver(Type appType)
+    public SingleAppTypeResolver(Type appType)
     {
         _appType = appType;
     }

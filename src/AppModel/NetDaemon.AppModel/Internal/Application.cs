@@ -1,29 +1,24 @@
+using NetDaemon.AppModel.Internal.Resolver;
+
 namespace NetDaemon.AppModel.Internal;
 
 internal class Application : IApplication
 {
     private const int MaxTimeInInitializeAsyncInMs = 5000;
-    private readonly IAppInstanceFactory _appInstanceFactory;
-    private readonly Type _applicationType;
-    private readonly IAppStateManager? _appStateManager;
-    private readonly ILogger<Application> _logger;
+
     private readonly IServiceProvider _provider;
+    private readonly ILogger<Application> _logger;
+    private readonly IAppStateManager? _appStateManager;
+    private readonly IAppInstance _instance;
 
     private bool _isErrorState;
 
-    public Application(
-        string id,
-        IAppInstanceFactory appInstanceFactory,
-        Type applicationType,
-        ILogger<Application> logger,
-        IServiceProvider provider
-    )
+    public Application(IServiceProvider provider, ILogger<Application> logger, IAppInstance instance)
     {
-        Id = id;
-        _appInstanceFactory = appInstanceFactory;
-        _applicationType = applicationType;
-        _logger = logger;
         _provider = provider;
+        _logger = logger;
+        _instance = instance;
+
         // Can be missing so it is not injected in the constructor
         _appStateManager = provider.GetService<IAppStateManager>();
     }
@@ -31,7 +26,7 @@ internal class Application : IApplication
     // Used in tests
     internal ApplicationContext? ApplicationContext { get; private set; }
 
-    public string Id { get; }
+    public string Id => _instance.Id;
 
     public ApplicationState State
     {
@@ -74,7 +69,7 @@ internal class Application : IApplication
         {
             await ApplicationContext.DisposeAsync().ConfigureAwait(false);
             ApplicationContext = null;
-            _logger.LogInformation("Successfully unloaded app {id}", Id);
+            _logger.LogInformation("Successfully unloaded app {Id}", Id);
             await SaveStateIfStateManagerExistAsync(state).ConfigureAwait(false);
         }
     }
@@ -99,7 +94,7 @@ internal class Application : IApplication
     {
         try
         {
-            ApplicationContext = new ApplicationContext(_appInstanceFactory, _applicationType, _provider);
+            ApplicationContext = new ApplicationContext(_provider, _instance);
 
             // Init async and warn user if taking too long.
             var initAsyncTask = ApplicationContext.InitializeAsync();
@@ -107,18 +102,18 @@ internal class Application : IApplication
             await Task.WhenAny(initAsyncTask, timeoutTask).ConfigureAwait(false);
             if (timeoutTask.IsCompleted)
                 _logger.LogWarning(
-                    "InitializeAsync is taking too long to execute in application {app}, this function should not be blocking",
+                    "InitializeAsync is taking too long to execute in application {Id}, this function should not be blocking",
                     Id);
 
             if (!initAsyncTask.IsCompleted)
                 await initAsyncTask; // Continue to wait even if timeout is set so we do not miss errors
 
             await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
-            _logger.LogInformation("Successfully loaded app {id}", Id);
+            _logger.LogInformation("Successfully loaded app {Id}", Id);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error loading app {id}", Id);
+            _logger.LogError(e, "Error loading app {Id}", Id);
             await SetStateAsync(ApplicationState.Error);
         }
     }

@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace NetDaemon.AppModel.Internal.TypeResolver;
 
 internal class AppTypeResolver : IAppTypeResolver
@@ -12,7 +14,19 @@ internal class AppTypeResolver : IAppTypeResolver
     public IReadOnlyCollection<Type> GetTypes()
     {
         return _assemblyResolvers
-            .Select(n => n.GetResolvedAssembly())
-            .SelectMany(s => s.GetTypes()).ToList();
+            .Select(resolver => resolver.GetResolvedAssembly())
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(IsNetDaemonAppType)
+            .ToList();
+    }
+
+    private static bool IsNetDaemonAppType(Type type)
+    {
+        if (!type.IsClass || !type.IsGenericType || !type.IsAbstract)
+        {
+            return false;
+        }
+
+        return type.GetCustomAttribute<NetDaemonAppAttribute>() is not null;
     }
 }

@@ -3,6 +3,7 @@ using LocalApps;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetDaemon.AppModel.Internal;
+using NetDaemon.AppModel.Internal.Resolver;
 using NetDaemon.AppModel.Tests.Helpers;
 
 namespace NetDaemon.AppModel.Tests.Internal;
@@ -138,12 +139,12 @@ public class AppModelTests
     public async Task TestSetStateToRunningShouldThrowException()
     {
         // ARRANGE
-        var factoryMock = new Mock<IAppInstanceFactory>();
-        var loggerMock = new Mock<ILogger<Application>>();
-        var providerMock = new Mock<IServiceProvider>();
+        var provider = Mock.Of<IServiceProvider>();
+        var logger = Mock.Of<ILogger<Application>>();
+        var instance = Mock.Of<IAppInstance>();
         
         // ACT
-        var app = new Application("", factoryMock.Object, typeof(object), loggerMock.Object, providerMock.Object);
+        var app = new Application(provider, logger, instance);
 
         // CHECK
         await Assert.ThrowsAsync<ArgumentException>(() => app.SetStateAsync(ApplicationState.Running));

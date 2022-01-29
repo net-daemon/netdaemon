@@ -1,6 +1,7 @@
 using System.Reflection;
 using NetDaemon.AppModel.Internal.Compiler;
 using NetDaemon.AppModel.Internal.Config;
+using NetDaemon.AppModel.Internal.Resolver;
 
 namespace NetDaemon.AppModel;
 
@@ -9,6 +10,15 @@ namespace NetDaemon.AppModel;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddApp<TAppType>(
+        this IServiceCollection services,
+        Func<IServiceProvider, TAppType> factoryFunc) where TAppType : class
+    {
+        return services
+            .AddAppModelIfNotExist()
+            .AddSingleton<IAppInstanceResolver>(new FactoryAppInstanceResolver<TAppType>(factoryFunc));
+    }
+
     /// <summary>
     ///     Adds applications from the specified assembly
     /// </summary>
@@ -43,7 +53,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddAppModelIfNotExist()
-            .AddSingleton<IAppTypeResolver>(new SingleAppResolver(type));
+            .AddSingleton<IAppTypeResolver>(new SingleAppTypeResolver(type));
     }
 
     /// <summary>
@@ -63,12 +73,13 @@ public static class ServiceCollectionExtensions
             .AddOptions<CompileSettings>().Configure(settings => settings.UseDebug = useDebug);
 
         // We need to compile it here so we can dynamically add the service providers
-        var assemblyResolver =
-            ActivatorUtilities.CreateInstance<DynamicallyCompiledAssemblyResolver>(services.BuildServiceProvider());
+        var assemblyResolver = ActivatorUtilities.CreateInstance<DynamicallyCompiledAssemblyResolver>(services.BuildServiceProvider());
         services.RegisterDynamicFunctions(assemblyResolver.GetResolvedAssembly());
-        // And not register the assembly resolver that will have the assembly already compiled
+
+        // And now register the assembly resolver that will have the assembly already compiled
         services.AddSingleton(assemblyResolver);
         services.AddSingleton<IAssemblyResolver>(s => s.GetRequiredService<DynamicallyCompiledAssemblyResolver>());
+
         return services;
     }
 
@@ -97,8 +108,6 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<AppModelImpl>()
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
-            .AddSingleton<AppInstanceFactory>()
-            .AddSingleton<IAppInstanceFactory>(s => s.GetRequiredService<AppInstanceFactory>())
             .AddTransient<AppModelContext>()
             .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
             .AddScopedConfigurationBinder()
@@ -109,13 +118,22 @@ public static class ServiceCollectionExtensions
 
     internal static IServiceCollection AddAppTypeResolverIfNotExist(this IServiceCollection services)
     {
-        // Check if we already registered
-        if (services.Any(n => n.ImplementationType == typeof(AppTypeResolver)))
-            return services;
+        // Check if already registered
+        if (services.All(descriptor => descriptor.ImplementationType != typeof(AppTypeResolver)))
+        {
+            services
+                .AddSingleton<AppTypeResolver>()
+                .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<AppTypeResolver>());
+        }
 
-        services
-            .AddSingleton<AppTypeResolver>()
-            .AddSingleton<IAppTypeResolver>(s => s.GetRequiredService<AppTypeResolver>());
+        // Check if already registered
+        if (services.All(n => n.ImplementationType != typeof(DynamicAppInstanceResolver)))
+        {
+            services
+                .AddSingleton<DynamicAppInstanceResolver>()
+                .AddSingleton<IAppInstanceResolver>(s => s.GetRequiredService<DynamicAppInstanceResolver>());
+        }
+
         return services;
     }
 
