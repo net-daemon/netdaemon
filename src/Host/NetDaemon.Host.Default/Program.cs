@@ -7,12 +7,12 @@ using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Scheduler;
 using NetDaemon.Extensions.Tts;
 using NetDaemon.Runtime;
-
+using NetDaemon.HassModel.Integration;
 #pragma warning disable CA1812
 
 // This assembly is not used by the host so we have to force load it
 // so it will be available for source deployment scenarios
-_ = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("NetDaemon.HassModel.Integration"));
+_ = AssemblyLoadContext.Default.LoadFromAssemblyPath(typeof(IntegrationHaContextExtensions).Assembly.Location);
 
 try
 {
