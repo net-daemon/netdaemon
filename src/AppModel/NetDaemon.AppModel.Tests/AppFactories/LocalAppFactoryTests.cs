@@ -24,7 +24,7 @@ public class LocalAppFactoryTests
     }
 
     [Fact]
-    public void TestCustomAppFactoryCreatesAppWithoutId()
+    public void TestCustomAppFactoryCreatesApp()
     {
         // ARRANGE
         var serviceProvider = CreateServiceProvider(_ => new MyAppLocalApp(Mock.Of<IAppConfig<LocalTestSettings>>()));
@@ -40,74 +40,6 @@ public class LocalAppFactoryTests
         appInstance.Should().BeOfType<MyAppLocalApp>();
     }
     
-    [Fact]
-    public void TestCustomAppFactoryCreatesAppWithId()
-    {
-        // ARRANGE
-        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalAppWithId());
-
-        // ACT
-        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
-        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
-        var appFactory = appFactories.Single(factory => factory.Id == MyAppLocalAppWithId.Id);
-        var appInstance = appFactory.Create(serviceProvider);
-
-        // ASSERT
-        appInstance.Should().NotBeNull();
-        appInstance.Should().BeOfType<MyAppLocalAppWithId>();
-    }
-    
-    [Fact]
-    public void TestCustomAppFactoryCreatesWithCustomId()
-    {
-        // ARRANGE
-        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalAppWithId(), "CustomId");
-
-        // ACT
-        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
-        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
-        var appFactory = appFactories.Single(factory => factory.Id == "CustomId");
-        var appInstance = appFactory.Create(serviceProvider);
-
-        // ASSERT
-        appInstance.Should().NotBeNull();
-        appInstance.Should().BeOfType<MyAppLocalAppWithId>();
-    }
-    
-    [Fact]
-    public void TestCustomAppFactoryCreatesWithCustomFocusTrue()
-    {
-        // ARRANGE
-        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalAppWithId(), "CustomId", true);
-
-        // ACT
-        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
-        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
-        var appFactory = appFactories.Single(factory => factory.Id == "CustomId" && factory.HasFocus);
-        var appInstance = appFactory.Create(serviceProvider);
-
-        // ASSERT
-        appInstance.Should().NotBeNull();
-        appInstance.Should().BeOfType<MyAppLocalAppWithId>();
-    }
-    
-    [Fact]
-    public void TestCustomAppFactoryCreatesWithCustomFocusFalse()
-    {
-        // ARRANGE
-        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalAppWithId(), "CustomId", false);
-
-        // ACT
-        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
-        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
-        var appFactory = appFactories.Single(factory => factory.Id == "CustomId" && factory.HasFocus == false);
-        var appInstance = appFactory.Create(serviceProvider);
-
-        // ASSERT
-        appInstance.Should().NotBeNull();
-        appInstance.Should().BeOfType<MyAppLocalAppWithId>();
-    }
-
     private static IServiceProvider CreateServiceProvider(Assembly assembly)
     {
         var serviceCollection = new ServiceCollection();

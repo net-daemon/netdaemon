@@ -92,6 +92,78 @@ public class LocalAppFactoryProviderTests
                                                  factory.HasFocus == false);
     }
     
+    [Fact]
+    public void TestLocalCustomAppFactoriesAreProvidedWithFullNameId()
+    {
+        // ARRANGE
+        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalApp(Mock.Of<IAppConfig<LocalTestSettings>>()));
+        
+        // ACT
+        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
+        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
+        
+        // ASSERT
+        appFactories.Should().Contain(factory => factory.Id == MyAppLocalApp.Id);
+    }
+
+    [Fact]
+    public void TestLocalCustomAppFactoriesAreProvidedWithCustomId()
+    {
+        // ARRANGE
+        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalAppWithId());
+        
+        // ACT
+        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
+        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
+        
+        // ASSERT
+        appFactories.Should().Contain(factory => factory.Id == MyAppLocalAppWithId.Id);
+    }
+    
+    [Fact]
+    public void TestLocalCustomAppFactoriesAreProvidedWithCustomProvidedId()
+    {
+        // ARRANGE
+        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalAppWithId(), "CustomId");
+        
+        // ACT
+        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
+        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
+        
+        // ASSERT
+        appFactories.Should().Contain(factory => factory.Id == "CustomId");
+    }
+    
+    [Fact]
+    public void TestLocalCustomAppFactoriesAreProvidedWithoutFocus()
+    {
+        // ARRANGE
+        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalApp(Mock.Of<IAppConfig<LocalTestSettings>>()));
+        
+        // ACT
+        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
+        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
+        
+        // ASSERT
+        appFactories.Should().Contain(factory => factory.Id == MyAppLocalApp.Id &&
+                                                 factory.HasFocus == false);
+    }
+    
+    [Fact]
+    public void TestLocalCustomAppFactoriesAreProvidedWithFocus()
+    {
+        // ARRANGE
+        var serviceProvider = CreateServiceProvider(_ => new MyAppLocalApp(Mock.Of<IAppConfig<LocalTestSettings>>()), focus: true);
+        
+        // ACT
+        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
+        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
+        
+        // ASSERT
+        appFactories.Should().Contain(factory => factory.Id == MyAppLocalApp.Id &&
+                                                 factory.HasFocus == true);
+    }
+    
     private static IServiceProvider CreateServiceProvider(Assembly assembly)
     {
         var serviceCollection = new ServiceCollection();
@@ -107,6 +179,18 @@ public class LocalAppFactoryProviderTests
         serviceCollection.AddLogging();
         serviceCollection.AddAppFromType<TAppType>();
         
+        return serviceCollection.BuildServiceProvider();
+    }
+    
+    private static IServiceProvider CreateServiceProvider<TAppType>(
+        Func<IServiceProvider, TAppType> func,
+        string? id = default,
+        bool? focus = default) where TAppType : class
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        serviceCollection.AddApp(func, id, focus);
+
         return serviceCollection.BuildServiceProvider();
     }
 }
