@@ -1,4 +1,5 @@
-using System.Reflection;
+using NetDaemon.AppModel.Internal.AppFactoryProviders;
+using IAppFactory = NetDaemon.AppModel.Internal.AppFactories.IAppFactory;
 
 namespace NetDaemon.AppModel.Internal;
 
@@ -6,16 +7,14 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 {
     private readonly List<Application> _applications = new();
 
-    private readonly IEnumerable<IAppTypeResolver> _appTypeResolvers;
+    private readonly IEnumerable<IAppFactoryProvider> _appFactoryProviders;
     private readonly IServiceProvider _provider;
     private bool _isDisposed;
 
-    public AppModelContext(
-        IEnumerable<IAppTypeResolver> appTypeResolvers,
-        IServiceProvider provider)
+    public AppModelContext(IEnumerable<IAppFactoryProvider> appFactoryProviders, IServiceProvider provider)
     {
+        _appFactoryProviders = appFactoryProviders;
         _provider = provider;
-        _appTypeResolvers = appTypeResolvers;
     }
 
     public IReadOnlyCollection<IApplication> Applications => _applications;
@@ -37,41 +36,27 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 
     private async Task LoadApplications()
     {
-        var applicationTypes = GetNetDaemonApplicationTypes().ToArray();
-        var loadOnlyFocusedApps = ShouldLoadOnlyFocusedApps(applicationTypes);
-        foreach (var appType in applicationTypes)
+        var factories = GetAppFactories().ToList();
+        var loadOnlyFocusedApps = ShouldLoadOnlyFocusedApps(factories);
+
+        foreach (var factory in factories)
         {
-            if (loadOnlyFocusedApps && !HasFocusAttribute(appType))
+            if (loadOnlyFocusedApps && !factory.HasFocus)
                 continue; // We do not load applications that does not have focus attr and we are in focus mode
 
-            var appAttribute = appType.GetCustomAttribute<NetDaemonAppAttribute>();
-            var id = appAttribute?.Id ?? appType.FullName ??
-                throw new InvalidOperationException("Type was not expected to be null");
-
-            var app = ActivatorUtilities.CreateInstance<Application>(_provider, id, appType);
+            var app = ActivatorUtilities.CreateInstance<Application>(_provider, factory);
             await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
         }
     }
 
-    private IEnumerable<Type> GetNetDaemonApplicationTypes()
+    private IEnumerable<IAppFactory> GetAppFactories()
     {
-        // Get all classes with the [NetDaemonAppAttribute]
-        return _appTypeResolvers.SelectMany(r => r.GetTypes())
-            .Where(n => n.IsClass &&
-                        !n.IsGenericType &&
-                        !n.IsAbstract &&
-                        n.GetCustomAttribute<NetDaemonAppAttribute>() != null
-            );
+        return _appFactoryProviders.SelectMany(provider => provider.GetAppFactories());
     }
 
-    private static bool ShouldLoadOnlyFocusedApps(IEnumerable<Type> types)
+    private static bool ShouldLoadOnlyFocusedApps(IEnumerable<IAppFactory> factories)
     {
-        return types.Any(n => n.GetCustomAttribute<FocusAttribute>() is not null);
-    }
-
-    private static bool HasFocusAttribute(Type type)
-    {
-        return type.GetCustomAttribute<FocusAttribute>() is not null;
+        return factories.Any(factory => factory.HasFocus);
     }
 }
