@@ -31,7 +31,9 @@
         <ProjectReference Include="..\..\src\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj" />
         <ProjectReference Include="..\..\src\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
         <ProjectReference Include="..\..\src\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
-        <ProjectReference Include="..\..\src\\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+        <ProjectReference Include="..\..\src\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+        <ProjectReference Include="..\..\src\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
+
     </ItemGroup>
     <PropertyGroup>
         <CodeAnalysisRuleSet>..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
