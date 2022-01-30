@@ -1,4 +1,4 @@
-using NetDaemon.AppModel.Internal.Resolver;
+using NetDaemon.AppModel.Internal.AppFactory;
 
 namespace NetDaemon.AppModel.Internal;
 
@@ -8,16 +8,16 @@ internal class Application : IApplication
 
     private readonly IServiceProvider _provider;
     private readonly ILogger<Application> _logger;
+    private readonly IAppFactory _appFactory;
     private readonly IAppStateManager? _appStateManager;
-    private readonly IAppInstance _instance;
 
     private bool _isErrorState;
 
-    public Application(IServiceProvider provider, ILogger<Application> logger, IAppInstance instance)
+    public Application(IServiceProvider provider, ILogger<Application> logger, IAppFactory appFactory)
     {
         _provider = provider;
         _logger = logger;
-        _instance = instance;
+        _appFactory = appFactory;
 
         // Can be missing so it is not injected in the constructor
         _appStateManager = provider.GetService<IAppStateManager>();
@@ -26,7 +26,7 @@ internal class Application : IApplication
     // Used in tests
     internal ApplicationContext? ApplicationContext { get; private set; }
 
-    public string Id => _instance.Id;
+    public string Id => _appFactory.Id;
 
     public ApplicationState State
     {
@@ -94,7 +94,7 @@ internal class Application : IApplication
     {
         try
         {
-            ApplicationContext = new ApplicationContext(_provider, _instance);
+            ApplicationContext = new ApplicationContext(_provider, _appFactory);
 
             // Init async and warn user if taking too long.
             var initAsyncTask = ApplicationContext.InitializeAsync();

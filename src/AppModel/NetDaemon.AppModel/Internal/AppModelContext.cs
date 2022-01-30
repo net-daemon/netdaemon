@@ -1,4 +1,5 @@
-using NetDaemon.AppModel.Internal.Resolver;
+using NetDaemon.AppModel.Internal.AppFactoryProvider;
+using IAppFactory = NetDaemon.AppModel.Internal.AppFactory.IAppFactory;
 
 namespace NetDaemon.AppModel.Internal;
 
@@ -6,13 +7,13 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 {
     private readonly List<Application> _applications = new();
 
-    private readonly IEnumerable<IAppInstanceResolver> _appInstanceResolvers;
+    private readonly IEnumerable<IAppFactoryProvider> _appFactoryProviders;
     private readonly IServiceProvider _provider;
     private bool _isDisposed;
 
-    public AppModelContext(IEnumerable<IAppInstanceResolver> appInstanceResolvers, IServiceProvider provider)
+    public AppModelContext(IEnumerable<IAppFactoryProvider> appFactoryProviders, IServiceProvider provider)
     {
-        _appInstanceResolvers = appInstanceResolvers;
+        _appFactoryProviders = appFactoryProviders;
         _provider = provider;
     }
 
@@ -35,27 +36,27 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 
     private async Task LoadApplications()
     {
-        var appInstances = GetAppInstances().ToList();
-        var loadOnlyFocusedApps = ShouldLoadOnlyFocusedApps(appInstances);
+        var factories = GetAppFactories().ToList();
+        var loadOnlyFocusedApps = ShouldLoadOnlyFocusedApps(factories);
 
-        foreach (var appInstance in appInstances)
+        foreach (var factory in factories)
         {
-            if (loadOnlyFocusedApps && !appInstance.HasFocus)
+            if (loadOnlyFocusedApps && !factory.HasFocus)
                 continue; // We do not load applications that does not have focus attr and we are in focus mode
 
-            var app = ActivatorUtilities.CreateInstance<Application>(_provider, appInstance);
+            var app = ActivatorUtilities.CreateInstance<Application>(_provider, factory);
             await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
         }
     }
 
-    private IEnumerable<IAppInstance> GetAppInstances()
+    private IEnumerable<IAppFactory> GetAppFactories()
     {
-        return _appInstanceResolvers.SelectMany(resolver => resolver.GetApps());
+        return _appFactoryProviders.SelectMany(provider => provider.GetAppFactories());
     }
 
-    private static bool ShouldLoadOnlyFocusedApps(IEnumerable<IAppInstance> types)
+    private static bool ShouldLoadOnlyFocusedApps(IEnumerable<IAppFactory> factories)
     {
-        return types.Any(instance => instance.HasFocus);
+        return factories.Any(factory => factory.HasFocus);
     }
 }

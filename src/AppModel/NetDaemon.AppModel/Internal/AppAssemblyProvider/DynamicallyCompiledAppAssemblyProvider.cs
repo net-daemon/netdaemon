@@ -1,42 +1,23 @@
-using System.Reflection;
+﻿using System.Reflection;
 using NetDaemon.AppModel.Internal.Compiler;
 
-namespace NetDaemon.AppModel.Internal;
+namespace NetDaemon.AppModel.Internal.AppAssemblyProvider;
 
-internal class AssemblyResolver : IAssemblyResolver
-{
-    private readonly Assembly _assembly;
-
-    public AssemblyResolver(
-        Assembly assembly
-    )
-    {
-        _assembly = assembly;
-    }
-
-    public Assembly GetResolvedAssembly()
-    {
-        return _assembly;
-    }
-}
-
-internal class DynamicallyCompiledAssemblyResolver : IAssemblyResolver, IDisposable
+internal class DynamicallyCompiledAppAssemblyProvider : IAppAssemblyProvider, IDisposable
 {
     private readonly ICompiler _compiler;
+
     private Assembly? _compiledAssembly;
     private CollectibleAssemblyLoadContext? _currentContext;
 
-    public DynamicallyCompiledAssemblyResolver(
-        ICompiler compiler
-    )
+    public DynamicallyCompiledAppAssemblyProvider(ICompiler compiler)
     {
         _compiler = compiler;
     }
 
-    public Assembly GetResolvedAssembly()
+    public Assembly GetAppAssembly()
     {
-        // We reuse an already compiled assembly since we only 
-        // compile once per start
+        // We reuse an already compiled assembly since we only compile once per start
         if (_compiledAssembly is not null)
             return _compiledAssembly;
 
