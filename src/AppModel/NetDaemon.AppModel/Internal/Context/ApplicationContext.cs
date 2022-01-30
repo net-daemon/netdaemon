@@ -1,3 +1,5 @@
+using NetDaemon.AppModel.Internal.AppFactories;
+
 namespace NetDaemon.AppModel.Internal;
 
 internal sealed class ApplicationContext
@@ -6,7 +8,7 @@ internal sealed class ApplicationContext
     private readonly IServiceScope? _serviceScope;
     private bool _isDisposed;
 
-    public ApplicationContext(Type appType, IServiceProvider serviceProvider)
+    public ApplicationContext(IServiceProvider serviceProvider, IAppFactory appFactory)
     {
         // Create a new ServiceScope for all objects we create for this app
         // this makes sure they will all be disposed along with the app
@@ -19,7 +21,7 @@ internal sealed class ApplicationContext
         if (appScope != null) appScope.ApplicationContext = this;
 
         // Now create the actual app from the new scope
-        Instance = ActivatorUtilities.CreateInstance(scopedProvider, appType);
+        Instance = appFactory.Create(scopedProvider);
     }
 
     public object Instance { get; }
