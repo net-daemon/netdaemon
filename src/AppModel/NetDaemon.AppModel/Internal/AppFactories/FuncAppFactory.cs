@@ -1,32 +1,60 @@
-﻿namespace NetDaemon.AppModel.Internal.AppFactories;
+﻿using System.Reflection;
 
-internal class FuncAppFactory<TAppType> : FuncAppFactory where TAppType : class
-{
-    public FuncAppFactory(Func<IServiceProvider, TAppType> factoryFunc, string? id = default, bool? focus = default) :
-        base(
-            factoryFunc,
-            id ?? AppFactoryHelper.GetAppId(typeof(TAppType)),
-            focus ?? AppFactoryHelper.GetAppFocus(typeof(TAppType))
-        )
-    {
-    }
-}
+namespace NetDaemon.AppModel.Internal.AppFactories;
 
 internal class FuncAppFactory : IAppFactory
 {
-    private readonly Func<IServiceProvider, object> _factoryFunc;
+    private readonly Func<IServiceProvider, object> _func;
 
-    public FuncAppFactory(Func<IServiceProvider, object> factoryFunc, string id, bool focus)
+    private FuncAppFactory(Func<IServiceProvider, object> func, Type type, string? id, bool? focus)
     {
-        _factoryFunc = factoryFunc;
+        _func = func;
 
-        Id = id;
-        HasFocus = focus;
+        Id = id ?? GetAppId(type);
+        HasFocus = focus ?? GetAppFocus(type);
+    }
+    
+    private static string GetAppId(Type type)
+    {
+        var attribute = type.GetCustomAttribute<NetDaemonAppAttribute>();
+        var id = attribute?.Id ?? type.FullName;
+
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new InvalidOperationException($"Could not get app id from {type}");
+        }
+
+        return id;
     }
 
-    public object Create(IServiceProvider provider) => _factoryFunc.Invoke(provider);
+    private static bool GetAppFocus(Type type)
+    {
+        return type.GetCustomAttribute<FocusAttribute>() is not null;
+    }
+
+    public object Create(IServiceProvider provider)
+    {
+        return _func.Invoke(provider);
+    }
 
     public string Id { get; }
 
     public bool HasFocus { get; }
+
+    public static FuncAppFactory Create<TAppType>(Func<IServiceProvider, TAppType> func,
+        string? id = default, bool? focus = default) where TAppType : class
+    {
+        return new FuncAppFactory(func, typeof(TAppType), id, focus);
+    }
+
+    public static FuncAppFactory Create(Type type,
+        string? id = default, bool? focus = default)
+    {
+        return new FuncAppFactory(CreateFactoryFunc(type), type, id, focus);
+    }
+
+    private static Func<IServiceProvider, object> CreateFactoryFunc(Type type)
+    {
+        return provider => ActivatorUtilities.CreateInstance(provider, type);
+    }
 }

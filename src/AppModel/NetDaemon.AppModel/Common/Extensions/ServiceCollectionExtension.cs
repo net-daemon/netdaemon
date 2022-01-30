@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddAppModelIfNotExist()
-            .AddSingleton<IAppFactory>(new FuncAppFactory<TAppType>(factoryFunc, id, focus));
+            .AddSingleton<IAppFactory>(FuncAppFactory.Create(factoryFunc, id, focus));
     }
 
     /// <summary>

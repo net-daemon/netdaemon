@@ -19,7 +19,7 @@ internal class AssemblyAppFactoryProvider : IAppFactoryProvider
             .Select(resolver => resolver.GetAppAssembly())
             .SelectMany(assembly => assembly.GetTypes())
             .Where(IsNetDaemonAppType)
-            .Select(type => new TypeAppFactory(type))
+            .Select(type => FuncAppFactory.Create(type))
             .ToList();
     }
 

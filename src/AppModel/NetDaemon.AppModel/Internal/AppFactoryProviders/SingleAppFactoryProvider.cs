@@ -13,6 +13,6 @@ internal class SingleAppFactoryProvider : IAppFactoryProvider
 
     public IReadOnlyCollection<IAppFactory> GetAppFactories()
     {
-        return new[] { new TypeAppFactory(_appType) };
+        return new[] { FuncAppFactory.Create(_appType) };
     }
 }
