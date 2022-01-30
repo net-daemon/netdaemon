@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
         return services
             .AddAppModelIfNotExist()
             .AddAppTypeResolverIfNotExist()
-            .AddSingleton<IAppAssemblyProvider>(new SingleAppAssemblyProvider(assembly));
+            .AddSingleton<IAppAssemblyProvider>(new AppAssemblyProvider(assembly));
     }
 
     /// <summary>
