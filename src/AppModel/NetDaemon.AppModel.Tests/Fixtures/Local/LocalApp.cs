@@ -10,6 +10,8 @@ public class LocalTestSettings
 [NetDaemonApp]
 public class MyAppLocalApp
 {
+    public static readonly string Id = typeof(MyAppLocalApp).FullName!;
+    
     public MyAppLocalApp(IAppConfig<LocalTestSettings> settings)
     {
         Settings = settings.Value;

@@ -13,7 +13,7 @@ internal class FuncAppFactory : IAppFactory
         Id = id ?? GetAppId(type);
         HasFocus = focus ?? GetAppFocus(type);
     }
-    
+
     private static string GetAppId(Type type)
     {
         var attribute = type.GetCustomAttribute<NetDaemonAppAttribute>();

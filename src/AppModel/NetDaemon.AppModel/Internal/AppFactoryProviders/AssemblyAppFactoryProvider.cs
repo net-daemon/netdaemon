@@ -25,7 +25,7 @@ internal class AssemblyAppFactoryProvider : IAppFactoryProvider
 
     private static bool IsNetDaemonAppType(Type type)
     {
-        if (!type.IsClass || !type.IsGenericType || !type.IsAbstract)
+        if (!type.IsClass || type.IsGenericType || type.IsAbstract)
         {
             return false;
         }

@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddAppModelIfNotExist()
-            .AddSingleton<IAppFactory>(FuncAppFactory.Create(factoryFunc, id, focus));
+            .AddSingleton<IAppFactoryProvider>(SingleAppFactoryProvider.Create(factoryFunc, id, focus));
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddAppModelIfNotExist()
-            .AddAppTypeResolverIfNotExist()
+            .AddAppFactoryIfNotExists()
             .AddSingleton<IAppAssemblyProvider>(new AppAssemblyProvider(assembly));
     }
 
@@ -67,7 +67,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddAppModelIfNotExist()
-            .AddSingleton<IAppFactoryProvider>(new SingleAppFactoryProvider(type));
+            .AddSingleton(SingleAppFactoryProvider.Create(type));
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public static class ServiceCollectionExtensions
         // We make sure we only add AppModel services once
         services
             .AddAppModelIfNotExist()
-            .AddAppTypeResolverIfNotExist()
+            .AddAppFactoryIfNotExists()
             .AddSingleton<Compiler>()
             .AddSingleton<ICompiler>(s => s.GetRequiredService<Compiler>())
             .AddSingleton<SyntaxTreeResolver>()
@@ -113,7 +113,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddAppModelIfNotExist(this IServiceCollection services)
+    private static IServiceCollection AddAppModelIfNotExist(this IServiceCollection services)
     {
         // Check if we already registered
         if (services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
@@ -130,7 +130,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    internal static IServiceCollection AddAppTypeResolverIfNotExist(this IServiceCollection services)
+    private static IServiceCollection AddAppFactoryIfNotExists(this IServiceCollection services)
     {
         if (services.Any(descriptor => descriptor.ImplementationType == typeof(AssemblyAppFactoryProvider)))
             return services;

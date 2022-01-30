@@ -1,5 +1,5 @@
 using NetDaemon.AppModel.Internal;
-using NetDaemon.AppModel.Internal.Resolver;
+using NetDaemon.AppModel.Internal.AppFactories;
 
 namespace NetDaemon.AppModel.Tests.Context;
 
@@ -24,7 +24,7 @@ public class ApplicationScopeTests
         {
             ApplicationContext = new ApplicationContext(
                 new ServiceCollection().BuildServiceProvider(),
-                Mock.Of<IAppInstance>()
+                Mock.Of<IAppFactory>()
             )
         };
         var ctx = scope.ApplicationContext;

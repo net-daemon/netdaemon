@@ -2,17 +2,30 @@
 
 namespace NetDaemon.AppModel.Internal.AppFactoryProviders;
 
-internal class SingleAppFactoryProvider : IAppFactoryProvider
+internal sealed class SingleAppFactoryProvider : IAppFactoryProvider
 {
-    private readonly Type _appType;
+    private readonly IAppFactory _factory;
 
-    public SingleAppFactoryProvider(Type appType)
+    private SingleAppFactoryProvider(IAppFactory factory)
     {
-        _appType = appType;
+        _factory = factory;
     }
 
     public IReadOnlyCollection<IAppFactory> GetAppFactories()
     {
-        return new[] { FuncAppFactory.Create(_appType) };
+        return new[] { _factory };
+    }
+
+    public static IAppFactoryProvider Create<TAppType>(Func<IServiceProvider, TAppType> func,
+        string? id = default, bool? focus = default) where TAppType : class
+    {
+        var factory = FuncAppFactory.Create(func, id, focus);
+        return new SingleAppFactoryProvider(factory);
+    }
+
+    public static IAppFactoryProvider Create(Type type, string? id = default, bool? focus = default)
+    {
+        var factory = FuncAppFactory.Create(type, id, focus);
+        return new SingleAppFactoryProvider(factory);
     }
 }
