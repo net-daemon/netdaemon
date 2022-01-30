@@ -1,4 +1,4 @@
-using NetDaemon.AppModel.Internal.AppFactory;
+using NetDaemon.AppModel.Internal.AppFactories;
 
 namespace NetDaemon.AppModel.Internal;
 

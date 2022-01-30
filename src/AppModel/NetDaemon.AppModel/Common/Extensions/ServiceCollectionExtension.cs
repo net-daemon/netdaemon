@@ -1,7 +1,7 @@
 using System.Reflection;
-using NetDaemon.AppModel.Internal.AppAssemblyProvider;
-using NetDaemon.AppModel.Internal.AppFactory;
-using NetDaemon.AppModel.Internal.AppFactoryProvider;
+using NetDaemon.AppModel.Internal.AppAssemblyProviders;
+using NetDaemon.AppModel.Internal.AppFactories;
+using NetDaemon.AppModel.Internal.AppFactoryProviders;
 using NetDaemon.AppModel.Internal.Compiler;
 using NetDaemon.AppModel.Internal.Config;
 

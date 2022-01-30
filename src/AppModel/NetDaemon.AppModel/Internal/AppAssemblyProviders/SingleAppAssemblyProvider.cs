@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace NetDaemon.AppModel.Internal.AppAssemblyProvider;
+namespace NetDaemon.AppModel.Internal.AppAssemblyProviders;
 
 internal class SingleAppAssemblyProvider : IAppAssemblyProvider
 {

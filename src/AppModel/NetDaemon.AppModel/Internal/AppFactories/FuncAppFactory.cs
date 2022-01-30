@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.AppModel.Internal.AppFactory;
+﻿namespace NetDaemon.AppModel.Internal.AppFactories;
 
 internal class FuncAppFactory<TAppType> : FuncAppFactory where TAppType : class
 {

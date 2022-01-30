@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using NetDaemon.AppModel.Internal.Compiler;
 
-namespace NetDaemon.AppModel.Internal.AppAssemblyProvider;
+namespace NetDaemon.AppModel.Internal.AppAssemblyProviders;
 
 internal class DynamicallyCompiledAppAssemblyProvider : IAppAssemblyProvider, IDisposable
 {

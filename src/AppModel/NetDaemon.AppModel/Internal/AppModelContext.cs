@@ -1,5 +1,5 @@
-using NetDaemon.AppModel.Internal.AppFactoryProvider;
-using IAppFactory = NetDaemon.AppModel.Internal.AppFactory.IAppFactory;
+using NetDaemon.AppModel.Internal.AppFactoryProviders;
+using IAppFactory = NetDaemon.AppModel.Internal.AppFactories.IAppFactory;
 
 namespace NetDaemon.AppModel.Internal;
 

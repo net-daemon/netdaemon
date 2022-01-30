@@ -1,8 +1,8 @@
 using System.Reflection;
-using NetDaemon.AppModel.Internal.AppAssemblyProvider;
-using NetDaemon.AppModel.Internal.AppFactory;
+using NetDaemon.AppModel.Internal.AppAssemblyProviders;
+using NetDaemon.AppModel.Internal.AppFactories;
 
-namespace NetDaemon.AppModel.Internal.AppFactoryProvider;
+namespace NetDaemon.AppModel.Internal.AppFactoryProviders;
 
 internal class AssemblyAppFactoryProvider : IAppFactoryProvider
 {

@@ -1,6 +1,6 @@
-﻿using NetDaemon.AppModel.Internal.AppFactory;
+﻿using NetDaemon.AppModel.Internal.AppFactories;
 
-namespace NetDaemon.AppModel.Internal.AppFactoryProvider;
+namespace NetDaemon.AppModel.Internal.AppFactoryProviders;
 
 internal class SingleAppFactoryProvider : IAppFactoryProvider
 {
