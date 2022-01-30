@@ -38,9 +38,5 @@ COPY ./Docker/rootfs/etc/services.d/NetDaemonApp /etc/services.d/NetDaemonApp
 # COPY --from=builder /admin /admin
 COPY --from=netbuilder /daemon /daemon
 
-ENV \    
-    HomeAssistant__Host=localhost \
-    HomeAssistant__Port=8123 \
-    HomeAssistant__Token=NOT_SET \
-    NetDaemon__ApplicationConfigurationFolder=/data 
-
+# This is always set to data as default
+ENV NetDaemon__ApplicationConfigurationFolder=/data
