@@ -18,17 +18,16 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 // HassClient usings
-global using NetDaemon.Client.Common;
-global using NetDaemon.Client.Common.HomeAssistant.Model;
+global using NetDaemon.Client.HomeAssistant.Model;
 global using NetDaemon.Client.Internal;
 global using NetDaemon.Client.Internal.Helpers;
 global using NetDaemon.Client.Internal.Json;
 global using NetDaemon.Client.Internal.Net;
-global using NetDaemon.Client.Common.Exceptions;
+global using NetDaemon.Client.Exceptions;
 global using NetDaemon.Client.Internal.Extensions;
 global using NetDaemon.Client.Internal.HomeAssistant.Commands;
 global using NetDaemon.Client.Internal.HomeAssistant.Messages;
-global using NetDaemon.Client.Common.Settings;
+global using NetDaemon.Client.Settings;
 
 // Make the internal visible to test project
 [assembly: InternalsVisibleTo("NetDaemon.HassClient.Tests")]

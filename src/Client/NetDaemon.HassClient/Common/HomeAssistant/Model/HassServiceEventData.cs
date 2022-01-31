@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.Common.HomeAssistant.Model;
+﻿namespace NetDaemon.Client.HomeAssistant.Model;
 
 public record HassServiceEventData
 {

@@ -5,11 +5,11 @@ global using Microsoft.Extensions.Options;
 global using FluentAssertions;
 global using Moq;
 global using Xunit;
-global using NetDaemon.Client.Common;
-global using NetDaemon.Client.Common.HomeAssistant.Model;
+global using NetDaemon.Client;
+global using NetDaemon.Client.HomeAssistant.Model;
 global using NetDaemon.Client.Internal.Extensions;
 global using NetDaemon.Client.Internal.HomeAssistant.Commands;
-global using NetDaemon.Client.Common.Settings;
+global using NetDaemon.Client.Settings;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("NetDaemon.Runtime.Tests")]

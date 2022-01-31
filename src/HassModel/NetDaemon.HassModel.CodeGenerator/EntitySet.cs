@@ -1,4 +1,4 @@
-﻿using NetDaemon.Client.Common.HomeAssistant.Model;
+﻿using NetDaemon.Client.HomeAssistant.Model;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 

@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.HomeAssistant.Model;
 
 namespace NetDaemon.Runtime.Internal.Model;
 

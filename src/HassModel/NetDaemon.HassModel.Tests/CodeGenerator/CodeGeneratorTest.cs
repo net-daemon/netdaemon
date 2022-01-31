@@ -5,7 +5,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
 using NetDaemon.HassModel.Tests.TestHelpers;

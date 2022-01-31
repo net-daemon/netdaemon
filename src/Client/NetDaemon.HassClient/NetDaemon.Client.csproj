@@ -17,7 +17,6 @@
         </PackageDescription>
         <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
         <tags>Home Assistant</tags>
-        <RootNamespace>JoySoftware.NetDaemon.Client</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

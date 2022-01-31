@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common.Extensions;
+namespace NetDaemon.Client.Extensions;
 
 /// <summary>
 ///     ServiceCollectionExtensions

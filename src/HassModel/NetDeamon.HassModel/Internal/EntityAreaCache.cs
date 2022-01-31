@@ -1,5 +1,5 @@
 ﻿using System.Threading;
-using NetDaemon.Client.Common.HomeAssistant.Extensions;
+using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
 
