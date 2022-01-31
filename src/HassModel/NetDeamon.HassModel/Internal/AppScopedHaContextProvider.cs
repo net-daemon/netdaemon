@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using NetDaemon.Client.Common;
+﻿using System.Threading;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
-using NetDaemon.Client.Common.HomeAssistant.Model;
-using NetDaemon.HassModel;
-using NetDaemon.HassModel.Entities;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;

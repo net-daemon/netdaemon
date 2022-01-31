@@ -1,8 +1,4 @@
-﻿using NetDaemon.Client.Common.HomeAssistant.Model;
-using NetDaemon.HassModel;
-using NetDaemon.HassModel.Entities;
-
-namespace NetDaemon.HassModel.Internal;
+﻿namespace NetDaemon.HassModel.Internal;
 
 internal static class HassObjectMapper
 {

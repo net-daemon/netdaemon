@@ -11,33 +11,33 @@ using NetDaemon.HassModel.CodeGenerator.Model;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
 
-namespace NetDaemon.HassModel.Tests.CodeGenerator
+namespace NetDaemon.HassModel.Tests.CodeGenerator;
+
+public class CodeGeneratorTest
 {
-    public class CodeGeneratorTest
+    [Fact]
+    public void RunCodeGenEMpy()
     {
-        [Fact]
-        public void RunCodeGenEMpy()
-        {
-            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", Array.Empty<HassState>(), new HassServiceDomain[0]);
+        var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", Array.Empty<HassState>(), new HassServiceDomain[0]);
 
-            code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
+        code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
             
-            AssertCodeCompiles(code.ToString(), string.Empty);
-        }
+        AssertCodeCompiles(code.ToString(), string.Empty);
+    }
 
-        [Fact]
-        public void TestIEntityGeneration()
+    [Fact]
+    public void TestIEntityGeneration()
+    {
+        var entityStates = new HassState[]
         {
-            var entityStates = new HassState[]
-            {
-                new() { EntityId = "light.light1" },
-                new() { EntityId = "light.light2" },
-                new() { EntityId = "switch.switch1" },
-                new() { EntityId = "switch.switch2" },
-            };
+            new() { EntityId = "light.light1" },
+            new() { EntityId = "light.light2" },
+            new() { EntityId = "switch.switch1" },
+            new() { EntityId = "switch.switch2" },
+        };
 
-            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
-            var appCode = @"
+        var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+        var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
 using RootNameSpace;
@@ -53,37 +53,37 @@ public class Root
         SwitchEntity switch2 = entities.Switch.Switch2;
     }
 }";
-            AssertCodeCompiles(generatedCode.ToString(), appCode);
-        }
+        AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }
         
-        [Fact]
-        public void TestNumericSensorEntityGeneration()
+    [Fact]
+    public void TestNumericSensorEntityGeneration()
+    {
+        // Numeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute
+        var entityStates = new HassState[]
         {
-            // Numeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute
-            var entityStates = new HassState[]
+            new() {
+                EntityId = "number.living_bass",
+                AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
+            },           
+            new()
             {
-                new() {
-                    EntityId = "number.living_bass",
-                    AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
-                },           
-                new()
-                {
-                    EntityId = "input_number.target_temperature",
-                    AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
-                },                
-                new()
-                {
-                    EntityId = "sensor.daily_power_consumption",
-                    AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
-                },
-                new()
-                {
-                    EntityId = "sensor.Pir",
-                },
-            };
+                EntityId = "input_number.target_temperature",
+                AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
+            },                
+            new()
+            {
+                EntityId = "sensor.daily_power_consumption",
+                AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
+            },
+            new()
+            {
+                EntityId = "sensor.Pir",
+            },
+        };
 
-            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
-            var appCode = @"
+        var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+        var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
 using RootNameSpace;
@@ -106,45 +106,45 @@ public class Root
         string? pir = pirSensor.State;
      }
 }";
-            AssertCodeCompiles(generatedCode.ToString(), appCode);
-        }
+        AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }
         
-        [Fact]
-        public void TestNumberExtensionMethodGeneration()
-        {
-            var entityStates = new HassState[] { 
-                new() {
-                    EntityId = "number.living_bass",
-                    AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
-                },           
-                new() {
-                    EntityId = "unknown.number",
-                    AttributesJson = new { unit_of_measurement = "pcs", }.AsJsonElement()
-                },           
-                new() {
-                    EntityId = "unknown.string",
-                },           
-            };
+    [Fact]
+    public void TestNumberExtensionMethodGeneration()
+    {
+        var entityStates = new HassState[] { 
+            new() {
+                EntityId = "number.living_bass",
+                AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
+            },           
+            new() {
+                EntityId = "unknown.number",
+                AttributesJson = new { unit_of_measurement = "pcs", }.AsJsonElement()
+            },           
+            new() {
+                EntityId = "unknown.string",
+            },           
+        };
 
-            var hassServiceDomains = new HassServiceDomain[] {
-                new() {
-                    Domain = "number",
-                    Services = new HassService[] {
-                        new() {
-                            Service = "set_value",
-                            Target = new TargetSelector {
-                                Entity = new() { Domain = "number" }
-                            },
-                            Fields = new HassServiceField[] {
-                                new() { Field = "value", Selector = new NumberSelector(), },
-                            },
-                        }
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "number",
+                Services = new HassService[] {
+                    new() {
+                        Service = "set_value",
+                        Target = new TargetSelector {
+                            Entity = new() { Domain = "number" }
+                        },
+                        Fields = new HassServiceField[] {
+                            new() { Field = "value", Selector = new NumberSelector(), },
+                        },
                     }
                 }
-            };
+            }
+        };
             
-            var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, hassServiceDomains);
-            var appCode = @"
+        var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, hassServiceDomains);
+        var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
 using RootNameSpace;
@@ -158,35 +158,35 @@ public class Root
     entities.Number.LivingBass.SetValue(12);
      }
 }";
-            AssertCodeCompiles(generatedCode.ToString(), appCode);
-        }
+        AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }
 
-        [Fact]
-        public void TestAttributeClassGeneration()
+    [Fact]
+    public void TestAttributeClassGeneration()
+    {
+        var entityStates = new HassState[]
         {
-            var entityStates = new HassState[]
+            new()
             {
-                new()
+                EntityId = "light.light1",
+                AttributesJson = new 
                 {
-                    EntityId = "light.light1",
-                    AttributesJson = new 
-                    {
-                        brightness = 255L,
-                        friendly_name = "attic",
-                        FriendlyName = "attic",
-                        start_date = new DateTime(2010, 12, 23, 23, 12, 00),
-                        not_used = (string?)null,
-                        trueValue = true,
-                        falseValue = false,
-                        dict = new {},
-                        arr = new []{"red", "blue"}
-                    }.AsJsonElement()
-                },
-            };
+                    brightness = 255L,
+                    friendly_name = "attic",
+                    FriendlyName = "attic",
+                    start_date = new DateTime(2010, 12, 23, 23, 12, 00),
+                    not_used = (string?)null,
+                    trueValue = true,
+                    falseValue = false,
+                    dict = new {},
+                    arr = new []{"red", "blue"}
+                }.AsJsonElement()
+            },
+        };
             
-            var generatedCode = Generator.GenerateCode("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = Generator.GenerateCode("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
 
-            var appCode = @"
+        var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
 using RootNameSpace;
@@ -204,47 +204,47 @@ public class Root
         string? startDate = light1.Attributes?.StartDate;
     }
 }";
-            AssertCodeCompiles(generatedCode, appCode);
-        }
+        AssertCodeCompiles(generatedCode, appCode);
+    }
 
-        [Fact]
-        public void TestServicesGeneration()
+    [Fact]
+    public void TestServicesGeneration()
+    {
+        var readOnlyCollection = new HassState[]
         {
-            var readOnlyCollection = new HassState[]
-            {
-                new() { EntityId = "light.light1" },
-            };
+            new() { EntityId = "light.light1" },
+        };
 
-            var hassServiceDomains = new HassServiceDomain[]
+        var hassServiceDomains = new HassServiceDomain[]
+        {
+            new()
             {
-                new()
-                {
-                    Domain = "light",
-                    Services = new HassService[] {
-                        new() {
-                            Service = "turn_off",
-                            Target = new TargetSelector { Entity = new() { Domain = "light" } }
+                Domain = "light",
+                Services = new HassService[] {
+                    new() {
+                        Service = "turn_off",
+                        Target = new TargetSelector { Entity = new() { Domain = "light" } }
+                    },
+                    new() {
+                        Service = "turn_on",
+                        Fields = new HassServiceField[] {
+                            new() { Field = "transition", Selector = new NumberSelector(), },
+                            new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2f }, }
                         },
-                        new() {
-                            Service = "turn_on",
-                            Fields = new HassServiceField[] {
-                                new() { Field = "transition", Selector = new NumberSelector(), },
-                                new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2f }, }
-                            },
-                            Target = new TargetSelector { Entity = new() { Domain = "light" } }
-                        }
+                        Target = new TargetSelector { Entity = new() { Domain = "light" } }
                     }
                 }
-            };
+            }
+        };
 
-            // Act:
-            var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", readOnlyCollection, hassServiceDomains);
-            // uncomment for debugging
-            // File.WriteAllText(@"c:\temp\generated.cs", code.ToString());
+        // Act:
+        var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", readOnlyCollection, hassServiceDomains);
+        // uncomment for debugging
+        // File.WriteAllText(@"c:\temp\generated.cs", code.ToString());
 
-            // Assert:
+        // Assert:
 
-            var appCode = @"
+        var appCode = @"
 using NetDaemon.HassModel;
 using NetDaemon.HassModel.Entities;
 using RootNameSpace;
@@ -270,30 +270,29 @@ public class Root
         light.TurnOff();
     }
 }";
-            AssertCodeCompiles(code.ToString(), appCode);
-        }
+        AssertCodeCompiles(code.ToString(), appCode);
+    }
 
-        private void AssertCodeCompiles(string generated, string appCode)
+    private void AssertCodeCompiles(string generated, string appCode)
+    {
+        var syntaxtrees = new []
         {
-            var syntaxtrees = new []
-            {
-                SyntaxFactory.ParseSyntaxTree(generated, path: "generated.cs"),
-                SyntaxFactory.ParseSyntaxTree(appCode, path: "appcode.cs")
+            SyntaxFactory.ParseSyntaxTree(generated, path: "generated.cs"),
+            SyntaxFactory.ParseSyntaxTree(appCode, path: "appcode.cs")
                 
-            };
+        };
             
-            var compilation = CSharpCompilation.Create("tempAssembly",
-                syntaxtrees,
-                AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)).ToArray(),
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
-            );
+        var compilation = CSharpCompilation.Create("tempAssembly",
+            syntaxtrees,
+            AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)).ToArray(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
+        );
 
-            var emitResult = compilation.Emit(Stream.Null);
+        var emitResult = compilation.Emit(Stream.Null);
 
-            emitResult.Diagnostics
-                .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning)
-                .Should().BeEmpty();
+        emitResult.Diagnostics
+            .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning)
+            .Should().BeEmpty();
             
-        }
     }
 }

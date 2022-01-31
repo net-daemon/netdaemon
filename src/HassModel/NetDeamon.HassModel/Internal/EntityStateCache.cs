@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reactive.Subjects;
+﻿using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Extensions;
-using NetDaemon.Client.Common.HomeAssistant.Model;
 
 namespace NetDaemon.HassModel.Internal;
 

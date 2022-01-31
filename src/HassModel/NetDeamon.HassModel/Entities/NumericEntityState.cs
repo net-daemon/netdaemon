@@ -1,5 +1,3 @@
-using NetDaemon.HassModel.Internal;
-
 namespace NetDaemon.HassModel.Entities;
 
 /// <summary>

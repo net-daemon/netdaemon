@@ -37,6 +37,9 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Internal\Extensions" />
+    </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
