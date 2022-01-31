@@ -5,7 +5,7 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace NetDaemon.HassModel.Tests.Common;
+namespace NetDaemon.HassModel.Tests;
 
 public class ObservableExtensionsTest
 {

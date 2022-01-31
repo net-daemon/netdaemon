@@ -2,7 +2,7 @@ using FluentAssertions;
 using NetDaemon.HassModel.Entities;
 using Xunit;
 
-namespace NetDaemon.HassModel.Tests.Common;
+namespace NetDaemon.HassModel.Tests;
 
 public class ServiceTargetTest
 {
