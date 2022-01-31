@@ -56,7 +56,7 @@ public class LocalAppFactoryTests
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        serviceCollection.AddApp(func, id, focus);
+        serviceCollection.AddNetDaemonApp(func, id, focus);
 
         return serviceCollection.BuildServiceProvider();
     }
