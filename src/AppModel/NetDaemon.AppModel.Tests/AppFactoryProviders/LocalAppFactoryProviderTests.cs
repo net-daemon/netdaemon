@@ -177,7 +177,7 @@ public class LocalAppFactoryProviderTests
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        serviceCollection.AddAppFromType<TAppType>();
+        serviceCollection.AddNetDaemonApp<TAppType>();
         
         return serviceCollection.BuildServiceProvider();
     }
@@ -189,7 +189,7 @@ public class LocalAppFactoryProviderTests
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        serviceCollection.AddApp(func, id, focus);
+        serviceCollection.AddNetDaemonApp(func, id, focus);
 
         return serviceCollection.BuildServiceProvider();
     }
