@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
     /// <param name="focus">Whether this app has focus or not. This parameter is optional,
     ///                     by default it tries to check this using the FocusAttribute</param>
     /// <typeparam name="TAppType">The type of the app</typeparam>
-    public static IServiceCollection AddApp<TAppType>(
+    public static IServiceCollection AddNetDaemonApp<TAppType>(
         this IServiceCollection services,
         Func<IServiceProvider, TAppType> factoryFunc,
         string? id = default,
@@ -51,11 +51,9 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">Services</param>
     /// <typeparam name="TAppType">The type of the app to add</typeparam>
-    public static IServiceCollection AddAppFromType<TAppType>(this IServiceCollection services)
+    public static IServiceCollection AddNetDaemonApp<TAppType>(this IServiceCollection services)
     {
-        return services
-            .AddAppModelIfNotExist()
-            .AddAppFromType(typeof(TAppType));
+        return services.AddNetDaemonApp(typeof(TAppType));
     }
 
     /// <summary>
@@ -63,7 +61,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">Services</param>
     /// <param name="type">The type of the app to add</param>
-    public static IServiceCollection AddAppFromType(this IServiceCollection services, Type type)
+    public static IServiceCollection AddNetDaemonApp(this IServiceCollection services, Type type)
     {
         return services
             .AddAppModelIfNotExist()

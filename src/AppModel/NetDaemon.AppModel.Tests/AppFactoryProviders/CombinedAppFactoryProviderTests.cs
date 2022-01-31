@@ -28,7 +28,7 @@ public class CombinedAppFactoryProviderTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
         serviceCollection.AddFakeOptions("Dynamic");
-        serviceCollection.AddAppFromType<TAppType>();
+        serviceCollection.AddNetDaemonApp<TAppType>();
         serviceCollection.AddAppsFromAssembly(assembly);
         serviceCollection.AddAppsFromSource();
 
