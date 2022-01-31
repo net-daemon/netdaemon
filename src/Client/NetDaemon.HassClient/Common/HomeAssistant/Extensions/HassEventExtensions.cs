@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common.HomeAssistant.Extensions;
+namespace NetDaemon.Client.HomeAssistant.Extensions;
 
 /// <summary>
 ///     Extensions to HassEvents to convert to more specific event types

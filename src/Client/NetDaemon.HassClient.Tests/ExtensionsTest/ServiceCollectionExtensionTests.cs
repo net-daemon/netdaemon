@@ -1,4 +1,4 @@
-using NetDaemon.Client.Common.Extensions;
+using NetDaemon.Client.Extensions;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest;
 

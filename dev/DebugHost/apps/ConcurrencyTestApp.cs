@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.AppModel;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 
 namespace Apps;
 

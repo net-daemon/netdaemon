@@ -1,5 +1,5 @@
 ﻿using System.Reactive.Subjects;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.Runtime.Tests.Helpers;

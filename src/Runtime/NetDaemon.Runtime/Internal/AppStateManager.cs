@@ -5,7 +5,7 @@ using System.Net;
 using System.Reactive.Linq;
 using System.Text;
 using NetDaemon.AppModel;
-using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.Exceptions;
 
 namespace NetDaemon.Runtime.Internal;

@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Linq;
-using NetDaemon.HassModel.Common;
 
 namespace NetDaemon.HassModel.Integration;
 

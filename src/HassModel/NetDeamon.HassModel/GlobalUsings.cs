@@ -1,0 +1,17 @@
+global using System;
+global using System.Buffers;
+global using System.Linq;
+global using System.Collections.Generic;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Globalization;
+global using System.Text.Json;
+global using System.Text.Json.Serialization;
+global using System.Threading.Tasks;
+global using System.Reactive.Subjects;
+global using System.Reactive.Linq;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using NetDaemon.Client;
+global using NetDaemon.Client.HomeAssistant.Model;
+global using NetDaemon.HassModel.Internal;
+global using NetDaemon.HassModel.Entities;

@@ -1,38 +1,32 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using NetDaemon.Client.Common.HomeAssistant.Model;
-using NetDaemon.HassModel.Common;
-using NetDaemon.HassModel.Internal;
+﻿using Microsoft.Extensions.Hosting;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
-namespace NetDaemon.HassModel
+namespace NetDaemon.HassModel;
+
+/// <summary>
+/// Setup methods for services configuration 
+/// </summary>
+public static class DependencyInjectionSetup
 {
     /// <summary>
-    /// Setup methods for services configuration 
+    /// Registers services for using the IHaContext interface scoped to NetDemonApps
     /// </summary>
-    public static class DependencyInjectionSetup
+    public static IHostBuilder UseAppScopedHaContext(this IHostBuilder hostBuilder)
     {
-        /// <summary>
-        /// Registers services for using the IHaContext interface scoped to NetDemonApps
-        /// </summary>
-        public static IHostBuilder UseAppScopedHaContext(this IHostBuilder hostBuilder)
-        {
-            if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
+        if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
 
-            return hostBuilder
-                .ConfigureServices((_, services) => services.AddScopedHaContext());
-        }
+        return hostBuilder
+            .ConfigureServices((_, services) => services.AddScopedHaContext());
+    }
 
-        internal static void AddScopedHaContext(this IServiceCollection services)
-        {
-            services.AddSingleton<EntityStateCache>();
-            services.AddSingleton<EntityAreaCache>();
-            services.AddScoped<AppScopedHaContextProvider>();
-            services.AddTransient<ICacheManager, CacheManager>();
-            services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
-            services.AddScoped<QueuedObservable<HassEvent>>();
-            services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<QueuedObservable<HassEvent>>());
-        }
+    internal static void AddScopedHaContext(this IServiceCollection services)
+    {
+        services.AddSingleton<EntityStateCache>();
+        services.AddSingleton<EntityAreaCache>();
+        services.AddScoped<AppScopedHaContextProvider>();
+        services.AddTransient<ICacheManager, CacheManager>();
+        services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
+        services.AddScoped<QueuedObservable<HassEvent>>();
+        services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<QueuedObservable<HassEvent>>());
     }
 }

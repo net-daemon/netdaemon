@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using NetDaemon.Client.Common;
+using NetDaemon.Client;
 using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;

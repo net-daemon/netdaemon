@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace NetDaemon.HassModel.Internal;
+﻿namespace NetDaemon.HassModel.Internal;
 
 internal class FormatHelpers
 {

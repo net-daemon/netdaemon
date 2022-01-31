@@ -1,9 +1,4 @@
-﻿using System;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-
-namespace NetDaemon.HassModel.Common;
+﻿namespace NetDaemon.HassModel;
 
 /// <summary>
 ///     Adds async and concurrent extensions on observables

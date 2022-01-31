@@ -1,6 +1,6 @@
 using System.Web;
 
-namespace NetDaemon.Client.Common.HomeAssistant.Extensions;
+namespace NetDaemon.Client.HomeAssistant.Extensions;
 
 /// <summary>
 ///     Adds extensions to the IHomeAssistantApiManager

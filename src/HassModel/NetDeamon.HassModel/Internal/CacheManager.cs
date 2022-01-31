@@ -1,6 +1,4 @@
 ﻿using System.Threading;
-using System.Threading.Tasks;
-using NetDaemon.HassModel.Common;
 
 namespace NetDaemon.HassModel.Internal;
 
