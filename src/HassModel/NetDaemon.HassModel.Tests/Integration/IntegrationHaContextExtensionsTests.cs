@@ -1,6 +1,5 @@
 ﻿using System;
 using Moq;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Integration;
 using NetDaemon.HassModel.Tests.TestHelpers;

@@ -7,8 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-using NetDaemon.Client.Common;
-using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client;
+using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Internal;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetDaemon.Infrastructure.ObservableHelpers;
+﻿namespace NetDaemon.Infrastructure.ObservableHelpers;
 
 /// <summary>
 ///     The observable that queues the events

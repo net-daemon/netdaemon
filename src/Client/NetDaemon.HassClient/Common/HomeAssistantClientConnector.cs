@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.Common;
+﻿namespace NetDaemon.Client;
 
 /// <summary>
 ///     Make connection to Home Assistant

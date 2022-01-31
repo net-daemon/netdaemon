@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using NetDaemon.Client.Common;
-using NetDaemon.Client.Common.Extensions;
-using NetDaemon.Client.Common.HomeAssistant.Extensions;
-using NetDaemon.Client.Common.HomeAssistant.Model;
-using NetDaemon.Client.Common.Settings;
+using NetDaemon.Client;
+using NetDaemon.Client.Extensions;
+using NetDaemon.Client.HomeAssistant.Extensions;
+using NetDaemon.Client.HomeAssistant.Model;
+using NetDaemon.Client.Settings;
 
 #pragma warning disable CA1303
 #pragma warning disable CA2007

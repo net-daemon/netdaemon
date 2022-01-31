@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common.Exceptions;
+namespace NetDaemon.Client.Exceptions;
 
 // We allow exception not to have default constructors since
 // in this case it only makes sense to have a reason

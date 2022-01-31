@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common.HomeAssistant.Model;
+namespace NetDaemon.Client.HomeAssistant.Model;
 
 /// <summary>
 ///     Represents a target for a service call in Home Assistant

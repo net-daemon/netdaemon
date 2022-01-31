@@ -1,11 +1,5 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Subjects;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using NetDaemon.HassModel.Common;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;

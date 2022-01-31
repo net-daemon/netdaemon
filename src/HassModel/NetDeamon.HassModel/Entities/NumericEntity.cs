@@ -1,8 +1,4 @@
-﻿using System;
-using System.Reactive.Linq;
-using NetDaemon.HassModel.Common;
-
-namespace NetDaemon.HassModel.Entities;
+﻿namespace NetDaemon.HassModel.Entities;
 
 /// <summary>
 /// Entity that has a numeric (double) State value

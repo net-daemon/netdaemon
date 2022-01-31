@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common.Settings;
+namespace NetDaemon.Client.Settings;
 
 /// <summary>
 ///     Home Assistant related settings

@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common;
+namespace NetDaemon.Client;
 
 /// <summary>
 ///     Handle home assistant API calls using json over http

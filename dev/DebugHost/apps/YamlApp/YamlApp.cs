@@ -1,6 +1,6 @@
 
 using NetDaemon.AppModel;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 
 namespace Apps;
 

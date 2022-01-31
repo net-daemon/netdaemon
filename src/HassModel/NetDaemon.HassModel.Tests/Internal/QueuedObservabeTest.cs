@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Internal;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;

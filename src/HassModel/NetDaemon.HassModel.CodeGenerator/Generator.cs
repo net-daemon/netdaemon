@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
-using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.HomeAssistant.Model;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 [assembly: InternalsVisibleTo("NetDaemon.Daemon.Tests")]

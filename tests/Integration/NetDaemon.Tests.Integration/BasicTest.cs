@@ -4,7 +4,7 @@ using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NetDaemon.AppModel;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.Tests.Integration.Helpers;
 using Xunit;

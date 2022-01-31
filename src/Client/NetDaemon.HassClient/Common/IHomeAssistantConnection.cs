@@ -1,4 +1,4 @@
-namespace NetDaemon.Client.Common;
+namespace NetDaemon.Client;
 
 public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisposable
 {
