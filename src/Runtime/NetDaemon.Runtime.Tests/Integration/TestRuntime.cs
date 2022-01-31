@@ -46,7 +46,7 @@ public class TestRuntime
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
-                .AddAppFromType<LocalApp>()
+                .AddNetDaemonApp<LocalApp>()
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
@@ -84,7 +84,7 @@ public class TestRuntime
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
-                .AddAppFromType<LocalApp>()
+                .AddNetDaemonApp<LocalApp>()
         ).Build();
 
         var runnerTask = host.RunAsync();
