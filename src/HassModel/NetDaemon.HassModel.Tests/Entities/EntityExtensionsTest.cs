@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Moq;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using Xunit;
 

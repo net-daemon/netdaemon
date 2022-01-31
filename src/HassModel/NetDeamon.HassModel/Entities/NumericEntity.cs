@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 
 namespace NetDaemon.HassModel.Entities;
 

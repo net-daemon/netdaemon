@@ -2,7 +2,7 @@
 using System.Reactive.Linq;
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Common
+namespace NetDaemon.HassModel
 {
     /// <summary>
     /// Extension methods for HaContext

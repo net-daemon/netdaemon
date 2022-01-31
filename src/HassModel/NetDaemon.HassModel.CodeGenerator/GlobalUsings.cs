@@ -7,7 +7,6 @@ global using NetDaemon.HassModel.CodeGenerator;
 global using NetDaemon.HassModel.CodeGenerator.Model;
 global using NetDaemon.HassModel.CodeGenerator.Helpers;
 global using NetDaemon.HassModel.CodeGenerator.Extensions;
-global using NetDaemon.HassModel.Common;
 global using NetDaemon.HassModel.Entities;
 global using Microsoft.CodeAnalysis;
 global using static NetDaemon.HassModel.CodeGenerator.Helpers.NamingHelper;

@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using NetDaemon.HassModel.Internal;
 
-namespace NetDaemon.HassModel.Common
+namespace NetDaemon.HassModel
 {
     /// <summary>
     /// Represents an Event from  Home Assistant

@@ -10,7 +10,6 @@ using Moq;
 using NetDaemon.Client.Common;
 using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;

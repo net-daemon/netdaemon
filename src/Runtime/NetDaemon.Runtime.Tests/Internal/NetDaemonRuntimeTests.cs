@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Internal;
 using NetDaemon.Runtime.Internal;
 

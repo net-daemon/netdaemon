@@ -3,7 +3,7 @@ using System.Reactive.Subjects;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.Client.Internal.Exceptions;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using NetDaemon.Runtime.Internal;
 using NetDaemon.Runtime.Internal.Model;
 

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Client.Common.HomeAssistant.Model;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using NetDaemon.HassModel.Internal;
 using NetDaemon.Infrastructure.ObservableHelpers;
 

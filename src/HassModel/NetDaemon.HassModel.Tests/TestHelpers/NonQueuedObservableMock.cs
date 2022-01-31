@@ -2,7 +2,6 @@
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetDaemon.HassModel.Common;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers;

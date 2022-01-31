@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;

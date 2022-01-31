@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NetDaemon.HassModel.Entities;
 
-namespace NetDaemon.HassModel.Common
+namespace NetDaemon.HassModel
 {
     /// <summary>
     /// Represents a context for interacting with Home Assistant

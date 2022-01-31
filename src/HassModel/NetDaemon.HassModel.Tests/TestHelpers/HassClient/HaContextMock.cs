@@ -1,6 +1,5 @@
 ﻿using System.Reactive.Subjects;
 using Moq;
-using NetDaemon.HassModel.Common;
 using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers.HassClient

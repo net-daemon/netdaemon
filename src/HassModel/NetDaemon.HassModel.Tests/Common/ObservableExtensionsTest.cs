@@ -3,7 +3,6 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
-using NetDaemon.HassModel.Common;
 using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Common;

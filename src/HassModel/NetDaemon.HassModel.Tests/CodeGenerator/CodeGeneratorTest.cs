@@ -39,7 +39,7 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator
             var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
             var appCode = @"
 using NetDaemon.HassModel.Entities;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using RootNameSpace;
 
 public class Root
@@ -85,7 +85,7 @@ public class Root
             var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
             var appCode = @"
 using NetDaemon.HassModel.Entities;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using RootNameSpace;
 
 public class Root
@@ -146,7 +146,7 @@ public class Root
             var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, hassServiceDomains);
             var appCode = @"
 using NetDaemon.HassModel.Entities;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using RootNameSpace;
 
 public class Root
@@ -188,7 +188,7 @@ public class Root
 
             var appCode = @"
 using NetDaemon.HassModel.Entities;
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using RootNameSpace;
 
 public class Root
@@ -245,7 +245,7 @@ public class Root
             // Assert:
 
             var appCode = @"
-using NetDaemon.HassModel.Common;
+using NetDaemon.HassModel;
 using NetDaemon.HassModel.Entities;
 using RootNameSpace;
 
