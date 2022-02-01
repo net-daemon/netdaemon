@@ -122,6 +122,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
             .AddTransient<AppModelContext>()
             .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
+            .AddTransient<FocusFilter>()
             .AddScopedConfigurationBinder()
             .AddScopedAppServices()
             .AddConfigManagement();
