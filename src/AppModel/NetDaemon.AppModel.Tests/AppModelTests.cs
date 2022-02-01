@@ -255,6 +255,7 @@ public class AppModelTests
         fakeAppStateManager.Setup(n => n.GetStateAsync(It.IsAny<string>())).ReturnsAsync(() => applicationState);
 
         var builder = Host.CreateDefaultBuilder()
+            .UseEnvironment("Development")
             .ConfigureServices((_, services) =>
             {
                 services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
