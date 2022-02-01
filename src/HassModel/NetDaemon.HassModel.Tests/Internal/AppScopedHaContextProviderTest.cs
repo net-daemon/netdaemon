@@ -11,6 +11,7 @@ using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Entities;
+using NetDaemon.HassModel.Internal;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using Xunit;
 
@@ -168,6 +169,34 @@ public class AppScopedHaContextProviderTest
         eventObserverMock.VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task TestThatCallServiceTrackBackgroundTask()
+    {
+        var provider = await CreateServiceProvider();
+
+        var haContext = provider.CreateScope().ServiceProvider.GetRequiredService<IHaContext>();
+        var backgroundTrackerMock = provider.GetRequiredService<Mock<IBackgroundTaskTracker>>();
+        var target = ServiceTarget.FromEntity("domain.entity");
+        var data = new { Name = "value" };
+
+        haContext.CallService("domain", "service", target, data);
+
+        backgroundTrackerMock.Verify(n => n.TrackBackgroundTask(It.IsAny<Task?>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task TestThatSendEventTrackBackgroundTask()
+    {
+        var provider = await CreateServiceProvider();
+
+        var haContext = provider.CreateScope().ServiceProvider.GetRequiredService<IHaContext>();
+        var backgroundTrackerMock = provider.GetRequiredService<Mock<IBackgroundTaskTracker>>();
+
+        haContext.SendEvent("any_type", null);
+
+        backgroundTrackerMock.Verify(n => n.TrackBackgroundTask(It.IsAny<Task?>(), It.IsAny<string>()), Times.Once);
+    }
+
     private async Task<IHaContext> CreateTargetAsync()
     {
         var provider = await CreateServiceProvider();
@@ -180,6 +209,8 @@ public class AppScopedHaContextProviderTest
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
+
+
         serviceCollection.AddSingleton(_hassConnectionMock.Object);
         serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
 
@@ -192,6 +223,10 @@ public class AppScopedHaContextProviderTest
 
         serviceCollection.AddSingleton(_ => apiManagerMock.Object);
         serviceCollection.AddScopedHaContext();
+
+        var backgroundTaskTrackerMock = new Mock<IBackgroundTaskTracker>();
+        serviceCollection.AddScoped<Mock<IBackgroundTaskTracker>>(_=> backgroundTaskTrackerMock);
+        serviceCollection.AddScoped(_ => backgroundTaskTrackerMock.Object);
 
         var provider = serviceCollection.BuildServiceProvider();
 

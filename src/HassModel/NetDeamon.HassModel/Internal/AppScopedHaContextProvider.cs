@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Concurrent;
+using System.Threading;
 using NetDaemon.Client.HomeAssistant.Extensions;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
@@ -17,6 +18,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     private readonly IHomeAssistantRunner _hassRunner;
     private readonly IQueuedObservable<HassEvent> _queuedObservable;
+    private readonly IBackgroundTaskTracker _backgroundTaskTracker;
 
     private readonly CancellationTokenSource _tokenSource = new();
 
@@ -25,8 +27,9 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         EntityAreaCache entityAreaCache,
         IHomeAssistantRunner hassRunner,
         IHomeAssistantApiManager apiManager,
-        IQueuedObservable<HassEvent> queuedObservable
-        )
+        IQueuedObservable<HassEvent> queuedObservable,
+        IBackgroundTaskTracker backgroundTaskTracker
+    )
     {
         _entityStateCache = entityStateCache;
         _entityAreaCache = entityAreaCache;
@@ -36,6 +39,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         // Create ScopedObservables for this app
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
         _queuedObservable = queuedObservable;
+        _backgroundTaskTracker = backgroundTaskTracker;
         _queuedObservable.Initialize(_entityStateCache.AllEvents);
     }
 
@@ -56,7 +60,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
-        _hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token);
+        _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
     public IObservable<StateChange> StateAllChanges()
@@ -73,8 +77,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void SendEvent(string eventType, object? data = null)
     {
-        // For now we do just a fire and forget of the async SendEvent method. HassClient will handle and log exceptions 
-        _apiManager.SendEventAsync(eventType, _tokenSource.Token, data);
+        _backgroundTaskTracker.TrackBackgroundTask(_apiManager.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
     }
 
     public ValueTask DisposeAsync()
