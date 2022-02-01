@@ -40,4 +40,13 @@ internal class BackgroundTaskTracker : IBackgroundTaskTracker
         // all tasks should be cancelable
         _ = Wrap();
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Wait for the tasks to complete max 5 seconds
+        if (!BackgroundTasks.IsEmpty)
+        {
+            await Task.WhenAny( Task.WhenAll(BackgroundTasks.Keys), Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+        }
+    }
 }
