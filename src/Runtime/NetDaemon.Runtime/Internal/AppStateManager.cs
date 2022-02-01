@@ -104,21 +104,34 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         var normalizedString = applicationId.Normalize(NormalizationForm.FormD);
         StringBuilder stringBuilder = new(applicationId.Length);
 
+        char lastChar = '\0';
+
         foreach (var c in normalizedString)
+        {
             switch (CharUnicodeInfo.GetUnicodeCategory(c))
             {
                 case UnicodeCategory.LowercaseLetter:
+                    stringBuilder.Append(c);
+                    break;
                 case UnicodeCategory.UppercaseLetter:
+                    if (CharUnicodeInfo.GetUnicodeCategory(lastChar) == UnicodeCategory.LowercaseLetter)
+                    {
+                        stringBuilder.Append('_');
+                    }
+                    stringBuilder.Append(char.ToLowerInvariant(c));
+                    break;
                 case UnicodeCategory.DecimalDigitNumber:
                     stringBuilder.Append(c);
                     break;
-
                 case UnicodeCategory.SpaceSeparator:
                 case UnicodeCategory.ConnectorPunctuation:
                 case UnicodeCategory.DashPunctuation:
+                case UnicodeCategory.OtherPunctuation:
                     stringBuilder.Append('_');
                     break;
             }
+           lastChar = c;
+        }
 
         return $"input_boolean.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
     }

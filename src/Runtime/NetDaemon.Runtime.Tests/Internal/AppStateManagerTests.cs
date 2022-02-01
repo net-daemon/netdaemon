@@ -377,4 +377,18 @@ public class AppStateManagerTests
         // ASSERT
         appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Never);
     }
+
+    [Theory]
+    [InlineData("lowercase", "lowercase")]
+    [InlineData("lower.namespace.lowercase", "lower_namespace_lowercase")]
+    [InlineData("Namespace.Class", "namespace_class")]
+    [InlineData("Namespace.ClassNameWithUpperAndLower", "namespace_class_name_with_upper_and_lower")]
+    [InlineData("ALLUPPERCASE", "alluppercase")]
+    [InlineData("DIClass", "diclass")]
+    [InlineData("DiClass", "di_class")]
+    public void TestToSafeHomeAssistantEntityIdFromApplicationIdShouldGiveCorrectName(string fromId, string toId)
+    {
+        var expected = $"input_boolean.netdaemon_{toId}";
+        AppStateManager.ToSafeHomeAssistantEntityIdFromApplicationId(fromId).Should().Be(expected);
+    }
 }
