@@ -143,8 +143,8 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
 
     private async Task<HassState?> GetOrCreateStateForApp(string entityId)
     {
-        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
-                           throw new InvalidOperationException();
+        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
+        
         try
         {
             var state = await haConnection.GetEntityStateAsync(entityId, _cancelTokenSource.Token)
