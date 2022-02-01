@@ -27,7 +27,7 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 
         var filteredFactories =  _focusFilter.FilterFocusApps(factories);
 
-        foreach (var factory in filterdFactories)
+        foreach (var factory in filteredFactories)
         {
             var app = ActivatorUtilities.CreateInstance<Application>(_provider, factory);
             await app.InitializeAsync().ConfigureAwait(false);
