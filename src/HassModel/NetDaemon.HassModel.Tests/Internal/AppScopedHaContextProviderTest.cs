@@ -225,8 +225,8 @@ public class AppScopedHaContextProviderTest
         serviceCollection.AddScopedHaContext();
 
         var backgroundTaskTrackerMock = new Mock<IBackgroundTaskTracker>();
-        serviceCollection.AddSingleton(backgroundTaskTrackerMock);
-        serviceCollection.AddSingleton(backgroundTaskTrackerMock.Object);
+        serviceCollection.AddScoped<Mock<IBackgroundTaskTracker>>(_=> backgroundTaskTrackerMock);
+        serviceCollection.AddScoped(_ => backgroundTaskTrackerMock.Object);
 
         var provider = serviceCollection.BuildServiceProvider();
 

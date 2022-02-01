@@ -24,8 +24,8 @@ public static class DependencyInjectionSetup
         services.AddSingleton<EntityStateCache>();
         services.AddSingleton<EntityAreaCache>();
         services.AddScoped<AppScopedHaContextProvider>();
-        services.AddSingleton<BackgroundTaskTracker>();
-        services.AddSingleton<IBackgroundTaskTracker>(s => s.GetRequiredService<BackgroundTaskTracker>());
+        services.AddScoped<BackgroundTaskTracker>();
+        services.AddScoped<IBackgroundTaskTracker>(s => s.GetRequiredService<BackgroundTaskTracker>());
         services.AddTransient<ICacheManager, CacheManager>();
         services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
         services.AddScoped<QueuedObservable<HassEvent>>();
