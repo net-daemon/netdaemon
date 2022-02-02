@@ -25,15 +25,15 @@ public static class CronExtensions
         // When this gets cancelled we only need to actually dispose of the most recent scheduled action
         // (there will only be one at a time) so we store that in a box we will pass down
         StrongBox<IDisposable?> disposableBox = new();
-        RecursiveSchedule(scheduler, CronExpression.Parse(cron), action, disposableBox);
+        RecursiveSchedule(scheduler, CronExpression.Parse(cron), action, disposableBox, scheduler.Now);
 
         // Dispose will Dispose the IDisposable in the box
         return Disposable.Create(()=> disposableBox.Value?.Dispose());
     }
 
-    private static void RecursiveSchedule(IScheduler scheduler, CronExpression cronExpression, Action action, StrongBox<IDisposable?> disposableBox)
+    private static void RecursiveSchedule(IScheduler scheduler, CronExpression cronExpression, Action action, StrongBox<IDisposable?> disposableBox, DateTimeOffset now)
     {
-        var next = cronExpression.GetNextOccurrence(scheduler.Now, TimeZoneInfo.Local);
+        var next = cronExpression.GetNextOccurrence(now, TimeZoneInfo.Local);
         if (next.HasValue)
         {
             disposableBox.Value = scheduler.Schedule(next.Value, EcecuteAndReschedule);
@@ -47,7 +47,7 @@ public static class CronExtensions
             }
             finally
             {
-                RecursiveSchedule(scheduler, cronExpression, action, disposableBox);
+                RecursiveSchedule(scheduler, cronExpression, action, disposableBox, next.Value);
             }
         }
     }
