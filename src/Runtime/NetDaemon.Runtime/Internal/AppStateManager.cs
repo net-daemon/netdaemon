@@ -116,7 +116,8 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 case UnicodeCategory.UppercaseLetter:
                     if (CharUnicodeInfo.GetUnicodeCategory(lastChar) == UnicodeCategory.LowercaseLetter)
                     {
-                        stringBuilder.Append('_');
+                        if (lastChar != '_')
+                            stringBuilder.Append('_');
                     }
                     stringBuilder.Append(char.ToLowerInvariant(c));
                     break;
@@ -127,7 +128,8 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 case UnicodeCategory.ConnectorPunctuation:
                 case UnicodeCategory.DashPunctuation:
                 case UnicodeCategory.OtherPunctuation:
-                    stringBuilder.Append('_');
+                    if (lastChar != '_')
+                        stringBuilder.Append('_');
                     break;
             }
            lastChar = c;
@@ -144,7 +146,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     private async Task<HassState?> GetOrCreateStateForApp(string entityId)
     {
         var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
-        
+
         try
         {
             var state = await haConnection.GetEntityStateAsync(entityId, _cancelTokenSource.Token)

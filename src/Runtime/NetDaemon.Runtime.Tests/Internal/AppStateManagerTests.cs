@@ -386,6 +386,9 @@ public class AppStateManagerTests
     [InlineData("ALLUPPERCASE", "alluppercase")]
     [InlineData("DIClass", "diclass")]
     [InlineData("DiClass", "di_class")]
+    [InlineData("Di_Class", "di_class")]
+    [InlineData("di_class", "di_class")]
+    [InlineData("di__class", "di_class")]
     public void TestToSafeHomeAssistantEntityIdFromApplicationIdShouldGiveCorrectName(string fromId, string toId)
     {
         var expected = $"input_boolean.netdaemon_{toId}";
