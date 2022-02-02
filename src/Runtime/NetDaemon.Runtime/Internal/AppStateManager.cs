@@ -104,21 +104,36 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         var normalizedString = applicationId.Normalize(NormalizationForm.FormD);
         StringBuilder stringBuilder = new(applicationId.Length);
 
+        char lastChar = '\0';
+
         foreach (var c in normalizedString)
+        {
             switch (CharUnicodeInfo.GetUnicodeCategory(c))
             {
                 case UnicodeCategory.LowercaseLetter:
+                    stringBuilder.Append(c);
+                    break;
                 case UnicodeCategory.UppercaseLetter:
+                    if (CharUnicodeInfo.GetUnicodeCategory(lastChar) == UnicodeCategory.LowercaseLetter)
+                    {
+                        if (lastChar != '_')
+                            stringBuilder.Append('_');
+                    }
+                    stringBuilder.Append(char.ToLowerInvariant(c));
+                    break;
                 case UnicodeCategory.DecimalDigitNumber:
                     stringBuilder.Append(c);
                     break;
-
                 case UnicodeCategory.SpaceSeparator:
                 case UnicodeCategory.ConnectorPunctuation:
                 case UnicodeCategory.DashPunctuation:
-                    stringBuilder.Append('_');
+                case UnicodeCategory.OtherPunctuation:
+                    if (lastChar != '_')
+                        stringBuilder.Append('_');
                     break;
             }
+           lastChar = c;
+        }
 
         return $"input_boolean.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
     }
@@ -130,8 +145,8 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
 
     private async Task<HassState?> GetOrCreateStateForApp(string entityId)
     {
-        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
-                           throw new InvalidOperationException();
+        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
+
         try
         {
             var state = await haConnection.GetEntityStateAsync(entityId, _cancelTokenSource.Token)
