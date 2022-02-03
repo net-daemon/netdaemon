@@ -12,3 +12,21 @@ internal record CreateInputBooleanHelperCommand : CommandMessage
 
     [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
 }
+
+internal record DeleteInputBooleanHelperCommand : CommandMessage
+{
+    public DeleteInputBooleanHelperCommand()
+    {
+        Type = "input_boolean/delete";
+    }
+
+    [JsonPropertyName("input_boolean_id")] public string InputBooleanId { get; init; } = string.Empty;
+}
+
+internal record ListInputBooleanHelperCommand : CommandMessage
+{
+    public ListInputBooleanHelperCommand()
+    {
+        Type = "input_boolean/list";
+    }
+}

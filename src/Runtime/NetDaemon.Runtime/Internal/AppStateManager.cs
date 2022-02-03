@@ -1,67 +1,61 @@
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Net;
 using System.Reactive.Linq;
-using System.Text;
 using NetDaemon.AppModel;
-using NetDaemon.Client.HomeAssistant.Model;
-using NetDaemon.Client.Internal.Exceptions;
 
 namespace NetDaemon.Runtime.Internal;
 
 internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates, IDisposable
 {
+    private readonly IAppStateRepository _appStateRepository;
     private readonly CancellationTokenSource _cancelTokenSource = new();
-    private readonly IServiceProvider _provider;
     private readonly ConcurrentDictionary<string, ApplicationState> _stateCache = new();
 
     public AppStateManager(
-        IServiceProvider provider
+        IAppStateRepository appStateRepository
     )
     {
-        _provider = provider;
+        _appStateRepository = appStateRepository;
     }
 
     public async Task<ApplicationState> GetStateAsync(string applicationId)
     {
-        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
-        if (_stateCache.TryGetValue(entityId, out var applicationState)) return applicationState;
+        if (_stateCache.TryGetValue(applicationId, out var applicationState)) return applicationState;
 
-        return (await GetOrCreateStateForApp(entityId).ConfigureAwait(false))?.State == "on"
+        return await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
+            .ConfigureAwait(false)
             ? ApplicationState.Enabled
             : ApplicationState.Disabled;
     }
 
     public async Task SaveStateAsync(string applicationId, ApplicationState state)
     {
-        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>() ??
-                           throw new InvalidOperationException();
-        var entityId = ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+        _stateCache[applicationId] = state;
 
-        _stateCache[entityId] = state;
-
-        var currentState = (await GetOrCreateStateForApp(entityId).ConfigureAwait(false))?.State
-                           ?? throw new InvalidOperationException();
+        var isEnabled = await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
+            .ConfigureAwait(false);
 
         switch (state)
         {
-            case ApplicationState.Enabled when currentState == "off":
-                await haConnection.CallServiceAsync("input_boolean", "turn_on",
-                    new HassTarget {EntityIds = new[] {entityId}},
-                    cancelToken: _cancelTokenSource.Token);
-                break;
-            case ApplicationState.Disabled when currentState == "on":
-                await haConnection.CallServiceAsync("input_boolean", "turn_off",
-                    new HassTarget {EntityIds = new[] {entityId}},
-                    cancelToken: _cancelTokenSource.Token);
+            case ApplicationState.Enabled when !isEnabled:
+            case ApplicationState.Disabled when isEnabled:
+                await _appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
+                    .ConfigureAwait(false);
                 break;
         }
     }
 
-    public void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext)
+    public void Dispose()
     {
-        ClearExistingCacheOnNewConnection();
+        _cancelTokenSource.Dispose();
+    }
+
+    public async Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext)
+    {
+        _stateCache.Clear();
+        if (appContext.Applications.Count > 0)
+            await _appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
+                _cancelTokenSource.Token);
+
         haConnection.OnHomeAssistantEvent
             .Where(n => n.EventType == "state_changed")
             .Select(async s =>
@@ -77,7 +71,8 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 foreach (var app in appContext.Applications)
                 {
                     var entityId =
-                        ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ?? throw new InvalidOperationException());
+                        EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ??
+                            throw new InvalidOperationException());
                     if (entityId != changedEvent.NewState.EntityId) continue;
 
                     var appState = changedEvent.NewState?.State == "on"
@@ -90,86 +85,5 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     break;
                 }
             }).Subscribe();
-    }
-
-
-    /// <summary>
-    ///     Converts any unicode string to a safe Home Assistant name
-    /// </summary>
-    /// <param name="applicationId">The unicode string to convert</param>
-    [SuppressMessage("Microsoft.Globalization", "CA1308")]
-    [SuppressMessage("", "CA1062")]
-    public static string ToSafeHomeAssistantEntityIdFromApplicationId(string applicationId)
-    {
-        var normalizedString = applicationId.Normalize(NormalizationForm.FormD);
-        StringBuilder stringBuilder = new(applicationId.Length);
-
-        char lastChar = '\0';
-
-        foreach (var c in normalizedString)
-        {
-            switch (CharUnicodeInfo.GetUnicodeCategory(c))
-            {
-                case UnicodeCategory.LowercaseLetter:
-                    stringBuilder.Append(c);
-                    break;
-                case UnicodeCategory.UppercaseLetter:
-                    if (CharUnicodeInfo.GetUnicodeCategory(lastChar) == UnicodeCategory.LowercaseLetter)
-                    {
-                        if (lastChar != '_')
-                            stringBuilder.Append('_');
-                    }
-                    stringBuilder.Append(char.ToLowerInvariant(c));
-                    break;
-                case UnicodeCategory.DecimalDigitNumber:
-                    stringBuilder.Append(c);
-                    break;
-                case UnicodeCategory.SpaceSeparator:
-                case UnicodeCategory.ConnectorPunctuation:
-                case UnicodeCategory.DashPunctuation:
-                case UnicodeCategory.OtherPunctuation:
-                    if (lastChar != '_')
-                        stringBuilder.Append('_');
-                    break;
-            }
-           lastChar = c;
-        }
-
-        return $"input_boolean.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
-    }
-
-    private void ClearExistingCacheOnNewConnection()
-    {
-        _stateCache.Clear();
-    }
-
-    private async Task<HassState?> GetOrCreateStateForApp(string entityId)
-    {
-        var haConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
-
-        try
-        {
-            var state = await haConnection.GetEntityStateAsync(entityId, _cancelTokenSource.Token)
-                .ConfigureAwait(false);
-            return state;
-        }
-        catch (HomeAssistantApiCallException e)
-        {
-            // Missing entity will throw a http status not found
-            if (e.Code != HttpStatusCode.NotFound) throw;
-            // The app state input_boolean does not exist, lets create a helper
-            var name = entityId[14..]; // remove the "input_boolean." part
-            await haConnection.CreateInputBooleanHelperAsync(name, _cancelTokenSource.Token);
-            _stateCache[entityId] = ApplicationState.Enabled;
-            await haConnection.CallServiceAsync("input_boolean", "turn_on",
-                new HassTarget {EntityIds = new[] {entityId}},
-                cancelToken: _cancelTokenSource.Token).ConfigureAwait(false);
-            return new HassState {State = "on"};
-        }
-    }
-
-    public void Dispose()
-    {
-        _cancelTokenSource.Dispose();
     }
 }

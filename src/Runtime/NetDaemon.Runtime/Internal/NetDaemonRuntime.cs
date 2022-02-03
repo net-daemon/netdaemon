@@ -97,12 +97,13 @@ internal class NetDaemonRuntime : IRuntime
 
             await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
+
             _applicationModelContext =
                 await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Handle state change for apps if registered
-            var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
-            appStateHandler?.Initialize(haConnection, _applicationModelContext);
+            var appStateHandler = _serviceProvider.GetRequiredService<IHandleHomeAssistantAppStateUpdates>();
+            await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
         }
         catch (Exception e)
         {
