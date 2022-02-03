@@ -12,8 +12,8 @@ public static class DependencyInjectionSetup
     public static IServiceCollection AddMqttExtensions(this IServiceCollection services)
     {
         services.AddSingleton<IMqttFactory, MqttFactory>();
-        services.AddScoped<IEntityUpdater, EntityUpdater>();
-        services.AddScoped<IMessageSender, MessageSender>();
+        services.AddSingleton<IEntityUpdater, EntityUpdater>();
+        services.AddSingleton<IMessageSender, MessageSender>();
         
         return services;
     }
