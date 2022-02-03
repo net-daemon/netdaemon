@@ -97,6 +97,34 @@ public class AppStateRepositoryTests
     }
 
     [Fact]
+    public async Task RemoveNotUsedStatesAsyncShouldRemoveAllHelpersIfNoAppsPresent()
+    {
+        var resultList = new[]
+        {
+            new InputBooleanHelper {Id = "netdaemon_some_app_id", Name = "netdaemon_some_app_id"},
+            new InputBooleanHelper {Id = "netdaemon_some_app_id2", Name = "netdaemon_some_app_id2"}
+        };
+        _connectionMock.Setup(n =>
+            n.SendCommandAndReturnResponseAsync<ListInputBooleanHelperCommand,
+                IReadOnlyCollection<InputBooleanHelper>>(It.IsAny<ListInputBooleanHelperCommand>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(resultList.ToList());
+
+        var applicationIds = new List<string>();
+        await _repository.RemoveNotUsedStatesAsync(applicationIds, CancellationToken.None);
+
+        // var command = new DeleteInputBooleanHelperCommand() {InputBooleanId = "some_app_id2", Type = "input_boolean/list""};
+        _connectionMock.Verify(
+            n => n.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
+                It.Is<DeleteInputBooleanHelperCommand>(n => n.InputBooleanId == "netdaemon_some_app_id"),
+                It.IsAny<CancellationToken>()), Times.Once);
+
+        _connectionMock.Verify(
+            n => n.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
+                It.Is<DeleteInputBooleanHelperCommand>(n => n.InputBooleanId == "netdaemon_some_app_id2"),
+                It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task RemoveNotUsedStatesAsyncShouldNotRemoveNonNetDaemonInputBooleans()
     {
         var resultList = new[]

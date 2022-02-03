@@ -17,38 +17,6 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         _appStateRepository = appStateRepository;
     }
 
-    public async Task<ApplicationState> GetStateAsync(string applicationId)
-    {
-        if (_stateCache.TryGetValue(applicationId, out var applicationState)) return applicationState;
-
-        return await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
-            .ConfigureAwait(false)
-            ? ApplicationState.Enabled
-            : ApplicationState.Disabled;
-    }
-
-    public async Task SaveStateAsync(string applicationId, ApplicationState state)
-    {
-        _stateCache[applicationId] = state;
-
-        var isEnabled = await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
-            .ConfigureAwait(false);
-
-        switch (state)
-        {
-            case ApplicationState.Enabled when !isEnabled:
-            case ApplicationState.Disabled when isEnabled:
-                await _appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
-                    .ConfigureAwait(false);
-                break;
-        }
-    }
-
-    public void Dispose()
-    {
-        _cancelTokenSource.Dispose();
-    }
-
     public async Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
         _stateCache.Clear();
@@ -85,5 +53,37 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                     break;
                 }
             }).Subscribe();
+    }
+    
+    public async Task<ApplicationState> GetStateAsync(string applicationId)
+    {
+        if (_stateCache.TryGetValue(applicationId, out var applicationState)) return applicationState;
+
+        return await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
+            .ConfigureAwait(false)
+            ? ApplicationState.Enabled
+            : ApplicationState.Disabled;
+    }
+
+    public async Task SaveStateAsync(string applicationId, ApplicationState state)
+    {
+        _stateCache[applicationId] = state;
+
+        var isEnabled = await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
+            .ConfigureAwait(false);
+
+        switch (state)
+        {
+            case ApplicationState.Enabled when !isEnabled:
+            case ApplicationState.Disabled when isEnabled:
+                await _appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
+                    .ConfigureAwait(false);
+                break;
+        }
+    }
+
+    public void Dispose()
+    {
+        _cancelTokenSource.Dispose();
     }
 }

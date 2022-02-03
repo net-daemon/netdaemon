@@ -52,9 +52,6 @@ internal class AppStateRepository : IAppStateRepository
 
     public async Task RemoveNotUsedStatesAsync(IReadOnlyCollection<string> applicationIds, CancellationToken token)
     {
-        if (applicationIds.Count == 0)
-            return;
-
         var haConnection = _runner.CurrentConnection ??
                            throw new InvalidOperationException();
         var helpers = await haConnection.ListInputBooleanHelpersAsync(token).ConfigureAwait(false);
