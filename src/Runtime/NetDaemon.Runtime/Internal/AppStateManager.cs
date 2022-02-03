@@ -54,7 +54,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 }
             }).Subscribe();
     }
-    
+
     public async Task<ApplicationState> GetStateAsync(string applicationId)
     {
         if (_stateCache.TryGetValue(applicationId, out var applicationState)) return applicationState;
@@ -72,13 +72,14 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
         var isEnabled = await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
             .ConfigureAwait(false);
 
-        switch (state)
+        // Only update state if it is different from current
+        if (
+            (state == ApplicationState.Enabled && !isEnabled) ||
+            (state == ApplicationState.Disabled && isEnabled)
+            )
         {
-            case ApplicationState.Enabled when !isEnabled:
-            case ApplicationState.Disabled when isEnabled:
-                await _appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
-                    .ConfigureAwait(false);
-                break;
+            await _appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
+                .ConfigureAwait(false);
         }
     }
 
