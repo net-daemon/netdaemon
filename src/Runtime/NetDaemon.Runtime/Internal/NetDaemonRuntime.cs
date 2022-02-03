@@ -97,7 +97,6 @@ internal class NetDaemonRuntime : IRuntime
 
             await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
-
             _applicationModelContext =
                 await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
 
