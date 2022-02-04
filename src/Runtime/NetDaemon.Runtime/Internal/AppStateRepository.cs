@@ -56,7 +56,8 @@ internal class AppStateRepository : IAppStateRepository
                            throw new InvalidOperationException();
         var helpers = await haConnection.ListInputBooleanHelpersAsync(token).ConfigureAwait(false);
 
-        var entityIds = applicationIds.Select(EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId);
+        var entityIds = applicationIds.Select(EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId)
+            .ToHashSet();
 
         var notUsedHelperIds = helpers.Where(n =>
             !entityIds.Contains($"input_boolean.{n.Name}") && n.Id.StartsWith("netdaemon_"));
