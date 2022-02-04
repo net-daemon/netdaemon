@@ -9,12 +9,12 @@ public static class DependencyInjectionSetup
     ///     Adds scheduling capabilities through dependency injection
     /// </summary>
     /// <param name="services">Provided service collection</param>
-    public static IServiceCollection AddMqttExtensions(this IServiceCollection services)
+    public static IServiceCollection AddNetDaemonMqttEntityManagement(this IServiceCollection services)
     {
         services.AddSingleton<IMqttFactory, MqttFactory>();
         services.AddSingleton<IEntityUpdater, EntityUpdater>();
-        services.AddSingleton<IMessageSender, MessageSender>();
-        
+        services.AddTransient<IMessageSender, MessageSender>();
+
         return services;
     }
 }
