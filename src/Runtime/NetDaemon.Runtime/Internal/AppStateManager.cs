@@ -7,20 +7,23 @@ namespace NetDaemon.Runtime.Internal;
 internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates, IDisposable
 {
     private readonly IAppStateRepository _appStateRepository;
+    private readonly IHostEnvironment _hostEnvironment;
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly ConcurrentDictionary<string, ApplicationState> _stateCache = new();
 
     public AppStateManager(
-        IAppStateRepository appStateRepository
+        IAppStateRepository appStateRepository,
+        IHostEnvironment hostEnvironment
     )
     {
         _appStateRepository = appStateRepository;
+        _hostEnvironment = hostEnvironment;
     }
 
     public async Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
         _stateCache.Clear();
-        if (appContext.Applications.Count > 0)
+        if (appContext.Applications.Count > 0 && !_hostEnvironment.IsDevelopment())
             await _appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
                 _cancelTokenSource.Token);
 
@@ -39,8 +42,8 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 foreach (var app in appContext.Applications)
                 {
                     var entityId =
-                        EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId(app.Id ??
-                            throw new InvalidOperationException());
+                        EntityMapperHelper.ToEntityIdFromApplicationId(app.Id ??
+                            throw new InvalidOperationException(), _hostEnvironment.IsDevelopment());
                     if (entityId != changedEvent.NewState.EntityId) continue;
 
                     var appState = changedEvent.NewState?.State == "on"

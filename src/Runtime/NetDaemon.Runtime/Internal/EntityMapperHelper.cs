@@ -10,9 +10,14 @@ public static class EntityMapperHelper
     ///     Converts any unicode string to a safe Home Assistant name for the helper
     /// </summary>
     /// <param name="applicationId">The unicode string to convert</param>
+    public static string ToEntityIdFromApplicationId(string applicationId, bool isDevelopment = false) =>
+        !isDevelopment ?
+            $"input_boolean.netdaemon_{ToSafeVersion(applicationId)}" :
+            $"input_boolean.dev_netdaemon_{ToSafeVersion(applicationId)}" ;
+
     [SuppressMessage("Microsoft.Globalization", "CA1308")]
     [SuppressMessage("", "CA1062")]
-    public static string ToSafeHomeAssistantEntityIdFromApplicationId(string applicationId)
+    private static string ToSafeVersion(string applicationId)
     {
         var normalizedString = applicationId.Normalize(NormalizationForm.FormD);
         StringBuilder stringBuilder = new(applicationId.Length);
@@ -47,6 +52,6 @@ public static class EntityMapperHelper
             lastChar = c;
         }
 
-        return $"input_boolean.netdaemon_{stringBuilder.ToString().ToLowerInvariant()}";
+        return stringBuilder.ToString().ToLowerInvariant();
     }
 }
