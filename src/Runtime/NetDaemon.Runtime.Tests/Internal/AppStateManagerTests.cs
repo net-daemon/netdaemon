@@ -16,8 +16,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -42,8 +45,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -68,8 +74,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
 
@@ -98,8 +107,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
 
@@ -126,8 +138,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
 
@@ -156,8 +171,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
 
@@ -183,8 +201,11 @@ public class AppStateManagerTests
     {
         // ARRANGE
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
-            .AddTransient(_ => haConnectionMock.Object)
+            .AddSingleton(haRunnerMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -207,15 +228,19 @@ public class AppStateManagerTests
     }
 
     [Fact]
-    public void TestInitialize()
+    public async Task TestInitialize()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var appModelContextMock = new Mock<IAppModelContext>();
+        appModelContextMock.SetupGet(n => n.Applications).Returns(new List<IApplication>());
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
+            .AddSingleton(haRunnerMock.Object)
             .AddScoped(_ => haContextMock.Object)
-            .AddTransient(_ => haConnectionMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -226,22 +251,27 @@ public class AppStateManagerTests
         haConnectionMock.SetupGet(n => n.OnHomeAssistantEvent).Returns(hassEvent);
 
         // ACT
-        homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
+        await homeAssistantStateUpdater.InitializeAsync(haConnectionMock.Object, appModelContextMock.Object)
+            .ConfigureAwait(false);
         // ASSERT
         hassEvent.HasObservers.Should().BeTrue();
     }
 
     [Fact]
-    public void TestAppDisabledShouldCallSetStateAsyncEnabled()
+    public async Task TestAppDisabledShouldCallSetStateAsyncEnabled()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var appModelContextMock = new Mock<IAppModelContext>();
+        appModelContextMock.SetupGet(n => n.Applications).Returns(new List<IApplication>());
         var appMock = new Mock<IApplication>();
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
+            .AddSingleton(haRunnerMock.Object)
             .AddScoped(_ => haContextMock.Object)
-            .AddTransient(_ => haConnectionMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -258,7 +288,9 @@ public class AppStateManagerTests
             });
 
         // ACT
-        homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
+        await homeAssistantStateUpdater.InitializeAsync(haConnectionMock.Object, appModelContextMock.Object)
+            .ConfigureAwait(false);
+
         hassEvent.OnNext(new HassEvent
         {
             EventType = "state_changed",
@@ -282,16 +314,20 @@ public class AppStateManagerTests
     }
 
     [Fact]
-    public void TestAppNoChangeShouldNotCallSetStateAsync()
+    public async Task TestAppNoChangeShouldNotCallSetStateAsync()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var appModelContextMock = new Mock<IAppModelContext>();
+        appModelContextMock.SetupGet(n => n.Applications).Returns(new List<IApplication>());
         var appMock = new Mock<IApplication>();
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
+            .AddSingleton(haRunnerMock.Object)
             .AddScoped(_ => haContextMock.Object)
-            .AddTransient(_ => haConnectionMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -308,7 +344,9 @@ public class AppStateManagerTests
             });
 
         // ACT
-        homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
+        await homeAssistantStateUpdater.InitializeAsync(haConnectionMock.Object, appModelContextMock.Object)
+            .ConfigureAwait(false);
+
         hassEvent.OnNext(new HassEvent
         {
             EventType = "state_changed",
@@ -333,16 +371,20 @@ public class AppStateManagerTests
     }
 
     [Fact]
-    public void TestAppOneStateIsNullShouldNotCallSetStateAsync()
+    public async Task TestAppOneStateIsNullShouldNotCallSetStateAsync()
     {
         // ARRANGE
         var haContextMock = new Mock<IHaContext>();
         var appModelContextMock = new Mock<IAppModelContext>();
+        appModelContextMock.SetupGet(n => n.Applications).Returns(new List<IApplication>());
         var appMock = new Mock<IApplication>();
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
+        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
+
         var provider = new ServiceCollection()
+            .AddSingleton(haRunnerMock.Object)
             .AddScoped(_ => haContextMock.Object)
-            .AddTransient(_ => haConnectionMock.Object)
             .AddNetDaemonStateManager()
             .BuildServiceProvider();
         using var scopedProvider = provider.CreateScope();
@@ -359,7 +401,7 @@ public class AppStateManagerTests
             });
 
         // ACT
-        homeAssistantStateUpdater.Initialize(haConnectionMock.Object, appModelContextMock.Object);
+        await homeAssistantStateUpdater.InitializeAsync(haConnectionMock.Object, appModelContextMock.Object);
         hassEvent.OnNext(new HassEvent
         {
             EventType = "state_changed",
@@ -376,22 +418,5 @@ public class AppStateManagerTests
 
         // ASSERT
         appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Never);
-    }
-
-    [Theory]
-    [InlineData("lowercase", "lowercase")]
-    [InlineData("lower.namespace.lowercase", "lower_namespace_lowercase")]
-    [InlineData("Namespace.Class", "namespace_class")]
-    [InlineData("Namespace.ClassNameWithUpperAndLower", "namespace_class_name_with_upper_and_lower")]
-    [InlineData("ALLUPPERCASE", "alluppercase")]
-    [InlineData("DIClass", "diclass")]
-    [InlineData("DiClass", "di_class")]
-    [InlineData("Di_Class", "di_class")]
-    [InlineData("di_class", "di_class")]
-    [InlineData("di__class", "di_class")]
-    public void TestToSafeHomeAssistantEntityIdFromApplicationIdShouldGiveCorrectName(string fromId, string toId)
-    {
-        var expected = $"input_boolean.netdaemon_{toId}";
-        AppStateManager.ToSafeHomeAssistantEntityIdFromApplicationId(fromId).Should().Be(expected);
     }
 }

@@ -10,7 +10,8 @@ public static class ServiceBuilderExtensions
         services.AddSingleton<AppStateManager>();
         services.AddSingleton<IAppStateManager>(s => s.GetRequiredService<AppStateManager>());
         services.AddSingleton<IHandleHomeAssistantAppStateUpdates>(s => s.GetRequiredService<AppStateManager>());
-
+        services.AddSingleton<AppStateRepository>();
+        services.AddSingleton<IAppStateRepository>(s => s.GetRequiredService<AppStateRepository>());
         return services;
     }
 }
