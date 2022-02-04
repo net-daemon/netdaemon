@@ -6,7 +6,7 @@ public class MqttEntityManager : IMqttEntityManager
 {
     private readonly IMessageSender _messageSender;
 
-    internal MqttEntityManager(IMessageSender messageSender)
+    public MqttEntityManager(IMessageSender messageSender)
     {
         _messageSender = messageSender;
     }
@@ -23,16 +23,16 @@ public class MqttEntityManager : IMqttEntityManager
         await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), payload).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(string domain, string entityId, string state, string? attributes)
+    public async Task UpdateAsync(string domain, string entityId, string state, string? attributes = null)
     {
         await _messageSender.SendMessageAsync(StatePath(domain, entityId), state).ConfigureAwait(false);
         if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(domain, entityId), state).ConfigureAwait(false);
+            await _messageSender.SendMessageAsync(AttrsPath(domain, entityId), attributes).ConfigureAwait(false);
     }
 
     public async Task RemoveAsync(string domain, string entityId)
     {
-        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), "").ConfigureAwait(false);
+        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), string.Empty).ConfigureAwait(false);
     }
 
     private static string AttrsPath(string domain, string entityId)

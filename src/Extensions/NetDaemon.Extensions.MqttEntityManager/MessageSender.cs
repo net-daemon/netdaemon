@@ -23,8 +23,8 @@ internal class MessageSender : IMessageSender
         _mqttFactory = mqttFactory;
         _mqttConfig  = mqttConfig.Value;
 
-        if (_mqttConfig == null)
-            throw new MqttConfigurationException("The Mqtt config was not found or there was an error loading it");
+        if (string.IsNullOrEmpty(_mqttConfig.Host))
+            throw new MqttConfigurationException("The Mqtt config was not found or there was an error loading it. Please add MqttConfiguration section to appsettings.json");
 
         _logger.LogDebug($"MQTT connection is {_mqttConfig.Host}:{_mqttConfig.Port}/{_mqttConfig.UserId}");
     }
@@ -50,13 +50,12 @@ internal class MessageSender : IMessageSender
 
     private async Task PublishMessage(IApplicationMessagePublisher client, string topic, string payload)
     {
-        var message = new MqttApplicationMessageBuilder()
-                      .WithTopic(topic)
-                      .WithPayload(payload)
-                      .WithRetainFlag()
-                      .Build();
+        var message = new MqttApplicationMessageBuilder().WithTopic(topic)
+                                                         .WithPayload(payload)
+                                                         .WithRetainFlag()
+                                                         .Build();
 
-        _logger.LogDebug($"Sending to {message.Topic}:\r\n   {message.ConvertPayloadToString()}");
+        _logger.LogDebug($"Sending to {message.Topic}: {message.ConvertPayloadToString()}");
 
         var publishResult = await client.PublishAsync(message, CancellationToken.None).ConfigureAwait(false);
         if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)

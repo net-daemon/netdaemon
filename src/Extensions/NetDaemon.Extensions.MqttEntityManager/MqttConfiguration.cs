@@ -1,6 +1,6 @@
 ﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
-internal class MqttConfiguration
+public class MqttConfiguration
 {
     public string Host { get; set; } = string.Empty;
     public int Port { get; set; } = 1883;

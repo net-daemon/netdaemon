@@ -1,20 +1,19 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MQTTnet;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 public static class DependencyInjectionSetup
 {
-    /// <summary>
-    ///     Adds scheduling capabilities through dependency injection
-    /// </summary>
-    /// <param name="services">Provided service collection</param>
-    public static IServiceCollection AddNetDaemonMqttEntityManagement(this IServiceCollection services)
+    public static IHostBuilder UseNetDaemonMqttEntityManagement(this IHostBuilder hostBuilder)
     {
-        services.AddSingleton<IMqttFactory, MqttFactory>();
-        services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
-        services.AddTransient<IMessageSender, MessageSender>();
-
-        return services;
+        return hostBuilder.ConfigureServices((context, services) =>
+        {
+            services.AddSingleton<IMqttFactory, MqttFactory>();
+            services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
+            services.AddTransient<IMessageSender, MessageSender>();
+            services.Configure<MqttConfiguration>(context.Configuration.GetSection(nameof(MqttConfiguration)));
+        });
     }
 }

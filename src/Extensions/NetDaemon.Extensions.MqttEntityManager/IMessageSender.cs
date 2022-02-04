@@ -1,6 +1,6 @@
 ﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
-internal interface IMessageSender
+public interface IMessageSender
 {
     Task SendMessageAsync(string topic, string payload);
 }
