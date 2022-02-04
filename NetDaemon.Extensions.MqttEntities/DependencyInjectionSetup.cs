@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MQTTnet;
 
-namespace NetDaemon.Extensions.MqttEntities;
+namespace NetDaemon.Extensions.MqttEntityManager;
 
 public static class DependencyInjectionSetup
 {
@@ -12,7 +12,7 @@ public static class DependencyInjectionSetup
     public static IServiceCollection AddNetDaemonMqttEntityManagement(this IServiceCollection services)
     {
         services.AddSingleton<IMqttFactory, MqttFactory>();
-        services.AddSingleton<IEntityUpdater, EntityUpdater>();
+        services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
         services.AddTransient<IMessageSender, MessageSender>();
 
         return services;

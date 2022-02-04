@@ -9,7 +9,7 @@ using MQTTnet.Client.Options;
 using MQTTnet.Client.Publishing;
 using MQTTnet.Exceptions;
 
-namespace NetDaemon.Extensions.MqttEntities;
+namespace NetDaemon.Extensions.MqttEntityManager;
 
 internal class MessageSender : IMessageSender
 {

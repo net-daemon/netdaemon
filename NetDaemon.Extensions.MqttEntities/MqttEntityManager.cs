@@ -1,16 +1,13 @@
 ﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
 
-namespace NetDaemon.Extensions.MqttEntities;
+namespace NetDaemon.Extensions.MqttEntityManager;
 
-public class EntityUpdater : IEntityUpdater
+public class MqttEntityManager : IMqttEntityManager
 {
-    private readonly ILogger<EntityUpdater> _logger;
-    private readonly IMessageSender         _messageSender;
+    private readonly IMessageSender _messageSender;
 
-    internal EntityUpdater(ILogger<EntityUpdater> logger, IMessageSender messageSender)
+    internal MqttEntityManager(IMessageSender messageSender)
     {
-        _logger        = logger;
         _messageSender = messageSender;
     }
 
@@ -23,7 +20,6 @@ public class EntityUpdater : IEntityUpdater
             state_topic           = StatePath(domain, entityId),
             json_attributes_topic = AttrsPath(domain, entityId)
         });
-
         await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), payload).ConfigureAwait(false);
     }
 

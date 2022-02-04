@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Extensions.MqttEntities;
+﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
 internal class MqttConfiguration
 {
