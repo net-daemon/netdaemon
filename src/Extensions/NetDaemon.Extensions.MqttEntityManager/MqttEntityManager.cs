@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
-/// Manage entities via MQTT
+///     Manage entities via MQTT
 /// </summary>
 public class MqttEntityManager : IMqttEntityManager
 {
@@ -16,7 +16,7 @@ public class MqttEntityManager : IMqttEntityManager
     private readonly IMessageSender    _messageSender;
 
     /// <summary>
-    /// Manage entities via MQTT
+    ///     Manage entities via MQTT
     /// </summary>
     /// <param name="messageSender"></param>
     /// <param name="config"></param>
@@ -26,14 +26,15 @@ public class MqttEntityManager : IMqttEntityManager
         _config        = config.Value;
     }
 
-    /// <summary>   
-    /// Create an entity in Home Assistant via MQTT
+    /// <summary>
+    ///     Create an entity in Home Assistant via MQTT
     /// </summary>
     /// <param name="domain"></param>
     /// <param name="deviceClass"></param>
     /// <param name="entityId"></param>
     /// <param name="name"></param>
-     public async Task CreateAsync(string domain, string entityId, string deviceClass, string name)
+    /// <param name="persist">This will persist the entity if Home Assistant restarts</param>
+    public async Task CreateAsync(string domain, string entityId, string deviceClass, string name, bool persist = true)
     {
         var payload = JsonSerializer.Serialize(new
         {
@@ -42,18 +43,11 @@ public class MqttEntityManager : IMqttEntityManager
             state_topic           = StatePath(domain, entityId),
             json_attributes_topic = AttrsPath(domain, entityId)
         });
-        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), payload).ConfigureAwait(false);
+        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), payload, persist).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Update state and, optionally, attributes of an HA entity via MQTT
-    /// </summary>
-    /// <param name="domain"></param>
-    /// <param name="entityId"></param>
-    /// <param name="state"></param>
-    /// <param name="attributes">Json string of attributes</param>
-    /// <summary>
-    /// Remove an entity from Home Assistant
+    ///     Remove an entity from Home Assistant
     /// </summary>
     /// <param name="domain"></param>
     /// <param name="entityId"></param>
@@ -62,6 +56,13 @@ public class MqttEntityManager : IMqttEntityManager
         await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), string.Empty).ConfigureAwait(false);
     }
 
+    /// <summary>
+    ///     Update state and, optionally, attributes of an HA entity via MQTT
+    /// </summary>
+    /// <param name="domain"></param>
+    /// <param name="entityId"></param>
+    /// <param name="state"></param>
+    /// <param name="attributes">Json string of attributes</param>
     public async Task UpdateAsync(string domain, string entityId, string state, string? attributes = null)
     {
         await _messageSender.SendMessageAsync(StatePath(domain, entityId), state).ConfigureAwait(false);

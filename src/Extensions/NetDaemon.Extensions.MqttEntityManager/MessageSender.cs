@@ -1,6 +1,5 @@
 ﻿#region
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
@@ -16,7 +15,7 @@ using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
-/// Manage connections and message publishing to MQTT
+///     Manage connections and message publishing to MQTT
 /// </summary>
 internal class MessageSender : IMessageSender
 {
@@ -25,7 +24,7 @@ internal class MessageSender : IMessageSender
     private readonly IMqttFactory           _mqttFactory;
 
     /// <summary>
-    /// Manage connections and message publishing to MQTT
+    ///     Manage connections and message publishing to MQTT
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="mqttFactory"></param>
@@ -44,15 +43,16 @@ internal class MessageSender : IMessageSender
     }
 
     /// <summary>
-    /// Connect to MQTT and publish a message to the given topic
+    ///     Connect to MQTT and publish a message to the given topic
     /// </summary>
     /// <param name="topic"></param>
     /// <param name="payload">Json structure of payload</param>
-    public async Task SendMessageAsync(string topic, string payload)
+    /// <param name="retain"></param>
+    public async Task SendMessageAsync(string topic, string payload, bool retain = false)
     {
         using var mqttClient = _mqttFactory.CreateMqttClient();
         await ConnectAsync(mqttClient);
-        await PublishMessage(mqttClient, topic, payload);
+        await PublishMessage(mqttClient, topic, payload, retain);
     }
 
     private async Task ConnectAsync(IMqttClient mqttClient)
@@ -76,11 +76,11 @@ internal class MessageSender : IMessageSender
         }
     }
 
-    private async Task PublishMessage(IApplicationMessagePublisher client, string topic, string payload)
+    private async Task PublishMessage(IApplicationMessagePublisher client, string topic, string payload, bool retain)
     {
         var message = new MqttApplicationMessageBuilder().WithTopic(topic)
                                                          .WithPayload(payload)
-                                                         .WithRetainFlag()
+                                                         .WithRetainFlag(retain)
                                                          .Build();
 
         _logger.LogDebug("Sending to {topic}: {message}", message.Topic, message.ConvertPayloadToString());

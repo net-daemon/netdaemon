@@ -30,26 +30,24 @@ public class MqttEntityManagerApp : IAsyncInitializable
     }
 
     [SuppressMessage("Naming", "CA1727:Use PascalCase for named placeholders", Justification = "<Pending>")]
+    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         try
         {
-
             _logger.LogInformation("Creating Entity {domain}.{entityId}", "binary_sensor", "manager_test");
-        await _manager.CreateAsync("binary_sensor", "manager_test", "motion", "Manager Test");
+            await _manager.CreateAsync("binary_sensor", "manager_test", "motion", "Manager Test");
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
 
             var entity = _ha.Entity("binary_sensor.manager_test");
-            _logger.LogInformation("Entity {domain}.{entityId} State: {state}", "binary_sensor", "manager_test",
-                entity.State);
+            _logger.LogInformation("Entity {domain}.{entityId} State: {state}", "binary_sensor", "manager_test", entity.State);
 
-            await _manager.UpdateAsync("binary_sensor", "manager_test", "ON",
-                JsonSerializer.Serialize(new { attribute1 = "attr1" })).ConfigureAwait(false);
+            await _manager.UpdateAsync("binary_sensor", "manager_test", "ON", JsonSerializer.Serialize(new { attribute1 = "attr1" }));
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("Entity {domain}.{entityId} State: {state} Attributes: {attributes}",
                 "binary_sensor", "manager_test", entity.State, entity.Attributes);
 
-            await _manager.RemoveAsync("binary_sensor", "manager_test").ConfigureAwait(false);
+            await _manager.RemoveAsync("binary_sensor", "manager_test");
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
             var removed = _ha.Entity("binary_sensor.manager_test").State == null;
             _logger.LogInformation("Removed Entity: {removed}", removed);
@@ -57,6 +55,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
         catch (Exception e)
         {
             _logger.LogError(e, e.Message);
+            throw;
         }
     }
 }
