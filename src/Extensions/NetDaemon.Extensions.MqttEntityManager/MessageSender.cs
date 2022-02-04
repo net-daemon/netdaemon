@@ -1,5 +1,4 @@
-﻿using System.Security.Authentication;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
@@ -8,6 +7,7 @@ using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Publishing;
 using MQTTnet.Exceptions;
+using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -43,9 +43,18 @@ internal class MessageSender : IMessageSender
                       .WithCredentials(_mqttConfig.UserId, _mqttConfig.Password)
                       .Build();
 
-        var connectResult = await mqttClient.ConnectAsync(options, CancellationToken.None).ConfigureAwait(false);
-        if (connectResult.ResultCode != MqttClientConnectResultCode.Success)
-            throw new AuthenticationException(connectResult.ReasonString);
+        try
+        {
+            var connectResult =
+                await mqttClient.ConnectAsync(options, CancellationToken.None).ConfigureAwait(false);
+            if (connectResult.ResultCode != MqttClientConnectResultCode.Success)
+                throw new MqttConnectionException(connectResult.ReasonString);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            throw new MqttConnectionException(e.Message, e);
+        }
     }
 
     private async Task PublishMessage(IApplicationMessagePublisher client, string topic, string payload)
@@ -57,8 +66,16 @@ internal class MessageSender : IMessageSender
 
         _logger.LogDebug($"Sending to {message.Topic}: {message.ConvertPayloadToString()}");
 
-        var publishResult = await client.PublishAsync(message, CancellationToken.None).ConfigureAwait(false);
-        if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
-            throw new InvalidOperationException(publishResult.ReasonString);
+        try
+        {
+            var publishResult = await client.PublishAsync(message, CancellationToken.None).ConfigureAwait(false);
+            if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
+                throw new MqttPublishException(publishResult.ReasonString);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message, e);
+            throw new MqttPublishException(e.Message, e);
+        }
     }
 }
