@@ -49,5 +49,7 @@ jobs:
         run: dotnet pack src/Extensions/NetDaemon.Extensions.Logging/NetDaemon.Extensions.Logging.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 🎁 Pack TTS extensions
         run: dotnet pack src/Extensions/NetDaemon.Extensions.Tts/NetDaemon.Extensions.Tts.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
+      - name: 🎁 Pack Mqtt extensions
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.MqttEntityManager/NetDaemon.Extensions.MqttEntityManager.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}
       - name: 📨 Push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols true
