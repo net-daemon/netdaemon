@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿#region
+
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -6,10 +9,12 @@ using NetDaemon.AppModel;
 using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.HassModel;
 
+#endregion
+
 namespace DebugHost.apps.Extensions;
 
 [NetDaemonApp]
-// [Focus]
+[Focus]
 public class MqttEntityManagerApp : IAsyncInitializable
 {
     private readonly IHaContext                    _ha;
@@ -23,7 +28,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
         _manager = manager;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1727:Use PascalCase for named placeholders", Justification = "<Pending>")]
+    [SuppressMessage("Naming", "CA1727:Use PascalCase for named placeholders", Justification = "<Pending>")]
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Creating Entity {domain}.{entityId}", "binary_sensor", "manager_test");
