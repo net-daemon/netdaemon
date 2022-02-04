@@ -8,9 +8,9 @@ using NetDaemon.HassModel;
 
 namespace DebugHost.apps.Extensions;
 
-[Focus]
 [NetDaemonApp]
-internal class MqttEntityManagerApp : IAsyncInitializable
+// [Focus]
+public class MqttEntityManagerApp : IAsyncInitializable
 {
     private readonly IHaContext                    _ha;
     private readonly ILogger<MqttEntityManagerApp> _logger;
