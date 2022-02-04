@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿#region
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
@@ -9,6 +11,8 @@ using MQTTnet.Client.Publishing;
 using MQTTnet.Exceptions;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 
+#endregion
+
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
@@ -17,8 +21,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MessageSender : IMessageSender
 {
     private readonly ILogger<MessageSender> _logger;
-    private readonly IMqttFactory           _mqttFactory;
     private readonly MqttConfiguration      _mqttConfig;
+    private readonly IMqttFactory           _mqttFactory;
 
     /// <summary>
     /// Manage connections and message publishing to MQTT
@@ -36,7 +40,7 @@ internal class MessageSender : IMessageSender
         if (string.IsNullOrEmpty(_mqttConfig.Host))
             throw new MqttConfigurationException("The Mqtt config was not found or there was an error loading it. Please add MqttConfiguration section to appsettings.json");
 
-        _logger.LogDebug($"MQTT connection is {_mqttConfig.Host}:{_mqttConfig.Port}/{_mqttConfig.UserId}");
+        _logger.LogDebug("MQTT connection is {host}:{port}/{userId}", _mqttConfig.Host, _mqttConfig.Port, _mqttConfig.UserId);
     }
 
     /// <summary>
@@ -79,7 +83,7 @@ internal class MessageSender : IMessageSender
                                                          .WithRetainFlag()
                                                          .Build();
 
-        _logger.LogDebug($"Sending to {message.Topic}: {message.ConvertPayloadToString()}");
+        _logger.LogDebug("Sending to {topic}: {message}", message.Topic, message.ConvertPayloadToString());
 
         try
         {

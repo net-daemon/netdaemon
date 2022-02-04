@@ -1,5 +1,9 @@
-﻿using System.Text.Json;
+﻿#region
+
+using System.Text.Json;
 using Microsoft.Extensions.Options;
+
+#endregion
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -8,8 +12,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </summary>
 public class MqttEntityManager : IMqttEntityManager
 {
-    private readonly IMessageSender    _messageSender;
     private readonly MqttConfiguration _config;
+    private readonly IMessageSender    _messageSender;
 
     /// <summary>
     /// Manage entities via MQTT
@@ -22,23 +26,23 @@ public class MqttEntityManager : IMqttEntityManager
         _config        = config.Value;
     }
 
-    /// <summary>
+    /// <summary>   
     /// Create an entity in Home Assistant via MQTT
     /// </summary>
     /// <param name="domain"></param>
     /// <param name="deviceClass"></param>
     /// <param name="entityId"></param>
     /// <param name="name"></param>
-    public async Task CreateAsync(string domain, string deviceClass, string entityId, string name)
+     public async Task CreateAsync(string domain, string entityId, string deviceClass, string name)
     {
         var payload = JsonSerializer.Serialize(new
         {
-            name                  = name,
+            name,
             device_class          = deviceClass,
-            state_topic           = StatePath(_config.DiscoveryPrefix, domain, entityId),
-            json_attributes_topic = AttrsPath(_config.DiscoveryPrefix, domain, entityId)
+            state_topic           = StatePath(domain, entityId),
+            json_attributes_topic = AttrsPath(domain, entityId)
         });
-        await _messageSender.SendMessageAsync(ConfigPath(_config.DiscoveryPrefix, domain, entityId), payload).ConfigureAwait(false);
+        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), payload).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -48,13 +52,6 @@ public class MqttEntityManager : IMqttEntityManager
     /// <param name="entityId"></param>
     /// <param name="state"></param>
     /// <param name="attributes">Json string of attributes</param>
-    public async Task UpdateAsync(string domain, string entityId, string state, string? attributes = null)
-    {
-        await _messageSender.SendMessageAsync(StatePath(_config.DiscoveryPrefix, domain, entityId), state).ConfigureAwait(false);
-        if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(_config.DiscoveryPrefix, domain, entityId), attributes).ConfigureAwait(false);
-    }
-
     /// <summary>
     /// Remove an entity from Home Assistant
     /// </summary>
@@ -62,26 +59,21 @@ public class MqttEntityManager : IMqttEntityManager
     /// <param name="entityId"></param>
     public async Task RemoveAsync(string domain, string entityId)
     {
-        await _messageSender.SendMessageAsync(ConfigPath(_config.DiscoveryPrefix, domain, entityId), string.Empty).ConfigureAwait(false);
+        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), string.Empty).ConfigureAwait(false);
     }
 
-    private static string AttrsPath(string discoveryPrefix, string domain, string entityId)
+    public async Task UpdateAsync(string domain, string entityId, string state, string? attributes = null)
     {
-        return $"{RootPath(discoveryPrefix, domain, entityId)}/attributes";
+        await _messageSender.SendMessageAsync(StatePath(domain, entityId), state).ConfigureAwait(false);
+        if (attributes != null)
+            await _messageSender.SendMessageAsync(AttrsPath(domain, entityId), attributes).ConfigureAwait(false);
     }
 
-    private static string StatePath(string discoveryPrefix, string domain, string entityId)
-    {
-        return $"{RootPath(discoveryPrefix, domain, entityId)}/state";
-    }
+    private string AttrsPath(string domain, string entityId) => $"{RootPath(domain, entityId)}/attributes";
 
-    private static string ConfigPath(string discoveryPrefix, string domain, string entityId)
-    {
-        return $"{RootPath(discoveryPrefix, domain, entityId)}/config";
-    }
+    private string ConfigPath(string domain, string entityId) => $"{RootPath(domain, entityId)}/config";
 
-    private static string RootPath(string discoveryPrefix, string domain, string entityId)
-    {
-        return $"{discoveryPrefix}/{domain}/{entityId}";
-    }
+    private string RootPath(string domain, string entityId) => $"{_config.DiscoveryPrefix}/{domain}/{entityId}";
+
+    private string StatePath(string domain, string entityId) => $"{RootPath(domain, entityId)}/state";
 }

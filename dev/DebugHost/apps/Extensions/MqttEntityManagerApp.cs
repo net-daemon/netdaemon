@@ -36,7 +36,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
         {
 
             _logger.LogInformation("Creating Entity {domain}.{entityId}", "binary_sensor", "manager_test");
-            await _manager.CreateAsync("binary_sensor", "motion", "manager_test", "Manager Test");
+        await _manager.CreateAsync("binary_sensor", "manager_test", "motion", "Manager Test");
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
 
             var entity = _ha.Entity("binary_sensor.manager_test");

@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿#region
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MQTTnet;
+
+#endregion
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -21,7 +25,7 @@ public static class DependencyInjectionSetup
             services.AddSingleton<IMqttFactory, MqttFactory>();
             services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
             services.AddTransient<IMessageSender, MessageSender>();
-            services.Configure<MqttConfiguration>(context.Configuration.GetSection(nameof(MqttConfiguration)));
+            services.Configure<MqttConfiguration>(context.Configuration.GetSection("Mqtt"));
         });
     }
 }
