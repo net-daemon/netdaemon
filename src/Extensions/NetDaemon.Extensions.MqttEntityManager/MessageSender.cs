@@ -11,13 +11,23 @@ using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
+/// <summary>
+/// Manage connections and message publishing to MQTT
+/// </summary>
 internal class MessageSender : IMessageSender
 {
     private readonly ILogger<MessageSender> _logger;
     private readonly IMqttFactory           _mqttFactory;
     private readonly MqttConfiguration      _mqttConfig;
 
-    public MessageSender(ILogger<MessageSender> logger, IConfiguration configuration, IMqttFactory mqttFactory, IOptions<MqttConfiguration> mqttConfig)
+    /// <summary>
+    /// Manage connections and message publishing to MQTT
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <param name="mqttFactory"></param>
+    /// <param name="mqttConfig"></param>
+    /// <exception cref="MqttConfigurationException"></exception>
+    public MessageSender(ILogger<MessageSender> logger, IMqttFactory mqttFactory, IOptions<MqttConfiguration> mqttConfig)
     {
         _logger      = logger;
         _mqttFactory = mqttFactory;
@@ -29,6 +39,11 @@ internal class MessageSender : IMessageSender
         _logger.LogDebug($"MQTT connection is {_mqttConfig.Host}:{_mqttConfig.Port}/{_mqttConfig.UserId}");
     }
 
+    /// <summary>
+    /// Connect to MQTT and publish a message to the given topic
+    /// </summary>
+    /// <param name="topic"></param>
+    /// <param name="payload">Json structure of payload</param>
     public async Task SendMessageAsync(string topic, string payload)
     {
         using var mqttClient = _mqttFactory.CreateMqttClient();
