@@ -4,5 +4,5 @@ namespace NetDaemon.Runtime.Internal;
 
 internal interface IHandleHomeAssistantAppStateUpdates
 {
-    void Initialize(IHomeAssistantConnection haConnection, IAppModelContext appContext);
+    Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext);
 }
