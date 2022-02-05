@@ -3,7 +3,7 @@
 /// <summary>
 ///     Interface to send messages to MQTT
 /// </summary>
-public interface IMessageSender
+internal interface IMessageSender
 {
     /// <summary>
     ///     Send a message for the given payload to the MQTT topic

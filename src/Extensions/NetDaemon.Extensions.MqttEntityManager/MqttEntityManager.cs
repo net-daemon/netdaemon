@@ -10,7 +10,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// <summary>
 ///     Manage entities via MQTT
 /// </summary>
-public class MqttEntityManager : IMqttEntityManager
+internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
     private readonly IMessageSender    _messageSender;
