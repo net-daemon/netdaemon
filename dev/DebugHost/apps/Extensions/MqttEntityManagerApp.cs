@@ -31,12 +31,15 @@ public class MqttEntityManagerApp : IAsyncInitializable
 
     [SuppressMessage("Naming", "CA1727:Use PascalCase for named placeholders", Justification = "<Pending>")]
     [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We need to log unexpected errors")]
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Creating Entity {domain}.{entityId}", "binary_sensor", "manager_test");
             await _manager.CreateAsync("binary_sensor", "manager_test", "motion", "Manager Test");
+            // Using Delay to give Mqtt and HA enough time to process events.
+            // Only needed for the example as we immediately read the entity and it may not yet exist
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
 
             var entity = _ha.Entity("binary_sensor.manager_test");
@@ -55,7 +58,6 @@ public class MqttEntityManagerApp : IAsyncInitializable
         catch (Exception e)
         {
             _logger.LogError(e, e.Message);
-            throw;
         }
     }
 }
