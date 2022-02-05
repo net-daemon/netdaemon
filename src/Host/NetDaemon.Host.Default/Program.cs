@@ -7,6 +7,7 @@ using NetDaemon.Extensions.Scheduler;
 using NetDaemon.Extensions.Tts;
 using NetDaemon.Runtime;
 using NetDaemon.HassModel.Integration;
+using NetDaemon.Extensions.MqttEntityManager;
 #pragma warning disable CA1812
 
 // This assembly is not used by the host so we have to force load it
@@ -20,6 +21,7 @@ try
         .UseNetDaemonDefaultLogging()
         .UseNetDaemonRuntime()
         .UseNetDaemonTextToSpeech()
+        .UseNetDaemonMqttEntityManagement()
         .ConfigureServices((_, services) =>
             services
                 .AddAppsFromSource()

@@ -28,6 +28,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\src\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
+        <ProjectReference Include="..\..\src\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
         <ProjectReference Include="..\..\src\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj" />
         <ProjectReference Include="..\..\src\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
         <ProjectReference Include="..\..\src\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
