@@ -50,8 +50,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
                 .ConfigureAwait(false);
 
             // Change state of the new sensor, set an attribute to right now
-            await _entityManager.UpdateAsync("sensor.my_id", "shiny",
-                    JsonSerializer.Serialize(new { updated = DateTime.UtcNow }))
+            await _entityManager.UpdateAsync("sensor.my_id", "shiny", new { updated = DateTime.UtcNow })
                 .ConfigureAwait(false);
 
             // Walk through a more complete set of examples, checking HA to verify that each operation completed

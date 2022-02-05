@@ -73,10 +73,15 @@ internal class MqttEntityManager : IMqttEntityManager
     public async Task UpdateAsync(string entityId, string state, string? attributes = null)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        
+
         await _messageSender.SendMessageAsync(StatePath(domain, identifier), state).ConfigureAwait(false);
         if (attributes != null)
             await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), attributes).ConfigureAwait(false);
+    }
+
+    public async Task UpdateAsync(string entityId, string state, object? attributes = null)
+    {
+        await UpdateAsync(entityId, state, attributes != null ? JsonSerializer.Serialize(attributes) : null);
     }
 
     private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
