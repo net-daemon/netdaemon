@@ -22,6 +22,7 @@ internal class MessageSender : IMessageSender
     private readonly ILogger<MessageSender> _logger;
     private readonly MqttConfiguration      _mqttConfig;
     private readonly IMqttFactory           _mqttFactory;
+    private readonly IMqttClientOptions _mqttClientOptions;
 
     /// <summary>
     ///     Manage connections and message publishing to MQTT
@@ -39,7 +40,12 @@ internal class MessageSender : IMessageSender
         if (string.IsNullOrEmpty(_mqttConfig.Host))
             throw new MqttConfigurationException("The Mqtt config was not found or there was an error loading it. Please add MqttConfiguration section to appsettings.json");
 
-        _logger.LogDebug("MQTT connection is {host}:{port}/{userId}", _mqttConfig.Host, _mqttConfig.Port, _mqttConfig.UserId);
+        _logger.LogDebug("MQTT connection is {host}:{port}/{userId}", _mqttConfig.Host, _mqttConfig.Port, _mqttConfig.UserName);
+        
+        _mqttClientOptions = new MqttClientOptionsBuilder()
+            .WithTcpServer(_mqttConfig.Host, _mqttConfig.Port)
+            .WithCredentials(_mqttConfig.UserName, _mqttConfig.Password)
+            .Build();
     }
 
     /// <summary>
@@ -57,15 +63,10 @@ internal class MessageSender : IMessageSender
 
     private async Task ConnectAsync(IMqttClient mqttClient)
     {
-        var options = new MqttClientOptionsBuilder()
-                      .WithTcpServer(_mqttConfig.Host, _mqttConfig.Port)
-                      .WithCredentials(_mqttConfig.UserId, _mqttConfig.Password)
-                      .Build();
-
         try
         {
             var connectResult =
-                await mqttClient.ConnectAsync(options, CancellationToken.None).ConfigureAwait(false);
+                await mqttClient.ConnectAsync(_mqttClientOptions, CancellationToken.None).ConfigureAwait(false);
             if (connectResult.ResultCode != MqttClientConnectResultCode.Success)
                 throw new MqttConnectionException(connectResult.ReasonString);
         }

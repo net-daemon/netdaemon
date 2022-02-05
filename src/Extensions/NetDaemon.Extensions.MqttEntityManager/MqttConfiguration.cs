@@ -21,12 +21,13 @@ public class MqttConfiguration
     public string Host { get; set; } = string.Empty;
     
     /// <summary>
-    /// User ID to connect to MQTT broker
+    /// User name to connect to MQTT broker
     /// </summary>
-    public string? Password { get; set; }
+    public string? UserName { get; set; }
     
     /// <summary>
     /// Password to connect to MQTT broker
     /// </summary>
-    public string? UserId { get; set; }
+    public string? Password { get; set; }
+
 }
