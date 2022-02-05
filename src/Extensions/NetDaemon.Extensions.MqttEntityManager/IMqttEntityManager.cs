@@ -1,4 +1,6 @@
-﻿namespace NetDaemon.Extensions.MqttEntityManager;
+﻿using NetDaemon.Extensions.MqttEntityManager.Models;
+
+namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
 ///     Interface for managing entities via MQTT
@@ -8,17 +10,16 @@ public interface IMqttEntityManager
     /// <summary>
     ///     Create an entity in Home Assistant via MQTT
     /// </summary>
-    Task CreateAsync(string domain, string entityId, string deviceClass, string name, bool persist = true);
-
+    Task CreateAsync(string entityId, EntityCreationOptions? options = null);
 
     /// <summary>
     ///     Remove an entity from Home Assistant
     /// </summary>
-    Task RemoveAsync(string domain, string entityId);
+    Task RemoveAsync(string entityId);
 
 
     /// <summary>
     ///     Update state and, optionally, attributes of an HA entity via MQTT
     /// </summary>
-    Task UpdateAsync(string domain, string entityId, string state, string? attributes = null);
+    Task UpdateAsync(string entityId, string state, string? attributes = null);
 }
