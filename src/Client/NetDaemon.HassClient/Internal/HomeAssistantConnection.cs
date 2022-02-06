@@ -14,6 +14,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private const int WaitForResultTimeout = 5000;
 
+    private readonly object _messageIdLock = new();
     private int _messageId = 1;
 
     #endregion
@@ -73,18 +74,27 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage
     {
-        command.Id = Interlocked.Increment(ref _messageId);
-
         var resultEvent = _hassMessageSubject
             .Where(n => n.Type == "result" && n.Id == command.Id)
             .Timeout(TimeSpan.FromMilliseconds(WaitForResultTimeout), Observable.Return(default(HassMessage?)))
             .FirstAsync()
-            .ToTask();
+            .ToTask(cancelToken);
 
-        await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
-        var result = await resultEvent.ConfigureAwait(false) ??
-                     throw new ApplicationException(
-                         "Send command ({command.Type}) did not get response in timely fashion");
+        try
+        {
+            Monitor.Enter(_messageIdLock);
+
+            command.Id = ++_messageId;
+            await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            Monitor.Exit(_messageIdLock);
+        }
+
+        var result =
+            await resultEvent.ConfigureAwait(false) ??
+            throw new ApplicationException($"Send command ({command.Type}) did not get response in timely fashion");
 
         if (!result.Success ?? false)
             throw new ApplicationException($"Failed command ({command.Type}) error: {result.Error}");
