@@ -15,7 +15,6 @@ using NetDaemon.HassModel;
 namespace DebugHost.apps.Extensions;
 
 [NetDaemonApp]
-[Focus]
 public class MqttEntityManagerApp : IAsyncInitializable
 {
     private readonly IHaContext _ha;
