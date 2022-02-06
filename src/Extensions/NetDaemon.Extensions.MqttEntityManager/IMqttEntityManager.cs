@@ -17,14 +17,8 @@ public interface IMqttEntityManager
     /// </summary>
     Task RemoveAsync(string entityId);
 
-
     /// <summary>
-    ///     Update state and, optionally, attributes of an HA entity via MQTT
+    ///     Update state and/or set attributes of an HA entity via MQTT
     /// </summary>
-    Task UpdateAsync(string entityId, string state, string? attributes = null);
-    
-    /// <summary>
-    ///     Update state and, optionally, attributes of an HA entity via MQTT
-    /// </summary>
-    Task UpdateAsync(string entityId, string state, object? attributes = null);
+    Task UpdateAsync(string entityId, string? state, object? attributes = null);
 }

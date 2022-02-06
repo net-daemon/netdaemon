@@ -68,20 +68,17 @@ internal class MqttEntityManager : IMqttEntityManager
     ///     Update state and, optionally, attributes of an HA entity via MQTT
     /// </summary>
     /// <param name="entityId"></param>
-    /// <param name="state"></param>
-    /// <param name="attributes">Json string of attributes</param>
-    public async Task UpdateAsync(string entityId, string state, string? attributes = null)
+    /// <param name="state">New state</param>
+    /// <param name="attributes">Concrete or anonymous attributes</param>
+    public async Task UpdateAsync(string entityId, string? state, object? attributes = null)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-
-        await _messageSender.SendMessageAsync(StatePath(domain, identifier), state).ConfigureAwait(false);
+        
+        if (!string.IsNullOrWhiteSpace(state))
+            await _messageSender.SendMessageAsync(StatePath(domain, identifier), state).ConfigureAwait(false);
+        
         if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), attributes).ConfigureAwait(false);
-    }
-
-    public async Task UpdateAsync(string entityId, string state, object? attributes = null)
-    {
-        await UpdateAsync(entityId, state, attributes != null ? JsonSerializer.Serialize(attributes) : null);
+            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes) ).ConfigureAwait(false);
     }
 
     private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";

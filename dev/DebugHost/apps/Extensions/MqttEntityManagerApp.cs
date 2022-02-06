@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -31,11 +30,18 @@ public class MqttEntityManagerApp : IAsyncInitializable
     }
 
     [SuppressMessage("Naming", "CA1727:Use PascalCase for named placeholders", Justification = "<Pending>")]
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We need to log unexpected errors")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
+        Justification = "We need to log unexpected errors")]
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         try
         {
+            await _entityManager.RemoveAsync("binary_sensor.mqtt_test").ConfigureAwait(false);
+            await _entityManager.RemoveAsync("binary_sensor.nd_test").ConfigureAwait(false);
+            await _entityManager.RemoveAsync("binary_sensor.leith_tides").ConfigureAwait(false);
+            await _entityManager.RemoveAsync("input_text.sample_text_helper").ConfigureAwait(false);
+
+
             // Basic entity creation
             await _entityManager.CreateAsync("sensor.basic_sensor").ConfigureAwait(false);
 
@@ -65,8 +71,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
             _logger.LogInformation("Entity {domain}.{entityId} State: {state}", "binary_sensor", "manager_test",
                 entity.State);
 
-            await _entityManager.UpdateAsync("binary_sensor.manager_test", "ON",
-                    JsonSerializer.Serialize(new { attribute1 = "attr1" }))
+            await _entityManager.UpdateAsync("binary_sensor.manager_test", "ON", new { attribute1 = "attr1" })
                 .ConfigureAwait(false);
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("Entity {domain}.{entityId} State: {state} Attributes: {attributes}",
