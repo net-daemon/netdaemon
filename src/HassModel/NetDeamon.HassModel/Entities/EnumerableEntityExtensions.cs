@@ -50,19 +50,22 @@ public static class EnumerableEntityExtensions
         if (!entities.Any()) return;
         
         var (serviceDomain, serviceName) = service.SplitAtDot();
+
+        if (serviceDomain == null)
+        {
+            var domainsFromEntity = entities.Select(e => e.EntityId.SplitAtDot().Left).Distinct().Take(2).ToArray();
+            if (domainsFromEntity.Length != 1) throw new InvalidOperationException($"Cannot call service {service} for entities that do not have the same domain");
+            
+            serviceDomain = domainsFromEntity.First()!;
+        }
         
         // Usually each Entity will have the same IHaContext and domain, but just in case its not, group by the context and domain and call the
         // service for each group separately
-        var serviceCalls = entities.GroupBy(e => (
-            e.HaContext, 
-            domain : serviceDomain ?? e.EntityId.SplitAtDot().Left ?? throw new InvalidOperationException("EntityId must be formatted 'domain.name'"))
-        );
+        var serviceCalls = entities.GroupBy(e => e.HaContext);
         
         foreach (var group in serviceCalls)
         {
-            group.Key.HaContext.CallService(group.Key.domain, 
-                serviceName, 
-                new ServiceTarget { EntityIds = group.Select(e => e.EntityId).ToList() }, data);
+            group.Key.CallService(serviceDomain, serviceName, new ServiceTarget { EntityIds = group.Select(e => e.EntityId).ToList() }, data);
         }
     }
 }
