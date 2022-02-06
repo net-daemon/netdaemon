@@ -24,7 +24,8 @@ public static class DependencyInjectionSetup
         {
             services.AddSingleton<IMqttFactory, MqttFactory>();
             services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
-            services.AddTransient<IMessageSender, MessageSender>();
+            services.AddSingleton<IAssuredMqttConnection, AssuredMqttConnection>();
+            services.AddSingleton<IMessageSender, MessageSender>();
             services.Configure<MqttConfiguration>(context.Configuration.GetSection("Mqtt"));
         });
     }
