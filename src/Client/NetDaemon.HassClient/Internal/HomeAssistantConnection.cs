@@ -11,6 +11,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
     private readonly Task _handleNewMessagesTask;
+    private readonly object _sendMessageLock = new();
 
     private const int WaitForResultTimeout = 5000;
 
@@ -81,9 +82,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
         Task commandTask;
 
-        lock (_transportPipeline)
+        lock (_sendMessageLock)
         {
-            command.Id = Interlocked.Increment(ref _messageId);
+            command.Id = ++_messageId;
             commandTask = _transportPipeline.SendMessageAsync(command, cancelToken);
         }
 
