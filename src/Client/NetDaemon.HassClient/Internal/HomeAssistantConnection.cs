@@ -11,10 +11,10 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
     private readonly Task _handleNewMessagesTask;
-    private readonly object _sendMessageLock = new();
 
     private const int WaitForResultTimeout = 5000;
 
+    private readonly object _messageIdLock = new();
     private int _messageId = 1;
 
     #endregion
@@ -80,15 +80,17 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             .FirstAsync()
             .ToTask(cancelToken);
 
-        Task commandTask;
-
-        lock (_sendMessageLock)
+        try
         {
-            command.Id = ++_messageId;
-            commandTask = _transportPipeline.SendMessageAsync(command, cancelToken);
-        }
+            Monitor.Enter(_messageIdLock);
 
-        await commandTask.ConfigureAwait(false);
+            command.Id = ++_messageId;
+            await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            Monitor.Exit(_messageIdLock);
+        }
 
         var result =
             await resultEvent.ConfigureAwait(false) ??
