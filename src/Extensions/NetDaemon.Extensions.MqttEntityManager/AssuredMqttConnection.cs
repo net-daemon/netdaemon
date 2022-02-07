@@ -16,7 +16,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
     private const int RetryMaximumSeconds = 15;
     private readonly ILogger<AssuredMqttConnection> _logger;
-    private readonly Task? _connectionTask;
+    private readonly Task _connectionTask;
     private IManagedMqttClient? _mqttClient;
     private bool _disposed;
 
@@ -33,28 +33,21 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _logger = logger;
 
+        _logger.LogDebug("MQTT initiating connection");
         _connectionTask = Task.Run(() => ConnectAsync(mqttConfig.Value, mqttFactory));
     }
 
     /// <summary>
-    /// Ensures that an MQTT client is available, retrying if necessary, and throws if connection is impossible
+    /// Ensures that the MQTT client is available
     /// </summary>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
-    public IManagedMqttClient GetClientOrThrow()
+    public async Task<IManagedMqttClient> GetClientOrThrowAsync()
     {
-        _connectionTask?.Wait();
+        await _connectionTask;
 
-        var retryCount = 1;
-        while ((_mqttClient == null || !_mqttClient.IsConnected) && retryCount <= RetryMaximumSeconds)
-        {
-            _logger.LogDebug("MQTT client is not yet available, retry #{RetryCount}", retryCount);
-            Thread.Sleep(1000);
-            retryCount++;
-        }
-
-        if (_mqttClient == null || !_mqttClient.IsConnected)
-            throw new MqttConnectionException("MQTT client is not connected");
+        if (_mqttClient == null)
+            throw new MqttConnectionException("Unable to create MQTT connection");
 
         return _mqttClient;
     }
@@ -77,6 +70,8 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         _mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(LogDisconnectedStatus);
 
         await _mqttClient.StartAsync(clientOptions);
+        
+        _logger.LogDebug("MQTT client is ready");
     }
 
     private void LogDisconnectedStatus(MqttClientDisconnectedEventArgs arg)

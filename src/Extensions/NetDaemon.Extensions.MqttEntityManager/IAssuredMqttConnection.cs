@@ -8,7 +8,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal interface IAssuredMqttConnection
 {
     /// <summary>
-    /// Ensures that an MQTT client is available, retrying if necessary, and throws if connection is impossible
+    /// Ensures that the MQTT client is available
     /// </summary>
-    IManagedMqttClient GetClientOrThrow();
+    Task<IManagedMqttClient> GetClientOrThrowAsync();
 }
