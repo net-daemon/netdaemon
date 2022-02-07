@@ -39,7 +39,7 @@ internal class MessageSender : IMessageSender
     /// <param name="retain"></param>
     public async Task SendMessageAsync(string topic, string payload, bool retain = false)
     {
-        var mqttClient = await _assuredMqttConnection.GetClientOrThrowAsync();
+        var mqttClient = await _assuredMqttConnection.GetClientAsync();
         
         await PublishMessage(mqttClient, topic, payload, retain);
     }

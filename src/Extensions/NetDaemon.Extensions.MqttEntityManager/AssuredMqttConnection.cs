@@ -42,14 +42,11 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// </summary>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
-    public async Task<IManagedMqttClient> GetClientOrThrowAsync()
+    public async Task<IManagedMqttClient> GetClientAsync()
     {
         await _connectionTask;
 
-        if (_mqttClient == null)
-            throw new MqttConnectionException("Unable to create MQTT connection");
-
-        return _mqttClient;
+        return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
     }
 
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactory mqttFactory)

@@ -10,5 +10,5 @@ internal interface IAssuredMqttConnection
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
-    Task<IManagedMqttClient> GetClientOrThrowAsync();
+    Task<IManagedMqttClient> GetClientAsync();
 }
