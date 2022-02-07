@@ -44,28 +44,60 @@ internal static class ExtensionMethodsGenerator
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethod(string domain, HassService service)
     {
         var serviceName = service.Service!;
-
         var serviceArguments = ServiceArguments.Create(domain, service);
-
         var entityTypeName = GetDomainEntityTypeName(service.Target?.Entity?.Domain!);
+        var enumerableTargetTypeName = $"IEnumerable<{entityTypeName}>";
 
-        yield return ParseMethod(
-                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity {(serviceArguments is not null ? $", {serviceArguments.GetParametersString()}" : string.Empty)})
-            {{
-                entity.CallService(""{serviceName}""{(serviceArguments is not null ? $", {serviceArguments.GetParametersVariable()}" : string.Empty)});
-            }}").ToPublic().ToStatic()
-            .WithSummaryComment(service.Description);
-
-        if (serviceArguments is not null)
+        if (serviceArguments is null)
         {
-            yield return ParseMethod(
-                    $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} entity, {serviceArguments.GetParametersDecomposedString()})
-                {{
-                    entity.CallService(""{serviceName}"", {serviceArguments.GetParametersDecomposedVariable()});
-                }}").ToPublic().ToStatic()
-                .WithSummaryComment(service.Description)
-                .WithParameterComment("entity", $"The {entityTypeName} to call this service for")
-                .WithParameterComments(serviceArguments);
+            yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName);
+            yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName);
         }
+        else
+        {
+            yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments);
+            yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments);
+
+            yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments);
+            yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments);
+        }
+    }
+
+    private static GlobalStatementSyntax ExtensionMethodWithoutArguments(HassService service, string serviceName, string entityTypeName)
+    {
+        return ParseMethod(
+                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} target)
+                {{
+                    target.CallService(""{serviceName}"");
+                }}")
+            .ToPublic()
+            .ToStatic()
+            .WithSummaryComment(service.Description);
+    }
+    
+    private static GlobalStatementSyntax ExtensionMethodWithClassArgument(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    {
+        return ParseMethod(
+                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} target, {serviceArguments.TypeName} data)
+                {{
+                    target.CallService(""{serviceName}"", data);
+                }}")
+            .ToPublic()
+            .ToStatic()
+            .WithSummaryComment(service.Description);
+    }
+    
+    private static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    {
+        return ParseMethod(
+                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} target, {serviceArguments.GetParametersList()})
+                {{
+                    target.CallService(""{serviceName}"", {serviceArguments.GetNewServiceArgumentsTypeExpression()});
+                }}")
+            .ToPublic()
+            .ToStatic()
+            .WithSummaryComment(service.Description)
+            .WithParameterComment("target", $"The {entityTypeName} to call this service for")
+            .WithParameterComments(serviceArguments);
     }
 }

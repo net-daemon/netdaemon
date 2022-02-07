@@ -49,19 +49,7 @@ internal class ServiceArguments
 
     public string TypeName => NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
 
-    public string GetParametersString()
-    {
-        // adding {(HasRequiredArguments ? "" : "= null")} causes ambiguity in a call with optional args
-        return $"{TypeName} data";
-    }
-
-    [SuppressMessage("", "CA1822", Justification = "we might want to use specific arg name in the future")]
-    public string GetParametersVariable()
-    {
-        return "data";
-    }
-
-    public string GetParametersDecomposedString()
+    public string GetParametersList()
     {
         var argumentList = Arguments.OrderByDescending(arg => arg.Required);
 
@@ -70,10 +58,10 @@ internal class ServiceArguments
         return $"{string.Join(", ", anonymousVariableStr)}";
     }
 
-    public string GetParametersDecomposedVariable()
+    public string GetNewServiceArgumentsTypeExpression()
     {
-        var anonymousVariableStr = Arguments.Select(x => $"{x.PropertyName} = @{x.VariableName}");
+        var propertyInitializers = Arguments.Select(x => $"{x.PropertyName} = @{x.VariableName}");
 
-        return $"new {TypeName} {{  { string.Join(", ", anonymousVariableStr) }  }}";
+        return $"new {TypeName} {{  { string.Join(", ", propertyInitializers) }  }}";
     }
 }
