@@ -67,24 +67,53 @@ public class EnumerableEntityExtensionsTest
         observerMock.Verify(m => m.OnNext(It.IsAny<StateChange>()), Times.Once);
     }
 
-
     [Fact]
     public void TestCallService()
     {
-        Subject<StateChange> stateChangesSubject = new();
         var haMock = new Mock<IHaContext>();
-        haMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
 
         var switch1 = new Entity(haMock.Object, "switch.Living1");
         var switch2 = new Entity(haMock.Object, "switch.Living2");
 
-        // Act: Subscribe to both entities
+        // Act:
         var data = new { Name = "John", Age = 12 };
-        new[] { switch1, switch2 }.CallService("switch", "set_state", data);
+        new[] { switch1, switch2 }.CallService("set_state", data);
 
         haMock.Verify(m => m.CallService("switch", "set_state", It.IsAny<ServiceTarget>(), data));
-
         haMock.Invocations.First().Arguments[2].As<ServiceTarget>().EntityIds
             .Should().BeEquivalentTo("switch.Living1", "switch.Living2");
+        haMock.VerifyNoOtherCalls();
     }
+    
+    [Fact]
+    public void TestCallServiceWithDomainInService()
+    {
+        var haMock = new Mock<IHaContext>();
+
+        var switch1 = new Entity(haMock.Object, "switch.Living1");
+        var switch2 = new Entity(haMock.Object, "light.Living2");
+
+        // Act:
+        var data = new { Name = "John", Age = 12 };
+        new[] { switch1, switch2 }.CallService("homeassistant.turn_on", data);
+
+        haMock.Verify(m => m.CallService("homeassistant", "turn_on", It.IsAny<ServiceTarget>(), data));
+        haMock.Invocations.First().Arguments[2].As<ServiceTarget>().EntityIds
+            .Should().BeEquivalentTo("switch.Living1", "light.Living2");
+        haMock.VerifyNoOtherCalls();
+    }    
+    
+    [Fact]
+    public void TestCallServiceWithDifferentDomainsNotAllowed()
+    {
+        var haMock = new Mock<IHaContext>();
+
+        var switch1 = new Entity(haMock.Object, "switch.Living1");
+        var switch2 = new Entity(haMock.Object, "light.Living2");
+
+        // Act:
+        var data = new { Name = "John", Age = 12 };
+        var action = () => new[] { switch1, switch2 }.CallService("turn_on", data);
+        action.Should().Throw<InvalidOperationException>();
+    }    
 }

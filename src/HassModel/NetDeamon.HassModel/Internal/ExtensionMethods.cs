@@ -21,7 +21,7 @@ internal static class NetDaemonExtensions
         var firstDot = id.IndexOf('.', System.StringComparison.InvariantCulture);
         if (firstDot == -1) return (null, id);
             
-        return (id[.. firstDot ], id[ firstDot .. ]);
+        return (id[.. firstDot ], id[ (firstDot + 1) .. ]);
     }
      
 }

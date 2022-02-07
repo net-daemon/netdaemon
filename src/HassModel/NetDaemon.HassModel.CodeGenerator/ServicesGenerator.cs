@@ -89,30 +89,42 @@ internal static class ServicesGenerator
         var serviceArguments = ServiceArguments.Create(domain, service);
         var haContextVariableName = GetVariableName<IHaContext>("_");
 
-        var argsParametersString = serviceArguments is not null ? $"{serviceArguments.TypeName} data" : null ;
-
         var serviceMethodName = GetServiceMethodName(serviceName);
+
         var targetParam = service.Target is not null ? $"{SimplifyTypeName(typeof(ServiceTarget))} target" : null;
         var targetArg = service.Target is not null ? "target" : "null";
         var targetComment = service.Target is not null ? ParameterComment("target", "The target for this service call") : (SyntaxTrivia?)null;
 
-        // method using arguments object 
-        yield return ParseMethod(
-                $@"void {serviceMethodName}({JoinArguments(targetParam, argsParametersString)})
-            {{
-                {haContextVariableName}.CallService({JoinArguments($"\"{domain}\"", $"\"{serviceName}\"", targetArg, serviceArguments is not null ? "data" : null)});
-            }}").ToPublic()
-            .WithSummaryComment(service.Description)
-            .AppendTrivia(targetComment);
-
-        if (serviceArguments is not null)
+        if (serviceArguments is null)
         {
+            // method without arguments
+            yield return ParseMethod(
+                    $@"void {serviceMethodName}({targetParam})
+                    {{
+                        {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", {targetArg});
+                    }}")
+                .ToPublic()
+                .WithSummaryComment(service.Description)
+                .AppendTrivia(targetComment);
+        }
+        else
+        {
+            // method using arguments object 
+            yield return ParseMethod(
+                    $@"void {serviceMethodName}({JoinList(targetParam, serviceArguments.TypeName)} data)
+                    {{
+                        {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", {targetArg}, data);
+                    }}")
+                .ToPublic()
+                .WithSummaryComment(service.Description)
+                .AppendTrivia(targetComment);
+
             // method using arguments as separate parameters 
             yield return ParseMethod(
-                    $@"void {serviceMethodName}({JoinArguments(targetParam, serviceArguments.GetParametersDecomposedString())})
-            {{
-                {haContextVariableName}.CallService({JoinArguments($"\"{domain}\"", $"\"{serviceName}\"", targetArg, serviceArguments.GetParametersDecomposedVariable())});
-            }}")
+                    $@"void {serviceMethodName}({JoinList(targetParam, serviceArguments.GetParametersList())})
+                    {{
+                        {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", {targetArg}, {serviceArguments.GetNewServiceArgumentsTypeExpression()});
+                    }}")
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment)
@@ -120,5 +132,5 @@ internal static class ServicesGenerator
         }
     }
 
-    private static string JoinArguments(params string?[] args) => string.Join(", ", args.Where(s => !string.IsNullOrEmpty(s)));
+    private static string JoinList(params string?[] args) => string.Join(", ", args.Where(s => !string.IsNullOrEmpty(s)));
 }
