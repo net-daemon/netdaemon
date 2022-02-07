@@ -2,6 +2,8 @@
 
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using NetDaemon.Extensions.MqttEntityManager.Helpers;
+using NetDaemon.Extensions.MqttEntityManager.Models;
 
 #endregion
 
@@ -13,7 +15,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
-    private readonly IMessageSender    _messageSender;
+    private readonly IMessageSender _messageSender;
 
     /// <summary>
     ///     Manage entities via MQTT
@@ -23,58 +25,69 @@ internal class MqttEntityManager : IMqttEntityManager
     public MqttEntityManager(IMessageSender messageSender, IOptions<MqttConfiguration> config)
     {
         _messageSender = messageSender;
-        _config        = config.Value;
+        _config = config.Value;
     }
 
     /// <summary>
-    ///     Create an entity in Home Assistant via MQTT
+    /// Create an entity in Home Assistant via MQTT
     /// </summary>
-    /// <param name="domain"></param>
-    /// <param name="deviceClass"></param>
-    /// <param name="entityId"></param>
-    /// <param name="name"></param>
-    /// <param name="persist">This will persist the entity if Home Assistant restarts</param>
-    public async Task CreateAsync(string domain, string entityId, string deviceClass, string name, bool persist = true)
+    /// <param name="entityId">Distinct identifier, in the format "domain.id", such as "sensor.kitchen_temp"</param>
+    /// <param name="options">Optional set of additional parameters</param>
+    public async Task CreateAsync(string entityId, EntityCreationOptions? options)
     {
-        var payload = JsonSerializer.Serialize(new
-        {
-            name,
-            device_class          = deviceClass,
-            state_topic           = StatePath(domain, entityId),
-            json_attributes_topic = AttrsPath(domain, entityId)
-        });
-        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), payload, persist).ConfigureAwait(false);
+        var (domain, identifier) = EntityIdParser.Extract(entityId);
+        var configPath = ConfigPath(domain, identifier);
+
+        var payload = JsonSerializer.Serialize(new EntityCreationPayload
+            {
+                Name = options?.Name ?? identifier,
+                DeviceClass = options?.DeviceClass,
+                UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
+                CommandTopic = CommandPath(domain, identifier),
+                StateTopic = StatePath(domain, identifier),
+                JsonAttributesTopic = AttrsPath(domain, identifier)
+            }
+        );
+
+        await _messageSender
+            .SendMessageAsync(configPath, payload, options?.Persist ?? true)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
     ///     Remove an entity from Home Assistant
     /// </summary>
-    /// <param name="domain"></param>
     /// <param name="entityId"></param>
-    public async Task RemoveAsync(string domain, string entityId)
+    public async Task RemoveAsync(string entityId)
     {
-        await _messageSender.SendMessageAsync(ConfigPath(domain, entityId), string.Empty).ConfigureAwait(false);
+        var (domain, identifier) = EntityIdParser.Extract(entityId);
+        await _messageSender.SendMessageAsync(ConfigPath(domain, identifier), string.Empty).ConfigureAwait(false);
     }
 
     /// <summary>
     ///     Update state and, optionally, attributes of an HA entity via MQTT
     /// </summary>
-    /// <param name="domain"></param>
     /// <param name="entityId"></param>
-    /// <param name="state"></param>
-    /// <param name="attributes">Json string of attributes</param>
-    public async Task UpdateAsync(string domain, string entityId, string state, string? attributes = null)
+    /// <param name="state">New state</param>
+    /// <param name="attributes">Concrete or anonymous attributes</param>
+    public async Task UpdateAsync(string entityId, string? state, object? attributes = null)
     {
-        await _messageSender.SendMessageAsync(StatePath(domain, entityId), state).ConfigureAwait(false);
+        var (domain, identifier) = EntityIdParser.Extract(entityId);
+        
+        if (!string.IsNullOrWhiteSpace(state))
+            await _messageSender.SendMessageAsync(StatePath(domain, identifier), state).ConfigureAwait(false);
+        
         if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(domain, entityId), attributes).ConfigureAwait(false);
+            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes) ).ConfigureAwait(false);
     }
 
-    private string AttrsPath(string domain, string entityId) => $"{RootPath(domain, entityId)}/attributes";
+    private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
 
-    private string ConfigPath(string domain, string entityId) => $"{RootPath(domain, entityId)}/config";
+    private string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";
 
-    private string RootPath(string domain, string entityId) => $"{_config.DiscoveryPrefix}/{domain}/{entityId}";
+    private string RootPath(string domain, string identifier) => $"{_config.DiscoveryPrefix}/{domain}/{identifier}";
 
-    private string StatePath(string domain, string entityId) => $"{RootPath(domain, entityId)}/state";
+    private string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
+
+    private string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
 }
