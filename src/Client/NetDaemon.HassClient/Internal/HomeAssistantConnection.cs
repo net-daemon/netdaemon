@@ -14,7 +14,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private const int WaitForResultTimeout = 5000;
 
-    private readonly object _messageIdLock = new();
+    private readonly SemaphoreSlim _messageIdSemaphore = new(1,1);
     private int _messageId = 1;
 
     #endregion
@@ -80,16 +80,17 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             .FirstAsync()
             .ToTask(cancelToken);
 
+        // We need to make sure messages to HA are send with increasing Ids therefore we need to synchronize
+        // increasing the messageId and Sending the message
+        await _messageIdSemaphore.WaitAsync(cancelToken).ConfigureAwait(false);
         try
         {
-            Monitor.Enter(_messageIdLock);
-
             command.Id = ++_messageId;
             await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
         }
         finally
         {
-            Monitor.Exit(_messageIdLock);
+            _messageIdSemaphore.Release();
         }
 
         var result =
