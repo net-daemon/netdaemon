@@ -17,7 +17,7 @@ NetDaemon runtime version 3 is built from scratch. The reason is to make the pro
 - We changed the way configuration works. Configuration from yaml is now injected using `IAppConfig<MyConfigClass<`. See the template [v3 branch](https://github.com/net-daemon/netdaemon-app-template/tree/v3) for examples how to use it.
 - Some public interfaces like `INetDaemon`is no longer used. 
 - Different namespaces are used, like `NetDaemon.AppModel`and `NetDaemon.Runtime`. Please see the template [v3 branch](https://github.com/net-daemon/netdaemon-app-template/tree/v3).
-- We now use `input_booleans` instead of `switch`for handling app state. If you are not using the service callbacks you will now no longer have to use the integration to handle app states persistent.
+- We now use `input_booleans` instead of `switch`for handling app state. If you are not using the service callbacks you will now no longer have to use the integration to handle app states persistent. They also have different names now when in Development.
 - The text to speech queued feature is now an extension.
 - Using a `.csproj`as target for the runtime is no longer supported. You need to deploy the compiled binaries and point to those.
 
@@ -48,4 +48,3 @@ Please check out the apps being developed for netdaemon3. Since documentation is
 | User                                                               | Description                                 |
 | ------------------------------------------------------------------ | ------------------------------------------- |
 | [@helto4real](https://github.com/helto4real/NetDaemon3Automations) | Tomas netdaemon3 apps running in production |
-

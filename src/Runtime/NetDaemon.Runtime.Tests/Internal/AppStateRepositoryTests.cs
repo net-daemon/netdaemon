@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.Extensions.Hosting;
 using NetDaemon.Client.Internal.Exceptions;
 using NetDaemon.Runtime.Internal;
 using NetDaemon.Runtime.Internal.Model;
@@ -10,11 +11,13 @@ public class AppStateRepositoryTests
     private readonly Mock<IHomeAssistantConnection> _connectionMock = new();
     private readonly AppStateRepository _repository;
     private readonly Mock<IHomeAssistantRunner> _runnerMock = new();
+    private readonly Mock<IHostEnvironment> _hostEnvironment = new();
 
     public AppStateRepositoryTests()
     {
         _runnerMock.SetupGet(x => x.CurrentConnection).Returns(_connectionMock.Object);
-        _repository = new AppStateRepository(_runnerMock.Object);
+        _hostEnvironment.Setup(n => n.EnvironmentName).Returns("");
+        _repository = new AppStateRepository(_runnerMock.Object, _hostEnvironment.Object);
     }
 
     [Fact]
@@ -89,7 +92,6 @@ public class AppStateRepositoryTests
         var applicationIds = new[] {"some_app_id"};
         await _repository.RemoveNotUsedStatesAsync(applicationIds, CancellationToken.None);
 
-        // var command = new DeleteInputBooleanHelperCommand() {InputBooleanId = "some_app_id2", Type = "input_boolean/list""};
         _connectionMock.Verify(
             n => n.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
                 It.Is<DeleteInputBooleanHelperCommand>(n => n.InputBooleanId == "netdaemon_some_app_id2"),
@@ -112,7 +114,6 @@ public class AppStateRepositoryTests
         var applicationIds = new List<string>();
         await _repository.RemoveNotUsedStatesAsync(applicationIds, CancellationToken.None);
 
-        // var command = new DeleteInputBooleanHelperCommand() {InputBooleanId = "some_app_id2", Type = "input_boolean/list""};
         _connectionMock.Verify(
             n => n.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
                 It.Is<DeleteInputBooleanHelperCommand>(n => n.InputBooleanId == "netdaemon_some_app_id"),
@@ -131,6 +132,7 @@ public class AppStateRepositoryTests
         {
             new InputBooleanHelper {Id = "netdaemon_some_app_id", Name = "netdaemon_some_app_id"},
             new InputBooleanHelper {Id = "netdaemon_some_app_id2", Name = "netdaemon_some_app_id2"},
+            new InputBooleanHelper {Id = "dev_netdaemon_some_app_id2", Name = "dev_netdaemon_some_app_id2"},
             new InputBooleanHelper {Id = "non_netdaemon_input_boolean", Name = "non_netdaemon_input_boolean"}
         };
         _connectionMock.Setup(n =>
@@ -141,10 +143,14 @@ public class AppStateRepositoryTests
         var applicationIds = new[] {"some_app_id"};
         await _repository.RemoveNotUsedStatesAsync(applicationIds, CancellationToken.None);
 
-        // var command = new DeleteInputBooleanHelperCommand() {InputBooleanId = "some_app_id2", Type = "input_boolean/list""};
         _connectionMock.Verify(
             n => n.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
                 It.Is<DeleteInputBooleanHelperCommand>(n => n.InputBooleanId == "non_netdaemon_input_boolean"),
                 It.IsAny<CancellationToken>()), Times.Never);
+
+        _connectionMock.Verify(
+            n => n.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
+                It.IsAny<DeleteInputBooleanHelperCommand>(),
+                It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 }

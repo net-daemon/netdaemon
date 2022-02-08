@@ -1,9 +1,25 @@
 #!/usr/bin/with-contenv /usr/bin/bashio
 
+# Optional MQTT configuration
+declare Mqtt__Host
+declare Mqtt__Port
+declare Mqtt__Username
+declare Mqtt__Password
+
 # Set configuration values to environment variables
 NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
 Logging__Loglevel__Default=$(bashio::config 'log_level') 
 NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
+
+if bashio::services.available "mqtt"; then
+    Mqtt__Host=$(bashio::services 'mqtt' 'host')
+    Mqtt__Port=$(bashio::services 'mqtt' 'port')
+    Mqtt__Username=$(bashio::services 'mqtt' 'username')
+    Mqtt__Password=$(bashio::services 'mqtt' 'password')
+else
+    bashio::log.warning \
+        "No MQTT add-on installed, MQTT features will not work."
+fi
 
 export \
     HomeAssistant__Host="supervisor" \
@@ -11,6 +27,10 @@ export \
     HomeAssistant__Port=80 \
     HomeAssistant__Ssl=false \
     HomeAssistant__Token="${SUPERVISOR_TOKEN}" \
+    Mqtt__Host \
+    Mqtt__Port \
+    Mqtt__Username \
+    Mqtt__Password \
     NetDaemon__ApplicationAssembly \
     Logging__Loglevel__Default \
     NetDaemon__ApplicationConfigurationFolder

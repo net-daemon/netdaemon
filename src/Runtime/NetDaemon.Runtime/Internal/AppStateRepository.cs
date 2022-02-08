@@ -7,10 +7,12 @@ namespace NetDaemon.Runtime.Internal;
 internal class AppStateRepository : IAppStateRepository
 {
     private readonly IHomeAssistantRunner _runner;
+    private readonly IHostEnvironment _hostEnvironment;
 
-    public AppStateRepository(IHomeAssistantRunner runner)
+    public AppStateRepository(IHomeAssistantRunner runner, IHostEnvironment hostEnvironment)
     {
         _runner = runner;
+        _hostEnvironment = hostEnvironment;
     }
 
     public async Task<bool> GetOrCreateAsync(string applicationId, CancellationToken token)
@@ -18,7 +20,7 @@ internal class AppStateRepository : IAppStateRepository
         var haConnection = _runner.CurrentConnection ??
                            throw new InvalidOperationException();
 
-        var entityId = EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+        var entityId = EntityMapperHelper.ToEntityIdFromApplicationId(applicationId, _hostEnvironment.IsDevelopment());
 
         try
         {
@@ -43,7 +45,7 @@ internal class AppStateRepository : IAppStateRepository
         var haConnection = _runner.CurrentConnection ??
                            throw new InvalidOperationException();
 
-        var entityId = EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId(applicationId);
+        var entityId = EntityMapperHelper.ToEntityIdFromApplicationId(applicationId, _hostEnvironment.IsDevelopment());
 
         await haConnection.CallServiceAsync("input_boolean", enabled ? "turn_on" : "turn_off",
             new HassTarget {EntityIds = new[] {entityId}},
@@ -56,11 +58,11 @@ internal class AppStateRepository : IAppStateRepository
                            throw new InvalidOperationException();
         var helpers = await haConnection.ListInputBooleanHelpersAsync(token).ConfigureAwait(false);
 
-        var entityIds = applicationIds.Select(EntityMapperHelper.ToSafeHomeAssistantEntityIdFromApplicationId)
+        var entityIds = applicationIds.Select(n => EntityMapperHelper.ToEntityIdFromApplicationId(n, _hostEnvironment.IsDevelopment()))
             .ToHashSet();
 
         var notUsedHelperIds = helpers.Where(n =>
-            !entityIds.Contains($"input_boolean.{n.Name}") && n.Id.StartsWith("netdaemon_"));
+            !entityIds.Contains($"input_boolean.{n.Name}") && (n.Id.StartsWith("netdaemon_")||n.Id.StartsWith("dev_netdaemon_")));
 
         foreach (var helper in notUsedHelperIds)
             await haConnection.DeleteInputBooleanHelperAsync(helper.Id, token).ConfigureAwait(false);
