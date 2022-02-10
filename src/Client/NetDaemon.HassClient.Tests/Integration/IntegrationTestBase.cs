@@ -22,7 +22,7 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
         var loggerClient = new Mock<ILogger<HomeAssistantClient>>();
         var loggerTransport = new Mock<ILogger<IWebSocketClientTransportPipeline>>();
         var loggerConnection = new Mock<ILogger<IHomeAssistantConnection>>();
-
+        var resultMessageHandler = new Mock<IResultMessageHandler>();
         var settings = haSettings ?? new HomeAssistantSettings
         {
             Host = "127.0.0.1",
@@ -44,7 +44,8 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
                     (mock.HomeAssistantHost.Services.GetRequiredService<IHttpClientFactory>() ??
                      throw new NullReferenceException())
                     .CreateClient()
-                )
+                ),
+                resultMessageHandler.Object
             )
         );
         var connection = await client.ConnectAsync(

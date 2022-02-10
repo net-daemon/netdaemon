@@ -67,7 +67,9 @@ public class HomeAssistantClientTests
             _ = new HomeAssistantConnection(
                 loggerMock.Object,
                 _pipeline.Object,
-                new Mock<IHomeAssistantApiManager>().Object));
+                new Mock<IHomeAssistantApiManager>().Object,
+                new Mock<IResultMessageHandler>().Object)
+                );
     }
 
     /// <summary>

@@ -7,12 +7,13 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly ILogger<IHomeAssistantConnection> _logger;
     private readonly IWebSocketClientTransportPipeline _transportPipeline;
     private readonly IHomeAssistantApiManager _apiManager;
+    private readonly IResultMessageHandler _resultMessageHandler;
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
     private readonly Task _handleNewMessagesTask;
 
-    private const int WaitForResultTimeout = 5000;
+    private const int WaitForResultTimeout = 20000;
 
     private readonly SemaphoreSlim _messageIdSemaphore = new(1,1);
     private int _messageId = 1;
@@ -25,14 +26,17 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     /// <param name="logger">A logger instance</param>
     /// <param name="pipeline">The pipeline to use for websocket communication</param>
     /// <param name="apiManager">The api manager</param>
+    /// <param name="resultMessageHandler">Handler for result message</param>
     public HomeAssistantConnection(
         ILogger<IHomeAssistantConnection> logger,
         IWebSocketClientTransportPipeline pipeline,
-        IHomeAssistantApiManager apiManager
+        IHomeAssistantApiManager apiManager,
+        IResultMessageHandler resultMessageHandler
     )
     {
         _transportPipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
         _apiManager = apiManager;
+        _resultMessageHandler = resultMessageHandler;
         _logger = logger;
 
         if (_transportPipeline.WebSocketState != WebSocketState.Open)
@@ -57,10 +61,35 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         await combinedTokenSource.Token.AsTask().ConfigureAwait(false);
     }
 
-    public Task SendCommandAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage
+    private async Task<Task<HassMessage>> SendCommandAsyncInternal<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
-        command.Id = Interlocked.Increment(ref _messageId);
-        return _transportPipeline.SendMessageAsync(command, cancelToken);
+        try
+        {
+            // We need to make sure messages to HA are send with increasing Ids therefore we need to synchronize
+            // increasing the messageId and Sending the message
+            await _messageIdSemaphore.WaitAsync(cancelToken).ConfigureAwait(false);
+            command.Id = ++_messageId;
+
+            // We make a task that subscribe for the return result message
+            // this task will be returned and handled by caller
+            var resultEvent = _hassMessageSubject
+                .Where(n => n.Type == "result" && n.Id == command.Id)
+                .FirstAsync().ToTask(cancelToken);
+
+            await _transportPipeline.SendMessageAsync(command, cancelToken);
+
+            return resultEvent;
+        }
+        finally
+        {
+            _messageIdSemaphore.Release();
+        }
+    }
+
+    public async Task SendCommandAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage
+    {
+        var returnMessageTask = await SendCommandAsyncInternal(command, cancelToken);
+        _resultMessageHandler.HandleResult(returnMessageTask, command);
     }
 
     public async Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken)
@@ -74,33 +103,24 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage
     {
-        var resultEvent = _hassMessageSubject
-            .Where(n => n.Type == "result" && n.Id == command.Id)
-            .Timeout(TimeSpan.FromMilliseconds(WaitForResultTimeout), Observable.Return(default(HassMessage?)))
-            .FirstAsync()
-            .ToTask(cancelToken);
+        var resultMessageTask = await SendCommandAsyncInternal(command, cancelToken);
 
-        // We need to make sure messages to HA are send with increasing Ids therefore we need to synchronize
-        // increasing the messageId and Sending the message
-        await _messageIdSemaphore.WaitAsync(cancelToken).ConfigureAwait(false);
-        try
+        var awaitedTask = await Task.WhenAny(resultMessageTask, Task.Delay(WaitForResultTimeout, cancelToken));
+
+        if (awaitedTask != resultMessageTask)
         {
-            command.Id = ++_messageId;
-            await _transportPipeline.SendMessageAsync(command, cancelToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            _messageIdSemaphore.Release();
+            // We have a timeout
+            throw new InvalidOperationException($"Send command ({command.Type}) did not get response in timely fashion. Sent command is {command.ToJsonElement()}");
         }
 
-        var result =
-            await resultEvent.ConfigureAwait(false) ??
-            throw new ApplicationException($"Send command ({command.Type}) did not get response in timely fashion");
+        // We already awaited the task so result
+        var result = resultMessageTask.Result;
 
-        if (!result.Success ?? false)
-            throw new ApplicationException($"Failed command ({command.Type}) error: {result.Error}");
+        if (result.Success ?? false)
+            return result.ResultElement;
 
-        return result.ResultElement;
+        // Non successful command should throw exception
+        throw new InvalidOperationException($"Failed command ({command.Type}) error: {result.Error}.  Sent command is {command.ToJsonElement()}");
     }
 
     public async ValueTask DisposeAsync()

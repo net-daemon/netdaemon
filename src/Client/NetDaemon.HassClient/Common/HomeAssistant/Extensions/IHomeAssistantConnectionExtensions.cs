@@ -103,7 +103,7 @@ public static class HomeAssistantConnectionExtensions
     )
     {
         await connection
-            .SendCommandAndReturnResponseAsync<CallServiceCommand, object?>
+            .SendCommandAsync
             (
                 new CallServiceCommand
                 {

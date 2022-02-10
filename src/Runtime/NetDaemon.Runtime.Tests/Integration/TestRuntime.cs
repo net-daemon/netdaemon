@@ -68,7 +68,7 @@ public class TestRuntime
             });
 
         haRunner.ClientMock.ConnectionMock.Verify(
-            n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
+            n => n.SendCommandAsync<CallServiceCommand>(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
         timedCancellationSource.Cancel();
         await runnerTask.ConfigureAwait(false);
