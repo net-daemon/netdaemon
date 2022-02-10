@@ -37,16 +37,19 @@ internal class ResultMessageHandler : IResultMessageHandler, IAsyncDisposable
                         "Command ({CommandType}) did not get response in timely fashion.  Sent command is {CommandMessage}",
                         command.Type, command);
                 }
-
+                // We wait for the task even if there was a timeout so we make sure
+                // we catch the original error
                 var result = await task.ConfigureAwait(false);
                 if (!result.Success ?? false)
+                {
                     _logger.LogWarning(
                         "Failed command ({CommandType}) error: {ErrorResult}.  Sent command is {CommandMessage}",
                         command.Type, result.Error, command);
+                }
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Exception waiting for result message");
+                _logger.LogError(e, "Exception waiting for result message  Sent command is {CommandMessage}", command);
             }
             finally
             {
