@@ -7,9 +7,9 @@ internal class ResultMessageHandler : IResultMessageHandler, IAsyncDisposable
     internal int WaitForResultTimeout = 20000;
     private readonly CancellationTokenSource _tokenSource = new();
     private readonly ConcurrentDictionary<Task<HassMessage>, object?> _backgroundTasks = new();
-    private readonly ILogger<ResultMessageHandler> _logger;
+    private readonly ILogger _logger;
 
-    public ResultMessageHandler(ILogger<ResultMessageHandler> logger)
+    public ResultMessageHandler(ILogger logger)
     {
         _logger = logger;
     }

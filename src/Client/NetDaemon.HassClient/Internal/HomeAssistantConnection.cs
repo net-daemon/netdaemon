@@ -7,7 +7,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly ILogger<IHomeAssistantConnection> _logger;
     private readonly IWebSocketClientTransportPipeline _transportPipeline;
     private readonly IHomeAssistantApiManager _apiManager;
-    private readonly IResultMessageHandler _resultMessageHandler;
+    private readonly ResultMessageHandler _resultMessageHandler;
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
@@ -30,14 +30,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public HomeAssistantConnection(
         ILogger<IHomeAssistantConnection> logger,
         IWebSocketClientTransportPipeline pipeline,
-        IHomeAssistantApiManager apiManager,
-        IResultMessageHandler resultMessageHandler
+        IHomeAssistantApiManager apiManager
     )
     {
         _transportPipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
         _apiManager = apiManager;
-        _resultMessageHandler = resultMessageHandler;
         _logger = logger;
+
+        _resultMessageHandler = new(_logger);
 
         if (_transportPipeline.WebSocketState != WebSocketState.Open)
             throw new ApplicationException(

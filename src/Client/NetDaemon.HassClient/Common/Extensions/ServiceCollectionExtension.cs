@@ -17,8 +17,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IHomeAssistantRunner>(s => s.GetRequiredService<HomeAssistantRunner>())
             .AddSingleton<HomeAssistantApiManager>()
             .AddSingleton<IHomeAssistantApiManager>(s => s.GetRequiredService<HomeAssistantApiManager>())
-            .AddSingleton<ResultMessageHandler>()
-            .AddSingleton<IResultMessageHandler>(s => s.GetRequiredService<ResultMessageHandler>())
             .AddTransient(s => s.GetRequiredService<IHomeAssistantRunner>().CurrentConnection!)
             .AddTransient(s => s.GetRequiredService<IHomeAssistantRunner>().CurrentConnection!.OnHomeAssistantEvent)
             .AddWebSocketFactory()

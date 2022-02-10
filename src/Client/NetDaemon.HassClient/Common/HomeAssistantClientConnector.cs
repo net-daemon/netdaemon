@@ -45,7 +45,7 @@ public static class HomeAssistantClientConnector
         };
         var optionsSettings = Options.Create(settings);
         var apiManager = new HomeAssistantApiManager(optionsSettings, new HttpClient());
-        var connectionFactory = new HomeAssistantConnectionFactory(loggerConnect, apiManager, new ResultMessageHandler(loggerResultMessageHandler));
+        var connectionFactory = new HomeAssistantConnectionFactory(loggerConnect, apiManager);
         var pipeLineFactory = new WebSocketClientTransportPipelineFactory();
         var websocketClientFactory = new WebSocketClientFactory(Options.Create(settings));
         var client = new HomeAssistantClient(loggerClient, websocketClientFactory, pipeLineFactory, connectionFactory);
