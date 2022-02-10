@@ -4,7 +4,7 @@ namespace NetDaemon.Client.Internal.Helpers;
 
 internal class ResultMessageHandler : IResultMessageHandler, IAsyncDisposable
 {
-    private const int WaitForResultTimeout = 20000;
+    internal int WaitForResultTimeout = 20000;
     private readonly CancellationTokenSource _tokenSource = new();
     private readonly ConcurrentDictionary<Task<HassMessage>, object?> _backgroundTasks = new();
     private readonly ILogger<ResultMessageHandler> _logger;

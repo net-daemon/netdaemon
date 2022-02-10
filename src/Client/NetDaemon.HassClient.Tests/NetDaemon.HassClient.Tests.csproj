@@ -28,6 +28,6 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\NetDaemon.HassClient\NetDaemon.Client.csproj"/>
+        <ProjectReference Include="..\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     </ItemGroup>
 </Project>

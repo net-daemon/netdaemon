@@ -63,11 +63,13 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private async Task<Task<HassMessage>> SendCommandAsyncInternal<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
+        // The semaphore can fail to be taken in rare cases so we need
+        // to keep this out of the try/finally block so it will not be released
+        await _messageIdSemaphore.WaitAsync(cancelToken).ConfigureAwait(false);
         try
         {
             // We need to make sure messages to HA are send with increasing Ids therefore we need to synchronize
             // increasing the messageId and Sending the message
-            await _messageIdSemaphore.WaitAsync(cancelToken).ConfigureAwait(false);
             command.Id = ++_messageId;
 
             // We make a task that subscribe for the return result message
