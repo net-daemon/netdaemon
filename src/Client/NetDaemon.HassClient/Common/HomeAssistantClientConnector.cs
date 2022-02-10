@@ -35,6 +35,7 @@ public static class HomeAssistantClientConnector
         var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
         var loggerConnect = loggerFactory.CreateLogger<IHomeAssistantConnection>();
         var loggerClient = loggerFactory.CreateLogger<IHomeAssistantClient>();
+        var loggerResultMessageHandler = loggerFactory.CreateLogger<ResultMessageHandler>();
         var settings = new HomeAssistantSettings
         {
             Host = host,

@@ -50,7 +50,7 @@ public class AppScopedHaContextProviderTest
             }
         };
         _hassConnectionMock.Verify(
-            c => c.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(expectedCommand,
+            c => c.SendCommandAsync<CallServiceCommand>(expectedCommand,
                 It.IsAny<CancellationToken>()), Times.Once);
     }
 
