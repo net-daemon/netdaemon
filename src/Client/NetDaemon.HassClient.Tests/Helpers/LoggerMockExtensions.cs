@@ -4,7 +4,7 @@ public static class LoggerMockExtensions
 {
     public static Mock<ILogger<T>> VerifyWarningWasCalled<T>(this Mock<ILogger<T>> logger, string expectedMessage)
     {
-        Func<object, Type, bool> state = (v, t) => v.ToString().CompareTo(expectedMessage) == 0;
+        Func<object, Type, bool> state = (v, t) => String.Compare(v.ToString()!, expectedMessage, StringComparison.Ordinal) == 0;
 
         logger.Verify(
             x => x.Log(
@@ -12,13 +12,13 @@ public static class LoggerMockExtensions
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, t) => state(v, t)),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!));
         return logger;
     }
 
     public static Mock<ILogger<T>> VerifyErrorWasCalled<T>(this Mock<ILogger<T>> logger, string expectedMessage)
     {
-        Func<object, Type, bool> state = (v, t) => v.ToString().CompareTo(expectedMessage) == 0;
+        Func<object, Type, bool> state = (v, t) => String.Compare(v.ToString()!, expectedMessage, StringComparison.Ordinal) == 0;
 
         logger.Verify(
             x => x.Log(
@@ -26,7 +26,7 @@ public static class LoggerMockExtensions
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, t) => state(v, t)),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!));
         return logger;
     }
 }
