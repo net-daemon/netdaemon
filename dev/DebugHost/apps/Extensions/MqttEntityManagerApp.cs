@@ -77,7 +77,6 @@ public class MqttEntityManagerApp : IAsyncInitializable
             await _entityManager.UpdateAsync(rainNexthour4Id, 2).ConfigureAwait(false);
             await _entityManager.UpdateAsync(rainNexthour4Id, 1).ConfigureAwait(false);
 
-            return;
             //**************************
             //  More in-depth creation and testing of results
             //**************************

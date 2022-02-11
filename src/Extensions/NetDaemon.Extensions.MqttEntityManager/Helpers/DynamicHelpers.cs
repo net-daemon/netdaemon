@@ -3,8 +3,17 @@ using System.Dynamic;
 
 namespace NetDaemon.Extensions.MqttEntityManager.Helpers;
 
+/// <summary>
+/// Helper utilities for dynamics
+/// </summary>
 public class DynamicHelpers
 {
+    /// <summary>
+    /// Return true if the specified dynamic object has a property of this name
+    /// </summary>
+    /// <param name="o"></param>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
     public static bool PropertyExists(dynamic o, string propertyName)
     {
         if (o == null)
