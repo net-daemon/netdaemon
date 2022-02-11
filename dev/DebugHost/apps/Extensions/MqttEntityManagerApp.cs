@@ -42,6 +42,47 @@ public class MqttEntityManagerApp : IAsyncInitializable
     {
         try
         {
+            //**************************
+            //  Quick entity creation tests
+            // **NOTE THAT THESE ENTITIES ARE REMOVED AT THE END OF THIS method
+            //**************************
+            
+            // Create a binary sensor, set it available and set its state
+            // Note the use of custom payloads...
+            var basicSensorId = "binary_sensor.s2";
+            await _entityManager.CreateAsync(basicSensorId, new EntityCreationOptions(
+                Name: "HotDog sensor",
+                AdditionalOptions:  new
+                {
+                    payload_available = "up", payload_not_available = "down",
+                    payload_on = "hot", payload_off = "cold"
+                }
+                )).ConfigureAwait(false);
+            
+            await _entityManager.SetAvailabilityAsync(basicSensorId, "up").ConfigureAwait(false);
+            await _entityManager.UpdateAsync(basicSensorId, "cold").ConfigureAwait(false);
+
+            // Create a humidity sensor with custom measurement and apply a sequence of values
+            var rainNexthour4Id = "sensor.rain_nexthour4";
+            await _entityManager.CreateAsync(rainNexthour4Id, new EntityCreationOptions(
+                Name: "Rain Next Hour4",
+                DeviceClass: "humidity",
+                AdditionalOptions:  new
+                {
+                    payload_available = "up", payload_not_available = "down",
+                    unit_of_measurement = "mm/h"
+                }
+            )).ConfigureAwait(false);
+
+            await _entityManager.SetAvailabilityAsync(rainNexthour4Id, "up").ConfigureAwait(false);
+            await _entityManager.UpdateAsync(rainNexthour4Id, 3).ConfigureAwait(false);
+            await _entityManager.UpdateAsync(rainNexthour4Id, 2).ConfigureAwait(false);
+            await _entityManager.UpdateAsync(rainNexthour4Id, 9).ConfigureAwait(false);
+            
+            //**************************
+            //  More in-depth creation and testing of results
+            //**************************
+            
             // Basic entity creation
             await _entityManager.CreateAsync("sensor.basic_sensor").ConfigureAwait(false);
 
@@ -82,9 +123,8 @@ public class MqttEntityManagerApp : IAsyncInitializable
             _logger.LogInformation("Removed Entity: {Removed}", removed);
 
             // Remove other entities
-            await _entityManager.RemoveAsync("sensor.basic_sensor").ConfigureAwait(false);
-            await _entityManager.RemoveAsync("sensor.helto_switch").ConfigureAwait(false);
-            await _entityManager.RemoveAsync("sensor.my_id").ConfigureAwait(false);
+            await _entityManager.RemoveAsync(basicSensorId).ConfigureAwait(false);
+            await _entityManager.RemoveAsync(rainNexthour4Id).ConfigureAwait(false);
         }
         catch (Exception e)
         {

@@ -38,16 +38,7 @@ internal class MqttEntityManager : IMqttEntityManager
         var (domain, identifier) = EntityIdParser.Extract(entityId);
         var configPath = ConfigPath(domain, identifier);
 
-        var payload = JsonSerializer.Serialize(new EntityCreationPayload
-            {
-                Name = options?.Name ?? identifier,
-                DeviceClass = options?.DeviceClass,
-                UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
-                CommandTopic = CommandPath(domain, identifier),
-                StateTopic = StatePath(domain, identifier),
-                JsonAttributesTopic = AttrsPath(domain, identifier)
-            }
-        );
+        var payload = BuildCreationPayload(domain, identifier, configPath, options);
 
         await _messageSender
             .SendMessageAsync(configPath, payload, options?.Persist ?? true)
@@ -68,17 +59,51 @@ internal class MqttEntityManager : IMqttEntityManager
     ///     Update state and, optionally, attributes of an HA entity via MQTT
     /// </summary>
     /// <param name="entityId"></param>
-    /// <param name="state">New state</param>
+    /// <param name="stateObject">New state, which will be converted to a string before submitting</param>
     /// <param name="attributes">Concrete or anonymous attributes</param>
-    public async Task UpdateAsync(string entityId, string? state, object? attributes = null)
+    public async Task UpdateAsync(string entityId, object? stateObject, object? attributes = null)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        
+        var state = stateObject?.ToString();
+
         if (!string.IsNullOrWhiteSpace(state))
             await _messageSender.SendMessageAsync(StatePath(domain, identifier), state).ConfigureAwait(false);
-        
+
         if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes) ).ConfigureAwait(false);
+            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes))
+                .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Set availability of the entity. If you specified "payload_available" and "payload_not_available" configuration
+    /// on creating the entity then the value should match one of these.
+    /// If not, then use "online" and "offline"
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <param name="availability"></param>
+    public async Task SetAvailabilityAsync(string entityId, string availability)
+    {
+        var (domain, identifier) = EntityIdParser.Extract(entityId);
+
+        await _messageSender.SendMessageAsync(AvailabilityPath(domain, identifier), availability).ConfigureAwait(false);
+    }
+
+    private string BuildCreationPayload(string domain, string identifier, string configPath,
+        EntityCreationOptions? options)
+    {
+        var concreteOptions = new EntityCreationPayload
+        {
+            Name = options?.Name ?? identifier,
+            DeviceClass = options?.DeviceClass,
+            UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
+            CommandTopic = CommandPath(domain, identifier),
+            StateTopic = StatePath(domain, identifier),
+            AvailabilityTopic = AvailabilityPath(domain, identifier),
+            JsonAttributesTopic = AttrsPath(domain, identifier),
+            QualityOfService = options?.QualityOfService
+        };
+
+        return EntityCreationPayloadHelper.Merge(concreteOptions, options?.AdditionalOptions);
     }
 
     private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
@@ -90,4 +115,6 @@ internal class MqttEntityManager : IMqttEntityManager
     private string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
 
     private string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
+
+    private string AvailabilityPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/availability";
 }
