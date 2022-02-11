@@ -22,7 +22,6 @@ public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
         var loggerClient = new Mock<ILogger<HomeAssistantClient>>();
         var loggerTransport = new Mock<ILogger<IWebSocketClientTransportPipeline>>();
         var loggerConnection = new Mock<ILogger<IHomeAssistantConnection>>();
-
         var settings = haSettings ?? new HomeAssistantSettings
         {
             Host = "127.0.0.1",

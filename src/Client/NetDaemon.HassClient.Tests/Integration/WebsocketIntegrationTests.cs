@@ -146,7 +146,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
     public async Task TestErrorReturnShouldThrowException()
     {
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
-        await Assert.ThrowsAsync<ApplicationException>(async () => await ctx.HomeAssistantConnection
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await ctx.HomeAssistantConnection
             .SendCommandAndReturnResponseAsync<SimpleCommand, object?>(
                 new SimpleCommand("fake_return_error"),
                 TokenSource.Token

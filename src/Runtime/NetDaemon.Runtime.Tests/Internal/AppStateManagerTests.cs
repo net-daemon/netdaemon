@@ -85,7 +85,7 @@ public class AppStateManagerTests
             n.GetApiCallAsync<HassState>("states/input_boolean.netdaemon_helloapp", It.IsAny<CancellationToken>()));
         // It exists so it should turn it on
         haConnectionMock.Verify(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
+            n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()));
     }
 
@@ -109,7 +109,7 @@ public class AppStateManagerTests
             n.SendCommandAndReturnResponseAsync<CreateInputBooleanHelperCommand, InputBooleanHelper>(
                 It.IsAny<CreateInputBooleanHelperCommand>(), It.IsAny<CancellationToken>()));
         haConnectionMock.Verify(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
+            n.SendCommandAsync<CallServiceCommand>(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()));
     }
 
@@ -133,7 +133,7 @@ public class AppStateManagerTests
             n.SendCommandAndReturnResponseAsync<CreateInputBooleanHelperCommand, InputBooleanHelper>(
                 It.IsAny<CreateInputBooleanHelperCommand>(), It.IsAny<CancellationToken>()));
         haConnectionMock.Verify(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
+            n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()));
     }
 
@@ -159,7 +159,7 @@ public class AppStateManagerTests
             n.GetApiCallAsync<HassState>("states/input_boolean.netdaemon_helloapp", It.IsAny<CancellationToken>()));
         // It exists so it should turn it on
         haConnectionMock.Verify(n =>
-            n.SendCommandAndReturnResponseAsync<CallServiceCommand, object>(It.IsAny<CallServiceCommand>(),
+            n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()));
     }
 
