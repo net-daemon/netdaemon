@@ -91,6 +91,10 @@ internal class MqttEntityManager : IMqttEntityManager
     private string BuildCreationPayload(string domain, string identifier, string configPath,
         EntityCreationOptions? options)
     {
+        var availabilityRequired = // If payloads for availability are specified then we need the topic
+            DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_available") &&
+            DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_not_available");
+
         var concreteOptions = new EntityCreationPayload
         {
             Name = options?.Name ?? identifier,
@@ -98,7 +102,7 @@ internal class MqttEntityManager : IMqttEntityManager
             UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
             CommandTopic = CommandPath(domain, identifier),
             StateTopic = StatePath(domain, identifier),
-            AvailabilityTopic = AvailabilityPath(domain, identifier),
+            AvailabilityTopic = availabilityRequired ? AvailabilityPath(domain, identifier) : null,
             JsonAttributesTopic = AttrsPath(domain, identifier),
             QualityOfService = options?.QualityOfService
         };

@@ -47,19 +47,17 @@ public class MqttEntityManagerApp : IAsyncInitializable
             // **NOTE THAT THESE ENTITIES ARE REMOVED AT THE END OF THIS method
             //**************************
             
-            // Create a binary sensor, set it available and set its state
+            // Create a binary sensor and set its state
             // Note the use of custom payloads...
             var basicSensorId = "binary_sensor.s2";
             await _entityManager.CreateAsync(basicSensorId, new EntityCreationOptions(
                 Name: "HotDog sensor",
                 AdditionalOptions:  new
                 {
-                    payload_available = "up", payload_not_available = "down",
                     payload_on = "hot", payload_off = "cold"
                 }
                 )).ConfigureAwait(false);
             
-            await _entityManager.SetAvailabilityAsync(basicSensorId, "up").ConfigureAwait(false);
             await _entityManager.UpdateAsync(basicSensorId, "cold").ConfigureAwait(false);
 
             // Create a humidity sensor with custom measurement and apply a sequence of values
@@ -77,8 +75,9 @@ public class MqttEntityManagerApp : IAsyncInitializable
             await _entityManager.SetAvailabilityAsync(rainNexthour4Id, "up").ConfigureAwait(false);
             await _entityManager.UpdateAsync(rainNexthour4Id, 3).ConfigureAwait(false);
             await _entityManager.UpdateAsync(rainNexthour4Id, 2).ConfigureAwait(false);
-            await _entityManager.UpdateAsync(rainNexthour4Id, 9).ConfigureAwait(false);
-            
+            await _entityManager.UpdateAsync(rainNexthour4Id, 1).ConfigureAwait(false);
+
+            return;
             //**************************
             //  More in-depth creation and testing of results
             //**************************
