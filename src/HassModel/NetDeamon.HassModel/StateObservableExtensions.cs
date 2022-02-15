@@ -17,8 +17,13 @@ public static class StateObservableExtensions
         IScheduler? scheduler = null)
     
         => observable
+            // Only process changes that start or stop matching the predicate
             .Where(e => predicate(e.Old) != predicate(e.New))
+                
+            // Both  will restart the timer
             .Throttle(timeSpan, scheduler ?? Scheduler.Default)
+            
+            // But only when the new state matches the predicate we emit it
             .Where(e => predicate(e.New));
     
     /// <summary>
