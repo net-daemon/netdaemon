@@ -1,4 +1,6 @@
-﻿namespace NetDaemon.Extensions.MqttEntityManager;
+﻿using MQTTnet.Protocol;
+
+namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
 ///     Interface to send messages to MQTT
@@ -11,6 +13,7 @@ internal interface IMessageSender
     /// <param name="topic"></param>
     /// <param name="payload"></param>
     /// <param name="retain"></param>
+    /// <param name="qos"></param>
     /// <returns></returns>
-    Task SendMessageAsync(string topic, string payload, bool retain = false);
+    Task SendMessageAsync(string topic, string payload, bool retain, MqttQualityOfServiceLevel qos);
 }

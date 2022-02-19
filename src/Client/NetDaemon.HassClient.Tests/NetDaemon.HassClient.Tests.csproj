@@ -28,6 +28,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
         <ProjectReference Include="..\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet;
 using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
+using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -28,7 +28,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// <param name="mqttConfig"></param>
     public AssuredMqttConnection(
         ILogger<AssuredMqttConnection> logger,
-        IMqttFactory mqttFactory,
+        IMqttFactoryWrapper mqttFactory,
         IOptions<MqttConfiguration> mqttConfig)
     {
         _logger = logger;
@@ -49,7 +49,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
     }
 
-    private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactory mqttFactory)
+    private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
         _logger.LogDebug("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
