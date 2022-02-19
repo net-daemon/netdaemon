@@ -8,6 +8,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="6.4.0" />
+        <PackageReference Include="FluentAssertions.Json" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
@@ -28,6 +29,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
         <ProjectReference Include="..\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     </ItemGroup>
 </Project>

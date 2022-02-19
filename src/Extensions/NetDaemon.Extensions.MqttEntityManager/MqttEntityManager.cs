@@ -1,11 +1,16 @@
 ﻿#region
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 using NetDaemon.Extensions.MqttEntityManager.Models;
 
 #endregion
+
+[assembly: InternalsVisibleTo("NetDaemon.HassClient.Tests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -16,6 +21,8 @@ internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
     private readonly IMessageSender _messageSender;
+
+    public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
     /// <summary>
     ///     Manage entities via MQTT
@@ -41,7 +48,7 @@ internal class MqttEntityManager : IMqttEntityManager
         var payload = BuildCreationPayload(domain, identifier, configPath, options);
 
         await _messageSender
-            .SendMessageAsync(configPath, payload, options?.Persist ?? true)
+            .SendMessageAsync(configPath, payload, options?.Persist ?? true, QualityOfServiceLevel)
             .ConfigureAwait(false);
     }
 
@@ -52,7 +59,9 @@ internal class MqttEntityManager : IMqttEntityManager
     public async Task RemoveAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        await _messageSender.SendMessageAsync(ConfigPath(domain, identifier), string.Empty).ConfigureAwait(false);
+        await _messageSender
+            .SendMessageAsync(ConfigPath(domain, identifier), string.Empty, false, QualityOfServiceLevel)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -67,10 +76,12 @@ internal class MqttEntityManager : IMqttEntityManager
         var state = stateObject?.ToString();
 
         if (!string.IsNullOrWhiteSpace(state))
-            await _messageSender.SendMessageAsync(StatePath(domain, identifier), state).ConfigureAwait(false);
+            await _messageSender.SendMessageAsync(StatePath(domain, identifier), state, true, QualityOfServiceLevel)
+                .ConfigureAwait(false);
 
         if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes))
+            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes),
+                    true, QualityOfServiceLevel)
                 .ConfigureAwait(false);
     }
 
@@ -85,14 +96,16 @@ internal class MqttEntityManager : IMqttEntityManager
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
 
-        await _messageSender.SendMessageAsync(AvailabilityPath(domain, identifier), availability).ConfigureAwait(false);
+        await _messageSender
+            .SendMessageAsync(AvailabilityPath(domain, identifier), availability, true, QualityOfServiceLevel)
+            .ConfigureAwait(false);
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,
         EntityCreationOptions? options)
     {
         var availabilityRequired = // If payloads for availability are specified then we need the topic
-            DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_available") &&
+            DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_available") ||
             DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_not_available");
 
         var concreteOptions = new EntityCreationPayload
@@ -103,8 +116,7 @@ internal class MqttEntityManager : IMqttEntityManager
             CommandTopic = CommandPath(domain, identifier),
             StateTopic = StatePath(domain, identifier),
             AvailabilityTopic = availabilityRequired ? AvailabilityPath(domain, identifier) : null,
-            JsonAttributesTopic = AttrsPath(domain, identifier),
-            QualityOfService = options?.QualityOfService
+            JsonAttributesTopic = AttrsPath(domain, identifier)
         };
 
         return EntityCreationPayloadHelper.Merge(concreteOptions, options?.AdditionalOptions);

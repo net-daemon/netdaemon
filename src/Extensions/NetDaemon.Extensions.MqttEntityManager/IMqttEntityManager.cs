@@ -1,4 +1,5 @@
-﻿using NetDaemon.Extensions.MqttEntityManager.Models;
+﻿using MQTTnet.Protocol;
+using NetDaemon.Extensions.MqttEntityManager.Models;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -31,4 +32,9 @@ public interface IMqttEntityManager
     /// <param name="availability"></param>
     /// <returns></returns>
     Task SetAvailabilityAsync(string entityId, string availability);
+    
+    /// <summary>
+    /// Set Quality of Service Level for MQTT message
+    /// </summary>
+    MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; }
 }
