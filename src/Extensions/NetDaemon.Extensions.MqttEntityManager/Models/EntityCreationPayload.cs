@@ -32,4 +32,13 @@ internal class EntityCreationPayload
     [JsonPropertyName("availability_topic")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AvailabilityTopic { get; set; }
+    
+    [JsonPropertyName("payload_available")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PayloadAvailable { get; set; }
+
+    [JsonPropertyName("payload_not_available")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PayloadNotAvailable { get; set; }
+
 }

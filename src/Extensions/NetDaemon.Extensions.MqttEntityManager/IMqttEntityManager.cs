@@ -11,7 +11,7 @@ public interface IMqttEntityManager
     /// <summary>
     ///     Create an entity in Home Assistant via MQTT
     /// </summary>
-    Task CreateAsync(string entityId, EntityCreationOptions? options = null);
+    Task CreateAsync(string entityId, EntityCreationOptions? options = null, object? additionalConfig = null);
 
     /// <summary>
     ///     Remove an entity from Home Assistant

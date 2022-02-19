@@ -22,6 +22,23 @@ public class MqttEntityManagerTester
         var mqttSetup = new MockMqttMessageSenderSetup();
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
 
+        await entityManager.CreateAsync("domain.sensor");
+        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
+
+        payload?.Count.Should().Be(5);
+        payload?["name"].ToString().Should().Be("sensor");
+        payload?["unique_id"].ToString().Should().Be("homeassistant_domain_sensor_config");
+        payload?["command_topic"].ToString().Should().Be("homeassistant/domain/sensor/set");
+        payload?["state_topic"].ToString().Should().Be("homeassistant/domain/sensor/state");
+        payload?["json_attributes_topic"].ToString().Should().Be("homeassistant/domain/sensor/attributes");
+    }
+    
+    [Fact]
+    public async Task CreateWithDefaultOptionsSetsBaseConfig()
+    {
+        var mqttSetup = new MockMqttMessageSenderSetup();
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
@@ -99,7 +116,7 @@ public class MqttEntityManagerTester
 
         var otherOptions = new { sub_class = "lights", up_state = "live" };
 
-        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(AdditionalOptions: otherOptions));
+        await entityManager.CreateAsync("domain.sensor", additionalConfig: otherOptions);
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?["sub_class"].ToString().Should().Be("lights");
@@ -114,7 +131,7 @@ public class MqttEntityManagerTester
 
         var otherOptions = new { command_topic = "my/topic"};
 
-        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(AdditionalOptions: otherOptions));
+        await entityManager.CreateAsync("domain.sensor", additionalConfig: otherOptions);
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?["command_topic"].ToString().Should().Be("my/topic");
@@ -126,7 +143,7 @@ public class MqttEntityManagerTester
         var mqttSetup = new MockMqttMessageSenderSetup();
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
 
-        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
+        await entityManager.CreateAsync("domain.sensor");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?.ContainsKey("availability_topic").Should().BeFalse();
@@ -138,13 +155,12 @@ public class MqttEntityManagerTester
         var mqttSetup = new MockMqttMessageSenderSetup();
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
 
-        var otherOptions = new { payload_available = "up"};
-
-        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(AdditionalOptions: otherOptions));
+        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(PayloadAvailable: "up"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?.ContainsKey("availability_topic").Should().BeTrue();
         payload?["availability_topic"].ToString().Should().Be("homeassistant/domain/sensor/availability");
+        payload?["payload_available"].ToString().Should().Be("up");
     }
     
     [Fact]
@@ -153,13 +169,12 @@ public class MqttEntityManagerTester
         var mqttSetup = new MockMqttMessageSenderSetup();
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
 
-        var otherOptions = new { payload_not_available = "down"};
-
-        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(AdditionalOptions: otherOptions));
+        await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(PayloadNotAvailable: "down"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?.ContainsKey("availability_topic").Should().BeTrue();
         payload?["availability_topic"].ToString().Should().Be("homeassistant/domain/sensor/availability");
+        payload?["payload_not_available"].ToString().Should().Be("down");
     }
 
     [Fact]

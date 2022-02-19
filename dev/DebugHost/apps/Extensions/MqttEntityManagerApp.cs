@@ -52,10 +52,8 @@ public class MqttEntityManagerApp : IAsyncInitializable
             var basicSensorId = "binary_sensor.s2";
             await _entityManager.CreateAsync(basicSensorId, new EntityCreationOptions(
                 Name: "HotDog sensor",
-                AdditionalOptions:  new
-                {
-                    payload_on = "hot", payload_off = "cold"
-                }
+                PayloadAvailable: "hot",
+                PayloadNotAvailable: "cold"
                 )).ConfigureAwait(false);
             
             await _entityManager.UpdateAsync(basicSensorId, "cold").ConfigureAwait(false);
@@ -65,12 +63,11 @@ public class MqttEntityManagerApp : IAsyncInitializable
             await _entityManager.CreateAsync(rainNexthour4Id, new EntityCreationOptions(
                 Name: "Rain Next Hour4",
                 DeviceClass: "humidity",
-                AdditionalOptions:  new
-                {
-                    payload_available = "up", payload_not_available = "down",
-                    unit_of_measurement = "mm/h"
-                }
-            )).ConfigureAwait(false);
+                PayloadAvailable: "up",
+                PayloadNotAvailable: "down"
+                ),
+            new { unit_of_measurement = "mm/h"}
+            ).ConfigureAwait(false);
 
             await _entityManager.SetAvailabilityAsync(rainNexthour4Id, "up").ConfigureAwait(false);
             await _entityManager.UpdateAsync(rainNexthour4Id, 3).ConfigureAwait(false);

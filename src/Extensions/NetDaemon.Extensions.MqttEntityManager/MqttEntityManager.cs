@@ -40,12 +40,13 @@ internal class MqttEntityManager : IMqttEntityManager
     /// </summary>
     /// <param name="entityId">Distinct identifier, in the format "domain.id", such as "sensor.kitchen_temp"</param>
     /// <param name="options">Optional set of additional parameters</param>
-    public async Task CreateAsync(string entityId, EntityCreationOptions? options)
+    /// <param name="additionalConfig"></param>
+    public async Task CreateAsync(string entityId, EntityCreationOptions? options = null, object? additionalConfig = null)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
         var configPath = ConfigPath(domain, identifier);
 
-        var payload = BuildCreationPayload(domain, identifier, configPath, options);
+        var payload = BuildCreationPayload(domain, identifier, configPath, options, additionalConfig);
 
         await _messageSender
             .SendMessageAsync(configPath, payload, options?.Persist ?? true, QualityOfServiceLevel)
@@ -102,11 +103,9 @@ internal class MqttEntityManager : IMqttEntityManager
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,
-        EntityCreationOptions? options)
+        EntityCreationOptions? options, object? additionalConfig)
     {
-        var availabilityRequired = // If payloads for availability are specified then we need the topic
-            DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_available") ||
-            DynamicHelpers.PropertyExists(options?.AdditionalOptions, "payload_not_available");
+        var availabilityRequired = IsAvailabilityTopicRequired(options);
 
         var concreteOptions = new EntityCreationPayload
         {
@@ -115,11 +114,19 @@ internal class MqttEntityManager : IMqttEntityManager
             UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
             CommandTopic = CommandPath(domain, identifier),
             StateTopic = StatePath(domain, identifier),
+            PayloadAvailable = options?.PayloadAvailable,
+            PayloadNotAvailable = options?.PayloadNotAvailable,
             AvailabilityTopic = availabilityRequired ? AvailabilityPath(domain, identifier) : null,
             JsonAttributesTopic = AttrsPath(domain, identifier)
         };
 
-        return EntityCreationPayloadHelper.Merge(concreteOptions, options?.AdditionalOptions);
+        return EntityCreationPayloadHelper.Merge(concreteOptions, additionalConfig);
+    }
+
+    private bool IsAvailabilityTopicRequired(EntityCreationOptions? options)
+    {
+        return options != null && (!string.IsNullOrWhiteSpace(options.PayloadAvailable) ||
+                                   !string.IsNullOrWhiteSpace(options.PayloadNotAvailable));
     }
 
     private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
