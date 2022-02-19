@@ -13,17 +13,17 @@ internal class EntityCreationPayloadHelper
     /// Merge an optional dynamic set of parameters with the concrete payload
     /// </summary>
     /// <param name="concreteOptions"></param>
-    /// <param name="dynamicOptions"></param>
+    /// <param name="additionalOptions"></param>
     /// <returns></returns>
     /// <exception cref="JsonException"></exception>
-    internal static string Merge(EntityCreationPayload concreteOptions, dynamic? dynamicOptions)
+    internal static string Merge(EntityCreationPayload concreteOptions, object? additionalOptions)
     {
         var concreteJson = JsonSerializer.SerializeToNode(concreteOptions)?.AsObject()
                            ?? throw new JsonException("Unable to convert concrete config to JsonObject");
 
-        if (dynamicOptions != null)
+        if (additionalOptions != null)
         {
-            JsonObject dynamicJson = JsonSerializer.SerializeToNode(dynamicOptions);
+            JsonObject? dynamicJson = (JsonObject)JsonSerializer.SerializeToNode(additionalOptions)!;
             concreteJson.AddRange(dynamicJson);
         }
 

@@ -43,9 +43,9 @@ public class EntityCreationPayloadHelperTests
 
     [Theory]
     [ClassData(typeof(PayloadTestData))]
-    internal void MergeTests(EntityCreationPayload concreteOptions, dynamic? dynamicOptions, JToken expected, string because)
+    internal void MergeTests(EntityCreationPayload concreteOptions, object? additionalOptions, JToken expected, string because)
     {
-        JToken mergedData = JToken.Parse(EntityCreationPayloadHelper.Merge(concreteOptions, dynamicOptions));
+        JToken mergedData = JToken.Parse(EntityCreationPayloadHelper.Merge(concreteOptions, additionalOptions));
 
         mergedData.Should().BeEquivalentTo(expected, because);
     }

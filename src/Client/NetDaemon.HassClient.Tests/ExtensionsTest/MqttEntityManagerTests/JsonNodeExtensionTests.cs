@@ -22,7 +22,7 @@ public class JsonNodeExtensionTests
 
     [Theory]
     [ClassData(typeof(MergeTestData))]
-    public void CanMerge(JsonObject target, JsonObject toMerge, JsonObject expected)
+    public void CanMerge(JsonObject target, JsonObject? toMerge, JsonObject expected)
     {
         target.AddRange(toMerge);
 

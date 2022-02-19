@@ -13,7 +13,7 @@ internal static class JsonNodeExtensions
     /// </summary>
     /// <param name="target"></param>
     /// <param name="toMerge"></param>
-    public static void AddRange(this JsonObject target, JsonObject toMerge)
+    public static void AddRange(this JsonObject target, JsonObject? toMerge)
     {
         foreach (var kvp in toMerge)
         {
