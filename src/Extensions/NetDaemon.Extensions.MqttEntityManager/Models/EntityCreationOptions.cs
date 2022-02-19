@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Extensions.MqttEntityManager.Models;
+﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
 /// Parameters to create an entity

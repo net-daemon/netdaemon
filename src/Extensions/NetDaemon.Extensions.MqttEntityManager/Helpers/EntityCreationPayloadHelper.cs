@@ -23,7 +23,7 @@ internal class EntityCreationPayloadHelper
 
         if (additionalOptions != null)
         {
-            JsonObject? dynamicJson = (JsonObject)JsonSerializer.SerializeToNode(additionalOptions)!;
+            JsonObject? dynamicJson = JsonSerializer.SerializeToNode(additionalOptions) as JsonObject;
             concreteJson.AddRange(dynamicJson);
         }
 
