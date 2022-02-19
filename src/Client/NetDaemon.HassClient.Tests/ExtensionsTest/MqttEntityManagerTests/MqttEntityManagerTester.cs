@@ -200,6 +200,18 @@ public class MqttEntityManagerTester
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/state");
         payload.Should().Be("NewState");
     }
+
+    [Fact]
+    public async Task CanSetStateToBlank()
+    {
+        var mqttSetup = new MockMqttMessageSenderSetup();
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+
+        await entityManager.SetStateAsync("domain.sensor", "");
+        
+        mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/state");
+        mqttSetup.LastPublishedMessage.Payload.Should().BeNull();
+    }
     
     [Fact]
     public async Task CanSetAttributes()

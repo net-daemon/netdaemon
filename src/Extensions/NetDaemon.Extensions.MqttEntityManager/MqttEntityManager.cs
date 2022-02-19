@@ -77,9 +77,8 @@ internal class MqttEntityManager : IMqttEntityManager
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
 
-        if (!string.IsNullOrWhiteSpace(state))
-            await _messageSender.SendMessageAsync(StatePath(domain, identifier), state, true, QualityOfServiceLevel)
-                .ConfigureAwait(false);
+        await _messageSender.SendMessageAsync(StatePath(domain, identifier), state, true, QualityOfServiceLevel)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
