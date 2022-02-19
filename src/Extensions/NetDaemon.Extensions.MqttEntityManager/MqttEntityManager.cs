@@ -41,7 +41,8 @@ internal class MqttEntityManager : IMqttEntityManager
     /// <param name="entityId">Distinct identifier, in the format "domain.id", such as "sensor.kitchen_temp"</param>
     /// <param name="options">Optional set of additional parameters</param>
     /// <param name="additionalConfig"></param>
-    public async Task CreateAsync(string entityId, EntityCreationOptions? options = null, object? additionalConfig = null)
+    public async Task CreateAsync(string entityId, EntityCreationOptions? options = null,
+        object? additionalConfig = null)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
         var configPath = ConfigPath(domain, identifier);
@@ -66,24 +67,35 @@ internal class MqttEntityManager : IMqttEntityManager
     }
 
     /// <summary>
-    ///     Update state and, optionally, attributes of an HA entity via MQTT
+    /// Set the state of an entity
     /// </summary>
     /// <param name="entityId"></param>
-    /// <param name="stateObject">New state, which will be converted to a string before submitting</param>
-    /// <param name="attributes">Concrete or anonymous attributes</param>
-    public async Task UpdateAsync(string entityId, object? stateObject, object? attributes = null)
+    /// <param name="state"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public async Task SetStateAsync(string entityId, string state)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        var state = stateObject?.ToString();
 
         if (!string.IsNullOrWhiteSpace(state))
             await _messageSender.SendMessageAsync(StatePath(domain, identifier), state, true, QualityOfServiceLevel)
                 .ConfigureAwait(false);
+    }
 
-        if (attributes != null)
-            await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes),
-                    true, QualityOfServiceLevel)
-                .ConfigureAwait(false);
+    /// <summary>
+    /// Set attributes on an entity
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <param name="attributes"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public async Task SetAttributesAsync(string entityId, object attributes)
+    {
+        var (domain, identifier) = EntityIdParser.Extract(entityId);
+
+        await _messageSender.SendMessageAsync(AttrsPath(domain, identifier), JsonSerializer.Serialize(attributes),
+                true, QualityOfServiceLevel)
+            .ConfigureAwait(false);
     }
 
     /// <summary>

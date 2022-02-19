@@ -17,11 +17,22 @@ public interface IMqttEntityManager
     ///     Remove an entity from Home Assistant
     /// </summary>
     Task RemoveAsync(string entityId);
+    
+    /// <summary>
+    /// Set the state of an entity
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    Task SetStateAsync(string entityId, string state);
 
     /// <summary>
-    ///     Update state and/or set attributes of an HA entity via MQTT
+    /// Set attributes on an entity
     /// </summary>
-    Task UpdateAsync(string entityId, object? state, object? attributes = null);
+    /// <param name="entityId"></param>
+    /// <param name="attributes"></param>
+    /// <returns></returns>
+    Task SetAttributesAsync(string entityId, object attributes);
 
     /// <summary>
     /// Set availability of the entity. If you specified "payload_available" and "payload_not_available" configuration

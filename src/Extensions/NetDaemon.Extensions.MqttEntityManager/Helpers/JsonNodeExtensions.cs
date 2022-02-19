@@ -15,6 +15,9 @@ internal static class JsonNodeExtensions
     /// <param name="toMerge"></param>
     public static void AddRange(this JsonObject target, JsonObject? toMerge)
     {
+        if (toMerge == null)
+            return;
+        
         foreach (var kvp in toMerge)
         {
             var k = kvp.Key;
