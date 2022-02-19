@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 using NetDaemon.Extensions.MqttEntityManager.Models;
-using FluentAssertions.Json;
 using Newtonsoft.Json.Linq;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
