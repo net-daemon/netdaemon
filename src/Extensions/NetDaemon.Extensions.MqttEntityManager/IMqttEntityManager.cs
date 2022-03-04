@@ -7,8 +7,6 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </summary>
 public interface IMqttEntityManager
 {
-    IMessageReceiver MessageReceiver { get; }
-
     /// <summary>
     ///     Set Quality of Service Level for MQTT message
     /// </summary>
@@ -51,11 +49,10 @@ public interface IMqttEntityManager
     Task SetStateAsync(string entityId, string state);
 
     /// <summary>
-    ///     Set the state of an entity
+    ///    Subscribe to the entity's command topic
     /// </summary>
     /// <param name="entityId"></param>
-    /// <param name="state"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    Task<IObservable<string>> SubscribeTopicAsync(string topic);
+    Task<IObservable<string>> SubscribeEntityCommandAsync(string entityId);
 }
