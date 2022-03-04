@@ -20,7 +20,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
-    private readonly IMessageSender _messageSender;
+    private readonly IMessageSender    _messageSender;
+    public IMessageReceiver  MessageReceiver { get; }
 
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -29,10 +30,11 @@ internal class MqttEntityManager : IMqttEntityManager
     /// </summary>
     /// <param name="messageSender"></param>
     /// <param name="config"></param>
-    public MqttEntityManager(IMessageSender messageSender, IOptions<MqttConfiguration> config)
+    public MqttEntityManager(IMessageSender messageSender, IMessageReceiver messageReceiver, IOptions<MqttConfiguration> config)
     {
-        _messageSender = messageSender;
-        _config = config.Value;
+        _messageSender        = messageSender;
+        MessageReceiver = messageReceiver;
+        _config               = config.Value;
     }
 
     /// <summary>
@@ -111,6 +113,17 @@ internal class MqttEntityManager : IMqttEntityManager
         await _messageSender
             .SendMessageAsync(AvailabilityPath(domain, identifier), availability, true, QualityOfServiceLevel)
             .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Subscribe to a topic
+    /// </summary>
+    /// <param name="topic"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public async Task SubscribeTopicAsync(string topic)
+    {
+        await MessageReceiver.ReceiveMessageAsync(topic).ConfigureAwait(false);
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,
