@@ -41,4 +41,12 @@ internal class EntityCreationPayload
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PayloadNotAvailable { get; set; }
 
+    [JsonPropertyName("payload_on")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PayloadOn { get; set; }
+
+    [JsonPropertyName("payload_off")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PayloadOff { get; set; }
+
 }

@@ -15,5 +15,7 @@ public record EntityCreationOptions(
     string? Name = null,
     string? PayloadAvailable = null,
     string? PayloadNotAvailable = null,
+    string? PayloadOn = null,
+    string? PayloadOff = null,
     bool Persist = true
 );

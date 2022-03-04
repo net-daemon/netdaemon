@@ -121,9 +121,9 @@ internal class MqttEntityManager : IMqttEntityManager
     /// <param name="topic"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task SubscribeTopicAsync(string topic)
+    public async Task<IObservable<string>> SubscribeTopicAsync(string topic)
     {
-        await MessageReceiver.ReceiveMessageAsync(topic).ConfigureAwait(false);
+        return await MessageReceiver.ReceiveMessageAsync(topic).ConfigureAwait(false);
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,

@@ -57,5 +57,5 @@ public interface IMqttEntityManager
     /// <param name="state"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    Task SubscribeTopicAsync(string topic);
+    Task<IObservable<string>> SubscribeTopicAsync(string topic);
 }

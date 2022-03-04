@@ -30,17 +30,19 @@ internal class MessageReceiver : IMessageReceiver
         _assuredMqttConnection = assuredMqttConnection;
     }
 
-    public IObservable<string> Messages { get; private set; }
+    private IObservable<string> _messages;
 
     /// <summary>
     ///     Publish a message to the given topic
     /// </summary>
     /// <param name="topic"></param>
-    public async Task ReceiveMessageAsync(string topic)
+    public async Task<IObservable<string>> ReceiveMessageAsync(string topic)
     {
         var mqttClient = await _assuredMqttConnection.GetClientAsync();
 
         await ReceiveMessage(mqttClient, topic);
+
+        return _messages;
     }
 
     private async Task ReceiveMessage(IManagedMqttClient mqttClient, string topic)
@@ -48,7 +50,7 @@ internal class MessageReceiver : IMessageReceiver
         try
         {
             await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
-            Messages = Observable.Create<string>(observer =>
+            _messages = Observable.Create<string>(observer =>
             {
                 mqttClient.UseApplicationMessageReceivedHandler(
                     msg =>
