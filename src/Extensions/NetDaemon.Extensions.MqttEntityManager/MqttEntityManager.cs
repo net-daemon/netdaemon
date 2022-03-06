@@ -21,7 +21,7 @@ internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
     private readonly IMessageSender    _messageSender;
-    public IMessageReceiver  MessageReceiver { get; }
+    private readonly IMessageReceiver  _messageReceiver;
 
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -29,12 +29,13 @@ internal class MqttEntityManager : IMqttEntityManager
     ///     Manage entities via MQTT
     /// </summary>
     /// <param name="messageSender"></param>
+    /// <param name="messageReceiver"></param>
     /// <param name="config"></param>
     public MqttEntityManager(IMessageSender messageSender, IMessageReceiver messageReceiver, IOptions<MqttConfiguration> config)
     {
-        _messageSender        = messageSender;
-        MessageReceiver = messageReceiver;
-        _config               = config.Value;
+        _messageSender = messageSender;
+        _messageReceiver = messageReceiver;
+        _config = config.Value;
     }
 
     /// <summary>
@@ -124,7 +125,7 @@ internal class MqttEntityManager : IMqttEntityManager
     public async Task<IObservable<string>> SubscribeEntityCommandAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        return await MessageReceiver.ReceiveMessageAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
+        return await _messageReceiver.ReceiveMessageAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,
@@ -141,6 +142,8 @@ internal class MqttEntityManager : IMqttEntityManager
             StateTopic = StatePath(domain, identifier),
             PayloadAvailable = options?.PayloadAvailable,
             PayloadNotAvailable = options?.PayloadNotAvailable,
+            PayloadOn = options?.PayloadOn,
+            PayloadOff = options?.PayloadOff,
             AvailabilityTopic = availabilityRequired ? AvailabilityPath(domain, identifier) : null,
             JsonAttributesTopic = AttrsPath(domain, identifier)
         };

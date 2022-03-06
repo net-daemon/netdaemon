@@ -30,8 +30,6 @@ internal class MessageReceiver : IMessageReceiver
         _assuredMqttConnection = assuredMqttConnection;
     }
 
-    private IObservable<string> _messages;
-
     /// <summary>
     ///     Publish a message to the given topic
     /// </summary>
@@ -39,27 +37,25 @@ internal class MessageReceiver : IMessageReceiver
     public async Task<IObservable<string>> ReceiveMessageAsync(string topic)
     {
         var mqttClient = await _assuredMqttConnection.GetClientAsync();
-
-        await ReceiveMessage(mqttClient, topic);
-
-        return _messages;
+        await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+        return ReceiveMessage(mqttClient, topic);
     }
 
-    private async Task ReceiveMessage(IManagedMqttClient mqttClient, string topic)
+    private IObservable<string> ReceiveMessage(IManagedMqttClient mqttClient, string topic)
     {
         try
         {
-            await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
-            _messages = Observable.Create<string>(observer =>
+            _logger.LogInformation("Subscribed to {Topic}", topic);
+            return Observable.Create<string>(observer =>
             {
                 mqttClient.UseApplicationMessageReceivedHandler(
                     msg =>
                     {
                         var payload = Encoding.UTF8.GetString(msg.ApplicationMessage.Payload);
-                        observer.OnNext(payload);
-                        _logger.LogInformation("Received: '{payload}' from '{topic}'",
+                        _logger.LogDebug("Received: '{payload}' from '{topic}'",
                             Encoding.UTF8.GetString(msg.ApplicationMessage.Payload),
                             msg.ApplicationMessage.Topic);
+                        observer.OnNext(payload);
                     });
                 return Disposable.Empty;
             });
