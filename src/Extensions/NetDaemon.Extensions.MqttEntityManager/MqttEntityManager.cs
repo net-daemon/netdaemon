@@ -125,7 +125,7 @@ internal class MqttEntityManager : IMqttEntityManager
     public async Task<IObservable<string>> SubscribeEntityCommandAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        return await _messageReceiver.ReceiveMessageAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
+        return await _messageReceiver.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,

@@ -6,5 +6,5 @@ internal interface IMessageReceiver
     ///     Receive a message from the given topic
     /// </summary>
     /// <param name="topic"></param>
-    Task<IObservable<string>> ReceiveMessageAsync(string topic);
+    Task<IObservable<string>> SubscribeTopicAsync(string topic);
 }
