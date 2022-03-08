@@ -10,7 +10,8 @@ using NetDaemon.Extensions.MqttEntityManager.Helpers;
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
-///     Manage connections and message publishing to MQTT
+///     Handle subscriptions to topics within MQTT and provide access for multiple subscribers to
+///     receive updates
 /// </summary>
 internal class MessageSubscriber : IMessageSubscriber, IDisposable
 {
@@ -24,7 +25,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     private readonly Dictionary<string, Subject<string>> _subscribers = new();
     
     /// <summary>
-    ///     Manage connections and message subscription by MQTT
+    ///     Managed subscriptions to topics within MQTT
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="assuredMqttConnection"></param>
@@ -58,17 +59,20 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     private async Task<IObservable<string>> AddSubscription(string topic)
     {
         await _subscriptionListLock.WaitAsync();
-        
-        if (!_subscribers.ContainsKey(topic))
+        try
         {
-            var subject = new Subject<string>();
-            _subscribedTopics.Add(subject);
-            _subscribers.Add(topic, subject);
+            if (!_subscribers.ContainsKey(topic))
+            {
+                var subject = new Subject<string>();
+                _subscribedTopics.Add(subject);
+                _subscribers.Add(topic, subject);
+            }
+            return _subscribers[topic];
         }
-
-        _subscriptionListLock.Release();
-
-        return _subscribers[topic];
+        finally
+        {
+            _subscriptionListLock.Release();
+        }
     }
 
     /// <summary>
@@ -77,22 +81,24 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <param name="mqttClient"></param>
     private async Task EnsureSubscriptionAsync(IManagedMqttClient mqttClient)
     {
+        await _subscriptionSetupLock.WaitAsync();
         try
         {
-            await _subscriptionSetupLock.WaitAsync();
             if (!_subscriptionIsSetup)
             {
                 _logger.LogInformation("Configuring message subscription");
                 mqttClient.UseApplicationMessageReceivedHandler(OnMessageReceived);
                 _subscriptionIsSetup = true;
             }
-
-            _subscriptionSetupLock.Release();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to set up or process message subscription");
             throw;
+        }
+        finally
+        {
+            _subscriptionSetupLock.Release();
         }
     }
 
