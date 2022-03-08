@@ -1,6 +1,6 @@
 ﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
-internal interface IMessageReceiver
+internal interface IMessageSubscriber
 {
     /// <summary>
     ///     Receive a message from the given topic

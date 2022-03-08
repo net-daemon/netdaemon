@@ -12,14 +12,14 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// <summary>
 ///     Manage connections and message publishing to MQTT
 /// </summary>
-internal class MessageReceiver : IMessageReceiver, IDisposable
+internal class MessageSubscriber : IMessageSubscriber, IDisposable
 {
     private readonly SemaphoreSlim _subscriptionSetupLock = new SemaphoreSlim(1);
     private readonly SemaphoreSlim _subscriptionListLock = new SemaphoreSlim(1);
     private bool _isDisposed;
     private bool _subscribtionIsSetup;
     private readonly IAssuredMqttConnection _assuredMqttConnection;
-    private readonly ILogger<MessageReceiver> _logger;
+    private readonly ILogger<MessageSubscriber> _logger;
     private Dictionary<string, TopicObservers> _subscriptions = new Dictionary<string, TopicObservers>();
 
     public class TopicObservers
@@ -33,7 +33,7 @@ internal class MessageReceiver : IMessageReceiver, IDisposable
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="assuredMqttConnection"></param>
-    public MessageReceiver(ILogger<MessageReceiver> logger, IAssuredMqttConnection assuredMqttConnection)
+    public MessageSubscriber(ILogger<MessageSubscriber> logger, IAssuredMqttConnection assuredMqttConnection)
     {
         _logger = logger;
         _assuredMqttConnection = assuredMqttConnection;

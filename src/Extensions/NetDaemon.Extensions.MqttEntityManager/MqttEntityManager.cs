@@ -21,7 +21,7 @@ internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
     private readonly IMessageSender    _messageSender;
-    private readonly IMessageReceiver  _messageReceiver;
+    private readonly IMessageSubscriber  _messageSubscriber;
 
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -29,12 +29,12 @@ internal class MqttEntityManager : IMqttEntityManager
     ///     Manage entities via MQTT
     /// </summary>
     /// <param name="messageSender"></param>
-    /// <param name="messageReceiver"></param>
+    /// <param name="messageSubscriber"></param>
     /// <param name="config"></param>
-    public MqttEntityManager(IMessageSender messageSender, IMessageReceiver messageReceiver, IOptions<MqttConfiguration> config)
+    public MqttEntityManager(IMessageSender messageSender, IMessageSubscriber messageSubscriber, IOptions<MqttConfiguration> config)
     {
         _messageSender = messageSender;
-        _messageReceiver = messageReceiver;
+        _messageSubscriber = messageSubscriber;
         _config = config.Value;
     }
 
@@ -125,7 +125,7 @@ internal class MqttEntityManager : IMqttEntityManager
     public async Task<IObservable<string>> SubscribeEntityCommandAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
-        return await _messageReceiver.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
+        return await _messageSubscriber.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
     }
 
     private string BuildCreationPayload(string domain, string identifier, string configPath,
