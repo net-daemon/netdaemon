@@ -1,10 +1,10 @@
 ﻿#region
-using System.Reactive.Linq;
-using System.Text;
+using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Extensions.ManagedClient;
-using NetDaemon.Extensions.MqttEntityManager.Exceptions;
+using NetDaemon.Extensions.MqttEntityManager.Helpers;
+
 #endregion
 
 namespace NetDaemon.Extensions.MqttEntityManager;
@@ -17,16 +17,11 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     private readonly SemaphoreSlim _subscriptionSetupLock = new SemaphoreSlim(1);
     private readonly SemaphoreSlim _subscriptionListLock = new SemaphoreSlim(1);
     private bool _isDisposed;
-    private bool _subscribtionIsSetup;
+    private bool _subscriptionIsSetup;
     private readonly IAssuredMqttConnection _assuredMqttConnection;
     private readonly ILogger<MessageSubscriber> _logger;
-    private Dictionary<string, TopicObservers> _subscriptions = new Dictionary<string, TopicObservers>();
-
-    public class TopicObservers
-    {
-        public IObservable<string> Observable { get; set; }
-        public IObserver<string> Observer { get; set; }
-    }
+    private readonly List<Subject<string>> _subscribedTopics = new();
+    private readonly Dictionary<string, Subject<string>> _subscribers = new();
     
     /// <summary>
     ///     Manage connections and message subscription by MQTT
@@ -45,56 +40,51 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <param name="topic"></param>
     public async Task<IObservable<string>> SubscribeTopicAsync(string topic)
     {
-        var mqttClient = await _assuredMqttConnection.GetClientAsync();
-        await EnsureSubscriptionAsync(mqttClient);
+        try
+        {
+            var mqttClient = await _assuredMqttConnection.GetClientAsync();
+            await EnsureSubscriptionAsync(mqttClient);
 
-        await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
-        return await AddSubscription(topic);
+            await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+            return await AddSubscription(topic);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to subscribe to topic");
+            throw;
+        }
     }
-
 
     private async Task<IObservable<string>> AddSubscription(string topic)
     {
-        if (_subscriptions.ContainsKey(topic))
-            throw new MqttDuplicateTopicSubscriptionException($"The topic '{topic}' is already subscribed");
-
         await _subscriptionListLock.WaitAsync();
+        
+        if (!_subscribers.ContainsKey(topic))
+        {
+            var subject = new Subject<string>();
+            _subscribedTopics.Add(subject);
+            _subscribers.Add(topic, subject);
+        }
 
-        var subscription = new TopicObservers();
-        subscription.Observable = Observable.Create<string>(
-            (IObserver<string> observer) =>
-            {
-                subscription.Observer = observer;
-                return () => _logger.LogDebug("Topic {Topic} is unsubscribing", topic);
-            });
-
-        _subscriptions.Add(topic, subscription);
         _subscriptionListLock.Release();
 
-        return subscription.Observable;
+        return _subscribers[topic];
     }
 
+    /// <summary>
+    /// If we are not already subscribed to receive messages, set up the handler
+    /// </summary>
+    /// <param name="mqttClient"></param>
     private async Task EnsureSubscriptionAsync(IManagedMqttClient mqttClient)
     {
         try
         {
             await _subscriptionSetupLock.WaitAsync();
-            if (!_subscribtionIsSetup)
+            if (!_subscriptionIsSetup)
             {
                 _logger.LogInformation("Configuring message subscription");
-                mqttClient.UseApplicationMessageReceivedHandler(msg =>
-                    {
-                        var payload = Encoding.UTF8.GetString(msg.ApplicationMessage.Payload);
-                        var topic = msg.ApplicationMessage.Topic;
-                        _logger.LogDebug("Subscription received {Payload} from {Topic}", payload, topic);
-
-                        if (!_subscriptions.ContainsKey(topic))
-                            _logger.LogDebug("No subscription for topic={Topic}", topic);
-                        else
-                            (_subscriptions[topic]).Observer.OnNext(payload);
-                    }
-                );
-                _subscribtionIsSetup = true;
+                mqttClient.UseApplicationMessageReceivedHandler(OnMessageReceived);
+                _subscriptionIsSetup = true;
             }
 
             _subscriptionSetupLock.Release();
@@ -106,17 +96,53 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
         }
     }
 
+    /// <summary>
+    /// Message received from MQTT, so find the subscription (if any) and notify them
+    /// </summary>
+    /// <param name="msg"></param>
+    /// <returns></returns>
+    private Task OnMessageReceived(MqttApplicationMessageReceivedEventArgs msg)
+    {
+        try
+        {
+            var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.Payload);
+            var topic = msg.ApplicationMessage.Topic;
+            _logger.LogDebug("Subscription received {Payload} from {Topic}", payload, topic);
+
+            if (!_subscribers.ContainsKey(topic))
+                _logger.LogDebug("No subscription for topic={Topic}", topic);
+            else
+            {
+                _subscribers[topic].OnNext(payload);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to notify subscribers");
+        }
+        
+        return Task.CompletedTask;
+    }
+
     public void Dispose()
     {
         if (!_isDisposed)
         {
             _isDisposed = true;
-            foreach (var observer in _subscriptions.Values.Select(s => s.Observer))
+            foreach (var observer in _subscribers)
             {
-                observer.OnCompleted();
+                _logger.LogDebug("Disposing {Topic} subscription", observer.Key);
+                observer.Value.OnCompleted();
+                observer.Value.Dispose();
             }
+
+            foreach (var subscribedTopic in _subscribedTopics)
+            {
+                subscribedTopic.Dispose();
+            }
+            
             _subscriptionSetupLock.Dispose();
-            _subscriptionSetupLock.Dispose();
+            _subscriptionListLock.Dispose();
         }
     }
 }

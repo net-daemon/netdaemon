@@ -8,6 +8,8 @@
 /// <param name="Name">Optional name of the entity</param>
 /// <param name="PayloadAvailable">Optional payload to set the entity available</param>
 /// <param name="PayloadNotAvailable">Optional payload to set the entity not-available</param>
+/// <param name="PayloadOn">Optional payload to set the command on</param>
+/// <param name="PayloadOff">Optional payload to set the command off</param>
 /// <param name="Persist">Optionally persist the entity over HA restarts, default is true</param>
 public record EntityCreationOptions(
     string? DeviceClass = null,

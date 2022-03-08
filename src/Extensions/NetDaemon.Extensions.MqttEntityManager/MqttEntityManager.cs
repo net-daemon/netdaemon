@@ -117,12 +117,12 @@ internal class MqttEntityManager : IMqttEntityManager
     }
 
     /// <summary>
-    ///     Subscribe to a topic
+    /// Prepare a subscription to command topics for the given entity
+    /// <para>Be sure to chain this request with .Subscribe(...)</para>
     /// </summary>
-    /// <param name="topic"></param>
+    /// <param name="entityId"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public async Task<IObservable<string>> SubscribeEntityCommandAsync(string entityId)
+    public async Task<IObservable<string>> PrepareCommandSubscriptionAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
         return await _messageSubscriber.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);

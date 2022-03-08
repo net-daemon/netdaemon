@@ -26,7 +26,7 @@ public class MttEntitySubscriptionApp : IAsyncInitializable
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        Task.Run(() => ExercisorAsync(cancellationToken), cancellationToken);
+        await Task.Run(() => ExercisorAsync(cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ExercisorAsync(CancellationToken cancellationToken)
@@ -44,15 +44,22 @@ public class MttEntitySubscriptionApp : IAsyncInitializable
                 new EntityCreationOptions(Name: "Switch Two", PayloadOn: onCommand, PayloadOff: offCommand))
             .ConfigureAwait(false);
         
-        
-        (await _entityManager.SubscribeEntityCommandAsync(switch1Id).ConfigureAwait(false)).Subscribe(new Action<string>(async s =>
+        (await _entityManager.PrepareCommandSubscriptionAsync(switch1Id).ConfigureAwait(false)).Subscribe(new Action<string>(async s =>
         {
-            _logger.LogInformation("Subscription #1 got command for {switch} {cmd}", switch1Id, s);
+            _logger.LogInformation("Subscription #1a got command for {Switch} {Cmd}", switch1Id, s);
+            await Task.Yield();     // Achieves nothing, just masks the CS1998 warning
         }));
         
-        (await _entityManager.SubscribeEntityCommandAsync(switch2Id).ConfigureAwait(false)).Subscribe(new Action<string>(async s =>
+        (await _entityManager.PrepareCommandSubscriptionAsync(switch1Id).ConfigureAwait(false)).Subscribe(new Action<string>(async s =>
         {
-            _logger.LogInformation("Subscription #2 got command for {switch} {cmd}", switch2Id, s);
+            _logger.LogInformation("Subscription #1b got command for {Switch} {Cmd}", switch1Id, s);
+            await Task.Yield();     // Achieves nothing, just masks the CS1998 warning
+        }));
+        
+        (await _entityManager.PrepareCommandSubscriptionAsync(switch2Id).ConfigureAwait(false)).Subscribe(new Action<string>(async s =>
+        {
+            _logger.LogInformation("Subscription #2 got command for {Switch} {Cmd}", switch2Id, s);
+            await Task.Yield();     // Achieves nothing, just masks the CS1998 warning
         }));
         
         // Thread.Sleep(2000);

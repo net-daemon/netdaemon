@@ -49,10 +49,10 @@ public interface IMqttEntityManager
     Task SetStateAsync(string entityId, string state);
 
     /// <summary>
-    ///    Subscribe to the entity's command topic
+    /// Prepare a subscription to command topics for the given entity
+    /// <para>Be sure to chain this request with .Subscribe(...)</para>
     /// </summary>
     /// <param name="entityId"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    Task<IObservable<string>> SubscribeEntityCommandAsync(string entityId);
+    Task<IObservable<string>> PrepareCommandSubscriptionAsync(string entityId);
 }
