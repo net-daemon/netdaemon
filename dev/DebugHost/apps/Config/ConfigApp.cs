@@ -10,7 +10,7 @@ public class ConfigApp
 {
     public ConfigApp(IAppConfig<AppConfig> config)
     {
-        Console.WriteLine(config.Value);
+        Console.WriteLine(config?.Value);
     }
 }
 
