@@ -8,7 +8,7 @@ internal class AppConfig<T> : IAppConfig<T> where T : class, new()
     {
         var type = typeof(T);
         var section = config.GetSection(type.FullName);
-        if (section is null)
+        if (section is null || section.Value is null)
         {
             logger.LogWarning("The configuration for {Type} is not found. Please add config.", typeof(T).FullName);
             Value = new T();
