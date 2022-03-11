@@ -22,6 +22,43 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
+    public void TestWhenInitIEnumerableThrowsException()
+    {
+        // ARRANGE
+        // ACT
+        // CHECK
+        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<CollectionBindingFaultyIEnumerableTestClass>("TestCollections"));
+    }
+
+    [Fact]
+    public void TestWhenInitIReadOnlyListThrowsException()
+    {
+        // ARRANGE
+        // ACT
+        // CHECK
+        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<CollectionBindingFaultyIReadOnlyListTestClass>("TestCollections"));
+    }
+
+    [Fact]
+    public void TestWhenInitIReadOnlyCollectionThrowsException()
+    {
+        // ARRANGE
+        // ACT
+        // CHECK
+        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<CollectionBindingFaultyIReadOnlyCollectionTestClass>("TestCollections"));
+    }
+
+    [Fact]
+    public void TestWhenInitIReadOnlyDictionaryThrowsException()
+    {
+        // ARRANGE
+        // ACT
+        Assert.Throws<InvalidOperationException>(() =>
+            GetObjectFromSection<CollectionBindingFaultyIReadOnlyDictionaryTestClass>("TestCollections"));
+        // CHECK
+    }
+
+    [Fact]
     public void TestAddYamlConfigGetsCollectionsCorrectly()
     {
         // ARRANGE
@@ -157,4 +194,25 @@ public record CollectionBindingTestClass
     public ICollection<string>? SomeCollection { get; init; }
     public IReadOnlyDictionary<string, string>? SomeReadOnlyDictionary { get; init; }
     public IDictionary<string, string>? SomeDictionary { get; init; }
+}
+
+public record CollectionBindingFaultyIEnumerableTestClass
+{
+    public IEnumerable<string>? SomeEnumerable { get; init; } = new List<string>();
+}
+
+public record CollectionBindingFaultyIReadOnlyListTestClass
+{
+    public IReadOnlyList<string>? SomeReadOnlyList { get; init; } = new List<string>();
+}
+
+public record CollectionBindingFaultyIReadOnlyCollectionTestClass
+{
+    public IReadOnlyCollection<string>? SomeReadOnlyCollection { get; init; } = new List<string>();
+}
+
+public record CollectionBindingFaultyIReadOnlyDictionaryTestClass
+{
+    public IReadOnlyDictionary<string, string>? SomeReadOnlyDictionary { get; init; } =
+        new Dictionary<string, string>();
 }

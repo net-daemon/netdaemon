@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace NetDaemon.AppModel.Internal.Config;
 
@@ -55,8 +56,29 @@ internal class ConfigurationBinding : IConfigurationBinding
     private void BindNonScalar(IConfiguration configuration, object? instance)
     {
         if (instance == null) return;
+
+        // If we came this far and it is readonly collection
+        // it means that the collection was already initialized
+        // that is not a valid operation
+        ThrowIfReadonlyCollection(instance);
+
         foreach (var property in GetAllProperties(instance.GetType().GetTypeInfo()))
             BindProperty(property, instance, configuration);
+    }
+
+    private void ThrowIfReadonlyCollection(object? instance)
+    {
+        var typ = instance?.GetType()!;
+
+        if (FindOpenGenericInterface(typeof(IEnumerable<>), typ) != null)
+        {
+            throw new InvalidOperationException("Read-only collections cannot be initialized and needs to be nullable!");
+        }
+
+        if (FindOpenGenericInterface(typeof(IReadOnlyCollection<>), typ) != null)
+        {
+            throw new InvalidOperationException("Read-only collections cannot be initialized and needs to be nullable!");
+        }
     }
 
     private void BindProperty(PropertyInfo property, object? instance, IConfiguration config)
