@@ -138,6 +138,7 @@ internal class MqttEntityManager : IMqttEntityManager
             Name = options?.Name ?? identifier,
             DeviceClass = options?.DeviceClass,
             UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
+            ObjectId = identifier,
             CommandTopic = CommandPath(domain, identifier),
             StateTopic = StatePath(domain, identifier),
             PayloadAvailable = options?.PayloadAvailable,
