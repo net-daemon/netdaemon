@@ -18,6 +18,9 @@ internal class EntityCreationPayload
     [JsonPropertyName("unique_id")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? UniqueId { get; set; }
+    
+    [JsonPropertyName("object_id")]
+    public string? ObjectId { get; set; }
 
     [JsonPropertyName("command_topic")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

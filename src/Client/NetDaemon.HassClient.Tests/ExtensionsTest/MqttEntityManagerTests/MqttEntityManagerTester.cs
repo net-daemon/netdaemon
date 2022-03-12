@@ -25,9 +25,10 @@ public class MqttEntityManagerTester
         await entityManager.CreateAsync("domain.sensor");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
-        payload?.Count.Should().Be(5);
+        payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
         payload?["unique_id"].ToString().Should().Be("homeassistant_domain_sensor_config");
+        payload?["object_id"].ToString().Should().Be("sensor");
         payload?["command_topic"].ToString().Should().Be("homeassistant/domain/sensor/set");
         payload?["state_topic"].ToString().Should().Be("homeassistant/domain/sensor/state");
         payload?["json_attributes_topic"].ToString().Should().Be("homeassistant/domain/sensor/attributes");
@@ -42,9 +43,10 @@ public class MqttEntityManagerTester
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
-        payload?.Count.Should().Be(5);
+        payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
         payload?["unique_id"].ToString().Should().Be("homeassistant_domain_sensor_config");
+        payload?["object_id"].ToString().Should().Be("sensor");
         payload?["command_topic"].ToString().Should().Be("homeassistant/domain/sensor/set");
         payload?["state_topic"].ToString().Should().Be("homeassistant/domain/sensor/state");
         payload?["json_attributes_topic"].ToString().Should().Be("homeassistant/domain/sensor/attributes");
@@ -60,6 +62,18 @@ public class MqttEntityManagerTester
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?["unique_id"].ToString().Should().Be("my_id");
+    }
+
+    [Fact]
+    public async Task CreateSetsObjectId()
+    {
+        var mqttSetup = new MockMqttMessageSenderSetup();
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+
+        await entityManager.CreateAsync("domain.the_id");
+        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
+
+        payload?["object_id"].ToString().Should().Be("the_id");
     }
 
     [Fact]
