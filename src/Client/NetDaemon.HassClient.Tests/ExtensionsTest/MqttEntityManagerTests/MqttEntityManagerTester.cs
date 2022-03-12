@@ -68,7 +68,7 @@ public class MqttEntityManagerTester
     public async Task CreateSetsObjectId()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.the_id");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
