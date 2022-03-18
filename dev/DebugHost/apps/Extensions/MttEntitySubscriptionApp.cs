@@ -9,7 +9,6 @@ using NetDaemon.HassModel;
 namespace DebugHost.apps.Extensions;
 
 [NetDaemonApp]
-[Focus]
 public class MttEntitySubscriptionApp : IAsyncInitializable
 {
     private readonly IHaContext _ha;
