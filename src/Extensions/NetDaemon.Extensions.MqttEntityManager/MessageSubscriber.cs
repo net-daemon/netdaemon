@@ -1,4 +1,6 @@
 ﻿#region
+
+using System.Collections.Concurrent;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
@@ -16,14 +18,12 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MessageSubscriber : IMessageSubscriber, IDisposable
 {
     private readonly SemaphoreSlim _subscriptionSetupLock = new SemaphoreSlim(1);
-    private readonly SemaphoreSlim _subscriptionListLock = new SemaphoreSlim(1);
     private bool _isDisposed;
     private bool _subscriptionIsSetup;
     private readonly IAssuredMqttConnection _assuredMqttConnection;
     private readonly ILogger<MessageSubscriber> _logger;
-    private readonly List<Subject<string>> _subscribedTopics = new();
-    private readonly Dictionary<string, Subject<string>> _subscribers = new();
-    
+    private readonly ConcurrentDictionary<string, Lazy<Subject<string>>> _subscribers = new();
+
     /// <summary>
     ///     Managed subscriptions to topics within MQTT
     /// </summary>
@@ -47,31 +47,12 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             await EnsureSubscriptionAsync(mqttClient);
 
             await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
-            return await AddSubscription(topic);
+            return _subscribers.GetOrAdd(topic, new Lazy<Subject<string>>()).Value;
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to subscribe to topic");
             throw;
-        }
-    }
-
-    private async Task<IObservable<string>> AddSubscription(string topic)
-    {
-        await _subscriptionListLock.WaitAsync();
-        try
-        {
-            if (!_subscribers.ContainsKey(topic))
-            {
-                var subject = new Subject<string>();
-                _subscribedTopics.Add(subject);
-                _subscribers.Add(topic, subject);
-            }
-            return _subscribers[topic];
-        }
-        finally
-        {
-            _subscriptionListLock.Release();
         }
     }
 
@@ -119,14 +100,14 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
                 _logger.LogDebug("No subscription for topic={Topic}", topic);
             else
             {
-                _subscribers[topic].OnNext(payload);
+                _subscribers[topic].Value.OnNext(payload);
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to notify subscribers");
         }
-        
+
         return Task.CompletedTask;
     }
 
@@ -138,17 +119,11 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             foreach (var observer in _subscribers)
             {
                 _logger.LogDebug("Disposing {Topic} subscription", observer.Key);
-                observer.Value.OnCompleted();
-                observer.Value.Dispose();
+                observer.Value.Value.OnCompleted();
+                observer.Value.Value.Dispose();
             }
 
-            foreach (var subscribedTopic in _subscribedTopics)
-            {
-                subscribedTopic.Dispose();
-            }
-            
             _subscriptionSetupLock.Dispose();
-            _subscriptionListLock.Dispose();
         }
     }
 }
