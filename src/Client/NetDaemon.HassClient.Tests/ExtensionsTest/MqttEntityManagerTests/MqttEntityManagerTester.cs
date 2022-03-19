@@ -10,7 +10,7 @@ public class MqttEntityManagerTester
     public async Task CreateSetsTopic()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/config");
@@ -20,7 +20,7 @@ public class MqttEntityManagerTester
     public async Task CreateWithNoOptionsSetsBaseConfig()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -33,12 +33,12 @@ public class MqttEntityManagerTester
         payload?["state_topic"].ToString().Should().Be("homeassistant/domain/sensor/state");
         payload?["json_attributes_topic"].ToString().Should().Be("homeassistant/domain/sensor/attributes");
     }
-    
+
     [Fact]
     public async Task CreateWithDefaultOptionsSetsBaseConfig()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -56,7 +56,7 @@ public class MqttEntityManagerTester
     public async Task CreateCanSetUniqueId()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(UniqueId: "my_id"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -68,7 +68,7 @@ public class MqttEntityManagerTester
     public async Task CreateSetsObjectId()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.the_id");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -80,7 +80,7 @@ public class MqttEntityManagerTester
     public async Task CreateCanSetDeviceClass()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(DeviceClass: "classy"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -92,7 +92,7 @@ public class MqttEntityManagerTester
     public async Task CreateCanSetName()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(Name: "george"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -104,7 +104,7 @@ public class MqttEntityManagerTester
     public async Task CreateDefaultsToPersist()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
 
@@ -115,7 +115,7 @@ public class MqttEntityManagerTester
     public async Task CreateCanDisablePersist()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(Persist: false));
 
@@ -126,7 +126,7 @@ public class MqttEntityManagerTester
     public async Task CreateCanSetAdditionalOptions()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         var otherOptions = new { sub_class = "lights", up_state = "live" };
 
@@ -136,38 +136,38 @@ public class MqttEntityManagerTester
         payload?["sub_class"].ToString().Should().Be("lights");
         payload?["up_state"].ToString().Should().Be("live");
     }
-    
+
     [Fact]
     public async Task CreateCanOverrideBaseConfig()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
-        var otherOptions = new { command_topic = "my/topic"};
+        var otherOptions = new { command_topic = "my/topic" };
 
         await entityManager.CreateAsync("domain.sensor", additionalConfig: otherOptions);
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?["command_topic"].ToString().Should().Be("my/topic");
     }
-    
+
     [Fact]
     public async Task CreateAvailabilityTopicOffByDefault()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
 
         payload?.ContainsKey("availability_topic").Should().BeFalse();
     }
-    
+
     [Fact]
     public async Task CreateAvailabilityTopicSetForAvailUp()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(PayloadAvailable: "up"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -176,12 +176,12 @@ public class MqttEntityManagerTester
         payload?["availability_topic"].ToString().Should().Be("homeassistant/domain/sensor/availability");
         payload?["payload_available"].ToString().Should().Be("up");
     }
-    
+
     [Fact]
     public async Task CreateAvailabilityTopicSetForAvailDown()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(PayloadNotAvailable: "down"));
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.Payload);
@@ -195,18 +195,18 @@ public class MqttEntityManagerTester
     public async Task CanRemove()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.RemoveAsync("domain.sensor");
 
         mqttSetup.LastPublishedMessage.Payload.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task CanSetState()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.SetStateAsync("domain.sensor", "NewState");
         var payload = System.Text.Encoding.Default.GetString(mqttSetup.LastPublishedMessage.Payload);
@@ -219,19 +219,19 @@ public class MqttEntityManagerTester
     public async Task CanSetStateToBlank()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.SetStateAsync("domain.sensor", "");
-        
+
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/state");
         mqttSetup.LastPublishedMessage.Payload.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task CanSetAttributes()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         var attributes = new { colour = "purple", ziggy = "stardust" };
         await entityManager.SetAttributesAsync("domain.sensor", attributes);
@@ -241,12 +241,12 @@ public class MqttEntityManagerTester
         payload?["colour"].ToString().Should().Be("purple");
         payload?["ziggy"].ToString().Should().Be("stardust");
     }
-    
+
     [Fact]
     public async Task CanSetAvailability()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
-        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, GetOptions());
+        var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.SetAvailabilityAsync("domain.sensor", "up");
         var payload = System.Text.Encoding.Default.GetString(mqttSetup.LastPublishedMessage.Payload);

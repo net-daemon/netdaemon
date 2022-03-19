@@ -28,6 +28,7 @@ public static class DependencyInjectionSetup
             services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
             services.AddSingleton<IAssuredMqttConnection, AssuredMqttConnection>();
             services.AddSingleton<IMessageSender, MessageSender>();
+            services.AddSingleton<IMessageSubscriber, MessageSubscriber>();
             services.Configure<MqttConfiguration>(context.Configuration.GetSection("Mqtt"));
         });
     }

@@ -20,7 +20,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
-    private readonly IMessageSender _messageSender;
+    private readonly IMessageSender    _messageSender;
+    private readonly IMessageSubscriber  _messageSubscriber;
 
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -28,10 +29,12 @@ internal class MqttEntityManager : IMqttEntityManager
     ///     Manage entities via MQTT
     /// </summary>
     /// <param name="messageSender"></param>
+    /// <param name="messageSubscriber"></param>
     /// <param name="config"></param>
-    public MqttEntityManager(IMessageSender messageSender, IOptions<MqttConfiguration> config)
+    public MqttEntityManager(IMessageSender messageSender, IMessageSubscriber messageSubscriber, IOptions<MqttConfiguration> config)
     {
         _messageSender = messageSender;
+        _messageSubscriber = messageSubscriber;
         _config = config.Value;
     }
 
@@ -113,6 +116,18 @@ internal class MqttEntityManager : IMqttEntityManager
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Prepare a subscription to command topics for the given entity
+    /// <para>Be sure to chain this request with .Subscribe(...)</para>
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <returns></returns>
+    public async Task<IObservable<string>> PrepareCommandSubscriptionAsync(string entityId)
+    {
+        var (domain, identifier) = EntityIdParser.Extract(entityId);
+        return await _messageSubscriber.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
+    }
+
     private string BuildCreationPayload(string domain, string identifier, string configPath,
         EntityCreationOptions? options, object? additionalConfig)
     {
@@ -128,6 +143,8 @@ internal class MqttEntityManager : IMqttEntityManager
             StateTopic = StatePath(domain, identifier),
             PayloadAvailable = options?.PayloadAvailable,
             PayloadNotAvailable = options?.PayloadNotAvailable,
+            PayloadOn = options?.PayloadOn,
+            PayloadOff = options?.PayloadOff,
             AvailabilityTopic = availabilityRequired ? AvailabilityPath(domain, identifier) : null,
             JsonAttributesTopic = AttrsPath(domain, identifier)
         };
