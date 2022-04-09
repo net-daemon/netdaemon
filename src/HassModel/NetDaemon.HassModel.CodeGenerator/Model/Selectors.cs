@@ -74,6 +74,24 @@ internal record SelectSelector
     public IReadOnlyCollection<string>? Options { get; init; }
 }
 
+internal record LabeledSelectSelector
+{
+    [JsonIgnore]
+    public IReadOnlyCollection<string> Options { get { return _Options.Select(o => o.Value).ToList(); } init { } }
+
+    [Required]
+    [JsonPropertyName("options")]
+    public IReadOnlyCollection<OptionSelector>? _Options { get; init; }
+}
+
+internal record OptionSelector
+{
+    [JsonPropertyName("label")]
+    public string? Label { get; init; }
+    [JsonPropertyName("value")]
+    public string? Value { get; init; }
+}
+
 internal record TargetSelector
 {
     public AreaSelector? Area { get; init; }

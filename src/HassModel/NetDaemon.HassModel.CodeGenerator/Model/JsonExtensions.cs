@@ -97,9 +97,32 @@ internal static class JsonExtensions
                 element.WriteTo(writer);
             }
 
-            return JsonSerializer.Deserialize(bufferWriter.WrittenSpan,
+            if (element.ValueKind == JsonValueKind.Object && string.Equals("select", selectorName, StringComparison.OrdinalIgnoreCase))
+            {
+                var labeledSelectorType = typeof(LabeledSelectSelector);
+
+                try
+                {
+                    return JsonSerializer.Deserialize(bufferWriter.WrittenSpan,
+                    labeledSelectorType,
+                    SnakeCaseNamingPolicySerializerOptions);
+                }
+                catch (Exception ex)
+                {
+                    // Not a labeled select, let the normal deserializer handle it as a SelectSelector
+                }
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize(bufferWriter.WrittenSpan,
                 selectorType,
                 SnakeCaseNamingPolicySerializerOptions);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         HassServiceField getField(string fieldName, JsonElement element)
