@@ -68,12 +68,6 @@ internal record ObjectSelector
 {
 }
 
-internal record SelectSelector
-{
-    [Required]
-    public IReadOnlyCollection<string>? Options { get; init; }
-}
-
 internal record TargetSelector
 {
     public AreaSelector? Area { get; init; }
