@@ -23,6 +23,8 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
     Console.WriteLine(@"
     Usage: nd-codegen [options] -ns namespace -o outfile
     Options:
+        -f           : Name of folder to output files (folder name only)
+        -fpe         : Create separate file per entity (ignores -o option)
         -host        : Host of the netdaemon instance
         -port        : Port of the NetDaemon instance
         -ssl         : true if NetDaemon instance use ssl
@@ -34,17 +36,45 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
     return 0;
 }
 
+//This is used as a command line switch rather than a configuration key. There is no key value following it to interpret.
+generationSettings.FilePerEntity = args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-fpe");
+
 var (hassStates, hassServiceDomains) = await GetHaData(haSettings);
-var code = Generator.GenerateCode(generationSettings.Namespace, hassStates, hassServiceDomains);
 
-File.WriteAllText(generationSettings.OutputFile, code);
+var dirPath = string.Empty;
 
+if (!string.IsNullOrWhiteSpace(generationSettings.OutputFolder))
+{
+    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\{generationSettings.OutputFolder}"))
+        Directory.CreateDirectory(generationSettings.OutputFolder);
+
+    dirPath = $"{Directory.GetCurrentDirectory()}\\{generationSettings.OutputFolder}\\";
+}
+
+if (generationSettings.FilePerEntity)
+{
+    Console.WriteLine("Generating separate file per entity");
+
+    var entities = Generator.GenerateCodePerEntity(generationSettings.Namespace, hassStates, hassServiceDomains).ToList();
+
+    entities.ForEach(entity => File.WriteAllText($"{dirPath}{entity.GetClassNameFromCompilationUnit()}.cs", entity.ToFullString()));
+
+    Console.WriteLine($"Generated {entities.Count} files.");
+    Console.WriteLine(dirPath);
+}
+else
+{
+    Console.WriteLine("Generating single file for all entities");
+    var code = Generator.GenerateCode(generationSettings.Namespace, hassStates, hassServiceDomains);
+    File.WriteAllText($"{dirPath}{generationSettings.OutputFile}", code);
+
+    Console.WriteLine($"{dirPath}{generationSettings.OutputFile}");
+}
+
+Console.WriteLine();
 Console.WriteLine("Code Generated successfully!");
-Console.WriteLine(Path.GetFullPath(generationSettings.OutputFile));
 
 return 0;
-
-
 
 IConfigurationRoot GetConfigurationRoot()
 {
@@ -65,6 +95,7 @@ IConfigurationRoot GetConfigurationRoot()
         .AddCommandLine(args, new Dictionary<string, string>()
         {
             ["-o"] = "CodeGeneration:OutputFile",
+            ["-f"] = "CodeGeneration:OutputFolder",
             ["-ns"] = "CodeGeneration:Namespace",
             ["-host"] = "HomeAssistant:Host",
             ["-port"] = "HomeAssistant:Port",
