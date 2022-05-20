@@ -8,7 +8,7 @@ namespace NetDaemon.HassModel.CodeGenerator.Extensions
 {
     internal static class CodeGeneratorExtensions
     {
-        public static string GetClassNameFromCompilationUnit(this CompilationUnitSyntax compilationUnit)
+        public static string GetClassName(this CompilationUnitSyntax compilationUnit)
         {
             if (compilationUnit.DescendantNodes().OfType<InterfaceDeclarationSyntax>().Any())
                 return compilationUnit.DescendantNodes().OfType<InterfaceDeclarationSyntax>().First().Identifier.ToString();
