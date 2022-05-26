@@ -35,7 +35,7 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
 }
 
 var (hassStates, hassServiceDomains) = await GetHaData(haSettings);
-var code = Generator.GenerateCode(generationSettings.Namespace, hassStates, hassServiceDomains);
+var code = Generator.GenerateCode(generationSettings, hassStates, hassServiceDomains);
 
 File.WriteAllText(generationSettings.OutputFile, code);
 
@@ -50,7 +50,7 @@ IConfigurationRoot GetConfigurationRoot()
 {
     var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
     var builder = new ConfigurationBuilder()
-        // default path is the folder of the currently execting root assembley
+        // default path is the folder of the currently executing root assembly
         .AddJsonFile("appsettings.json", true, true)
         .AddJsonFile($"appsettings.{env}.json", true, true)
 

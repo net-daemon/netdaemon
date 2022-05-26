@@ -1,13 +1,15 @@
-﻿using NetDaemon.Client.HomeAssistant.Model;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using NetDaemon.Client.HomeAssistant.Model;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class EntitiesGenerator
 {
-    public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyList<HassState> entities)
+    public static IEnumerable<MemberDeclarationSyntax> Generate(CodeGenerationSettings codeGenerationSettings, IReadOnlyList<HassState> entities)
     {
-        var entitySets = entities.GroupBy(e => (EntityIdHelper.GetDomain(e.EntityId), IsNumeric(e)))
-            .Select(g => new EntitySet(g.Key.Item1, g.Key.Item2, g))
+        var entitySets = entities.GroupBy(e => (domain: EntityIdHelper.GetDomain(e.EntityId), isNumeric: IsNumeric(e)))
+            .Select(g => new EntitySet(g.Key.domain, g.Key.isNumeric, g))
             .OrderBy(s => s.Domain)
             .ToList();
 
@@ -23,17 +25,16 @@ internal static class EntitiesGenerator
         {
             yield return entityClass;
         }
-
-        foreach (var entitytype in entitySets.Select(GenerateEntityType))
+        
+        foreach (var entitySet in entitySets)
         {
-            yield return entitytype;
-        }
-
-        foreach (var attributeRecord in entitySets.Select(GenerateAttributeRecord))
-        {
-            yield return attributeRecord;
+            yield return GenerateEntityType(entitySet);
+            
+            var attrGen = new AttributeTypeGenerator(codeGenerationSettings, entitySet);
+            yield return attrGen.GenerateAttributeRecord();
         }
     }
+    
     private static TypeDeclarationSyntax GenerateRootEntitiesInterface(IEnumerable<string> domains)
     {
         var autoProperties = domains.Select(domain =>
@@ -61,80 +62,20 @@ internal static class EntitiesGenerator
                 .ToPublic();
         }).ToArray();
 
-        return ClassWithInjected<IHaContext>("Entities").WithBase((string)"IEntities").AddMembers(properties).ToPublic();
-    }
-
-    /// <summary>
-    /// Generates a record with all the attributes found in a set of entities providing unique names for each.
-    /// </summary>
-    private static RecordDeclarationSyntax GenerateAttributeRecord(EntitySet entitySet)
-    {
-        // Get all attributes of all entities in this set
-        var jsonProperties = entitySet.EntityStates.SelectMany(s => s.AttributesJson?.EnumerateObject() ?? Enumerable.Empty<JsonProperty>());
-
-        // Group the attributes by JsonPropertyName and find the best ClrType that fits all
-        var attributesByJsonName = jsonProperties
-            .GroupBy(p => p.Name)
-            .Select(group => (CSharpName: group.Key.ToNormalizedPascalCase(),
-                JsonName: group.Key, 
-                ClrType: GetBestClrType(group)));
-
-        // We might have different json names that after CamelCasing result in the same CSharpName 
-        var uniqueProperties = attributesByJsonName
-            .GroupBy(t => t.CSharpName)
-            .SelectMany(DuplicateCSharpName)
-            .OrderBy(p => p.CSharpName);
-
-        var propertyDeclarations = uniqueProperties.Select(a => Property($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
+        return ClassWithInjected<IHaContext>("Entities")
             .ToPublic()
-            .WithJsonPropertyName(a.JsonName));
-
-        return Record(entitySet.AttributesClassName, propertyDeclarations).ToPublic();
+            .AddModifiers(Token(SyntaxKind.PartialKeyword))
+            .WithBase((string)"IEntities").AddMembers(properties);
     }
-
-    private static IEnumerable<(string CSharpName, string JsonName, Type ClrType)> DuplicateCSharpName(IEnumerable<(string CSharpName, string JsonName, Type ClrType)> items)
-    {
-        var list = items.ToList();
-        if (list.Count == 1) return new[] { list.First() };
-
-        return list.OrderBy(i => i.JsonName).Select((p, i) => ($"{p.CSharpName}_{i}", jsonName: p.JsonName, type: p.ClrType));
-    }
-
-    private static Type GetBestClrType(IEnumerable<JsonProperty> valueKinds)
-    {
-        var distinctCrlTypes = valueKinds
-            .Select(p => p.Value.ValueKind)
-            .Distinct()
-            .Where(k => k!= JsonValueKind.Null) // null fits in any type so we can ignore it for now
-            .Select(MapJsonType)
-            .ToHashSet();
-
-        // If all have the same clr type use that, if not it will be 'object'
-        return distinctCrlTypes.Count == 1
-            ? distinctCrlTypes.First()
-            : typeof(object);
-    }
-
-    private static Type MapJsonType(JsonValueKind kind) =>
-        kind switch
-        {
-            JsonValueKind.False => typeof(bool),
-            JsonValueKind.Undefined => typeof(object),
-            JsonValueKind.Object => typeof(object),
-            JsonValueKind.Array => typeof(object),
-            JsonValueKind.String => typeof(string),
-            JsonValueKind.Number => typeof(double),
-            JsonValueKind.True => typeof(bool),
-            JsonValueKind.Null => typeof(object),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
-        };
 
     /// <summary>
     /// Generates the class with all the properties for the Entities of one domain
     /// </summary>
     private static TypeDeclarationSyntax GenerateEntiesForDomainClass(string className, IEnumerable<EntitySet> entitySets)
     {
-        var entityClass = ClassWithInjected<IHaContext>(className).ToPublic();
+        var entityClass = ClassWithInjected<IHaContext>(className)
+            .ToPublic()
+            .AddModifiers(Token(SyntaxKind.PartialKeyword));
 
         var entityProperty = entitySets.SelectMany(s=> s.EntityStates.Select(e => GenerateEntityProperty(e, s.EntityClassName))).ToArray();
 
@@ -184,7 +125,9 @@ internal static class EntitiesGenerator
                                             {{}}
                                     }}";
 
-        return ParseRecord(classDeclaration).ToPublic();
+        return ParseRecord(classDeclaration)
+            .ToPublic()
+            .AddModifiers(Token(SyntaxKind.PartialKeyword));
     }
 
     /// <summary>
