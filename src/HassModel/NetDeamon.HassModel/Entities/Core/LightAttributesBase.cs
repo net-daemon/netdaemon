@@ -1,4 +1,5 @@
 ﻿namespace NetDaemon.HassModel.Entities.Core;
+#pragma warning disable CS1591 
 
 public record LightAttributesBase
 {
@@ -30,14 +31,14 @@ public record LightAttributesBase
     public double? SupportedFeatures { get; init; }
     
     [JsonPropertyName("color_temp")]
-    public double? ColorTemp { get; init; }
+    public IReadOnlyList<double>? ColorTemp { get; init; }
 
     [JsonPropertyName("hs_color")]
-    public double[]? HsColor { get; init; }
+    public IReadOnlyList<double>? HsColor { get; init; }
 
     [JsonPropertyName("rgb_color")]
-    public double[]? RgbColor { get; init; }
+    public IReadOnlyList<double>? RgbColor { get; init; }
 
     [JsonPropertyName("xy_color")]
-    public double[]? XyColor { get; init; }
+    public IReadOnlyList<double>? XyColor { get; init; }
 }
