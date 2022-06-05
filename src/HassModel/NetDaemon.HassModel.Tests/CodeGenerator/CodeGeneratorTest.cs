@@ -164,7 +164,7 @@ public class Root
     }
 
     [Fact]
-    public void TestAttributeClassGeneration()
+    public void TestAttributeClassGeneration_UseAttributeBaseClassesFalse()
     {
         var entityStates = new HassState[]
         {
@@ -186,7 +186,7 @@ public class Root
             },
         };
             
-        var generatedCode = Generator.GenerateCode(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = Generator.GenerateCode(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassServiceDomain>());
 
         var appCode = @"
 using NetDaemon.HassModel.Entities;
@@ -231,7 +231,7 @@ public class Root
             },
         };
             
-        var generatedCode = Generator.GenerateCode(_settings with {UseAttributeBaseClasses = true}, entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = Generator.GenerateCode(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassServiceDomain>());
         generatedCode.Should().NotContain("Brightness", because: "It is in the base class");
 
         var appCode = @"
