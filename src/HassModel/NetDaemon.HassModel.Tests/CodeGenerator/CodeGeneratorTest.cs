@@ -204,6 +204,7 @@ public class Root
         string? friendlyName0 = light1.Attributes?.FriendlyName_0;
         string? friendlyName1 = light1.Attributes?.FriendlyName_1;
         string? startDate = light1.Attributes?.StartDate;
+        string? arrElement1 = light1.Attributes?.Arr?[0];
     }
 }";
         AssertCodeCompiles(generatedCode, appCode);
