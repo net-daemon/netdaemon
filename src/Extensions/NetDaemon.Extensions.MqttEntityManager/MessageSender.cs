@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.Logging;
 using MQTTnet;
-using MQTTnet.Client.Publishing;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
@@ -57,9 +56,7 @@ internal class MessageSender : IMessageSender
 
         try
         {
-            var publishResult = await mqttClient.PublishAsync(message, CancellationToken.None).ConfigureAwait(false);
-            if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
-                throw new MqttPublishException(publishResult.ReasonString);
+            await mqttClient.EnqueueAsync(message).ConfigureAwait(false);
         }
         catch (Exception e)
         {
