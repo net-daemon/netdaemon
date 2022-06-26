@@ -8,6 +8,7 @@
     },
     "CodeGeneration": {
         "Namespace": "HomeAssistantGenerated",
-        "OutputFile": "HomeAssistantGenerated.cs"
+        "OutputFile": "HomeAssistantGenerated.cs",
+        "UseAttributeBaseClasses" : "true"
     }
 }

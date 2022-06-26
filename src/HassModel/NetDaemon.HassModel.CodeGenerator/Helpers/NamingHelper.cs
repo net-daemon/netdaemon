@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using NetDaemon.HassModel.Entities.Core;
 
 namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
@@ -72,6 +73,7 @@ internal static class NamingHelper
         typeof(IHaContext).Namespace!,
         typeof(JsonPropertyNameAttribute).Namespace!,
         typeof(Entity).Namespace!,
+        typeof(LightAttributesBase).Namespace!
     };
 
     private static string GetVariableName(string typeName, string variablePrefix)
