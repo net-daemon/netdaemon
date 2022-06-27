@@ -10,11 +10,9 @@ public static class HostBuilderExtensions
     public static IHostBuilder UseNetDaemonAppSettings(this IHostBuilder hostBuilder)
     {
         return hostBuilder
-            .ConfigureServices((context, services) =>
-            {
-                services.Configure<AppConfigurationLocationSetting>(context.Configuration.GetSection("NetDaemon"));
-                services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-            })
+            .ConfigureServices((context, services)
+                => services.ConfigureNetDaemonServices(context.Configuration)
+            )
             .ConfigureAppConfiguration((ctx, config) =>
             {
                 config.SetBasePath(Directory.GetCurrentDirectory());
