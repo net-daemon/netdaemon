@@ -102,10 +102,10 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
         {
             var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.Payload);
             var topic = msg.ApplicationMessage.Topic;
-            _logger.LogDebug("Subscription received {Payload} from {Topic}", payload, topic);
+            _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
 
             if (!_subscribers.ContainsKey(topic))
-                _logger.LogDebug("No subscription for topic={Topic}", topic);
+                _logger.LogTrace("No subscription for topic={Topic}", topic);
             else
             {
                 _subscribers[topic].Value.OnNext(payload);
@@ -126,7 +126,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             _isDisposed = true;
             foreach (var observer in _subscribers)
             {
-                _logger.LogDebug("Disposing {Topic} subscription", observer.Key);
+                _logger.LogTrace("Disposing {Topic} subscription", observer.Key);
                 observer.Value.Value.OnCompleted();
                 observer.Value.Value.Dispose();
             }
