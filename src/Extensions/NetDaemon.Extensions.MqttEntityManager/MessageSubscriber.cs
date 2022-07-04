@@ -1,10 +1,13 @@
 ﻿#region
 
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
+using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Packets;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 #endregion
@@ -46,7 +49,12 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             var mqttClient = await _assuredMqttConnection.GetClientAsync();
             await EnsureSubscriptionAsync(mqttClient);
 
-            await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+            var topicFilters = new Collection<MqttTopicFilter>
+            {
+                new MqttTopicFilterBuilder().WithTopic(topic).Build()
+            };
+
+            await mqttClient.SubscribeAsync(topicFilters);
             return _subscribers.GetOrAdd(topic, new Lazy<Subject<string>>()).Value;
         }
         catch (Exception e)
@@ -68,7 +76,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             if (!_subscriptionIsSetup)
             {
                 _logger.LogInformation("Configuring message subscription");
-                mqttClient.UseApplicationMessageReceivedHandler(OnMessageReceived);
+                mqttClient.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
                 _subscriptionIsSetup = true;
             }
         }
@@ -88,7 +96,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// </summary>
     /// <param name="msg"></param>
     /// <returns></returns>
-    private Task OnMessageReceived(MqttApplicationMessageReceivedEventArgs msg)
+    private Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs msg)
     {
         try
         {
