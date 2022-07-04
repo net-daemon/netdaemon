@@ -52,7 +52,7 @@ internal class MessageSender : IMessageSender
             .WithQualityOfServiceLevel(qos)
             .Build();
 
-        _logger.LogDebug("MQTT sending to {Topic}: {Message}", message.Topic, message.ConvertPayloadToString());
+        _logger.LogTrace("MQTT sending to {Topic}: {Message}", message.Topic, message.ConvertPayloadToString());
 
         try
         {

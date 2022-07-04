@@ -31,7 +31,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _logger = logger;
 
-        _logger.LogDebug("MQTT initiating connection");
+        _logger.LogTrace("MQTT initiating connection");
         _connectionTask = Task.Run(() => ConnectAsync(mqttConfig.Value, mqttFactory));
     }
 
@@ -49,7 +49,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
-        _logger.LogDebug("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
+        _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
 
         var clientOptions = new ManagedMqttClientOptionsBuilder()
@@ -66,7 +66,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         
         await _mqttClient.StartAsync(clientOptions);
         
-        _logger.LogDebug("MQTT client is ready");
+        _logger.LogTrace("MQTT client is ready");
     }
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
@@ -87,7 +87,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             return;
 
         _disposed = true;
-        _logger.LogInformation("MQTT disconnecting");
+        _logger.LogTrace("MQTT disconnecting");
         _connectionTask?.Dispose();
         _mqttClient?.Dispose();
     }
