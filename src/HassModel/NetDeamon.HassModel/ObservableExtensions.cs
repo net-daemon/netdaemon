@@ -105,8 +105,11 @@ public static class ObservableExtensions
             }
             else
             {
-                using var loggerFactory = LoggerFactory.Create(x => { x.AddConsole(); });
-                logger ??= loggerFactory.CreateLogger<IHaContext>();
+                if (logger is null)
+                {
+                    using var loggerFactory = LoggerFactory.Create(x => { x.AddConsole(); });
+                    logger = loggerFactory.CreateLogger<IHaContext>();
+                }
                 logger.LogError(ex,
                     "Error on SubscribeSafe");
             }
@@ -130,9 +133,11 @@ public static class ObservableExtensions
             }
             else
             {
-                using var loggerFactory = LoggerFactory.Create(x => { x.AddConsole(); });
-                logger = logger ??= loggerFactory.CreateLogger<IHaContext>();
-
+                if (logger is null)
+                {
+                    using var loggerFactory = LoggerFactory.Create(x => { x.AddConsole(); });
+                    logger = loggerFactory.CreateLogger<IHaContext>();
+                }
                 logger.LogError(ex,
                     "SubscribeConcurrent throws an unhandled Exception, please use error callback function to do proper logging");
             }
