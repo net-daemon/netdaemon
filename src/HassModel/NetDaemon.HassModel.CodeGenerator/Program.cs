@@ -37,7 +37,7 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
 }
 
 //This is used as a command line switch rather than a configuration key. There is no key value following it to interpret.
-generationSettings.FilePerEntity = args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-fpe");
+generationSettings.GenerateOneFilePerEntity = args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-fpe");
 
 var (hassStates, hassServiceDomains) = await GetHaData(haSettings);
 
@@ -51,13 +51,13 @@ if (!string.IsNullOrWhiteSpace(generationSettings.OutputFolder))
     dirPath = $"{Directory.GetCurrentDirectory()}\\{generationSettings.OutputFolder}\\";
 }
 
-if (generationSettings.FilePerEntity)
+if (generationSettings.GenerateOneFilePerEntity)
 {
     Console.WriteLine("Generating separate file per entity");
 
-    var entities = Generator.GenerateCodePerEntity(generationSettings.Namespace, hassStates, hassServiceDomains).ToList();
+    var entities = Generator.GenerateCodePerEntity(generationSettings, hassStates, hassServiceDomains).ToList();
 
-    entities.ForEach(entity => File.WriteAllText($"{dirPath}{entity.GetClassNameFromCompilationUnit()}.cs", entity.ToFullString()));
+    entities.ForEach(entity => File.WriteAllText($"{dirPath}{entity.GetClassName()}.cs", entity.ToFullString()));
 
     Console.WriteLine($"Generated {entities.Count} files.");
     Console.WriteLine(dirPath);
@@ -65,7 +65,7 @@ if (generationSettings.FilePerEntity)
 else
 {
     Console.WriteLine("Generating single file for all entities");
-    var code = Generator.GenerateCode(generationSettings.Namespace, hassStates, hassServiceDomains);
+    var code = Generator.GenerateCode(generationSettings, hassStates, hassServiceDomains);
     File.WriteAllText($"{dirPath}{generationSettings.OutputFile}", code);
 
     Console.WriteLine($"{dirPath}{generationSettings.OutputFile}");
