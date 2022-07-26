@@ -1,5 +1,4 @@
-﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+﻿using MQTTnet.Extensions.ManagedClient;
 
 namespace NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -35,6 +34,7 @@ internal class MqttFactoryWrapper : IMqttFactoryWrapper
     /// <returns></returns>
     public IManagedMqttClient CreateManagedMqttClient()
     {
-        return _client == null ? _mqttFactory.CreateManagedMqttClient() : _client;
+        return _client ?? _mqttFactory?.CreateManagedMqttClient() 
+            ?? throw new InvalidOperationException("No client or MqttFactory specified");
     }
 }

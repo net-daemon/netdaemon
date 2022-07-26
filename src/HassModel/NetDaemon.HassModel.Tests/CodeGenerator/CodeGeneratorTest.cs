@@ -15,10 +15,12 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator;
 
 public class CodeGeneratorTest
 {
+    private readonly CodeGenerationSettings _settings = new() { Namespace = "RootNameSpace" };
+    
     [Fact]
     public void RunCodeGenEMpy()
     {
-        var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", Array.Empty<HassState>(), new HassServiceDomain[0]);
+        var code = Generator.CreateCompilationUnitSyntax(_settings, Array.Empty<HassState>(), new HassServiceDomain[0]);
 
         code.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
             
@@ -36,7 +38,7 @@ public class CodeGeneratorTest
             new() { EntityId = "switch.switch2" },
         };
 
-        var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = Generator.CreateCompilationUnitSyntax(_settings, entityStates, Array.Empty<HassServiceDomain>());
         var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
@@ -82,7 +84,7 @@ public class Root
             },
         };
 
-        var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = Generator.CreateCompilationUnitSyntax(_settings, entityStates, Array.Empty<HassServiceDomain>());
         var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
@@ -143,7 +145,7 @@ public class Root
             }
         };
             
-        var generatedCode = Generator.CreateCompilationUnitSyntax("RootNameSpace", entityStates, hassServiceDomains);
+        var generatedCode = Generator.CreateCompilationUnitSyntax(_settings, entityStates, hassServiceDomains);
         var appCode = @"
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel;
@@ -162,7 +164,7 @@ public class Root
     }
 
     [Fact]
-    public void TestAttributeClassGeneration()
+    public void TestAttributeClassGeneration_UseAttributeBaseClassesFalse()
     {
         var entityStates = new HassState[]
         {
@@ -184,7 +186,7 @@ public class Root
             },
         };
             
-        var generatedCode = Generator.GenerateCode("RootNameSpace", entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = Generator.GenerateCode(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassServiceDomain>());
 
         var appCode = @"
 using NetDaemon.HassModel.Entities;
@@ -202,11 +204,58 @@ public class Root
         string? friendlyName0 = light1.Attributes?.FriendlyName_0;
         string? friendlyName1 = light1.Attributes?.FriendlyName_1;
         string? startDate = light1.Attributes?.StartDate;
+        string? arrElement1 = light1.Attributes?.Arr?[0];
     }
 }";
         AssertCodeCompiles(generatedCode, appCode);
     }
 
+    
+    [Fact]
+    public void TestAttributeClassGenerationSkipBaseProperties()
+    {
+        var entityStates = new HassState[]
+        {
+            new()
+            {
+                EntityId = "light.light1",
+                AttributesJson = new 
+                {
+                    brightness = 30,
+                    start_date = new DateTime(2010, 12, 23, 23, 12, 00),
+                    not_used = (string?)null,
+                    trueValue = true,
+                    falseValue = false,
+                    dict = new {},
+                    arr = new []{"red", "blue"}
+                }.AsJsonElement()
+            },
+        };
+            
+        var generatedCode = Generator.GenerateCode(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassServiceDomain>());
+        generatedCode.Should().NotContain("Brightness", because: "It is in the base class");
+
+        var appCode = @"
+using NetDaemon.HassModel.Entities;
+using NetDaemon.HassModel.Entities.Core;
+using NetDaemon.HassModel;
+using RootNameSpace;
+
+public class Root
+{
+    public void Run(IHaContext ha)
+    {
+        IEntities entities = new Entities(ha);
+        LightEntity light1 = entities.Light.Light1;
+        int? brightness = light1.Attributes?.Brightness;
+
+        LightAttributesBase? baseAttr = light1.Attributes;
+        int? brightnessBase = baseAttr?.Brightness;
+    }
+}";
+        AssertCodeCompiles(generatedCode, appCode);
+    }
+    
     [Fact]
     public void TestServicesGeneration()
     {
@@ -238,7 +287,7 @@ public class Root
         };
 
         // Act:
-        var code = Generator.CreateCompilationUnitSyntax("RootNameSpace", readOnlyCollection, hassServiceDomains);
+        var code = Generator.CreateCompilationUnitSyntax(_settings, readOnlyCollection, hassServiceDomains);
         // uncomment for debugging
         // File.WriteAllText(@"c:\temp\generated.cs", code.ToString());
 
@@ -293,6 +342,5 @@ public class Root
         emitResult.Diagnostics
             .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning)
             .Should().BeEmpty();
-            
     }
 }

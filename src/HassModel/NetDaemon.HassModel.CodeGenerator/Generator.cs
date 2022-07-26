@@ -8,9 +8,9 @@ namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class Generator
 {
-    public static string GenerateCode(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
-    {
-        var code = CreateCompilationUnitSyntax(nameSpace, entities, services);
+    public static string GenerateCode(CodeGenerationSettings codeGenerationSettings, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
+    { 
+        var code = CreateCompilationUnitSyntax(codeGenerationSettings, entities, services);
         return code.ToFullString();
     }
 
@@ -45,6 +45,7 @@ internal static class Generator
     }
 
     internal static CompilationUnitSyntax CreateCompilationUnitSyntax(string nameSpace, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
+    internal static CompilationUnitSyntax CreateCompilationUnitSyntax(CodeGenerationSettings codeGenerationSettings, IReadOnlyCollection<HassState> entities, IReadOnlyCollection<HassServiceDomain> services)
     {
         var orderedEntities = entities.OrderBy(x => x.EntityId).ToArray();
         var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
@@ -54,9 +55,9 @@ internal static class Generator
             .AddUsings(UsingDirective(ParseName("System.Collections.Generic")))
             .AddUsings(UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray());
 
-        var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).NormalizeWhitespace();
+        var namespaceDeclaration = NamespaceDeclaration(ParseName(codeGenerationSettings.Namespace)).NormalizeWhitespace();
 
-        namespaceDeclaration = namespaceDeclaration.AddMembers(EntitiesGenerator.Generate(orderedEntities).ToArray());
+        namespaceDeclaration = namespaceDeclaration.AddMembers(EntitiesGenerator.Generate(codeGenerationSettings, orderedEntities).ToArray());
         namespaceDeclaration = namespaceDeclaration.AddMembers(ServicesGenerator.Generate(orderedServiceDomains).ToArray());
         namespaceDeclaration = namespaceDeclaration.AddMembers(ExtensionMethodsGenerator.Generate(orderedServiceDomains, entities).ToArray());
 

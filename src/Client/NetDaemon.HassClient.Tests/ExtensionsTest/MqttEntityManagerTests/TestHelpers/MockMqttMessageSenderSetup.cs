@@ -1,5 +1,5 @@
 ﻿using MQTTnet;
-using MQTTnet.Client.Publishing;
+using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
@@ -22,21 +22,20 @@ internal class MockMqttMessageSenderSetup
     {
         SetupMockMqtt();
         SetupMessageSender();
-        SetResponseCode(MqttClientPublishReasonCode.Success);
+        SetupMessageReceiver();
     }
 
-    public void SetResponseCode(MqttClientPublishReasonCode code)
+    // ReSharper disable once MemberCanBePrivate.Global
+    public void SetupMessageReceiver()
     {
-        var publishResult = new MqttClientPublishResult() { ReasonCode = code };
+        var publishResult = new MqttClientPublishResult() { ReasonCode = MqttClientPublishReasonCode.Success };
         
-        // Ensure that when the MQTT Client is called, it's published message is saved and that it returns
-        // the specified response code
-        MqttClient.Setup(m => m.PublishAsync(It.IsAny<MqttApplicationMessage>(), It.IsAny<CancellationToken>()))
-            .Callback<MqttApplicationMessage, CancellationToken>((message, token) =>
+        // Ensure that when the MQTT Client is called its published message is saved
+        MqttClient.Setup(m => m.EnqueueAsync(It.IsAny<MqttApplicationMessage>()))
+            .Callback<MqttApplicationMessage>((message) =>
             {
                 LastPublishedMessage = message;
-            })
-            .ReturnsAsync(publishResult);
+            });
     }
 
     /// <summary>

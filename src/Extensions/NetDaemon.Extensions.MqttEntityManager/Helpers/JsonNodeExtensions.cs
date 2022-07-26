@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -17,16 +18,16 @@ internal static class JsonNodeExtensions
     {
         if (toMerge == null)
             return;
-        
+
         foreach (var kvp in toMerge)
         {
             var k = kvp.Key;
-            var v = JsonValue.Create(kvp.Value?.GetValue<object>());
+            var v = kvp.Value;
 
             if (target.ContainsKey(k))
                 target.Remove(k);
-            
-            target.Add(new(k, v));
+
+            target.Add(new(k, v?.Deserialize<JsonNode>()));
         }
     }
 
