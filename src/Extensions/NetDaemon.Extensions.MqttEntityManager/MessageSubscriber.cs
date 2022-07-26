@@ -1,10 +1,13 @@
 ﻿#region
 
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
+using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Packets;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 #endregion
@@ -46,7 +49,12 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             var mqttClient = await _assuredMqttConnection.GetClientAsync();
             await EnsureSubscriptionAsync(mqttClient);
 
-            await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build());
+            var topicFilters = new Collection<MqttTopicFilter>
+            {
+                new MqttTopicFilterBuilder().WithTopic(topic).Build()
+            };
+
+            await mqttClient.SubscribeAsync(topicFilters);
             return _subscribers.GetOrAdd(topic, new Lazy<Subject<string>>()).Value;
         }
         catch (Exception e)
@@ -68,7 +76,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             if (!_subscriptionIsSetup)
             {
                 _logger.LogInformation("Configuring message subscription");
-                mqttClient.UseApplicationMessageReceivedHandler(OnMessageReceived);
+                mqttClient.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
                 _subscriptionIsSetup = true;
             }
         }
@@ -88,16 +96,16 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// </summary>
     /// <param name="msg"></param>
     /// <returns></returns>
-    private Task OnMessageReceived(MqttApplicationMessageReceivedEventArgs msg)
+    private Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs msg)
     {
         try
         {
             var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.Payload);
             var topic = msg.ApplicationMessage.Topic;
-            _logger.LogDebug("Subscription received {Payload} from {Topic}", payload, topic);
+            _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
 
             if (!_subscribers.ContainsKey(topic))
-                _logger.LogDebug("No subscription for topic={Topic}", topic);
+                _logger.LogTrace("No subscription for topic={Topic}", topic);
             else
             {
                 _subscribers[topic].Value.OnNext(payload);
@@ -118,7 +126,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             _isDisposed = true;
             foreach (var observer in _subscribers)
             {
-                _logger.LogDebug("Disposing {Topic} subscription", observer.Key);
+                _logger.LogTrace("Disposing {Topic} subscription", observer.Key);
                 observer.Value.Value.OnCompleted();
                 observer.Value.Value.Dispose();
             }

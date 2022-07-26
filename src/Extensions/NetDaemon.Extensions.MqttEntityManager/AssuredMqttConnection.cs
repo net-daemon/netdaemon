@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet.Client.Connecting;
-using MQTTnet.Client.Disconnecting;
-using MQTTnet.Client.Options;
+using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
@@ -33,7 +31,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _logger = logger;
 
-        _logger.LogDebug("MQTT initiating connection");
+        _logger.LogTrace("MQTT initiating connection");
         _connectionTask = Task.Run(() => ConnectAsync(mqttConfig.Value, mqttFactory));
     }
 
@@ -51,7 +49,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
-        _logger.LogDebug("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
+        _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
 
         var clientOptions = new ManagedMqttClientOptionsBuilder()
@@ -63,22 +61,24 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
         _mqttClient = mqttFactory.CreateManagedMqttClient();
 
-        _mqttClient.ConnectedHandler = new MqttClientConnectedHandlerDelegate(LogConnectedStatus);
-        _mqttClient.DisconnectedHandler = new MqttClientDisconnectedHandlerDelegate(LogDisconnectedStatus);
-
+        _mqttClient.ConnectedAsync += MqttClientOnConnectedAsync;
+        _mqttClient.DisconnectedAsync += MqttClientOnDisconnectedAsync;
+        
         await _mqttClient.StartAsync(clientOptions);
         
-        _logger.LogDebug("MQTT client is ready");
+        _logger.LogTrace("MQTT client is ready");
     }
 
-    private void LogDisconnectedStatus(MqttClientDisconnectedEventArgs arg)
+    private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
-        _logger.LogDebug("MQTT disconnected: {Reason}", arg.Reason);
+        _logger.LogDebug("MQTT disconnected: {Reason}", arg.ConnectResult.ReasonString);   
+        return Task.CompletedTask;
     }
 
-    private void LogConnectedStatus(MqttClientConnectedEventArgs arg)
+    private Task MqttClientOnConnectedAsync(MqttClientConnectedEventArgs arg)
     {
         _logger.LogDebug("MQTT connected: {ResultCode}", arg.ConnectResult.ResultCode);
+        return Task.CompletedTask;
     }
 
     public void Dispose()
@@ -87,7 +87,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             return;
 
         _disposed = true;
-        _logger.LogInformation("MQTT disconnecting");
+        _logger.LogTrace("MQTT disconnecting");
         _connectionTask?.Dispose();
         _mqttClient?.Dispose();
     }

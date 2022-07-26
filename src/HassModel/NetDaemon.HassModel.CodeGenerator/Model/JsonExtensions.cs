@@ -57,9 +57,12 @@ internal static class JsonExtensions
                         serviceDescription = serviceProperty.Value.GetString();
                         break;
                     case "fields":
-                        foreach (var fieldsProperty in serviceProperty.Value.EnumerateObject())
+                        if (serviceProperty.Value.ValueKind == JsonValueKind.Object)
                         {
-                            serviceFields.Add(getField(fieldsProperty.Name, fieldsProperty.Value));
+                            foreach (var fieldsProperty in serviceProperty.Value.EnumerateObject())
+                            {
+                                serviceFields.Add(getField(fieldsProperty.Name, fieldsProperty.Value));
+                            }
                         }
                         break;
                     case "target":

@@ -1,6 +1,4 @@
-﻿using MQTTnet.Client.Publishing;
-using MQTTnet.Protocol;
-using NetDaemon.Extensions.MqttEntityManager.Exceptions;
+﻿using MQTTnet.Protocol;
 using NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
@@ -41,21 +39,6 @@ public class MessageSenderTests
         var publishedMessage = mqttSetup.LastPublishedMessage;
 
         publishedMessage.Retain.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task FailedSendThrows()
-    {
-        var mqttSetup = new MockMqttMessageSenderSetup();
-        mqttSetup.SetResponseCode(MqttClientPublishReasonCode.UnspecifiedError);
-
-        Func<Task> f = async () =>
-        {
-            await mqttSetup.MessageSender.SendMessageAsync("topic", "payload", true,
-                MqttQualityOfServiceLevel.AtMostOnce);
-        };
-
-        await f.Should().ThrowAsync<MqttPublishException>();
     }
 
     [Fact]
