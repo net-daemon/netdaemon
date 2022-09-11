@@ -99,7 +99,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     {
         var result = await SendCommandAndReturnResponseRawAsync(command, cancelToken).ConfigureAwait(false);
 
-        return result is not null ? result.Value.ToObject<TResult>() : default;
+        return result is not null ? result.Value.Deserialize<TResult>() : default;
     }
 
     public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)

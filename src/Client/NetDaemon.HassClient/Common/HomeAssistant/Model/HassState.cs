@@ -6,7 +6,7 @@ public record HassState
 
     public IReadOnlyDictionary<string, object>? Attributes
     {
-        get => AttributesJson?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+        get => AttributesJson?.Deserialize<Dictionary<string, object>>() ?? new Dictionary<string, object>();
         init => AttributesJson = value.ToJsonElement();
     }
 
@@ -19,6 +19,6 @@ public record HassState
 
     public T? AttributesAs<T>()
     {
-        return AttributesJson.HasValue ? AttributesJson.Value.ToObject<T>() : default;
+        return AttributesJson.HasValue ? AttributesJson.Value.Deserialize<T>() : default;
     }
 }

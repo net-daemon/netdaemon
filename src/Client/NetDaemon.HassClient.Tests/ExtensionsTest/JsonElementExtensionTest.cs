@@ -13,24 +13,4 @@ public class JsonElementExtensionTest
             .Should()
             .Be("get_services");
     }
-
-    [Fact]
-    public void TestToObjectFromElementShouldReturnCorrectObject()
-    {
-        var jsonDoc = JsonDocument.Parse(
-            @"
-            {
-                ""id"": 3,
-                ""type"": ""result"",
-                ""success"": true,
-                ""result"": null
-                }
-            "
-        );
-        var msg = jsonDoc.RootElement.ToObject<HassMessage>();
-
-        msg!.Id
-            .Should()
-            .Be(3);
-    }
 }

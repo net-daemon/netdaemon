@@ -16,7 +16,7 @@ public record EntityState
     /// <summary>
     /// The attributes
     /// </summary>
-    public virtual object? Attributes => AttributesJson?.ToObject<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+    public virtual object? Attributes => AttributesJson?.Deserialize<Dictionary<string, object>>() ?? new Dictionary<string, object>();
     
     /// <summary>Last changed, when state changed from and to different values</summary>
     public DateTime? LastChanged { get; init; }
@@ -46,7 +46,7 @@ public record EntityState<TAttributes> : EntityState
     /// <param name="source"></param>
     public EntityState(EntityState source) : base(source)
     {
-        _attributesLazy = new (() => AttributesJson?.ToObject<TAttributes>() ?? default);            
+        _attributesLazy = new (() => AttributesJson?.Deserialize<TAttributes>() ?? default);            
     }
 
     /// <inheritdoc/>

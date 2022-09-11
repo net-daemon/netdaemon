@@ -40,7 +40,7 @@ public record Event<TData> : Event
     /// <summary>Copy constructor from Base type</summary>
     public Event(Event source) : base(source)
     {
-        _lazyData = new Lazy<TData?>(() => DataElement?.ToObject<TData>());
+        _lazyData = new Lazy<TData?>(() => DataElement?.Deserialize<TData>());
     }
         
     private Lazy<TData?> _lazyData;
