@@ -27,7 +27,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-      <PackageReference Include="MQTTnet" Version="4.1.0.247" />
+      <PackageReference Include="MQTTnet" Version="4.1.1.318" />
       <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.1.0.247" />
       <PackageReference Include="System.Reactive" Version="5.0.0" />
     </ItemGroup>
