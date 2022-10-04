@@ -35,24 +35,24 @@ jobs:
         run: |
           sed -i "/        private const string Version = /c\        private const string Version =  \"${{ github.event.inputs.tag }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
       - name: 🎁 Pack AppModel
-        run: dotnet pack src/AppModel/NetDaemon.AppModel/NetDaemon.AppModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/AppModel/NetDaemon.AppModel/NetDaemon.AppModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack Client
-        run: dotnet pack src/Client/NetDaemon.HassClient/NetDaemon.Client.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Client/NetDaemon.HassClient/NetDaemon.Client.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack Runtime
-        run: dotnet pack src/Runtime/NetDaemon.Runtime/NetDaemon.Runtime.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Runtime/NetDaemon.Runtime/NetDaemon.Runtime.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack HassModel
-        run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/HassModel/NetDeamon.HassModel/NetDaemon.HassModel.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack HassModel integration
-        run: dotnet pack src/HassModel/NetDaemon.HassModel.Integration/NetDaemon.HassModel.Integration.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/HassModel/NetDaemon.HassModel.Integration/NetDaemon.HassModel.Integration.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack HassModel codegen
-        run: dotnet pack src/HassModel/NetDaemon.HassModel.CodeGenerator/NetDaemon.HassModel.CodeGenerator.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/HassModel/NetDaemon.HassModel.CodeGenerator/NetDaemon.HassModel.CodeGenerator.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack scheduling extensions
-        run: dotnet pack src/Extensions/NetDaemon.Extensions.Scheduling/NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.Scheduling/NetDaemon.Extensions.Scheduling.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack logging extensions
-        run: dotnet pack src/Extensions/NetDaemon.Extensions.Logging/NetDaemon.Extensions.Logging.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.Logging/NetDaemon.Extensions.Logging.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack TTS extensions
-        run: dotnet pack src/Extensions/NetDaemon.Extensions.Tts/NetDaemon.Extensions.Tts.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.Tts/NetDaemon.Extensions.Tts.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 🎁 Pack Mqtt extensions
-        run: dotnet pack src/Extensions/NetDaemon.Extensions.MqttEntityManager/NetDaemon.Extensions.MqttEntityManager.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}
+        run: dotnet pack src/Extensions/NetDaemon.Extensions.MqttEntityManager/NetDaemon.Extensions.MqttEntityManager.csproj --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }} -p:Version=${{ github.event.inputs.tag }}
       - name: 📨 Push to nuget
         run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols
