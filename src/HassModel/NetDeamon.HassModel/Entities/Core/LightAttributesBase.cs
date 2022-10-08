@@ -34,7 +34,7 @@ public record LightAttributesBase
     public string? Icon { get; init; }
     
     /// <summary>
-    /// The warmest color_temp that this light supports
+    /// The warmest color_temp that this light supports.
     /// </summary>
     [JsonPropertyName("max_mireds")]
     public int? MaxMireds { get; init; }
