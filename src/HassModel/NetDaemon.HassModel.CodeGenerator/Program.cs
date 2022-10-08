@@ -119,9 +119,9 @@ async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServi
     await using var connection = await client.ConnectAsync(homeAssistantSettings.Host, homeAssistantSettings.Port, homeAssistantSettings.Ssl, homeAssistantSettings.Token, CancellationToken.None).ConfigureAwait(false);
 
     var services = await connection.GetServicesAsync(CancellationToken.None).ConfigureAwait(false);
-    var serviceDmains = services!.Value.ToServicesResult();
+    var serviceDomains = services!.Value.ToServicesResult();
 
     var states = await connection.GetStatesAsync(CancellationToken.None).ConfigureAwait(false);
 
-    return (states!, serviceDmains);
+    return (states!, serviceDomains);
 }

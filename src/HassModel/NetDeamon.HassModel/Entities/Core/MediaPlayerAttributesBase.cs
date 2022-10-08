@@ -1,5 +1,6 @@
 ﻿namespace NetDaemon.HassModel.Entities.Core;
 #pragma warning disable CS1591
+#pragma warning disable CA1056
 
 public record MediaPlayerAttributesBase
 {
@@ -9,6 +10,9 @@ public record MediaPlayerAttributesBase
     [JsonPropertyName("app_name")]
     public string? AppName { get; init; }
 
+    /// <summary>
+    /// Type of media player.
+    /// </summary>
     [JsonPropertyName("device_class")]
     public string? DeviceClass { get; init; }
 
@@ -32,7 +36,20 @@ public record MediaPlayerAttributesBase
 
     [JsonPropertyName("media_album_name")]
     public string? MediaAlbumName { get; init; }
-
+    
+    /// <summary>
+    /// URL that represents the current image.
+    /// </summary>
+    [JsonPropertyName("media_image_url")]
+    public string? MediaImageUrl { get; init; }
+    
+    // This is documented but has never shown up in the forums
+    // /// <summary>
+    // /// Is the media_image_url accessible outside of the home network.
+    // /// </summary>
+    // [JsonPropertyName("media_image_remotely_accessible")]
+    // public bool? MediaImageRemotelyAccessible { get; init; }
+    
     [JsonPropertyName("media_artist")]
     public string? MediaArtist { get; init; }
 
@@ -62,16 +79,37 @@ public record MediaPlayerAttributesBase
 
     [JsonPropertyName("shuffle")]
     public bool? Shuffle { get; init; }
+    
+    /// <summary>
+    /// The current sound mode of the media player
+    /// </summary>
+    [JsonPropertyName("sound_mode")]
+    public string? SoundMode { get; init; }
+    
+    /// <summary>
+    /// Dynamic list of available sound modes (set by platform, empty means sound mode not supported)
+    /// </summary>
+    [JsonPropertyName("sound_mode_list")]
+    public IReadOnlyList<string>? SoundModeList { get; init; }
 
+    /// <summary>
+    /// The currently selected input source for the media player.
+    /// </summary>
     [JsonPropertyName("source")]
     public string? Source { get; init; }
 
+    /// <summary>
+    /// The list of possible input sources for the media player. (This list should contain human readable names, suitable for frontend display)
+    /// </summary>
     [JsonPropertyName("source_list")]
     public IReadOnlyList<string>? SourceList { get; init; }
 
     [JsonPropertyName("supported_features")]
     public double? SupportedFeatures { get; init; }
 
+    /// <summary>
+    /// Float for volume level between 0..1
+    /// </summary>
     [JsonPropertyName("volume_level")]
     public double? VolumeLevel { get; init; }
 }
