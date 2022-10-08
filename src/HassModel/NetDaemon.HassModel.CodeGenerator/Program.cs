@@ -107,7 +107,7 @@ IConfigurationRoot GetConfigurationRoot()
     return builder.Build();
 }
 
-async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServiceDomain> serviceDmains)> GetHaData(HomeAssistantSettings homeAssistantSettings)
+async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServiceDomain> serviceDomains)> GetHaData(HomeAssistantSettings homeAssistantSettings)
 {
     Console.WriteLine($"Connecting to Home Assistant at {homeAssistantSettings.Host}:{homeAssistantSettings.Port}");
 
