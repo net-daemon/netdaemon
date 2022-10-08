@@ -42,14 +42,7 @@ public record MediaPlayerAttributesBase
     /// </summary>
     [JsonPropertyName("media_image_url")]
     public string? MediaImageUrl { get; init; }
-    
-    // This is documented but has never shown up in the forums
-    // /// <summary>
-    // /// Is the media_image_url accessible outside of the home network.
-    // /// </summary>
-    // [JsonPropertyName("media_image_remotely_accessible")]
-    // public bool? MediaImageRemotelyAccessible { get; init; }
-    
+
     [JsonPropertyName("media_artist")]
     public string? MediaArtist { get; init; }
 
