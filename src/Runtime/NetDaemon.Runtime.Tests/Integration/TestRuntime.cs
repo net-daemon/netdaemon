@@ -25,7 +25,7 @@ public class TestRuntime
         ).Build();
 
 
-        var runnerTask = host.RunAsync();
+        var runnerTask = host.RunAsync(timedCancellationSource.Token);
 
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
         var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
@@ -50,7 +50,7 @@ public class TestRuntime
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
-        var runnerTask = host.RunAsync();
+        var runnerTask = host.RunAsync(timedCancellationSource.Token);
         while (!haRunner.ConnectMock.HasObservers && !runnerTask.IsCompleted) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
         _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
@@ -87,7 +87,7 @@ public class TestRuntime
                 .AddNetDaemonApp<LocalApp>()
         ).Build();
 
-        var runnerTask = host.RunAsync();
+        var runnerTask = host.RunAsync(timedCancellationSource.Token);
         while (!haRunner.ConnectMock.HasObservers && !runnerTask.IsCompleted) await Task.Delay(10);
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
         _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;

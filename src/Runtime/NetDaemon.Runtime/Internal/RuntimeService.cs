@@ -2,23 +2,27 @@ namespace NetDaemon.Runtime.Internal;
 
 internal class RuntimeService : BackgroundService
 {
-    private readonly IHostApplicationLifetime _hostLifetime;
-
     private readonly IRuntime _runtime;
+    
+    private Task? _executingTask;
 
-    public RuntimeService(
-        IHostApplicationLifetime hostLifetime,
-        IRuntime runtime
-        )
+    public RuntimeService(IRuntime runtime)
     {
-        _hostLifetime = hostLifetime;
         _runtime = runtime;
+    }
+
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _executingTask = _runtime.ExecuteAsync(cancellationToken);
+        await _runtime.WhenStarted;
+        await base.StartAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _runtime.ExecuteAsync(stoppingToken).ConfigureAwait(false);
-        // Stop application if this is exited
-        _hostLifetime.StopApplication();
+        if (_executingTask != null)
+        {
+            await _executingTask.ConfigureAwait(false);
+        }
     }
 }

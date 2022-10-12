@@ -8,7 +8,7 @@ internal class NetDaemonRuntime : IRuntime
 {
     private const string Version = "custom_compiled";
     private const int TimeoutInSeconds = 30;
-    private readonly IAppModel _appModel;
+    private readonly IAppModel? _appModel;
     private readonly ICacheManager _cacheManager;
 
     private readonly HomeAssistantSettings _haSettings;
@@ -25,7 +25,6 @@ internal class NetDaemonRuntime : IRuntime
         IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
         IOptions<AppConfigurationLocationSetting> locationSettings,
-        IAppModel appModel,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
@@ -33,7 +32,7 @@ internal class NetDaemonRuntime : IRuntime
         _haSettings = settings.Value;
         _homeAssistantRunner = homeAssistantRunner;
         _locationSettings = locationSettings;
-        _appModel = appModel;
+        _appModel = serviceProvider.GetService<IAppModel>();
         _serviceProvider = serviceProvider;
         _logger = logger;
         _cacheManager = cacheManager;
@@ -43,6 +42,9 @@ internal class NetDaemonRuntime : IRuntime
     internal IReadOnlyCollection<IApplication> ApplicationInstances =>
         _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
+    public Task WhenStarted => connected.Task;
+    private TaskCompletionSource connected = new();
+    
     public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
@@ -71,7 +73,7 @@ internal class NetDaemonRuntime : IRuntime
             // Ignore and just stop
         }
 
-        _logger.LogInformation("Exiting NetDaemon runtime.");
+        _logger.LogInformation("Exiting NetDaemon runtime");
     }
 
     public async ValueTask DisposeAsync()
@@ -89,20 +91,27 @@ internal class NetDaemonRuntime : IRuntime
             InternalConnection = haConnection;
 
             _logger.LogInformation("Successfully connected to Home Assistant");
-            if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
-                _logger.LogDebug("Loading applications from folder {Path}",
-                    Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
-            else
-                _logger.LogDebug("Loading applications with no configuration folder");
-
             await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
-            _applicationModelContext =
-                await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+            if (_appModel is not null)
+            {
+                if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
+                    _logger.LogDebug("Loading applications from folder {Path}",
+                        Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+                else
+                    _logger.LogDebug("Loading applications with no configuration folder");
 
-            // Handle state change for apps if registered
-            var appStateHandler = _serviceProvider.GetRequiredService<IHandleHomeAssistantAppStateUpdates>();
-            await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
+                _applicationModelContext =
+                    await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+
+
+                // Handle state change for apps if registered
+                var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
+                if (appStateHandler != null)
+                    await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
+            }
+            connected.SetResult();
+
         }
         catch (Exception e)
         {

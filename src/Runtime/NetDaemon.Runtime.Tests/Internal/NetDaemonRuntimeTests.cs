@@ -13,7 +13,6 @@ public class NetDaemonRuntimeTests
     public async Task TestExecuteAsync()
     {
         var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
-        var appModelMock = new Mock<IAppModel>();
         var serviceProviderMock = new Mock<IServiceProvider>();
         var loggerMock = new Mock<ILogger<NetDaemonRuntime>>();
 
@@ -25,7 +24,6 @@ public class NetDaemonRuntimeTests
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
             new FakeApplicationLocationSettingsOptions(),
-            appModelMock.Object,
             serviceProviderMock.Object,
             loggerMock.Object,
             Mock.Of<ICacheManager>()
@@ -68,13 +66,13 @@ public class NetDaemonRuntimeTests
         serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
         serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);
         serviceCollection.AddScoped(_ => scopedContext);
+        serviceCollection.AddSingleton(appModelMock.Object);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         await using var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
             new FakeApplicationLocationSettingsOptions(),
-            appModelMock.Object,
             serviceProvider,
             loggerMock.Object,
             Mock.Of<ICacheManager>()
@@ -84,6 +82,8 @@ public class NetDaemonRuntimeTests
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
+
+        await runtime.WhenStarted;
 
         appModelMock.Verify(n => n.InitializeAsync(It.IsAny<CancellationToken>()));
     }
@@ -119,13 +119,13 @@ public class NetDaemonRuntimeTests
         serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
         serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);
         serviceCollection.AddScoped(_ => scopedContext);
+        serviceCollection.AddSingleton(appModelMock.Object);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         await using var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
             new FakeApplicationLocationSettingsOptions(),
-            appModelMock.Object,
             serviceProvider,
             loggerMock.Object,
             Mock.Of<ICacheManager>()

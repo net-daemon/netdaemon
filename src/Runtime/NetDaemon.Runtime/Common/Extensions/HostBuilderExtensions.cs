@@ -12,6 +12,8 @@ public static class HostBuilderExtensions
         return hostBuilder
             .ConfigureServices((context, services)
                 => services.ConfigureNetDaemonServices(context.Configuration)
+                //                 services.Configure<AppConfigurationLocationSetting>(context.Configuration.GetSection("NetDaemon"));
+
             )
             .ConfigureAppConfiguration((ctx, config) =>
             {
@@ -38,7 +40,7 @@ public static class HostBuilderExtensions
                 services.AddLogging();
                 services.AddHostedService<RuntimeService>();
                 services.AddHomeAssistantClient();
-
+                services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                 services.AddSingleton<IRuntime, NetDaemonRuntime>();
             });
     }
