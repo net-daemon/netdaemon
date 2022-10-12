@@ -107,7 +107,7 @@ public record MediaPlayerAttributesBase
     public IReadOnlyList<string>? SourceList { get; init; }
 
     [JsonPropertyName("supported_features")]
-    public double? SupportedFeatures { get; init; }
+    public long? SupportedFeatures { get; init; }
 
     /// <summary>
     /// Float for volume level between 0..1

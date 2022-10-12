@@ -55,37 +55,37 @@ public record LightAttributesBase
     /// The warmest color_temp that this light supports.
     /// </summary>
     [JsonPropertyName("max_mireds")]
-    public int? MaxMireds { get; init; }
+    public long? MaxMireds { get; init; }
 
     /// <summary>
     /// The coldest color_temp that this light supports.
     /// </summary>
     [JsonPropertyName("min_mireds")]
-    public int? MinMireds { get; init; }
+    public long? MinMireds { get; init; }
 
     /// <summary>
     /// List containing three integers between 0 and 255 representing the RGB color (red, green, blue) of the light. Three comma-separated integers that represent the color in RGB.
     /// </summary>
     [JsonPropertyName("rgb_color")]
-    public IReadOnlyList<int>? RgbColor { get; init; }
+    public IReadOnlyList<long>? RgbColor { get; init; }
     
     /// <summary>
     /// List containing four integers between 0 and 255 representing the RGBW color (red, green, blue, white) of the light. This attribute will be null for lights which do not support RGBW colors.
     /// </summary>
     [JsonPropertyName("rgbw_color")]
-    public IReadOnlyList<int>? RgbwColor { get; init; }
+    public IReadOnlyList<long>? RgbwColor { get; init; }
     
     /// <summary>
     /// List containing five integers between 0 and 255 representing the RGBWW color (red, green, blue, cold white, warm white) of the light. This attribute will be null for lights which do not support RGBWW colors.
     /// </summary>
     [JsonPropertyName("rgbww_color")]
-    public IReadOnlyList<int>? RgbwwColor { get; init; }
+    public IReadOnlyList<long>? RgbwwColor { get; init; }
     
     [JsonPropertyName("supported_color_modes")]
     public IReadOnlyList<string>? SupportedColorModes { get; init; }
     
     [JsonPropertyName("supported_features")]
-    public int? SupportedFeatures { get; init; }
+    public long? SupportedFeatures { get; init; }
 
     /// <summary>
     /// List containing two floats representing the xy color of the light. Two comma-separated floats that represent the color in XY.
