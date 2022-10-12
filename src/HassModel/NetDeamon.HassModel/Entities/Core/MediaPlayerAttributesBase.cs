@@ -16,15 +16,24 @@ public record MediaPlayerAttributesBase
     [JsonPropertyName("device_class")]
     public string? DeviceClass { get; init; }
 
+    /// <summary>
+    /// Entity ids of the entities in the media player group. Null if not a group.
+    /// </summary>
     [JsonPropertyName("entity_id")]
     public IReadOnlyList<string>? EntityId { get; init; }
 
+    /// <summary>
+    /// URL of the picture for the entity.
+    /// </summary>
     [JsonPropertyName("entity_picture")]
     public string? EntityPicture { get; init; }
 
     [JsonPropertyName("entity_picture_local")]
     public string? EntityPictureLocal { get; init; }
 
+    /// <summary>
+    /// Name of the media player as displayed in the UI.
+    /// </summary>
     [JsonPropertyName("friendly_name")]
     public string? FriendlyName { get; init; }
 
