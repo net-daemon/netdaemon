@@ -65,7 +65,7 @@ internal static class NamingHelper
     public static string SimplifyTypeName(Type type)
     {
         // Use short name if the type is in one of the using namespaces
-        return  UsingNamespaces.Any(u => type.Namespace == u) ? type.Name : type.FullName!;
+        return UsingNamespaces.Any(u => type.Namespace == u) ? type.Name : type.FullName!;
     }
 
     public static readonly string[] UsingNamespaces =

@@ -107,7 +107,7 @@ IConfigurationRoot GetConfigurationRoot()
     return builder.Build();
 }
 
-async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServiceDomain> serviceDmains)> GetHaData(HomeAssistantSettings homeAssistantSettings)
+async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServiceDomain> serviceDomains)> GetHaData(HomeAssistantSettings homeAssistantSettings)
 {
     Console.WriteLine($"Connecting to Home Assistant at {homeAssistantSettings.Host}:{homeAssistantSettings.Port}");
 
@@ -119,9 +119,9 @@ async Task<(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassServi
     await using var connection = await client.ConnectAsync(homeAssistantSettings.Host, homeAssistantSettings.Port, homeAssistantSettings.Ssl, homeAssistantSettings.Token, CancellationToken.None).ConfigureAwait(false);
 
     var services = await connection.GetServicesAsync(CancellationToken.None).ConfigureAwait(false);
-    var serviceDmains = services!.Value.ToServicesResult();
+    var serviceDomains = services!.Value.ToServicesResult();
 
     var states = await connection.GetStatesAsync(CancellationToken.None).ConfigureAwait(false);
 
-    return (states!, serviceDmains);
+    return (states!, serviceDomains);
 }
