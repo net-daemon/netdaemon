@@ -74,7 +74,7 @@ public record MediaPlayerAttributesBase
     public string? MediaTitle { get; init; }
 
     [JsonPropertyName("media_track")]
-    public double? MediaTrack { get; init; }
+    public object? MediaTrack { get; init; }
 
     [JsonPropertyName("repeat")]
     public string? Repeat { get; init; }
