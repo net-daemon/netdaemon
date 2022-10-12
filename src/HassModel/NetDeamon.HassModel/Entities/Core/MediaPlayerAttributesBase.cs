@@ -17,7 +17,7 @@ public record MediaPlayerAttributesBase
     public string? DeviceClass { get; init; }
 
     [JsonPropertyName("entity_id")]
-    public object? EntityId { get; init; }
+    public IReadOnlyList<string>? EntityId { get; init; }
 
     [JsonPropertyName("entity_picture")]
     public string? EntityPicture { get; init; }

@@ -4,7 +4,7 @@
 public record LightAttributesBase
 {
     [JsonPropertyName("entity_id")]
-    public object? EntityId { get; init; }
+    public IReadOnlyList<string>? EntityId { get; init; }
 
     /// <summary>
     /// Integer between 0 and 255 for how bright the light should be, where 0 means the light is off, 1 is the minimum brightness and 255 is the maximum brightness supported by the light.
@@ -44,9 +44,6 @@ public record LightAttributesBase
     /// </summary>
     [JsonPropertyName("min_mireds")]
     public int? MinMireds { get; init; }
-
-    [JsonPropertyName("off_brightness")]
-    public object? OffBrightness { get; init; }
     
     [JsonPropertyName("supported_color_modes")]
     public IReadOnlyList<string>? SupportedColorModes { get; init; }
