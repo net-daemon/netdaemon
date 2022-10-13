@@ -94,12 +94,8 @@ internal static class EntitiesGenerator
         var genericEnumerableMethod = GenerateEnumerableMethod(entityStates, enumerableBaseClass);
         entityClass = entityClass.AddMembers(genericEnumerableMethod);
 
-        entityClass = entityClass.AddMembers(ParseMethod($@"IEnumerator<{enumerableBaseClass}> GetEnumerator()		
-                                                            {{
-		                                                        return GetEntities().GetEnumerator();                              
-                                                            }}").ToPublic());
-
-        entityClass = entityClass.AddMembers(ParseExpressionMethod("IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();"));
+        entityClass = entityClass.AddMembers(ParseMethod($"IEnumerator<{enumerableBaseClass}> GetEnumerator() => GetEntities().GetEnumerator();").ToPublic());
+        entityClass = entityClass.AddMembers(ParseExplicitMethod("IEnumerator IEnumerable.GetEnumerator() => GetEntities().GetEnumerator();"));
 
         return entityClass;
     }

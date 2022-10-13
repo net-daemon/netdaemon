@@ -12,7 +12,7 @@ internal static class SyntaxFactoryHelper
         return Parse<GlobalStatementSyntax>(code);
     }
 
-    public static MethodDeclarationSyntax ParseExpressionMethod(string code)
+    public static MethodDeclarationSyntax ParseExplicitMethod(string code)
     {
         return Parse<MethodDeclarationSyntax>(code);
     }
