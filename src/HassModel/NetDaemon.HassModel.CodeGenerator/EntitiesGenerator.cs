@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using NetDaemon.Client.HomeAssistant.Model;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -112,15 +113,17 @@ internal static class EntitiesGenerator
 
     private static MemberDeclarationSyntax GenerateEnumerableMethod(IEnumerable<DomainEntityState> states, string enumeratorBaseClass)
     {
-        StringBuilder sourceBuilder = new($"IEnumerable<{enumeratorBaseClass}> GetEntities() {{");
+        StringBuilder sourceBuilder = new();
+
+        sourceBuilder.Append(CultureInfo.InvariantCulture, $"IEnumerable<{enumeratorBaseClass}> GetEntities() {{");
 
         foreach (var state in states)
         {
             var pascalCaseEntityName = GetPascalCaseName(state.Entity);
-            sourceBuilder.Append($@"yield return {pascalCaseEntityName};");
+            sourceBuilder.Append(CultureInfo.InvariantCulture, $"yield return {pascalCaseEntityName};");
         }
 
-        sourceBuilder.Append("}");
+        sourceBuilder.Append('}');
 
         var enumerableMethod = ParseMethod(sourceBuilder.ToString());
 
