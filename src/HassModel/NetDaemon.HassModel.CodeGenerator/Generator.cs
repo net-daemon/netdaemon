@@ -40,6 +40,7 @@ internal static class Generator
             units.Add(CompilationUnit()
                 .AddUsings(UsingDirective(ParseName("System")))
                 .WithLeadingTrivia(TriviaHelper.GetFileHeader())
+                .AddUsings(UsingDirective(ParseName("System.Collections")))
                 .AddUsings(UsingDirective(ParseName("System.Collections.Generic")))
                 .AddUsings(UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray())
                 .AddMembers(NamespaceDeclaration(ParseName(codeGenerationSettings.Namespace))
@@ -60,6 +61,7 @@ internal static class Generator
         var code = CompilationUnit()
             .AddUsings(UsingDirective(ParseName("System")))
             .WithLeadingTrivia(TriviaHelper.GetFileHeader())
+            .AddUsings(UsingDirective(ParseName("System.Collections")))
             .AddUsings(UsingDirective(ParseName("System.Collections.Generic")))
             .AddUsings(UsingNamespaces.OrderBy(s => s).Select(u => UsingDirective(ParseName(u))).ToArray());
 

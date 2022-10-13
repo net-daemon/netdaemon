@@ -1,4 +1,5 @@
-﻿using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+﻿using System.Text;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Microsoft.CodeAnalysis.CSharp;
 using NetDaemon.Client.HomeAssistant.Model;
 
@@ -21,7 +22,7 @@ internal static class EntitiesGenerator
 
         yield return GenerateRootEntitiesClass(entitySets);
 
-        foreach (var entityClass in entitySets.GroupBy(s => s.EntitiesForDomainClassName).Select(g => GenerateEntiesForDomainClass(g.Key, g)))
+        foreach (var entityClass in entitySets.GroupBy(s => s.EntitiesForDomainClassName).Select(g => GenerateEntitiesForDomainClass(g.Key, g)))
         {
             yield return entityClass;
         }
@@ -53,7 +54,7 @@ internal static class EntitiesGenerator
     {
         var haContextNames = GetNames<IHaContext>();
 
-        var properties = entitySet.DistinctBy(s=>s.Domain).Select(set =>
+        var properties = entitySet.DistinctBy(s => s.Domain).Select(set =>
         {
             var entitiesTypeName = GetEntitiesForDomainClassName(set.Domain);
             var entitiesPropertyName = set.Domain.ToPascalCase();
@@ -68,31 +69,76 @@ internal static class EntitiesGenerator
             .WithBase((string)"IEntities").AddMembers(properties);
     }
 
+    private record DomainEntityState(HassState Entity, string ClassName);
+
     /// <summary>
     /// Generates the class with all the properties for the Entities of one domain
     /// </summary>
-    private static TypeDeclarationSyntax GenerateEntiesForDomainClass(string className, IEnumerable<EntitySet> entitySets)
+    private static TypeDeclarationSyntax GenerateEntitiesForDomainClass(string className, IEnumerable<EntitySet> entitySets)
     {
+        entitySets = entitySets.ToList();
+
+        //if there are multiple entitySets, we use the Entity base class since NumericSensor does not inherit from Sensor
+        var enumerableBaseClass = entitySets.Count() > 1 ? "Entity" : entitySets.First().EntityClassName;
+
         var entityClass = ClassWithInjected<IHaContext>(className)
             .ToPublic()
+            .WithBase($"IEnumerable<{enumerableBaseClass}>")
             .AddModifiers(Token(SyntaxKind.PartialKeyword));
 
-        var entityProperty = entitySets.SelectMany(s=> s.EntityStates.Select(e => GenerateEntityProperty(e, s.EntityClassName))).ToArray();
+        var entityStates = entitySets.SelectMany(s=> s.EntityStates.Select(e => new DomainEntityState(e, s.EntityClassName))).ToArray();
 
-        return entityClass.AddMembers(entityProperty);
+        var entityProperties = entityStates.Select(GenerateEntityProperty).ToArray();
+        entityClass = entityClass.AddMembers(entityProperties);
+
+        var genericEnumerableMethod = GenerateEnumerableMethod(entityStates, enumerableBaseClass);
+        entityClass = entityClass.AddMembers(genericEnumerableMethod);
+
+        entityClass = entityClass.AddMembers(ParseMethod($@"IEnumerator<{enumerableBaseClass}> GetEnumerator()		
+                                                            {{
+		                                                        return GetEntities().GetEnumerator();                              
+                                                            }}").ToPublic());
+
+        entityClass = entityClass.AddMembers(ParseExpressionMethod("IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();"));
+
+        return entityClass;
     }
 
-    private static MemberDeclarationSyntax GenerateEntityProperty(HassState entity, string className)
+    private static MemberDeclarationSyntax GenerateEntityProperty(DomainEntityState state)
     {
-        var entityName = EntityIdHelper.GetEntity(entity.EntityId);
+        var (entity, className) = state;
 
-        var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.EntityId}"");";
+        var propertyCode = $@"{className} {GetPascalCaseName(entity)} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.EntityId}"");";
 
         var name = entity.AttributesAs<attributes>()?.friendly_name;
         return ParseProperty(propertyCode).ToPublic().WithSummaryComment(name);
     }
 
-    record attributes(string friendly_name);
+    private static MemberDeclarationSyntax GenerateEnumerableMethod(IEnumerable<DomainEntityState> states, string enumeratorBaseClass)
+    {
+        StringBuilder sourceBuilder = new($"IEnumerable<{enumeratorBaseClass}> GetEntities() {{");
+
+        foreach (var state in states)
+        {
+            var pascalCaseEntityName = GetPascalCaseName(state.Entity);
+            sourceBuilder.Append($@"yield return {pascalCaseEntityName};");
+        }
+
+        sourceBuilder.Append("}");
+
+        var enumerableMethod = ParseMethod(sourceBuilder.ToString());
+
+        return enumerableMethod.ToPublic().WithSummaryComment("Get all of the entities in the domain");
+    }
+
+    private static string GetPascalCaseName(HassState entity)
+    {
+        var entityName = EntityIdHelper.GetEntity(entity.EntityId);
+        var pascalCaseEntityName = entityName.ToNormalizedPascalCase("E_");
+        return pascalCaseEntityName;
+    }
+
+    private record attributes(string friendly_name);
 
     private static bool IsNumeric(HassState entity)
     {
