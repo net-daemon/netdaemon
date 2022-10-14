@@ -12,8 +12,6 @@ public static class HostBuilderExtensions
         return hostBuilder
             .ConfigureServices((context, services)
                 => services.ConfigureNetDaemonServices(context.Configuration)
-                //                 services.Configure<AppConfigurationLocationSetting>(context.Configuration.GetSection("NetDaemon"));
-
             )
             .ConfigureAppConfiguration((ctx, config) =>
             {
@@ -35,7 +33,7 @@ public static class HostBuilderExtensions
     {
         return hostBuilder
             .UseAppScopedHaContext()
-            .ConfigureServices((_, services) =>
+            .ConfigureServices((context, services) =>
             {
                 services.AddLogging();
                 services.AddHostedService<RuntimeService>();

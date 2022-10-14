@@ -10,19 +10,16 @@ internal class RuntimeService : BackgroundService
     {
         _runtime = runtime;
     }
-
+    
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        _executingTask = _runtime.ExecuteAsync(cancellationToken);
-        await _runtime.WhenStarted;
-        await base.StartAsync(cancellationToken);
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        if (_executingTask != null)
+        try
         {
-            await _executingTask.ConfigureAwait(false);
+            await _runtime.StartAsync(cancellationToken);
+            await base.StartAsync(cancellationToken);
         }
+        catch (OperationCanceledException) { }
     }
+    
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
 }

@@ -8,7 +8,6 @@ internal class NetDaemonRuntime : IRuntime
 {
     private const string Version = "custom_compiled";
     private const int TimeoutInSeconds = 30;
-    private readonly IAppModel? _appModel;
     private readonly ICacheManager _cacheManager;
 
     private readonly HomeAssistantSettings _haSettings;
@@ -19,7 +18,9 @@ internal class NetDaemonRuntime : IRuntime
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
     private CancellationToken? _stoppingToken;
-    internal IHomeAssistantConnection? InternalConnection;
+    private CancellationTokenSource? _runnerCancelationSource;
+
+    public bool IsConnected;
 
     public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
@@ -32,7 +33,6 @@ internal class NetDaemonRuntime : IRuntime
         _haSettings = settings.Value;
         _homeAssistantRunner = homeAssistantRunner;
         _locationSettings = locationSettings;
-        _appModel = serviceProvider.GetService<IAppModel>();
         _serviceProvider = serviceProvider;
         _logger = logger;
         _cacheManager = cacheManager;
@@ -42,10 +42,11 @@ internal class NetDaemonRuntime : IRuntime
     internal IReadOnlyCollection<IApplication> ApplicationInstances =>
         _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
-    public Task WhenStarted => connected.Task;
-    private TaskCompletionSource connected = new();
-    
-    public async Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly TaskCompletionSource _startedAndConnected = new();
+
+    private Task _runnerTask = Task.CompletedTask;
+
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
 
@@ -59,59 +60,60 @@ internal class NetDaemonRuntime : IRuntime
             .Subscribe();
         try
         {
-            await _homeAssistantRunner.RunAsync(
+            _runnerCancelationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
+            _runnerTask = _homeAssistantRunner.RunAsync(
                 _haSettings.Host,
                 _haSettings.Port,
                 _haSettings.Ssl,
                 _haSettings.Token,
                 _haSettings.WebsocketPath,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
-                stoppingToken).ConfigureAwait(false);
+                _runnerCancelationSource.Token);
+
+            await _startedAndConnected.Task;
         }
         catch (OperationCanceledException)
         {
             // Ignore and just stop
         }
-
-        _logger.LogInformation("Exiting NetDaemon runtime");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeApplicationsAsync().ConfigureAwait(false);
     }
 
     private async Task OnHomeAssistantClientConnected(
         IHomeAssistantConnection haConnection,
-        CancellationToken cancelToken
-    )
+        CancellationToken cancelToken)
     {
+        _logger.LogInformation("Successfully connected to Home Assistant");
+        IsConnected = true;
+
+        await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
+
+        await LoadNewAppContextAsync(haConnection, cancelToken);
+
+        _startedAndConnected.SetResult();
+    }
+
+    private async Task LoadNewAppContextAsync(IHomeAssistantConnection haConnection, CancellationToken cancelToken)
+    {
+        var appModel = _serviceProvider.GetService<IAppModel>();
+        if (appModel == null) return;
+
         try
         {
-            InternalConnection = haConnection;
+            // this logging is a bit weird in this class
+            if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
+                _logger.LogDebug("Loading applications from folder {Path}",
+                    Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+            else
+                _logger.LogDebug("Loading applications with no configuration folder");
+            
+            _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
-            _logger.LogInformation("Successfully connected to Home Assistant");
-            await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
-
-            if (_appModel is not null)
-            {
-                if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
-                    _logger.LogDebug("Loading applications from folder {Path}",
-                        Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
-                else
-                    _logger.LogDebug("Loading applications with no configuration folder");
-
-                _applicationModelContext =
-                    await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
-
-
-                // Handle state change for apps if registered
-                var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
-                if (appStateHandler != null)
-                    await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
-            }
-            connected.SetResult();
-
+            // Handle state change for apps if registered
+            var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
+            if (appStateHandler == null) return;
+            
+            await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
         }
         catch (Exception e)
         {
@@ -140,8 +142,8 @@ internal class NetDaemonRuntime : IRuntime
                 reasonString, TimeoutInSeconds);
         }
 
-        if (InternalConnection is not null) InternalConnection = null;
         await DisposeApplicationsAsync().ConfigureAwait(false);
+        IsConnected = false;
     }
 
     private async Task DisposeApplicationsAsync()
@@ -152,5 +154,17 @@ internal class NetDaemonRuntime : IRuntime
                 await applicationInstance.DisposeAsync().ConfigureAwait(false);
             _applicationModelContext = null;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeApplicationsAsync().ConfigureAwait(false);
+        try
+        {
+            _runnerCancelationSource?.Cancel();
+        }
+        catch (OperationCanceledException) { }
+        
+        await _runnerTask.ConfigureAwait(false);
     }
 }

@@ -33,7 +33,11 @@ public class TestRuntime
 
         instances.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
         timedCancellationSource.Cancel();
-        await runnerTask.ConfigureAwait(false);
+        try
+        {
+            await runnerTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { }
     }
 
     [Fact]
@@ -71,7 +75,11 @@ public class TestRuntime
             n => n.SendCommandAsync<CallServiceCommand>(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
         timedCancellationSource.Cancel();
-        await runnerTask.ConfigureAwait(false);
+        try
+        {
+            await runnerTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { }
     }
 
     [Fact]
@@ -105,7 +113,11 @@ public class TestRuntime
             });
 
         timedCancellationSource.Cancel();
-        await runnerTask.ConfigureAwait(false);
+        try
+        {
+            await runnerTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { }
     }
 
     private static IHostBuilder GetDefaultHostBuilder(string path)

@@ -1,9 +1,8 @@
-using System.Reflection;
 using NetDaemon.AppModel.Internal.AppFactoryProviders;
 
 namespace NetDaemon.AppModel.Internal;
 
-internal class AppModelContext : IAppModelContext, IAsyncInitializable
+internal class AppModelContext : IAppModelContext
 {
     private readonly List<Application> _applications = new();
 

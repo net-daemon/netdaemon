@@ -29,10 +29,12 @@ public class NetDaemonRuntimeTests
             Mock.Of<ICacheManager>()
         );
         var cancelSource = new CancellationTokenSource(5000);
-        await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
+        var startingTask = runtime.StartAsync(cancelSource.Token);
 
         connectSubject.HasObservers.Should().BeTrue();
         disconnectSubject.HasObservers.Should().BeTrue();
+
+        startingTask.IsCompleted.Should().BeFalse();
     }
 
     [Fact]
@@ -77,15 +79,16 @@ public class NetDaemonRuntimeTests
             loggerMock.Object,
             Mock.Of<ICacheManager>()
         );
-        await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
+        var startingTask = runtime.StartAsync(cancelSource.Token);
 
+        startingTask.IsCompleted.Should().BeFalse();
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
+        await startingTask.ConfigureAwait(false);
 
-        await runtime.WhenStarted;
 
-        appModelMock.Verify(n => n.InitializeAsync(It.IsAny<CancellationToken>()));
+        appModelMock.Verify(n => n.LoadNewApplicationContext(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -130,21 +133,22 @@ public class NetDaemonRuntimeTests
             loggerMock.Object,
             Mock.Of<ICacheManager>()
         );
-        await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
+        var startingTask = runtime.StartAsync(cancelSource.Token);
 
         // First make sure we add an connection
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
 
-        Assert.NotNull(runtime.InternalConnection);
+        await startingTask.ConfigureAwait(false);
+        runtime.IsConnected.Should().BeTrue();
 
         // Then fake a disconnect
         disconnectSubject.OnNext(
             DisconnectReason.Client
         );
 
-        Assert.Null(runtime.InternalConnection);
+        runtime.IsConnected.Should().BeFalse();
     }
 
     private class FakeHassSettingsOptions : IOptions<HomeAssistantSettings>
