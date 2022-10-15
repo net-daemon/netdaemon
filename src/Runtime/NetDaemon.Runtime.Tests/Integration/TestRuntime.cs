@@ -24,7 +24,6 @@ public class TestRuntime
                 .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
         ).Build();
 
-
         var runnerTask = host.RunAsync(timedCancellationSource.Token);
 
         haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
@@ -33,11 +32,7 @@ public class TestRuntime
 
         instances.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
         timedCancellationSource.Cancel();
-        try
-        {
-            await runnerTask.ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) { }
+        await runnerTask.ConfigureAwait(false);
     }
 
     [Fact]
@@ -75,11 +70,7 @@ public class TestRuntime
             n => n.SendCommandAsync<CallServiceCommand>(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
         timedCancellationSource.Cancel();
-        try
-        {
-            await runnerTask.ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) { }
+        await runnerTask.ConfigureAwait(false);
     }
 
     [Fact]
@@ -113,11 +104,7 @@ public class TestRuntime
             });
 
         timedCancellationSource.Cancel();
-        try
-        {
-            await runnerTask.ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) { }
+        await runnerTask.ConfigureAwait(false);
     }
 
     private static IHostBuilder GetDefaultHostBuilder(string path)

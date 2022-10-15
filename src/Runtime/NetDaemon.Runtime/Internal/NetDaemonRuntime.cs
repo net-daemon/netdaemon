@@ -124,7 +124,7 @@ internal class NetDaemonRuntime : IRuntime
 
     private async Task OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
-        if (_stoppingToken?.IsCancellationRequested ?? false)
+        if (_stoppingToken?.IsCancellationRequested == true || reason == DisconnectReason.Client)
         {
             _logger.LogInformation("HassClient disconnected cause of user stopping");
         }
@@ -152,6 +152,7 @@ internal class NetDaemonRuntime : IRuntime
         {
             foreach (var applicationInstance in _applicationModelContext.Applications)
                 await applicationInstance.DisposeAsync().ConfigureAwait(false);
+            
             _applicationModelContext = null;
         }
     }
@@ -159,12 +160,11 @@ internal class NetDaemonRuntime : IRuntime
     public async ValueTask DisposeAsync()
     {
         await DisposeApplicationsAsync().ConfigureAwait(false);
+        _runnerCancelationSource?.Cancel();
         try
         {
-            _runnerCancelationSource?.Cancel();
+            await _runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
-        
-        await _runnerTask.ConfigureAwait(false);
     }
 }
