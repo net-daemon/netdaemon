@@ -13,5 +13,8 @@
         <ProjectReference Include="..\src\\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
 
     </ItemGroup>
+    <ItemGroup>
+      <None Include="_appsettings.Development.json" />
+    </ItemGroup>
 
 </Project>

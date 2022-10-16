@@ -49,7 +49,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Runtime.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{E15D4280-7FFC-4F8B-9B8C-CF9AF2BF838C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugHost", "dev\DebugHost\DebugHost.csproj", "{898966EA-F814-4B7B-9A3D-5E78C38174B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugHost", "src\debug\DebugHost\DebugHost.csproj", "{898966EA-F814-4B7B-9A3D-5E78C38174B2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.Logging", "src\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj", "{00333EBA-DB52-4D56-ADF7-940FB533E530}"
 EndProject
@@ -57,7 +57,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.Tts", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.MqttEntityManager", "src\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj", "{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWeb", "TestWeb\TestWeb.csproj", "{AEBC7828-7C19-4A86-B6E2-58B5171347B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugWebHost", "src\debug\DebugWebHost\DebugWebHost.csproj", "{AEBC7828-7C19-4A86-B6E2-58B5171347B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

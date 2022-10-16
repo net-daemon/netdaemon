@@ -11,7 +11,7 @@ app.MapGet("/Off", (IHaContext ha) => ha.Entity("light.spots_woonkamer_rechts").
 app.MapGet("/On", (IHaContext ha) => ha.Entity("light.spots_woonkamer_rechts").CallService("turn_on"));
 app.MapGet("/State/{id}", (IHaContext ha, string id) => ha.Entity(id).EntityState);
 
-app.MapGet("/Stop", () => app.StopAsync().Wait());
+app.MapGet("/Stop", () => app.StopAsync());
 
 app.Run();
 
