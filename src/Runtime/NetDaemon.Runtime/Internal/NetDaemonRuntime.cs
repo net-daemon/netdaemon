@@ -152,8 +152,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         if (_applicationModelContext is not null)
         {
-            foreach (var applicationInstance in _applicationModelContext.Applications)
-                await applicationInstance.DisposeAsync().ConfigureAwait(false);
+            await _applicationModelContext.DisposeAsync();
             
             _applicationModelContext = null;
         }

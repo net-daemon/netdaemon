@@ -36,11 +36,14 @@ internal class AppModelContext : IAppModelContext
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed)
-            return;
-
-        foreach (var appInstance in _applications) await appInstance.DisposeAsync().ConfigureAwait(false);
-        _applications.Clear();
+        if (_isDisposed) return;
         _isDisposed = true;
+
+        foreach (var appInstance in _applications)
+        {
+            await appInstance.DisposeAsync().ConfigureAwait(false);
+        }
+        
+        _applications.Clear();
     }
 }
