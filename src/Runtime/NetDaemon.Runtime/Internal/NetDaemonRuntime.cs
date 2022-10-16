@@ -71,6 +71,7 @@ internal class NetDaemonRuntime : IRuntime
                 TimeSpan.FromSeconds(TimeoutInSeconds),
                 _runnerCancelationSource.Token);
 
+            // Make sure we only return after the connection is made and initialization is ready
             await _startedAndConnected.Task;
         }
         catch (OperationCanceledException)
@@ -90,6 +91,7 @@ internal class NetDaemonRuntime : IRuntime
 
         await LoadNewAppContextAsync(haConnection, cancelToken);
 
+        // Now signal that StartAsync may return
         _startedAndConnected.SetResult();
     }
 
@@ -157,8 +159,12 @@ internal class NetDaemonRuntime : IRuntime
         }
     }
 
+    private bool _isDisposed;
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+        
         await DisposeApplicationsAsync().ConfigureAwait(false);
         _runnerCancelationSource?.Cancel();
         try

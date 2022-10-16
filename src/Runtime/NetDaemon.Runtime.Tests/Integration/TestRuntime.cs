@@ -3,7 +3,6 @@ using LocalApps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
-using NetDaemon.Infrastructure.ObservableHelpers;
 using NetDaemon.Runtime.Internal;
 using NetDaemon.Runtime.Tests.Helpers;
 
@@ -15,9 +14,9 @@ public class TestRuntime
     public async Task TestApplicationIsLoaded()
     {
         var timedCancellationSource = new CancellationTokenSource(5000);
-        var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
+        var haRunner = new HomeAssistantRunnerMock();
 
-        var hostBuilder = GetDefaultHostBuilder("Fixtures");
+        var hostBuilder = GetDefaultHostBuilder();
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
@@ -26,7 +25,7 @@ public class TestRuntime
 
         var runnerTask = host.RunAsync(timedCancellationSource.Token);
 
-        haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
+        haRunner.MockConnect();
         var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
         var instances = service.ApplicationInstances;
 
@@ -39,9 +38,9 @@ public class TestRuntime
     public async Task TestApplicationReactToNewEvents()
     {
         var timedCancellationSource = new CancellationTokenSource(-1);
-        var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
+        var haRunner = new HomeAssistantRunnerMock();
 
-        var hostBuilder = GetDefaultHostBuilder("Fixtures");
+        var hostBuilder = GetDefaultHostBuilder();
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
@@ -49,10 +48,10 @@ public class TestRuntime
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
 
-        var runnerTask = host.RunAsync(timedCancellationSource.Token);
-        while (!haRunner.ConnectMock.HasObservers && !runnerTask.IsCompleted) await Task.Delay(10);
-        haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
+        var runnerTask = host.StartAsync(timedCancellationSource.Token);
+        haRunner.MockConnect();
         _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        await runnerTask.ConfigureAwait(false);
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState
@@ -65,30 +64,29 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir",
                 State = "on"
             });
-
+        // stopping the host will also flush any event queues
+        await host.StopAsync(timedCancellationSource.Token).ConfigureAwait(false);
+        
         haRunner.ClientMock.ConnectionMock.Verify(
-            n => n.SendCommandAsync<CallServiceCommand>(It.IsAny<CallServiceCommand>(),
+            n => n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
-        timedCancellationSource.Cancel();
-        await runnerTask.ConfigureAwait(false);
     }
 
     [Fact]
     public async Task TestApplicationReactToNewEventsAndThrowException()
     {
         var timedCancellationSource = new CancellationTokenSource(5000);
-        var haRunner = new HomeAssistantRunnerMock(timedCancellationSource.Token);
+        var haRunner = new HomeAssistantRunnerMock();
 
-        var hostBuilder = GetDefaultHostBuilder("Fixtures");
+        var hostBuilder = GetDefaultHostBuilder();
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
                 .AddNetDaemonApp<LocalApp>()
         ).Build();
 
-        var runnerTask = host.RunAsync(timedCancellationSource.Token);
-        while (!haRunner.ConnectMock.HasObservers && !runnerTask.IsCompleted) await Task.Delay(10);
-        haRunner.ConnectMock.OnNext(haRunner.ClientMock.ConnectionMock.Object);
+        var runnerTask = host.StartAsync(timedCancellationSource.Token);
+        haRunner.MockConnect();
         _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
@@ -106,29 +104,37 @@ public class TestRuntime
         timedCancellationSource.Cancel();
         await runnerTask.ConfigureAwait(false);
     }
-
-    private static IHostBuilder GetDefaultHostBuilder(string path)
+    
+    
+    [Fact]
+    public async Task TestShutdownHostShutDownApps()
     {
-        return Host.CreateDefaultBuilder()
-            .UseNetDaemonAppSettings()
+        var timedCancellationSource = new CancellationTokenSource();
+        var haRunner = new HomeAssistantRunnerMock();
+
+        var disposableApp = new Mock<IAsyncDisposable>();
+
+        var host = Host.CreateDefaultBuilder()
             .UseNetDaemonRuntime()
             .ConfigureServices((_, services) =>
-            {
-                services.Configure<HostOptions>(hostOptions =>
-                {
-                    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-                });
-                services.AddTransient<IOptions<AppConfigurationLocationSetting>>(
-                    _ => new FakeOptions(Path.Combine(AppContext.BaseDirectory, path)));
-                services.AddScoped<NonQueuedObservableMock<HassEvent>>();
-                services.AddScoped<IQueuedObservable<HassEvent>>(s =>
-                    s.GetRequiredService<NonQueuedObservableMock<HassEvent>>());
-            })
-            .ConfigureAppConfiguration((_, config) =>
-            {
-                config.AddYamlAppConfig(
-                    Path.Combine(AppContext.BaseDirectory,
-                        path));
-            });
+                services
+                    .AddSingleton(haRunner.Object)
+                    .AddNetDaemonApp(_ => disposableApp.Object))
+            .Build();
+        var runnerTask = host.StartAsync(timedCancellationSource.Token);
+
+        haRunner.MockConnect();
+        await runnerTask.WaitAsync(timedCancellationSource.Token).ConfigureAwait(false);;
+
+        await host.StopAsync(timedCancellationSource.Token).WaitAsync(timedCancellationSource.Token).ConfigureAwait(false);
+        host.Dispose();
+        
+        disposableApp.Verify(m=>m.DisposeAsync(), Times.Once);
+    }
+
+    private static IHostBuilder GetDefaultHostBuilder()
+    {
+        return Host.CreateDefaultBuilder()
+            .UseNetDaemonRuntime();
     }
 }
