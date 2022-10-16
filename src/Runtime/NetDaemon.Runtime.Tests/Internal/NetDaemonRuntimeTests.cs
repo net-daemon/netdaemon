@@ -10,7 +10,7 @@ namespace NetDaemon.Runtime.Tests.Internal;
 public class NetDaemonRuntimeTests
 {
     [Fact]
-    public async Task TestExecuteAsync()
+    public void TestExecuteAsync()
     {
         var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
         var serviceProviderMock = new Mock<IServiceProvider>();

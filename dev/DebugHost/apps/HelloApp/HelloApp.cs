@@ -9,21 +9,23 @@ namespace Apps;
 
 [NetDaemonApp]
 // [Focus]
-public class HelloApp : IAsyncDisposable
+public sealed class HelloApp : IAsyncDisposable
 {
+    private readonly ILogger<HelloApp> _logger;
+
     public HelloApp(IHaContext ha, ILogger<HelloApp> logger)
     {
-        // // .Where(n => n.EventType == "test_event")
-        // ha?.Events.Where(n => n.EventType == "test_event").Subscribe( n =>
-        // {
-        //     logger.LogInformation("Hello testevent");
-        // });
+        _logger = logger;
+        ha?.Events.Where(n => n.EventType == "test_event").Subscribe( n =>
+        {
+            logger.LogInformation("Hello testevent");
+        });
         // ha?.CallService("notify", "persistent_notification", data: new { message = "Notify me", title = "Hello world!" });
     }
 
     public ValueTask DisposeAsync()
     {
-        Console.WriteLine("disposed app");
+        _logger.LogInformation("disposed app");
         return ValueTask.CompletedTask;
     }
 }
