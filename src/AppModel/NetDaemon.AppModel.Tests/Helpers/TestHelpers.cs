@@ -21,7 +21,7 @@ public static class TestHelpers
             })
             .Build();
         var appModel = builder.Services.GetService<IAppModel>();
-        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
         return appModelContext.Applications;
     }
 
@@ -43,7 +43,7 @@ public static class TestHelpers
             })
             .Build();
         var appModel = builder.Services.GetService<IAppModel>();
-        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
         return appModelContext.Applications;
     }
 }

@@ -3,7 +3,7 @@ namespace NetDaemon.AppModel;
 /// <summary>
 ///     Application model
 /// </summary>
-public interface IAppModel : IAsyncDisposable
+public interface IAppModel
 {
     /// <summary>
     ///     Instance and configure all applications.
@@ -15,5 +15,5 @@ public interface IAppModel : IAsyncDisposable
     ///     Depending on the selected compilation type it will be local or dynamically compiled apps
     /// </remark>
     /// <returns></returns>
-    Task<IAppModelContext> InitializeAsync(CancellationToken cancellationToken);
+    Task<IAppModelContext> LoadNewApplicationContext(CancellationToken cancellationToken);
 }

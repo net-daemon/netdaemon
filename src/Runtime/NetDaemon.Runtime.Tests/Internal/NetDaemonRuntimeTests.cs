@@ -10,10 +10,9 @@ namespace NetDaemon.Runtime.Tests.Internal;
 public class NetDaemonRuntimeTests
 {
     [Fact]
-    public async Task TestExecuteAsync()
+    public void TestExecuteAsync()
     {
         var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
-        var appModelMock = new Mock<IAppModel>();
         var serviceProviderMock = new Mock<IServiceProvider>();
         var loggerMock = new Mock<ILogger<NetDaemonRuntime>>();
 
@@ -25,16 +24,17 @@ public class NetDaemonRuntimeTests
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
             new FakeApplicationLocationSettingsOptions(),
-            appModelMock.Object,
             serviceProviderMock.Object,
             loggerMock.Object,
             Mock.Of<ICacheManager>()
         );
         var cancelSource = new CancellationTokenSource(5000);
-        await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
+        var startingTask = runtime.StartAsync(cancelSource.Token);
 
         connectSubject.HasObservers.Should().BeTrue();
         disconnectSubject.HasObservers.Should().BeTrue();
+
+        startingTask.IsCompleted.Should().BeFalse();
     }
 
     [Fact]
@@ -68,24 +68,27 @@ public class NetDaemonRuntimeTests
         serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
         serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);
         serviceCollection.AddScoped(_ => scopedContext);
+        serviceCollection.AddSingleton(appModelMock.Object);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         await using var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
             new FakeApplicationLocationSettingsOptions(),
-            appModelMock.Object,
             serviceProvider,
             loggerMock.Object,
             Mock.Of<ICacheManager>()
         );
-        await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
+        var startingTask = runtime.StartAsync(cancelSource.Token);
 
+        startingTask.IsCompleted.Should().BeFalse();
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
+        await startingTask.ConfigureAwait(false);
 
-        appModelMock.Verify(n => n.InitializeAsync(It.IsAny<CancellationToken>()));
+
+        appModelMock.Verify(n => n.LoadNewApplicationContext(It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -119,32 +122,33 @@ public class NetDaemonRuntimeTests
         serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
         serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);
         serviceCollection.AddScoped(_ => scopedContext);
+        serviceCollection.AddSingleton(appModelMock.Object);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         await using var runtime = new NetDaemonRuntime(
             homeAssistantRunnerMock.Object,
             new FakeHassSettingsOptions(),
             new FakeApplicationLocationSettingsOptions(),
-            appModelMock.Object,
             serviceProvider,
             loggerMock.Object,
             Mock.Of<ICacheManager>()
         );
-        await runtime.ExecuteAsync(cancelSource.Token).ConfigureAwait(false);
+        var startingTask = runtime.StartAsync(cancelSource.Token);
 
         // First make sure we add an connection
         connectSubject.OnNext(
             homeAssistantConnectionMock.Object
         );
 
-        Assert.NotNull(runtime.InternalConnection);
+        await startingTask.ConfigureAwait(false);
+        runtime.IsConnected.Should().BeTrue();
 
         // Then fake a disconnect
         disconnectSubject.OnNext(
             DisconnectReason.Client
         );
 
-        Assert.Null(runtime.InternalConnection);
+        runtime.IsConnected.Should().BeFalse();
     }
 
     private class FakeHassSettingsOptions : IOptions<HomeAssistantSettings>

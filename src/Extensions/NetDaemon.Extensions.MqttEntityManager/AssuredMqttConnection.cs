@@ -71,7 +71,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
-        _logger.LogDebug("MQTT disconnected: {Reason}", arg.ConnectResult.ReasonString);   
+        _logger.LogDebug("MQTT disconnected: {Reason}", arg.ConnectResult?.ReasonString);   
         return Task.CompletedTask;
     }
 
