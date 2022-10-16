@@ -6,11 +6,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\src\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
-        <ProjectReference Include="..\src\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj" />
-        <ProjectReference Include="..\src\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
-        <ProjectReference Include="..\src\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
-        <ProjectReference Include="..\src\\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+        <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
+        <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj" />
+        <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
+        <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
+        <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
 
     </ItemGroup>
     <ItemGroup>
