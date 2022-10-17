@@ -74,7 +74,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         {
             if (isRetry)
             {
-                _logger.LogDebug("Client disconnected, retrying in {seconds} seconds...", timeout.TotalSeconds);
+                _logger.LogDebug("Client disconnected, retrying in {Seconds} seconds...", timeout.TotalSeconds);
                 // This is a retry
                 await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
             }

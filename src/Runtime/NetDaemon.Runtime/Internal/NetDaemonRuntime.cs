@@ -8,7 +8,6 @@ internal class NetDaemonRuntime : IRuntime
 {
     private const string Version = "custom_compiled";
     private const int TimeoutInSeconds = 30;
-    private readonly IAppModel _appModel;
     private readonly ICacheManager _cacheManager;
 
     private readonly HomeAssistantSettings _haSettings;
@@ -19,13 +18,14 @@ internal class NetDaemonRuntime : IRuntime
     private readonly IServiceProvider _serviceProvider;
     private IAppModelContext? _applicationModelContext;
     private CancellationToken? _stoppingToken;
-    internal IHomeAssistantConnection? InternalConnection;
+    private CancellationTokenSource? _runnerCancelationSource;
+
+    public bool IsConnected;
 
     public NetDaemonRuntime(
         IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
         IOptions<AppConfigurationLocationSetting> locationSettings,
-        IAppModel appModel,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
@@ -33,7 +33,6 @@ internal class NetDaemonRuntime : IRuntime
         _haSettings = settings.Value;
         _homeAssistantRunner = homeAssistantRunner;
         _locationSettings = locationSettings;
-        _appModel = appModel;
         _serviceProvider = serviceProvider;
         _logger = logger;
         _cacheManager = cacheManager;
@@ -43,7 +42,11 @@ internal class NetDaemonRuntime : IRuntime
     internal IReadOnlyCollection<IApplication> ApplicationInstances =>
         _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
 
-    public async Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly TaskCompletionSource _startedAndConnected = new();
+
+    private Task _runnerTask = Task.CompletedTask;
+
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
 
@@ -57,51 +60,61 @@ internal class NetDaemonRuntime : IRuntime
             .Subscribe();
         try
         {
-            await _homeAssistantRunner.RunAsync(
+            _runnerCancelationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
+            _runnerTask = _homeAssistantRunner.RunAsync(
                 _haSettings.Host,
                 _haSettings.Port,
                 _haSettings.Ssl,
                 _haSettings.Token,
                 _haSettings.WebsocketPath,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
-                stoppingToken).ConfigureAwait(false);
+                _runnerCancelationSource.Token);
+
+            // Make sure we only return after the connection is made and initialization is ready
+            await _startedAndConnected.Task;
         }
         catch (OperationCanceledException)
         {
             // Ignore and just stop
         }
-
-        _logger.LogInformation("Exiting NetDaemon runtime.");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeApplicationsAsync().ConfigureAwait(false);
     }
 
     private async Task OnHomeAssistantClientConnected(
         IHomeAssistantConnection haConnection,
-        CancellationToken cancelToken
-    )
+        CancellationToken cancelToken)
     {
+        _logger.LogInformation("Successfully connected to Home Assistant");
+        IsConnected = true;
+
+        await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
+
+        await LoadNewAppContextAsync(haConnection, cancelToken);
+
+        // Now signal that StartAsync may return
+        _startedAndConnected.SetResult();
+    }
+
+    private async Task LoadNewAppContextAsync(IHomeAssistantConnection haConnection, CancellationToken cancelToken)
+    {
+        var appModel = _serviceProvider.GetService<IAppModel>();
+        if (appModel == null) return;
+
         try
         {
-            InternalConnection = haConnection;
-
-            _logger.LogInformation("Successfully connected to Home Assistant");
+            // this logging is a bit weird in this class
             if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
                 _logger.LogDebug("Loading applications from folder {Path}",
                     Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
             else
                 _logger.LogDebug("Loading applications with no configuration folder");
-
-            await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
-
-            _applicationModelContext =
-                await _appModel.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+            
+            _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
             // Handle state change for apps if registered
-            var appStateHandler = _serviceProvider.GetRequiredService<IHandleHomeAssistantAppStateUpdates>();
+            var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
+            if (appStateHandler == null) return;
+            
             await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
         }
         catch (Exception e)
@@ -113,7 +126,7 @@ internal class NetDaemonRuntime : IRuntime
 
     private async Task OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
-        if (_stoppingToken?.IsCancellationRequested ?? false)
+        if (_stoppingToken?.IsCancellationRequested == true || reason == DisconnectReason.Client)
         {
             _logger.LogInformation("HassClient disconnected cause of user stopping");
         }
@@ -131,17 +144,32 @@ internal class NetDaemonRuntime : IRuntime
                 reasonString, TimeoutInSeconds);
         }
 
-        if (InternalConnection is not null) InternalConnection = null;
         await DisposeApplicationsAsync().ConfigureAwait(false);
+        IsConnected = false;
     }
 
     private async Task DisposeApplicationsAsync()
     {
         if (_applicationModelContext is not null)
         {
-            foreach (var applicationInstance in _applicationModelContext.Applications)
-                await applicationInstance.DisposeAsync().ConfigureAwait(false);
+            await _applicationModelContext.DisposeAsync();
+            
             _applicationModelContext = null;
         }
+    }
+
+    private bool _isDisposed;
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+        
+        await DisposeApplicationsAsync().ConfigureAwait(false);
+        _runnerCancelationSource?.Cancel();
+        try
+        {
+            await _runnerTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { }
     }
 }

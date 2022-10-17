@@ -8,7 +8,7 @@ internal class HomeAssistantRunnerMock : Mock<IHomeAssistantRunner>
     public HomeAssistantClientMock ClientMock { get; }
     public Subject<IHomeAssistantConnection> ConnectMock { get; }
     public Subject<DisconnectReason> DisconnectMock { get; }
-    public HomeAssistantRunnerMock(CancellationToken cancelToken)
+    public HomeAssistantRunnerMock()
     {
         ConnectMock = new();
         DisconnectMock = new();
@@ -25,12 +25,14 @@ internal class HomeAssistantRunnerMock : Mock<IHomeAssistantRunner>
             It.IsAny<string>(),
             It.IsAny<TimeSpan>(),
             It.IsAny<CancellationToken>())).Returns(
-            async () =>
+            async (string _, int _, bool _, string _, string _, TimeSpan _, CancellationToken ct) =>
             {
-                await Task.Delay(-1, cancelToken);
+                await Task.Delay(-1, ct);
             }
             );
     }
+    
+    public void MockConnect() => ConnectMock.OnNext(ClientMock.ConnectionMock.Object);
 }
 
 internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>

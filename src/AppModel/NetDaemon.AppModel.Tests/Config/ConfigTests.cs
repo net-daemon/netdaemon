@@ -131,7 +131,7 @@ public class ConfigTests
         var appModel = scope.ServiceProvider.GetService<IAppModel>();
 
         // ACT
-        var loadApps = (await appModel!.InitializeAsync(CancellationToken.None)).Applications;
+        var loadApps = (await appModel!.LoadNewApplicationContext(CancellationToken.None)).Applications;
         var application = (Application)loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
         var app = (MyAppLocalApp?)application?.ApplicationContext?.Instance;
         // CHECK

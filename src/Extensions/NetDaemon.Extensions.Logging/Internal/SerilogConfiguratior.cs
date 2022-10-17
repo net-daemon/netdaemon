@@ -28,6 +28,7 @@ internal static class SerilogConfigurator
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .WriteTo.Console(
+                formatProvider: CultureInfo.InvariantCulture,
                 theme: NetDaemonLoggingThemes.NetDaemonConsoleThemes.GetThemeByType(loggingConfiguration
                     .ConsoleThemeType),
                 applyThemeToRedirectedOutput: true,

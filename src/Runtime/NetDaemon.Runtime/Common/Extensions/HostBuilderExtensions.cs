@@ -15,17 +15,20 @@ public static class HostBuilderExtensions
             )
             .ConfigureAppConfiguration((ctx, config) =>
             {
+                // TODO: Most of this seems to be what Host.CreateDefaultBuilder already does 
                 config.SetBasePath(Directory.GetCurrentDirectory());
                 config.AddJsonFile("appsettings.json");
                 config.AddJsonFile($"appsettings.{ctx.HostingEnvironment.EnvironmentName}.json", true);
                 config.AddEnvironmentVariables();
+                
                 var c = config.Build();
                 var locationSetting = c.GetSection("NetDaemon").Get<AppConfigurationLocationSetting>();
+                if (locationSetting?.ApplicationConfigurationFolder is not null)
+                {
+                    var fullPath = Path.GetFullPath(locationSetting.ApplicationConfigurationFolder);
+                    config.AddYamlAppConfig(fullPath);
+                }
 
-                var fullPath = Path.GetFullPath(locationSetting.ApplicationConfigurationFolder);
-
-                config.AddYamlAppConfig(
-                    fullPath);
             });
     }
 
@@ -33,12 +36,12 @@ public static class HostBuilderExtensions
     {
         return hostBuilder
             .UseAppScopedHaContext()
-            .ConfigureServices((_, services) =>
+            .ConfigureServices((context, services) =>
             {
                 services.AddLogging();
                 services.AddHostedService<RuntimeService>();
                 services.AddHomeAssistantClient();
-
+                services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
                 services.AddSingleton<IRuntime, NetDaemonRuntime>();
             });
     }

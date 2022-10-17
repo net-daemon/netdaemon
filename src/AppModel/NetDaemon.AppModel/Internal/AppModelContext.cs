@@ -1,9 +1,8 @@
-using System.Reflection;
 using NetDaemon.AppModel.Internal.AppFactoryProviders;
 
 namespace NetDaemon.AppModel.Internal;
 
-internal class AppModelContext : IAppModelContext, IAsyncInitializable
+internal class AppModelContext : IAppModelContext
 {
     private readonly List<Application> _applications = new();
 
@@ -37,11 +36,14 @@ internal class AppModelContext : IAppModelContext, IAsyncInitializable
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed)
-            return;
-
-        foreach (var appInstance in _applications) await appInstance.DisposeAsync().ConfigureAwait(false);
-        _applications.Clear();
+        if (_isDisposed) return;
         _isDisposed = true;
+
+        foreach (var appInstance in _applications)
+        {
+            await appInstance.DisposeAsync().ConfigureAwait(false);
+        }
+        
+        _applications.Clear();
     }
 }

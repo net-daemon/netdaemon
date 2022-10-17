@@ -66,7 +66,7 @@ public class AppModelTests
 
         var fakeStateManager = (FakeAppStateManager?) builder.Services.GetService<IAppStateManager>();
         var appModel = builder.Services.GetService<IAppModel>();
-        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
         // ACT
         var apps = appModelContext.Applications;
@@ -105,7 +105,7 @@ public class AppModelTests
             .Build();
 
         var appModel = builder.Services.GetService<IAppModel>();
-        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
         // ACT
         var apps = appModelContext.Applications;
@@ -176,7 +176,7 @@ public class AppModelTests
 
         // ACT
         var loadApps = (await appModel!
-            .InitializeAsync(CancellationToken.None)).Applications;
+            .LoadNewApplicationContext(CancellationToken.None)).Applications;
 
 
         // CHECK
@@ -266,7 +266,7 @@ public class AppModelTests
             .Build();
 
         var appModel = builder.Services.GetService<IAppModel>();
-        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
         // ACT
         var apps = appModelContext.Applications;
@@ -300,7 +300,7 @@ public class AppModelTests
             .Build();
 
         var appModel = builder.Services.GetService<IAppModel>();
-        var appModelContext = await appModel!.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
         // ACT
         var apps = appModelContext.Applications;

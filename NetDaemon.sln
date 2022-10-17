@@ -49,13 +49,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Runtime.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{E15D4280-7FFC-4F8B-9B8C-CF9AF2BF838C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugHost", "dev\DebugHost\DebugHost.csproj", "{898966EA-F814-4B7B-9A3D-5E78C38174B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugHost", "src\debug\DebugHost\DebugHost.csproj", "{898966EA-F814-4B7B-9A3D-5E78C38174B2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.Logging", "src\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj", "{00333EBA-DB52-4D56-ADF7-940FB533E530}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.Tts", "src\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj", "{F4B29B77-9B92-4037-A884-288CA5EF0B78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.MqttEntityManager", "src\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj", "{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugWebHost", "src\debug\DebugWebHost\DebugWebHost.csproj", "{AEBC7828-7C19-4A86-B6E2-58B5171347B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -271,6 +273,18 @@ Global
 		{F4B29B77-9B92-4037-A884-288CA5EF0B78}.Release|x64.Build.0 = Release|Any CPU
 		{F4B29B77-9B92-4037-A884-288CA5EF0B78}.Release|x86.ActiveCfg = Release|Any CPU
 		{F4B29B77-9B92-4037-A884-288CA5EF0B78}.Release|x86.Build.0 = Release|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Debug|x64.Build.0 = Debug|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Debug|x86.Build.0 = Debug|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Release|x64.ActiveCfg = Release|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Release|x64.Build.0 = Release|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Release|x86.ActiveCfg = Release|Any CPU
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1}.Release|x86.Build.0 = Release|Any CPU
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -307,6 +321,7 @@ Global
 		{00333EBA-DB52-4D56-ADF7-940FB533E530} = {DFF3E7AA-7A50-4A1E-B3F8-EC01531FB83D}
 		{F4B29B77-9B92-4037-A884-288CA5EF0B78} = {DFF3E7AA-7A50-4A1E-B3F8-EC01531FB83D}
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6} = {DFF3E7AA-7A50-4A1E-B3F8-EC01531FB83D}
+		{AEBC7828-7C19-4A86-B6E2-58B5171347B1} = {E15D4280-7FFC-4F8B-9B8C-CF9AF2BF838C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7C5FBB7F-654C-4CAC-964F-6D71AF3D62F8}
