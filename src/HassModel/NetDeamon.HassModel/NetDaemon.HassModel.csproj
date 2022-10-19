@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>11</LangVersion>
         <RootNamespace>NetDaemon.HassModel</RootNamespace>
         <PackageId>JoySoftware.NetDaemon.HassModel</PackageId>
         <Version>21.47.1</Version>

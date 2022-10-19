@@ -1,19 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Internal;
 using NetDaemon.HassModel.Tests.TestHelpers;
-using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace NetDaemon.HassModel.CodeGenerator;
+﻿namespace NetDaemon.HassModel.CodeGenerator;
 
 internal record ServiceArgument
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reactive.Subjects;
-using Moq;
-using Xunit;
+﻿using System.Reactive.Subjects;
 using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Tests.Internal;

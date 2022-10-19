@@ -1,10 +1,7 @@
-﻿using System;
-using Moq;
-using NetDaemon.HassModel.Entities;
+﻿using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Integration;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using NetDaemon.HassModel.Tests.TestHelpers.HassClient;
-using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Integration;
 

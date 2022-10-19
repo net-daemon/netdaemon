@@ -11,7 +11,8 @@ public record EntityState
     /// <summary>The state </summary>
     public string? State { get; init; }
 
-    internal JsonElement? AttributesJson { get; init; }
+    /// <summary>The attributes as a JsonElement</summary>
+    public JsonElement? AttributesJson { get; init; }
         
     /// <summary>
     /// The attributes

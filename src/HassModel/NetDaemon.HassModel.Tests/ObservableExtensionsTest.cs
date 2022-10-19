@@ -1,9 +1,4 @@
-﻿using System;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Moq;
-using Xunit;
+﻿using System.Reactive.Subjects;
 
 namespace NetDaemon.HassModel.Tests;
 
