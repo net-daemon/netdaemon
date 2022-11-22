@@ -7,7 +7,7 @@ internal class AppConfig<T> : IAppConfig<T> where T : class, new()
     public AppConfig(IConfiguration config, IConfigurationBinding configBinder, ILogger<AppConfig<T>> logger)
     {
         var type = typeof(T);
-        var section = config.GetSection(type.FullName);
+        var section = config.GetSection(type.FullName!);
 
         if (!section.Exists())
         {

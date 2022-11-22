@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using LocalApps;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,7 @@ public class ConfigTests
         var settings = configRoot.GetSection("TestConfig").Get<TestSettings>();
 
         // CHECK
-        settings.AString
+        settings!.AString
             .Should()
             .Be("Hello test!");
     }
@@ -34,7 +35,7 @@ public class ConfigTests
         var settings = configRoot.GetSection("TestConfig").Get<TestSettings>();
 
         // CHECK
-        settings.AString
+        settings!.AString
             .Should()
             .Be("Hello test!");
     }

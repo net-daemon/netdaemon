@@ -1,8 +1,10 @@
-﻿using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+﻿using System.Diagnostics.CodeAnalysis;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Microsoft.CodeAnalysis.CSharp;
 using NetDaemon.Client.HomeAssistant.Model;
 
 namespace NetDaemon.HassModel.CodeGenerator;
+
 
 internal static class EntitiesGenerator
 {
@@ -88,11 +90,11 @@ internal static class EntitiesGenerator
 
         var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.EntityId}"");";
 
-        var name = entity.AttributesAs<attributes>()?.friendly_name;
+        var name = entity.AttributesAs<Attributes>()?.friendly_name;
         return ParseProperty(propertyCode).ToPublic().WithSummaryComment(name);
     }
 
-    record attributes(string friendly_name);
+    record Attributes(string friendly_name);
 
     private static bool IsNumeric(HassState entity)
     {

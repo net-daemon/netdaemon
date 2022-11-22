@@ -46,7 +46,7 @@ public static class ConfigurationBuilderExtensions
     {
         if (provider == null && Path.IsPathRooted(filePath))
         {
-            provider = new PhysicalFileProvider(Path.GetDirectoryName(filePath));
+            provider = new PhysicalFileProvider(Path.GetDirectoryName(filePath)??"");
             filePath = Path.GetFileName(filePath);
         }
 
