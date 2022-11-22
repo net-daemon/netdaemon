@@ -30,14 +30,10 @@ jobs:
 
       - name: 👀 Test
         run: |
-          export CollectCoverage=true
-          export CoverletOutputFormat=json
-          export CoverletOutput=/p:CoverletOutput=${{github.workspace}}/codecover
-          dotnet test src/HassModel/NetDaemon.HassModel.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover
-          dotnet test src/Extensions/NetDaemon.Extensions.Scheduling.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover
-          dotnet test src/Client/NetDaemon.HassClient.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover
-          export CoverletOutputFormat=lcov
-          dotnet test src/AppModel/NetDaemon.AppModel.Tests -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover
+          dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover src/HassModel/NetDaemon.HassModel.Tests 
+          dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover src/Extensions/NetDaemon.Extensions.Scheduling.Tests 
+          dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=json /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover src/Client/NetDaemon.HassClient.Tests 
+          dotnet test -v minimal /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:MergeWith=${{github.workspace}}/codecover.json /p:CoverletOutput=${{github.workspace}}/codecover src/AppModel/NetDaemon.AppModel.Tests 
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
