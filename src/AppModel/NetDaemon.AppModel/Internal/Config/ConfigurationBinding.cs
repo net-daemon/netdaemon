@@ -14,7 +14,7 @@ internal interface IConfigurationBinding
 ///     Class that allows binding strongly typed objects to configuration values.
 /// </summary>
 /// <remarks>
-///     This is a scaled down and modified version of .NET 6 implementation.
+///     This is a scaled down and modified version of .NET 7 implementation.
 /// </remarks>
 internal class ConfigurationBinding : IConfigurationBinding
 {

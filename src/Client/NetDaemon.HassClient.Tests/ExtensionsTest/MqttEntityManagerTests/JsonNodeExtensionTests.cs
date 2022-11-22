@@ -56,11 +56,11 @@ public class JsonNodeExtensionTests
 
         j1.AddRange(J(o2));
         var combined = JsonConvert.DeserializeObject<dynamic>(j1.ToJsonString());
-        Assert.Equal("1", combined.a.ToString());
-        Assert.Equal("2", combined.b.ToString());
-        Assert.Equal("3", combined.c.ToString());
-        Assert.Equal("8", combined.d.x.ToString());
-        Assert.Equal("9", combined.d.y.ToString());
+        Assert.Equal("1", combined?.a.ToString());
+        Assert.Equal("2", combined?.b.ToString());
+        Assert.Equal("3", combined?.c.ToString());
+        Assert.Equal("8", combined?.d.x.ToString());
+        Assert.Equal("9", combined?.d.y.ToString());
     }
 
     [Fact]
@@ -73,10 +73,10 @@ public class JsonNodeExtensionTests
 
         j1.AddRange(J(o2));
         var combined = JsonConvert.DeserializeObject<dynamic>(j1.ToJsonString());
-        Assert.Equal("3", combined.a.ToString());
-        Assert.Equal("2", combined.b.ToString());
-        Assert.Equal("8", combined.c.x.ToString());
-        Assert.Equal("9", combined.c.y.ToString());
+        Assert.Equal("3", combined?.a.ToString());
+        Assert.Equal("2", combined?.b.ToString());
+        Assert.Equal("8", combined?.c.x.ToString());
+        Assert.Equal("9", combined?.c.y.ToString());
     }
 
     [Fact]
@@ -89,10 +89,10 @@ public class JsonNodeExtensionTests
 
         j1.AddRange(J(o2));
         var combined = JsonConvert.DeserializeObject<dynamic>(j1.ToJsonString());
-        Assert.Equal("1", combined.a.ToString());
-        Assert.Equal("2", combined.b.ToString());
-        Assert.Equal("8", combined.c.x.ToString());
-        Assert.Equal("9", combined.c.y.ToString());
+        Assert.Equal("1", combined?.a.ToString());
+        Assert.Equal("2", combined?.b.ToString());
+        Assert.Equal("8", combined?.c.x.ToString());
+        Assert.Equal("9", combined?.c.y.ToString());
     }
 
     [Fact]
@@ -105,11 +105,11 @@ public class JsonNodeExtensionTests
 
         j1.AddRange(J(o2));
         var combined = JsonConvert.DeserializeObject<dynamic>(j1.ToJsonString());
-        Assert.Equal("1", combined.a.ToString());
-        Assert.Equal("10", combined.b.q.ToString());
-        Assert.Equal("11", combined.b.r.ToString());
-        Assert.Equal("8", combined.c.x.ToString());
-        Assert.Equal("9", combined.c.y.ToString());
+        Assert.Equal("1", combined?.a.ToString());
+        Assert.Equal("10", combined?.b.q.ToString());
+        Assert.Equal("11", combined?.b.r.ToString());
+        Assert.Equal("8", combined?.c.x.ToString());
+        Assert.Equal("9", combined?.c.y.ToString());
     }
 
     [Fact]
@@ -141,15 +141,15 @@ public class JsonNodeExtensionTests
         j1.AddRange(J(o2));
         var combined = JsonConvert.DeserializeObject<dynamic>(j1.ToJsonString());
         
-        Assert.Equal("1", combined.a.ToString());
-        Assert.Equal("2", combined.b.ToString());
-        Assert.Equal("3", combined.c.ToString());
-        Assert.Equal("smith", combined.person.name.surname.ToString());
-        Assert.Equal("john", combined.person.name.forename.ToString());
-        Assert.Equal("11000", combined.person.age.quantity.ToString());
-        Assert.Equal("days", combined.person.age.unit.ToString());
-        Assert.Equal("numeric", combined.id.style.ToString());
-        Assert.Equal("1234", combined.id.value.ToString());
+        Assert.Equal("1", combined?.a.ToString());
+        Assert.Equal("2", combined?.b.ToString());
+        Assert.Equal("3", combined?.c.ToString());
+        Assert.Equal("smith", combined?.person.name.surname.ToString());
+        Assert.Equal("john", combined?.person.name.forename.ToString());
+        Assert.Equal("11000", combined?.person.age.quantity.ToString());
+        Assert.Equal("days", combined?.person.age.unit.ToString());
+        Assert.Equal("numeric", combined?.id.style.ToString());
+        Assert.Equal("1234", combined?.id.value.ToString());
     }
 
 

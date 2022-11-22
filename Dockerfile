@@ -14,7 +14,7 @@ RUN \
     && rm -rf /var/cache/apk/* 
 
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-amd64 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:7.0.100-bullseye-slim-amd64 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -28,7 +28,7 @@ COPY ./src /usr/src
 RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.csproj -o "/daemon"
 
 # Final stage, create the runtime container
-FROM ghcr.io/net-daemon/netdaemon_base
+FROM ghcr.io/net-daemon/netdaemon_base7
 
 # # Install S6 and the Admin site
 # COPY ./Docker/rootfs/etc/services.d/NetDaemonAdmin /etc/services.d/NetDaemonAdmin
