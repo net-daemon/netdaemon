@@ -105,8 +105,7 @@ internal class Application : IApplication
                     "InitializeAsync is taking too long to execute in application {Id}, this function should not be blocking",
                     Id);
 
-            if (!initAsyncTask.IsCompleted)
-                await initAsyncTask; // Continue to wait even if timeout is set so we do not miss errors
+            await initAsyncTask; // Continue to wait even if timeout is set so we do not miss errors
 
             await SaveStateIfStateManagerExistAsync(ApplicationState.Running);
             _logger.LogInformation("Successfully loaded app {Id}", Id);
