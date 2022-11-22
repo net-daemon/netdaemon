@@ -64,9 +64,11 @@ public class TestRuntime
                 EntityId = "binary_sensor.mypir",
                 State = "on"
             });
+
+        await Task.Delay(100).ConfigureAwait(false);
         // stopping the host will also flush any event queues
         await host.StopAsync(timedCancellationSource.Token).ConfigureAwait(false);
-        
+
         haRunner.ClientMock.ConnectionMock.Verify(
             n => n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()), Times.Once);
