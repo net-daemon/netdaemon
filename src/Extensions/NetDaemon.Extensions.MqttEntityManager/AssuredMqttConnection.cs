@@ -43,7 +43,9 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
     public async Task<IManagedMqttClient> GetClientAsync(int timeoutSeconds)
     {
-        if (await Task.WhenAny(_connectionTask, Task.Delay(timeoutSeconds * 1000)) == _connectionTask)
+        await _connectionTask.WaitAsync(new TimeSpan(0, 0, timeoutSeconds));
+        
+        if (_connectionTask.IsCompletedSuccessfully)
             return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
 
         throw new TimeoutException($"Failed to connect to MQTT broker after {timeoutSeconds} seconds");
