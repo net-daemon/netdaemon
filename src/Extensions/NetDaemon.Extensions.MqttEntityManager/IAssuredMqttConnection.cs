@@ -10,5 +10,10 @@ internal interface IAssuredMqttConnection
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
-    Task<IManagedMqttClient> GetClientAsync(int timeoutSeconds = 30);
+    Task<IManagedMqttClient> GetClientAsync(TimeSpan timeout);
+    
+    /// <summary>
+    /// Ensures that the MQTT client is available
+    /// </summary>
+    Task<IManagedMqttClient> GetClientAsync();
 }

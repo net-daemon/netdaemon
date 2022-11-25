@@ -15,7 +15,7 @@ public class AssuredMqttConnectionTests
         var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
        
         var conn = new AssuredMqttConnection(logger.Object, mqttFactory, GetMockOptions());
-        var returnedClient = await conn.GetClientAsync(30);
+        var returnedClient = await conn.GetClientAsync();
         
         returnedClient.Should().Be(mqttClient.Object);
     }
@@ -23,17 +23,17 @@ public class AssuredMqttConnectionTests
     [Fact]
     public async Task GetClientAbortsAfterTimeout()
     {
-        const int timeoutSeconds = 1;
+        var timeout = new TimeSpan(0, 0, 0, 0, 10);
         var logger = new Mock<ILogger<AssuredMqttConnection>>();
         
         var mqttClient = new Mock<IManagedMqttClient>();
         var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
 
         mqttClient.Setup(m => m.StartAsync(It.IsAny<ManagedMqttClientOptions>()))
-            .Callback(() => Thread.Sleep(timeoutSeconds * 2000));
+            .Callback(() => Thread.Sleep(timeout*2));
         
         var conn = new AssuredMqttConnection(logger.Object, mqttFactory, GetMockOptions());
-        var act = async () => { await conn.GetClientAsync(timeoutSeconds); };
+        var act = async () => { await conn.GetClientAsync(timeout); };
         
         await act.Should().ThrowAsync<TimeoutException>();
     }

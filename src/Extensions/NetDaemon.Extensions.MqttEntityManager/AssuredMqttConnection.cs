@@ -38,17 +38,26 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
-    /// <param name="timeoutSeconds">Number of seconds to wait for connection to become available</param>
+    /// <param name="timeout">Number of seconds to wait for connection to become available</param>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
-    public async Task<IManagedMqttClient> GetClientAsync(int timeoutSeconds)
+    public async Task<IManagedMqttClient> GetClientAsync(TimeSpan timeout)
     {
-        await _connectionTask.WaitAsync(new TimeSpan(0, 0, timeoutSeconds));
+        await _connectionTask.WaitAsync(timeout);
         
         if (_connectionTask.IsCompletedSuccessfully)
             return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
 
-        throw new TimeoutException($"Failed to connect to MQTT broker after {timeoutSeconds} seconds");
+        throw new TimeoutException($"Failed to connect to MQTT broker after {timeout} seconds");
+    }
+
+    /// <summary>
+    /// Ensures that the MQTT client is available
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IManagedMqttClient> GetClientAsync()
+    {
+        return await GetClientAsync(new TimeSpan(0, 0, 30));
     }
 
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
