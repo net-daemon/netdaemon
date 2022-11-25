@@ -19,7 +19,6 @@ public class MqttEntityManagerApp : IAsyncInitializable
     private readonly IHaContext _ha;
     private readonly ILogger<MqttEntityManagerApp> _logger;
     private readonly IMqttEntityManager _entityManager;
-    private Task? _exerciseTask;
 
     public MqttEntityManagerApp(IHaContext ha, ILogger<MqttEntityManagerApp> logger, IMqttEntityManager entityManager)
     {
@@ -33,7 +32,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
 #pragma warning disable 1998 // We may be debugging here, so don't block the initialize function
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        _exerciseTask = Task.Run(() => ExercisorAsync(cancellationToken), cancellationToken);
+        Task.Run(() => ExercisorAsync(cancellationToken), cancellationToken);
     }
 #pragma warning disable 1998
 

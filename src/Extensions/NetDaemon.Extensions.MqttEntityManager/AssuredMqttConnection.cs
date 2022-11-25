@@ -38,18 +38,20 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
+    /// <param name="timeoutSeconds">Number of seconds to wait for connection to become available</param>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
-    public async Task<IManagedMqttClient> GetClientAsync()
+    public async Task<IManagedMqttClient> GetClientAsync(int timeoutSeconds)
     {
-        await _connectionTask;
+        if (await Task.WhenAny(_connectionTask, Task.Delay(timeoutSeconds * 1000)) == _connectionTask)
+            return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
 
-        return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
+        throw new TimeoutException($"Failed to connect to MQTT broker after {timeoutSeconds} seconds");
     }
 
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
-        _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
+        _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
 
         var clientOptions = new ManagedMqttClientOptionsBuilder()
@@ -63,15 +65,15 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
         _mqttClient.ConnectedAsync += MqttClientOnConnectedAsync;
         _mqttClient.DisconnectedAsync += MqttClientOnDisconnectedAsync;
-        
+
         await _mqttClient.StartAsync(clientOptions);
-        
+
         _logger.LogTrace("MQTT client is ready");
     }
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
-        _logger.LogDebug("MQTT disconnected: {Reason}", arg.ConnectResult?.ReasonString);   
+        _logger.LogDebug("MQTT disconnected: {Reason}", arg.ConnectResult?.ReasonString);
         return Task.CompletedTask;
     }
 
