@@ -32,7 +32,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
 #pragma warning disable 1998 // We may be debugging here, so don't block the initialize function
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        Task.Run(() => ExercisorAsync(cancellationToken), cancellationToken);
+        await Task.Run(() => ExercisorAsync(cancellationToken), cancellationToken);
     }
 #pragma warning disable 1998
 
