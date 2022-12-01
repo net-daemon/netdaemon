@@ -33,11 +33,11 @@ internal class Controller
         var currentEntityMetaData = EntityMetaDataGenerator.GetEntityDomainMetaData(hassStates);
         var mergedEntityMetaData = EntityMetaDataMerger.Merge(_generationSettings, previousEntityMetadata, currentEntityMetaData);
 
-        var generatedTypes = Generator.GenerateTypes(mergedEntityMetaData.Domains, servicesMetaData!.Value.ToServicesResult() );
-
         await Save(mergedEntityMetaData, EntityMetaDataFileName).ConfigureAwait(false);
         await Save(servicesMetaData, ServicesMetaDataFileName).ConfigureAwait(false);
-        
+
+        var generatedTypes = Generator.GenerateTypes(mergedEntityMetaData.Domains, servicesMetaData!.Value.ToServicesResult() );
+
         SaveGeneratedCode(generatedTypes.ToList());
     }
 
