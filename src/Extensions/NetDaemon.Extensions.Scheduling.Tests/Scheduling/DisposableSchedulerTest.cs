@@ -78,6 +78,15 @@ public class DisposableSchedulerTest
         inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         called.Should().Be(3);
     }
+    
+    [Fact]
+    public void DisposeTwice_NoException()
+    {
+        var (_, disposableScheduler) = CreateScheduler();
+
+        disposableScheduler.Dispose();
+        disposableScheduler.Dispose();
+    }
 
     private (TestScheduler inner, DisposableScheduler disposableScheduler) CreateScheduler()
     {
