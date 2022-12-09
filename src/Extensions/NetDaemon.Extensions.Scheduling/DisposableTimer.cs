@@ -10,6 +10,8 @@ public sealed class DisposableTimer : IDisposable
 {
     private readonly CancellationTokenSource _combinedToken;
     private readonly CancellationTokenSource _internalToken;
+    private bool _disposed;
+    
     /// <summary>
     ///     Constructor
     /// </summary>
@@ -29,8 +31,11 @@ public sealed class DisposableTimer : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _internalToken.Cancel();
-        _combinedToken.Dispose();
-        _internalToken.Dispose();
+        if (!_disposed){
+            _internalToken.Cancel();
+            _combinedToken.Dispose();
+            _internalToken.Dispose();
+            _disposed = true;
+        }
     }
 }
