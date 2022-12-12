@@ -12,9 +12,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </summary>
 internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
-    private const int RetryMaximumSeconds = 15;
     private readonly ILogger<AssuredMqttConnection> _logger;
-    private readonly Task _connectionTask;
+    private readonly Task<IManagedMqttClient> _connectionTask;
     private IManagedMqttClient? _mqttClient;
     private bool _disposed;
 
@@ -38,17 +37,12 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
-    /// <param name="timeout">Number of seconds to wait for connection to become available</param>
+    /// <param name="timeout">Time to wait for connection to become available</param>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
     public async Task<IManagedMqttClient> GetClientAsync(TimeSpan timeout)
     {
-        await _connectionTask.WaitAsync(timeout);
-
-        if (_connectionTask.IsCompletedSuccessfully && _mqttClient != null)
-            return _mqttClient;
-        
-        throw new MqttConnectionException("Unable to create MQTT connection");
+        return await _connectionTask.WaitAsync(timeout);
     }
 
     /// <summary>
@@ -60,7 +54,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         return await GetClientAsync(new TimeSpan(0, 0, 30));
     }
 
-    private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
+    private async Task<IManagedMqttClient> ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
         _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
@@ -80,6 +74,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         await _mqttClient.StartAsync(clientOptions);
 
         _logger.LogTrace("MQTT client is ready");
+        return _mqttClient;
     }
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
