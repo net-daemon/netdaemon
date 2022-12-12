@@ -32,7 +32,6 @@ public class MetaDataMergerTest
 
         var expected = new []{new EntityDomainMetadata("light", false, new []
             {
-                new EntityMetaData("light.living", "Livingroom spots"),
                 new EntityMetaData("light.bedroom", "nightlight"),
                 new EntityMetaData("light.kitchen", "Kitchen light new name")
             },

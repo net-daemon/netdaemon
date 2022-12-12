@@ -28,13 +28,10 @@ internal static class EntityMetaDataMerger
     // } ]
     //
     // How to merge:
-    // Match previous and current EntityDomainMetadata on domain and isnumeric
+    // Match previous and current EntityDomainMetadata on domain and isNumeric
     //    use all non-matches from both
     //    merge matching items
-    //       Match Entities on id
-    //           use all non-matches from both
-    //           merge matching items
-    //               note: current will override previous, in this case that is only the friendlyName which is mainly used for xml documentation and it makes most sense to use the most recent 
+    //       Only keep Entities in current set
     //       Match Attributes on JsonName
     //           use all non-matches from both
     //           merge matching items
@@ -53,7 +50,7 @@ internal static class EntityMetaDataMerger
         return previous with
         {
             Domains = FullOuterJoin(previous.Domains, current.Domains, p => (p.Domain.ToLowerInvariant(), p.IsNumeric), MergeDomains)
-                .Select(HandleDuplicateCharpNames)
+                .Select(HandleDuplicateCSharpNames)
                 .ToList()
         };
     }
@@ -83,17 +80,11 @@ internal static class EntityMetaDataMerger
 
     private static EntityDomainMetadata MergeDomains(EntityDomainMetadata previous, EntityDomainMetadata current)
     {
+        // Only keep entities from Current but merge the attributes
         return current with
         {
-            Entities = MergeEntitySets(previous.Entities, current.Entities), 
             Attributes = MergeAttributeSets(previous.Attributes, current.Attributes).ToList()
         };
-    }
-
-    private static List<EntityMetaData> MergeEntitySets(IEnumerable<EntityMetaData> previous, IEnumerable<EntityMetaData> current)
-    {
-        // For Entities matching by id => use the current and ignore previous
-        return FullOuterJoin(previous, current, e => e.id, (_,c) => c).ToList();
     }
 
     private static IEnumerable<EntityAttributeMetaData> MergeAttributeSets(
@@ -121,26 +112,23 @@ internal static class EntityMetaDataMerger
         };
     }
 
-    private static EntityDomainMetadata HandleDuplicateCharpNames(EntityDomainMetadata entitiesMetaData)
+    private static EntityDomainMetadata HandleDuplicateCSharpNames(EntityDomainMetadata entitiesMetaData)
     {
-        // This hashset will initially have all Member names in the base class,
+        // This hashset will initially have all Member names in the base class.
         // We will then also add all new names to this set so we are sure they will all be unique 
         var reservedCSharpNames = entitiesMetaData.AttributesBaseClass?
             .GetMembers().Select(p => p.Name).ToHashSet() ?? new HashSet<string>();
 
+        var withDeDuplicatedCSharpNames = entitiesMetaData.Attributes
+            .GroupBy(t => t.CSharpName)
+            .SelectMany(s => DeDuplicateCSharpNames(s.Key, s, reservedCSharpNames)).ToList();
+        
         return entitiesMetaData with
         {
-            Attributes = HandleDulicateCSharpNames(reservedCSharpNames, entitiesMetaData.Attributes).ToList()
+            Attributes = withDeDuplicatedCSharpNames
         };
     }
     
-    private static IEnumerable<EntityAttributeMetaData> HandleDulicateCSharpNames(ISet<string> reservedCSharpNames, IReadOnlyCollection<EntityAttributeMetaData> merged)
-    {
-        return merged
-            .GroupBy(t => t.CSharpName)
-            .SelectMany(s => DeDuplicateCSharpNames(s.Key, s, reservedCSharpNames));
-    }
-
     private static IEnumerable<EntityAttributeMetaData> DeDuplicateCSharpNames(
         string preferredCSharpName, IEnumerable<EntityAttributeMetaData> items, 
         ISet<string> reservedCSharpNames)
