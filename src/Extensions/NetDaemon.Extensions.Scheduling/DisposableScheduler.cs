@@ -76,9 +76,11 @@ public sealed class DisposableScheduler : IScheduler, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        _isDisposed = true;
-
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        if (!_isDisposed)
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _isDisposed = true;
+        }
     }
 }
