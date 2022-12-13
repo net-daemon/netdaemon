@@ -23,14 +23,14 @@ public class AssuredMqttConnectionTests
     [Fact]
     public async Task GetClientAbortsAfterTimeout()
     {
-        var timeout = new TimeSpan(0, 0, 0, 0, 10);
+        var timeout = TimeSpan.FromMilliseconds(5);
         var logger = new Mock<ILogger<AssuredMqttConnection>>();
         
         var mqttClient = new Mock<IManagedMqttClient>();
         var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
 
         mqttClient.Setup(m => m.StartAsync(It.IsAny<ManagedMqttClientOptions>()))
-            .Callback(() => Thread.Sleep(timeout*2));
+            .Callback(() => Thread.Sleep(TimeSpan.FromSeconds(1)));
         
         var conn = new AssuredMqttConnection(logger.Object, mqttFactory, GetMockOptions());
         var act = async () => { await conn.GetClientAsync(timeout); };
