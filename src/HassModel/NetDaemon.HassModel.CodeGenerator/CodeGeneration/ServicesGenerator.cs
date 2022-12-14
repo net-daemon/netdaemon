@@ -43,7 +43,7 @@ internal static class ServicesGenerator
             return ParseProperty(propertyCode).ToPublic();
         }).ToArray();
 
-        return ClassWithInjected<IHaContext>("Services").WithBase((string)"IServices").AddMembers(properties).ToPublic();
+        return ClassWithInjected<IHaContext>(ServicesClassName).WithBase((string)"IServices").AddMembers(properties).ToPublic();
     }
 
     private static TypeDeclarationSyntax GenerateRootServicesInterface(IEnumerable<string> domains)

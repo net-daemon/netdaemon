@@ -11,11 +11,12 @@ internal static class Generator
     {
         var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
 
+        var helpers = HelpersGenerator.Generate(entityDomains, orderedServiceDomains);
         var entityClasses = EntitiesGenerator.Generate(domains);
         var serviceClasses = ServicesGenerator.Generate(orderedServiceDomains);
         var extensionMethodClasses = ExtensionMethodsGenerator.Generate(orderedServiceDomains, domains);
 
-        return new[] { entityClasses, serviceClasses, extensionMethodClasses }.SelectMany(x => x).ToList();
+        return new[] {helpers, entityClasses, serviceClasses, extensionMethodClasses }.SelectMany(x => x).ToArray();
     }
 
     public static CompilationUnitSyntax BuildCompilationUnit(string namespaceName, params MemberDeclarationSyntax[] generatedTypes)
