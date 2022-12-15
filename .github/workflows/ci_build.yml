@@ -34,7 +34,7 @@ jobs:
           dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests 
           dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests 
           dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests 
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests
+          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
