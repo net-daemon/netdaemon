@@ -37,6 +37,7 @@ Just add ruleset file to a solution and open it.
     <!-- Logging rule to optimize later -->
     <Rule Id="CA1848" Action="None" />
     <Rule Id="CA2254" Action="None" />
+    <Rule Id="CA1852" Action="None" />
   </Rules>
 
 </RuleSet>
