@@ -1,6 +1,4 @@
-using FluentAssertions;
 using NetDaemon.HassModel.Entities;
-using Xunit;
 
 namespace NetDaemon.HassModel.Tests;
 

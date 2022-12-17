@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Xunit;
-
 using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;

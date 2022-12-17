@@ -1,12 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Subjects;
-using Moq;
+﻿using System.Reactive.Subjects;
 using NetDaemon.HassModel.Entities;
-using FluentAssertions;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using NetDaemon.HassModel.Tests.TestHelpers.HassClient;
-using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Entities;
 

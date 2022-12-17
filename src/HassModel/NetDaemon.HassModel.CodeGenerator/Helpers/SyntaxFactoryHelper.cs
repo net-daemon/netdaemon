@@ -64,7 +64,7 @@ internal static class SyntaxFactoryHelper
                                   _{variableName} = {variableName};
                               }}
                           }}";
-
+        
         return ParseClass(classCode);
     }
 

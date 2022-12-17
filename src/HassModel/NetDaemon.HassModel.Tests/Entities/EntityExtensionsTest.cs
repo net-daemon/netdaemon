@@ -1,7 +1,4 @@
-﻿using FluentAssertions;
-using Moq;
-using NetDaemon.HassModel.Entities;
-using Xunit;
+﻿using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Tests.Entities;
 

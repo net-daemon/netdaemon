@@ -1,12 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using System.Threading;
 using Microsoft.Extensions.Logging;
-using Moq;
 using NetDaemon.HassModel.Internal;
-using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
