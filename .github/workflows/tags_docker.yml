@@ -56,8 +56,8 @@ jobs:
             --compress \
             --tag netdaemon/netdaemon_addon3:${{ steps.version.outputs.version }} \
             --tag netdaemon/netdaemon_addon3:latest \
-            --tag ghcr.io/net-daemon/netdaemon_addon3:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon_addon3:latest
+            --tag ghcr.io/net-daemon/netdaemon_addon3_1:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon_addon3_1:latest
 
   deploy_docker:
     name: 📦 Deploy to Docker Hub
@@ -110,5 +110,5 @@ jobs:
             --compress \
             --tag netdaemon/netdaemon3:latest \
             --tag netdaemon/netdaemon3:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon3:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon3:latest
+            --tag ghcr.io/net-daemon/netdaemon3_1:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon3_1:latest
