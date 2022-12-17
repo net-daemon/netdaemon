@@ -54,8 +54,8 @@ jobs:
             --no-cache \
             --file ./Dockerfile.AddOn . \
             --compress \
-            --tag netdaemon/netdaemon_addon3:${{ steps.version.outputs.version }} \
-            --tag netdaemon/netdaemon_addon3:latest \
+            --tag netdaemon/netdaemon_addon3_1:${{ steps.version.outputs.version }} \
+            --tag netdaemon/netdaemon_addon3_1:latest \
             --tag ghcr.io/net-daemon/netdaemon_addon3_1:${{ steps.version.outputs.version }} \
             --tag ghcr.io/net-daemon/netdaemon_addon3_1:latest
 
@@ -108,7 +108,7 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon3:latest \
-            --tag netdaemon/netdaemon3:${{ steps.version.outputs.version }} \
+            --tag netdaemon/netdaemon3_1:latest \
+            --tag netdaemon/netdaemon3_1:${{ steps.version.outputs.version }} \
             --tag ghcr.io/net-daemon/netdaemon3_1:${{ steps.version.outputs.version }} \
             --tag ghcr.io/net-daemon/netdaemon3_1:latest
