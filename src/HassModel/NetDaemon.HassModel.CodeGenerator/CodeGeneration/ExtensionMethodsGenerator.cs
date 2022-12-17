@@ -2,16 +2,35 @@
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
+/// <summary>
+/// Generates classes with extension methods for calling services on Entities
+/// </summary>
+/// <example>
+/// public static class InputButtonEntityExtensionMethods
+/// {
+///     ///<summary>Press the input button entity.</summary>
+///     public static void Press(this InputButtonEntity target)
+///     {
+///         target.CallService("press");
+///     }
+/// 
+///     ///<summary>Press the input button entity.</summary>
+///     public static void Press(this IEnumerable<InputButtonEntity> target)
+///     {
+///         target.CallService("press");
+///     }
+/// }
+/// </example>
 internal static class ExtensionMethodsGenerator
 {
-    public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<HassState> entities)
+    public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<EntityDomainMetadata> entityDomains)
     {
-        var entityDomains = entities.GroupBy(e => EntityIdHelper.GetDomain(e.EntityId)).Select(x => x.Key);
+        var entityDomainNames = entityDomains.Select(d => d.Domain).ToHashSet();
 
+        // we only want to generate these classes for entities that 
         return serviceDomains
             .Where(sd =>
-                sd.Services?.Any() == true
-                && sd.Services.Any(s => entityDomains.Contains(s.Target?.Entity?.Domain)))
+                 sd.Services?.Any(s => s.Target?.Entity?.Domain != null && entityDomainNames.Contains(s.Target.Entity.Domain)) == true)
             .GroupBy(x => x.Domain, x => x.Services)
             .Select(GenerateClass);
     }

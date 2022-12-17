@@ -70,8 +70,10 @@ internal static class NamingHelper
 
     public static readonly string[] UsingNamespaces =
     {
-        typeof(IHaContext).Namespace!,
+        "System",
+        "System.Collections.Generic",
         typeof(JsonPropertyNameAttribute).Namespace!,
+        typeof(IHaContext).Namespace!,
         typeof(Entity).Namespace!,
         typeof(LightAttributesBase).Namespace!
     };

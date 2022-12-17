@@ -1,4 +1,7 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
+namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class ServicesGenerator
 {
@@ -79,7 +82,9 @@ internal static class ServicesGenerator
                 .WithJsonPropertyName(argument.HaName!).WithSummaryComment(argument.Comment))
             .ToArray();
 
-        yield return Record(serviceArguments.TypeName, autoProperties).ToPublic();
+        yield return Record(serviceArguments.TypeName, autoProperties)
+            .ToPublic()
+            .AddModifiers(Token(SyntaxKind.PartialKeyword));
     }
 
     private static IEnumerable<MemberDeclarationSyntax> GenerateServiceMethod(string domain, HassService service)

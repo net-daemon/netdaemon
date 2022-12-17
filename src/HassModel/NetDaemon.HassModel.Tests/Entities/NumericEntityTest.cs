@@ -1,14 +1,10 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading;
-using FluentAssertions;
-using Moq;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using NetDaemon.HassModel.Tests.TestHelpers.HassClient;
-using Xunit;
 
 namespace NetDaemon.HassModel.Tests.Entities;
 
