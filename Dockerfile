@@ -1,20 +1,5 @@
-# Build the NetDaemon Admin with build container
-FROM ghcr.io/ludeeus/alpine/node:stable as builder
-
-RUN \
-    apk add --no-cache --virtual .build-deps \
-        make \
-    \
-    && git clone https://github.com/net-daemon/admin.git /admin \
-    && cd /admin \
-    && git checkout tags/1.3.5 \
-    && make deploy \
-    \
-    && apk del --no-cache .build-deps \
-    && rm -rf /var/cache/apk/* 
-
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:7.0.100-bullseye-slim-amd64 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:7.0.101-bullseye-slim-amd64 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
