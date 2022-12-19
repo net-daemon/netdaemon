@@ -76,7 +76,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             // this task will be returned and handled by caller
             var resultEvent = _hassMessageSubject
                 .Where(n => n.Type == "result" && n.Id == command.Id)
-                .FirstAsync().ToTask(cancelToken);
+                .FirstAsync().ToTask(CancellationToken.None);
+            // We dont want to pass the incoming CancellationToken here because it will throw a TaskCanceledException
+            // when calling services from an Apps Dispose(Async) and hide possible actual exceptions
 
             await _transportPipeline.SendMessageAsync(command, cancelToken);
 
