@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using NetDaemon.HassModel.CodeGenerator.CodeGeneration;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace NetDaemon.HassModel.CodeGenerator;
@@ -11,7 +12,7 @@ internal static class Generator
     {
         var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
 
-        var helpers = HelpersGenerator.Generate(entityDomains, orderedServiceDomains);
+        var helpers = HelpersGenerator.Generate(domains, orderedServiceDomains);
         var entityClasses = EntitiesGenerator.Generate(domains);
         var serviceClasses = ServicesGenerator.Generate(orderedServiceDomains);
         var extensionMethodClasses = ExtensionMethodsGenerator.Generate(orderedServiceDomains, domains);
