@@ -14,14 +14,21 @@ public record Entity
     public string EntityId { get; }
 
     /// <summary>
+    /// Device id of the device associated with this entity
+    /// </summary>
+    public string? DeviceId { get; }
+
+    /// <summary>
     /// Creates a new instance of a Entity class
     /// </summary>
     /// <param name="haContext">The Home Assistant context associated with this Entity</param>
     /// <param name="entityId">The id of this Entity</param>
-    public Entity(IHaContext haContext, string entityId)
+    /// <param name="deviceId">The id of the device associated with this entity</param>
+    public Entity(IHaContext haContext, string entityId, string? deviceId = null)
     {
         HaContext = haContext;
         EntityId = entityId;
+        DeviceId = deviceId;
     }
         
     /// <summary>
@@ -82,7 +89,7 @@ public abstract record Entity<TEntity, TEntityState, TAttributes> : Entity
     { }
 
     /// <summary>Constructor from haContext and entityId</summary>
-    protected Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
+    protected Entity(IHaContext haContext, string entityId, string? deviceId = null) : base(haContext, entityId, deviceId)
     { }
 
     /// <inheritdoc />

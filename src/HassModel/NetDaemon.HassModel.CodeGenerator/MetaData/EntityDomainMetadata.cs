@@ -33,6 +33,6 @@ record EntityDomainMetadata(
     public Type? AttributesBaseClass { get; set; }
 };
 
-record EntityMetaData(string id, string? friendlyName);
+record EntityMetaData(string id, string? friendlyName, string? deviceId = null);
 
 record EntityAttributeMetaData(string JsonName, string CSharpName, Type ClrType);

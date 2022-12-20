@@ -12,7 +12,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 
 internal static class HaRepositry
 {
-    public record HaData(IReadOnlyCollection<HassState> states, JsonElement? servicesMetaData);
+    public record HaData(IReadOnlyCollection<HassState> states, IReadOnlyCollection<HassEntity> entities, JsonElement? servicesMetaData);
 
     public static async Task<HaData> GetHaData(HomeAssistantSettings homeAssistantSettings)
     {
@@ -31,8 +31,9 @@ internal static class HaRepositry
         {
             var services = await connection.GetServicesAsync(CancellationToken.None).ConfigureAwait(false);
             var states = await connection.GetStatesAsync(CancellationToken.None).ConfigureAwait(false);
+            var entities = await connection.GetEntitiesAsync(CancellationToken.None).ConfigureAwait(false);
 
-            return new HaData(states!, services);
+            return new HaData(states!, entities!, services);
         }
     }
 

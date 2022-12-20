@@ -27,10 +27,10 @@ internal class Controller
     
     public async Task RunAsync()
     {
-        var (hassStates, servicesMetaData) = await HaRepositry.GetHaData(_haSettings).ConfigureAwait(false);
+        var (hassStates, hassEntities, servicesMetaData) = await HaRepositry.GetHaData(_haSettings).ConfigureAwait(false);
 
         var previousEntityMetadata = await LoadEntitiesMetaDataAsync().ConfigureAwait(false);
-        var currentEntityMetaData = EntityMetaDataGenerator.GetEntityDomainMetaData(hassStates);
+        var currentEntityMetaData = EntityMetaDataGenerator.GetEntityDomainMetaData(hassStates, hassEntities);
         var mergedEntityMetaData = EntityMetaDataMerger.Merge(_generationSettings, previousEntityMetadata, currentEntityMetaData);
 
         await Save(mergedEntityMetaData, EntityMetaDataFileName).ConfigureAwait(false);

@@ -19,7 +19,7 @@ public class CodeGeneratorTest
     [Fact]
     public void RunCodeGenEmpy()
     {
-        var code = GenerateCompilationUnit(_settings, Array.Empty<HassState>(), new HassServiceDomain[0]);
+        var code = GenerateCompilationUnit(_settings, Array.Empty<HassState>(), Array.Empty<HassEntity>(), new HassServiceDomain[0]);
 
         code.DescendantNodes().OfType<FileScopedNamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
             
@@ -37,7 +37,7 @@ public class CodeGeneratorTest
             new() { EntityId = "switch.switch2" },
         };
 
-        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassEntity>(), Array.Empty<HassServiceDomain>());
         var appCode = """
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
@@ -52,6 +52,47 @@ public class CodeGeneratorTest
                                 LightEntity light2 = entities.Light.Light2;
                                 SwitchEntity switch1 = entities.Switch.Switch1;
                                 SwitchEntity switch2 = entities.Switch.Switch2;
+                            }
+                        }
+                        """;
+        AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }
+
+    [Fact]
+    public void TestIEntityGenerationWithDeviceId()
+    {
+        var entityStates = new HassState[]
+        {
+            new() { EntityId = "light.light1" },
+            new() { EntityId = "light.light2" },
+            new() { EntityId = "switch.switch1" },
+            new() { EntityId = "switch.switch2" },
+        };
+
+        var entities = new HassEntity[]
+        {
+            new() { EntityId = "light.light1", DeviceId="dev1" },
+            new() { EntityId = "light.light2", DeviceId="dev2" },
+            new() { EntityId = "switch.switch1", DeviceId="dev1" },
+            new() { EntityId = "switch.switch2", DeviceId="dev2" },
+        };
+
+        var generatedCode = GenerateCompilationUnit(_settings, entityStates, entities, Array.Empty<HassServiceDomain>());
+        var appCode = """
+                        using NetDaemon.HassModel.Entities;
+                        using NetDaemon.HassModel;
+                        using RootNameSpace;
+
+                        public class Root
+                        {
+                            public void Run(IHaContext ha)
+                            {
+                                IEntities entities = new Entities(ha);
+                                LightEntity light1 = entities.Light.Light1;
+                                LightEntity light2 = entities.Light.Light2;
+                                SwitchEntity switch1 = entities.Switch.Switch1;
+                                SwitchEntity switch2 = entities.Switch.Switch2;
+                                string? light1Device = light1.DeviceId;
                             }
                         }
                         """;
@@ -84,7 +125,7 @@ public class CodeGeneratorTest
             },
         };
 
-        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassEntity>(), Array.Empty<HassServiceDomain>());
         var appCode = """
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
@@ -146,7 +187,7 @@ public class CodeGeneratorTest
             }
         };
             
-        var generatedCode = GenerateCompilationUnit(_settings, entityStates, hassServiceDomains);
+        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassEntity>(), hassServiceDomains);
         var appCode = """
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
@@ -188,7 +229,7 @@ public class CodeGeneratorTest
             },
         };
             
-        var generatedCode = GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
+        var generatedCode = GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassEntity>(), Array.Empty<HassServiceDomain>()).ToString();
 
         var appCode = """
                     using NetDaemon.HassModel.Entities;
@@ -235,7 +276,7 @@ public class CodeGeneratorTest
             },
         };
             
-        var generatedCode = GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
+        var generatedCode = GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassEntity>(), Array.Empty<HassServiceDomain>()).ToString();
         generatedCode.Should().NotContain("Brightness", because: "It is in the base class");
 
         var appCode = """
@@ -292,7 +333,7 @@ public class CodeGeneratorTest
         };
 
         // Act:
-        var code = GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+        var code = GenerateCompilationUnit(_settings, readOnlyCollection, Array.Empty<HassEntity>(), hassServiceDomains);
 
         var appCode = """
                     using NetDaemon.HassModel;
@@ -362,10 +403,11 @@ public class CodeGeneratorTest
     
     private static CompilationUnitSyntax GenerateCompilationUnit(
         CodeGenerationSettings codeGenerationSettings, 
-        IReadOnlyCollection<HassState> states, 
+        IReadOnlyCollection<HassState> states,
+        IReadOnlyCollection<HassEntity> entities,
         IReadOnlyCollection<HassServiceDomain> services)
     {
-        var metaData = EntityMetaDataGenerator.GetEntityDomainMetaData(states);
+        var metaData = EntityMetaDataGenerator.GetEntityDomainMetaData(states, entities);
         metaData = EntityMetaDataMerger.Merge(codeGenerationSettings, new EntitiesMetaData(), metaData);
         var generatedTypes = Generator.GenerateTypes(metaData.Domains, services).ToArray();
         return Generator.BuildCompilationUnit(codeGenerationSettings.Namespace, generatedTypes);

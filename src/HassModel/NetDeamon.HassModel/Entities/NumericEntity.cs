@@ -39,7 +39,7 @@ public record NumericEntity<TEntity, TEntityState, TAttributes> : Entity<TEntity
     public NumericEntity(Entity entity) : base(entity) { }
 
     /// <summary>Constructor from haContext and entityId</summary>
-    public NumericEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
+    public NumericEntity(IHaContext haContext, string entityId, string? deviceId = null) : base(haContext, entityId, deviceId) { }
         
     /// <summary>The current state of this Entity converted to double if possible, null if it is not</summary>
     public new double? State => EntityState?.State;
@@ -69,5 +69,5 @@ public record NumericEntity<TAttributes> : NumericEntity<NumericEntity<TAttribut
     public NumericEntity(Entity entity) : base(entity) { }
     
     /// <summary>Constructor from haContext and entityId</summary>
-    public NumericEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
+    public NumericEntity(IHaContext haContext, string entityId, string? deviceId = null) : base(haContext, entityId, deviceId) { }
 }

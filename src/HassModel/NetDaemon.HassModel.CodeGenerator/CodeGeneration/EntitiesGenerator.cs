@@ -79,7 +79,7 @@ internal static class EntitiesGenerator
     {
         var entityName = EntityIdHelper.GetEntity(entity.id);
 
-        var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.id}"");";
+        var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.id}"", ""{entity.deviceId}"");";
 
         var name = entity.friendlyName;
         return ParseProperty(propertyCode).ToPublic().WithSummaryComment(name);
@@ -100,7 +100,7 @@ internal static class EntitiesGenerator
         var (className, variableName) = GetNames<IHaContext>();
         var classDeclaration = $@"record {domainMetaData.EntityClassName} : {baseClass}
                                     {{
-                                            public {domainMetaData.EntityClassName}({className} {variableName}, string entityId) : base({variableName}, entityId)
+                                            public {domainMetaData.EntityClassName}({className} {variableName}, string entityId, string? deviceId = null) : base({variableName}, entityId, deviceId)
                                             {{}}
 
                                             public {domainMetaData.EntityClassName}({SimplifyTypeName(typeof(Entity))} entity) : base(entity)
