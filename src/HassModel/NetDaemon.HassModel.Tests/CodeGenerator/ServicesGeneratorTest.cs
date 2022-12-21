@@ -1,4 +1,5 @@
-﻿using NetDaemon.Client.HomeAssistant.Model;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
 
@@ -11,15 +12,12 @@ public class ServicesGeneratorTest
     [Fact]
     public void TestServicesGeneration()
     {
-        var readOnlyCollection = new HassState[]
-        {
+        var readOnlyCollection = new HassState[] {
             new() { EntityId = "light.light1" },
         };
 
-        var hassServiceDomains = new HassServiceDomain[]
-        {
-            new()
-            {
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
                 Domain = "light",
                 Services = new HassService[] {
                     new() {
@@ -75,48 +73,31 @@ public class ServicesGeneratorTest
     [Fact]
     public void TestServiceWithoutAnyTargetEntity_ExtensionMethodSkipped()
     {
-        var readOnlyCollection = new HassState[]
-        {
-            new() { EntityId = "light.light1" },
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "orbiter.cassini" },
         };
 
         var hassServiceDomains = new HassServiceDomain[]
         {
-            new()
-            {
+            new() {
                 Domain = "smart_things",
                 Services = new HassService[] {
                     new() {
-                        Service = "set_fan_mode",  
-                        Target = new TargetSelector { Entity = new() { Domain = "humidifiers" } },
-                        // Because there is no entity for the humidifiers domain we should not generate extension
-                        // methods for those
+                        Service = "dig",  
+                        Target = new TargetSelector { Entity = new() { Domain = "rover" } },
                     },
                     new() {
                         Service = "orbit",
-                        Target = new TargetSelector { Entity = new() { Domain = "light" } },
+                        Target = new TargetSelector { Entity = new() { Domain = "orbiter" } },
                     }
                 },
-            },
-            new()
-            {
-                Domain = "dumbthings",
-                Services = new HassService[] {
-                    new() {
-                        Service = "push_button",  
-                        Target = new TargetSelector { Entity = new() { Domain = "uselessbox" } },
-                        // Because there is no entity for the uselessbox domain we should not generate extension
-                        // methods for those
-                    },
-                },
-            }            
+            }
         };
 
         // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
 
-        code.ToString().Should().NotContain("humidifiers", because:"There is no entity for domain humidifiers");
-        code.ToString().Should().NotContain("DumbthingsEntityExtensionMethods", because:"There is no entity for any of the services in dumbthings");
+        code.ToString().Should().NotContain("rover", because:"There is no entity for domain rover");
 
         var appCode = """
                     using NetDaemon.HassModel;
@@ -127,13 +108,54 @@ public class ServicesGeneratorTest
                     {
                         public void Run(Entities entities, Services services)
                         {
-                            // Test the extension Method exists                        
-                            SmartThingsEntityExtensionMethods.Orbit(entities.Light.Light1);
-                            entities.Light.Light1.Orbit();
+                            // Test the Orbit extension Method exists                        
+                            SmartThingsEntityExtensionMethods.Orbit(entities.Orbiter.Cassini);
+                            entities.Orbiter.Cassini.Orbit();
                             
-                            // Test the Methods on the service classes exist
-                            services.SmartThings.SetFanMode(new ServiceTarget());
+                            // Test the Methods on the service classes do exist
+                            services.SmartThings.Dig(new ServiceTarget());
                             services.SmartThings.Orbit(new ServiceTarget());
+                        }
+                    }
+                    """;
+        
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }    
+    
+    [Fact]
+    public void TestServiceWithoutAnyMethods_ClassSkipped()
+    {
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "light.light1" },
+        };
+
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "dumbthings",
+                Services = new HassService[] {
+                    new() {
+                        Service = "push_button",  
+                        Target = new TargetSelector { Entity = new() { Domain = "uselessbox" } },
+                    },
+                },
+            }            
+        };
+
+        // Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+        code.ToString().Should().NotContain("DumbthingsEntityExtensionMethods",
+            because:"There is no entity for any of the services in dumbthings");
+        
+        var appCode = """
+                    using NetDaemon.HassModel;
+                    using NetDaemon.HassModel.Entities;
+                    using RootNameSpace;
+
+                    public class Root
+                    {
+                        public void Run(Entities entities, Services services)
+                        {
+                            // But the Method on the Dumbthings service class should still exist
                             services.Dumbthings.PushButton(new ServiceTarget());
                         }
                     }
@@ -141,4 +163,5 @@ public class ServicesGeneratorTest
         
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }    
-}
+}    
+    
