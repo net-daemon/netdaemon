@@ -15,16 +15,22 @@ public interface IHaContext
     /// </summary>
     IObservable<StateChange> StateAllChanges();
 
+    IObservable<IStateChange> StateAllChangesGeneric();
+
     /// <summary>
     /// Get state for a single entity
     /// </summary>
     /// <param name="entityId"></param>
     EntityState? GetState(string entityId);
 
+    IEntityState? GetStateGeneric(string entityId);
+
     /// <summary>
     /// Gets all the entities in HomeAssistant
     /// </summary>
     IReadOnlyList<Entity> GetAllEntities();
+
+    IReadOnlyList<IEntity> GetAllEntitiesGeneric();
 
     /// <summary>
     /// Calls a service in Home Assistant

@@ -48,6 +48,11 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         return _entityStateCache.GetState(entityId).Map();
     }
 
+    public IEntityState? GetStateGeneric(string entityId)
+    {
+        return _entityStateCache.GetState(entityId).MapGeneric();
+    }
+
     public Area? GetAreaFromEntityId(string entityId)
     {
         return _entityAreaCache.GetArea(entityId)?.Map();
@@ -56,6 +61,11 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     public IReadOnlyList<Entity> GetAllEntities()
     {
         return _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
+    }
+
+    public IReadOnlyList<IEntity> GetAllEntitiesGeneric()
+    {
+        return _entityStateCache.AllEntityIds.Select(id => new EntityGeneric(this, id)).ToList();
     }
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
@@ -69,6 +79,14 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
             n.EventType == "state_changed")
             .Select(n => n.ToStateChangedEvent()!)
             .Select(e => e.Map(this));
+    }
+
+    public IObservable<IStateChange> StateAllChangesGeneric()
+    {
+        return _queuedObservable.Where(n =>
+            n.EventType == "state_changed")
+            .Select(n => n.ToStateChangedEvent()!)
+            .Select(e => e.MapGeneric(this));
     }
 
     public IObservable<Event> Events => _queuedObservable
