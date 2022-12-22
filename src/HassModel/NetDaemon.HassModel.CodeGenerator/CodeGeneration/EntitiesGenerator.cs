@@ -54,7 +54,7 @@ internal static class EntitiesGenerator
                 .ToPublic();
         }).ToArray();
 
-        return ClassWithInjected<IHaContext>("Entities")
+        return ClassWithInjected<IHaContext>(EntitiesClassName)
             .ToPublic()
             .AddModifiers(Token(SyntaxKind.PartialKeyword))
             .WithBase((string)"IEntities")

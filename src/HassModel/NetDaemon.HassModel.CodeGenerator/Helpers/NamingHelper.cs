@@ -5,6 +5,9 @@ namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
 internal static class NamingHelper
 {
+    public const string EntitiesClassName =  "Entities";
+    public const string ServicesClassName =  "Services";
+
     public static string GetEntitiesForDomainClassName(string prefix)
     {
         var normalizedDomain = prefix.ToNormalizedPascalCase();
@@ -72,6 +75,7 @@ internal static class NamingHelper
     {
         "System",
         "System.Collections.Generic",
+        "Microsoft.Extensions.DependencyInjection",
         typeof(JsonPropertyNameAttribute).Namespace!,
         typeof(IHaContext).Namespace!,
         typeof(Entity).Namespace!,
