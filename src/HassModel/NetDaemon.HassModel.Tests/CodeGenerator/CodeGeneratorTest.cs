@@ -19,11 +19,11 @@ public class CodeGeneratorTest
     [Fact]
     public void RunCodeGenEmpy()
     {
-        var code = GenerateCompilationUnit(_settings, Array.Empty<HassState>(), new HassServiceDomain[0]);
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, Array.Empty<HassState>(), new HassServiceDomain[0]);
 
         code.DescendantNodes().OfType<FileScopedNamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
-            
-        AssertCodeCompiles(code.ToString(), string.Empty);
+
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), string.Empty);
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class CodeGeneratorTest
             new() { EntityId = "switch.switch2" },
         };
 
-        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
         var appCode = """
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
@@ -55,7 +55,7 @@ public class CodeGeneratorTest
                             }
                         }
                         """;
-        AssertCodeCompiles(generatedCode.ToString(), appCode);
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
     }
         
     [Fact]
@@ -84,7 +84,7 @@ public class CodeGeneratorTest
             },
         };
 
-        var generatedCode = GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
         var appCode = """
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
@@ -109,7 +109,7 @@ public class CodeGeneratorTest
                              }
                         }
                         """;
-        AssertCodeCompiles(generatedCode.ToString(), appCode);
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
     }
         
     [Fact]
@@ -146,7 +146,7 @@ public class CodeGeneratorTest
             }
         };
             
-        var generatedCode = GenerateCompilationUnit(_settings, entityStates, hassServiceDomains);
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, hassServiceDomains);
         var appCode = """
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
@@ -162,7 +162,7 @@ public class CodeGeneratorTest
                              }
                         }
                         """;
-        AssertCodeCompiles(generatedCode.ToString(), appCode);
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public class CodeGeneratorTest
             },
         };
             
-        var generatedCode = GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
 
         var appCode = """
                     using NetDaemon.HassModel.Entities;
@@ -210,7 +210,7 @@ public class CodeGeneratorTest
                         }
                     }
                     """;
-        AssertCodeCompiles(generatedCode, appCode);
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode, appCode);
     }
 
     
@@ -235,7 +235,7 @@ public class CodeGeneratorTest
             },
         };
             
-        var generatedCode = GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
         generatedCode.Should().NotContain("Brightness", because: "It is in the base class");
 
         var appCode = """
@@ -258,116 +258,7 @@ public class CodeGeneratorTest
                         }
                     }
                     """;
-        AssertCodeCompiles(generatedCode, appCode);
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode, appCode);
     }
     
-    [Fact]
-    public void TestServicesGeneration()
-    {
-        var readOnlyCollection = new HassState[]
-        {
-            new() { EntityId = "light.light1" },
-        };
-
-        var hassServiceDomains = new HassServiceDomain[]
-        {
-            new()
-            {
-                Domain = "light",
-                Services = new HassService[] {
-                    new() {
-                        Service = "turn_off",
-                        Target = new TargetSelector { Entity = new() { Domain = "light" } }
-                    },
-                    new() {
-                        Service = "turn_on",
-                        Fields = new HassServiceField[] {
-                            new() { Field = "transition", Selector = new NumberSelector(), },
-                            new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2f }, }
-                        },
-                        Target = new TargetSelector { Entity = new() { Domain = "light" } }
-                    }
-                }
-            }
-        };
-
-        // Act:
-        var code = GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
-
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
-
-                    public class Root
-                    {
-                        public void Run(IHaContext ha)
-                        {
-                            var s = new RootNameSpace.Services(ha);
-
-                            s.Light.TurnOn(new ServiceTarget() );
-                            s.Light.TurnOn(new ServiceTarget(), transition: 12, brightness: 324.5f);
-                            s.Light.TurnOn(new ServiceTarget(), new (){ Transition = 12L, Brightness = 12.3f });
-                            s.Light.TurnOn(new ServiceTarget(), new (){ Brightness = 12.3f });
-
-                            s.Light.TurnOff(new ServiceTarget());
-
-                            var light = new RootNameSpace.LightEntity(ha, "light.testLight");
-
-                            light.TurnOn();
-                            light.TurnOn(transition: 12, brightness: 324.5f);
-                            light.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
-                            light.TurnOff();
-                        }
-                    }
-                    """;
-        AssertCodeCompiles(code.ToString(), appCode);
-    }
-
-    private void AssertCodeCompiles(string generated,  string appCode)
-    {
-        var syntaxtrees = new []
-        {
-            SyntaxFactory.ParseSyntaxTree(generated, path: "generated.cs"),
-            SyntaxFactory.ParseSyntaxTree(appCode, path: "appcode.cs")
-        };
-            
-        var compilation = CSharpCompilation.Create("tempAssembly",
-            syntaxtrees,
-            AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)).ToArray(),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
-        );
-
-        var emitResult = compilation.Emit(Stream.Null);
-
-        var warningsAndErrors = emitResult.Diagnostics
-            .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning).ToList();
-        
-        if (warningsAndErrors.Any())
-        {
-            var msg = new StringBuilder("Compile of generated code failed.\r\n");
-            foreach (var diagnostic in warningsAndErrors)
-            {
-                msg.AppendLine(diagnostic.ToString());
-            }
-
-            msg.AppendLine();
-            msg.AppendLine("generated.cs");
-            // output the generated code including line numbers to help debugging 
-            msg.AppendLine(string.Join(Environment.NewLine, generated.Split('\n').Select((l, i) => $"{i+1,4}: {l}")));
-            
-            Assert.Fail(msg.ToString());
-        }
-    }
-    
-    private static CompilationUnitSyntax GenerateCompilationUnit(
-        CodeGenerationSettings codeGenerationSettings, 
-        IReadOnlyCollection<HassState> states, 
-        IReadOnlyCollection<HassServiceDomain> services)
-    {
-        var metaData = EntityMetaDataGenerator.GetEntityDomainMetaData(states);
-        metaData = EntityMetaDataMerger.Merge(codeGenerationSettings, new EntitiesMetaData(), metaData);
-        var generatedTypes = Generator.GenerateTypes(metaData.Domains, services).ToArray();
-        return Generator.BuildCompilationUnit(codeGenerationSettings.Namespace, generatedTypes);
-    }
 }

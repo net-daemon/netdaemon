@@ -3,5 +3,5 @@
 internal record HassServiceDomain
 {
     public required string Domain { get; init; }
-    public IReadOnlyCollection<HassService>? Services { get; init; }
+    public required IReadOnlyCollection<HassService> Services { get; init; }
 }

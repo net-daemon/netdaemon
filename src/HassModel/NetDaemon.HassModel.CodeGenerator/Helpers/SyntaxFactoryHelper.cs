@@ -68,11 +68,6 @@ internal static class SyntaxFactoryHelper
         return ParseClass(classCode);
     }
 
-    public static ClassDeclarationSyntax Class(string name)
-    {
-        return ClassDeclaration(name);
-    }
-
     public static TypeDeclarationSyntax Interface(string name)
     {
         return InterfaceDeclaration(name);
