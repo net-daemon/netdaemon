@@ -1,4 +1,4 @@
-﻿using NetDaemon.Client.HomeAssistant.Model;
+﻿using Microsoft.CodeAnalysis.CSharp;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
@@ -25,46 +25,38 @@ internal static class ExtensionMethodsGenerator
 {
     public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<EntityDomainMetadata> entityDomains)
     {
-        var entityDomainNames = entityDomains.Select(d => d.Domain).ToHashSet();
-
-        // we only want to generate these classes for entities that 
+        var entityClassNameByDomain = entityDomains.ToLookup(e => e.Domain, e => e.EntityClassName);
+        
         return serviceDomains
-            .Where(sd =>
-                 sd.Services?.Any(s => s.Target?.Entity?.Domain != null && entityDomainNames.Contains(s.Target.Entity.Domain)) == true)
-            .GroupBy(x => x.Domain, x => x.Services)
-            .Select(GenerateClass);
+            .Select(sd => GenerateDomainExtensionClass(sd, entityClassNameByDomain))
+            .OfType<MemberDeclarationSyntax>(); // filter out nulls
     }
 
-    private static ClassDeclarationSyntax GenerateClass(IGrouping<string?, IReadOnlyCollection<HassService>?> domainServicesGroup)
+    private static ClassDeclarationSyntax? GenerateDomainExtensionClass(HassServiceDomain serviceDomain, ILookup<string, string> entityClassNameByDomain)
     {
-        var domain = domainServicesGroup.Key!;
-
-        var domainServices = domainServicesGroup
-            .SelectMany(services => services!)
-            .Where(s => s.Target?.Entity?.Domain != null)
-            .Select(group => @group)
+        var serviceMethodDeclarations = serviceDomain.Services
             .OrderBy(x => x.Service)
-            .ToList();
-
-        return GenerateDomainExtensionClass(domain, domainServices);
-    }
-
-    private static ClassDeclarationSyntax GenerateDomainExtensionClass(string domain, IEnumerable<HassService> services)
-    {
-        var serviceTypeDeclaration = Class(GetEntityDomainExtensionMethodClassName(domain)).ToPublic().ToStatic();
-
-        var serviceMethodDeclarations = services
-            .SelectMany(service => GenerateExtensionMethod(domain, service))
+            .SelectMany(service => GenerateExtensionMethods(serviceDomain.Domain, service, entityClassNameByDomain))
             .ToArray();
 
-        return serviceTypeDeclaration.AddMembers(serviceMethodDeclarations);
+        if (!serviceMethodDeclarations.Any()) return null;
+
+        return SyntaxFactory.ClassDeclaration(GetEntityDomainExtensionMethodClassName(serviceDomain.Domain))
+                .AddMembers(serviceMethodDeclarations)
+                .ToPublic()
+                .ToStatic();
     }
 
-    private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethod(string domain, HassService service)
+    private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethods(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
     {
-        var serviceName = service.Service!;
+        var targetEntityDomain = service.Target?.Entity?.Domain;
+        if (targetEntityDomain == null) yield break;
+        
+        var entityTypeName = entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
+        if (entityTypeName == null) yield break;
+        
+        var serviceName = service.Service;
         var serviceArguments = ServiceArguments.Create(domain, service);
-        var entityTypeName = GetDomainEntityTypeName(service.Target?.Entity?.Domain!);
         var enumerableTargetTypeName = $"IEnumerable<{entityTypeName}>";
 
         if (serviceArguments is null)
