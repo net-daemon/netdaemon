@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
@@ -36,22 +36,27 @@ internal static class ExtensionMethodsGenerator
     {
         var serviceMethodDeclarations = serviceDomain.Services
             .OrderBy(x => x.Service)
-            .SelectMany(service => GenerateExtensionMethods(serviceDomain.Domain, service, entityClassNameByDomain))
+            .SelectMany(service => GenerateExtensionMethodsForService(serviceDomain.Domain, service, entityClassNameByDomain))
             .ToArray();
 
         if (!serviceMethodDeclarations.Any()) return null;
 
-        return SyntaxFactory.ClassDeclaration(GetEntityDomainExtensionMethodClassName(serviceDomain.Domain))
+        return ClassDeclaration(GetEntityDomainExtensionMethodClassName(serviceDomain.Domain))
                 .AddMembers(serviceMethodDeclarations)
                 .ToPublic()
                 .ToStatic();
     }
 
-    private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethods(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
+    private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
     {
-        var targetEntityDomain = service.Target?.Entity?.Domain;
-        if (targetEntityDomain == null) yield break;
+        // There can be multiple Target Domains, so generate methods for each 
+        var targetEntityDomains = service.Target?.Entity?.Domain ?? Array.Empty<string>();
         
+        return targetEntityDomains.SelectMany(targetEntityDomain => GenerateExtensionMethodsForService(domain, service, targetEntityDomain, entityClassNameByDomain));
+    }
+
+    private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, string targetEntityDomain, ILookup<string, string> entityClassNameByDomain)
+    {
         var entityTypeName = entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
         if (entityTypeName == null) yield break;
         
@@ -74,41 +79,38 @@ internal static class ExtensionMethodsGenerator
         }
     }
 
-    private static GlobalStatementSyntax ExtensionMethodWithoutArguments(HassService service, string serviceName, string entityTypeName)
+    private static MemberDeclarationSyntax ExtensionMethodWithoutArguments(HassService service, string serviceName, string entityTypeName)
     {
-        return ParseMethod(
-                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} target)
-                {{
-                    target.CallService(""{serviceName}"");
-                }}")
-            .ToPublic()
-            .ToStatic()
+        return ParseMemberDeclaration($$"""
+                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target)
+                    {
+                        target.CallService("{{serviceName}}");
+                    }
+                    """)!
             .WithSummaryComment(service.Description);
     }
     
-    private static GlobalStatementSyntax ExtensionMethodWithClassArgument(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    private static MemberDeclarationSyntax ExtensionMethodWithClassArgument(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
-        return ParseMethod(
-                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} target, {serviceArguments.TypeName} data)
-                {{
-                    target.CallService(""{serviceName}"", data);
-                }}")
-            .ToPublic()
-            .ToStatic()
+        return ParseMemberDeclaration($$"""
+                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.TypeName}} data)
+                    {
+                        target.CallService("{{serviceName}}", data);
+                    }
+                    """)!
             .WithSummaryComment(service.Description);
     }
     
     private static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
-        return ParseMethod(
-                $@"void {GetServiceMethodName(serviceName)}(this {entityTypeName} target, {serviceArguments.GetParametersList()})
-                {{
-                    target.CallService(""{serviceName}"", {serviceArguments.GetNewServiceArgumentsTypeExpression()});
-                }}")
-            .ToPublic()
-            .ToStatic()
+        return ParseMemberDeclaration($$"""
+                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
+                    {
+                        target.CallService("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                    }
+                    """)!
             .WithSummaryComment(service.Description)
-            .WithParameterComment("target", $"The {entityTypeName} to call this service for")
-            .WithParameterComments(serviceArguments);
+            .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
+            .AppendParameterComments(serviceArguments);
     }
 }

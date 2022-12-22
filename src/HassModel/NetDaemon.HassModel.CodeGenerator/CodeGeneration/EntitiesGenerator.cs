@@ -34,29 +34,24 @@ internal static class EntitiesGenerator
             var typeName = GetEntitiesForDomainClassName(domain);
             var propertyName = domain.ToPascalCase();
 
-            return (MemberDeclarationSyntax)Property(typeName, propertyName, init: false);
-        }).ToArray();
+            return (MemberDeclarationSyntax)AutoPropertyGet(typeName, propertyName);
+        });
 
-        return Interface("IEntities").AddMembers(autoProperties).ToPublic();
+        return InterfaceDeclaration("IEntities").WithMembers(List(autoProperties)).ToPublic();
     }
 
     // The Entities class that provides properties to all Domains
-    private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<EntityDomainMetadata> entitySet)
+    private static TypeDeclarationSyntax GenerateRootEntitiesClass(IEnumerable<EntityDomainMetadata> domains)
     {
-        var haContextNames = GetNames<IHaContext>();
-
-        var properties = entitySet.DistinctBy(s=>s.Domain).Select(set =>
+        var properties = domains.DistinctBy(s => s.Domain).Select(set =>
         {
             var entitiesTypeName = GetEntitiesForDomainClassName(set.Domain);
             var entitiesPropertyName = set.Domain.ToPascalCase();
 
-            return (MemberDeclarationSyntax)ParseProperty($"{entitiesTypeName} {entitiesPropertyName} => new(_{haContextNames.VariableName});")
-                .ToPublic();
+            return PropertyWithExpressionBodyNew(entitiesTypeName, entitiesPropertyName, "_haContext");
         }).ToArray();
 
-        return ClassWithInjected<IHaContext>(EntitiesClassName)
-            .ToPublic()
-            .AddModifiers(Token(SyntaxKind.PartialKeyword))
+        return ClassWithInjectedHaContext(EntitiesClassName)
             .WithBase((string)"IEntities")
             .AddMembers(properties);
     }
@@ -66,9 +61,7 @@ internal static class EntitiesGenerator
     /// </summary>
     private static TypeDeclarationSyntax GenerateEntiesForDomainClass(string className, IEnumerable<EntityDomainMetadata> entitySets)
     {
-        var entityClass = ClassWithInjected<IHaContext>(className)
-            .ToPublic()
-            .AddModifiers(Token(SyntaxKind.PartialKeyword));
+        var entityClass = ClassWithInjectedHaContext(className);
 
         var entityProperty = entitySets.SelectMany(s=>s.Entities.Select(e => GenerateEntityProperty(e, s.EntityClassName))).ToArray();
 
@@ -79,16 +72,16 @@ internal static class EntitiesGenerator
     {
         var entityName = EntityIdHelper.GetEntity(entity.id);
 
-        var propertyCode = $@"{className} {entityName.ToNormalizedPascalCase((string)"E_")} => new(_{GetNames<IHaContext>().VariableName}, ""{entity.id}"");";
+        var normalizedPascalCase = entityName.ToNormalizedPascalCase((string)"E_");
 
         var name = entity.friendlyName;
-        return ParseProperty(propertyCode).ToPublic().WithSummaryComment(name);
+        return PropertyWithExpressionBodyNew(className, normalizedPascalCase, "_haContext", $"\"{entity.id}\"").WithSummaryComment(name);
     }
 
     /// <summary>
     /// Generates a record derived from Entity like ClimateEntity or SensorEntity for a specific set of entities
     /// </summary>
-    private static TypeDeclarationSyntax GenerateEntityType(EntityDomainMetadata domainMetaData)
+    private static MemberDeclarationSyntax GenerateEntityType(EntityDomainMetadata domainMetaData)
     {
         string attributesGeneric = domainMetaData.AttributesClassName;
 
@@ -98,16 +91,18 @@ internal static class EntitiesGenerator
         var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData.EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
 
         var (className, variableName) = GetNames<IHaContext>();
-        var classDeclaration = $@"record {domainMetaData.EntityClassName} : {baseClass}
-                                    {{
-                                            public {domainMetaData.EntityClassName}({className} {variableName}, string entityId) : base({variableName}, entityId)
-                                            {{}}
+        var classDeclaration = $$"""
+            record {{domainMetaData.EntityClassName}} : {{baseClass}}
+            {
+                    public {{domainMetaData.EntityClassName}}({{className}} {{variableName}}, string entityId) : base({{variableName}}, entityId)
+                    {}
 
-                                            public {domainMetaData.EntityClassName}({SimplifyTypeName(typeof(Entity))} entity) : base(entity)
-                                            {{}}
-                                    }}";
+                    public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(Entity))}} entity) : base(entity)
+                    {}
+            }
+            """;
 
-        return ParseRecord(classDeclaration)
+        return ParseMemberDeclaration(classDeclaration)!
             .ToPublic()
             .AddModifiers(Token(SyntaxKind.PartialKeyword));
     }

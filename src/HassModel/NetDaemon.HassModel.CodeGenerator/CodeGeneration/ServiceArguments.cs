@@ -2,23 +2,21 @@
 
 internal record ServiceArgument
 {
-    public Type? Type { get; init; }
-
+    public required string HaName { get; init; }
+    public required Type ClrType { get; init; }
     public bool Required { get; init; }
 
-    public string? HaName { get; init; }
-
-    public string? TypeName => Type?.GetFriendlyName();
-
-    public string? ParameterTypeName => Required ? TypeName : $"{TypeName}?";
-
-    public string? PropertyName => HaName?.ToNormalizedPascalCase();
-
-    public string? VariableName => HaName?.ToNormalizedCamelCase();
-
-    public string? ParameterVariableName => Required ? VariableName : $"{VariableName} = null";
-
     public string? Comment { get; init; }
+
+    public string TypeName => ClrType.GetFriendlyName();
+
+    public string ParameterTypeName => Required ? TypeName : $"{TypeName}?";
+
+    public string PropertyName => HaName.ToNormalizedPascalCase();
+
+    public string VariableName => HaName.ToNormalizedCamelCase();
+
+    public string ParameterVariableName => Required ? VariableName : $"{VariableName} = null";
 }
 
 internal class ServiceArguments
@@ -33,19 +31,19 @@ internal class ServiceArguments
             return null;
         }
 
-        return new ServiceArguments(domain, service.Service!, service.Fields);
+        return new ServiceArguments(domain, service.Service, service.Fields);
     }
-        
-    public ServiceArguments(string domain, string serviceName, IReadOnlyCollection<HassServiceField> serviceFields)
+
+    private ServiceArguments(string domain, string serviceName, IReadOnlyCollection<HassServiceField> serviceFields)
     {
         _domain = domain;
         _serviceName = serviceName!;
-        Arguments = serviceFields.Select(HassServiceArgumentMapper.Map);
+        Arguments = serviceFields.Select(HassServiceArgumentMapper.Map).ToArray();
     }
 
     public IEnumerable<ServiceArgument> Arguments { get; }
 
-    public string TypeName => NamingHelper.GetServiceArgumentsTypeName(_domain, _serviceName);
+    public string TypeName => $"{_domain.ToNormalizedPascalCase()}{GetServiceMethodName(_serviceName)}Parameters";
 
     public string GetParametersList()
     {

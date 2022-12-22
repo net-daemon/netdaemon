@@ -36,9 +36,9 @@ internal class Controller
         await Save(mergedEntityMetaData, EntityMetaDataFileName).ConfigureAwait(false);
         await Save(servicesMetaData, ServicesMetaDataFileName).ConfigureAwait(false);
 
-        var generatedTypes = Generator.GenerateTypes(mergedEntityMetaData.Domains, servicesMetaData!.Value.ToServicesResult() );
+        var generatedTypes = Generator.GenerateTypes(mergedEntityMetaData.Domains, ServiceMetaDataParser.Parse(servicesMetaData!.Value));
 
-        SaveGeneratedCode(generatedTypes.ToList());
+        SaveGeneratedCode(generatedTypes);
     }
 
     private async Task<EntitiesMetaData> LoadEntitiesMetaDataAsync()
@@ -70,7 +70,7 @@ internal class Controller
             Converters = { new ClrTypeJsonConverter() }
         };
     
-    private void SaveGeneratedCode(IReadOnlyCollection<MemberDeclarationSyntax> generatedTypes)
+    private void SaveGeneratedCode(MemberDeclarationSyntax[] generatedTypes)
     {
         if (!_generationSettings.GenerateOneFilePerEntity)
         {
@@ -97,7 +97,7 @@ internal class Controller
                 unit.WriteTo(writer);
             }
 
-            Console.WriteLine($"Generated {generatedTypes.Count} files.");
+            Console.WriteLine($"Generated {generatedTypes.Length} files.");
             Console.WriteLine(OutputFolder);
         }
     }

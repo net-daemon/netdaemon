@@ -35,15 +35,9 @@ internal static class ServicesGenerator
 
     private static TypeDeclarationSyntax GenerateRootServicesType(IEnumerable<string> domains)
     {
-        var haContextNames = GetNames<IHaContext>();
-        var properties = domains.Select(domain =>
-        {
-            var propertyCode = $"{GetServicesTypeName(domain)} {domain.ToPascalCase()} => new(_{haContextNames.VariableName});";
+        var properties = domains.Select(domain => PropertyWithExpressionBodyNew(GetServicesTypeName(domain), domain.ToPascalCase(), "_haContext")).ToArray();
 
-            return ParseProperty(propertyCode).ToPublic();
-        }).ToArray();
-
-        return ClassWithInjected<IHaContext>(ServicesClassName).WithBase((string)"IServices").AddMembers(properties).ToPublic();
+        return ClassWithInjectedHaContext(ServicesClassName).WithBase((string)"IServices").AddMembers(properties);
     }
 
     private static TypeDeclarationSyntax GenerateRootServicesInterface(IEnumerable<string> domains)
@@ -53,15 +47,15 @@ internal static class ServicesGenerator
             var typeName = GetServicesTypeName(domain);
             var domainName = domain.ToPascalCase();
 
-            return Property(typeName, domainName, init: false);
-        }).ToArray();
+            return AutoPropertyGet(typeName, domainName);
+        }).ToArray<MemberDeclarationSyntax>();
 
-        return Interface("IServices").AddMembers(properties).ToPublic();
+        return InterfaceDeclaration("IServices").WithMembers(List(properties)).ToPublic();
     }
 
     private static TypeDeclarationSyntax GenerateServicesDomainType(string domain, IEnumerable<HassService> services)
     {
-        var serviceTypeDeclaration = ClassWithInjected<IHaContext>(GetServicesTypeName(domain)).ToPublic();
+        var serviceTypeDeclaration = ClassWithInjectedHaContext(GetServicesTypeName(domain));
 
         var serviceMethodDeclarations = services.SelectMany(service => GenerateServiceMethod(domain, service)).ToArray();
 
@@ -78,7 +72,8 @@ internal static class ServicesGenerator
         }
 
         var autoProperties = serviceArguments.Arguments
-            .Select(argument => Property($"{argument.TypeName!}?", argument.PropertyName!).ToPublic()
+            .Select(argument => AutoPropertyGetInit($"{argument.TypeName!}?", argument.PropertyName!)
+                .ToPublic()
                 .WithJsonPropertyName(argument.HaName!).WithSummaryComment(argument.Comment))
             .ToArray();
 
@@ -103,11 +98,12 @@ internal static class ServicesGenerator
         if (serviceArguments is null)
         {
             // method without arguments
-            yield return ParseMethod(
-                    $@"void {serviceMethodName}({targetParam})
-                    {{
-                        {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", {targetArg});
-                    }}")
+            yield return ParseMemberDeclaration($$"""
+                        void {{serviceMethodName}}({{targetParam}})
+                        {
+                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}});
+                        }
+                        """)!
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment);
@@ -115,25 +111,27 @@ internal static class ServicesGenerator
         else
         {
             // method using arguments object 
-            yield return ParseMethod(
-                    $@"void {serviceMethodName}({JoinList(targetParam, serviceArguments.TypeName)} data)
-                    {{
-                        {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", {targetArg}, data);
-                    }}")
+            yield return ParseMemberDeclaration($$"""
+                        void {{serviceMethodName}}({{JoinList(targetParam, serviceArguments.TypeName)}} data)
+                        {
+                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, data);
+                        }
+                        """)!
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment);
 
             // method using arguments as separate parameters 
-            yield return ParseMethod(
-                    $@"void {serviceMethodName}({JoinList(targetParam, serviceArguments.GetParametersList())})
-                    {{
-                        {haContextVariableName}.CallService(""{domain}"", ""{serviceName}"", {targetArg}, {serviceArguments.GetNewServiceArgumentsTypeExpression()});
-                    }}")
+            yield return ParseMemberDeclaration($$"""
+                        void {{serviceMethodName}}({{JoinList(targetParam, serviceArguments.GetParametersList())}})
+                        {
+                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                        }
+                        """)!
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment)
-                .WithParameterComments(serviceArguments);
+                .AppendParameterComments(serviceArguments);
         }
     }
 

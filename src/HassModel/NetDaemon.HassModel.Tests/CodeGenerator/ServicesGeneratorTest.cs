@@ -1,4 +1,3 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
@@ -22,7 +21,7 @@ public class ServicesGeneratorTest
                 Services = new HassService[] {
                     new() {
                         Service = "turn_off",
-                        Target = new TargetSelector { Entity = new() { Domain = "light" } }
+                        Target = new TargetSelector { Entity = new() { Domain = new [] {"light"} } }
                     },
                     new() {
                         Service = "turn_on",
@@ -30,7 +29,7 @@ public class ServicesGeneratorTest
                             new() { Field = "transition", Selector = new NumberSelector(), },
                             new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2f }, }
                         },
-                        Target = new TargetSelector { Entity = new() { Domain = "light" } }
+                        Target = new TargetSelector { Entity = new() { Domain = new [] {"light" } } }
                     }
                 }
             }
@@ -84,11 +83,11 @@ public class ServicesGeneratorTest
                 Services = new HassService[] {
                     new() {
                         Service = "dig",  
-                        Target = new TargetSelector { Entity = new() { Domain = "rover" } },
+                        Target = new TargetSelector { Entity = new() { Domain = new [] {"humidifiers"} } },
                     },
                     new() {
                         Service = "orbit",
-                        Target = new TargetSelector { Entity = new() { Domain = "orbiter" } },
+                        Target = new TargetSelector { Entity = new() { Domain = new [] {"orbiter" }} },
                     }
                 },
             }
@@ -135,7 +134,7 @@ public class ServicesGeneratorTest
                 Services = new HassService[] {
                     new() {
                         Service = "push_button",  
-                        Target = new TargetSelector { Entity = new() { Domain = "uselessbox" } },
+                        Target = new TargetSelector { Entity = new() { Domain = new [] {"uselessbox" }} },
                     },
                 },
             }            
