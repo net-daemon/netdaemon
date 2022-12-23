@@ -1,7 +1,7 @@
 namespace NetDaemon.HassModel.Entities;
 
 /// <inheritdoc/>
-public class EntityStateGeneric : IEntityState
+public sealed record EntityStateGeneric : IEntityState
 {
     /// <inheritdoc/>
     public required string EntityId { get; init; }
@@ -23,7 +23,7 @@ public class EntityStateGeneric : IEntityState
 }
 
 /// <inheritdoc/>
-public class EntityStateGeneric<TState, TAttributes> : IEntityState<TState, TAttributes>
+public sealed record EntityStateGeneric<TState, TAttributes> : IEntityState<TState, TAttributes>
     where TAttributes : class
 {
     private readonly IEntityState _entityState;

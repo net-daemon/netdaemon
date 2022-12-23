@@ -1,13 +1,18 @@
 namespace NetDaemon.HassModel.Entities;
 
 /// <inheritdoc/>
-public class EntityStateMapper<TState, TAttributes> : IEntityStateMapper<TState, TAttributes>
+public sealed class EntityStateMapper<TState, TAttributes> : IEntityStateMapper<TState, TAttributes>
     where TAttributes : class
 {
     private readonly Func<string?, TState> _stateParser;
     private readonly Func<JsonElement?, TAttributes?> _attributesParser;
 
-    internal EntityStateMapper(Func<string?, TState> stateParser, Func<JsonElement?, TAttributes?> attributesParser)
+    /// <summary>
+    /// Create an EnitityStateMapper by providing parsinge functions for the state and attributes properties
+    /// </summary>
+    /// <param name="stateParser"></param>
+    /// <param name="attributesParser"></param>
+    public EntityStateMapper(Func<string?, TState> stateParser, Func<JsonElement?, TAttributes?> attributesParser)
     {
         _stateParser = stateParser;
         _attributesParser = attributesParser;
