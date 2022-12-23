@@ -10,7 +10,11 @@ public static class DefaultEntityStateMappers
     private static Dictionary<string, object> AttributesAsObjectDictionary(JsonElement? a) =>
         a?.Deserialize<Dictionary<string, object>>() ?? new Dictionary<string, object>();
 
-    private static TAttributes? AttributesAsClass<TAttributes>(JsonElement? a) where TAttributes : class =>
+    /// <summary>
+    /// Parses the attributes JSON into the class TAttributes
+    /// </summary>
+    /// <typeparam name="TAttributes"></typeparam>
+    public static TAttributes? AttributesAsClass<TAttributes>(JsonElement? a) where TAttributes : class =>
         a?.Deserialize<TAttributes>() ?? default;
 
     /// <summary>

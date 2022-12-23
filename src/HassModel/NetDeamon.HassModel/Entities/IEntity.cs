@@ -56,6 +56,12 @@ public interface IEntity<TState, TAttributes> : IEntity
     /// The current Attributes of this Entity
     /// </summary>
     TAttributes? Attributes { get; }
+
+    /// <summary>
+    /// The mapper from the raw state and attributes to the strong types
+    /// </summary>
+    /// <value></value>
+    IEntityStateMapper<TState, TAttributes> EntityStateMapper { get; }
     
     /// <summary>
     /// Observable, All state changes including attributes
@@ -66,4 +72,29 @@ public interface IEntity<TState, TAttributes> : IEntity
     /// Observable, All state changes. New.State!=Old.State
     /// </summary>
     IObservable<IStateChange<TState, TAttributes>> StateChanges();
+
+    /// <summary>
+    /// Get a new IEntity with new state type mapping
+    /// </summary>
+    /// <param name="newStateParser"></param>
+    /// <typeparam name="TStateNew"></typeparam>
+    /// <returns></returns>
+    IEntity<TStateNew, TAttributes> WithStateAs<TStateNew>(Func<string?, TStateNew> newStateParser);
+
+    /// <summary>
+    /// Get a new IEntity with a new attributes class mapping
+    /// </summary>
+    /// <param name="newAttributesParser"></param>
+    /// <typeparam name="TAttributesNew"></typeparam>
+    /// <returns></returns>
+    IEntity<TState, TAttributesNew> WithAttributesAs<TAttributesNew>(Func<JsonElement?, TAttributesNew> newAttributesParser)
+        where TAttributesNew : class;
+
+    /// <summary>
+    /// Get a new IEntity with a new attributes class mapping using the default parser
+    /// </summary>
+    /// <typeparam name="TAttributesNew"></typeparam>
+    /// <returns></returns>
+    IEntity<TState, TAttributesNew> WithAttributesAs<TAttributesNew>()
+        where TAttributesNew : class;
 }

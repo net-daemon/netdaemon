@@ -28,5 +28,6 @@
         "noquotes",
         "parentidguid",
         "useridguid"
-    ]
+    ],
+    "dotnet-test-explorer.testProjectPath": "**/*Tests.@(csproj|vbproj|fsproj)"
 }

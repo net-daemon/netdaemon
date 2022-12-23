@@ -1,7 +1,7 @@
 namespace NetDaemon.HassModel.Entities;
 
 /// <summary>
-/// Detailec state information
+/// Detailed state information
 /// </summary>
 public interface IEntityState
 {

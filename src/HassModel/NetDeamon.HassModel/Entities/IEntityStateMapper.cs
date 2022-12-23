@@ -42,4 +42,31 @@ public interface IEntityStateMapper<TState, TAttributes>
     /// <param name="stateChange"></param>
     /// <returns></returns>
     IStateChange<TState, TAttributes> Map(IStateChange stateChange);
+
+    /// <summary>
+    /// Create a new IEntityStateMapper that has a new state type and parser
+    /// with the same attributes clsss
+    /// </summary>
+    /// <param name="newStateParser"></param>
+    /// <typeparam name="TStateNew"></typeparam>
+    /// <returns></returns>
+    IEntityStateMapper<TStateNew, TAttributes> WithStateAs<TStateNew>(Func<string?, TStateNew> newStateParser);
+
+    /// <summary>
+    /// Create a new IEntityStateMapper that has the same state type and parser
+    /// with a new attributes class
+    /// </summary>
+    /// <typeparam name="TAttributesNew"></typeparam>
+    /// <returns></returns>
+    IEntityStateMapper<TState, TAttributesNew> WithAttributesAs<TAttributesNew>(Func<JsonElement?, TAttributesNew?> customAttributesParser)
+        where TAttributesNew : class;
+
+    /// <summary>
+    /// Create a new IEntityStateMapper that has the same state type and parser
+    /// with a new attributes class using the default attributes parser
+    /// </summary>
+    /// <typeparam name="TAttributesNew"></typeparam>
+    /// <returns></returns>
+    IEntityStateMapper<TState, TAttributesNew> WithAttributesAs<TAttributesNew>()
+        where TAttributesNew : class;
 }

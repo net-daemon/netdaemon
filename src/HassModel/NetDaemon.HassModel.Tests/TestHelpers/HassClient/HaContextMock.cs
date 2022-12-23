@@ -8,9 +8,11 @@ internal class HaContextMock : Mock<IHaContext>
     public HaContextMock()
     {
         Setup(m => m.StateAllChanges()).Returns(StateAllChangeSubject);
+        Setup(m => m.StateAllChangesGeneric()).Returns(StateAllChangeGenericSubject);
         Setup(m => m.Events).Returns(EventsSubject);
     }
 
     public Subject<StateChange> StateAllChangeSubject { get; } = new();
+    public Subject<IStateChange> StateAllChangeGenericSubject { get; } = new();
     public Subject<Event> EventsSubject { get; } = new();
 }

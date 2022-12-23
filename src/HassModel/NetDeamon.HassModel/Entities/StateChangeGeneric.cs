@@ -1,17 +1,12 @@
 namespace NetDaemon.HassModel.Entities;
 
 /// <inheritdoc/>
-public sealed record StateChangeGeneric : IStateChange
-{
-    /// <inheritdoc/>
-    public required IEntity Entity { get; init; }
-
-    /// <inheritdoc/>
-    public IEntityState? RawOld { get; init; }
-
-    /// <inheritdoc/>
-    public IEntityState? RawNew { get; init; }
-}
+public sealed record StateChangeGeneric
+(
+    IEntity Entity,
+    IEntityState? RawOld,
+    IEntityState? RawNew
+) : IStateChange;
 
 /// <inheritdoc/>
 public sealed record StateChangeGeneric<TState, TAttributes> : IStateChange<TState, TAttributes>
