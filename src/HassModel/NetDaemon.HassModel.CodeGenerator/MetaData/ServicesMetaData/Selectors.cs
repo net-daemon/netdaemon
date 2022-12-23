@@ -3,26 +3,20 @@ using System.Text.Json.Serialization;
 
 namespace NetDaemon.HassModel.CodeGenerator.Model;
 
-internal record ActionSelector
+internal record Selector()
 {
+    public string? Type { get; init; }
 }
 
-internal record AddonSelector
-{
-}
 
-internal record AreaSelector
+internal record AreaSelector : Selector
 {
     public DeviceSelector? Device { get; init; }
 
     public EntitySelector? Entity { get; init; }
 }
 
-internal record BooleanSelector
-{
-}
-
-internal record DeviceSelector
+internal record DeviceSelector : Selector
 {
     public string? Integration { get; init; }
 
@@ -33,16 +27,15 @@ internal record DeviceSelector
     public EntitySelector? Entity { get; init; }
 }
 
-internal record EntitySelector
+internal record EntitySelector : Selector
 {
     public string? Integration { get; init; }
 
-    public string? Domain { get; init; }
-
-    public string? DeviceClass { get; init; }
+    [JsonConverter(typeof(StringAsArrayConverter))]
+    public string[] Domain { get; init; } = Array.Empty<string>();
 }
 
-internal record NumberSelector
+internal record NumberSelector : Selector
 {
     [Required]
     public double Min { get; init; }
@@ -53,22 +46,9 @@ internal record NumberSelector
     public float? Step { get; init; }
 
     public string? UnitOfMeasurement { get; init; }
-
-    [JsonConverter(typeof(NullableEnumStringConverter<NumberSelectorMode?>))]
-    public NumberSelectorMode? Mode { get; init; }
 }
 
-internal enum NumberSelectorMode
-{
-    Box,
-    Slider
-}
-
-internal record ObjectSelector
-{
-}
-
-internal record TargetSelector
+internal record TargetSelector : Selector 
 {
     public AreaSelector? Area { get; init; }
 
@@ -77,11 +57,3 @@ internal record TargetSelector
     public EntitySelector? Entity { get; init; }
 }
 
-internal record TextSelector
-{
-    public bool? Multiline { get; init; }
-}
-
-internal record TimeSelector
-{
-}

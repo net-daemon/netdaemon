@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
@@ -31,7 +32,8 @@ internal class CodeGenTestHelper
             SyntaxFactory.ParseSyntaxTree(generated, path: "generated.cs"),
             SyntaxFactory.ParseSyntaxTree(appCode, path: "appcode.cs")
         };
-            
+        var _ = typeof(IServiceCollection); // make sure this type is not removed
+
         var compilation = CSharpCompilation.Create("tempAssembly",
             syntaxtrees,
             AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)).ToArray(),
@@ -53,8 +55,12 @@ internal class CodeGenTestHelper
 
         msg.AppendLine();
         msg.AppendLine("generated.cs");
+        
         // output the generated code including line numbers to help debugging 
-        msg.AppendLine(string.Join(Environment.NewLine, generated.Split('\n').Select((l, i) => $"{i+1,4}: {l}")));
+        var linesWithNumbers = generated.Split(new [] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
+                .Select((l, i) => $"{i+1,5}: {l}");
+        
+        msg.AppendJoin(Environment.NewLine, linesWithNumbers);
             
         Assert.Fail(msg.ToString());
     }

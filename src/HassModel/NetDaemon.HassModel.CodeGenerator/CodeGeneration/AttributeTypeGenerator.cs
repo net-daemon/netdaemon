@@ -24,7 +24,7 @@ internal static class AttributeTypeGenerator
     public static RecordDeclarationSyntax GenerateAttributeRecord(EntityDomainMetadata domain)
     {
         var propertyDeclarations = domain.Attributes
-            .Select(a => Property($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
+            .Select(a => AutoPropertyGetInit($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
                 .ToPublic()
                 .WithJsonPropertyName(a.JsonName));
 

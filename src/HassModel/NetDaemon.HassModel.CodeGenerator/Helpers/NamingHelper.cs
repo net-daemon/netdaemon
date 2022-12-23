@@ -43,11 +43,6 @@ internal static class NamingHelper
         return $"{serviceName}";
     }
 
-    public static string GetServiceArgumentsTypeName(string domain, string serviceName)
-    {
-        return $"{domain.ToNormalizedPascalCase()}{GetServiceMethodName(serviceName)}Parameters";
-    }
-
     public static (string TypeName, string VariableName) GetNames<T>(string variablePrefix = "")
     {
         return GetNames(typeof(T), variablePrefix);
