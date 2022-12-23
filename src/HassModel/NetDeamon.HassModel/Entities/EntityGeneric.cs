@@ -1,27 +1,35 @@
 namespace NetDaemon.HassModel.Entities;
 
-public record EntityGeneric : IEntity
+/// <inheritdoc/>
+public sealed record EntityGeneric : IEntity
 {
+    /// <inheritdoc/>
     public IHaContext HaContext { get; }
 
+    /// <inheritdoc/>
     public string EntityId { get; }
 
-    public EntityGeneric(IHaContext haContext, string entityId)
+    internal EntityGeneric(IHaContext haContext, string entityId)
     {
         HaContext = haContext;
         EntityId = entityId;
     }
 
+    /// <inheritdoc/>
     public IEntityState? RawEntityState => HaContext.GetStateGeneric(EntityId);
 
+    /// <inheritdoc/>
     public string? RawState => RawEntityState?.RawState;
 
+    /// <inheritdoc/>
     public IObservable<IStateChange> RawStateAllChanges() =>
         HaContext.StateAllChangesGeneric().Where(e => e.Entity.EntityId == EntityId);
 
+    /// <inheritdoc/>
     public IObservable<IStateChange> RawStateChanges() =>
         RawStateAllChanges().StateChangesOnlyGeneric();
 
+    /// <inheritdoc/>
     public void CallService(string service, object? data = null)
     {
         ArgumentNullException.ThrowIfNull(service, nameof(service));
@@ -34,49 +42,57 @@ public record EntityGeneric : IEntity
     }
 }
 
-public record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttributes>
+/// <inheritdoc/>
+public sealed record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttributes>
     where TAttributes : class
 {
     private readonly IEntity _entity;
     private readonly IEntityStateMapper<TState, TAttributes> _mapper;
 
-    public EntityGeneric(IEntity entity, Func<string?, TState> stateParser, Func<JsonElement?, TAttributes> attributesParser)
-    {
-        _entity = entity;
-        _mapper = new EntityStateMapper<TState, TAttributes>(stateParser, attributesParser);
-    }
-
-    public EntityGeneric(IEntity entity, IEntityStateMapper<TState, TAttributes> mapper)
+    internal EntityGeneric(IEntity entity, IEntityStateMapper<TState, TAttributes> mapper)
     {
         _entity = entity;
         _mapper = mapper;
     }
 
+    /// <inheritdoc/>
     public IHaContext HaContext => _entity.HaContext;
 
+    /// <inheritdoc/>
     public string EntityId => _entity.EntityId;
 
+    /// <inheritdoc/>
     public IEntityState? RawEntityState => _entity.RawEntityState;
 
+    /// <inheritdoc/>
     public IEntityState<TState, TAttributes>? EntityState =>
         _entity.RawEntityState is null
             ? null
             : _mapper.Map(_entity.RawEntityState);
+
+    /// <inheritdoc/>
     public TState State => EntityState is null ? _mapper.ParseState(null) : EntityState.State;
 
+    /// <inheritdoc/>
     public string? RawState => _entity.RawState;
 
-    public TAttributes Attributes => EntityState is null ? _mapper.ParseAttributes(null) : EntityState.Attributes;
+    /// <inheritdoc/>
+    public TAttributes? Attributes => EntityState is null ? _mapper.ParseAttributes(null) : EntityState.Attributes;
 
+    /// <inheritdoc/>
     public void CallService(string service, object? data = null) => _entity.CallService(service, data);
 
+    /// <inheritdoc/>
     public IObservable<IStateChange> RawStateAllChanges() => _entity.RawStateAllChanges();
 
+    /// <inheritdoc/>
     public IObservable<IStateChange> RawStateChanges() => _entity.RawStateChanges();
 
+    /// <inheritdoc/>
     public IObservable<IStateChange<TState, TAttributes>> StateAllChanges() =>
         _entity.RawStateAllChanges().Select(_mapper.Map);
 
+    /// <inheritdoc/>
     public IObservable<IStateChange<TState, TAttributes>> StateChanges() =>
         StateAllChanges().StateChangesOnlyGeneric();
 }

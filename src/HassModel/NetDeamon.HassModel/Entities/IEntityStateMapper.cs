@@ -20,7 +20,7 @@ public interface IEntityStateMapper<TState, TAttributes>
     /// </summary>
     /// <param name="rawAttributes"></param>
     /// <returns></returns>
-    TAttributes ParseAttributes(JsonElement? rawAttributes);
+    TAttributes? ParseAttributes(JsonElement? rawAttributes);
 
     /// <summary>
     /// Map a raw entity state object into a strongly typed one

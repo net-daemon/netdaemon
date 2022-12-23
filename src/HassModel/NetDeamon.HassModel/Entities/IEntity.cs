@@ -13,6 +13,10 @@ public interface IEntity
     /// </summary>
     string EntityId { get; }
 
+    /// <summary>
+    /// The full state of the entity in its raw form
+    /// </summary>
+    /// <value></value>
     IEntityState? RawEntityState { get; }
 
     /// <summary>The current state of this Entity as a raw string</summary>
@@ -51,7 +55,7 @@ public interface IEntity<TState, TAttributes> : IEntity
     /// <summary>
     /// The current Attributes of this Entity
     /// </summary>
-    TAttributes Attributes { get; }
+    TAttributes? Attributes { get; }
     
     /// <summary>
     /// Observable, All state changes including attributes

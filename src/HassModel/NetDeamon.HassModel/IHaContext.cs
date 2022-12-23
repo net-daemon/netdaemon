@@ -15,6 +15,10 @@ public interface IHaContext
     /// </summary>
     IObservable<StateChange> StateAllChanges();
 
+    /// <summary>
+    /// The observable state stream, all changes including attributes
+    /// </summary>
+    /// <returns></returns>
     IObservable<IStateChange> StateAllChangesGeneric();
 
     /// <summary>
@@ -23,6 +27,11 @@ public interface IHaContext
     /// <param name="entityId"></param>
     EntityState? GetState(string entityId);
 
+    /// <summary>
+    /// Get state for a single entity
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <returns></returns>
     IEntityState? GetStateGeneric(string entityId);
 
     /// <summary>
@@ -30,6 +39,10 @@ public interface IHaContext
     /// </summary>
     IReadOnlyList<Entity> GetAllEntities();
 
+    /// <summary>
+    /// Gets all the entities in HomeAssistant
+    /// </summary>
+    /// <returns></returns>
     IReadOnlyList<IEntity> GetAllEntitiesGeneric();
 
     /// <summary>
