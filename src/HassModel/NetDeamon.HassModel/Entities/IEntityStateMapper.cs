@@ -30,18 +30,26 @@ public interface IEntityStateMapper<TState, TAttributes>
     IEntityState<TState, TAttributes> Map(IEntityState state);
 
     /// <summary>
-    /// Map a raw entity into a strongly typed one
+    /// Map a raw state change object into a strongly typed one
+    /// </summary>
+    /// <param name="stateChange"></param>
+    /// <returns></returns>
+    IStateChange<TState, TAttributes> Map(IStateChange stateChange);
+
+    /// <summary>
+    /// Map a raw state change object into a strongly typed one
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
     IEntity<TState, TAttributes> Map(IEntity entity);
 
     /// <summary>
-    /// Map a raw state change object into a strongly typed one
+    /// Create a new Entity instance
     /// </summary>
-    /// <param name="stateChange"></param>
+    /// <param name="haContext"></param>
+    /// <param name="entityId"></param>
     /// <returns></returns>
-    IStateChange<TState, TAttributes> Map(IStateChange stateChange);
+    IEntity<TState, TAttributes> Entity(IHaContext haContext, string entityId);
 
     /// <summary>
     /// Create a new IEntityStateMapper that has a new state type and parser

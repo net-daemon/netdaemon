@@ -28,10 +28,13 @@ public sealed class EntityStateMapper<TState, TAttributes> : IEntityStateMapper<
     public IEntityState<TState, TAttributes> Map(IEntityState state) => new EntityStateGeneric<TState, TAttributes>(state, this);
 
     /// <inheritdoc/>
-    public IEntity<TState, TAttributes> Map(IEntity entity) => new EntityGeneric<TState, TAttributes>(entity, this);
+    public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
 
     /// <inheritdoc/>
-    public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
+    public IEntity<TState, TAttributes> Map(IEntity entity) => new EntityGeneric<TState, TAttributes>(entity.HaContext, entity.EntityId, this);
+
+    /// <inheritdoc/>
+    public IEntity<TState, TAttributes> Entity(IHaContext haContext, string entityId) => new EntityGeneric<TState, TAttributes>(haContext, entityId, this);
 
     /// <inheritdoc/>
     public IEntityStateMapper<TStateNew, TAttributes> WithStateAs<TStateNew>(Func<string?, TStateNew> newStateParser)
@@ -77,10 +80,13 @@ public sealed class CachedEntityStateMapper<TState, TAttributes> : IEntityStateM
     public IEntityState<TState, TAttributes> Map(IEntityState state) => new CachedEntityStateGeneric<TState, TAttributes>(state, this);
 
     /// <inheritdoc/>
-    public IEntity<TState, TAttributes> Map(IEntity entity) => new EntityGeneric<TState, TAttributes>(entity, this);
+    public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
 
     /// <inheritdoc/>
-    public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
+    public IEntity<TState, TAttributes> Map(IEntity entity) => new EntityGeneric<TState, TAttributes>(entity.HaContext, entity.EntityId, this);
+
+    /// <inheritdoc/>
+    public IEntity<TState, TAttributes> Entity(IHaContext haContext, string entityId) => new EntityGeneric<TState, TAttributes>(haContext, entityId, this);
 
     /// <inheritdoc/>
     public IEntityStateMapper<TStateNew, TAttributes> WithStateAs<TStateNew>(Func<string?, TStateNew> newStateParser)

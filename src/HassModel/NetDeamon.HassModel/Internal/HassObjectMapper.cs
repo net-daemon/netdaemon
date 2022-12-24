@@ -13,7 +13,7 @@ internal static class HassObjectMapper
     {
         return new StateChangeGeneric
         (
-            new EntityGeneric(haContext, source.EntityId),
+            DefaultEntityStateMappers.Base.Entity(haContext, source.EntityId),
             MapGeneric(source.OldState),
             MapGeneric(source.NewState)
         );

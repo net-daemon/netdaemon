@@ -13,6 +13,6 @@ public sealed class EntityGenericFactory : IEntityFactory
 
     /// <inheritdoc/>
     public IEntity<TState, TAttributes> CreateIEntity<TState, TAttributes>(string entityId, IEntityStateMapper<TState, TAttributes> mapper)
-        where TAttributes : class =>
-        new EntityGeneric<TState, TAttributes>(new EntityGeneric(_haContext, entityId), mapper);
+        where TAttributes : class
+        => mapper.Entity(_haContext, entityId);
 }

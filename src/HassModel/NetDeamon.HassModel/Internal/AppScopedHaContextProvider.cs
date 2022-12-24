@@ -65,7 +65,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public IReadOnlyList<IEntity> GetAllEntitiesGeneric()
     {
-        return _entityStateCache.AllEntityIds.Select(id => new EntityGeneric(this, id)).ToList();
+        return _entityStateCache.AllEntityIds.Select(id => DefaultEntityStateMappers.Base.Entity(this, id)).ToList();
     }
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)

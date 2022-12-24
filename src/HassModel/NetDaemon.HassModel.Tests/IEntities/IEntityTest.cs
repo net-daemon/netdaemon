@@ -126,6 +126,8 @@ public class IEntityTest
         var entity = entityFactory.CreateIEntity(entityId, DefaultEntityStateMappers.TypedAttributes<TestEntityAttributes>());
         entity.State.Should().Be("12.3");
 
+        entity.WithStateAs(s => s);
+
         // Act: AsNumeric
         var numericEntity = entity.AsNumeric();
 

@@ -17,6 +17,46 @@ public static class EntityGenericExtensions
     public static IEntity<TState, TAttributes> AsEntityStateType<TState, TAttributes>(this IEntity entity, IEntityStateMapper<TState, TAttributes> mapper)
         where TAttributes : class
         => mapper.Map(entity);
+
+    /// <summary>
+    /// Get a new IEntity with new state type mapping
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="newStateParser"></param>
+    /// <typeparam name="TStateNew"></typeparam>
+    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TAttributes"></typeparam>
+    /// <returns></returns>
+    public static IEntity<TStateNew, TAttributes> WithStateAsExt<TStateNew, TState, TAttributes>(this IEntity<TState, TAttributes> entity, Func<string?, TStateNew> newStateParser)
+        where TAttributes : class
+        => entity.EntityStateMapper.WithStateAs(newStateParser).Map(entity);
+
+    /// <summary>
+    /// Get a new IEntity with a new attributes class mapping
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="newAttributesParser"></param>
+    /// <typeparam name="TAttributesNew"></typeparam>
+    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TAttributes"></typeparam>
+    /// <returns></returns>
+    public static IEntity<TState, TAttributesNew> WithAttributesAsExt<TAttributesNew, TState, TAttributes>(this IEntity<TState, TAttributes> entity, Func<JsonElement?, TAttributesNew> newAttributesParser)
+        where TAttributesNew : class
+        where TAttributes : class
+        => entity.EntityStateMapper.WithAttributesAs(newAttributesParser).Map(entity);
+
+    /// <summary>
+    /// Get a new IEntity with a new attributes class mapping using the default parser
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <typeparam name="TAttributesNew"></typeparam>
+    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TAttributes"></typeparam>
+    /// <returns></returns>
+    public static IEntity<TState, TAttributesNew> WithAttributesAsExt<TAttributesNew, TState, TAttributes>(this IEntity<TState, TAttributes> entity)
+        where TAttributesNew : class
+        where TAttributes : class
+        => entity.EntityStateMapper.WithAttributesAs<TAttributesNew>().Map(entity);
     
     /// <summary>
     /// Get a Numeric IEntity from a given IEntity
