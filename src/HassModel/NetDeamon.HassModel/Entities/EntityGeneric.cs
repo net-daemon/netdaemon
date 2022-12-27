@@ -13,12 +13,6 @@ public sealed record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttri
     /// <inheritdoc/>
     public IEntityStateMapper<TState, TAttributes> EntityStateMapper { get; }
 
-    /// <inheritdoc/>
-    public IEntityState? RawEntityState => HaContext.GetState(EntityId, EntityStateMapper.MapHassState);
-
-    /// <inheritdoc/>
-    public string? RawState => RawEntityState?.RawState;
-
     internal EntityGeneric(IHaContext haContext, string entityId, IEntityStateMapper<TState, TAttributes> mapper)
     {
         HaContext = haContext;
@@ -27,10 +21,7 @@ public sealed record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttri
     }
 
     /// <inheritdoc/>
-    public IEntityState<TState, TAttributes>? EntityState =>
-        RawEntityState is null
-            ? null
-            : EntityStateMapper.Map(RawEntityState);
+    public IEntityState<TState, TAttributes>? EntityState => EntityStateMapper.MapHassState(HaContext.GetHassState(EntityId));
 
     /// <inheritdoc/>
     public TState State => EntityState is null ? EntityStateMapper.ParseState(null) : EntityState.State;
@@ -40,25 +31,11 @@ public sealed record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttri
 
     /// <inheritdoc/>
     public IObservable<IStateChange<TState, TAttributes>> StateAllChanges() =>
-        HaContext.StateAllChangesGeneric(EntityStateMapper.MapHassStateChange).Where(e => e.Entity.EntityId == EntityId);
+        HaContext.HassStateAllChanges().Select(e => EntityStateMapper.MapHassStateChange(HaContext, e)).Where(e => e.Entity.EntityId == EntityId);
 
     /// <inheritdoc/>
     public IObservable<IStateChange<TState, TAttributes>> StateChanges() =>
-        StateAllChanges().StateChangesOnlyGeneric();
-
-    /// <inheritdoc/>
-    public IEntity<TStateNew, TAttributes> WithStateAs<TStateNew>(Func<string?, TStateNew> newStateParser)
-        => EntityStateMapper.WithStateAs(newStateParser).Map(this);
-
-    /// <inheritdoc/>
-    public IEntity<TState, TAttributesNew> WithAttributesAs<TAttributesNew>(Func<JsonElement?, TAttributesNew> newAttributesParser)
-        where TAttributesNew : class
-        => EntityStateMapper.WithAttributesAs(newAttributesParser).Map(this);
-
-    /// <inheritdoc/>
-    public IEntity<TState, TAttributesNew> WithAttributesAs<TAttributesNew>()
-        where TAttributesNew : class
-        => EntityStateMapper.WithAttributesAs<TAttributesNew>().Map(this);
+        StateAllChanges().Where(c => c.New?.RawState != c.Old?.RawState);
 
     /// <inheritdoc/>
     public void CallService(string service, object? data = null)

@@ -1,9 +1,12 @@
 namespace NetDaemon.HassModel.Entities;
 
 /// <summary>
-/// Detailed state information
+/// Generic EntityState with specific types of State and Attributes
 /// </summary>
-public interface IEntityState
+/// <typeparam name="TState">Type of the State property</typeparam>
+/// <typeparam name="TAttributes">Type of the Attributes property</typeparam>
+public interface IEntityState<TState, TAttributes>
+    where TAttributes : class
 {
     /// <summary>
     /// Unique id of the entity
@@ -40,16 +43,6 @@ public interface IEntityState
     /// </summary>
     /// <value></value>
     Context? Context { get; }
-}
-
-/// <summary>
-/// Generic EntityState with specific types of State and Attributes
-/// </summary>
-/// <typeparam name="TState">Type of the State property</typeparam>
-/// <typeparam name="TAttributes">Type of the Attributes property</typeparam>
-public interface IEntityState<TState, TAttributes> : IEntityState
-    where TAttributes : class
-{
     /// <summary>
     /// The state of the entity as the type TState
     /// </summary>

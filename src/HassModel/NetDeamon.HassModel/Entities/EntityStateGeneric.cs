@@ -38,18 +38,6 @@ public sealed record EntityStateGeneric<TState, TAttributes> : IEntityState<TSta
         _attributesLazy = new (() => mapper.ParseAttributes(AttributesJson));
     }
 
-    internal EntityStateGeneric(IEntityState entityState, IEntityStateMapper<TState, TAttributes> mapper)
-    {
-        EntityId = entityState.EntityId;
-        RawState = entityState.RawState;
-        AttributesJson = entityState.AttributesJson;
-        LastChanged = entityState.LastChanged;
-        LastUpdated = entityState.LastUpdated;
-        Context = entityState.Context;
-        _parseState = mapper.ParseState;
-        _attributesLazy = new (() => mapper.ParseAttributes(AttributesJson));
-    }
-
     /// <inheritdoc/>
     public TState State => _parseState(RawState);
 
@@ -90,18 +78,6 @@ public sealed record CachedEntityStateGeneric<TState, TAttributes> : IEntityStat
     internal CachedEntityStateGeneric(string entityId, IEntityStateMapper<TState, TAttributes> mapper)
     {
         EntityId = entityId;
-        _stateLazy = new (() => mapper.ParseState(RawState));
-        _attributesLazy = new (() => mapper.ParseAttributes(AttributesJson));
-    }
-
-    internal CachedEntityStateGeneric(IEntityState entityState, IEntityStateMapper<TState, TAttributes> mapper)
-    {
-        EntityId = entityState.EntityId;
-        RawState = entityState.RawState;
-        AttributesJson = entityState.AttributesJson;
-        LastChanged = entityState.LastChanged;
-        LastUpdated = entityState.LastUpdated;
-        Context = entityState.Context;
         _stateLazy = new (() => mapper.ParseState(RawState));
         _attributesLazy = new (() => mapper.ParseAttributes(AttributesJson));
     }

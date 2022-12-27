@@ -37,13 +37,6 @@ public interface IEntityStateMapper<TState, TAttributes>
     /// <returns></returns>
     IStateChange<TState, TAttributes> MapHassStateChange(IHaContext haContext, HassStateChangedEventData hassStateChange);
 
-    /// <summary>
-    /// Map a raw entity state object into a strongly typed one
-    /// </summary>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    IEntityState<TState, TAttributes> Map(IEntityState state);
-
     // /// <summary>
     // /// Map a raw state change object into a strongly typed one
     // /// </summary>
@@ -56,7 +49,8 @@ public interface IEntityStateMapper<TState, TAttributes>
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    IEntity<TState, TAttributes> Map(IEntity entity);
+    IEntity<TState, TAttributes> Map<TStateOld, TAttributesOld>(IEntity<TStateOld, TAttributesOld> entity)
+        where TAttributesOld : class;
 
     /// <summary>
     /// Create a new Entity instance

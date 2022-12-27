@@ -19,7 +19,7 @@ public interface IHaContext
     /// The observable state stream, all changes including attributes
     /// </summary>
     /// <returns></returns>
-    IObservable<T> StateAllChangesGeneric<T>(Func<IHaContext, HassStateChangedEventData, T> mapper);
+    IObservable<HassStateChangedEventData> HassStateAllChanges();
 
     /// <summary>
     /// Get state for a single entity
@@ -28,12 +28,11 @@ public interface IHaContext
     EntityState? GetState(string entityId);
 
     /// <summary>
-    /// Get state for a single entity
+    /// Get HassState for a single entity
     /// </summary>
     /// <param name="entityId"></param>
-    /// <param name="mapper">A function to convert a HassState object to the required return type</param>
     /// <returns></returns>
-    T GetState<T>(string entityId, Func<HassState?, T> mapper);
+    HassState? GetHassState(string entityId);
 
     /// <summary>
     /// Gets all the entities in HomeAssistant
@@ -44,7 +43,7 @@ public interface IHaContext
     /// Gets all the entities in HomeAssistant
     /// </summary>
     /// <returns></returns>
-    IReadOnlyList<IEntity> GetAllEntitiesGeneric();
+    IEnumerable<string> GetAllEntityIds();
 
     /// <summary>
     /// Calls a service in Home Assistant

@@ -28,7 +28,7 @@ public class IEntityTest
                 AttributesJson = new { name = "name initial" }.AsJsonElement()
             };
 
-        haContextMock.Setup(t => t.GetState(It.IsAny<string>(), It.IsAny<Func<HassState?, IEntityState<string?, AttributesWithName>?>>())).Returns(mapper.MapHassState(hassState));
+        haContextMock.Setup(t => t.GetHassState(It.IsAny<string>())).Returns(hassState);
         
         // ACT
         var target = mapper.Entity(haContextMock.Object, entityId);
@@ -41,52 +41,68 @@ public class IEntityTest
         target.EntityState!.Attributes!.Name.Should().Be("name initial");
     }
 
-    record AttributesWithName([property:JsonPropertyName("name")]string? Name);
+    public record AttributesWithName([property:JsonPropertyName("name")]string? Name);
 
-    // [Fact]
-    // public void ShouldShowStateChangesFromContext()
-    // {
-    //     var haContextMock = new Mock<IHaContext>();
-    //     var stateChangesSubject = new Subject<IStateChange<string, AttributesWithName>>();
-    //     var entityId = "domain.test_entity";
-    //     var mapper = DefaultEntityStateMappers.TypedAttributes<AttributesWithName>();
+    [Fact]
+    public void ShouldShowStateChangesFromContext()
+    {
+        var haContextMock = new Mock<IHaContext>();
+        var hassStateChangesSubject = new Subject<HassStateChangedEventData>();
+        var entityId = "domain.test_entity";
+        var mapper = DefaultEntityStateMappers.TypedAttributes<AttributesWithName>();
 
-    //     var hassState = new HassState
-    //         {
-    //             EntityId = entityId,
-    //             State = "state initial",
-    //             AttributesJson = new { name = "name initial" }.AsJsonElement()
-    //         };
+        var hassState = new HassState
+            {
+                EntityId = entityId,
+                State = "state initial",
+                AttributesJson = new { name = "name initial" }.AsJsonElement()
+            };
 
-    //     haContextMock.Setup(t => t.GetState(It.IsAny<string>(), It.IsAny<Func<HassState?, IEntityState<string?, AttributesWithName>?>>())).Returns(mapper.MapHassState(hassState));
+        haContextMock.Setup(t => t.GetHassState(It.IsAny<string>())).Returns(hassState);
 
-    //     haContextMock.Setup(h => h.StateAllChangesGeneric(It.IsAny<Func<HassStateChangedEventData, IStateChange<string?, AttributesWithName>>>)).Returns(stateChangesSubject);
-    //     var entityFactory = new EntityGenericFactory(haContextMock.Object);
+        haContextMock.Setup(h => h.HassStateAllChanges()).Returns(hassStateChangesSubject);
+        var entityFactory = new EntityGenericFactory(haContextMock.Object);
 
-    //     var target = entityFactory.CreateIEntity(entityId, DefaultEntityStateMappers.TypedAttributes<AttributesWithName>());
-    //     var stateChangeObserverMock = new Mock<IObserver<IStateChange>>();
-    //     var stateAllChangeObserverMock = new Mock<IObserver<IStateChange>>();
+        var target = mapper.Entity(haContextMock.Object, entityId);
+        var stateChangeObserverMock = new Mock<IObserver<IStateChange<string?, AttributesWithName>>>();
+        var stateAllChangeObserverMock = new Mock<IObserver<IStateChange<string?, AttributesWithName>>>();
 
-    //     target.StateAllChanges().Subscribe(stateAllChangeObserverMock.Object);
-    //     target.StateChanges().Subscribe(stateChangeObserverMock.Object);
+        target.StateAllChanges().Subscribe(stateAllChangeObserverMock.Object);
+        target.StateChanges().Subscribe(stateChangeObserverMock.Object);
 
-    //     stateChangesSubject.OnNext(
-    //         new StateChangeGeneric
-    //         (
-    //             target,
-    //             new EntityStateGeneric(entityId, "old"),
-    //             new EntityStateGeneric(entityId, "new")
-    //         ));
+        hassStateChangesSubject.OnNext(
+            new HassStateChangedEventData
+            {
+                EntityId = entityId,
+                NewState = new HassState
+                    {
+                        EntityId = entityId,
+                        State = "old"
+                    },
+                OldState = new HassState
+                    {
+                        EntityId = entityId,
+                        State = "new"
+                    }
+            });
 
-    //     stateChangesSubject.OnNext(
-    //         new StateChangeGeneric
-    //         (
-    //             target,
-    //             new EntityStateGeneric(entityId, "same"),
-    //             new EntityStateGeneric(entityId, "same")
-    //         ));
+        hassStateChangesSubject.OnNext(
+            new HassStateChangedEventData
+            {
+                EntityId = entityId,
+                NewState = new HassState
+                    {
+                        EntityId = entityId,
+                        State = "same"
+                    },
+                OldState = new HassState
+                    {
+                        EntityId = entityId,
+                        State = "same"
+                    }
+            });
 
-    //     stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<IStateChange>()), Times.Once);
-    //     stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<IStateChange>()), Times.Exactly(2));
-    // }
+        stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<IStateChange<string?, AttributesWithName>>()), Times.Once);
+        stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<IStateChange<string?, AttributesWithName>>()), Times.Exactly(2));
+    }
 }

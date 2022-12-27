@@ -37,7 +37,8 @@ public static class EnumerableEntityGenericExtensions
     /// <param name="entities">IEnumerable of Entities for which to call the service</param>
     /// <param name="service">Name of the service to call. If the Domain of the service is the same as the domain of the Entities it can be omitted</param>
     /// <param name="data">Data to provide</param>
-    public static void CallService(this IEnumerable<IEntity> entities, string service, object? data = null)
+    public static void CallService<TState, TAttributes>(this IEnumerable<IEntity<TState, TAttributes>> entities, string service, object? data = null)
+        where TAttributes : class
     {
         ArgumentNullException.ThrowIfNull(service);
         

@@ -1,35 +1,11 @@
 namespace NetDaemon.HassModel.Entities;
 
 /// <summary>
-/// Represents a state change event for an entity
-/// </summary>
-public interface IStateChange
-{
-    /// <summary>
-    /// The entity associated with the state change
-    /// </summary>
-    /// <value></value>
-    IEntity RawEntity { get; }
-
-    /// <summary>
-    /// The old raw state of the entity
-    /// </summary>
-    /// <value></value>
-    IEntityState? RawOld { get; }
-
-    /// <summary>
-    /// The new raw state of the entity
-    /// </summary>
-    /// <value></value>
-    IEntityState? RawNew { get; }
-}
-
-/// <summary>
 /// Represents a state change event for a strongly typed entity and state
 /// </summary>
 /// <typeparam name="TState"></typeparam>
 /// <typeparam name="TAttributes"></typeparam>
-public interface IStateChange<TState, TAttributes> : IStateChange
+public interface IStateChange<TState, TAttributes>
     where TAttributes : class
 {
     /// <summary>
