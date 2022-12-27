@@ -81,6 +81,10 @@ public class CodeGeneratorTest
             new()
             {
                 EntityId = "sensor.Pir",
+            },            
+            new()
+            {
+                EntityId = "proximity.home",
             },
         };
 
@@ -106,6 +110,9 @@ public class CodeGeneratorTest
 
                                 SensorEntity pirSensor = entities.Sensor.Pir;
                                 string? pir = pirSensor.State;
+
+                                ProximityEntity homeProximity = entities.Proximity.Home;
+                                double? distance = homeProximity.State;
                              }
                         }
                         """;
