@@ -14,7 +14,7 @@ public sealed record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttri
     public IEntityStateMapper<TState, TAttributes> EntityStateMapper { get; }
 
     /// <inheritdoc/>
-    public IEntityState? RawEntityState => HaContext.GetStateGeneric(EntityId);
+    public IEntityState? RawEntityState => HaContext.GetState(EntityId, EntityStateMapper.MapHassState);
 
     /// <inheritdoc/>
     public string? RawState => RawEntityState?.RawState;
@@ -39,16 +39,8 @@ public sealed record EntityGeneric<TState, TAttributes> : IEntity<TState, TAttri
     public TAttributes? Attributes => EntityState is null ? EntityStateMapper.ParseAttributes(null) : EntityState.Attributes;
 
     /// <inheritdoc/>
-    public IObservable<IStateChange> RawStateAllChanges() =>
-        HaContext.StateAllChangesGeneric().Where(e => e.Entity.EntityId == EntityId);
-
-    /// <inheritdoc/>
-    public IObservable<IStateChange> RawStateChanges() =>
-        RawStateAllChanges().StateChangesOnlyGeneric();
-
-    /// <inheritdoc/>
     public IObservable<IStateChange<TState, TAttributes>> StateAllChanges() =>
-        RawStateAllChanges().Select(EntityStateMapper.Map);
+        HaContext.StateAllChangesGeneric(EntityStateMapper.MapHassStateChange).Where(e => e.Entity.EntityId == EntityId);
 
     /// <inheritdoc/>
     public IObservable<IStateChange<TState, TAttributes>> StateChanges() =>

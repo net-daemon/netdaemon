@@ -57,6 +57,7 @@ public static class EntityExtensions
     internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
         => changes.Where(c => c.New?.State != c.Old?.State);
 
-    internal static IObservable<T> StateChangesOnlyGeneric<T>(this IObservable<T> changes) where T : IStateChange
+    internal static IObservable<T> StateChangesOnlyGeneric<T>(this IObservable<T> changes)
+        where T : IStateChange
         => changes.Where(c => c.RawNew?.RawState != c.RawOld?.RawState);
 }

@@ -14,7 +14,7 @@ public static class EntityGenericExtensions
     /// <typeparam name="TState"></typeparam>
     /// <typeparam name="TAttributes"></typeparam>
     /// <returns></returns>
-    public static IEntity<TState, TAttributes> AsEntityStateType<TState, TAttributes>(this IEntity entity, IEntityStateMapper<TState, TAttributes> mapper)
+    public static IEntity<TState, TAttributes> MappedBy<TState, TAttributes>(this IEntity entity, IEntityStateMapper<TState, TAttributes> mapper)
         where TAttributes : class
         => mapper.Map(entity);
 

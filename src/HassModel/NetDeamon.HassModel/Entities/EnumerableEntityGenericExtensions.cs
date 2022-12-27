@@ -5,31 +5,31 @@
 /// </summary>
 public static class EnumerableEntityGenericExtensions
 {
-    /// <summary>
-    /// Observable, All state changes including attributes
-    /// </summary>
-    public static IObservable<IStateChange> RawStateAllChanges(this IEnumerable<IEntity> entities) => 
-        entities.Select(t => t.RawStateAllChanges()).Merge();
+    // /// <summary>
+    // /// Observable, All state changes including attributes
+    // /// </summary>
+    // public static IObservable<IStateChange> RawStateAllChanges(this IEnumerable<IEntity> entities) => 
+    //     entities.Select(t => t.RawStateAllChanges()).Merge();
 
-    /// <summary>
-    /// Observable, All state changes. New.State != Old.State
-    /// </summary>
-    public static IObservable<IStateChange> StateChanges(this IEnumerable<IEntity> entities) =>
-        entities.RawStateAllChanges().StateChangesOnlyGeneric();
+    // /// <summary>
+    // /// Observable, All state changes. New.State != Old.State
+    // /// </summary>
+    // public static IObservable<IStateChange> StateChanges(this IEnumerable<IEntity> entities) =>
+    //     entities.RawStateAllChanges().StateChangesOnlyGeneric();
         
-    /// <summary>
-    /// Observable, All state changes including attributes
-    /// </summary>
-    public static IObservable<IStateChange<TState, TAttributes>> StateAllChanges<TState, TAttributes>(this IEnumerable<IEntity<TState, TAttributes>> entities)
-        where TAttributes : class =>
-        entities.Select(t => t.StateAllChanges()).Merge();
+    // /// <summary>
+    // /// Observable, All state changes including attributes
+    // /// </summary>
+    // public static IObservable<IStateChange<TState, TAttributes>> StateAllChanges<TState, TAttributes>(this IEnumerable<IEntity<TState, TAttributes>> entities)
+    //     where TAttributes : class =>
+    //     entities.Select(t => t.StateAllChanges()).Merge();
 
-    /// <summary>
-    /// Observable, All state changes. New.State != Old.State
-    /// </summary>
-    public static IObservable<IStateChange<TState, TAttributes>> StateChanges<TState, TAttributes>(this IEnumerable<IEntity<TState, TAttributes>> entities)
-        where TAttributes : class => 
-        entities.StateAllChanges().StateChangesOnlyGeneric();
+    // /// <summary>
+    // /// Observable, All state changes. New.State != Old.State
+    // /// </summary>
+    // public static IObservable<IStateChange<TState, TAttributes>> StateChanges<TState, TAttributes>(this IEnumerable<IEntity<TState, TAttributes>> entities)
+    //     where TAttributes : class => 
+    //     entities.StateAllChanges().StateChangesOnlyGeneric();
 
     /// <summary>
     /// Calls a service with a set of Entities as the target

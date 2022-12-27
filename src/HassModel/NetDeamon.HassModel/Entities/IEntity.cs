@@ -22,15 +22,15 @@ public interface IEntity
     /// <summary>The current state of this Entity as a raw string</summary>
     string? RawState { get; }
     
-    /// <summary>
-    /// Observable, All state changes including attributes
-    /// </summary>
-    IObservable<IStateChange> RawStateAllChanges();
+    // /// <summary>
+    // /// Observable, All state changes including attributes
+    // /// </summary>
+    // IObservable<IStateChange> RawStateAllChanges();
 
-    /// <summary>
-    /// Observable, All state changes. New.State!=Old.State
-    /// </summary>
-    IObservable<IStateChange> RawStateChanges();
+    // /// <summary>
+    // /// Observable, All state changes. New.State!=Old.State
+    // /// </summary>
+    // IObservable<IStateChange> RawStateChanges();
 
     /// <summary>
     /// Calls a service using this entity as the target

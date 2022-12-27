@@ -9,15 +9,6 @@ internal static class HassObjectMapper
             Map(source.OldState),
             Map(source.NewState));
     }
-    public static IStateChange MapGeneric(this HassStateChangedEventData source, IHaContext haContext)
-    {
-        return new StateChangeGeneric
-        (
-            DefaultEntityStateMappers.Base.Entity(haContext, source.EntityId),
-            MapGeneric(source.OldState),
-            MapGeneric(source.NewState)
-        );
-    }
 
     public static EntityState? Map(this HassState? hassState)
     {
@@ -39,28 +30,6 @@ internal static class HassObjectMapper
                     ParentId = hassState.Context.UserId
                 }
         };
-    }
-
-    public static IEntityState? MapGeneric(this HassState? hassState)
-    {
-        if (hassState == null) return null;
-
-        return new EntityStateGeneric
-        (
-            hassState.EntityId,
-            hassState.State,
-            hassState.AttributesJson,
-            hassState.LastChanged,
-            hassState.LastUpdated,
-            hassState.Context == null
-                ? null
-                : new Context
-                {
-                    Id = hassState.Context.Id,
-                    UserId = hassState.Context.UserId,
-                    ParentId = hassState.Context.UserId
-                }
-        );
     }
 
     public static HassTarget? Map(this ServiceTarget? target)

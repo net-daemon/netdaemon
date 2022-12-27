@@ -25,10 +25,41 @@ public sealed class EntityStateMapper<TState, TAttributes> : IEntityStateMapper<
     public TAttributes? ParseAttributes(JsonElement? rawAttributes) => _attributesParser(rawAttributes);
 
     /// <inheritdoc/>
-    public IEntityState<TState, TAttributes> Map(IEntityState state) => new EntityStateGeneric<TState, TAttributes>(state, this);
+    public IEntityState<TState, TAttributes>? MapHassState(HassState? hassState)
+    {
+        if (hassState == null) return null;
+
+        return new EntityStateGeneric<TState, TAttributes>(hassState.EntityId, this)
+        {
+            RawState = hassState.State,
+            AttributesJson = hassState.AttributesJson,
+            LastChanged = hassState.LastChanged,
+            LastUpdated = hassState.LastUpdated,
+            Context = hassState.Context == null
+                ? null
+                : new Context
+                {
+                    Id = hassState.Context.Id,
+                    UserId = hassState.Context.UserId,
+                    ParentId = hassState.Context.UserId
+                }
+        };
+    }
+    
+    /// <inheritdoc/>
+    public IStateChange<TState, TAttributes> MapHassStateChange(IHaContext haContext, HassStateChangedEventData hassStateChange)
+        => new StateChangeGeneric<TState, TAttributes>
+        (
+            Entity(haContext, hassStateChange.EntityId),
+            MapHassState(hassStateChange.OldState),
+            MapHassState(hassStateChange.NewState)
+        );
 
     /// <inheritdoc/>
-    public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
+    public IEntityState<TState, TAttributes> Map(IEntityState state) => new EntityStateGeneric<TState, TAttributes>(state, this);
+
+    // /// <inheritdoc/>
+    // public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
 
     /// <inheritdoc/>
     public IEntity<TState, TAttributes> Map(IEntity entity) => new EntityGeneric<TState, TAttributes>(entity.HaContext, entity.EntityId, this);
@@ -77,10 +108,41 @@ public sealed class CachedEntityStateMapper<TState, TAttributes> : IEntityStateM
     public TAttributes? ParseAttributes(JsonElement? rawAttributes) => _attributesParser(rawAttributes);
 
     /// <inheritdoc/>
-    public IEntityState<TState, TAttributes> Map(IEntityState state) => new CachedEntityStateGeneric<TState, TAttributes>(state, this);
+    public IEntityState<TState, TAttributes>? MapHassState(HassState? hassState)
+    {
+        if (hassState == null) return null;
+
+        return new CachedEntityStateGeneric<TState, TAttributes>(hassState.EntityId, this)
+        {
+            RawState = hassState.State,
+            AttributesJson = hassState.AttributesJson,
+            LastChanged = hassState.LastChanged,
+            LastUpdated = hassState.LastUpdated,
+            Context = hassState.Context == null
+                ? null
+                : new Context
+                {
+                    Id = hassState.Context.Id,
+                    UserId = hassState.Context.UserId,
+                    ParentId = hassState.Context.UserId
+                }
+        };
+    }
+    
+    /// <inheritdoc/>
+    public IStateChange<TState, TAttributes> MapHassStateChange(IHaContext haContext, HassStateChangedEventData hassStateChange)
+        => new StateChangeGeneric<TState, TAttributes>
+        (
+            Entity(haContext, hassStateChange.EntityId),
+            MapHassState(hassStateChange.OldState),
+            MapHassState(hassStateChange.NewState)
+        );
 
     /// <inheritdoc/>
-    public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
+    public IEntityState<TState, TAttributes> Map(IEntityState state) => new CachedEntityStateGeneric<TState, TAttributes>(state, this);
+
+    // /// <inheritdoc/>
+    // public IStateChange<TState, TAttributes> Map(IStateChange stateChange) => new StateChangeGeneric<TState, TAttributes>(stateChange, this);
 
     /// <inheritdoc/>
     public IEntity<TState, TAttributes> Map(IEntity entity) => new EntityGeneric<TState, TAttributes>(entity.HaContext, entity.EntityId, this);

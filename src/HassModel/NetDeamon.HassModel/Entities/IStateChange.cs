@@ -9,7 +9,7 @@ public interface IStateChange
     /// The entity associated with the state change
     /// </summary>
     /// <value></value>
-    IEntity Entity { get; }
+    IEntity RawEntity { get; }
 
     /// <summary>
     /// The old raw state of the entity
@@ -32,6 +32,12 @@ public interface IStateChange
 public interface IStateChange<TState, TAttributes> : IStateChange
     where TAttributes : class
 {
+    /// <summary>
+    /// The strongly typed entity object
+    /// </summary>
+    /// <value></value>
+    IEntity<TState, TAttributes> Entity { get; }
+
     /// <summary>
     /// The strongly typed old state
     /// </summary>

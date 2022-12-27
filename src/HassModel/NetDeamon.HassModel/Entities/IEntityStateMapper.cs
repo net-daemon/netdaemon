@@ -23,18 +23,33 @@ public interface IEntityStateMapper<TState, TAttributes>
     TAttributes? ParseAttributes(JsonElement? rawAttributes);
 
     /// <summary>
+    /// Map a HassState object to IEntityState
+    /// </summary>
+    /// <param name="hassState"></param>
+    /// <returns></returns>
+    IEntityState<TState, TAttributes>? MapHassState(HassState? hassState);
+
+    /// <summary>
+    /// Map a HassStateChangedEventData object to IStateChange
+    /// </summary>
+    /// <param name="haContext"></param>
+    /// <param name="hassStateChange"></param>
+    /// <returns></returns>
+    IStateChange<TState, TAttributes> MapHassStateChange(IHaContext haContext, HassStateChangedEventData hassStateChange);
+
+    /// <summary>
     /// Map a raw entity state object into a strongly typed one
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
     IEntityState<TState, TAttributes> Map(IEntityState state);
 
-    /// <summary>
-    /// Map a raw state change object into a strongly typed one
-    /// </summary>
-    /// <param name="stateChange"></param>
-    /// <returns></returns>
-    IStateChange<TState, TAttributes> Map(IStateChange stateChange);
+    // /// <summary>
+    // /// Map a raw state change object into a strongly typed one
+    // /// </summary>
+    // /// <param name="stateChange"></param>
+    // /// <returns></returns>
+    // IStateChange<TState, TAttributes> Map(IStateChange stateChange);
 
     /// <summary>
     /// Map a raw state change object into a strongly typed one
