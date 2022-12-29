@@ -250,6 +250,27 @@ public class IEntityTest
         stateAllChangeObserverMock.VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public void StatePropertyShouldBeCultureUnaware()
+    {
+        Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("De-de");
+
+        var entityId = "sensor.temperature";
+
+        var haContextMock = new HaContextMock();
+        haContextMock.Setup(m => m.GetHassState(entityId)).Returns(new HassState { EntityId = entityId, State = "12.5" });
+
+        var entity = new EntityGenericFactory(haContextMock.Object).CreateIEntity(entityId, DefaultEntityStateMappers.Base);
+
+        var numericEntity = entity.AsNumeric();
+        numericEntity.State.Should().Be(12.5);
+        numericEntity.EntityState!.State.Should().Be(12.5);
+
+        var withAttributesAs = entity.MappedBy(DefaultEntityStateMappers.NumericTypedAttributes<TestSensorAttributes>());
+        withAttributesAs.State.Should().Be(12.5);
+        withAttributesAs.EntityState!.State.Should().Be(12.5);
+    }
+
     // Attribute records
     public record AttributesWithName([property:JsonPropertyName("name")]string? Name);
     public record TestSensorAttributes([property:JsonPropertyName("set_point")]double? SetPoint, [property:JsonPropertyName("units")]string? Units);
