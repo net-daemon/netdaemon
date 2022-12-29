@@ -38,6 +38,7 @@ IConfigurationRoot GetConfigurationRoot()
         .SetBasePath(Environment.CurrentDirectory)
         .AddJsonFile("appsettings.json", true, true)
         .AddJsonFile("appsettings.development.json", true, true)
+        .AddUserSecrets<Program>()
 
         // finally override with Environment vars or commandline
         .AddEnvironmentVariables()
