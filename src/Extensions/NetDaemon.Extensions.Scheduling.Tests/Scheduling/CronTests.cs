@@ -16,6 +16,8 @@ public class CronTests
     {
         var count = 0;
         var sched = new TestScheduler();
+
+        #region Standard Format Cron
         sched.AdvanceTo(DateTime.UtcNow.Ticks);
 
         var sub = sched.ScheduleCron("0 * * * *", () => count++);
@@ -32,8 +34,30 @@ public class CronTests
         sub.Dispose();
         sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
         count.Should().Be(3, because: "Action should not fire after Dispose()");
+        #endregion
+
+        #region Cron with Seconds
+        sched = new TestScheduler();
+        count = 0;
+        sched.AdvanceTo(DateTime.UtcNow.Ticks);
+        var subSec = sched.ScheduleCron("*/30 0 * * * *", () => count++,true);
+
+        sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+        count.Should().Be(2);
+
+        sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+        count.Should().Be(4);
+
+        sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+        count.Should().Be(6);
+
+        subSec.Dispose();
+        sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+        count.Should().Be(6, because: "Action should not fire after Dispose()");
+        #endregion
+
     }
-    
+
     [Fact]
     public void ContinueAfterActionThrows()
     {
