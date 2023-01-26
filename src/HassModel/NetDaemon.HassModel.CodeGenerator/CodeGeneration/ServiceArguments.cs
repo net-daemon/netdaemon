@@ -1,4 +1,6 @@
-﻿namespace NetDaemon.HassModel.CodeGenerator;
+﻿using Microsoft.CodeAnalysis.CSharp;
+
+namespace NetDaemon.HassModel.CodeGenerator;
 
 internal record ServiceArgument
 {
@@ -14,9 +16,10 @@ internal record ServiceArgument
 
     public string PropertyName => HaName.ToNormalizedPascalCase();
 
-    public string VariableName => HaName.ToNormalizedCamelCase();
+    public string ParameterName => HaName.ToNormalizedCamelCase();
 
-    public string ParameterVariableName => Required ? VariableName : $"{VariableName} = null";
+    
+    public string ParameterDefault => Required ? "" : " = null";
 }
 
 internal class ServiceArguments
@@ -49,15 +52,24 @@ internal class ServiceArguments
     {
         var argumentList = Arguments.OrderByDescending(arg => arg.Required);
 
-        var anonymousVariableStr = argumentList.Select(x => $"{x.ParameterTypeName} @{x.ParameterVariableName}");
+        var anonymousVariableStr = argumentList.Select(x => $"{x.ParameterTypeName} {EscapeIfRequired(x.ParameterName)}{x.ParameterDefault}");
 
         return $"{string.Join(", ", anonymousVariableStr)}";
     }
 
     public string GetNewServiceArgumentsTypeExpression()
     {
-        var propertyInitializers = Arguments.Select(x => $"{x.PropertyName} = @{x.VariableName}");
+        var propertyInitializers = Arguments.Select(x => $"{x.PropertyName} = {EscapeIfRequired(x.ParameterName)}");
 
         return $"new {TypeName} {{  { string.Join(", ", propertyInitializers) }  }}";
     }
+    
+    private static string EscapeIfRequired(string name)
+    {
+        var match = SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ||
+                    SyntaxFacts.GetContextualKeywordKind(name) != SyntaxKind.None;
+
+        return match ? "@" + name : name;
+    }
+
 }

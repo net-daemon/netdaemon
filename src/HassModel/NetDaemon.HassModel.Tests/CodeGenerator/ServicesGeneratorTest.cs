@@ -162,5 +162,51 @@ public class ServicesGeneratorTest
         
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }    
+    
+    
+    [Fact]
+    public void TestServiceWithKeyWordFieldName_ParamEscaped()
+    {
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "light.light1" },
+        };
+
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "light",
+                Services = new HassService[] {
+                    new() {
+                        Service = "set_value",
+                        Target = new TargetSelector {
+                            Entity = new() { Domain = new [] {"light"} }
+                        },
+                        Fields = new HassServiceField[] {
+                            new() { Field = "class", Selector = new NumberSelector(), },
+                        },
+                    }
+                }
+            }
+        };
+
+        // Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+        
+        var appCode = """
+                    using NetDaemon.HassModel;
+                    using NetDaemon.HassModel.Entities;
+                    using RootNameSpace;
+
+                    public class Root
+                    {
+                        public void Run(Entities entities, Services services)
+                        {
+                            entities.Light.Light1.SetValue(@class:2);
+                            services.Light.SetValue(new ServiceTarget(), @class:2);
+                        }
+                    }
+                    """;
+        
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }    
 }    
     
