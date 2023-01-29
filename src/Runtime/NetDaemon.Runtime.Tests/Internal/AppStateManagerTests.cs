@@ -6,7 +6,6 @@ using NetDaemon.AppModel;
 using NetDaemon.Client.Internal.Exceptions;
 using NetDaemon.HassModel;
 using NetDaemon.Runtime.Internal;
-using NetDaemon.Runtime.Internal.Model;
 
 namespace NetDaemon.Runtime.Tests.Internal;
 
@@ -109,7 +108,7 @@ public class AppStateManagerTests
             n.SendCommandAndReturnResponseAsync<CreateInputBooleanHelperCommand, InputBooleanHelper>(
                 It.IsAny<CreateInputBooleanHelperCommand>(), It.IsAny<CancellationToken>()));
         haConnectionMock.Verify(n =>
-            n.SendCommandAsync<CallServiceCommand>(It.IsAny<CallServiceCommand>(),
+            n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
                 It.IsAny<CancellationToken>()));
     }
 
