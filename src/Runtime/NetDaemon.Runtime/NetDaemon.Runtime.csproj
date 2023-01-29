@@ -40,8 +40,4 @@
         <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
         <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Internal\Model" />
-    </ItemGroup>
 </Project>
