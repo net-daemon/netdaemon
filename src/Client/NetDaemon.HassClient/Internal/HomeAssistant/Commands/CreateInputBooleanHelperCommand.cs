@@ -3,7 +3,7 @@ using NetDaemon.Client.HomeAssistant.Model;
 
 namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
-public record CreateInputBooleanHelperCommand : CommandMessage
+internal record CreateInputBooleanHelperCommand : CommandMessage
 {
     public CreateInputBooleanHelperCommand()
     {
@@ -13,7 +13,7 @@ public record CreateInputBooleanHelperCommand : CommandMessage
     [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
 }
 
-public record DeleteInputBooleanHelperCommand : CommandMessage
+internal record DeleteInputBooleanHelperCommand : CommandMessage
 {
     public DeleteInputBooleanHelperCommand()
     {
@@ -23,7 +23,7 @@ public record DeleteInputBooleanHelperCommand : CommandMessage
     [JsonPropertyName("input_boolean_id")] public string InputBooleanId { get; init; } = string.Empty;
 }
 
-public record ListInputBooleanHelperCommand : CommandMessage
+internal record ListInputBooleanHelperCommand : CommandMessage
 {
     public ListInputBooleanHelperCommand()
     {
