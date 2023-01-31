@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using NetDaemon.Client.HomeAssistant.Model;
 
-namespace NetDaemon.Runtime.Internal.Model;
+namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
 internal record CreateInputBooleanHelperCommand : CommandMessage
 {
@@ -10,7 +10,7 @@ internal record CreateInputBooleanHelperCommand : CommandMessage
         Type = "input_boolean/create";
     }
 
-    [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
+    [JsonPropertyName("name")] public required string Name { get; init; }
 }
 
 internal record DeleteInputBooleanHelperCommand : CommandMessage
@@ -20,7 +20,7 @@ internal record DeleteInputBooleanHelperCommand : CommandMessage
         Type = "input_boolean/delete";
     }
 
-    [JsonPropertyName("input_boolean_id")] public string InputBooleanId { get; init; } = string.Empty;
+    [JsonPropertyName("input_boolean_id")] public required string InputBooleanId { get; init; } = string.Empty;
 }
 
 internal record ListInputBooleanHelperCommand : CommandMessage

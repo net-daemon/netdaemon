@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using NetDaemon.Client.Internal.Exceptions;
 using NetDaemon.Runtime.Internal;
-using NetDaemon.Runtime.Internal.Model;
 
 namespace NetDaemon.Runtime.Tests.Internal;
 
