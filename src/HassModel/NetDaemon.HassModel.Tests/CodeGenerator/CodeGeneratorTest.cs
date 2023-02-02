@@ -59,6 +59,60 @@ public class CodeGeneratorTest
     }
         
     [Fact]
+    public void TestEntityDuplictateNormalizedName()
+    {
+        var entityStates = new HassState[]
+        {
+            new() { EntityId = "light.light_1_1" },
+            new() { EntityId = "light.light_11" },
+        };
+
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var appCode = """
+                        using NetDaemon.HassModel.Entities;
+                        using NetDaemon.HassModel;
+                        using RootNameSpace;
+
+                        public class Root
+                        {
+                            public void Run(Entities entities)
+                            {
+                                LightEntity l1_1 = entities.Light.light_1_1;
+                                LightEntity l11 = entities.Light.light_11;
+                            }
+                        }
+                        """;
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }    
+    
+    [Fact]
+    public void TestEntityInvalidCSharpName()
+    {
+        var entityStates = new HassState[]
+        {
+            new() { EntityId = "light.1light" },
+            new() { EntityId = "light.li@#ght" },
+        };
+
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var appCode = """
+                        using NetDaemon.HassModel.Entities;
+                        using NetDaemon.HassModel;
+                        using RootNameSpace;
+
+                        public class Root
+                        {
+                            public void Run(Entities entities)
+                            {
+                                LightEntity l1 = entities.Light._1light;
+                                LightEntity l2 = entities.Light.Light;
+                            }
+                        }
+                        """;
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }        
+    
+    [Fact]
     public void TestNumericSensorEntityGeneration()
     {
         // Numeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute

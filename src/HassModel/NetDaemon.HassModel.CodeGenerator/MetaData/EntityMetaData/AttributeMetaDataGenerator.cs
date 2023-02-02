@@ -16,7 +16,7 @@ internal static class AttributeMetaDataGenerator
         var attributesByJsonName = jsonPropetiesByName
             .Select(group => new EntityAttributeMetaData(
                 JsonName: group.Key,
-                CSharpName: group.Key.ToNormalizedPascalCase(),
+                CSharpName: group.Key.ToValidCSharpPascalCase(),
                 ClrType: GetBestClrType(group.Select(g => g.Value))));
 
         // We ignore possible duplicate CSharp names here, they will be handled later 
