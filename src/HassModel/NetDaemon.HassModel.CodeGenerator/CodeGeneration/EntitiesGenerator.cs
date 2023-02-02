@@ -70,12 +70,8 @@ internal static class EntitiesGenerator
 
     private static MemberDeclarationSyntax GenerateEntityProperty(EntityMetaData entity, string className)
     {
-        var entityName = EntityIdHelper.GetEntity(entity.id);
-
-        var normalizedPascalCase = entityName.ToNormalizedPascalCase((string)"E_");
-
-        var name = entity.friendlyName;
-        return PropertyWithExpressionBodyNew(className, normalizedPascalCase, "_haContext", $"\"{entity.id}\"").WithSummaryComment(name);
+        return PropertyWithExpressionBodyNew(className, entity.cSharpName, "_haContext", $"\"{entity.id}\"")
+            .WithSummaryComment(entity.friendlyName);
     }
 
     /// <summary>

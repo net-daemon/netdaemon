@@ -10,8 +10,8 @@ public class MetaDataMergerTest
     {
         var previous = new []{new EntityDomainMetadata("light", false, new []
             {
-                new EntityMetaData("light.living", "Livingroom spots"),
-                new EntityMetaData("light.kitchen", "Kitchen light")
+                new EntityMetaData("light.living", "Livingroom spots", "Living"),
+                new EntityMetaData("light.kitchen", "Kitchen light", "Kitchen")
             }, 
             new []
             {
@@ -20,20 +20,20 @@ public class MetaDataMergerTest
 
         var current = new []{new EntityDomainMetadata("light", false, new []
             {
-                new EntityMetaData("light.bedroom", "nightlight"),
-                new EntityMetaData("light.kitchen", "Kitchen light new name")
+                new EntityMetaData("light.bedroom", "nightlight", "Bedroom"),
+                new EntityMetaData("light.kitchen", "Kitchen light new name", "Kitchen")
             }, 
             new []
             {
                 new EntityAttributeMetaData("off_brightness", "OffBrightness", typeof(double))
             })};
 
-        var result= EntityMetaDataMerger.Merge(new(), new EntitiesMetaData(){Domains = previous}, new EntitiesMetaData{Domains = current}).Domains;
+        var result = EntityMetaDataMerger.Merge(new(), new EntitiesMetaData { Domains = previous }, new EntitiesMetaData { Domains = current }).Domains;
 
         var expected = new []{new EntityDomainMetadata("light", false, new []
             {
-                new EntityMetaData("light.bedroom", "nightlight"),
-                new EntityMetaData("light.kitchen", "Kitchen light new name")
+                new EntityMetaData("light.bedroom", "nightlight", "Bedroom"),
+                new EntityMetaData("light.kitchen", "Kitchen light new name", "Kitchen")
             },
             new []
             {

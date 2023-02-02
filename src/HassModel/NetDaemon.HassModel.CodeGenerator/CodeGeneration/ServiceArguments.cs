@@ -14,11 +14,10 @@ internal record ServiceArgument
 
     public string ParameterTypeName => Required ? TypeName : $"{TypeName}?";
 
-    public string PropertyName => HaName.ToNormalizedPascalCase();
+    public string PropertyName => HaName.ToValidCSharpPascalCase();
 
-    public string ParameterName => HaName.ToNormalizedCamelCase();
+    public string ParameterName => HaName.ToValidCSharpCamelCase();
 
-    
     public string ParameterDefault => Required ? "" : " = null";
 }
 
@@ -46,7 +45,7 @@ internal class ServiceArguments
 
     public IEnumerable<ServiceArgument> Arguments { get; }
 
-    public string TypeName => $"{_domain.ToNormalizedPascalCase()}{GetServiceMethodName(_serviceName)}Parameters";
+    public string TypeName => $"{_domain.ToValidCSharpPascalCase()}{GetServiceMethodName(_serviceName)}Parameters";
 
     public string GetParametersList()
     {
@@ -54,7 +53,7 @@ internal class ServiceArguments
 
         var anonymousVariableStr = argumentList.Select(x => $"{x.ParameterTypeName} {EscapeIfRequired(x.ParameterName)}{x.ParameterDefault}");
 
-        return $"{string.Join(", ", anonymousVariableStr)}";
+        return string.Join(", ", anonymousVariableStr);
     }
 
     public string GetNewServiceArgumentsTypeExpression()
@@ -71,5 +70,4 @@ internal class ServiceArguments
 
         return match ? "@" + name : name;
     }
-
 }
