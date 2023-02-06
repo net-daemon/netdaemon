@@ -22,11 +22,12 @@ public static class CronExtensions
     public static IDisposable ScheduleCron(this IScheduler scheduler, string cron, Action action, bool hasSeconds = false)
     {
         ArgumentNullException.ThrowIfNull(scheduler);
-        CronFormat format = hasSeconds ? CronFormat.IncludeSeconds : CronFormat.Standard;
+        
+        var format = hasSeconds ? CronFormat.IncludeSeconds : CronFormat.Standard;
         // When this gets cancelled we only need to actually dispose of the most recent scheduled action
         // (there will only be one at a time) so we store that in a box we will pass down
         StrongBox<IDisposable?> disposableBox = new();
-        RecursiveSchedule(scheduler, CronExpression.Parse(cron,format), action, disposableBox, scheduler.Now);
+        RecursiveSchedule(scheduler, CronExpression.Parse(cron, format), action, disposableBox, scheduler.Now);
 
         // Dispose will Dispose the IDisposable in the box
         return Disposable.Create(()=> disposableBox.Value?.Dispose());
