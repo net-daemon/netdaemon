@@ -77,7 +77,7 @@ internal static class SyntaxFactoryHelper
         string.IsNullOrWhiteSpace(summary) ? node : node.WithLeadingTrivia(Comment($"///<summary>{summary.ReplaceLineEndings(" ")}</summary>"));
 
     public static T AppendParameterComments<T>(this T node, ServiceArguments arguments) where T : SyntaxNode 
-        => node.WithLeadingTrivia(node.GetLeadingTrivia().Concat(arguments.Arguments.Select(a => ParameterComment(a.VariableName, a.Comment))));
+        => node.WithLeadingTrivia(node.GetLeadingTrivia().Concat(arguments.Arguments.Select(a => ParameterComment(a.ParameterName, a.Comment))));
 
     public  static T AppendParameterComment<T>(this T node, string? name, string? description)
         where T : SyntaxNode

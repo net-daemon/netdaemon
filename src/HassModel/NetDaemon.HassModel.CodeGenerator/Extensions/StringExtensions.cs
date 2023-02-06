@@ -6,24 +6,26 @@ namespace NetDaemon.HassModel.CodeGenerator.Extensions;
 
 internal static class StringExtensions
 {
-    public static string ToNormalizedPascalCase(this string name, string prefix = "HA_")
+    public static string ToValidCSharpPascalCase(this string name)
     {
-        return name.ToPascalCase().ToNormalized(prefix);
+        return name.ToPascalCase().ToValidCSharpIdentifier();
     }
 
-    public static string ToNormalizedCamelCase(this string name, string prefix = "HA_")
+    public static string ToValidCSharpCamelCase(this string name)
     {
-        return name.ToCamelCase().ToNormalized(prefix);
+        return name.ToCamelCase().ToValidCSharpIdentifier();
     }
 
-    private static string ToNormalized(this string name, string prefix = "HA_")
+    public static string ToValidCSharpIdentifier(this string name)
     {
         name = name.Replace(".", "_", StringComparison.InvariantCulture);
 
-        if (!char.IsLetter(name[0]) && name[0] != '_')
-            name = prefix + name;
+        name = Regex.Replace(name, "[^a-zA-Z0-9_]+", "", RegexOptions.Compiled);
 
-        return Regex.Replace(name, "[^a-zA-Z0-9]+", "", RegexOptions.Compiled);
+        if (char.IsAsciiDigit(name[0]))
+            name = "_" + name;
+
+        return name;
     }
         
     public static string ToPascalCase(this string str)

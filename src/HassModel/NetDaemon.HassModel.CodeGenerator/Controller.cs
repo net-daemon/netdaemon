@@ -57,7 +57,7 @@ internal class Controller
     {
         Directory.CreateDirectory(OutputFolder);
 
-        var fileStream = File.OpenWrite(fileName);
+        var fileStream = File.Create(fileName);
         await using var _ = fileStream.ConfigureAwait(false);
         await JsonSerializer.SerializeAsync(fileStream, merged, JsonSerializerOptions).ConfigureAwait(false);
     }

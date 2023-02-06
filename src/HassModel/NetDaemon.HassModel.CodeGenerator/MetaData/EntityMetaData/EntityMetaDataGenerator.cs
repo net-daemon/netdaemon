@@ -1,4 +1,5 @@
-﻿using NetDaemon.Client.HomeAssistant.Model;
+﻿using System.Diagnostics;
+using NetDaemon.Client.HomeAssistant.Model;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
@@ -25,9 +26,40 @@ internal static class EntityMetaDataGenerator
             Entities: MapToEntityMetaData(domainGroup),
             Attributes: AttributeMetaDataGenerator.GetMetaDataFromEntityStates(domainGroup).ToList());
 
-    private static List<EntityMetaData> MapToEntityMetaData(IEnumerable<HassState> g) =>
-        g.Select(state => new EntityMetaData(state.EntityId, GetFriendlyName(state)))
-            .OrderBy(s=>s.id).ToList();
+    private static List<EntityMetaData> MapToEntityMetaData(IEnumerable<HassState> g)
+    {
+        var entityMetaDatas = g.Select(state => new EntityMetaData(
+            id: state.EntityId, 
+            friendlyName: GetFriendlyName(state),
+            cSharpName: GetPreferredCSharpName(state.EntityId)));
+
+        entityMetaDatas = DeDuplicateCSharpNames(entityMetaDatas);
+        
+        return entityMetaDatas.OrderBy(e => e.id).ToList();
+    }
+
+    private static IEnumerable<EntityMetaData> DeDuplicateCSharpNames(IEnumerable<EntityMetaData> entityMetaDatas)
+    {
+        // The PascalCased EntityId might not be unique because we removed all underscores
+        // If we have duplicates we will use the original ID instead and only make sure it is a Valid C# identifier
+        return entityMetaDatas
+            .ToLookup(e => e.cSharpName)
+            .SelectMany(e => e.Count() == 1 
+                ? e 
+                : e.Select(i => i with { cSharpName = GetUniqueCSharpName(i.id) }));
+    }
+
+    /// <summary>
+    /// We prefer the Property names for Entities to be the id in PascalCase
+    /// </summary>
+    private static string GetPreferredCSharpName(string id) => EntityIdHelper.GetEntity(id).ToValidCSharpPascalCase();
+
+    /// <summary>
+    /// HA entity ID's can only contain [a-z0-9_]. Which are all also valid in Csharp identifiers.
+    /// HA does allow the id to begin with a digit which is not valid for C#. In those cases it will be prefixed with
+    /// an _ 
+    /// </summary>
+    private static string GetUniqueCSharpName(string id) => EntityIdHelper.GetEntity(id).ToValidCSharpIdentifier();
 
     private static string? GetFriendlyName(HassState hassState) => hassState.AttributesAs<Attributes>()?.friendly_name;
 

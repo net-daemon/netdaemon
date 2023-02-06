@@ -1,8 +1,6 @@
-﻿using NetDaemon.Runtime.Internal.Model;
+﻿namespace NetDaemon.Client.HomeAssistant.Extensions;
 
-namespace NetDaemon.Runtime.Internal;
-
-internal static class HomeAssistantConnectionExtensions
+public static class HomeAssistantConnectionHelpersExtensions
 {
     public static async Task<InputBooleanHelper?> CreateInputBooleanHelperAsync(
         this IHomeAssistantConnection connection,

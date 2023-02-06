@@ -21,18 +21,18 @@ record EntityDomainMetadata(
     private readonly string prefixedDomain = (IsNumeric && EntityIdHelper.MixedDomains.Contains(Domain)  ? "numeric_" : "") + Domain;
 
     [JsonIgnore]
-    public string EntityClassName => GetDomainEntityTypeName(prefixedDomain);
+    public string EntityClassName => $"{prefixedDomain}Entity".ToValidCSharpPascalCase();
 
     [JsonIgnore]
-    public string AttributesClassName => $"{prefixedDomain}Attributes".ToNormalizedPascalCase();
+    public string AttributesClassName => $"{prefixedDomain}Attributes".ToValidCSharpPascalCase();
 
     [JsonIgnore]
-    public string EntitiesForDomainClassName => $"{Domain}Entities".ToNormalizedPascalCase();
+    public string EntitiesForDomainClassName => $"{Domain}Entities".ToValidCSharpPascalCase();
 
     [JsonIgnore]
     public Type? AttributesBaseClass { get; set; }
 };
 
-record EntityMetaData(string id, string? friendlyName);
+record EntityMetaData(string id, string? friendlyName, string cSharpName);
 
 record EntityAttributeMetaData(string JsonName, string CSharpName, Type ClrType);

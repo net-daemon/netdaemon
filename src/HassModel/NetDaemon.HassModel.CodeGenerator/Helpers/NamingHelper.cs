@@ -10,35 +10,28 @@ internal static class NamingHelper
 
     public static string GetEntitiesForDomainClassName(string prefix)
     {
-        var normalizedDomain = prefix.ToNormalizedPascalCase();
+        var normalizedDomain = prefix.ToValidCSharpPascalCase();
 
         return $"{normalizedDomain}Entities";
     }
 
-    public static string GetDomainEntityTypeName(string prefix)
-    {
-        var normalizedDomain = prefix.ToNormalizedPascalCase();
-
-        return $"{normalizedDomain}Entity";
-    }
-
     public static string GetServicesTypeName(string prefix)
     {
-        var normalizedDomain = prefix.ToNormalizedPascalCase();
+        var normalizedDomain = prefix.ToValidCSharpPascalCase();
 
         return $"{normalizedDomain}Services";
     }
 
     public static string GetEntityDomainExtensionMethodClassName(string prefix)
     {
-        var normalizedDomain = prefix.ToNormalizedPascalCase();
+        var normalizedDomain = prefix.ToValidCSharpPascalCase();
 
         return $"{normalizedDomain}EntityExtensionMethods";
     }
 
     public static string GetServiceMethodName(string serviceName)
     {
-        serviceName = serviceName.ToNormalizedPascalCase();
+        serviceName = serviceName.ToValidCSharpPascalCase();
 
         return $"{serviceName}";
     }
