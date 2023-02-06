@@ -17,15 +17,17 @@ public static class CronExtensions
     /// <param name="scheduler">IScheduler to use for this action</param>
     /// <param name="cron">Cron expression that describes the schedule</param>
     /// <param name="action">Callback to execute</param>
+    /// <param name="hasSeconds">True if cron has Seconds specified</param>
     /// <returns>Disposable object that allows the schedule to be cancelled</returns>
-    public static IDisposable ScheduleCron(this IScheduler scheduler, string cron, Action action)
+    public static IDisposable ScheduleCron(this IScheduler scheduler, string cron, Action action, bool hasSeconds = false)
     {
         ArgumentNullException.ThrowIfNull(scheduler);
-
+        
+        var format = hasSeconds ? CronFormat.IncludeSeconds : CronFormat.Standard;
         // When this gets cancelled we only need to actually dispose of the most recent scheduled action
         // (there will only be one at a time) so we store that in a box we will pass down
         StrongBox<IDisposable?> disposableBox = new();
-        RecursiveSchedule(scheduler, CronExpression.Parse(cron), action, disposableBox, scheduler.Now);
+        RecursiveSchedule(scheduler, CronExpression.Parse(cron, format), action, disposableBox, scheduler.Now);
 
         // Dispose will Dispose the IDisposable in the box
         return Disposable.Create(()=> disposableBox.Value?.Dispose());

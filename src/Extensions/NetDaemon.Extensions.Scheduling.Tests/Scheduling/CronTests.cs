@@ -16,6 +16,7 @@ public class CronTests
     {
         var count = 0;
         var sched = new TestScheduler();
+
         sched.AdvanceTo(DateTime.UtcNow.Ticks);
 
         var sub = sched.ScheduleCron("0 * * * *", () => count++);
@@ -25,7 +26,7 @@ public class CronTests
 
         sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
         count.Should().Be(2);
-        
+
         sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
         count.Should().Be(3);
 
@@ -33,7 +34,41 @@ public class CronTests
         sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
         count.Should().Be(3, because: "Action should not fire after Dispose()");
     }
-    
+
+    [Fact]
+    public void TestCronSeconds()
+    {
+        var count = 0;
+        var sched = new TestScheduler();
+
+        sched = new TestScheduler();
+        count = 0;
+        sched.AdvanceTo(new DateTime(2020, 2, 3, 8, 0, 28).Ticks);
+        var subSec = sched.ScheduleCron("*/30 0 * * * *", () => count++, hasSeconds: true); // 0 and 30 seconds after every whole hour 
+
+        sched.AdvanceTo(new DateTime(2020, 2, 3, 8, minute: 0, second: 29).Ticks);
+        count.Should().Be(0);
+
+        sched.AdvanceTo(new DateTime(2020, 2, 3, 8, minute: 0, second: 30).Ticks);
+        count.Should().Be(1);
+
+        sched.AdvanceTo(new DateTime(2020, 2, 3, 8, minute: 1, second: 1).Ticks);
+        count.Should().Be(1);
+        
+        sched.AdvanceBy(TimeSpan.FromMinutes(10).Ticks);
+        count.Should().Be(1);
+
+        sched.AdvanceTo(new DateTime(2020, 2, 3, 9, minute: 0, second: 0).Ticks);
+        count.Should().Be(2);
+
+        sched.AdvanceTo(new DateTime(2020, 2, 3, 9, minute: 0, second: 30).Ticks);
+        count.Should().Be(3);
+
+        subSec.Dispose();
+        sched.AdvanceBy(TimeSpan.FromHours(1).Ticks);
+        count.Should().Be(3, because: "Action should not fire after Dispose()");
+    }
+
     [Fact]
     public void ContinueAfterActionThrows()
     {
