@@ -8,7 +8,7 @@ namespace NetDaemon.HassModel;
 public static class StateObservableExtensions
 {
     /// <summary>
-    /// Waits for an EntitySte to match a predicate for the specified time
+    /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
     public static IObservable<StateChange> WhenStateIsFor(
         this IObservable<StateChange> observable, 
@@ -27,7 +27,7 @@ public static class StateObservableExtensions
             .Where(e => predicate(e.New));
     
     /// <summary>
-    /// Waits for an EntitySte to match a predicate for the specified time
+    /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
     public static IObservable<StateChange<TEntity, TEntityState>> WhenStateIsFor<TEntity, TEntityState>(
         this IObservable<StateChange<TEntity, TEntityState>> observable, 
