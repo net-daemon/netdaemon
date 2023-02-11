@@ -74,7 +74,7 @@ internal static class SyntaxFactoryHelper
         (T)member.WithBaseList(BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(IdentifierName(baseTypeName)))));
 
     public  static T WithSummaryComment<T>(this T node, string? summary) where T : SyntaxNode =>
-        string.IsNullOrWhiteSpace(summary) ? node : node.WithLeadingTrivia(Comment($"///<summary>{summary.ReplaceLineEndings(" ")}</summary>"));
+        string.IsNullOrWhiteSpace(summary) ? node : node.WithLeadingTrivia(Comment($"///<summary>{SecurityElement.Escape(summary.ReplaceLineEndings(" "))}</summary>"));
 
     public static T AppendParameterComments<T>(this T node, ServiceArguments arguments) where T : SyntaxNode 
         => node.WithLeadingTrivia(node.GetLeadingTrivia().Concat(arguments.Arguments.Select(a => ParameterComment(a.ParameterName, a.Comment))));
@@ -84,7 +84,7 @@ internal static class SyntaxFactoryHelper
         => node.AppendTrivia(ParameterComment(name, description));
 
     public static SyntaxTrivia ParameterComment(string? paramName, string? comment)
-        => Comment($"///<param name=\"{paramName?.ReplaceLineEndings(" ")}\">{comment?.ReplaceLineEndings(" ")}</param>");
+        => Comment($"///<param name=\"{SecurityElement.Escape(paramName?.ReplaceLineEndings(" "))}\">{SecurityElement.Escape(comment?.ReplaceLineEndings(" "))}</param>");
 
     public static T AppendTrivia<T>(this T node, SyntaxTrivia? trivia)
         where T : SyntaxNode =>
