@@ -311,11 +311,11 @@ public class CodeGeneratorTest
                         {
                             IEntities entities = new Entities(ha);
                             LightEntity light1 = entities.Light.Light1;
-                            int? brightness = light1.Attributes?.Brightness;
+                            double? brightness = light1.Attributes?.Brightness;
 
                             // check it can be Assigned to LightAttributesBase
                             LightAttributesBase? baseAttr = light1.Attributes;
-                            int? brightnessBase = baseAttr?.Brightness;
+                            double? brightnessBase = baseAttr?.Brightness;
                         }
                     }
                     """;
