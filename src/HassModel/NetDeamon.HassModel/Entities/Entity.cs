@@ -43,14 +43,31 @@ public record Entity
     public virtual EntityState? EntityState => HaContext.GetState(EntityId);
 
     /// <summary>
-    /// Observable, All state changes including attributes
+    /// Observable that emits all state changes, including attribute changes.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// bedroomLight.StateAllChanges()
+    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128 
+    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
+    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
+    /// </code>
+    /// </example>
     public virtual IObservable<StateChange> StateAllChanges() =>
         HaContext.StateAllChanges().Where(e => e.Entity.EntityId == EntityId);
 
     /// <summary>
-    /// Observable, All state changes. New.State!=Old.State
+    /// Observable that emits state changes where New.State != Old.State<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// disabledLight.StateChanges()
+    ///    .Where(s =&gt; s.New?.State == "on")
+    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
+    /// </code>
+    /// </example>
     public virtual IObservable<StateChange> StateChanges() =>
         StateAllChanges().StateChangesOnly();
 

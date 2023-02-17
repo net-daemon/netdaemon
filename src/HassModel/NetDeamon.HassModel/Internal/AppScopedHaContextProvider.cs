@@ -7,7 +7,7 @@ namespace NetDaemon.HassModel.Internal;
 
 /// <summary>
 ///     Implements IHaContext and IEventProvider to be used in a scope like a NetDaemon App
-///     (We could eg. also have an implementation that does not deal with scopes or caching etc to be used en Console apps)
+///     (We could eg. also have an implementation that does not deal with scopes or caching etc to be used in Console apps)
 /// </summary>
 [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
 internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable

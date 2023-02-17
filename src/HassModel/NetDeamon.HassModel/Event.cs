@@ -1,7 +1,7 @@
 ﻿namespace NetDaemon.HassModel;
 
 /// <summary>
-/// Represents an Event from  Home Assistant
+/// Represents an Event from Home Assistant
 /// </summary>
 public record Event
 {
@@ -33,7 +33,7 @@ public record Event
 /// <summary>
 /// Event with typed Data field
 /// </summary>
-/// <typeparam name="TData">The type to </typeparam>
+/// <typeparam name="TData">The type of the event to deserialize into</typeparam>
 public record Event<TData> : Event
     where TData : class
 {

@@ -11,7 +11,7 @@ public interface IHaContext
     IObservable<Event> Events { get; }
 
     /// <summary>
-    ///     The observable state stream, all changes including attributes
+    /// The observable state stream, all changes including attributes
     /// </summary>
     IObservable<StateChange> StateAllChanges();
 
@@ -46,6 +46,6 @@ public interface IHaContext
     /// Sends an event to Home Assistant
     /// </summary>
     /// <param name="eventType">The event_type for the event</param>
-    /// <param name="data">The data for the event, will be json serialized as the date element</param>
+    /// <param name="data">The data for the event, will be json serialized as the data element</param>
     void SendEvent(string eventType, object? data = null);
 }

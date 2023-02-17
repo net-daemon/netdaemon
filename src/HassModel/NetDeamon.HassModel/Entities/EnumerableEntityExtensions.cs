@@ -6,20 +6,46 @@
 public static class EnumerableEntityExtensions
 {
     /// <summary>
-    /// Observable, All state changes including attributes
+    /// Observable that emits all state changes, including attribute changes.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// bedroomLights.StateAllChanges()
+    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128 
+    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
+    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
+    /// </code>
+    /// </example>
     public static IObservable<StateChange> StateAllChanges(this IEnumerable<Entity> entities) => 
         entities.Select(t => t.StateAllChanges()).Merge();
 
     /// <summary>
-    /// Observable, All state changes. New.State != Old.State
+    /// Observable that emits state changes where New.State != Old.State<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// disabledLights.StateChanges()
+    ///    .Where(s =&gt; s.New?.State == "on")
+    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
+    /// </code>
+    /// </example>
     public static IObservable<StateChange> StateChanges(this IEnumerable<Entity> entities) =>
         entities.StateAllChanges().StateChangesOnly();
         
     /// <summary>
-    /// Observable, All state changes including attributes
+    /// Observable that emits all state changes, including attribute changes.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// bedroomLights.StateAllChanges()
+    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128 
+    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
+    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
+    /// </code>
+    /// </example>
     public static IObservable<StateChange<TEntity, TEntityState>> StateAllChanges<TEntity, TEntityState, TAttributes>(this IEnumerable<Entity<TEntity, TEntityState, TAttributes>> entities) 
         where TEntity : Entity<TEntity, TEntityState, TAttributes>
         where TEntityState : EntityState<TAttributes>
@@ -27,8 +53,16 @@ public static class EnumerableEntityExtensions
         entities.Select(t => t.StateAllChanges()).Merge();
 
     /// <summary>
-    /// Observable, All state changes. New.State != Old.State
+    /// Observable that emits state changes where New.State != Old.State<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// disabledLights.StateChanges()
+    ///    .Where(s =&gt; s.New?.State == "on")
+    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
+    /// </code>
+    /// </example>
     public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes>(this IEnumerable<Entity<TEntity, TEntityState, TAttributes>> entities) 
         where TEntity : Entity<TEntity, TEntityState, TAttributes>
         where TEntityState : EntityState<TAttributes>

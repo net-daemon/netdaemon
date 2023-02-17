@@ -29,7 +29,7 @@ public static class IntegrationHaContextExtensions
     }
 
     /// <summary>
-    ///     Set application state
+    /// Set application state
     /// </summary>
     /// <param name="haContext">IHaContext to use</param>
     /// <param name="entityId">EntityId of the entity to create</param>
