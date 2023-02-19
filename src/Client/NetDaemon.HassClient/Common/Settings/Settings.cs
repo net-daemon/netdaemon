@@ -26,7 +26,7 @@ public class HomeAssistantSettings
     public string Token { get; set; } = string.Empty;
 
     /// <summary>
-    ///     Set to true all certificate errors are ignored, please use at own risk
+    ///     Set to true to ignore all certificate errors, please use at own risk
     /// </summary>
     /// <remarks>
     ///     We do not recommend to use this to bypass certificate errors.

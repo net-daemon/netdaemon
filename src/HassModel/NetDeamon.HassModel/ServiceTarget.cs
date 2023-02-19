@@ -8,7 +8,7 @@ public class ServiceTarget
     /// <summary>
     /// Creates a new ServiceTarget from an EntityId
     /// </summary>
-    /// <param name="entityId">The Id of teh entity</param>
+    /// <param name="entityId">The Id of the entity</param>
     /// <returns>A new ServiceTarget</returns>
     public static ServiceTarget FromEntity(string entityId) =>
         new() { EntityIds = new[] { entityId } };

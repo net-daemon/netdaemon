@@ -116,7 +116,7 @@ public static class HomeAssistantConnectionExtensions
     }
 
     /// <summary>
-    ///     Pings the connected Home Assistant instance and expect a pong
+    ///     Pings the connected Home Assistant instance and expects a pong
     /// </summary>
     /// <param name="connection">connected Home Assistant instance</param>
     /// <param name="timeout">Timeout to wait for pong back</param>
