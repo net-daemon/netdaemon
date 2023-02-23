@@ -1,13 +1,20 @@
 ﻿namespace NetDaemon.HassModel.Entities.Core;
 #pragma warning disable CS1591 
 
+/// <summary>
+///     Attributes base class for light entities.
+/// </summary>
+/// <remarks>
+///     We use doubles even if the standard is integer to make the serializing more robust
+///     since we cannot trust HA integrations use integers when supposed to
+/// </remarks>
 public record LightAttributesBase
 {
     /// <summary>
     /// Integer between 0 and 255 for how bright the light should be, where 0 means the light is off, 1 is the minimum brightness and 255 is the maximum brightness supported by the light.
     /// </summary>
     [JsonPropertyName("brightness")]
-    public int? Brightness { get; init; }
+    public double? Brightness { get; init; }
     
     [JsonPropertyName("color_mode")]
     public string? ColorMode { get; init; }
@@ -16,7 +23,7 @@ public record LightAttributesBase
     /// Integer in mireds representing the color temperature of the light.
     /// </summary>
     [JsonPropertyName("color_temp")]
-    public int? ColorTemp { get; init; }
+    public double? ColorTemp { get; init; }
 
     /// <summary>
     /// The current effect.
@@ -55,31 +62,31 @@ public record LightAttributesBase
     /// The warmest color_temp that this light supports.
     /// </summary>
     [JsonPropertyName("max_mireds")]
-    public long? MaxMireds { get; init; }
+    public double? MaxMireds { get; init; }
 
     /// <summary>
     /// The coldest color_temp that this light supports.
     /// </summary>
     [JsonPropertyName("min_mireds")]
-    public long? MinMireds { get; init; }
+    public double? MinMireds { get; init; }
 
     /// <summary>
     /// List containing three integers between 0 and 255 representing the RGB color (red, green, blue) of the light. Three comma-separated integers that represent the color in RGB.
     /// </summary>
     [JsonPropertyName("rgb_color")]
-    public IReadOnlyList<long>? RgbColor { get; init; }
+    public IReadOnlyList<double>? RgbColor { get; init; }
     
     /// <summary>
     /// List containing four integers between 0 and 255 representing the RGBW color (red, green, blue, white) of the light. This attribute will be null for lights which do not support RGBW colors.
     /// </summary>
     [JsonPropertyName("rgbw_color")]
-    public IReadOnlyList<long>? RgbwColor { get; init; }
+    public IReadOnlyList<double>? RgbwColor { get; init; }
     
     /// <summary>
     /// List containing five integers between 0 and 255 representing the RGBWW color (red, green, blue, cold white, warm white) of the light. This attribute will be null for lights which do not support RGBWW colors.
     /// </summary>
     [JsonPropertyName("rgbww_color")]
-    public IReadOnlyList<long>? RgbwwColor { get; init; }
+    public IReadOnlyList<double>? RgbwwColor { get; init; }
     
     [JsonPropertyName("supported_color_modes")]
     public IReadOnlyList<string>? SupportedColorModes { get; init; }
