@@ -1,5 +1,5 @@
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:7.0.101-bullseye-slim-amd64 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:7.0.200-bullseye-slim-amd64 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
