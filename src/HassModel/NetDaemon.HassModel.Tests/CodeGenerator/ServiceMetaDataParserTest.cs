@@ -109,8 +109,7 @@ public class ServiceMetaDataParserTest
          """;
       var result = Parse(sample);
       
-      result.First().Services.First().Fields!.First().Selector.Should()
-        .BeAssignableTo<EntitySelector>().Which.Domain.Should().BeEquivalentTo("climate", "select");
+      result.First().Services.First().Fields!.First().Required.Should().BeTrue();
     }
 
     private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)
