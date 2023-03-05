@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
+//Based on: https://stackoverflow.com/a/68685773
 internal class NullableBoolJsonConverter : JsonConverter<bool?>
 {
     public override void Write(Utf8JsonWriter writer, bool? value, JsonSerializerOptions options) =>
