@@ -15,15 +15,26 @@ internal static class ServiceMetaDataParser
     {
         if (element.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException("Not expected result from the GetServices result");
-
-        var result = element.EnumerateObject().Select(property =>
-            new HassServiceDomain
+       
+        var hassServiceDomains = new List<HassServiceDomain>();
+        foreach (var property in element.EnumerateObject())
+        {
+            try
             {
-                Domain = property.Name,
-                Services = GetServices(property.Value)
-            }).ToList();
-
-        return result;
+                var hassServiceDomain = new HassServiceDomain
+                {
+                    Domain = property.Name,
+                    Services = GetServices(property.Value)
+                };
+                hassServiceDomains.Add(hassServiceDomain);
+            }
+            catch (JsonException e)
+            {
+                Console.Error.WriteLine($"JSON deserialization of {nameof(HassServiceDomain)} failed: {e.Message}");
+                Console.Error.WriteLine($"Deserialization source was: {property.Value}");
+            }
+        }
+        return hassServiceDomains;
     }
 
     private static IReadOnlyCollection<HassService> GetServices(JsonElement element)
