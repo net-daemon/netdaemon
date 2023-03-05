@@ -77,6 +77,41 @@ public class ServiceMetaDataParserTest
       result.First().Services.First().Fields!.First().Selector.Should()
         .BeAssignableTo<EntitySelector>().Which.Domain.Should().BeEquivalentTo("climate", "select");
     }
+    
+    [Fact]
+    public void TestMultiDomainTargetWithRequiredFieldAsString()
+    {
+      var sample = """
+         {
+         "wiser": {
+           "get_schedule": {
+             "name": "Save Schedule to File",
+             "description": "Read the schedule from a room or device and write to an output file in yaml\n",
+             "fields": {
+               "entity_id": {
+                 "name": "Entity",
+                 "description": "A wiser entity",
+                 "required": "true",
+                 "selector": {
+                   "entity": {
+                     "integration": "wiser",
+                     "domain": [
+                       "climate",
+                       "select"
+                       ]
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         }
+         """;
+      var result = Parse(sample);
+      
+      result.First().Services.First().Fields!.First().Selector.Should()
+        .BeAssignableTo<EntitySelector>().Which.Domain.Should().BeEquivalentTo("climate", "select");
+    }
 
     private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)
     {
