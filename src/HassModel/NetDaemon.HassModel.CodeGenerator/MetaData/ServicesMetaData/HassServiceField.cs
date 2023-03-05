@@ -6,6 +6,7 @@ internal record HassServiceField
 {
     public string Field { get; init; } = "";  // cannot be required because the JsonSerializer will complain
     public string? Description { get; init; }
+    [JsonConverter(typeof(NullableBoolJsonConverter))]
     public bool? Required { get; init; }
     public object? Example { get; init; }
     
