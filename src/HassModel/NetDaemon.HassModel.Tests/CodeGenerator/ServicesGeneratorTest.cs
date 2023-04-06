@@ -21,7 +21,11 @@ public class ServicesGeneratorTest
                 Services = new HassService[] {
                     new() {
                         Service = "turn_off",
-                        Target = new TargetSelector { Entity = new() { Domain = new [] {"light"} } }
+                        Target = new TargetSelector
+                        {
+                            Entity = new[] { new EntitySelector { Domain = new[] { "light" } } } 
+                        }
+
                     },
                     new() {
                         Service = "turn_on",
@@ -29,7 +33,10 @@ public class ServicesGeneratorTest
                             new() { Field = "transition", Selector = new NumberSelector(), },
                             new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2f }, }
                         },
-                        Target = new TargetSelector { Entity = new() { Domain = new [] {"light" } } }
+                        Target = new TargetSelector
+                        {
+                            Entity = new[] { new EntitySelector { Domain = new[] { "light" } } } 
+                        }
                     }
                 }
             }
@@ -82,12 +89,18 @@ public class ServicesGeneratorTest
                 Domain = "smart_things",
                 Services = new HassService[] {
                     new() {
-                        Service = "dig",  
-                        Target = new TargetSelector { Entity = new() { Domain = new [] {"humidifiers"} } },
+                        Service = "dig", 
+                        Target = new TargetSelector
+                        {
+                            Entity = new[] { new EntitySelector { Domain = new[] { "humidifiers" } } } 
+                        },
                     },
                     new() {
                         Service = "orbit",
-                        Target = new TargetSelector { Entity = new() { Domain = new [] {"orbiter" }} },
+                        Target = new TargetSelector
+                        {
+                            Entity = new[] { new EntitySelector { Domain = new[] { "orbiter" } } } 
+                        },
                     }
                 },
             }
@@ -134,7 +147,10 @@ public class ServicesGeneratorTest
                 Services = new HassService[] {
                     new() {
                         Service = "push_button",  
-                        Target = new TargetSelector { Entity = new() { Domain = new [] {"uselessbox" }} },
+                        Target = new TargetSelector
+                        {
+                            Entity = new[] { new EntitySelector { Domain = new[] { "uselessbox" } } } 
+                        },
                     },
                 },
             }            
@@ -178,7 +194,7 @@ public class ServicesGeneratorTest
                     new() {
                         Service = "set_value",
                         Target = new TargetSelector {
-                            Entity = new() { Domain = new [] {"light"} }
+                            Entity = new[] { new EntitySelector { Domain = new[] { "light" } } } 
                         },
                         Fields = new HassServiceField[] {
                             new() { Field = "class", Selector = new NumberSelector(), },

@@ -40,7 +40,7 @@ public class ServiceMetaDataParserTest
       var res = ServiceMetaDataParser.Parse(element);
       res.Should().HaveCount(1);
       res.First().Domain.Should().Be("homeassistant");
-      res.First().Services.ElementAt(1).Target!.Entity!.Domain.Should().BeEmpty();
+      res.First().Services.ElementAt(1).Target!.Entity.SelectMany(e=>e.Domain).Should().BeEmpty();
     }
     
     [Fact]
@@ -110,6 +110,38 @@ public class ServiceMetaDataParserTest
       var result = Parse(sample);
       
       result.First().Services.First().Fields!.First().Required.Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeserializeTargetEntityArray()
+    {
+       var sample = """
+         {
+            "testdomain": {
+              "purge_entities":{
+              "name":"Purge Entities",
+              "fields":{
+              },
+              "target":{
+                 "entity":[
+                    {
+                      "domain":"targetdomain1" 
+                    },
+                    {
+                      "domain":["targetdomain2", "targetdomain3"] 
+                    }
+
+                 ]
+              }
+           }
+        }
+      }
+      """;
+       var result = Parse(sample);
+       result.First().Services.First().Target!.Entity.Should().HaveCount(2);
+       result.First().Services.First().Target!.Entity[0].Domain.Should().Equal("targetdomain1");
+       result.First().Services.First().Target!.Entity[1].Domain.Should().Equal("targetdomain2", "targetdomain3");
+
     }
 
     private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)

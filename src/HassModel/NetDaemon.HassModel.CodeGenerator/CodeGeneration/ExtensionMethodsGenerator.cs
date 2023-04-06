@@ -50,7 +50,7 @@ internal static class ExtensionMethodsGenerator
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
     {
         // There can be multiple Target Domains, so generate methods for each 
-        var targetEntityDomains = service.Target?.Entity?.Domain ?? Array.Empty<string>();
+        var targetEntityDomains = service.Target?.Entity.SelectMany(e => e.Domain) ?? Array.Empty<string>();
         
         return targetEntityDomains.SelectMany(targetEntityDomain => GenerateExtensionMethodsForService(domain, service, targetEntityDomain, entityClassNameByDomain));
     }
