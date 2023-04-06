@@ -50,10 +50,7 @@ internal record NumberSelector : Selector
 
 internal record TargetSelector : Selector 
 {
-    public AreaSelector? Area { get; init; }
-
-    public DeviceSelector? Device { get; init; }
-
-    public EntitySelector? Entity { get; init; }
+    [JsonConverter(typeof(SingleObjectAsArrayConverter<EntitySelector>))]
+    public EntitySelector[] Entity { get; init; } = Array.Empty<EntitySelector>();
 }
 
