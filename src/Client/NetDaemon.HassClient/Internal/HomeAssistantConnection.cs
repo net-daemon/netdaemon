@@ -137,7 +137,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         throw new InvalidOperationException($"Failed command ({command.Type}) error: {resultMessageTask.Result.Error}.  Sent command is {command.ToJsonElement()}");
     }
 
-    public async Task<IObservable<HassMessage>> SubscribeToTriggerAsync<T>(
+    public async Task<int> SubscribeToTriggerAsync<T>(
         T trigger, CancellationToken cancelToken) where T: TriggerBase
     {
         var triggerCommand = new SubscribeTriggersCommand<T>(trigger);
@@ -145,10 +145,19 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         var msg = await SendCommandAndReturnHassMessageResponseAsync<SubscribeTriggersCommand<T>>
                           (triggerCommand, cancelToken).ConfigureAwait(false) ??
                   throw new NullReferenceException("Unexpected null return from command");
-
-        return _hassMessageSubject.Where(n => n.Id == msg.Id);
+        return msg.Id;
     }
 
+    public async Task UnsubscribeToTriggerAsync(
+        int id, CancellationToken cancelToken)
+    {
+        var triggerCommand = new UnsubscribeTriggersCommand(id);
+        
+        var msg = await SendCommandAndReturnHassMessageResponseAsync<UnsubscribeTriggersCommand>
+                      (triggerCommand, cancelToken).ConfigureAwait(false) ??
+                  throw new NullReferenceException("Unexpected null return from command");
+    }
+    
     public async ValueTask DisposeAsync()
     {
         try

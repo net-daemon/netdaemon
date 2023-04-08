@@ -42,8 +42,10 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     Task<HassMessage?> SendCommandAndReturnHassMessageResponseAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage;
 
-    Task<IObservable<HassMessage>> SubscribeToTriggerAsync<T>(
+    Task<int> SubscribeToTriggerAsync<T>(
         T trigger, CancellationToken cancelToken) where T: TriggerBase;
+
+    Task UnsubscribeToTriggerAsync(int id, CancellationToken cancelToken);
     
     /// <summary>
     ///     Start processing Home Assistant events

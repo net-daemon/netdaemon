@@ -2,5 +2,5 @@
 
 public record HassVariable
 {
-    [JsonPropertyName("trigger")] public JsonElement? Trigger { get; init; }
+    [JsonPropertyName("trigger")] public JsonElement? TriggerElement { get; init; }
 }
