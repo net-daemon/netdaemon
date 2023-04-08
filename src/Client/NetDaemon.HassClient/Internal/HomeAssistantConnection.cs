@@ -14,7 +14,6 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
-    private readonly ConcurrentDictionary<int, Subject<HassMessage>> _triggerSubscriptions = new();
     private readonly Task _handleNewMessagesTask;
 
     private const int WaitForResultTimeout = 20000;
@@ -147,10 +146,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                           (triggerCommand, cancelToken).ConfigureAwait(false) ??
                   throw new NullReferenceException("Unexpected null return from command");
 
-        var triggerSubject = new Subject<HassMessage>();
-        _triggerSubscriptions[msg.Id] = triggerSubject;
-        
-        return triggerSubject;
+        return _hassMessageSubject.Where(n => n.Id == msg.Id);
     }
 
     public async ValueTask DisposeAsync()
@@ -205,14 +201,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                     .ConfigureAwait(false);
                 try
                 {
-                    if (_triggerSubscriptions.ContainsKey(msg.Id))
-                    {
-                        _triggerSubscriptions[msg.Id].OnNext(msg);                  
-                    }
-                    else
-                    {
                         _hassMessageSubject.OnNext(msg);
-                    }
                 }
                 catch (Exception e)
                 {
