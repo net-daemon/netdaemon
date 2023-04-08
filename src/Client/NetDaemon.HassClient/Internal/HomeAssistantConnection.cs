@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using NetDaemon.Client.Common.HomeAssistant.Model;
+
 namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistantHassMessages
@@ -11,6 +14,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
+    private readonly ConcurrentDictionary<int, Subject<HassMessage>> _triggerSubscriptions = new();
     private readonly Task _handleNewMessagesTask;
 
     private const int WaitForResultTimeout = 20000;
@@ -107,6 +111,16 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage
     {
+        var hassMessage =
+            await SendCommandAndReturnHassMessageResponseAsync(command, cancelToken).ConfigureAwait(false);
+
+        // The SendCommmandsAndReturnHAssMessageResponse will throw if not successful so just ignore errors here
+        return hassMessage?.ResultElement;
+    }
+    
+    public async Task<HassMessage?> SendCommandAndReturnHassMessageResponseAsync<T>(T command, CancellationToken cancelToken)
+        where T : CommandMessage
+    {
         var resultMessageTask = await SendCommandAsyncInternal(command, cancelToken);
 
         var awaitedTask = await Task.WhenAny(resultMessageTask, Task.Delay(WaitForResultTimeout, cancelToken));
@@ -117,14 +131,26 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             throw new InvalidOperationException($"Send command ({command.Type}) did not get response in timely fashion. Sent command is {command.ToJsonElement()}");
         }
 
-        // We already awaited the task so result
-        var result = resultMessageTask.Result;
-
-        if (result.Success ?? false)
-            return result.ResultElement;
+        if (resultMessageTask.Result.Success ?? false)
+            return resultMessageTask.Result;
 
         // Non successful command should throw exception
-        throw new InvalidOperationException($"Failed command ({command.Type}) error: {result.Error}.  Sent command is {command.ToJsonElement()}");
+        throw new InvalidOperationException($"Failed command ({command.Type}) error: {resultMessageTask.Result.Error}.  Sent command is {command.ToJsonElement()}");
+    }
+
+    public async Task<IObservable<HassMessage>> SubscribeToTriggerAsync<T>(
+        T trigger, CancellationToken cancelToken) where T: TriggerBase
+    {
+        var triggerCommand = new SubscribeTriggersCommand<T>(trigger);
+        
+        var msg = await SendCommandAndReturnHassMessageResponseAsync<SubscribeTriggersCommand<T>>
+                          (triggerCommand, cancelToken).ConfigureAwait(false) ??
+                  throw new NullReferenceException("Unexpected null return from command");
+
+        var triggerSubject = new Subject<HassMessage>();
+        _triggerSubscriptions[msg.Id] = triggerSubject;
+        
+        return triggerSubject;
     }
 
     public async ValueTask DisposeAsync()
@@ -179,7 +205,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                     .ConfigureAwait(false);
                 try
                 {
-                    _hassMessageSubject.OnNext(msg);
+                    if (_triggerSubscriptions.ContainsKey(msg.Id))
+                    {
+                        _triggerSubscriptions[msg.Id].OnNext(msg);                  
+                    }
+                    else
+                    {
+                        _hassMessageSubject.OnNext(msg);
+                    }
                 }
                 catch (Exception e)
                 {

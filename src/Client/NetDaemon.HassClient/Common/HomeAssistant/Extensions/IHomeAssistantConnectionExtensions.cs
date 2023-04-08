@@ -1,3 +1,5 @@
+using NetDaemon.Client.Common.HomeAssistant.Model;
+
 namespace NetDaemon.Client.HomeAssistant.Extensions;
 
 /// <summary>
@@ -83,6 +85,7 @@ public static class HomeAssistantConnectionExtensions
                        (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
                throw new NullReferenceException("Unexpected null return from command");
     }
+
 
     /// <summary>
     ///     Get all configuration from Home Assistant

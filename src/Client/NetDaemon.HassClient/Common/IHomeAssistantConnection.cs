@@ -1,3 +1,5 @@
+using NetDaemon.Client.Common.HomeAssistant.Model;
+
 namespace NetDaemon.Client;
 
 public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisposable
@@ -37,6 +39,12 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage;
 
+    Task<HassMessage?> SendCommandAndReturnHassMessageResponseAsync<T>(T command, CancellationToken cancelToken)
+        where T : CommandMessage;
+
+    Task<IObservable<HassMessage>> SubscribeToTriggerAsync<T>(
+        T trigger, CancellationToken cancelToken) where T: TriggerBase;
+    
     /// <summary>
     ///     Start processing Home Assistant events
     /// </summary>
