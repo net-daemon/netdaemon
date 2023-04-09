@@ -45,7 +45,7 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     Task<int> SubscribeToTriggerAsync<T>(
         T trigger, CancellationToken cancelToken) where T: TriggerBase;
 
-    Task UnsubscribeToTriggerAsync(int id, CancellationToken cancelToken);
+    Task UnsubscribeFromTriggerAsync(int id, CancellationToken cancelToken);
     
     /// <summary>
     ///     Start processing Home Assistant events

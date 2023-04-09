@@ -148,7 +148,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         return msg.Id;
     }
 
-    public async Task UnsubscribeToTriggerAsync(
+    public async Task UnsubscribeFromTriggerAsync(
         int id, CancellationToken cancelToken)
     {
         var triggerCommand = new UnsubscribeTriggersCommand(id);

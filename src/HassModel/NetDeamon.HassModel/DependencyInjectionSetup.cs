@@ -30,5 +30,6 @@ public static class DependencyInjectionSetup
         services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
         services.AddScoped<QueuedObservable<HassEvent>>();
         services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<QueuedObservable<HassEvent>>());
+        services.AddTransient<ITriggerManager, TriggerManager>();
     }
 }
