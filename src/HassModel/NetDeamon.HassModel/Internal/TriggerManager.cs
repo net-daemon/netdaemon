@@ -25,7 +25,7 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
     
     public async Task<IObservable<JsonElement>> RegisterTrigger<T>(T triggerParams) where T : TriggerBase
     {
-        var id = await _runner.CurrentConnection!.SubscribeToTriggerAsync(triggerParams, CancellationToken.None);
+        var id = await _runner.CurrentConnection!.SubscribeToTriggerAsync(triggerParams, CancellationToken.None).ConfigureAwait(false);
         _triggerIds.Add(id);
         
         // We create a new subject and forward all messages for this trigger subscription to that.
@@ -54,6 +54,6 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
             subscription.Dispose();
         }
         
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 }
