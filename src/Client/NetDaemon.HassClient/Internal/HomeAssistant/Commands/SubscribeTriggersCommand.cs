@@ -1,14 +1,13 @@
-﻿using NetDaemon.Client.Common.HomeAssistant.Model;
+﻿namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
-namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
-
-internal record SubscribeTriggersCommand<T> : CommandMessage where T: TriggerBase
+internal record SubscribeTriggersCommand : CommandMessage
 {
-    public SubscribeTriggersCommand(T trigger)
+    public SubscribeTriggersCommand(object trigger)
     {
         Type = "subscribe_trigger";
         Trigger = trigger;
     }
 
-    [JsonPropertyName("trigger")] public T Trigger { get; init; }
+    [JsonPropertyName("trigger")] 
+    public object Trigger { get; init; }
 }

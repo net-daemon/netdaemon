@@ -1,6 +1,3 @@
-using System.Collections.Concurrent;
-using NetDaemon.Client.Common.HomeAssistant.Model;
-
 namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistantHassMessages
@@ -137,26 +134,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         throw new InvalidOperationException($"Failed command ({command.Type}) error: {resultMessageTask.Result.Error}.  Sent command is {command.ToJsonElement()}");
     }
 
-    public async Task<int> SubscribeToTriggerAsync<T>(
-        T trigger, CancellationToken cancelToken) where T: TriggerBase
-    {
-        var triggerCommand = new SubscribeTriggersCommand<T>(trigger);
-        
-        var msg = await SendCommandAndReturnHassMessageResponseAsync<SubscribeTriggersCommand<T>>
-                          (triggerCommand, cancelToken).ConfigureAwait(false) ??
-                  throw new NullReferenceException("Unexpected null return from command");
-        return msg.Id;
-    }
 
-    public async Task UnsubscribeFromTriggerAsync(
-        int id, CancellationToken cancelToken)
-    {
-        var triggerCommand = new UnsubscribeTriggersCommand(id);
-        
-        var msg = await SendCommandAndReturnHassMessageResponseAsync<UnsubscribeTriggersCommand>
-                      (triggerCommand, cancelToken).ConfigureAwait(false) ??
-                  throw new NullReferenceException("Unexpected null return from command");
-    }
     
     public async ValueTask DisposeAsync()
     {

@@ -1,5 +1,3 @@
-using NetDaemon.Client.Common.HomeAssistant.Model;
-
 namespace NetDaemon.Client.HomeAssistant.Extensions;
 
 /// <summary>
@@ -149,5 +147,25 @@ public static class HomeAssistantConnectionExtensions
         }
 
         return true;
+    }
+    
+    public static async Task<HassMessage> SubscribeToTriggerAsync(this IHomeAssistantConnection connection, object trigger, CancellationToken cancelToken)
+    {
+        var triggerCommand = new SubscribeTriggersCommand(trigger);
+        
+        var msg = await connection.SendCommandAndReturnHassMessageResponseAsync
+                      (triggerCommand, cancelToken).ConfigureAwait(false) ??
+                  throw new NullReferenceException("Unexpected null return from command");
+        return msg;
+    }
+    
+    public static async Task UnsubscribeFromTriggerAsync(this IHomeAssistantConnection connection,
+        int id, CancellationToken cancelToken)
+    {
+        var triggerCommand = new UnsubscribeTriggersCommand(id);
+
+        _ = await connection.SendCommandAndReturnHassMessageResponseAsync
+                (triggerCommand, cancelToken).ConfigureAwait(false) ??
+            throw new NullReferenceException("Unexpected null return from command");
     }
 }

@@ -2,7 +2,10 @@
 
 namespace NetDaemon.HassModel;
 
+/// <summary>
+/// Enables the creation of triggers
+/// </summary>
 public interface ITriggerManager
 {
-    Task<IObservable<JsonElement>> RegisterTrigger<T>(T triggerParams) where T : TriggerBase;
+    IObservable<JsonElement> RegisterTrigger(object triggerParams);
 }

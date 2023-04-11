@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
-using NetDaemon.Client.Common.HomeAssistant.Model;
+using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
 
@@ -12,32 +12,44 @@ namespace NetDaemon.HassModel.Internal;
 internal class TriggerManager : IAsyncDisposable, ITriggerManager
 {
     private readonly IHomeAssistantRunner _runner;
+    private readonly IBackgroundTaskTracker _tracker;
     private readonly IHomeAssistantHassMessages _hassMessages;
-    private readonly ConcurrentBag<int> _triggerIds = new();
-    private readonly ConcurrentBag<IDisposable> _subscriptions = new();
+    private readonly ConcurrentBag<(int, IDisposable)> _subscriptions = new();
     private bool _disposed;
 
-    public TriggerManager(IHomeAssistantRunner runner)
+    public TriggerManager(IHomeAssistantRunner runner, IBackgroundTaskTracker tracker)
     {
         _runner = runner;
+        _tracker = tracker;
         _hassMessages = (IHomeAssistantHassMessages)runner.CurrentConnection!;
     }
     
-    public async Task<IObservable<JsonElement>> RegisterTrigger<T>(T triggerParams) where T : TriggerBase
+    public IObservable<JsonElement> RegisterTrigger(object triggerParams)
     {
-        var id = await _runner.CurrentConnection!.SubscribeToTriggerAsync(triggerParams, CancellationToken.None).ConfigureAwait(false);
-        _triggerIds.Add(id);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        // We create a new subject that we can return directly. In the background we register the trigger in HA and 
+        // forward messages to this Subject
+        var subject = new Subject<JsonElement>();
+
+        _tracker.TrackBackgroundTask(SubscribeToTrigger(triggerParams, subject));
+
+        return subject;
+    }
+
+    private async Task SubscribeToTrigger(object triggerParams, Subject<JsonElement> subject)
+    {
         
-        // We create a new subject and forward all messages for this trigger subscription to that.
-        // This makes it possible to unsubscribe when Disposing this manager and avoid
-        // memory leaks when apps are stopped and started repeatedly  
-        var sub = new Subject<JsonElement>();
-        
-        _subscriptions.Add(_hassMessages.OnHassMessage
+        var message = await _runner.CurrentConnection!.SubscribeToTriggerAsync(triggerParams, CancellationToken.None).ConfigureAwait(false);
+        var id = message.Id;
+
+        var subscribtion = _hassMessages.OnHassMessage
             .Where(m => m.Id == id)
             .Select(n => n.Event?.Variables?.TriggerElement)
-            .Where(m => m.HasValue).Subscribe(m => sub.OnNext(m!.Value)));
-        return sub;
+            .Where(m => m.HasValue)
+            .Subscribe(m => subject.OnNext(m!.Value));
+        
+        _subscriptions.Add((id, subscribtion));
     }
 
     public async ValueTask DisposeAsync()
@@ -45,13 +57,13 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
         if (_disposed) return;
         _disposed = true;
 
-        // Unsubscribe to this trigger in HA (ignore if not connected anymore, we will not ge new events anyway)
-        var tasks = _triggerIds.Select(id => _runner.CurrentConnection?.UnsubscribeFromTriggerAsync(id, CancellationToken.None) ?? Task.CompletedTask).ToArray();
+        // Unsubscribe to this trigger in HA (ignore if not connected anymore, we will not get new events anyway)
+        var tasks = _subscriptions.Select(s => _runner.CurrentConnection?.UnsubscribeFromTriggerAsync(s.Item1, CancellationToken.None) ?? Task.CompletedTask).ToArray();
         
         // Also unsubscribe any Observers we dont get memory leaks
         foreach (var subscription in _subscriptions)
         {
-            subscription.Dispose();
+            subscription.Item2.Dispose();
         }
         
         await Task.WhenAll(tasks).ConfigureAwait(false);
