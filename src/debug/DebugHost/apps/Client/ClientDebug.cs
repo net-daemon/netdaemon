@@ -21,7 +21,7 @@ public sealed class ClientApp : IAsyncDisposable
         var triggerObservable = _triggerManager.RegisterTrigger(new StateTrigger()
         {
             EntityId = new string[] { "media_player.vardagsrum" },
-            Attribute = new []{"volume_level"}
+            Attribute = "volume_level"
             // From = new string[] { "on" },
             // To = new string[] {"off"}
         });

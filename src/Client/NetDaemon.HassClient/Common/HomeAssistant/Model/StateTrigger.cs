@@ -9,7 +9,7 @@ public record StateTrigger : TriggerBase
     
     [JsonPropertyName("entity_id")] public string[] EntityId { get; init; } = Array.Empty<string>();
     
-    [JsonPropertyName("attribute")] public string[]? Attribute { get; init; }
+    [JsonPropertyName("attribute")] public string? Attribute { get; init; }
     
     [JsonPropertyName("from")] public string[]? From { get; init; }
     [JsonPropertyName("to")] public string[]? To { get; init; }
