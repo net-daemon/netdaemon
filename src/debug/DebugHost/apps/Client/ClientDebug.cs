@@ -18,12 +18,13 @@ public sealed class ClientApp : IAsyncDisposable
         _logger = logger;
         _triggerManager = triggerManager;
         
-        var triggerObservable = _triggerManager.RegisterTrigger(new StateTrigger()
+        var triggerObservable = _triggerManager.RegisterTrigger(
+        new
         {
-            EntityId = new string[] { "media_player.vardagsrum" },
-            Attribute = "volume_level"
-            // From = new string[] { "on" },
-            // To = new string[] {"off"}
+            platform = "state",
+            entity_id = new string[] { "media_player.vardagsrum" },
+            from = new string[] { "idle", "playing" },
+            to = "off"
         });
 
         triggerObservable.Subscribe(n => 
@@ -38,7 +39,7 @@ public sealed class ClientApp : IAsyncDisposable
         
         var disposedSubscription = timePatternTriggerObservable.Subscribe(n => 
             _logger.LogCritical("Got trigger message: {Message}", n)
-        );        
+        );
     }
 
     public ValueTask DisposeAsync()
