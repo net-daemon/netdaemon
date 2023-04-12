@@ -1,8 +1,8 @@
 ﻿namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
-internal record SubscribeTriggersCommand : CommandMessage
+internal record SubscribeTriggerCommand : CommandMessage
 {
-    public SubscribeTriggersCommand(object trigger)
+    public SubscribeTriggerCommand(object trigger)
     {
         Type = "subscribe_trigger";
         Trigger = trigger;

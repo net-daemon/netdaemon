@@ -151,7 +151,7 @@ public static class HomeAssistantConnectionExtensions
     
     public static async Task<HassMessage> SubscribeToTriggerAsync(this IHomeAssistantConnection connection, object trigger, CancellationToken cancelToken)
     {
-        var triggerCommand = new SubscribeTriggersCommand(trigger);
+        var triggerCommand = new SubscribeTriggerCommand(trigger);
         
         var msg = await connection.SendCommandAndReturnHassMessageResponseAsync
                       (triggerCommand, cancelToken).ConfigureAwait(false) ??
@@ -162,7 +162,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task UnsubscribeFromTriggerAsync(this IHomeAssistantConnection connection,
         int id, CancellationToken cancelToken)
     {
-        var triggerCommand = new UnsubscribeTriggersCommand(id);
+        var triggerCommand = new UnsubscribeEventsCommand(id);
 
         _ = await connection.SendCommandAndReturnHassMessageResponseAsync
                 (triggerCommand, cancelToken).ConfigureAwait(false) ??

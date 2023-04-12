@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.AppModel;
-using NetDaemon.Client.Common.HomeAssistant.Model;
 using NetDaemon.HassModel;
 
 namespace Apps;
@@ -12,13 +11,12 @@ namespace Apps;
 public sealed class ClientApp : IAsyncDisposable
 {
     private readonly ILogger<HelloApp> _logger;
-    private readonly ITriggerManager _triggerManager;
+
     public ClientApp(ILogger<HelloApp> logger, ITriggerManager triggerManager)
     {
         _logger = logger;
-        _triggerManager = triggerManager;
-        
-        var triggerObservable = _triggerManager.RegisterTrigger(
+
+        var triggerObservable = triggerManager.RegisterTrigger(
         new
         {
             platform = "state",
@@ -31,9 +29,10 @@ public sealed class ClientApp : IAsyncDisposable
             _logger.LogCritical("Got trigger message: {Message}", n)
         );
                 
-        var timePatternTriggerObservable = _triggerManager.RegisterTrigger(new
+        var timePatternTriggerObservable = triggerManager.RegisterTrigger<TimePatternResult>(new
         {
             platform = "time_pattern",
+            id = "some id",
             seconds = "/1"
         });
         
@@ -48,3 +47,5 @@ public sealed class ClientApp : IAsyncDisposable
         return ValueTask.CompletedTask;
     }
 }
+
+record TimePatternResult(string id, string alias, string platform, DateTimeOffset now, string description);

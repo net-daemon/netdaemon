@@ -14,6 +14,7 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
     private readonly IHomeAssistantRunner _runner;
     private readonly IBackgroundTaskTracker _tracker;
     private readonly IHomeAssistantHassMessages _hassMessages;
+    
     private readonly ConcurrentBag<(int, IDisposable)> _subscriptions = new();
     private bool _disposed;
 
@@ -57,10 +58,10 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
         if (_disposed) return;
         _disposed = true;
 
-        // Unsubscribe to this trigger in HA (ignore if not connected anymore, we will not get new events anyway)
+        // Unsubscribe from all triggers in HA (ignore if not connected anymore, we will not get new events anyway)
         var tasks = _subscriptions.Select(s => _runner.CurrentConnection?.UnsubscribeFromTriggerAsync(s.Item1, CancellationToken.None) ?? Task.CompletedTask).ToArray();
         
-        // Also unsubscribe any Observers we dont get memory leaks
+        // Also unsubscribe any Observers to avoid memory leaks
         foreach (var subscription in _subscriptions)
         {
             subscription.Item2.Dispose();

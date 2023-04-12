@@ -15,6 +15,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private const int WaitForResultTimeout = 20000;
 
+    private int _eventSubscribtionMessageId = -1;
+
     private readonly SemaphoreSlim _messageIdSemaphore = new(1,1);
     private int _messageId = 1;
 
@@ -48,7 +50,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     }
 
     public IObservable<HassEvent> OnHomeAssistantEvent =>
-        _hassMessageSubject.Where(n => n.Type == "event").Select(n => n.Event!);
+        _hassMessageSubject.Where(n => n.Type == "event" && n.Id == _eventSubscribtionMessageId).Select(n => n.Event!);
 
     public async Task ProcessHomeAssistantEventsAsync(CancellationToken cancelToken)
     {
@@ -134,8 +136,6 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         throw new InvalidOperationException($"Failed command ({command.Type}) error: {resultMessageTask.Result.Error}.  Sent command is {command.ToJsonElement()}");
     }
 
-
-    
     public async ValueTask DisposeAsync()
     {
         try
@@ -174,8 +174,11 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private async Task SubscribeToAllHomeAssistantEvents(CancellationToken cancelToken)
     {
-        _ = await SendCommandAndReturnResponseAsync<SubscribeEventCommand, object?>(new SubscribeEventCommand(),
+        var result = await SendCommandAndReturnHassMessageResponseAsync(new SubscribeEventCommand(),
             cancelToken).ConfigureAwait(false);
+        
+        // The id if the message we used to subscribe should be used as the filter for the event messages 
+        _eventSubscribtionMessageId = result?.Id ?? -1;
     }
 
     private async Task HandleNewMessages()
@@ -188,7 +191,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                     .ConfigureAwait(false);
                 try
                 {
-                        _hassMessageSubject.OnNext(msg);
+                    _hassMessageSubject.OnNext(msg);
                 }
                 catch (Exception e)
                 {

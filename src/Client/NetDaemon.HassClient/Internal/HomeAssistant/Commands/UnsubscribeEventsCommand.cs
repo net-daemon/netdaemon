@@ -1,8 +1,8 @@
 ﻿namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
-internal record UnsubscribeTriggersCommand : CommandMessage
+internal record UnsubscribeEventsCommand : CommandMessage
 {
-    public UnsubscribeTriggersCommand(int subscriptionId)
+    public UnsubscribeEventsCommand(int subscriptionId)
     {
         Type = "unsubscribe_events";
         Subscription = subscriptionId;
