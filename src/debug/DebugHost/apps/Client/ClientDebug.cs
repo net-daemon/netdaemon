@@ -8,7 +8,7 @@ namespace Apps;
 
 [NetDaemonApp]
 [Focus]
-public sealed class ClientApp : IAsyncDisposable
+internal sealed class ClientApp : IAsyncDisposable
 {
     private readonly ILogger<HelloApp> _logger;
 
@@ -47,5 +47,6 @@ public sealed class ClientApp : IAsyncDisposable
         return ValueTask.CompletedTask;
     }
 }
+
 
 record TimePatternResult(string id, string alias, string platform, DateTimeOffset now, string description);
