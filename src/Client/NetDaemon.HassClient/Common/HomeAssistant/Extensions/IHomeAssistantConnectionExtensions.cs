@@ -159,7 +159,7 @@ public static class HomeAssistantConnectionExtensions
         return msg;
     }
     
-    public static async Task UnsubscribeFromTriggerAsync(this IHomeAssistantConnection connection,
+    public static async Task UnsubscribeEventsAsync(this IHomeAssistantConnection connection,
         int id, CancellationToken cancelToken)
     {
         var triggerCommand = new UnsubscribeEventsCommand(id);
