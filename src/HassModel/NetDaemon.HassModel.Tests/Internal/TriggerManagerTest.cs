@@ -15,7 +15,7 @@ public class TriggerManagerTest
     private readonly ITriggerManager _triggerManager;
 
     private readonly Mock<IHomeAssistantConnection> _hassConnectionMock = new();
-    private readonly Subject<HassMessage> _messageSubject;
+    private readonly Subject<HassMessage> _messageSubject = new();
 
     private int nextMessageId = 5;
 
@@ -29,8 +29,6 @@ public class TriggerManagerTest
                 It.IsAny<UnsubscribeEventsCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => new HassMessage { Id = nextMessageId });
 
-        _messageSubject = new Subject<HassMessage>();
-        
         _hassConnectionMock
             .As<IHomeAssistantHassMessages>()
             .SetupGet(m => m.OnHassMessage)
