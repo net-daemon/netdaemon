@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace NetDaemon.HassClient.Tests.Integration;
 
 /// <summary>
@@ -161,6 +163,9 @@ public class HassMockStartup : IHostedService
             WebSocketMessageType.Text, true, _cancelSource.Token).ConfigureAwait(false);
     }
 
+
+    private readonly ConcurrentBag<int> _eventSubscriptions = new();
+
     /// <summary>
     ///     Process incoming websocket requests to simulate Home Assistant websocket API
     /// </summary>
@@ -235,6 +240,8 @@ public class HassMockStartup : IHostedService
                             "result_msg.json",
                             hassMessage.Id,
                             webSocket).ConfigureAwait(false);
+                        
+                        _eventSubscriptions.Add(hassMessage.Id);
 
                         await ReplaceIdInResponseAndSendMsg(
                             "event.json",
@@ -299,10 +306,13 @@ public class HassMockStartup : IHostedService
                             hassMessage.Id,
                             webSocket).ConfigureAwait(false);
 
-                        await ReplaceIdInResponseAndSendMsg(
-                            "service_event.json",
-                            hassMessage.Id,
-                            webSocket).ConfigureAwait(false);
+                        foreach (var subscription in _eventSubscriptions)
+                        {
+                            await ReplaceIdInResponseAndSendMsg(
+                                "service_event.json",
+                                subscription,
+                                webSocket).ConfigureAwait(false);
+                        }
                         break;
                     case "fake_disconnect_test":
                         // This is not a real home assistant message, just used to test disconnect from socket.

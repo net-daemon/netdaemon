@@ -84,6 +84,7 @@ public static class HomeAssistantConnectionExtensions
                throw new NullReferenceException("Unexpected null return from command");
     }
 
+
     /// <summary>
     ///     Get all configuration from Home Assistant
     /// </summary>
@@ -146,5 +147,25 @@ public static class HomeAssistantConnectionExtensions
         }
 
         return true;
+    }
+    
+    public static async Task<HassMessage> SubscribeToTriggerAsync(this IHomeAssistantConnection connection, object trigger, CancellationToken cancelToken)
+    {
+        var triggerCommand = new SubscribeTriggerCommand(trigger);
+        
+        var msg = await connection.SendCommandAndReturnHassMessageResponseAsync
+                      (triggerCommand, cancelToken).ConfigureAwait(false) ??
+                  throw new NullReferenceException("Unexpected null return from command");
+        return msg;
+    }
+    
+    public static async Task UnsubscribeEventsAsync(this IHomeAssistantConnection connection,
+        int id, CancellationToken cancelToken)
+    {
+        var triggerCommand = new UnsubscribeEventsCommand(id);
+
+        _ = await connection.SendCommandAndReturnHassMessageResponseAsync
+                (triggerCommand, cancelToken).ConfigureAwait(false) ??
+            throw new NullReferenceException("Unexpected null return from command");
     }
 }

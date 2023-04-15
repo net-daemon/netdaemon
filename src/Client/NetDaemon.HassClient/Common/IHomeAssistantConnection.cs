@@ -37,6 +37,9 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
     Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage;
 
+    Task<HassMessage?> SendCommandAndReturnHassMessageResponseAsync<T>(T command, CancellationToken cancelToken)
+        where T : CommandMessage;
+    
     /// <summary>
     ///     Start processing Home Assistant events
     /// </summary>

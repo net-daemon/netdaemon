@@ -15,6 +15,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private const int WaitForResultTimeout = 20000;
 
+    private int _eventSubscribtionMessageId = -1;
+
     private readonly SemaphoreSlim _messageIdSemaphore = new(1,1);
     private int _messageId = 1;
 
@@ -48,7 +50,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     }
 
     public IObservable<HassEvent> OnHomeAssistantEvent =>
-        _hassMessageSubject.Where(n => n.Type == "event").Select(n => n.Event!);
+        _hassMessageSubject.Where(n => n.Type == "event" && n.Id == _eventSubscribtionMessageId).Select(n => n.Event!);
 
     public async Task ProcessHomeAssistantEventsAsync(CancellationToken cancelToken)
     {
@@ -107,6 +109,16 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task<JsonElement?> SendCommandAndReturnResponseRawAsync<T>(T command, CancellationToken cancelToken)
         where T : CommandMessage
     {
+        var hassMessage =
+            await SendCommandAndReturnHassMessageResponseAsync(command, cancelToken).ConfigureAwait(false);
+
+        // The SendCommmandsAndReturnHAssMessageResponse will throw if not successful so just ignore errors here
+        return hassMessage?.ResultElement;
+    }
+    
+    public async Task<HassMessage?> SendCommandAndReturnHassMessageResponseAsync<T>(T command, CancellationToken cancelToken)
+        where T : CommandMessage
+    {
         var resultMessageTask = await SendCommandAsyncInternal(command, cancelToken);
 
         var awaitedTask = await Task.WhenAny(resultMessageTask, Task.Delay(WaitForResultTimeout, cancelToken));
@@ -117,14 +129,11 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             throw new InvalidOperationException($"Send command ({command.Type}) did not get response in timely fashion. Sent command is {command.ToJsonElement()}");
         }
 
-        // We already awaited the task so result
-        var result = resultMessageTask.Result;
-
-        if (result.Success ?? false)
-            return result.ResultElement;
+        if (resultMessageTask.Result.Success ?? false)
+            return resultMessageTask.Result;
 
         // Non successful command should throw exception
-        throw new InvalidOperationException($"Failed command ({command.Type}) error: {result.Error}.  Sent command is {command.ToJsonElement()}");
+        throw new InvalidOperationException($"Failed command ({command.Type}) error: {resultMessageTask.Result.Error}.  Sent command is {command.ToJsonElement()}");
     }
 
     public async ValueTask DisposeAsync()
@@ -165,8 +174,11 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private async Task SubscribeToAllHomeAssistantEvents(CancellationToken cancelToken)
     {
-        _ = await SendCommandAndReturnResponseAsync<SubscribeEventCommand, object?>(new SubscribeEventCommand(),
+        var result = await SendCommandAndReturnHassMessageResponseAsync(new SubscribeEventCommand(),
             cancelToken).ConfigureAwait(false);
+        
+        // The id if the message we used to subscribe should be used as the filter for the event messages 
+        _eventSubscribtionMessageId = result?.Id ?? -1;
     }
 
     private async Task HandleNewMessages()
