@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
 using NetDaemon.Client.HomeAssistant.Extensions;
+using NetDaemon.Client.Internal.HomeAssistant.Commands;
+using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;
 
@@ -12,17 +14,20 @@ namespace NetDaemon.HassModel.Internal;
 internal class TriggerManager : IAsyncDisposable, ITriggerManager
 {
     private readonly IHomeAssistantRunner _runner;
+    private readonly IQueuedObservable<HassMessage> _queuedObservable;
     private readonly IBackgroundTaskTracker _tracker;
-    private readonly IHomeAssistantHassMessages _hassMessages;
-    
+
     private readonly ConcurrentBag<(int id, IDisposable disposable)> _subscriptions = new();
     private bool _disposed;
 
-    public TriggerManager(IHomeAssistantRunner runner, IBackgroundTaskTracker tracker)
+    public TriggerManager(IHomeAssistantRunner runner, IBackgroundTaskTracker tracker, IQueuedObservable<HassMessage> queuedObservable)
     {
         _runner = runner;
         _tracker = tracker;
-        _hassMessages = (IHomeAssistantHassMessages)runner.CurrentConnection!;
+            
+        var hassMessages = (IHomeAssistantHassMessages)runner.CurrentConnection!;
+        _queuedObservable = queuedObservable;
+        _queuedObservable.Initialize(hassMessages.OnHassMessage);
     }
     
     public IObservable<JsonElement> RegisterTrigger(object triggerParams)
@@ -40,11 +45,10 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
 
     private async Task SubscribeToTrigger(object triggerParams, Subject<JsonElement> subject)
     {
-        
         var message = await _runner.CurrentConnection!.SubscribeToTriggerAsync(triggerParams, CancellationToken.None).ConfigureAwait(false);
         var id = message.Id;
 
-        var subscribtion = _hassMessages.OnHassMessage
+        var subscribtion = _queuedObservable
             .Where(m => m.Id == id)
             .Select(n => n.Event?.Variables?.TriggerElement)
             .Where(m => m.HasValue)
