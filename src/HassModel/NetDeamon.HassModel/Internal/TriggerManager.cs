@@ -20,13 +20,13 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
     private readonly ConcurrentBag<(int id, IDisposable disposable)> _subscriptions = new();
     private bool _disposed;
 
-    public TriggerManager(IHomeAssistantRunner runner, IBackgroundTaskTracker tracker, IQueuedObservable<HassMessage> queuedObservable)
+    public TriggerManager(IHomeAssistantRunner runner, IBackgroundTaskTracker tracker, ILogger<IHaContext> logger)
     {
         _runner = runner;
         _tracker = tracker;
             
         var hassMessages = (IHomeAssistantHassMessages)runner.CurrentConnection!;
-        _queuedObservable = queuedObservable;
+        _queuedObservable = new QueuedObservable<HassMessage>(logger);
         _queuedObservable.Initialize(hassMessages.OnHassMessage);
     }
     
@@ -72,5 +72,6 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
         }
         
         await Task.WhenAll(tasks).ConfigureAwait(false);
+        await _queuedObservable.DisposeAsync();
     }
 }

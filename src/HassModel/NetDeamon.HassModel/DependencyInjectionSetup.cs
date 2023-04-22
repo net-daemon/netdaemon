@@ -32,7 +32,6 @@ public static class DependencyInjectionSetup
         services.AddScoped<QueuedObservable<HassEvent>>();
         services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<QueuedObservable<HassEvent>>());
         services.AddScoped<QueuedObservable<HassMessage>>();
-        services.AddScoped<IQueuedObservable<HassMessage>>(s => s.GetRequiredService<QueuedObservable<HassMessage>>());
         services.AddScoped<TriggerManager>();
         services.AddTransient<ITriggerManager>(s => s.GetRequiredService<TriggerManager>());
     }
