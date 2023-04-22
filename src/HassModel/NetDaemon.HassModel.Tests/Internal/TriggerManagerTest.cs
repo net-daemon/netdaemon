@@ -57,7 +57,7 @@ public class TriggerManagerTest
 
 
     [Fact]
-    public void RegisterTrigger()
+    public async Task RegisterTrigger()
     {
         var incomingTriggersMock = _triggerManager.RegisterTrigger(new {}).SubscribeMock();
 
@@ -66,6 +66,8 @@ public class TriggerManagerTest
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message }}});
 
+        await ((IAsyncDisposable)_triggerManager).DisposeAsync();
+        
         // Assert
         incomingTriggersMock.Verify(e => e.OnNext(message));
     }
