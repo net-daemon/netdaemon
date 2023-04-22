@@ -72,6 +72,6 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
         }
         
         await Task.WhenAll(tasks).ConfigureAwait(false);
-        await _queuedObservable.DisposeAsync();
+        await _queuedObservable.DisposeAsync().ConfigureAwait(false);
     }
 }
