@@ -1,4 +1,6 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,17 +61,17 @@ public class TriggerManagerTest
     [Fact]
     public async Task RegisterTrigger()
     {
-        var incomingTriggersMock = _triggerManager.RegisterTrigger(new {}).SubscribeMock();
+        var incomingTriggersTask = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
 
         var message = new { }.AsJsonElement();
 
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message }}});
-
-        await ((IAsyncDisposable)_triggerManager).DisposeAsync();
         
         // Assert
-        incomingTriggersMock.Verify(e => e.OnNext(message));
+        await incomingTriggersTask.Should()
+            .CompleteWithinAsync(TimeSpan.FromSeconds(1), "the message should have arrived by now")
+            .WithResult(message);
     }
     
     [Fact]
@@ -86,7 +88,6 @@ public class TriggerManagerTest
 
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = new JsonElement() }}});
-
         incomingTriggersMock.VerifyNoOtherCalls();
     }    
     
