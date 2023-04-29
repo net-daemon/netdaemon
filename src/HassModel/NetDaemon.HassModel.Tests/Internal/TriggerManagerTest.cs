@@ -1,4 +1,6 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,61 +59,68 @@ public class TriggerManagerTest
 
 
     [Fact]
-    public void RegisterTrigger()
+    public async Task RegisterTrigger()
     {
-        var incomingTriggersMock = _triggerManager.RegisterTrigger(new {}).SubscribeMock();
+        var incomingTriggersTask = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
 
         var message = new { }.AsJsonElement();
 
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message }}});
-
+        
         // Assert
-        incomingTriggersMock.Verify(e => e.OnNext(message));
+        await incomingTriggersTask.Should()
+            .CompleteWithinAsync(TimeSpan.FromSeconds(1), "the message should have arrived by now")
+            .WithResult(message);
     }
     
     [Fact]
-    public async void NoMoreTriggersAfterDispose()
+    public async Task NoMoreTriggersAfterDispose()
     {
         // Act
-        var incomingTriggersMock = _triggerManager.RegisterTrigger(new {}).SubscribeMock();
+        var incomingTriggersTask = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
 
         await ((IAsyncDisposable)_triggerManager).DisposeAsync().ConfigureAwait(false);
         
         // Assert, Dispose should unsubscribe with HA AND stop any messages that do pass        
-        _hassConnectionMock.Verify(m => m.SendCommandAndReturnHassMessageResponseAsync(
-            new UnsubscribeEventsCommand(nextMessageId), It.IsAny<CancellationToken>()));
-
+        
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = new JsonElement() }}});
-
-        incomingTriggersMock.VerifyNoOtherCalls();
+        
+        await incomingTriggersTask.Should()
+            .NotCompleteWithinAsync(TimeSpan.FromSeconds(1), "no messages should arrive after being disposed");
+        
+        _hassConnectionMock.Verify(m => m.SendCommandAndReturnHassMessageResponseAsync(
+            new UnsubscribeEventsCommand(nextMessageId), It.IsAny<CancellationToken>()));
     }    
     
 
     [Fact]
-    public void RegisterTriggerCorrectMessagesPerSubscription()
+    public async Task RegisterTriggerCorrectMessagesPerSubscription()
     {
         nextMessageId = 6;
-        var incomingTriggersMock6 = _triggerManager.RegisterTrigger(new {}).SubscribeMock();
+        var incomingTriggersTask6 = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
 
         nextMessageId = 7;
-        var incomingTriggersMock7 = _triggerManager.RegisterTrigger(new {}).SubscribeMock();
+        var incomingTriggersTask7 = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
         
         var message6 = new { tag = "six" }.AsJsonElement();
         var message7 = new { tag = "seven" }.AsJsonElement();
 
-        // Assert
         _messageSubject.OnNext(new HassMessage{Id = 6, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message6 }}});
         
 
         _messageSubject.OnNext(new HassMessage{Id = 7, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message7 }}});
-
-        incomingTriggersMock6.Verify(e => e.OnNext(message6), Times.Once);
-        incomingTriggersMock7.Verify(e => e.OnNext(message7), Times.Once);
+        
+        // Assert
+        await incomingTriggersTask6.Should()
+            .CompleteWithinAsync(TimeSpan.FromSeconds(1), $"{nameof(message6)} should have arrived by now")
+            .WithResult(message6);
+        
+        await incomingTriggersTask7.Should()
+            .CompleteWithinAsync(TimeSpan.FromSeconds(1), $"{nameof(message7)} should have arrived by now")
+            .WithResult(message7);
     }
-
-    
 }

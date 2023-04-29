@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers;
 
@@ -28,6 +29,8 @@ internal static class Extensions
 
         return observerMock;
     }
+
+    public static Func<T> ToFunc<T>(this T input) => () => input;
 
     public static async Task WaitForInvocationAndVerify<T>(this Mock<T> mock, Expression<Action<T>> expression)
         where T : class
