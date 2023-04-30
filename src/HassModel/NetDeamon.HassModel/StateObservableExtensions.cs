@@ -37,17 +37,22 @@ public static class StateObservableExtensions
         Func<EntityState?, bool> predicate,
         TimeSpan timeSpan,
         IScheduler scheduler)
-    
-        => observable
+    {
+        if (observable == null) throw new ArgumentNullException(nameof(observable));
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        if (scheduler == null) throw new ArgumentNullException(nameof(scheduler));
+        
+        return observable
             // Only process changes that start or stop matching the predicate
             .Where(e => predicate(e.Old) != predicate(e.New))
-                
+
             // Both  will restart the timer
             .Throttle(timeSpan, scheduler)
-            
+
             // But only when the new state matches the predicate we emit it
             .Where(e => predicate(e.New));
-    
+    }
+
     /// <summary>
     /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
@@ -57,10 +62,15 @@ public static class StateObservableExtensions
         TimeSpan timeSpan,
         IScheduler scheduler)
         where TEntity : Entity
-        where TEntityState : EntityState 
-
-        => observable
+        where TEntityState : EntityState
+    {
+        if (observable == null) throw new ArgumentNullException(nameof(observable));
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        if (scheduler == null) throw new ArgumentNullException(nameof(scheduler));
+        
+        return observable
             .Where(e => predicate(e.Old) != predicate(e.New))
             .Throttle(timeSpan, scheduler)
             .Where(e => predicate(e.New));
+    }
 }
