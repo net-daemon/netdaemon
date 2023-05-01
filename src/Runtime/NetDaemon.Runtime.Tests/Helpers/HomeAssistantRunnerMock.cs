@@ -59,7 +59,7 @@ internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>
         );
 
         ConnectionMock.Setup(n =>
-            n.ProcessHomeAssistantEventsAsync(It.IsAny<CancellationToken>())
+            n.WaitForConnectionToCloseAsync(It.IsAny<CancellationToken>())
         ).Returns(
             async (CancellationToken cancelToken) =>
             {
@@ -76,7 +76,8 @@ internal class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
     public HomeAssistantConnectionMock()
     {
         HomeAssistantEventMock = new();
-        SetupGet(n => n.OnHomeAssistantEvent).Returns(HomeAssistantEventMock);
+        Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(HomeAssistantEventMock);
     }
 
     internal void AddStateChangeEvent(HassState oldState, HassState newState)

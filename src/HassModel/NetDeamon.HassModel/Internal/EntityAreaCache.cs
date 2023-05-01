@@ -27,7 +27,7 @@ internal class EntityAreaCache : IDisposable
     {
         _cancellationToken = cancellationToken;
 
-        var events = _provider.GetRequiredService<IObservable<HassEvent>>();
+        var events = await _hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null, _cancellationToken).ConfigureAwait(false);
         _eventSubscription = events.Subscribe(HandleEvent);
 
         await LoadAreas().ConfigureAwait(false);

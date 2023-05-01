@@ -37,7 +37,7 @@ internal class EntityStateCache : IDisposable
     {
         _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException();
 
-        var events = _provider.GetRequiredService<IObservable<HassEvent>>();
+        var events = await _hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
         _eventSubscription = events.Subscribe(HandleEvent);
 
         var hassStates = await _hassRunner.CurrentConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);

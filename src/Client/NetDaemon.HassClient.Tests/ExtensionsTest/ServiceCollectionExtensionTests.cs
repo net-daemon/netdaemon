@@ -19,6 +19,5 @@ public class ServiceCollectionExtensionTests
         apiManager.Should().NotBeNull();
 
         Assert.Null(connection);
-        Assert.Throws<NullReferenceException>(() => serviceProvider.GetService<IObservable<HassEvent>>());
     }
 }

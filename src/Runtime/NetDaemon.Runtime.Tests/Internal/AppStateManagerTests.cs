@@ -236,7 +236,8 @@ public class AppStateManagerTests
         var homeAssistantStateUpdater =
             scopedProvider.ServiceProvider.GetRequiredService<IHandleHomeAssistantAppStateUpdates>();
         Subject<HassEvent> hassEvent = new();
-        haConnectionMock.SetupGet(n => n.OnHomeAssistantEvent).Returns(hassEvent);
+        haConnectionMock.Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(hassEvent);
 
         // ACT
         await homeAssistantStateUpdater.InitializeAsync(haConnectionMock.Object, appModelContextMock.Object)
@@ -256,8 +257,11 @@ public class AppStateManagerTests
         appModelContextMock.SetupGet(n => n.Applications)
             .Returns(new List<IApplication>(){new Mock<IApplication>().Object});
         var haConnectionMock = new Mock<IHomeAssistantConnection>();
-        haConnectionMock.SetupGet(n => n.OnHomeAssistantEvent).Returns(new Subject<HassEvent>());
+        
+        haConnectionMock.Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Subject<HassEvent>());
         var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        
         haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(haConnectionMock.Object);
 
         var environmentMock = new Mock<IHostEnvironment>();
@@ -296,8 +300,12 @@ public class AppStateManagerTests
         var homeAssistantStateUpdater =
             provider.GetRequiredService<IHandleHomeAssistantAppStateUpdates>();
         Subject<HassEvent> hassEvent = new();
-        haConnectionMock.SetupGet(n => n.OnHomeAssistantEvent).Returns(hassEvent);
+        
+        haConnectionMock.Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(hassEvent);
+        
         appMock.SetupGet(n => n.Id).Returns("app");
+        
         appModelContextMock.SetupGet(n => n.Applications).Returns(
             new List<IApplication>
             {
@@ -346,8 +354,12 @@ public class AppStateManagerTests
 
         var appMock = new Mock<IApplication>();
 
-        haConnectionMock.SetupGet(n => n.OnHomeAssistantEvent).Returns(hassEvent);
+        
+        haConnectionMock.Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(hassEvent);
+        
         appMock.SetupGet(n => n.Id).Returns("app");
+        
         appModelContextMock.SetupGet(n => n.Applications).Returns(
             new List<IApplication>
             {
@@ -398,9 +410,14 @@ public class AppStateManagerTests
 
         var homeAssistantStateUpdater =
             provider.GetRequiredService<IHandleHomeAssistantAppStateUpdates>();
+        
         Subject<HassEvent> hassEvent = new();
-        haConnectionMock.SetupGet(n => n.OnHomeAssistantEvent).Returns(hassEvent);
+        
+        haConnectionMock.Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(hassEvent);
+        
         appMock.SetupGet(n => n.Id).Returns("app");
+        
         appModelContextMock.SetupGet(n => n.Applications).Returns(
             new List<IApplication>
             {

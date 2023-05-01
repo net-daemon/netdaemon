@@ -159,36 +159,167 @@ public class WebsocketIntegrationTests : IntegrationTestBase
     {
         using CancellationTokenSource tokenSource = new(TestSettings.DefaultTimeout + 1000);
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
-        var subscribeTask = ctx.HomeAssistantConnection
-            .OnHomeAssistantEvent
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(HassEvent?)))
+
+        var events = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync(null, tokenSource.Token).ConfigureAwait(false);
+
+       var subscribeTask = events
             .FirstAsync()
-            .ToTask();
+            .ToTask(tokenSource.Token);
 
         _ = ctx.HomeAssistantConnection
-            .ProcessHomeAssistantEventsAsync(tokenSource.Token);
+            .WaitForConnectionToCloseAsync(tokenSource.Token);
 
         var haEvent = await subscribeTask.ConfigureAwait(false);
 
         haEvent.Should().NotBeNull();
-        haEvent?
+        haEvent
             .EventType
             .Should()
             .BeEquivalentTo("state_changed");
 
         // We test the state changed 
-        var changedEvent = haEvent?.ToStateChangedEvent();
-        changedEvent?.EntityId
+        var changedEvent = haEvent.ToStateChangedEvent();
+        changedEvent!.EntityId
             .Should()
             .BeEquivalentTo("binary_sensor.vardagsrum_pir");
 
-        var attr = changedEvent?.NewState?.AttributesAs<AttributeTest>();
-        attr?
+        var attr = changedEvent.NewState!.AttributesAs<AttributeTest>();
+        attr!
             .BatteryLevel
             .Should()
             .Be(100);
 
-        changedEvent?.NewState?.Attributes?.FirstOrDefault(n => n.Key == "battery_level")
+        changedEvent.NewState!.Attributes!.FirstOrDefault(n => n.Key == "battery_level")!
+            .Should()
+            .NotBeNull();
+    }
+
+    [Fact]
+    public async Task TestSubscribeEventChangeAndGetEvent()
+    {
+        using CancellationTokenSource tokenSource = new(TestSettings.DefaultTimeout + 1000);
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+
+        var events = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync("state_changed", tokenSource.Token).ConfigureAwait(false);
+
+        var subscribeTask = events
+            .FirstAsync()
+            .ToTask(tokenSource.Token);
+
+        _ = ctx.HomeAssistantConnection
+            .WaitForConnectionToCloseAsync(tokenSource.Token);
+
+        var haEvent = await subscribeTask.ConfigureAwait(false);
+
+        haEvent.Should().NotBeNull();
+        haEvent
+            .EventType
+            .Should()
+            .BeEquivalentTo("state_changed");
+
+        // We test the state changed 
+        var changedEvent = haEvent.ToStateChangedEvent();
+        changedEvent!.EntityId
+            .Should()
+            .BeEquivalentTo("binary_sensor.vardagsrum_pir");
+
+        var attr = changedEvent.NewState!.AttributesAs<AttributeTest>();
+        attr!
+            .BatteryLevel
+            .Should()
+            .Be(100);
+
+        changedEvent.NewState!.Attributes!.FirstOrDefault(n => n.Key == "battery_level")!
+            .Should()
+            .NotBeNull();
+    }
+
+    [Fact]
+    public async Task TestMultipleSubscribeAllEventReturnsSameInstance()
+    {
+        using CancellationTokenSource tokenSource = new(TestSettings.DefaultTimeout + 1000);
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+
+        var firstEventSubscription = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync(null, tokenSource.Token).ConfigureAwait(false);
+        var secondEventSubscription = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync(null, tokenSource.Token).ConfigureAwait(false);
+
+        Assert.Same(firstEventSubscription, secondEventSubscription);
+    }
+
+    [Fact]
+    public async Task TestMultipleSubscribeEventChangeAndGetEvent()
+    {
+        using CancellationTokenSource tokenSource = new(TestSettings.DefaultTimeout + 1000);
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+
+        var firstEventSubscription = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync("state_changed", tokenSource.Token).ConfigureAwait(false);
+
+        var firstEventSubscriptionTask = firstEventSubscription
+            .FirstAsync()
+            .ToTask(tokenSource.Token);
+
+        var secondEventSubscription = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync("state_changed", tokenSource.Token).ConfigureAwait(false);
+        var secondEventSubscriptionTask = secondEventSubscription
+            .FirstAsync()
+            .ToTask(tokenSource.Token);
+
+        // Since we are not subscribing to all events we should have two different instances
+        Assert.NotSame(firstEventSubscription, secondEventSubscription);
+
+        _ = ctx.HomeAssistantConnection
+            .WaitForConnectionToCloseAsync(tokenSource.Token);
+
+        var firstHaEvent = await firstEventSubscriptionTask.ConfigureAwait(false);
+        var secondHaEvent = await secondEventSubscriptionTask.ConfigureAwait(false);
+
+        firstHaEvent.Should().NotBeNull();
+        secondHaEvent.Should().NotBeNull();
+
+        firstHaEvent
+            .EventType
+            .Should()
+            .BeEquivalentTo("state_changed");
+        secondHaEvent
+            .EventType
+            .Should()
+            .BeEquivalentTo("state_changed");
+
+        // We test the state changed 
+        var firstChangedEvent = firstHaEvent.ToStateChangedEvent();
+        var secondChangedEvent = secondHaEvent.ToStateChangedEvent();
+
+        firstChangedEvent!.EntityId
+            .Should()
+            .BeEquivalentTo("binary_sensor.vardagsrum_pir");
+
+        secondChangedEvent!.EntityId
+            .Should()
+            .BeEquivalentTo("binary_sensor.vardagsrum_pir");
+
+        var firstAttribute = firstChangedEvent.NewState!.AttributesAs<AttributeTest>();
+        var secondAttribute = secondChangedEvent.NewState!.AttributesAs<AttributeTest>();
+
+        firstAttribute!
+            .BatteryLevel
+            .Should()
+            .Be(100);
+
+        secondAttribute!
+            .BatteryLevel
+            .Should()
+            .Be(100);
+
+        firstChangedEvent.NewState!.Attributes!.FirstOrDefault(n => n.Key == "battery_level")!
+            .Should()
+            .NotBeNull();
+
+        secondChangedEvent!.NewState!.Attributes!.FirstOrDefault(n => n.Key == "battery_level")!
             .Should()
             .NotBeNull();
     }
@@ -198,15 +329,15 @@ public class WebsocketIntegrationTests : IntegrationTestBase
     {
         using CancellationTokenSource tokenSource = new(TestSettings.DefaultTimeout + 1000);
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
-        var subscribeTask = ctx.HomeAssistantConnection
-            .OnHomeAssistantEvent
+        var events = await ctx.HomeAssistantConnection
+            .SubscribeToHomeAssistantEventsAsync(null, tokenSource.Token).ConfigureAwait(false);
+        var subscribeTask = events
             .Where(n => n.EventType == "call_service")
-            .Timeout(TimeSpan.FromMilliseconds(TestSettings.DefaultTimeout), Observable.Return(default(HassEvent?)))
             .FirstAsync()
-            .ToTask();
+            .ToTask(tokenSource.Token);
 
         _ = ctx.HomeAssistantConnection
-            .ProcessHomeAssistantEventsAsync(tokenSource.Token);
+            .WaitForConnectionToCloseAsync(tokenSource.Token);
 
         await ctx.HomeAssistantConnection
             .SendCommandAndReturnResponseAsync<SimpleCommand, object?>(
@@ -218,13 +349,13 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         var haEvent = await subscribeTask.ConfigureAwait(false);
 
         haEvent.Should().NotBeNull();
-        haEvent?
+        haEvent
             .EventType
             .Should()
             .BeEquivalentTo("call_service");
         // Test the conversion to service event
-        var stateChangedEvent = haEvent?.ToCallServiceEvent();
-        stateChangedEvent?.Domain
+        var stateChangedEvent = haEvent.ToCallServiceEvent();
+        stateChangedEvent!.Domain
             .Should()
             .BeEquivalentTo("light");
     }
@@ -245,7 +376,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .GetStatesAsync(TokenSource.Token)
             .ConfigureAwait(false);
 
-        states.Should().HaveCount(19);
+        states!.Should().HaveCount(19);
     }
 
     private record AttributeTest

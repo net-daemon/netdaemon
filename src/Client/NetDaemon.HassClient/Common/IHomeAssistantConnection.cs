@@ -3,13 +3,18 @@ namespace NetDaemon.Client;
 public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisposable
 {
     /// <summary>
-    ///     Allows subscription on all events
+    ///     Subscribe to all events and return a IObservable getting the events
     /// </summary>
-    /// <remark>
-    ///     This requires that "ProcessHomeAssistantEvents" task is running
-    /// </remark>
-    IObservable<HassEvent> OnHomeAssistantEvent { get; }
-
+    /// <param name="eventType">The type of event to subscribe to, null if all events. If users want non optimized separate subscriptions on all events, provide a "*" as input.</param>
+    /// <param name="cancelToken">token to cancel operation</param>
+    /// <summary>
+    ///     If eventType is null or empty the HomeAssistant connection optimizes and use same
+    ///     observable for all subscriptions on all events.
+    ///     Users can still provide a "*" as input for eventType and have separated subscriptions
+    ///     for all events.
+    /// </summary>
+    Task<IObservable<HassEvent>> SubscribeToHomeAssistantEventsAsync(string? eventType, CancellationToken cancelToken);
+    
     /// <summary>
     ///     Sends a command message to Home Assistant without handling the result
     /// </summary>
@@ -41,10 +46,10 @@ public interface IHomeAssistantConnection : IHomeAssistantApiManager, IAsyncDisp
         where T : CommandMessage;
     
     /// <summary>
-    ///     Start processing Home Assistant events
+    ///     Return if connection to HomeAssistant is closed for any reason
     /// </summary>
     /// <param name="cancelToken">The token to cancel the processing of events</param>
-    Task ProcessHomeAssistantEventsAsync(CancellationToken cancelToken);
+    Task WaitForConnectionToCloseAsync(CancellationToken cancelToken);
 }
 
 /// <summary>

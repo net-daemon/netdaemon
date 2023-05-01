@@ -84,7 +84,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
                 CurrentConnection = await _client.ConnectAsync(host, port, ssl, token, websocketPath, combinedToken.Token)
                     .ConfigureAwait(false);
                 // Start the event processing before publish the connection
-                var eventsTask = CurrentConnection.ProcessHomeAssistantEventsAsync(combinedToken.Token);
+                var eventsTask = CurrentConnection.WaitForConnectionToCloseAsync(combinedToken.Token);
                 _onConnectSubject.OnNext(CurrentConnection);
                 await eventsTask.ConfigureAwait(false);
             }

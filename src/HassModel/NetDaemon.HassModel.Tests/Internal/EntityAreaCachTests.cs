@@ -21,6 +21,10 @@ public class EntityAreaCachTests
 
         haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
 
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testSubject);
+        
         _hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -69,7 +73,10 @@ public class EntityAreaCachTests
 
         haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
 
-
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testSubject);
+        
         _hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -123,6 +130,10 @@ public class EntityAreaCachTests
 
         haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
 
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testSubject);
+        
         _hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -181,6 +192,10 @@ public class EntityAreaCachTests
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
             )).ReturnsAsync(Array.Empty<HassDevice>());
 
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testSubject);
+        
         _hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
                 (
