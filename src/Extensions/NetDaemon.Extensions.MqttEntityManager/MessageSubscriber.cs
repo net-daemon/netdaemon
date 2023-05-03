@@ -100,7 +100,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     {
         try
         {
-            var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.Payload);
+            var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.PayloadSegment.Array);
             var topic = msg.ApplicationMessage.Topic;
             _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
 
