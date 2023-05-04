@@ -27,7 +27,10 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
             await _appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
                 _cancelTokenSource.Token);
 
-        haConnection.OnHomeAssistantEvent
+        var hassEvents = await haConnection.SubscribeToHomeAssistantEventsAsync(null, _cancelTokenSource.Token)
+            .ConfigureAwait(false);
+        
+        hassEvents
             .Where(n => n.EventType == "state_changed")
             .Select(async s =>
             {

@@ -177,7 +177,7 @@ public class AppScopedHaContextProviderTest
 
         backgroundTrackerMock.Verify(n => n.TrackBackgroundTask(It.IsAny<Task?>(), It.IsAny<string>()), Times.Once);
     }
-
+    
     [Fact]
     public async Task TestThatSendEventTrackBackgroundTask()
     {
@@ -206,6 +206,10 @@ public class AppScopedHaContextProviderTest
 
 
         serviceCollection.AddSingleton(_hassConnectionMock.Object);
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_hassEventSubjectMock
+            );
         serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
 
         var haRunnerMock = new Mock<IHomeAssistantRunner>();

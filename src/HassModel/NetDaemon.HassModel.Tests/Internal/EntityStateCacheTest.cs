@@ -34,6 +34,11 @@ public class EntityStateCacheTest
                 new() {EntityId = entityId, State = "InitialState"}
             });
 
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(testSubject
+            );
+        
         var serviceColletion = new ServiceCollection();
         _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
         var sp = serviceColletion.BuildServiceProvider();
@@ -100,7 +105,12 @@ public class EntityStateCacheTest
             });
 
         var serviceColletion = new ServiceCollection();
-        _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
+        
+        _hassConnectionMock.Setup(n =>
+                n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(testSubject
+            );
+        
         var sp = serviceColletion.BuildServiceProvider();
 
         using var cache = new EntityStateCache(haRunnerMock.Object, sp);

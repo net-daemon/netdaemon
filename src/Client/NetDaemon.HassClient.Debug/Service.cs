@@ -48,13 +48,12 @@ internal class DebugService : BackgroundService
         _hostLifetime.StopApplication();
     }
 
-    private Task OnHomeAssistantClientConnected(IHomeAssistantConnection connection)
+    private async Task OnHomeAssistantClientConnected(IHomeAssistantConnection connection)
     {
         _logger.LogInformation("HassClient connected and processing events");
-        connection.OnHomeAssistantEvent.Subscribe(HandleEvent);
-
-        // Add your code to test here
-        return Task.CompletedTask;
+        var hassEvents = await connection.SubscribeToHomeAssistantEventsAsync(null, _cancelToken ?? CancellationToken.None).ConfigureAwait(false);
+        hassEvents.Subscribe(HandleEvent);
+      
     }
 
     private void OnHomeAssistantClientDisconnected(DisconnectReason reason)
