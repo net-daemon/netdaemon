@@ -14,7 +14,7 @@ internal interface IWebSocketClientTransportPipeline : IAsyncDisposable
     /// <summary>
     ///     Gets next message from pipeline
     /// </summary>
-    ValueTask<T> GetNextMessageAsync<T>(CancellationToken cancellationToken) where T : class;
+    ValueTask<T[]> GetNextMessagesAsync<T>(CancellationToken cancellationToken) where T : class;
 
     /// <summary>
     ///     Sends a message to the pipeline

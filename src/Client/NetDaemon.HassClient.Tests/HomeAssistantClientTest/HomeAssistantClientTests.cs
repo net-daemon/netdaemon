@@ -39,6 +39,17 @@ public class HomeAssistantClientTests
 
         connection.Should().NotBeNull();
     }
+    
+    [Fact]
+    public async Task TestConnectWithOldVersionHomeAShouldReturnConnection()
+    {
+        var client = GetDefaultConnectOkToOldVersionHomeAssistantClient();
+
+        var connection = await client.ConnectAsync("host", 1, true, "token", "path", CancellationToken.None)
+            .ConfigureAwait(false);
+
+        connection.Should().NotBeNull();
+    }
 
     [Fact]
     public async Task TestConnectWithHomeAssistantNotReadyShouldThrowException()
@@ -83,15 +94,24 @@ public class HomeAssistantClientTests
                 Type = "auth_required"
             }
         );
+        _pipeline.AddAuthResponse(
+            new HassAuthResponse()
+            {
+                Type = "auth_ok",
+                HaVersion = "2023.1.0"
+            }
+        );
         _pipeline.AddResponse(
             new HassMessage
             {
-                Type = "auth_ok"
-            }
+                Id = 1,
+                Type = "result",
+                Success = true
+            } //{"id":1,"type":"result","success":true,"result":null}
         );
         return GetDefaultHomeAssistantClient();
     }
-
+    
     /// <summary>
     ///     Return a pre authenticated and running state
     ///     HomeAssistantClient
@@ -108,10 +128,53 @@ public class HomeAssistantClientTests
                 Type = "auth_required"
             }
         );
+        _pipeline.AddAuthResponse(
+            new HassAuthResponse()
+            {
+                Type = "auth_ok",
+                HaVersion = "2023.1.0"
+            }
+        );
         _pipeline.AddResponse(
             new HassMessage
             {
-                Type = "auth_ok"
+                Id = 1,
+                Type = "result",
+                Success = true
+            } //{"id":1,"type":"result","success":true,"result":null}
+        );
+        
+        // The add the fake config state that says running
+        _haConnectionMock.AddConfigResponseMessage(
+            new HassConfig
+            {
+                State = "RUNNING"
+            }
+        );
+        return GetDefaultHomeAssistantClient();
+    }    
+    
+    /// <summary>
+    ///     Return a pre authenticated and running state
+    ///     HomeAssistantClient with version less than 2023.9.x
+    /// </summary>
+    private HomeAssistantClient GetDefaultConnectOkToOldVersionHomeAssistantClient()
+    {
+        // For a successful connection we need success on authorization
+        // and success on getting a config message that has state="RUNNING"
+
+        // First add the authorization responses from pipeline
+        _pipeline.AddResponse(
+            new HassMessage
+            {
+                Type = "auth_required"
+            }
+        );
+        _pipeline.AddAuthResponse(
+            new HassAuthResponse()
+            {
+                Type = "auth_ok",
+                HaVersion = "2022.8.99"
             }
         );
         // The add the fake config state that says running

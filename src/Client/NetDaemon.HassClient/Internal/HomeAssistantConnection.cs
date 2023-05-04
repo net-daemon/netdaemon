@@ -208,11 +208,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         {
             while (!_internalCancelSource.IsCancellationRequested)
             {
-                var msg = await _transportPipeline.GetNextMessageAsync<HassMessage>(_internalCancelSource.Token)
+                var msg = await _transportPipeline.GetNextMessagesAsync<HassMessage>(_internalCancelSource.Token)
                     .ConfigureAwait(false);
                 try
                 {
-                    _hassMessageSubject.OnNext(msg);
+                    foreach (var obj in msg)
+                    {
+                        _hassMessageSubject.OnNext(obj);
+                    }
                 }
                 catch (Exception e)
                 {

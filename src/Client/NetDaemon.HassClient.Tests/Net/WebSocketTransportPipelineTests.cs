@@ -17,10 +17,10 @@ public class WebSocketTransportPipelineTests
         WsMock.AddResponse(@"{""type"": ""auth_required""}");
 
         // ACT
-        var msg = await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false);
+        var msg = await DefaultPipeline.GetNextMessagesAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false);
 
         // ASSERT
-        msg.Type
+        msg[0].Type
             .Should()
             .BeEquivalentTo("auth_required");
     }
@@ -33,7 +33,7 @@ public class WebSocketTransportPipelineTests
 
         // ACT AND ASSERT
         await Assert.ThrowsAsync<ApplicationException>(async () =>
-            await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
+            await DefaultPipeline.GetNextMessagesAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public class WebSocketTransportPipelineTests
         WsMock.AddResponse(sb.ToString());
 
         // ACT
-        var msg = await DefaultPipeline.GetNextMessageAsync<ChunkedMessagesTestClass>(CancellationToken.None)
+        var msg = await DefaultPipeline.GetNextMessagesAsync<ChunkedMessagesTestClass>(CancellationToken.None)
             .ConfigureAwait(false);
 
-        msg.BigChunkedMessage
+        msg[0].BigChunkedMessage
             .Should()
             .HaveLength(8180);
 
@@ -107,7 +107,7 @@ public class WebSocketTransportPipelineTests
 
         // The operation should be cancelled when remote closes websocket
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await DefaultPipeline.GetNextMessageAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
+            await DefaultPipeline.GetNextMessagesAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
 
         // CloseOutput should always be called when 
         // a close frame are sent from the remote websocket
