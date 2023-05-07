@@ -40,7 +40,12 @@ internal class HomeAssistantClient : IHomeAssistantClient
 
             var transportPipeline = _transportPipelineFactory.New(ws);
 
-            await HandleAuthorizationSequence(token, transportPipeline, cancelToken).ConfigureAwait(false);
+            var hassVersionInfo = await  HandleAuthorizationSequenceAndReturnHassVersionInfo(token, transportPipeline, cancelToken).ConfigureAwait(false);
+            
+            if (Version.Parse(hassVersionInfo) >= new Version(2022, 9))
+            {
+                await AddCoalesceSupport(transportPipeline, cancelToken).ConfigureAwait(false);
+            }
 
             var connection = _connectionFactory.New(transportPipeline);
 
@@ -58,6 +63,28 @@ internal class HomeAssistantClient : IHomeAssistantClient
             _logger.LogDebug(e, "Error connecting to Home Assistant");
             throw;
         }
+    }
+
+    private async Task AddCoalesceSupport(IWebSocketClientTransportPipeline transportPipeline, CancellationToken cancelToken)
+    {
+        var supportedFeaturesCommandMsg = new SupportedFeaturesCommand
+            {Id = 1, Features = new Features() { CoalesceMessages = 1 }};
+        
+        // Send the supported features command
+        await transportPipeline.SendMessageAsync(
+            supportedFeaturesCommandMsg,
+            cancelToken
+        ).ConfigureAwait(false);
+        
+        // Get the result from command
+        var resultMsg = await transportPipeline
+            .GetNextMessagesAsync<HassMessage>(cancelToken).ConfigureAwait(false);
+
+        if (resultMsg.Single().Success == true)
+        {
+            return;
+        }
+        throw new InvalidOperationException($"Failed to get result from supported feature command : {resultMsg.Single()}");
     }
 
     private static Uri GetHomeAssistantWebSocketUri(string host, int port, bool ssl, string websocketPath)
@@ -78,17 +105,17 @@ internal class HomeAssistantClient : IHomeAssistantClient
         return config.State == "RUNNING";
     }
 
-    private static async Task HandleAuthorizationSequence(string token,
+    private static async Task<string> HandleAuthorizationSequenceAndReturnHassVersionInfo(string token,
         IWebSocketClientTransportPipeline transportPipeline, CancellationToken cancelToken)
     {
         var connectTimeoutTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancelToken);
         connectTimeoutTokenSource.CancelAfter(5000);
         // Begin the authorization sequence
         // Expect 'auth_required' 
-        var msg = await transportPipeline.GetNextMessageAsync<HassMessage>(connectTimeoutTokenSource.Token)
+        var msg = await transportPipeline.GetNextMessagesAsync<HassMessage>(connectTimeoutTokenSource.Token)
             .ConfigureAwait(false);
-        if (msg.Type != "auth_required")
-            throw new ApplicationException($"Unexpected type: '{msg.Type}' expected 'auth_required'");
+        if (msg[0].Type != "auth_required")
+            throw new ApplicationException($"Unexpected type: '{msg[0].Type}' expected 'auth_required'");
 
         // Now send the auth message to Home Assistant
         await transportPipeline.SendMessageAsync(
@@ -97,19 +124,20 @@ internal class HomeAssistantClient : IHomeAssistantClient
         ).ConfigureAwait(false);
         // Now get the result
         var authResultMessage = await transportPipeline
-            .GetNextMessageAsync<HassMessage>(connectTimeoutTokenSource.Token).ConfigureAwait(false);
+            .GetNextMessagesAsync<HassAuthResponse>(connectTimeoutTokenSource.Token).ConfigureAwait(false);
 
-        switch (authResultMessage.Type)
+        switch (authResultMessage.Single().Type)
         {
             case "auth_ok":
-                return;
+                
+                return authResultMessage[0].HaVersion;
 
             case "auth_invalid":
                 await transportPipeline.CloseAsync().ConfigureAwait(false);
                 throw new HomeAssistantConnectionException(DisconnectReason.Unauthorized);
 
             default:
-                throw new ApplicationException($"Unexpected response ({authResultMessage.Type})");
+                throw new ApplicationException($"Unexpected response ({authResultMessage.Single().Type})");
         }
     }
 }

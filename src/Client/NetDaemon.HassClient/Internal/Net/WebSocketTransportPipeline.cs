@@ -45,7 +45,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
         await _ws.DisposeAsync().ConfigureAwait(false);
     }
 
-    public async ValueTask<T> GetNextMessageAsync<T>(CancellationToken cancelToken) where T : class
+    public async ValueTask<T[]> GetNextMessagesAsync<T>(CancellationToken cancelToken) where T : class
     {
         if (_ws.State != WebSocketState.Open)
             throw new ApplicationException("Cannot send data on a closed socket!");
@@ -60,7 +60,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
             // the pipeline for new data written from websocket input 
             // We want the processing to start before we read data
             // from the websocket so the pipeline is not getting full
-            var serializeTask = ReadMessageFromPipelineAndSerializeAsync<T>(combinedTokenSource.Token);
+            var serializeTask = ReadMessagesFromPipelineAndSerializeAsync<T>(combinedTokenSource.Token);
             await ReadMessageFromWebSocketAndWriteToPipelineAsync(combinedTokenSource.Token).ConfigureAwait(false);
             var result = await serializeTask.ConfigureAwait(false);
             // File.WriteAllText("./json_result.json", JsonSerializer.Serialize<T>(result, _defaultSerializerOptions));
@@ -96,15 +96,29 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
     /// </summary>
     /// <param name="cancelToken">Cancellation token</param>
     /// <typeparam name="T">The type to serialize to</typeparam>
-    private async ValueTask<T> ReadMessageFromPipelineAndSerializeAsync<T>(CancellationToken cancelToken)
+    private async Task<T[]> ReadMessagesFromPipelineAndSerializeAsync<T>(CancellationToken cancelToken)
     {
         try
         {
-            var message = await JsonSerializer.DeserializeAsync<T>(_pipe.Reader.AsStream(),
+            var message = await JsonSerializer.DeserializeAsync<JsonElement?>(_pipe.Reader.AsStream(),
                               cancellationToken: cancelToken).ConfigureAwait(false)
                           ?? throw new ApplicationException(
                               "Deserialization of websocket returned empty result (null)");
-            return message;
+            if (message.ValueKind == JsonValueKind.Array)
+            {
+                // This is a coalesced message containing multiple messages so we need to
+                // deserialize it as an array
+                var obj = message.Deserialize<T[]>() ?? throw new ApplicationException(
+                    "Deserialization of websocket returned empty result (null)");
+                return obj;
+            }
+            else
+            {
+                // This is normal message and we deserialize it as object
+                var obj = message.Deserialize<T>() ?? throw new ApplicationException(
+                    "Deserialization of websocket returned empty result (null)");
+                return new T[] { obj };
+            }
         }
         finally
         {
