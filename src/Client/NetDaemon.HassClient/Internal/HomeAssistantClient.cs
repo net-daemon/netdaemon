@@ -40,9 +40,9 @@ internal class HomeAssistantClient : IHomeAssistantClient
 
             var transportPipeline = _transportPipelineFactory.New(ws);
 
-            var hassVersionInfo = await  HandleAuthorizationSequenceAndReturnHassVersionInfo(token, transportPipeline, cancelToken).ConfigureAwait(false);
+            var hassVersionInfo = await HandleAuthorizationSequenceAndReturnHassVersionInfo(token, transportPipeline, cancelToken).ConfigureAwait(false);
             
-            if (Version.Parse(hassVersionInfo) >= new Version(2022, 9))
+            if (VersionHelper.ReplaceBeta(hassVersionInfo) >= new Version(2022, 9))
             {
                 await AddCoalesceSupport(transportPipeline, cancelToken).ConfigureAwait(false);
             }
