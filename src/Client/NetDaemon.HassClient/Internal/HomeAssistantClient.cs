@@ -42,7 +42,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
 
             var hassVersionInfo = await HandleAuthorizationSequenceAndReturnHassVersionInfo(token, transportPipeline, cancelToken).ConfigureAwait(false);
             
-            if (Version.Parse(Regex.Replace(hassVersionInfo, @"\.0b\d+$", ".0")) >= new Version(2022, 9))
+            if (VersionHelper.ReplaceBeta(hassVersionInfo) >= new Version(2022, 9))
             {
                 await AddCoalesceSupport(transportPipeline, cancelToken).ConfigureAwait(false);
             }
