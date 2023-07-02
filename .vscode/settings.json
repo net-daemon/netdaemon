@@ -28,5 +28,6 @@
         "noquotes",
         "parentidguid",
         "useridguid"
-    ]
+    ],
+    "dotnet.defaultSolution": "NetDaemon.sln"
 }
