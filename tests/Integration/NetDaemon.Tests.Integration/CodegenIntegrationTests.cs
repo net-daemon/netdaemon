@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Extensions;
 using NetDaemon.HassModel.CodeGenerator.Model;
@@ -11,18 +12,8 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration;
 
-public class CodegenIntegrationTests : IClassFixture<MakeSureNetDaemonIsRunningFixture>
+public class CodegenIntegrationTests : NetDaemonIntegrationBase
 {
-    private readonly IHomeAssistantConnection _haConnection;
-
-    public CodegenIntegrationTests(
-        MakeSureNetDaemonIsRunningFixture _,
-        IHomeAssistantConnection haConnection
-    )
-    {
-        _haConnection = haConnection;
-    }
-
     /// <summary>
     ///     Tests the code generator. We had som problems with websocket interface changing and this should at least allert us on changes when it reaches
     ///     beta stage
@@ -30,7 +21,10 @@ public class CodegenIntegrationTests : IClassFixture<MakeSureNetDaemonIsRunningF
     [Fact]
     public async Task Codegen_ShouldBeAbleToParseServiceDescriptions()
     {
-        var element = await _haConnection.GetServicesAsync(new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).ConfigureAwait(false) ?? throw new InvalidOperationException("Failed to get services");
+        using var netDaemon = StartNetDaemon();
+        var haConnection = netDaemon.Services.GetRequiredService<IHomeAssistantConnection>();
+        
+        var element = await haConnection.GetServicesAsync(new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).ConfigureAwait(false) ?? throw new InvalidOperationException("Failed to get services");
         var serviceMetadata = ServiceMetaDataParser.Parse(element);
         serviceMetadata.Count.Should().NotBe(0);
 
@@ -39,5 +33,9 @@ public class CodegenIntegrationTests : IClassFixture<MakeSureNetDaemonIsRunningF
         var turnOnService = lightDomain.Services.FirstOrDefault(n => n.Service == "turn_on") ?? throw new InvalidOperationException("Expected domain light to be present");
         
         Assert.NotNull(turnOnService?.Target?.Entity);
+    }
+
+    public CodegenIntegrationTests(HomeAssistantLifetime homeAssistantLifetime) : base(homeAssistantLifetime)
+    {
     }
 }

@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
 using NetDaemon.HassModel.Entities;
@@ -29,30 +30,22 @@ public class BasicApp
     }
 }
 
-public class BasicTests : IClassFixture<MakeSureNetDaemonIsRunningFixture>
+public class BasicTests : NetDaemonIntegrationBase
 {
-    private readonly IHaContext _haContext;
-
-    public BasicTests(
-        MakeSureNetDaemonIsRunningFixture _,
-        IHaContext haContext
-    )
-    {
-        _haContext = haContext;
-    }
-
     [Fact]
     public async Task BasicTestApp_ShouldChangeStateOfInputTextToTheStateOfInputSelect_WhenChange()
     {
-        var optionToSet = GetDifferentOptionThanCurrentlySelected();
-
-        var waitTask = _haContext.StateChanges()
+        using var netDaemon = StartNetDaemon();
+        var haContext = netDaemon.Services.GetRequiredService<IHaContext>();
+        var optionToSet = GetDifferentOptionThanCurrentlySelected(haContext);
+        
+        var waitTask = haContext.StateChanges()
             .Where(n => n.Entity.EntityId == "input_text.test_result")
             .Timeout(TimeSpan.FromMilliseconds(5000))
             .FirstAsync()
             .ToTask();
-
-        _haContext.CallService(
+        
+        haContext.CallService(
             "input_select",
             "select_option",
             ServiceTarget.FromEntities("input_select.who_cooks"),
@@ -63,9 +56,9 @@ public class BasicTests : IClassFixture<MakeSureNetDaemonIsRunningFixture>
         result.New!.State.Should().Be(optionToSet);
     }
 
-    private string GetDifferentOptionThanCurrentlySelected()
+    private string GetDifferentOptionThanCurrentlySelected(IHaContext haContext)
     {
-        var currentState = _haContext.GetState("input_select.who_cooks")?.State
+        var currentState = haContext.GetState("input_select.who_cooks")?.State
                            ?? throw new InvalidOperationException();
 
         var useOption = currentState switch
@@ -74,5 +67,9 @@ public class BasicTests : IClassFixture<MakeSureNetDaemonIsRunningFixture>
             _ => "Paulus"
         };
         return useOption;
+    }
+
+    public BasicTests(HomeAssistantLifetime homeAssistantLifetime) : base(homeAssistantLifetime)
+    {
     }
 }
