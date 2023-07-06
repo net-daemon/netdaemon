@@ -47,12 +47,6 @@ public class BasicTests : NetDaemonIntegrationBase
             .FirstAsync()
             .ToTask();
 
-        haContext.StateChanges()
-            .Where(n => n.Entity.EntityId == "input_text.test_result").Subscribe(x =>
-            {
-
-            });
-        
         haContext.CallService(
             "input_select",
             "select_option",
