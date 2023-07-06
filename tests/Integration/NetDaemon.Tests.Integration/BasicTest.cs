@@ -36,7 +36,9 @@ public class BasicTests : NetDaemonIntegrationBase
     public async Task BasicTestApp_ShouldChangeStateOfInputTextToTheStateOfInputSelect_WhenChange()
     {
         using var netDaemon = StartNetDaemon();
-        var haContext = netDaemon.Services.GetRequiredService<IHaContext>();
+        await using var scope = netDaemon.Services.CreateAsyncScope();
+        
+        var haContext = scope.ServiceProvider.GetRequiredService<IHaContext>();
         var optionToSet = GetDifferentOptionThanCurrentlySelected(haContext);
         
         var waitTask = haContext.StateChanges()
@@ -44,6 +46,12 @@ public class BasicTests : NetDaemonIntegrationBase
             .Timeout(TimeSpan.FromMilliseconds(5000))
             .FirstAsync()
             .ToTask();
+
+        haContext.StateChanges()
+            .Where(n => n.Entity.EntityId == "input_text.test_result").Subscribe(x =>
+            {
+
+            });
         
         haContext.CallService(
             "input_select",
