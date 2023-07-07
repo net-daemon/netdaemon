@@ -68,6 +68,8 @@ public class HomeAssistantLifetime : IAsyncLifetime
         .WithImage("homeassistant/home-assistant:stable")
         .WithResourceMapping(new DirectoryInfo("./HA/config"), "/config")
         .WithPortBinding(8123, true)
+        .WithWaitStrategy(Wait.ForUnixContainer()
+            .UntilHttpRequestIsSucceeded(request => request.ForPort(8123).ForPath("/")))
         .Build();
 
     public int Port => _homeassistant.GetMappedPublicPort(8123);
