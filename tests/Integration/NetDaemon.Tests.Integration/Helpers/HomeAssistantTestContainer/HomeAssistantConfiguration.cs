@@ -9,15 +9,18 @@ public class HomeAssistantConfiguration : ContainerConfiguration
     public string Username { get; }
     public string Password { get; }
     public string ClientId { get; }
+    public string Version { get; }
     
     public HomeAssistantConfiguration(
         string? username = null,
         string? password = null,
-        string? clientId = null)
+        string? clientId = null,
+        string? version = null)
     {
         Username = username;
         Password = password;
         ClientId = clientId;
+        Version = version;
     }
 
     public HomeAssistantConfiguration(IResourceConfiguration<CreateContainerParameters> resourceConfiguration)
@@ -36,10 +39,6 @@ public class HomeAssistantConfiguration : ContainerConfiguration
         ClientId = BuildConfiguration.Combine(oldValue.ClientId, newValue.ClientId);
         Username = BuildConfiguration.Combine(oldValue.Username, newValue.Username);
         Password = BuildConfiguration.Combine(oldValue.Password, newValue.Password);
-    }
-
-
-    public HomeAssistantConfiguration()
-    {
+        Version = BuildConfiguration.Combine(oldValue.Version, newValue.Version);
     }
 }

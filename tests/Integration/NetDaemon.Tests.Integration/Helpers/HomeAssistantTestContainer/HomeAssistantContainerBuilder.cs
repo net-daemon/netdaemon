@@ -6,6 +6,7 @@ namespace NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 
 public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantContainerBuilder, HomeAssistantContainer, HomeAssistantConfiguration>
 {
+    private const string DefaultVersion = "stable";
     private const string DefaultClientId = "http://dummyClientId";
     private const string DefaultUsername = "username";
     private const string DefaultPassword = "password";
@@ -29,9 +30,11 @@ public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantConta
                 .UntilHttpRequestIsSucceeded(request => request.ForPort(8123).ForPath("/")))
             .WithUsername(DefaultUsername)
             .WithPassword(DefaultPassword)
-            .WithClientId(DefaultClientId);
+            .WithClientId(DefaultClientId)
+            .WithVersion(DefaultVersion);
     }
     
+    public HomeAssistantContainerBuilder WithVersion(string version) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(version: version));
     public HomeAssistantContainerBuilder WithUsername(string username) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(username: username));
     public HomeAssistantContainerBuilder WithPassword(string password) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(password: password));
     public HomeAssistantContainerBuilder WithClientId(string clientId) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(clientId: clientId));
