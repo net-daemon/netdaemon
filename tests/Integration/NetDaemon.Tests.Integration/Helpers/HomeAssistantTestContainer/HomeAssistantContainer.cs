@@ -41,13 +41,13 @@ public class HomeAssistantContainer : DockerContainer
         return (await onboardingResult.Content.ReadFromJsonAsync<HomeAssistantAuthorizeResult>())!;
     }
 
-    public async Task<HomeAssistantTokenResult> GenerateApiToken(HomeAssistantAuthorizeResult authorizeResult)
+    public async Task<HomeAssistantTokenResult> GenerateApiToken(string authCode)
     {
         var tokenResponse = await Client.PostAsync("/auth/token", new FormUrlEncodedContent(
             new Dictionary<string, string>()
             {
                 { "grant_type", "authorization_code" },
-                { "code", authorizeResult.AuthCode },
+                { "code", authCode },
                 { "client_id", _configuration.ClientId },
             }));
 
