@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
@@ -40,7 +41,6 @@ public class BasicTests : NetDaemonIntegrationBase
         
         var waitTask = haContext.StateChanges()
             .Where(n => n.Entity.EntityId == "input_text.test_result")
-            .Timeout(TimeSpan.FromMilliseconds(5000))
             .FirstAsync()
             .ToTask();
 
@@ -50,8 +50,9 @@ public class BasicTests : NetDaemonIntegrationBase
             ServiceTarget.FromEntities("input_select.who_cooks"),
             new {option = optionToSet});
 
-        var result = await waitTask.ConfigureAwait(false);
+        var act = async () => await waitTask.ConfigureAwait(false);
 
+        var result = (await act.Should().CompleteWithinAsync(5000.Milliseconds())).Subject;
         result.New!.State.Should().Be(optionToSet);
     }
 
