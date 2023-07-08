@@ -21,8 +21,8 @@ public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>, IA
     public NetDaemonIntegrationBase(HomeAssistantLifetime homeAssistantLifetime)
     {
         _homeAssistantLifetime = homeAssistantLifetime;
-        _netDaemon = StartNetDaemon();
-        _scope = _netDaemon.Services.CreateAsyncScope();
+        //_netDaemon = StartNetDaemon();
+        //_scope = _netDaemon.Services.CreateAsyncScope();
     }
 
     private IHost StartNetDaemon()
