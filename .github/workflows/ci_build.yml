@@ -38,9 +38,6 @@ jobs:
           
       - name: 👀 IntegrationTests
         run: |
-          echo "HomeAssistantVersion=stable" >> $GITHUB_ENV
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
-          echo "HomeAssistantVersion=beta" >> $GITHUB_ENV
           dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
 
       - name: 📨 Publish coverage report to coveralls.io
