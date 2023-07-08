@@ -34,8 +34,9 @@ public class BasicApp
 public class BasicTests : NetDaemonIntegrationBase
 {
     [Fact]
-    public async Task BasicTestApp_ShouldChangeStateOfInputTextToTheStateOfInputSelect_WhenChange()
+    public Task BasicTestApp_ShouldChangeStateOfInputTextToTheStateOfInputSelect_WhenChange()
     {
+        return Task.CompletedTask;
         //var haContext = Services.GetRequiredService<IHaContext>();
         //var optionToSet = GetDifferentOptionThanCurrentlySelected(haContext);
         //
