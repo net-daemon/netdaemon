@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 using Xunit;
@@ -9,9 +10,10 @@ public class HomeAssistantLifetime : IAsyncLifetime
 {
     private readonly HomeAssistantContainer _homeassistant = new HomeAssistantContainerBuilder()
         .WithResourceMapping(new DirectoryInfo("./HA/config"), "/config")
+        .WithVersion(Environment.GetEnvironmentVariable("HomeAssistantVersion") ?? HomeAssistantContainerBuilder.DefaultVersion)
         .Build();
     
-    public string AccessToken;
+    public string? AccessToken;
     public ushort Port => _homeassistant.Port;
 
     public async Task InitializeAsync()

@@ -6,10 +6,10 @@ namespace NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 
 public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantContainerBuilder, HomeAssistantContainer, HomeAssistantConfiguration>
 {
-    private const string DefaultVersion = "stable";
-    private const string DefaultClientId = "http://dummyClientId";
-    private const string DefaultUsername = "username";
-    private const string DefaultPassword = "password";
+    public const string DefaultVersion = "stable";
+    public const string DefaultClientId = "http://dummyClientId";
+    public const string DefaultUsername = "username";
+    public const string DefaultPassword = "password";
     
     public HomeAssistantContainerBuilder() : this(new HomeAssistantConfiguration())
     {

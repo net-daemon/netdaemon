@@ -6,21 +6,21 @@ namespace NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 
 public class HomeAssistantConfiguration : ContainerConfiguration
 {
-    public string Username { get; }
-    public string Password { get; }
-    public string ClientId { get; }
-    public string Version { get; }
-    
+    public string Username { get; } = null!;
+    public string Password { get; } = null!;
+    public string ClientId { get; } = null!;
+    public string Version { get; } = null!;
+
     public HomeAssistantConfiguration(
         string? username = null,
         string? password = null,
         string? clientId = null,
         string? version = null)
     {
-        Username = username;
-        Password = password;
-        ClientId = clientId;
-        Version = version;
+        Username = username!;
+        Password = password!;
+        ClientId = clientId!;
+        Version = version!;
     }
 
     public HomeAssistantConfiguration(IResourceConfiguration<CreateContainerParameters> resourceConfiguration)
