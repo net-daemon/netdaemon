@@ -21,10 +21,9 @@ public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantConta
         DockerResourceConfiguration = dockerResourceConfiguration;
     }
 
-    protected override HomeAssistantContainerBuilder Init()
-    {
-        return base.Init()
-            .WithImage("homeassistant/home-assistant:stable")
+    protected override HomeAssistantContainerBuilder Init() =>
+        base.Init()
+            .WithImage($"homeassistant/home-assistant:{DefaultVersion}")
             .WithPortBinding(8123, true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilHttpRequestIsSucceeded(request => request.ForPort(8123).ForPath("/")))
@@ -32,9 +31,11 @@ public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantConta
             .WithPassword(DefaultPassword)
             .WithClientId(DefaultClientId)
             .WithVersion(DefaultVersion);
-    }
-    
-    public HomeAssistantContainerBuilder WithVersion(string version) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(version: version));
+
+    public HomeAssistantContainerBuilder WithVersion(string version) =>
+        Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(version: version))
+            .WithImage($"homeassistant/home-assistant:{version}");
+
     public HomeAssistantContainerBuilder WithUsername(string username) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(username: username));
     public HomeAssistantContainerBuilder WithPassword(string password) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(password: password));
     public HomeAssistantContainerBuilder WithClientId(string clientId) => Merge(DockerResourceConfiguration, new HomeAssistantConfiguration(clientId: clientId));
