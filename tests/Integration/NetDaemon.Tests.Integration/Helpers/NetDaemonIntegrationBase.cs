@@ -15,8 +15,12 @@ public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>, IA
 {
     public IServiceProvider Services => _scope.ServiceProvider;
     private readonly HomeAssistantLifetime _homeAssistantLifetime;
-    private IHost _netDaemon;
+#pragma warning disable CS0649
+    private IHost _netDaemon = null!;
+#pragma warning restore CS0649
+#pragma warning disable CS0649
     private AsyncServiceScope _scope;
+#pragma warning restore CS0649
 
     public NetDaemonIntegrationBase(HomeAssistantLifetime homeAssistantLifetime)
     {
