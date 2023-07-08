@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
 using NetDaemon.Runtime;
@@ -8,16 +11,21 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;
 
-public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>
+public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>, IAsyncDisposable
 {
+    public IServiceProvider Services => _scope.ServiceProvider;
     private readonly HomeAssistantLifetime _homeAssistantLifetime;
+    private IHost _netDaemon;
+    private AsyncServiceScope _scope;
 
     public NetDaemonIntegrationBase(HomeAssistantLifetime homeAssistantLifetime)
     {
         _homeAssistantLifetime = homeAssistantLifetime;
+        _netDaemon = StartNetDaemon();
+        _scope = _netDaemon.Services.CreateAsyncScope();
     }
 
-    public IHost StartNetDaemon()
+    private IHost StartNetDaemon()
     {
         var netDeamon = Host.CreateDefaultBuilder()
             .UseNetDaemonAppSettings()
@@ -38,5 +46,11 @@ public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>
 
         netDeamon.Start();
         return netDeamon;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _scope.DisposeAsync();
+        _netDaemon.Dispose();
     }
 }

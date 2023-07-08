@@ -21,8 +21,7 @@ public class CodegenIntegrationTests : NetDaemonIntegrationBase
     [Fact]
     public async Task Codegen_ShouldBeAbleToParseServiceDescriptions()
     {
-        using var netDaemon = StartNetDaemon();
-        var haConnection = netDaemon.Services.GetRequiredService<IHomeAssistantConnection>();
+        var haConnection = Services.GetRequiredService<IHomeAssistantConnection>();
         
         var element = await haConnection.GetServicesAsync(new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).ConfigureAwait(false) ?? throw new InvalidOperationException("Failed to get services");
         var serviceMetadata = ServiceMetaDataParser.Parse(element);
