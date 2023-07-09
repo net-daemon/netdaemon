@@ -31,16 +31,23 @@ jobs:
 
       - name: 👀 Test
         run: |
-          dotnet test -v minimal --no-build '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests 
-          dotnet test -v minimal --no-build '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests 
-          dotnet test -v minimal --no-build '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests 
-          dotnet test -v minimal --no-build '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests 
-          dotnet test -v minimal --no-build '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests
+          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests 
+          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests 
+          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests 
+          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests 
+          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests
           
       - name: 👀 IntegrationTests
         run: |
-          dotnet test -v minimal --no-build -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
-          dotnet test -v minimal --no-build -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
+          dotnet test -v minimal --no-build -e --logger trx HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
+          dotnet test -v minimal --no-build -e --logger trx HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            **/*.trx
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
