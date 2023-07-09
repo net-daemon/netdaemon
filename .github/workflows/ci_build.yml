@@ -48,7 +48,13 @@ jobs:
         with:
           name: Test Results
           path: |
-            **.trx
+            **/*.trx
+            
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: Event File
+          path: ${{ github.event_path }}
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
