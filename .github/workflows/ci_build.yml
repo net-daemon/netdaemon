@@ -39,8 +39,8 @@ jobs:
           
       - name: 👀 IntegrationTests
         run: |
-          dotnet test -v minimal --no-build -e --logger trx HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
-          dotnet test -v minimal --no-build -e --logger trx HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
+          dotnet test -v minimal --no-build --logger trx -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
+          dotnet test -v minimal --no-build --logger trx -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
