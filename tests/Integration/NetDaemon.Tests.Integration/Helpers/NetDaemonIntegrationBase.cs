@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>, IA
     public NetDaemonIntegrationBase(HomeAssistantLifetime homeAssistantLifetime)
     {
         _homeAssistantLifetime = homeAssistantLifetime;
-        _netDaemon = StartNetDaemon();
+        _netDaemon = RunWithoutSynchronizationContext(StartNetDaemon);
         _scope = _netDaemon.Services.CreateAsyncScope();
     }
 
@@ -46,6 +47,20 @@ public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>, IA
 
         netDeamon.Start();
         return netDeamon;
+    }
+    
+    private T RunWithoutSynchronizationContext<T>(Func<T> func)
+    {
+        var synchronizationContext = SynchronizationContext.Current;
+        try
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+            return func();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+        }
     }
 
     public async ValueTask DisposeAsync()
