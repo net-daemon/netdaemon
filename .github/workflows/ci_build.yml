@@ -50,7 +50,7 @@ jobs:
           path: |
             **/*.trx
             
-      - name: Upload
+      - name: Artifact Upload Event
         uses: actions/upload-artifact@v3
         with:
           name: Event File
