@@ -27,7 +27,7 @@ public class HomeAssistantLifetime : IAsyncLifetime
     public async Task DisposeAsync()
     {
         var (stdout, stderr) = await _homeassistant.GetLogsAsync();
-        Console.WriteLine(stderr);
+        Console.WriteLine($"Writing Homeassistant logs to console:{Environment.NewLine}{stderr}{Environment.NewLine}End of Homeassistant logs");
         await _homeassistant.StopAsync();
     }
 }
