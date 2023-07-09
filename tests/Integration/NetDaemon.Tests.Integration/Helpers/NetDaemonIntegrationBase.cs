@@ -12,7 +12,8 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;
 
-public class NetDaemonIntegrationBase : IClassFixture<HomeAssistantLifetime>, IAsyncDisposable
+[Collection("HomeAssistant collection")]
+public class NetDaemonIntegrationBase : IAsyncDisposable
 {
     public IServiceProvider Services => _scope.ServiceProvider;
     private readonly HomeAssistantLifetime _homeAssistantLifetime;
