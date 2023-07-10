@@ -31,30 +31,16 @@ jobs:
 
       - name: 👀 Test
         run: |
-          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests 
-          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests 
-          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests 
-          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests 
-          dotnet test -v minimal --no-build --logger trx '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests -- RunConfiguration.CollectSourceInformation=true
           
       - name: 👀 IntegrationTests
         run: |
-          dotnet test -v minimal --no-build --logger trx -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
-          dotnet test -v minimal --no-build --logger trx -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: Test Results
-          path: |
-            **/*.trx
-            
-      - name: Artifact Upload Event
-        uses: actions/upload-artifact@v3
-        with:
-          name: Event File
-          path: ${{ github.event_path }}
+          dotnet test -v minimal --no-build --logger GitHubActions -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
