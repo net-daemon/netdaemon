@@ -140,7 +140,7 @@ public class WebSocketTransportPipelineTests
         }
         catch (Exception)
         {
-            Assert.True(false, "DisposeAsync should not throw exception");
+            Assert.Fail("DisposeAsync should not throw exception");
         }
     }
 
