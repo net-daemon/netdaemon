@@ -9,10 +9,13 @@ on:
     branches:
       - main
       - dev
+  schedule:
+    - cron: "0 2 * * *" # run at 2 AM UTC
 jobs:
   build:
     name: 🔨 Build sources (CI)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
@@ -28,13 +31,18 @@ jobs:
       - name: 🛠️ Build code
         run: dotnet build /warnaserror
 
-      - name: 👀 Test
+      - name: 👀 Unit Test
         run: |
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests 
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests 
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests 
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests 
-          dotnet test -v minimal '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests -- RunConfiguration.CollectSourceInformation=true
+          
+      - name: 👀 Integration Tests
+        run: |
+          dotnet test -v minimal --no-build --logger "GitHubActions;annotations.titleFormat=@test (stable)" -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --logger "GitHubActions;annotations.titleFormat=@test (beta)" -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master
@@ -49,3 +57,11 @@ jobs:
           name: codecov-umbrella # optional
           files: ${{github.workspace}}/codecover.info
           fail_ci_if_error: true # optional (default = false)
+
+      - name: Discord failure notification
+        if: ${{ github.event_name == 'schedule' && failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_ACTION_FAILURE }}
+        uses: Ilshidur/action-discord@0.3.2
+        with:
+          args: "[Scheduled action failed!](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})"

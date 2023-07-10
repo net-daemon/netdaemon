@@ -55,6 +55,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.Extensions.MqttEn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugWebHost", "src\debug\DebugWebHost\DebugWebHost.csproj", "{AEBC7828-7C19-4A86-B6E2-58B5171347B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.Tests.Integration", "tests\Integration\NetDaemon.Tests.Integration\NetDaemon.Tests.Integration.csproj", "{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -293,6 +295,18 @@ Global
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}.Release|x64.Build.0 = Release|Any CPU
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}.Release|x86.ActiveCfg = Release|Any CPU
 		{3EB8C461-C91E-4900-BFBD-0986CBBE87A6}.Release|x86.Build.0 = Release|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Debug|x64.Build.0 = Debug|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Debug|x86.Build.0 = Debug|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Release|x64.ActiveCfg = Release|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Release|x64.Build.0 = Release|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Release|x86.ActiveCfg = Release|Any CPU
+		{9B6A778A-A2D6-43A6-9FED-8D5B2BC18514}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
