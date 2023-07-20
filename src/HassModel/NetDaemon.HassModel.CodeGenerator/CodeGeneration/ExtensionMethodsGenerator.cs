@@ -1,3 +1,4 @@
+using NetDaemon.HassModel.CodeGenerator.CodeGeneration;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace NetDaemon.HassModel.CodeGenerator;
@@ -59,7 +60,9 @@ internal static class ExtensionMethodsGenerator
 
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, string targetEntityDomain, ILookup<string, string> entityClassNameByDomain)
     {
-        var entityTypeName = entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
+        var entityTypeName = HelpersGenerator.EntityInterfaces.GetValueOrDefault(targetEntityDomain)?.GetValueOrDefault(HelpersGenerator.GenerationMode.Entity) ??
+                             entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
+
         if (entityTypeName == null) yield break;
         
         var serviceName = service.Service;

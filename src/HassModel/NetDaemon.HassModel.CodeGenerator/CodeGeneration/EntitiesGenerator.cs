@@ -18,15 +18,12 @@ internal static class EntitiesGenerator
         {
             yield return GenerateEntiesForDomainClass(domainMetadata.Key, domainMetadata);
         }
-        
         foreach (var domainMetadata in metaData)
         {
             yield return GenerateEntityType(domainMetadata);
-            
             yield return AttributeTypeGenerator.GenerateAttributeRecord(domainMetadata);
         }
     }
-    
     private static TypeDeclarationSyntax GenerateRootEntitiesInterface(IEnumerable<string> domains)
     {
         var autoProperties = domains.Select(domain =>
@@ -79,12 +76,16 @@ internal static class EntitiesGenerator
     /// </summary>
     private static MemberDeclarationSyntax GenerateEntityType(EntityDomainMetadata domainMetaData)
     {
-        string attributesGeneric = domainMetaData.AttributesClassName;
+        var attributesGeneric = domainMetaData.AttributesClassName;
 
         var baseType = domainMetaData.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
         var entityStateType = domainMetaData.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
-
         var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData.EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
+
+        if (HelpersGenerator.EntityInterfaces.TryGetValue(domainMetaData.Domain, out var @values))
+        {
+            baseClass += $", {@values[HelpersGenerator.GenerationMode.Entity]}";
+        }
 
         var (className, variableName) = GetNames<IHaContext>();
         var classDeclaration = $$"""
@@ -95,6 +96,8 @@ internal static class EntitiesGenerator
 
                     public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(Entity))}} entity) : base(entity)
                     {}
+
+                    // Here would be some wrappers around the entity extension methods
             }
             """;
 

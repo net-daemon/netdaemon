@@ -5,6 +5,31 @@ namespace NetDaemon.HassModel.CodeGenerator.CodeGeneration;
 
 internal static class HelpersGenerator
 {
+    
+    public enum GenerationMode
+    {
+        Entity,
+        Parameter
+    }
+
+    public static readonly Dictionary<string, Dictionary<GenerationMode, string>> EntityInterfaces = new()
+    {
+        {
+            "light",
+            new Dictionary<GenerationMode, string>
+            {
+                { GenerationMode.Entity, "ILightEntity" },
+            }
+        },
+        {
+            "switch",
+            new Dictionary<GenerationMode, string>
+            {
+                { GenerationMode.Entity, "ISwitchEntity" },
+            }
+        }
+    };
+
     public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyCollection<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains)
     {
         var extensionClass = GenerateServiceCollectionExtension(domains, orderedServiceDomains);

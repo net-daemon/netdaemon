@@ -1,7 +1,7 @@
 ﻿namespace NetDaemon.HassModel.Entities;
 
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
-public record Entity
+public record Entity: IServiceTarget
 {
     /// <summary>
     /// The IHAContext
