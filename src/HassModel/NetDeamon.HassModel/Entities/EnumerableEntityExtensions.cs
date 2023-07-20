@@ -17,7 +17,7 @@ public static class EnumerableEntityExtensions
     ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateAllChanges(this IEnumerable<Entity> entities) => 
+    public static IObservable<StateChange> StateAllChanges(this IEnumerable<IServiceTarget> entities) => 
         entities.Select(t => t.StateAllChanges()).Merge();
 
     /// <summary>
@@ -31,7 +31,7 @@ public static class EnumerableEntityExtensions
     ///    .Subscribe(e =&gt; e.Entity.TurnOff());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateChanges(this IEnumerable<Entity> entities) =>
+    public static IObservable<StateChange> StateChanges(this IEnumerable<IServiceTarget> entities) =>
         entities.StateAllChanges().StateChangesOnly();
         
     /// <summary>
@@ -75,7 +75,7 @@ public static class EnumerableEntityExtensions
     /// <param name="entities">IEnumerable of Entities for which to call the service</param>
     /// <param name="service">Name of the service to call. If the Domain of the service is the same as the domain of the Entities it can be omitted</param>
     /// <param name="data">Data to provide</param>
-    public static void CallService(this IEnumerable<Entity> entities, string service, object? data = null)
+    public static void CallService(this IEnumerable<IServiceTarget> entities, string service, object? data = null)
     {
         ArgumentNullException.ThrowIfNull(service);
         
