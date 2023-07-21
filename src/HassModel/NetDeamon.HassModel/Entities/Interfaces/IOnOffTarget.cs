@@ -31,12 +31,17 @@ public interface IOnOffTarget
         throw new NotImplementedException();
     }
     
-    public static void TurnOn()
+    public void TurnOn()
     {
         throw new NotImplementedException();
     }
     
-    public static void TurnOff()
+    public void TurnOff()
+    {
+        throw new NotImplementedException();
+    }
+    
+    public void Toggle(IEnumerable<IServiceTarget> targets)
     {
         throw new NotImplementedException();
     }
@@ -115,5 +120,8 @@ public interface IOnOffTarget
 
 public interface IOnOffListTarget: IEnumerable<IOnOffTarget>
 {
-    
+    public void Toggle()
+    {
+        throw new NotImplementedException();
+    }
 }
