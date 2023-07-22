@@ -30,8 +30,6 @@ public sealed class ServiceApp : IAsyncInitializable
         _api = api;
         _client = client;
         _logger = logger;
-       
-        
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)

@@ -46,6 +46,50 @@ public class AppScopedHaContextProviderTest
         _hassConnectionMock.Verify(
             c => c.SendCommandAsync<CallServiceCommand>(expectedCommand,
                 It.IsAny<CancellationToken>()), Times.Once);
+    }    
+    
+    [Fact]
+    public async Task TestCallServiceWithResponseAsync()
+    {
+        var haContext = await CreateTargetAsync();
+
+        var serviceTarget = ServiceTarget.FromEntity("domain.entity");
+        var serviceData = new { Name = "value" };
+        
+        await haContext.CallServiceWithResponseAsync("domain", "service", serviceTarget, serviceData);
+
+        // The following expected structure to be called by the underlying connection 
+        
+        // {
+        //     Id = 0,
+        //     Type = "execute_script",
+        //     Sequence = new object[]
+        //     {
+        //         new
+        //         {
+        //             service = "domain.service",
+        //             data = serviceData,
+        //             target = serviceTarget,
+        //             response_variable = "service_result"
+        //         },
+        //         new
+        //         {
+        //             stop = "done",
+        //             response_variable = "service_result"
+        //         }
+        //     }
+        // }
+        
+        // Hack since verify did not work on that complex object
+        var result = _hassConnectionMock.Invocations.Single(e => 
+            e.Method.Name == "SendCommandAndReturnResponseAsync" &&
+            e.Arguments[0] is CallExecuteScriptCommand);
+        
+        var executeCommand = result.Arguments[0] as CallExecuteScriptCommand;
+
+        executeCommand!.Sequence[0].GetType().GetProperty("service")!.GetValue(executeCommand.Sequence[0])!.Should().Be("domain.service");
+        executeCommand.Sequence[0].GetType().GetProperty("data")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceData);
+        executeCommand.Sequence[0].GetType().GetProperty("target")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceTarget);
     }
 
     [Fact]
