@@ -1,6 +1,6 @@
 namespace NetDaemon.HassModel.Entities;
 
-
+#pragma warning disable CA1040
 
 /// <summary>
 /// 
@@ -16,31 +16,54 @@ public interface ITurnOffParameters
 {
 }
 
+/// <summary>
+/// 
+/// </summary>
 public interface ITurnOnParameters
 {
 }
 
 
 
+/// <summary>
+/// Base interface for togglebal targets
+/// </summary>
 public interface IOnOffTarget
 {   
     // Virtual extension methods (aka default interface methods)
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
     public void Toggle()
     {
         throw new NotImplementedException();
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
     public void TurnOn()
     {
         throw new NotImplementedException();
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
     public void TurnOff()
     {
         throw new NotImplementedException();
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="targets"></param>
+    /// <exception cref="NotImplementedException"></exception>
     public void Toggle(IEnumerable<IServiceTarget> targets)
     {
         throw new NotImplementedException();
@@ -53,7 +76,6 @@ public interface IOnOffTarget
     }
 
     ///<summary>Toggles one or more targets, from on to off, or, off to on, based on their current state. </summary>
-    ///<param name="target">The LightEntity to call this service for</param>
     ///<param name="transition">Duration it takes to get to next state.</param>
     ///<param name="rgbColor">Color for the light in RGB-format. eg: [255, 100, 100]</param>
     ///<param name="colorName">A human readable color name.</param>
@@ -79,7 +101,6 @@ public interface IOnOffTarget
     }
 
     ///<summary>Turns off one or more targets.</summary>
-    ///<param name="target">The LightEntity to call this service for</param>
     ///<param name="transition">Duration it takes to get to next state.</param>
     ///<param name="flash">If the light should flash.</param>
     public static void TurnOff(long? transition = null, object? flash = null)
@@ -94,7 +115,6 @@ public interface IOnOffTarget
     }
 
     ///<summary>Turn on one or more targets and adjust properties of the light, even when they are turned on already. </summary>
-    ///<param name="target">The LightEntity to call this service for</param>
     ///<param name="transition">Duration it takes to get to next state.</param>
     ///<param name="rgbColor">The color for the light (based on RGB - red, green, blue).</param>
     ///<param name="rgbwColor">A list containing four integers between 0 and 255 representing the RGBW (red, green, blue, white) color for the light. eg: [255, 100, 100, 50]</param>
@@ -113,14 +133,6 @@ public interface IOnOffTarget
     ///<param name="flash">If the light should flash.</param>
     ///<param name="effect">Light effect.</param>
     public static void TurnOn(long? transition = null, object? rgbColor = null, object? rgbwColor = null, object? rgbwwColor = null, object? colorName = null, object? hsColor = null, object? xyColor = null, object? colorTemp = null, long? kelvin = null, long? brightness = null, long? brightnessPct = null, long? brightnessStep = null, long? brightnessStepPct = null, object? white = null, string? profile = null, object? flash = null, string? effect = null)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public interface IOnOffListTarget: IEnumerable<IOnOffTarget>
-{
-    public void Toggle()
     {
         throw new NotImplementedException();
     }
