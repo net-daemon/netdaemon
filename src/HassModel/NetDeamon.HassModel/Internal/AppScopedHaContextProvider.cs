@@ -65,7 +65,8 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public JsonElement? CallServiceWithResponse(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
-       var result = Task.Run(async () => await _hassRunner.CurrentConnection?.CallServiceWithResponseAsync(domain, service, data, target.Map(),_tokenSource.Token)).Result;
+        _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
+       var result = Task.Run(async () => await _hassRunner.CurrentConnection.CallServiceWithResponseAsync(domain, service, data, target?.Map(),_tokenSource.Token).ConfigureAwait(false)).Result;
        return result?.Response;
     }
     
