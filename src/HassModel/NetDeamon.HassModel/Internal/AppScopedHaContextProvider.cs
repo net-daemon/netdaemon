@@ -63,10 +63,12 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
-    public JsonElement? CallServiceWithResponse(string domain, string service, ServiceTarget? target = null, object? data = null)
+    public async Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
         _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
-       var result = Task.Run(async () => await _hassRunner.CurrentConnection.CallServiceWithResponseAsync(domain, service, data, target?.Map(),_tokenSource.Token).ConfigureAwait(false)).Result;
+        var result = await _hassRunner.CurrentConnection
+            .CallServiceWithResponseAsync(domain, service, data, target?.Map(), _tokenSource.Token)
+            .ConfigureAwait(false);
        return result?.Response;
     }
     

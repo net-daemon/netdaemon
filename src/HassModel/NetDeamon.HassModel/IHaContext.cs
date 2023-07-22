@@ -43,7 +43,7 @@ public interface IHaContext
     /// <param name="target">The target that is targeted by this service call</param>
     /// <param name="data">Data provided to service. Should be Json-serializable to the data expected by the service</param>
     /// <returns>Returns a JsonElement containing the service result</returns>
-    public JsonElement? CallServiceWithResponse(string domain, string service, ServiceTarget? target = null,
+    public Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null,
         object? data = null);
     
     /// <summary>

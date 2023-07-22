@@ -27,9 +27,9 @@ public class CalendarApp
     )
     {
         // We wait for the test to send an event to start the test and we send back a event with the result
-        haContext.Events.Where(s => s.EventType == "start_test_custom_calendar_events").Subscribe(_ =>
+        haContext.Events.Where(s => s.EventType == "start_test_custom_calendar_events").SubscribeAsync(async _ =>
         {
-            var result = haContext.CallServiceWithResponse("calendar", "list_events",
+            var result = await haContext.CallServiceWithResponseAsync("calendar", "list_events",
                 ServiceTarget.FromEntity("calendar.cal"),
                 new { start_date_time = "2023-07-26 00:00:00", end_date_time = "2023-07-28 00:00:00" });
             if (result is not null)
