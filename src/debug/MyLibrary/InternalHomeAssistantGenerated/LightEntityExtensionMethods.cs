@@ -1,11 +1,12 @@
 using NetDaemon.HassModel.Entities;
 
-namespace MyLibrary.InternalHomeAssistantGenerated;
+namespace MyLibrary;
 
 public static class LightEntityExtensionMethods
 {
     public static void Toggle(this ILightEntity target, IToggleParameters data)
-    {
+    {   
+        Console.WriteLine("Toggle");
         target.CallService("toggle", data);
     }
 
