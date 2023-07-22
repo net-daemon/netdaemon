@@ -1,0 +1,22 @@
+﻿{
+  "id": 3,
+  "type": "result",
+  "success": true,
+  "result": {
+    "context": {
+      "id": "01H5X83MG4X9ZPT436JRBH6HXQ",
+      "parent_id": null,
+      "user_id": "9587bf0916cf498fa289523c229ccdb4"
+    },
+    "response": {
+      "events": [
+        {
+          "start": "2023-07-21T22:00:00+00:00",
+          "end": "2023-07-21T23:00:00+00:00",
+          "summary": "Test",
+          "description": "A calendar event"
+        }
+      ]
+    }
+  }
+}

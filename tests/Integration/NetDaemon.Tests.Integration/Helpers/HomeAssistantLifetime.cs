@@ -22,6 +22,7 @@ public class HomeAssistantLifetime : IAsyncLifetime
 
         var authorizeResult = await _homeassistant.DoOnboarding();
         AccessToken = (await _homeassistant.GenerateApiToken(authorizeResult.AuthCode)).AccessToken;
+        await _homeassistant.AddIntegrations(AccessToken);
     }
 
     public async Task DisposeAsync()

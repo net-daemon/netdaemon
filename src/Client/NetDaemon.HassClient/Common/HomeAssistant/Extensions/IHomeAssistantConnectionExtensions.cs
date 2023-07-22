@@ -1,3 +1,5 @@
+using NetDaemon.Client.Common.HomeAssistant.Model;
+
 namespace NetDaemon.Client.HomeAssistant.Extensions;
 
 /// <summary>
@@ -116,6 +118,49 @@ public static class HomeAssistantConnectionExtensions
                 cancelToken ?? CancellationToken.None).ConfigureAwait(false);
     }
 
+    /// <summary>
+    ///     Get all configuration from Home Assistant
+    /// </summary>
+    /// <param name="connection">connected Home Assistant instance</param>
+    /// <param name="domain"></param>
+    /// <param name="service"></param>
+    /// <param name="serviceData"></param>
+    /// <param name="serviceTarget">The target of service call</param>
+    /// <param name="cancelToken">cancellation token</param>
+    public static async Task<HassServiceResult?> CallServiceWithResponseAsync(
+        this IHomeAssistantConnection connection,
+        string domain,
+        string service,
+        object? serviceData = null,
+        HassTarget? serviceTarget = null,
+        CancellationToken? cancelToken = null
+    )
+    {
+        var response = await connection
+            .SendCommandAndReturnResponseAsync<CallExecuteScriptCommand, HassServiceResult>
+            (
+                new()
+                {
+                   Sequence = new object[]
+                   {
+                       new
+                       {
+                           service = $"{domain}.{service}",
+                           data = serviceData,
+                           target = serviceTarget,
+                           response_variable = "service_result"
+                       },
+                       new
+                       {
+                           stop = "done",
+                           response_variable = "service_result"
+                       }
+                   }
+                },
+                cancelToken ?? CancellationToken.None).ConfigureAwait(false);
+        return response;
+    }
+    
     /// <summary>
     ///     Pings the connected Home Assistant instance and expects a pong
     /// </summary>

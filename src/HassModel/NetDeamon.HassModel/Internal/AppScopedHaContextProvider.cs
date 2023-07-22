@@ -63,6 +63,12 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
+    public JsonElement? CallServiceWithResponse(string domain, string service, ServiceTarget? target = null, object? data = null)
+    {
+       var result = Task.Run(async () => await _hassRunner.CurrentConnection?.CallServiceWithResponseAsync(domain, service, data, target.Map(),_tokenSource.Token)).Result;
+       return result?.Response;
+    }
+    
     public IObservable<StateChange> StateAllChanges()
     {
         return _queuedObservable.Where(n =>
