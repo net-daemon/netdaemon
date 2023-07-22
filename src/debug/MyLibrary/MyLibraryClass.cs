@@ -1,4 +1,5 @@
 ﻿using NetDaemon.HassModel.Entities;
+using MyLibrary.InternalHomeAssistantGenerated;
 
 namespace MyLibrary;
 
