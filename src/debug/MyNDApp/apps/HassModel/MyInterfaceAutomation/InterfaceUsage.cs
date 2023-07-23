@@ -14,10 +14,10 @@ public class InterfaceUsage
     {
         var entities = new Entities(haContext);
         IEnumerable<ILightEntity> lights = new[] { entities.Light.LivingRoom, entities.Light.SonoffLed };
-        var myLibraryClass = new MyLibraryClass(entities.Light.SonoffLed, lights);
-        while (true)
+        var myLibraryClass = new MyLibraryClass(entities.Light.LivingRoom, lights, logger);
+        for (var i = 0; i < 4; i++)
         {
-            myLibraryClass.ToogleTargetList();
+            myLibraryClass.ToogleTarget();
             Thread.Sleep(1000);
         }
     }

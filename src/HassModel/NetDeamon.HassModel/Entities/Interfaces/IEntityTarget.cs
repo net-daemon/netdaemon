@@ -3,7 +3,7 @@ namespace NetDaemon.HassModel.Entities;
 /// <summary>
 /// 
 /// </summary>
-public interface IServiceTarget: IEntity
+public interface IEntityTarget: IEntity
 {
     /// <summary>
     /// Base interface for all service targets such as entities, rooms, areas.

@@ -1,0 +1,88 @@
+namespace NetDaemon.HassModel.Entities;
+
+/// <summary>
+/// 
+/// </summary>
+public interface ILightEntityTarget: IOnOffTarget
+{
+}
+
+/// <summary>
+/// 
+/// </summary>
+public interface ILightEntity : ILightEntityTarget
+{
+    /// <summary>
+    /// Default implementation of Toggle method
+    /// </summary>
+    public new void Toggle()
+    {   
+        CallService("light.toggle");
+    }
+    
+    /// <summary>
+    /// Default implementation of TurnOn method
+    /// </summary>
+    public new void TurnOn()
+    {
+        CallService("light.turn_on");
+    }
+    
+    /// <summary>
+    /// Default implementation of TurnOff method
+    /// </summary>
+    public new void TurnOff()
+    {
+        CallService("light.turn_off");
+    }
+    
+    ///<summary>Toggles one or more targets, from on to off, or, off to on, based on their current state. </summary>
+    ///<param name="transition">Duration it takes to get to next state.</param>
+    ///<param name="rgbColor">Color for the light in RGB-format. eg: [255, 100, 100]</param>
+    ///<param name="colorName">A human readable color name.</param>
+    ///<param name="hsColor">Color for the light in hue/sat format. Hue is 0-360 and Sat is 0-100. eg: [300, 70]</param>
+    ///<param name="xyColor">Color for the light in XY-format. eg: [0.52, 0.43]</param>
+    ///<param name="colorTemp">Color temperature for the light in mireds.</param>
+    ///<param name="kelvin">Color temperature for the light in Kelvin.</param>
+    ///<param name="brightness">Number indicating brightness, where 0 turns the light off, 1 is the minimum brightness and 255 is the maximum brightness supported by the light.</param>
+    ///<param name="brightnessPct">Number indicating percentage of full brightness, where 0 turns the light off, 1 is the minimum brightness and 100 is the maximum brightness supported by the light.</param>
+    ///<param name="white">Set the light to white mode.</param>
+    ///<param name="profile">Name of a light profile to use. eg: relax</param>
+    ///<param name="flash">If the light should flash.</param>
+    ///<param name="effect">Light effect.</param>
+    public void Toggle(long? transition = null, object? rgbColor = null, object? colorName = null, object? hsColor = null, object? xyColor = null, object? colorTemp = null, long? kelvin = null, long? brightness = null, long? brightnessPct = null, object? white = null, string? profile = null, object? flash = null, string? effect = null)
+    {
+        throw new NotImplementedException();
+    }
+    
+    ///<summary>Turns off one or more targets.</summary>
+    ///<param name="transition">Duration it takes to get to next state.</param>
+    ///<param name="flash">If the light should flash.</param>
+    public void TurnOff(long? transition = null, object? flash = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    ///<summary>Turn on one or more targets and adjust properties of the light, even when they are turned on already. </summary>
+    ///<param name="transition">Duration it takes to get to next state.</param>
+    ///<param name="rgbColor">The color for the light (based on RGB - red, green, blue).</param>
+    ///<param name="rgbwColor">A list containing four integers between 0 and 255 representing the RGBW (red, green, blue, white) color for the light. eg: [255, 100, 100, 50]</param>
+    ///<param name="rgbwwColor">A list containing five integers between 0 and 255 representing the RGBWW (red, green, blue, cold white, warm white) color for the light. eg: [255, 100, 100, 50, 70]</param>
+    ///<param name="colorName">A human readable color name.</param>
+    ///<param name="hsColor">Color for the light in hue/sat format. Hue is 0-360 and Sat is 0-100. eg: [300, 70]</param>
+    ///<param name="xyColor">Color for the light in XY-format. eg: [0.52, 0.43]</param>
+    ///<param name="colorTemp">Color temperature for the light in mireds.</param>
+    ///<param name="kelvin">Color temperature for the light in Kelvin.</param>
+    ///<param name="brightness">Number indicating brightness, where 0 turns the light off, 1 is the minimum brightness and 255 is the maximum brightness supported by the light.</param>
+    ///<param name="brightnessPct">Number indicating percentage of full brightness, where 0 turns the light off, 1 is the minimum brightness and 100 is the maximum brightness supported by the light.</param>
+    ///<param name="brightnessStep">Change brightness by an amount.</param>
+    ///<param name="brightnessStepPct">Change brightness by a percentage.</param>
+    ///<param name="white">Set the light to white mode.</param>
+    ///<param name="profile">Name of a light profile to use. eg: relax</param>
+    ///<param name="flash">If the light should flash.</param>
+    ///<param name="effect">Light effect.</param>
+    public void TurnOn(long? transition = null, object? rgbColor = null, object? rgbwColor = null, object? rgbwwColor = null, object? colorName = null, object? hsColor = null, object? xyColor = null, object? colorTemp = null, long? kelvin = null, long? brightness = null, long? brightnessPct = null, long? brightnessStep = null, long? brightnessStepPct = null, object? white = null, string? profile = null, object? flash = null, string? effect = null)
+    {
+        throw new NotImplementedException();
+    }
+}
