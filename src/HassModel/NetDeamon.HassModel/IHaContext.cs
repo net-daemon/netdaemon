@@ -36,6 +36,17 @@ public interface IHaContext
     void CallService(string domain, string service, ServiceTarget? target = null, object? data = null);
 
     /// <summary>
+    /// Calls a service that returns a response
+    /// </summary>
+    /// <param name="domain">Domain of service</param>
+    /// <param name="service">Service name</param>
+    /// <param name="target">The target that is targeted by this service call</param>
+    /// <param name="data">Data provided to service. Should be Json-serializable to the data expected by the service</param>
+    /// <returns>Returns a JsonElement containing the service result</returns>
+    public Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null,
+        object? data = null);
+    
+    /// <summary>
     /// Get area for a single entity
     /// </summary>
     /// <param name="entityId"></param>
