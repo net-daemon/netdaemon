@@ -3,7 +3,7 @@ namespace NetDaemon.HassModel.Entities;
 /// <summary>
 /// 
 /// </summary>
-public interface ISwitchEntity: IOnOffTarget, IEntityTarget
+public interface ISwitchEntity: IOnOffTarget
 {
     
 }
