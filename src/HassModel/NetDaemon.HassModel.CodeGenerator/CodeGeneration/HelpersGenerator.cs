@@ -5,31 +5,6 @@ namespace NetDaemon.HassModel.CodeGenerator.CodeGeneration;
 
 internal static class HelpersGenerator
 {
-    
-    public enum GenerationMode
-    {
-        Entity,
-        Parameter
-    }
-
-    public static readonly Dictionary<string, Dictionary<GenerationMode, string>> EntityInterfaces = new()
-    {
-        {
-            "light",
-            new Dictionary<GenerationMode, string>
-            {
-                { GenerationMode.Entity, "ILightEntity" },
-            }
-        },
-        {
-            "switch",
-            new Dictionary<GenerationMode, string>
-            {
-                { GenerationMode.Entity, "ISwitchEntity" },
-            }
-        }
-    };
-
     public static IEnumerable<MemberDeclarationSyntax> Generate(IReadOnlyCollection<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains)
     {
         var extensionClass = GenerateServiceCollectionExtension(domains, orderedServiceDomains);
@@ -58,15 +33,15 @@ internal static class HelpersGenerator
     /// Generates the AddHomeAssistantGenerated method
     /// </summary>
     //
-    //     public static IServiceCollection AddGeneratedCode(this IServiceCollection serviceCollection)
-    //     {
-    //         serviceCollection.AddTransient<Entities>();
-    //         serviceCollection.AddTransient<AutomationEntities>();
-    //         serviceCollection.AddTransient<BinarySensorEntities>();
-    //         serviceCollection.AddTransient<Services>();
-    //         serviceCollection.AddTransient<AlarmControlPanelServices>();
-    //         return serviceCollection;
-    //    }
+    //  public static IServiceCollection AddGeneratedCode(this IServiceCollection serviceCollection)
+    //  {
+    //      serviceCollection.AddTransient<Entities>();
+    //      serviceCollection.AddTransient<AutomationEntities>();
+    //      serviceCollection.AddTransient<BinarySensorEntities>();
+    //      serviceCollection.AddTransient<Services>();
+    //      serviceCollection.AddTransient<AlarmControlPanelServices>();
+    //      return serviceCollection;
+    // }
     private static MethodDeclarationSyntax BuildAddHomeAssistantGenerated(IEnumerable<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains)
     {
 

@@ -1,6 +1,7 @@
 ﻿using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Microsoft.CodeAnalysis.CSharp;
 using NetDaemon.HassModel.CodeGenerator.CodeGeneration;
+using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
@@ -80,11 +81,15 @@ internal static class EntitiesGenerator
 
         var baseType = domainMetaData.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
         var entityStateType = domainMetaData.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
-        var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData.EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
+        var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData .EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
 
-        if (HelpersGenerator.EntityInterfaces.TryGetValue(domainMetaData.Domain, out var @values))
+        var result = Array.Find(typeof(IEntityTarget).Assembly
+            .GetTypes(),
+            t => t.IsInterface && t.Name.Equals($"I{domainMetaData.EntityClassName}", StringComparison.Ordinal)
+            );
+        if (result is not null)
         {
-            baseClass += $", {@values[HelpersGenerator.GenerationMode.Entity]}";
+            baseClass += $", {result.Name}";
         }
 
         var (className, variableName) = GetNames<IHaContext>();
@@ -96,8 +101,6 @@ internal static class EntitiesGenerator
 
                     public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(Entity))}} entity) : base(entity)
                     {}
-
-                    // Here would be some wrappers around the entity extension methods
             }
             """;
 

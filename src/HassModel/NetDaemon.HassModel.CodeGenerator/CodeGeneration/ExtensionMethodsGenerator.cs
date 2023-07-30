@@ -60,11 +60,10 @@ internal static class ExtensionMethodsGenerator
 
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, string targetEntityDomain, ILookup<string, string> entityClassNameByDomain)
     {
-        var entityTypeName = HelpersGenerator.EntityInterfaces.GetValueOrDefault(targetEntityDomain)?.GetValueOrDefault(HelpersGenerator.GenerationMode.Entity) ??
-                             entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
+        var entityTypeName = entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
 
         if (entityTypeName == null) yield break;
-        
+
         var serviceName = service.Service;
         var serviceArguments = ServiceArguments.Create(domain, service);
         var enumerableTargetTypeName = $"IEnumerable<{entityTypeName}>";
