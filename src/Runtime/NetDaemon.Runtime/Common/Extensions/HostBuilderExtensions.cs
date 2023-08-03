@@ -7,29 +7,53 @@ namespace NetDaemon.Runtime;
 
 public static class HostBuilderExtensions
 {
+    /// <summary>
+    /// Call this method to load NetDeamonYaml settings, and to register 'ConfigureNetDaemonServices' in the service collection
+    /// </summary>
+    /// <param name="hostBuilder"></param>
+    /// <remarks>
+    /// UseNetDaemonAppSettings has several responsibilities:
+    ///  - Register appsettings.json to the host configuration
+    ///  - Register all the yaml settings from the path set in the current configuration to the configuration provider
+    ///  - Call 'ConfigureNetDaemonServices' in the service collection
+    ///  
+    /// You can call these methods separately if you want to do something else in between, or if you're calling any of these methods already.
+    /// Change `UseNetDaemonAppSettings` to `.RegisterAppSettingsJsonToHost().RegisterYamlSettings()` and call `ConfigureNetDaemonServices(context.Configuration)` in ConfigureServices.
+    /// </remarks>
     public static IHostBuilder UseNetDaemonAppSettings(this IHostBuilder hostBuilder)
     {
         return hostBuilder
+            .RegisterAppSettingsJsonToHost()
+            .RegisterYamlSettings()
             .ConfigureServices((context, services)
                 => services.ConfigureNetDaemonServices(context.Configuration)
-            )
-            .ConfigureAppConfiguration((ctx, config) =>
-            {
-                // TODO: Most of this seems to be what Host.CreateDefaultBuilder already does 
-                config.SetBasePath(Directory.GetCurrentDirectory());
-                config.AddJsonFile("appsettings.json");
-                config.AddJsonFile($"appsettings.{ctx.HostingEnvironment.EnvironmentName}.json", true);
-                config.AddEnvironmentVariables();
-                
-                var c = config.Build();
-                var locationSetting = c.GetSection("NetDaemon").Get<AppConfigurationLocationSetting>();
-                if (locationSetting?.ApplicationConfigurationFolder is not null)
-                {
-                    var fullPath = Path.GetFullPath(locationSetting.ApplicationConfigurationFolder);
-                    config.AddYamlAppConfig(fullPath);
-                }
+            );
+    }
 
-            });
+    /// <summary>
+    /// Registers appsettings.json to the host configuration
+    /// </summary>
+    /// <param name="hostBuilder"></param>
+    /// <remarks>This enables using data from the appsettings.json in the `ConfigureAppConfiguration` call</remarks>
+    public static IHostBuilder RegisterAppSettingsJsonToHost(this IHostBuilder hostBuilder)
+    {
+        return hostBuilder.ConfigureHostConfiguration(config =>
+        {
+            config.AddJsonFile("appsettings.json", optional: true);
+        });
+    }
+
+    /// <summary>
+    /// Register all the yaml settings from the path set in the current configuration to the configuration provider
+    /// </summary>
+    /// <param name="hostBuilder"></param>
+    /// <remarks>Call `RegisterAppSettingsJsonToHost()` before, using this method.</remarks>
+    public static IHostBuilder RegisterYamlSettings(this IHostBuilder hostBuilder)
+    {
+        return hostBuilder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddYamlAppConfigs(context.Configuration);
+        });
     }
 
     public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
