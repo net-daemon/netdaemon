@@ -75,11 +75,6 @@
           "clrType": "System.Collections.Generic.IReadOnlyList\u00601[System.String]"
         },        
         {
-          "jsonName": "some_new_attribute",
-          "cSharpName": "SomeNewAttribute",
-          "clrType": "System.Collections.Generic.IReadOnlyList\u00601[System.String]"
-        },
-        {
           "jsonName": "effect_list",
           "cSharpName": "EffectList",
           "clrType": "System.Collections.Generic.IReadOnlyList\u00601[System.String]"
