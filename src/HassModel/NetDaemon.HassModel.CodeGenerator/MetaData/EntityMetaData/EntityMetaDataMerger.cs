@@ -1,12 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using NetDaemon.HassModel.Entities.Core;
 
 namespace NetDaemon.HassModel.CodeGenerator;
-
 internal static class EntityMetaDataMerger
 {
+    // We have to disable warnings. SuppressMessage attribute did not work.
+#pragma warning disable CS0618 // Type or member is obsolete
     private static readonly Type[] _possibleBaseTypes = typeof(LightAttributesBase).Assembly.GetTypes();
+#pragma warning restore CS0618 // Type or member is obsolete
     
     // We need to merge the previously saved metadata with the current metadata from HA
     // We do this because sometimes entities do not provide all their attributes,
