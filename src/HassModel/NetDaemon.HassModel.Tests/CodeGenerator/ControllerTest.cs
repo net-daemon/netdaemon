@@ -15,8 +15,10 @@ public class ControllerTest
         var result = await controller.LoadEntitiesMetaDataAsync();
 
         // ASSERT
-        result.Domains.Count.Should().Be(1);
+        result.Domains.Count.Should().Be(2);
         result.Domains.Single(x => x.Domain == "light").Should().NotBeNull();
         result.Domains.Single(x => x.Domain == "light").Attributes.SingleOrDefault(x => x.JsonName == "brightness").Should().NotBeNull();
+        result.Domains.Single(x => x.Domain == "media_player").Should().NotBeNull();
+        result.Domains.Single(x => x.Domain == "media_player").Attributes.SingleOrDefault(x => x.JsonName == "media_artist").Should().NotBeNull();
     }
 }
