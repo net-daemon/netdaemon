@@ -51,8 +51,6 @@
 
     <ItemGroup>
       <None Remove="MetaData\DefaultMetadata\DefaultEntityMetaData.json" />
-      <Resource Include="bin\Debug\net7.0\DefaultEntityMetaData.json" />
-      <Resource Include="bin\Debug\net7.0\EntityMetaData.json" />
       <EmbeddedResource Include="MetaData\DefaultMetadata\DefaultEntityMetaData.json" />
     </ItemGroup>
 
