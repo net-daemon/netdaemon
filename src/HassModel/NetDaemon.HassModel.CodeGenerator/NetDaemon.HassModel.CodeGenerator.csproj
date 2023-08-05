@@ -50,18 +50,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="MetaData\DefaultMetadata\DefaultEntityMetaData.json" />
       <EmbeddedResource Include="MetaData\DefaultMetadata\DefaultEntityMetaData.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="bin\Debug\net7.0\ServicesMetaData.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="bin\Debug\net7.0\" />
-      <Folder Include="bin\Release\net7.0\" />
-    </ItemGroup>
     <PropertyGroup>
         <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
