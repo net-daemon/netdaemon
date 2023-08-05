@@ -8,6 +8,7 @@
 ///     We use doubles even if the standard is integer to make the serializing more robust
 ///     since we cannot trust HA integrations use integers when supposed to
 /// </remarks>
+[Obsolete("Usage of attribute base classes are deprecated, default meta data is not used to replace it")]
 public record LightAttributesBase
 {
     /// <summary>

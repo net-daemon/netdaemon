@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 #pragma warning disable CA1056
 
+[Obsolete("Usage of attribute base classes are deprecated, default meta data is not used to replace it")]
 public record MediaPlayerAttributesBase
 {
     [JsonPropertyName("app_id")]
