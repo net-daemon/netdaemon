@@ -17,5 +17,6 @@ public class ControllerTest
         // ASSERT
         result.Domains.Count.Should().Be(1);
         result.Domains.Single(x => x.Domain == "light").Should().NotBeNull();
+        result.Domains.Single(x => x.Domain == "light").Attributes.SingleOrDefault(x => x.JsonName == "brightness").Should().NotBeNull();
     }
 }
