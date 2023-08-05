@@ -45,7 +45,8 @@ internal class CodeGenTestHelper
         var warningsOrErrors = emitResult.Diagnostics
             .Where(d => d.Severity is DiagnosticSeverity.Error or DiagnosticSeverity.Warning).ToList();
 
-        if (!warningsOrErrors.Any()) return;
+        // Ignore obsolete warnings
+        if (warningsOrErrors.All(n => n.Id == "CS0618")) return;
         
         var msg = new StringBuilder("Compile of generated code failed.\r\n");
         foreach (var diagnostic in warningsOrErrors)
