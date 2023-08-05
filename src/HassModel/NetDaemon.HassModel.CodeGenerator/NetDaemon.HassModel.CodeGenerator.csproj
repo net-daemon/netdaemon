@@ -48,6 +48,11 @@
     <ItemGroup>
         <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="MetaData\DefaultMetadata\DefaultEntityMetaData.json" />
+    </ItemGroup>
+
     <PropertyGroup>
         <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

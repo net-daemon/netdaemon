@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using NetDaemon.Client.Settings;
 
@@ -9,6 +10,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 
 internal class Controller
 {
+    private const string ResourceName = "NetDaemon.HassModel.CodeGenerator.MetaData.DefaultMetadata.DefaultEntityMetaData.json";
     private readonly CodeGenerationSettings _generationSettings;
     private readonly HomeAssistantSettings _haSettings;
 
@@ -41,16 +43,25 @@ internal class Controller
         SaveGeneratedCode(generatedTypes);
     }
 
-    private async Task<EntitiesMetaData> LoadEntitiesMetaDataAsync()
+    internal async Task<EntitiesMetaData> LoadEntitiesMetaDataAsync()
     {
-        if (!File.Exists(EntityMetaDataFileName)) return new EntitiesMetaData();
-        
-        var fileStream = File.OpenRead(EntityMetaDataFileName);
+        var fileStream = File.Exists(EntityMetaDataFileName) switch
+        {
+            true => File.OpenRead(EntityMetaDataFileName),
+            false => GetDefaultMetaDataFileFromResource()
+        };
+
         await using var _ = fileStream.ConfigureAwait(false);
 
         var loaded = await JsonSerializer.DeserializeAsync<EntitiesMetaData>(fileStream, JsonSerializerOptions).ConfigureAwait(false);
 
         return loaded ?? new EntitiesMetaData();
+    }
+
+    private static Stream GetDefaultMetaDataFileFromResource()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        return assembly.GetManifestResourceStream(ResourceName)!;
     }
 
     private async Task Save<T>(T merged, string fileName)

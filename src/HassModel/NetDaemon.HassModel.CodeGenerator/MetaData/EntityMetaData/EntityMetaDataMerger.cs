@@ -43,6 +43,7 @@ internal static class EntityMetaDataMerger
     {
         if (codeGenerationSettings.UseAttributeBaseClasses)
         {
+            WriteWarningMessageToConsole("Usage of attribute classes is deprecated and will be removed in future release. We now include default metadata that gives same behaviour.");
             previous = SetBaseTypes(previous);
             current = SetBaseTypes(current);
         }
@@ -53,6 +54,13 @@ internal static class EntityMetaDataMerger
                 .Select(HandleDuplicateCSharpNames)
                 .ToList()
         };
+    }
+
+    private static void WriteWarningMessageToConsole(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine(message);
+        Console.ResetColor();
     }
 
     public static EntitiesMetaData SetBaseTypes(EntitiesMetaData entitiesMetaData)
