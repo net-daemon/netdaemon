@@ -1,8 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using NetDaemon.HassModel.Entities.Core;
 
 namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
+[SuppressMessage("", "CS0618")]
 internal static class NamingHelper
 {
     public const string EntitiesClassName =  "Entities";
@@ -58,7 +60,7 @@ internal static class NamingHelper
         // Use short name if the type is in one of the using namespaces
         return UsingNamespaces.Any(u => type.Namespace == u) ? type.Name : type.FullName!;
     }
-
+    
     public static readonly string[] UsingNamespaces =
     {
         "System",
@@ -67,7 +69,10 @@ internal static class NamingHelper
         typeof(JsonPropertyNameAttribute).Namespace!,
         typeof(IHaContext).Namespace!,
         typeof(Entity).Namespace!,
+        // Have to suppress warning because of obsolete LightAttributesBase. Suppress message attribute did not work.  
+#pragma warning disable CS0618 // Type or member is obsolete
         typeof(LightAttributesBase).Namespace!
+#pragma warning restore CS0618 // Type or member is obsolete
     };
 
     private static string GetVariableName(string typeName, string variablePrefix)
