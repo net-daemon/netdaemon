@@ -2,10 +2,12 @@
 
 namespace NetDaemon.HassModel.CodeGenerator.Helpers;
 
+#pragma warning disable CA1303
+
 /// <summary>
 /// Returns current version of NetDaemon
 /// </summary>
-public class VersionHelper
+public static class VersionHelper
 {
     public static string GeneratorVersion { get; } =
         Assembly.GetAssembly(typeof(Generator))!.GetName().Version!.ToString();
