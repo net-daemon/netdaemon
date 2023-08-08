@@ -45,21 +45,26 @@ public class MqttEntityManagerApp : IAsyncInitializable
             //  Quick entity creation tests
             // **NOTE THAT THESE ENTITIES ARE REMOVED AT THE END OF THIS method
             //**************************
+            const string hotDogSensorId = "binary_sensor.s2";
+            const string rainNextHour4Id = "sensor.rain_next_hour4";
+            const string basicSensorId = "sensor.basic_sensor";
+            const string overrideSensorId = "sensor.my_id";
+            const string helToSwitchId = "switch.hel_to_switch";
+            const string stateChangeId = "sensor.my_id";
+            const string binarySensorId = "binary_sensor.manager_test";
 
             // Create a binary sensor and set its state
             // Note the use of custom payloads...
-            var basicSensorId = "binary_sensor.s2";
-            await _entityManager.CreateAsync(basicSensorId, new EntityCreationOptions(
+            await _entityManager.CreateAsync(hotDogSensorId, new EntityCreationOptions(
                 Name: "HotDog sensor",
                 PayloadAvailable: "hot",
                 PayloadNotAvailable: "cold"
             )).ConfigureAwait(false);
 
-            await _entityManager.SetStateAsync(basicSensorId, "cold").ConfigureAwait(false);
+            await _entityManager.SetStateAsync(hotDogSensorId, "cold").ConfigureAwait(false);
 
             // Create a humidity sensor with custom measurement and apply a sequence of values
-            var rainNexthour4Id = "sensor.rain_nexthour4";
-            await _entityManager.CreateAsync(rainNexthour4Id, new EntityCreationOptions(
+            await _entityManager.CreateAsync(rainNextHour4Id, new EntityCreationOptions(
                     Name: "Rain Next Hour4",
                     DeviceClass: "humidity",
                     PayloadAvailable: "up",
@@ -68,61 +73,62 @@ public class MqttEntityManagerApp : IAsyncInitializable
                 new { unit_of_measurement = "mm/h" }
             ).ConfigureAwait(false);
 
-            await _entityManager.SetAvailabilityAsync(rainNexthour4Id, "up").ConfigureAwait(false);
-            await _entityManager.SetStateAsync(rainNexthour4Id, "3").ConfigureAwait(false);
-            await _entityManager.SetStateAsync(rainNexthour4Id, "2").ConfigureAwait(false);
-            await _entityManager.SetStateAsync(rainNexthour4Id, "1").ConfigureAwait(false);
-
-            //**************************
-            //  More in-depth creation and testing of results
-            //**************************
+            await _entityManager.SetAvailabilityAsync(rainNextHour4Id, "up").ConfigureAwait(false);
+            await _entityManager.SetStateAsync(rainNextHour4Id, "3").ConfigureAwait(false);
+            await _entityManager.SetStateAsync(rainNextHour4Id, "2").ConfigureAwait(false);
+            await _entityManager.SetStateAsync(rainNextHour4Id, "1").ConfigureAwait(false);
 
             // Basic entity creation
-            await _entityManager.CreateAsync("sensor.basic_sensor").ConfigureAwait(false);
+            await _entityManager.CreateAsync(basicSensorId).ConfigureAwait(false);
 
             // Overriding the default unique ID and name
-            await _entityManager.CreateAsync("sensor.my_id",
+            await _entityManager.CreateAsync(overrideSensorId,
                     new EntityCreationOptions(UniqueId: "my_id", Name: "A special kind of sensor"))
                 .ConfigureAwait(false);
 
             // Switches require a device class
-            await _entityManager.CreateAsync("switch.helto_switch",
-                    new EntityCreationOptions(Name: "Helto switch", DeviceClass: "switch"))
+            await _entityManager.CreateAsync(helToSwitchId,
+                    new EntityCreationOptions(DeviceClass: "switch", Name: "HelTo switch"))
                 .ConfigureAwait(false);
 
             // Change state of the new sensor, set an attribute to right now
-            await _entityManager.SetStateAsync("sensor.my_id", "shiny")
+            await _entityManager.SetStateAsync(stateChangeId, "shiny")
                 .ConfigureAwait(false);
-            await _entityManager.SetAttributesAsync("sensor.my_id", new { updated = DateTime.UtcNow })
+            await _entityManager.SetAttributesAsync(stateChangeId, new { updated = DateTime.UtcNow })
                 .ConfigureAwait(false);
 
             // Walk through a more complete set of examples, checking HA to verify that each operation completed
-            _logger.LogInformation("Creating Entity binary_sensor.manager_test");
+            _logger.LogInformation("Creating Entity {EntityId}", binarySensorId);
             var createOptions = new EntityCreationOptions(DeviceClass: "motion", Name: "Manager Test");
-            await _entityManager.CreateAsync("binary_sensor.manager_test", createOptions).ConfigureAwait(false);
+            await _entityManager.CreateAsync(binarySensorId, createOptions).ConfigureAwait(false);
             // Using Delay to give Mqtt and HA enough time to process events.
             // Only needed for the example as we immediately read the entity and it may not yet exist
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
 
-            var entity = _ha.Entity("binary_sensor.manager_test");
-            _logger.LogInformation("Entity binary_sensor.manager_test State: {State}", entity.State);
+            var entity = _ha.Entity(binarySensorId);
+            _logger.LogInformation("Entity {EntityId} State: {State}",binarySensorId, entity.State);
 
-            await _entityManager.SetStateAsync("binary_sensor.manager_test", "ON")
+            await _entityManager.SetStateAsync(binarySensorId, "ON")
                 .ConfigureAwait(false);
-            await _entityManager.SetAttributesAsync("binary_sensor.manager_test", new { attribute1 = "attr1" })
+            await _entityManager.SetAttributesAsync(binarySensorId, new { attribute1 = "attr1" })
                 .ConfigureAwait(false);
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("Entity binary_sensor.manager_test State: {State} Attributes: {Attributes}",
-                entity.State, entity.Attributes);
+            _logger.LogInformation("Entity {EntityId} State: {State} Attributes: {Attributes}",
+                binarySensorId, entity.State, entity.Attributes);
 
-            await _entityManager.RemoveAsync("binary_sensor.manager_test").ConfigureAwait(false);
+            await _entityManager.RemoveAsync(binarySensorId).ConfigureAwait(false);
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
-            var removed = _ha.Entity("binary_sensor.manager_test").State == null;
+            var removed = _ha.Entity(binarySensorId).State == null;
             _logger.LogInformation("Removed Entity: {Removed}", removed);
 
             // Remove other entities
+            // SET BREAKPOINT HERE if you want to check the entities in Home Assistant
+            await _entityManager.RemoveAsync(hotDogSensorId).ConfigureAwait(false);
+            await _entityManager.RemoveAsync(rainNextHour4Id).ConfigureAwait(false);
             await _entityManager.RemoveAsync(basicSensorId).ConfigureAwait(false);
-            await _entityManager.RemoveAsync(rainNexthour4Id).ConfigureAwait(false);
+            await _entityManager.RemoveAsync(overrideSensorId).ConfigureAwait(false);
+            await _entityManager.RemoveAsync(helToSwitchId).ConfigureAwait(false);
+            await _entityManager.RemoveAsync(stateChangeId).ConfigureAwait(false);
         }
         catch (Exception e)
         {
