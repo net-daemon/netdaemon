@@ -17,6 +17,7 @@
         <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.Runtime</RootNamespace>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

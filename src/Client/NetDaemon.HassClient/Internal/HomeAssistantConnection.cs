@@ -27,7 +27,6 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     /// <param name="logger">A logger instance</param>
     /// <param name="pipeline">The pipeline to use for websocket communication</param>
     /// <param name="apiManager">The api manager</param>
-    /// <param name="resultMessageHandler">Handler for result message</param>
     public HomeAssistantConnection(
         ILogger<IHomeAssistantConnection> logger,
         IWebSocketClientTransportPipeline pipeline,

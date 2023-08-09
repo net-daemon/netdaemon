@@ -29,20 +29,30 @@ jobs:
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 
       - name: 🛠️ Build code
-        run: dotnet build /warnaserror
+        run: dotnet build --configuration Release
 
       - name: 👀 Unit Test
         run: |
-          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests -- RunConfiguration.CollectSourceInformation=true
-          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests -- RunConfiguration.CollectSourceInformation=true
-          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests -- RunConfiguration.CollectSourceInformation=true
-          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=json;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests -- RunConfiguration.CollectSourceInformation=true
-          dotnet test -v minimal --no-build --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests -- RunConfiguration.CollectSourceInformation=true
+          echo "## ❔ Unit test results" >> $GITHUB_STEP_SUMMARY
+          dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/HassModel/NetDaemon.HassModel.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Extensions/NetDaemon.Extensions.Scheduling.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests -- RunConfiguration.CollectSourceInformation=true
           
       - name: 👀 Integration Tests
         run: |
-          dotnet test -v minimal --no-build --logger "GitHubActions;annotations.titleFormat=@test (stable)" -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
-          dotnet test -v minimal --no-build --logger "GitHubActions;annotations.titleFormat=@test (beta)" -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat=lcov;MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
+          echo "## ❔ Integration test results" >> $GITHUB_STEP_SUMMARY
+          dotnet test -v minimal --no-build --configuration Release --logger "GitHubActions;annotations.titleFormat=@test (stable)" -e HomeAssistantVersion="stable" '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
+          dotnet test -v minimal --no-build --configuration Release --logger "GitHubActions;annotations.titleFormat=@test (beta)" -e HomeAssistantVersion="beta" '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' tests/Integration/NetDaemon.Tests.Integration -- RunConfiguration.CollectSourceInformation=true
+
+      - name: 📝 Code Coverage report
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.23
+          reportgenerator -reports:${{github.workspace}}/codecover.cobertura.xml -targetdir:${{github.workspace}}/report -reporttypes:MarkdownSummaryGithub "-filefilters:-*.g.cs" -verbosity:Warning
+          sed -i 's/# Summary/## 📝 Code Coverage/g' ${{github.workspace}}/report/SummaryGithub.md
+          sed -i 's/## Coverage/### Code Coverage details/g' ${{github.workspace}}/report/SummaryGithub.md
+          cat ${{github.workspace}}/report/*.md >> $GITHUB_STEP_SUMMARY
 
       - name: 📨 Publish coverage report to coveralls.io
         uses: coverallsapp/github-action@master

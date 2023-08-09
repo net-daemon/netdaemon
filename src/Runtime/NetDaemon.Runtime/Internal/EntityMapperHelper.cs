@@ -4,12 +4,16 @@ using System.Text;
 
 namespace NetDaemon.Runtime.Internal;
 
+/// <summary>
+/// Helper to generate home assistant friendly entity ids
+/// </summary>
 public static class EntityMapperHelper
 {
     /// <summary>
     ///     Converts any unicode string to a safe Home Assistant name for the helper
     /// </summary>
     /// <param name="applicationId">The unicode string to convert</param>
+    /// <param name="isDevelopment">input_boolean.dev_netdaemon_ vs input_boolean.netdaemon_</param>
     public static string ToEntityIdFromApplicationId(string applicationId, bool isDevelopment = false) =>
         !isDevelopment ?
             $"input_boolean.netdaemon_{ToSafeVersion(applicationId)}" :
