@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
@@ -71,7 +72,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
-        _logger.LogDebug("MQTT disconnected: {Reason}", arg.ConnectResult?.ReasonString);   
+        _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));   
         return Task.CompletedTask;
     }
 
@@ -79,6 +80,21 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _logger.LogDebug("MQTT connected: {ResultCode}", arg.ConnectResult.ResultCode);
         return Task.CompletedTask;
+    }
+
+    private static string BuildErrorResponse(MqttClientDisconnectedEventArgs arg)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"{arg.Exception?.Message} ({arg.Reason})");     // Note: arg.ReasonString is always null
+        var ex = arg.Exception?.InnerException;
+        while (ex != null)
+        {
+            sb.AppendLine(ex.Message);
+            ex = ex.InnerException;
+        }
+
+        return sb.ToString();
     }
 
     public void Dispose()
