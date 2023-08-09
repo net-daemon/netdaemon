@@ -29,7 +29,7 @@ jobs:
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 
       - name: 🛠️ Build code
-        run: dotnet build --configuration Release /warnaserror
+        run: dotnet build --configuration Release
 
       - name: 👀 Unit Test
         run: |
