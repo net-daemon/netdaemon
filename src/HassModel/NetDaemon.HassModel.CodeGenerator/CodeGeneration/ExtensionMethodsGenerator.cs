@@ -6,6 +6,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 /// Generates classes with extension methods for calling services on Entities
 /// </summary>
 /// <example>
+/// <![CDATA[
 /// public static class InputButtonEntityExtensionMethods
 /// {
 ///     ///<summary>Press the input button entity.</summary>
@@ -20,6 +21,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 ///         target.CallService("press");
 ///     }
 /// }
+/// ]]>
 /// </example>
 internal static class ExtensionMethodsGenerator
 {

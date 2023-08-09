@@ -17,7 +17,17 @@
         <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.AppModel</RootNamespace>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn>1701;1702</NoWarn>
+		<!-- add these to also hide the warnings during development ;CS1591;CS1573 -->
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<NoWarn>1701;1702;CS1591;CS1574</NoWarn>
+	</PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />

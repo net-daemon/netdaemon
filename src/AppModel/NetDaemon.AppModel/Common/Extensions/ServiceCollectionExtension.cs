@@ -72,6 +72,7 @@ public static class ServiceCollectionExtensions
     ///     Add apps from c# source code using the configuration source to find path
     /// </summary>
     /// <param name="services">Services</param>
+    /// <param name="useDebug">Override UseDebug in CompileSettings</param>
     public static IServiceCollection AddAppsFromSource(this IServiceCollection services, bool useDebug = false)
     {
         // We make sure we only add AppModel services once
