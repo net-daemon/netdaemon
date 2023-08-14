@@ -1,10 +1,13 @@
+using System;
 using System.Reflection;
 using HomeAssistantGenerated;
 using Microsoft.Extensions.Hosting;
+using NetDaemon.AppModel;
 using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Scheduler;
 using NetDaemon.Extensions.Tts;
 using NetDaemon.Runtime;
+
 // Add next line if using code generator
 
 #pragma warning disable CA1812

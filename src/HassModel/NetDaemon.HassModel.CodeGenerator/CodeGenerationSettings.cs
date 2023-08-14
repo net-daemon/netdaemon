@@ -1,6 +1,6 @@
 ﻿namespace NetDaemon.HassModel.CodeGenerator;
 
-public record CodeGenerationSettings
+record CodeGenerationSettings
 {
     public string OutputFile { get; init; } = "HomeAssistantGenerated.cs";
     public string OutputFolder { get; init; } = "NetDaemonCodegen";

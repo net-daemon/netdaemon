@@ -1,7 +1,7 @@
 ﻿namespace NetDaemon.HassModel.Entities;
 
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
-public record Entity: IEntityTarget
+public record Entity : IEntityCore
 {
     /// <summary>
     /// The IHAContext
@@ -22,6 +22,14 @@ public record Entity: IEntityTarget
     {
         HaContext = haContext;
         EntityId = entityId;
+    }
+
+    /// <summary>Copy constructor from IEntityCore</summary>
+    public Entity(IEntityCore entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        HaContext = entity.HaContext;
+        EntityId = entity.EntityId;
     }
         
     /// <summary>
@@ -78,13 +86,7 @@ public record Entity: IEntityTarget
     /// <param name="data">Data to provide</param>
     public virtual void CallService(string service, object? data = null)
     {
-        ArgumentNullException.ThrowIfNull(service, nameof(service));
-            
-        var (serviceDomain, serviceName) = service.SplitAtDot();
-
-        serviceDomain ??= EntityId.SplitAtDot().Left ?? throw new InvalidOperationException("EntityId must be formatted 'domain.name'");
-            
-        HaContext.CallService(serviceDomain, serviceName, ServiceTarget.FromEntity(EntityId), data);
+        EntityExtensions.CallService(this, service, data);
     }
 }
 
@@ -94,8 +96,8 @@ public abstract record Entity<TEntity, TEntityState, TAttributes> : Entity
     where TEntityState : EntityState<TAttributes>
     where TAttributes : class
 {
-    /// <summary>Copy constructor from Base type</summary>
-    protected Entity(Entity entity) : base(entity)
+    /// <summary>Copy constructor from IEntityCore</summary>
+    protected Entity(IEntityCore entity) : base(entity)
     { }
 
     /// <summary>Constructor from haContext and entityId</summary>
@@ -126,8 +128,8 @@ public record Entity<TAttributes> : Entity<Entity<TAttributes>, EntityState<TAtt
 {
     // This type is needed because the base type has a recursive type parameter so it can not be used as a return value
         
-    /// <summary>Copy constructor from Base type</summary>
-    public Entity(Entity entity) : base(entity) { }
+    /// <summary>Copy constructor from IEntityCore</summary>
+    public Entity(IEntityCore entity) : base(entity) { }
         
     /// <summary>Constructor from haContext and entityId</summary>
     public Entity(IHaContext haContext, string entityId) : base(haContext, entityId) { }

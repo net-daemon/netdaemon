@@ -1,7 +1,6 @@
 ﻿using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Microsoft.CodeAnalysis.CSharp;
 using NetDaemon.HassModel.CodeGenerator.CodeGeneration;
-using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
@@ -72,6 +71,12 @@ internal static class EntitiesGenerator
             .WithSummaryComment(entity.friendlyName);
     }
 
+    private static readonly HashSet<string> CoreInterfaces = 
+        typeof(IEntityCore).Assembly.GetTypes()
+        .Where(t => t.IsInterface && t.IsAssignableTo(typeof(IEntityCore)))
+        .Select(t => t.Name)
+        .ToHashSet();
+    
     /// <summary>
     /// Generates a record derived from Entity like ClimateEntity or SensorEntity for a specific set of entities
     /// </summary>
@@ -83,24 +88,20 @@ internal static class EntitiesGenerator
         var entityStateType = domainMetaData.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
         var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData .EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
 
-        var result = Array.Find(typeof(IEntityTarget).Assembly
-            .GetTypes(),
-            t => t.IsInterface && t.Name.Equals($"I{domainMetaData.EntityClassName}", StringComparison.Ordinal)
-            );
-        if (result is not null)
+        if (CoreInterfaces.Contains(domainMetaData.CoreInterfaceName))
         {
-            baseClass += $", {result.Name}";
+            baseClass += $", {domainMetaData.CoreInterfaceName}";
         }
-
+        
         var (className, variableName) = GetNames<IHaContext>();
         var classDeclaration = $$"""
             record {{domainMetaData.EntityClassName}} : {{baseClass}}
             {
-                    public {{domainMetaData.EntityClassName}}({{className}} {{variableName}}, string entityId) : base({{variableName}}, entityId)
-                    {}
+                public {{domainMetaData.EntityClassName}}({{className}} {{variableName}}, string entityId) : base({{variableName}}, entityId)
+                {}
 
-                    public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(Entity))}} entity) : base(entity)
-                    {}
+                public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(IEntityCore))}} entity) : base(entity)
+                {}
             }
             """;
 

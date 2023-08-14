@@ -24,6 +24,9 @@ record EntityDomainMetadata(
     public string EntityClassName => $"{prefixedDomain}Entity".ToValidCSharpPascalCase();
 
     [JsonIgnore]
+    public string CoreInterfaceName => $"I{Domain.ToValidCSharpPascalCase()}EntityCore";
+    
+    [JsonIgnore]
     public string AttributesClassName => $"{prefixedDomain}Attributes".ToValidCSharpPascalCase();
 
     [JsonIgnore]
