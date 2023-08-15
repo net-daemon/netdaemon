@@ -71,12 +71,6 @@ internal static class EntitiesGenerator
             .WithSummaryComment(entity.friendlyName);
     }
 
-    private static readonly HashSet<string> CoreInterfaces = 
-        typeof(IEntityCore).Assembly.GetTypes()
-        .Where(t => t.IsInterface && t.IsAssignableTo(typeof(IEntityCore)))
-        .Select(t => t.Name)
-        .ToHashSet();
-    
     /// <summary>
     /// Generates a record derived from Entity like ClimateEntity or SensorEntity for a specific set of entities
     /// </summary>
@@ -86,11 +80,12 @@ internal static class EntitiesGenerator
 
         var baseType = domainMetaData.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
         var entityStateType = domainMetaData.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
-        var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData .EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
+        var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData.EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
 
-        if (CoreInterfaces.Contains(domainMetaData.CoreInterfaceName))
+        var coreinterface = domainMetaData.CoreInterfaceName;
+        if (coreinterface != null)
         {
-            baseClass += $", {domainMetaData.CoreInterfaceName}";
+            baseClass += $", {coreinterface}";
         }
         
         var (className, variableName) = GetNames<IHaContext>();

@@ -18,14 +18,30 @@ record EntityDomainMetadata(
     IReadOnlyList<EntityAttributeMetaData> Attributes
     )
 {
+    private static readonly HashSet<string> CoreInterfaces = 
+        typeof(IEntityCore).Assembly.GetTypes()
+            .Where(t => t.IsInterface && t.IsAssignableTo(typeof(IEntityCore)))
+            .Select(t => t.Name)
+            .ToHashSet();
+    
     private readonly string prefixedDomain = (IsNumeric && EntityIdHelper.MixedDomains.Contains(Domain)  ? "numeric_" : "") + Domain;
 
     [JsonIgnore]
     public string EntityClassName => $"{prefixedDomain}Entity".ToValidCSharpPascalCase();
 
+    /// <summary>
+    /// Returns the name of the corresponding Core Interface if it exists, or null if it does not 
+    /// </summary>
     [JsonIgnore]
-    public string CoreInterfaceName => $"I{Domain.ToValidCSharpPascalCase()}EntityCore";
-    
+    public string? CoreInterfaceName
+    {
+        get
+        {
+            var name = $"I{Domain.ToValidCSharpPascalCase()}EntityCore";
+            return CoreInterfaces.Contains(name) ? name : null;
+        }
+    }
+
     [JsonIgnore]
     public string AttributesClassName => $"{prefixedDomain}Attributes".ToValidCSharpPascalCase();
 

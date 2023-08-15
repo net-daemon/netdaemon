@@ -27,7 +27,7 @@ internal static class ExtensionMethodsGenerator
 {
     public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<EntityDomainMetadata> entityDomains)
     {
-        var entityClassNameByDomain = entityDomains.ToLookup(e => e.Domain, e => e.EntityClassName);
+        var entityClassNameByDomain = entityDomains.ToLookup(e => e.Domain, e => e.CoreInterfaceName ?? e.EntityClassName);
         
         return serviceDomains
             .Select(sd => GenerateDomainExtensionClass(sd, entityClassNameByDomain))
