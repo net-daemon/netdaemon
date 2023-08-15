@@ -11,3 +11,39 @@ public interface ILightEntityCore: IEntityCore { }
 
 /// <summary>Common interface for binary_sensor entities</summary>
 public interface IBinarySensorEntityCore: IEntityCore { }
+
+/// <summary> Common interface for person entities </summary>
+public interface IPersonEntityCore: IEntityCore { }
+
+/// <summary> Common interface for zone entities </summary>
+public interface IZoneEntityCore: IEntityCore { }
+
+/// <summary> Common interface for sun entities </summary>
+public interface ISunEntityCore: IEntityCore { }
+
+/// <summary> Common interface for input_button entities </summary>
+public interface IInputButtonEntityCore: IEntityCore { }
+
+/// <summary> Common interface for sensor entities </summary>
+public interface ISensorEntityCore: IEntityCore { }
+
+/// <summary> Common interface for weather entities </summary>
+public interface IWeatherEntityCore: IEntityCore { }
+
+/// <summary> Common interface for device_tracker entities </summary>
+public interface IDeviceTrackerEntityCore: IEntityCore { }
+
+/// <summary> Common interface for media_player entities </summary>
+public interface IMediaPlayerEntityCore: IEntityCore { }
+
+/// <summary> Common interface for button entities </summary>
+public interface IButtonEntityCore: IEntityCore { }
+
+/// <summary> Common interface for camera entities </summary>
+public interface INumberEntityCore: IEntityCore { }
+
+/// <summary> Common interface for select entities </summary>
+public interface ISelectEntityCore: IEntityCore { }
+
+/// <summary> Common interface for automation entities </summary>
+public interface IAutomationEntityCore: IEntityCore { }
