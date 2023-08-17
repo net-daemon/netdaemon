@@ -7,14 +7,13 @@
         <Version>21.47.1</Version>
         <Authors>helto4real</Authors>
         <Company>JoySoftware</Company>
-        <description>A .net core client for Home Assistant</description>
-        <projectUrl>https://github.com/helto4real/net-hassclient</projectUrl>
+        <description>Runtime</description>
+        <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-            A client for manage the free open source home automations software Home Assisstant written in .net core 3.
-            Please see https://github.com/helto4real/net-hassclient/blob/main/README.md for docs.
+            Runtime package for NetDeamon
+            Please see https://netdaemon.xyz for docs.
         </PackageDescription>
-        <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.Runtime</RootNamespace>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>

@@ -1,6 +1,6 @@
 namespace NetDaemon.Runtime;
 
-public interface IRuntime : IAsyncDisposable
+internal interface IRuntime : IAsyncDisposable
 {
     Task StartAsync(CancellationToken stoppingToken);
 }

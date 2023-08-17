@@ -8,7 +8,7 @@ internal class DynamicallyCompiledAppAssemblyProvider : IAppAssemblyProvider, ID
     private readonly ICompiler _compiler;
 
     private Assembly? _compiledAssembly;
-    private CollectibleAssemblyLoadContext? _currentContext;
+    private CollectableAssemblyLoadContext? _currentContext;
 
     public DynamicallyCompiledAppAssemblyProvider(ICompiler compiler)
     {
