@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime;
-using System.Runtime.Loader;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
 
-internal record CompiledAssemblyResult(CollectibleAssemblyLoadContext AssemblyContext, Assembly CompiledAssembly);
+internal record CompiledAssemblyResult(CollectableAssemblyLoadContext AssemblyContext, Assembly CompiledAssembly);
 
 internal class Compiler : ICompiler
 {
@@ -33,7 +32,7 @@ internal class Compiler : ICompiler
 
     public CompiledAssemblyResult Compile()
     {
-        CollectibleAssemblyLoadContext context = new();
+        CollectableAssemblyLoadContext context = new();
 
         var compilation = GetSharpCompilation();
 

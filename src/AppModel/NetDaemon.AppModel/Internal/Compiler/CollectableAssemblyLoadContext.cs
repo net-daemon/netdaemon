@@ -3,9 +3,9 @@ using System.Runtime.Loader;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
 
-public class CollectibleAssemblyLoadContext : AssemblyLoadContext
+internal class CollectableAssemblyLoadContext : AssemblyLoadContext
 {
-    public CollectibleAssemblyLoadContext() : base(true)
+    public CollectableAssemblyLoadContext() : base(true)
     {
     }
 
