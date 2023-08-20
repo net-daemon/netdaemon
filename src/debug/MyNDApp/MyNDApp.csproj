@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <LangVersion>11.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Debug</RootNamespace>
+ </PropertyGroup>
+  <ItemGroup>
+    <None Update="$(MSBuildProjectDir)appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="$(MSBuildProjectDir)appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JoySoftware.NetDaemon.AppModel" Version="23.26.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Runtime" Version="23.26.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.HassModel" Version="23.26.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Client" Version="23.26.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Extensions.Scheduling" Version="23.26.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Extensions.Logging" Version="23.26.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Extensions.Tts" Version="23.26.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".devcontainer\devcontainer.json" />
+    <Content Include=".vscode\launch.json" />
+    <Content Include=".vscode\tasks.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SrcDeploy" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
+    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
+    <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.CodeGenerator\NetDaemon.HassModel.CodeGenerator.csproj" />
+    <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+    <ProjectReference Include="..\..\Host\NetDaemon.Host.Default\NetDaemon.Host.Default.csproj" />
+    <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
+    <ProjectReference Include="..\MyLibrary\MyLibrary.csproj" />
+  </ItemGroup>
+
+
+</Project>
