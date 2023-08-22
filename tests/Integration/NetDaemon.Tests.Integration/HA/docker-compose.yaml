@@ -1,0 +1,13 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: home-assistant
+    image: homeassistant/home-assistant:stable
+    volumes:
+      - ./config:/config
+    environment:
+      - TZ=Europe/Stockholm
+    restart: on-failure
+    # Map the port to 8124 instead of 8123 not to compete with any local Home Assistant
+    ports:
+      - "8124:8123"

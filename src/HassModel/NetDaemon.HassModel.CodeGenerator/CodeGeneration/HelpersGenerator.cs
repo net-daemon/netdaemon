@@ -33,15 +33,15 @@ internal static class HelpersGenerator
     /// Generates the AddHomeAssistantGenerated method
     /// </summary>
     //
-    //     public static IServiceCollection AddGeneratedCode(this IServiceCollection serviceCollection)
-    //     {
-    //         serviceCollection.AddTransient<Entities>();
-    //         serviceCollection.AddTransient<AutomationEntities>();
-    //         serviceCollection.AddTransient<BinarySensorEntities>();
-    //         serviceCollection.AddTransient<Services>();
-    //         serviceCollection.AddTransient<AlarmControlPanelServices>();
-    //         return serviceCollection;
-    //    }
+    //  public static IServiceCollection AddGeneratedCode(this IServiceCollection serviceCollection)
+    //  {
+    //      serviceCollection.AddTransient<Entities>();
+    //      serviceCollection.AddTransient<AutomationEntities>();
+    //      serviceCollection.AddTransient<BinarySensorEntities>();
+    //      serviceCollection.AddTransient<Services>();
+    //      serviceCollection.AddTransient<AlarmControlPanelServices>();
+    //      return serviceCollection;
+    // }
     private static MethodDeclarationSyntax BuildAddHomeAssistantGenerated(IEnumerable<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains)
     {
 

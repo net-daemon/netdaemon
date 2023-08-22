@@ -1,12 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using NetDaemon.HassModel.Entities.Core;
 
 namespace NetDaemon.HassModel.CodeGenerator;
-
 internal static class EntityMetaDataMerger
 {
+    // We have to disable warnings. SuppressMessage attribute did not work.
+#pragma warning disable CS0618 // Type or member is obsolete
     private static readonly Type[] _possibleBaseTypes = typeof(LightAttributesBase).Assembly.GetTypes();
+#pragma warning restore CS0618 // Type or member is obsolete
     
     // We need to merge the previously saved metadata with the current metadata from HA
     // We do this because sometimes entities do not provide all their attributes,
@@ -43,6 +46,7 @@ internal static class EntityMetaDataMerger
     {
         if (codeGenerationSettings.UseAttributeBaseClasses)
         {
+            WriteWarningMessageToConsole("Usage of attribute classes is deprecated and will be removed in future release. We now include default metadata that gives same behaviour.");
             previous = SetBaseTypes(previous);
             current = SetBaseTypes(current);
         }
@@ -53,6 +57,13 @@ internal static class EntityMetaDataMerger
                 .Select(HandleDuplicateCSharpNames)
                 .ToList()
         };
+    }
+
+    private static void WriteWarningMessageToConsole(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine(message);
+        Console.ResetColor();
     }
 
     public static EntitiesMetaData SetBaseTypes(EntitiesMetaData entitiesMetaData)

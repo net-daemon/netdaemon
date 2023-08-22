@@ -18,15 +18,12 @@ internal static class EntitiesGenerator
         {
             yield return GenerateEntiesForDomainClass(domainMetadata.Key, domainMetadata);
         }
-        
         foreach (var domainMetadata in metaData)
         {
             yield return GenerateEntityType(domainMetadata);
-            
             yield return AttributeTypeGenerator.GenerateAttributeRecord(domainMetadata);
         }
     }
-    
     private static TypeDeclarationSyntax GenerateRootEntitiesInterface(IEnumerable<string> domains)
     {
         var autoProperties = domains.Select(domain =>
@@ -79,22 +76,27 @@ internal static class EntitiesGenerator
     /// </summary>
     private static MemberDeclarationSyntax GenerateEntityType(EntityDomainMetadata domainMetaData)
     {
-        string attributesGeneric = domainMetaData.AttributesClassName;
+        var attributesGeneric = domainMetaData.AttributesClassName;
 
         var baseType = domainMetaData.IsNumeric ? typeof(NumericEntity) : typeof(Entity);
         var entityStateType = domainMetaData.IsNumeric ? typeof(NumericEntityState) : typeof(EntityState);
-
         var baseClass = $"{SimplifyTypeName(baseType)}<{domainMetaData.EntityClassName}, {SimplifyTypeName(entityStateType)}<{attributesGeneric}>, {attributesGeneric}>";
 
+        var coreinterface = domainMetaData.CoreInterfaceName;
+        if (coreinterface != null)
+        {
+            baseClass += $", {coreinterface}";
+        }
+        
         var (className, variableName) = GetNames<IHaContext>();
         var classDeclaration = $$"""
             record {{domainMetaData.EntityClassName}} : {{baseClass}}
             {
-                    public {{domainMetaData.EntityClassName}}({{className}} {{variableName}}, string entityId) : base({{variableName}}, entityId)
-                    {}
+                public {{domainMetaData.EntityClassName}}({{className}} {{variableName}}, string entityId) : base({{variableName}}, entityId)
+                {}
 
-                    public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(Entity))}} entity) : base(entity)
-                    {}
+                public {{domainMetaData.EntityClassName}}({{SimplifyTypeName(typeof(IEntityCore))}} entity) : base(entity)
+                {}
             }
             """;
 

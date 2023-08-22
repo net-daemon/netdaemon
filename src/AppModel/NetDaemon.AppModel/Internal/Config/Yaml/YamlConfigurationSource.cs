@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace NetDaemon.AppModel.Internal.Config;
 
-public class YamlConfigurationSource : FileConfigurationSource
+internal class YamlConfigurationSource : FileConfigurationSource
 {
     public override IConfigurationProvider Build(IConfigurationBuilder builder)
     {

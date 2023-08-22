@@ -42,6 +42,24 @@ public class WebsocketIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task TestCallServiceWithResultShouldSucceed()
+    {
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+        var result = await ctx.HomeAssistantConnection
+            .CallServiceWithResponseAsync(
+                "domain",
+                "service",
+                null,
+                new HassTarget
+                {
+                    EntityIds = new[] { "calendar.cal" }
+                },
+                TokenSource.Token)
+            .ConfigureAwait(false);
+        result.Should().NotBeNull();
+    }
+    
+    [Fact]
     public async Task TestGetDevicesShouldHaveCorrectCounts()
     {
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);

@@ -1,47 +1,15 @@
-# Configure a default setup of Home Assistant (frontend, api, etc)
+
+# Loads default set of integrations. Do not remove.
 default_config:
-http:
-  # ssl_certificate: /config/ssl/homeassistant.local.pem
-  # ssl_key: /config/ssl/homeassistant.local-key.pem
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
 
 # Text to speech
 tts:
   - platform: google_translate
 
-switch:
-
-input_select:
-  who_cooks:
-    name: Who cooks today
-    options:
-      - Paulus
-      - Anne Therese
-    initial: Anne Therese
-    icon: mdi:panda
-  living_room_preset:
-    options:
-      - Visitors
-      - Visitors with kids
-      - Home Alone
-
-input_text:
-  test_result:
-    name: Test results
-    initial: No tests is run yet
-    
-template:
-  - trigger:
-      - platform: webhook
-        webhook_id: my-super-secret-id
-    sensor:
-      - name: "NetDaemon webhook temp sensor"
-        state: "{{ trigger.json.temperature }}"
-        unit_of_measurement: °C
-
-group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-
-#logger:
-#  default: debug

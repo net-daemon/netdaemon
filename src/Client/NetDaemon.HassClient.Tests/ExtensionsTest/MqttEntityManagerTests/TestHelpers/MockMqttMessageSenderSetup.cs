@@ -28,8 +28,6 @@ internal class MockMqttMessageSenderSetup
     // ReSharper disable once MemberCanBePrivate.Global
     public void SetupMessageReceiver()
     {
-        var publishResult = new MqttClientPublishResult() { ReasonCode = MqttClientPublishReasonCode.Success };
-        
         // Ensure that when the MQTT Client is called its published message is saved
         MqttClient.Setup(m => m.EnqueueAsync(It.IsAny<MqttApplicationMessage>()))
             .Callback<MqttApplicationMessage>((message) =>

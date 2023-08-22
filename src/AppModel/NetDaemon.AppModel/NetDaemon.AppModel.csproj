@@ -7,16 +7,16 @@
         <Version>21.47.1</Version>
         <Authors>helto4real</Authors>
         <Company>JoySoftware</Company>
-        <description>A .net core client for Home Assistant</description>
-        <projectUrl>https://github.com/helto4real/net-hassclient</projectUrl>
+        <description>Application model for NetDaemon</description>
+        <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-            A client for manage the free open source home automations software Home Assisstant written in .net core 3.
-            Please see https://github.com/helto4real/net-hassclient/blob/main/README.md for docs.
+            Provides NetDaemons application model
+            Please see https://github.com/net-daemon/netdaemon.
         </PackageDescription>
-        <PackageReleaseNotes>First alpha version, expect things to change!</PackageReleaseNotes>
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.AppModel</RootNamespace>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,14 +26,14 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
-        <PackageReference Include="System.Reactive" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" />
+        <PackageReference Include="System.Reactive" Version="6.0.0" />
         <PackageReference Include="System.IO.Pipelines" Version="7.0.0" />
-        <PackageReference Include="Roslynator.Analyzers" Version="4.2.0">
+        <PackageReference Include="Roslynator.Analyzers" Version="4.4.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="YamlDotNet" Version="13.1.0" />
+        <PackageReference Include="YamlDotNet" Version="13.2.0" />
     </ItemGroup>
 </Project>

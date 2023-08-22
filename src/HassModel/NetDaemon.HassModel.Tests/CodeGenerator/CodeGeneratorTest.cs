@@ -52,6 +52,10 @@ public class CodeGeneratorTest
                                 LightEntity light2 = entities.Light.Light2;
                                 SwitchEntity switch1 = entities.Switch.Switch1;
                                 SwitchEntity switch2 = entities.Switch.Switch2;
+
+                                // Now check if the entity classes implement the core interfaces
+                                ILightEntityCore lightAsCore = entities.Light.Light1;
+                                ISwitchEntityCore switch1AsCore = entities.Switch.Switch1;
                             }
                         }
                         """;

@@ -6,6 +6,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 /// Generates classes with extension methods for calling services on Entities
 /// </summary>
 /// <example>
+/// <![CDATA[
 /// public static class InputButtonEntityExtensionMethods
 /// {
 ///     ///<summary>Press the input button entity.</summary>
@@ -20,12 +21,13 @@ namespace NetDaemon.HassModel.CodeGenerator;
 ///         target.CallService("press");
 ///     }
 /// }
+/// ]]>
 /// </example>
 internal static class ExtensionMethodsGenerator
 {
     public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<EntityDomainMetadata> entityDomains)
     {
-        var entityClassNameByDomain = entityDomains.ToLookup(e => e.Domain, e => e.EntityClassName);
+        var entityClassNameByDomain = entityDomains.ToLookup(e => e.Domain, e => e.CoreInterfaceName ?? e.EntityClassName);
         
         return serviceDomains
             .Select(sd => GenerateDomainExtensionClass(sd, entityClassNameByDomain))
@@ -58,8 +60,9 @@ internal static class ExtensionMethodsGenerator
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, string targetEntityDomain, ILookup<string, string> entityClassNameByDomain)
     {
         var entityTypeName = entityClassNameByDomain[targetEntityDomain].FirstOrDefault();
+
         if (entityTypeName == null) yield break;
-        
+
         var serviceName = service.Service;
         var serviceArguments = ServiceArguments.Create(domain, service);
         var enumerableTargetTypeName = $"IEnumerable<{entityTypeName}>";

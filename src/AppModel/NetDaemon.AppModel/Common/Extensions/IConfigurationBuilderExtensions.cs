@@ -35,6 +35,30 @@ public static class ConfigurationBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds yaml configurations for apps given the path in the configuration
+    /// </summary>
+    /// <param name="builder">Builder</param>
+    /// <param name="configuration">Configuration</param>
+    /// <remarks>Should be called from `hostBuilder.ConfigureAppConfiguration`</remarks>
+    /// <example>
+    /// hostBuilder.ConfigureAppConfiguration((context, config) =>
+    /// {
+    ///     config.AddYamlAppConfigs(context.Configuration);
+    /// });
+    /// </example>
+    public static IConfigurationBuilder AddYamlAppConfigs(this IConfigurationBuilder builder, IConfiguration configuration)
+    {
+        AppConfigurationLocationSetting? appConfigurationLocationSetting = configuration.GetSection("NetDaemon")?.Get<AppConfigurationLocationSetting>();
+        if (appConfigurationLocationSetting?.ApplicationConfigurationFolder != null)
+        {
+            string fullPath = Path.GetFullPath(appConfigurationLocationSetting.ApplicationConfigurationFolder);
+            builder.AddYamlAppConfig(fullPath);
+        }
+
+        return builder;
+    }
+
     internal static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string filePath, bool optional,
         bool reloadOnChange)
     {

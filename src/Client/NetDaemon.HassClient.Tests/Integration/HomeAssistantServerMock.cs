@@ -266,6 +266,12 @@ public class HassMockStartup : IHostedService
                             hassMessage.Id,
                             webSocket).ConfigureAwait(false);
                         break;
+                    case "execute_script":
+                        await ReplaceIdInResponseAndSendMsg(
+                            "result_calendar_list_event.json",
+                            hassMessage.Id,
+                            webSocket).ConfigureAwait(false);
+                        break;
                     case "get_config":
                         await ReplaceIdInResponseAndSendMsg(
                             "result_config.json",
