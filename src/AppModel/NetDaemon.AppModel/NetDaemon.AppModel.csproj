@@ -17,12 +17,10 @@
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.AppModel</RootNamespace>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
+    <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
+    
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
