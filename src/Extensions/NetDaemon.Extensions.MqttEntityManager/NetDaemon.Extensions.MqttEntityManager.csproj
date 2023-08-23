@@ -20,6 +20,8 @@
         <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
         <tags>Home Assistant, NetDaemon, MQTT</tags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>

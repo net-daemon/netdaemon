@@ -18,6 +18,8 @@
         <PackageReleaseNotes>This package is used internally by NetDaemon and not intended to be used directly. That means things could change if needed without prior notice</PackageReleaseNotes>
         <tags>Home Assistant</tags>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>

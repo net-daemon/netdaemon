@@ -17,6 +17,8 @@
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.AppModel</RootNamespace>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
