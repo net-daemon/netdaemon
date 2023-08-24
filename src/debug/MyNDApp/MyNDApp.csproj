@@ -23,7 +23,7 @@
     <PackageReference Include="JoySoftware.NetDaemon.AppModel" Version="23.32.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Runtime" Version="23.32.0" />
     <PackageReference Include="JoySoftware.NetDaemon.HassModel" Version="23.32.0" />
-    <PackageReference Include="JoySoftware.NetDaemon.Client" Version="23.32.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Client" Version="23.33.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Scheduling" Version="23.32.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Logging" Version="23.32.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Tts" Version="23.32.0" />
