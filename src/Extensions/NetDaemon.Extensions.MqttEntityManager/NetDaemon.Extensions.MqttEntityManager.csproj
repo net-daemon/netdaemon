@@ -22,11 +22,14 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
+    <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
+    
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
       <PackageReference Include="MQTTnet" Version="4.2.1.781" />
       <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.2.1.781" />
       <PackageReference Include="System.Reactive" Version="6.0.0" />

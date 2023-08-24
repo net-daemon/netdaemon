@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+</Project>
