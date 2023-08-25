@@ -6,7 +6,7 @@
 public record NumericEntity : Entity
 {
     /// <summary>Copy constructor from base class</summary>
-    public NumericEntity(Entity entity) : base(entity) { }
+    public NumericEntity(IEntityCore entity) : base(entity) { }
     
     /// <summary>Constructor from haContext and entityId</summary>
     public NumericEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
@@ -36,7 +36,7 @@ public record NumericEntity<TEntity, TEntityState, TAttributes> : Entity<TEntity
     where TAttributes : class
 {
     /// <summary>Copy constructor from base class</summary>
-    public NumericEntity(Entity entity) : base(entity) { }
+    public NumericEntity(IEntityCore entity) : base(entity) { }
 
     /// <summary>Constructor from haContext and entityId</summary>
     public NumericEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }

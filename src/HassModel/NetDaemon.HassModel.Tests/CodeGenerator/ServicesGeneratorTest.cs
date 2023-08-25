@@ -65,12 +65,17 @@ public class ServicesGeneratorTest
 
                             s.Light.TurnOff(new ServiceTarget());
 
-                            var light = new RootNameSpace.LightEntity(ha, "light.testLight");
-
+                            LightEntity light = new RootNameSpace.LightEntity(ha, "light.testLight");
                             light.TurnOn();
                             light.TurnOn(transition: 12, brightness: 324.5f);
                             light.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
                             light.TurnOff();
+
+                            ILightEntityCore lightCore = light;
+                            lightCore.TurnOn();
+                            lightCore.TurnOn(transition: 12, brightness: 324.5f);
+                            lightCore.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
+                            lightCore.TurnOff();
                         }
                     }
                     """;
@@ -180,7 +185,6 @@ public class ServicesGeneratorTest
         
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }    
-    
     
     [Fact]
     public void TestServiceWithKeyWordFieldName_ParamEscaped()

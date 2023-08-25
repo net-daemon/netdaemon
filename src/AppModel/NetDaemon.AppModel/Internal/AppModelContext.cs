@@ -9,13 +9,15 @@ internal class AppModelContext : IAppModelContext
     private readonly IEnumerable<IAppFactoryProvider> _appFactoryProviders;
     private readonly IServiceProvider _provider;
     private readonly FocusFilter _focusFilter;
+    private ILogger<AppModelContext> _logger;
     private bool _isDisposed;
 
-    public AppModelContext(IEnumerable<IAppFactoryProvider> appFactoryProviders, IServiceProvider provider, FocusFilter focusFilter)
+    public AppModelContext(IEnumerable<IAppFactoryProvider> appFactoryProviders, IServiceProvider provider, FocusFilter focusFilter, ILogger<AppModelContext> logger)
     {
         _appFactoryProviders = appFactoryProviders;
         _provider = provider;
         _focusFilter = focusFilter;
+        _logger = logger;
     }
 
     public IReadOnlyCollection<IApplication> Applications => _applications;
@@ -32,6 +34,9 @@ internal class AppModelContext : IAppModelContext
             await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
         }
+
+        _logger.LogInformation("Finished loading applications: {state}",
+            string.Join(", ", Enum.GetValues<ApplicationState>().Select(possibleState => $"{possibleState} {_applications.Count(app => app.State == possibleState)}")));
     }
 
     public async ValueTask DisposeAsync()

@@ -25,6 +25,7 @@ SOFTWARE. */
 // ReSharper disable UnusedType.Global
 
 #pragma warning disable 1591
+#pragma warning disable CS1574, CS1584, CS1581, CS1580
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global

@@ -5,10 +5,13 @@ using NetDaemon.Runtime.Internal;
 
 namespace NetDaemon.Runtime;
 
+/// <summary>
+/// NetDaemon.Runtime Extension methods for IHostBuilder
+/// </summary>
 public static class HostBuilderExtensions
 {
     /// <summary>
-    /// Call this method to load NetDeamonYaml settings, and to register 'ConfigureNetDaemonServices' in the service collection
+    /// Call this method to load NetDeamon Yaml settings, and to register 'ConfigureNetDaemonServices' in the service collection
     /// </summary>
     /// <param name="hostBuilder"></param>
     /// <remarks>
@@ -56,6 +59,9 @@ public static class HostBuilderExtensions
         });
     }
 
+    /// <summary>
+    /// Adds the NetDaemon Runtime Services to a HostBuilder
+    /// </summary>
     public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
     {
         return hostBuilder
