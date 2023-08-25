@@ -32,6 +32,6 @@ internal static class HassServiceArgumentMapper
             },
         };
 
-        return selectorObject?.Multiple ?? false ? clrType.MakeArrayType() : clrType;
+        return selectorObject?.Multiple ?? false ? typeof(IEnumerable<>).MakeGenericType(clrType) : clrType;
     }
 }
