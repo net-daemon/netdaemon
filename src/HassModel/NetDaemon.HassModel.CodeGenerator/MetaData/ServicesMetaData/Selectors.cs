@@ -5,7 +5,7 @@ namespace NetDaemon.HassModel.CodeGenerator.Model;
 
 internal record Selector()
 {
-    public bool Multiple { get; set; }
+    public bool Multiple { get; init; }
     
     public string? Type { get; init; }
 }
