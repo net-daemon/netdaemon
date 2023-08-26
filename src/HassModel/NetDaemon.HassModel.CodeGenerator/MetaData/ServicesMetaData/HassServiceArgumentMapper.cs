@@ -14,7 +14,7 @@ internal static class HassServiceArgumentMapper
     }
     private static Type GetClrTypeFromSelector(Selector? selectorObject)
     {
-        return selectorObject switch
+        var clrType =  selectorObject switch
         {
             null => typeof(object),
             NumberSelector s when (s.Step ?? 1) % 1 != 0 => typeof(double),
@@ -31,5 +31,7 @@ internal static class HassServiceArgumentMapper
                 _ => typeof(object)
             },
         };
+
+        return selectorObject?.Multiple ?? false ? typeof(IEnumerable<>).MakeGenericType(clrType) : clrType;
     }
 }

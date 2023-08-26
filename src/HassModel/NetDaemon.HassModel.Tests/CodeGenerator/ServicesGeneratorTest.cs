@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Text.Json;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
@@ -227,6 +229,72 @@ public class ServicesGeneratorTest
                     """;
         
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
-    }    
+    }
+
+    [Fact]
+    public void MultpileEntitySelector_ShouldGenerateArray()
+    {
+        var states = new HassState[] {
+            new() { EntityId = "media_player.group1" },
+        };
+        
+        var serviceMetaData = """
+                    {
+                      "media_player": {
+                        "join": {
+                          "name": "Join",
+                          "description": "Group players together. Only works on platforms with support for player groups.",
+                          "fields": {
+                            "group_members": {
+                              "name": "Group members",
+                              "description": "The players which will be synced with the target player.",
+                              "required": true,
+                              "example": "- media_player.multiroom_player2\n- media_player.multiroom_player3\n",
+                              "selector": {
+                                "entity": {
+                                  "multiple": true,
+                                  "domain": "media_player"
+                                }
+                              }
+                            }
+                          },
+                          "target": {
+                            "entity": {
+                              "domain": "media_player"
+                            }
+                          }
+                        }
+                     }
+                    }
+                    """;
+
+        var appCode = """
+                    using NetDaemon.HassModel;
+                    using NetDaemon.HassModel.Entities;
+                    using RootNameSpace;
+
+                    public class Root
+                    {
+                        public void Run(Entities entities, Services services)
+                        {
+                            entities.MediaPlayer.Group1.Join(groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
+                            services.MediaPlayer.Join(new ServiceTarget(), groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
+                        }
+                    }
+                    """;
+
+        var hassServiceDomains = Parse(serviceMetaData);
+        
+// Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
+
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);        
+    }
+    
+    private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)
+    {
+        var element = JsonDocument.Parse(sample).RootElement;
+        return ServiceMetaDataParser.Parse(element);
+    }
 }    
     
