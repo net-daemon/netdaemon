@@ -42,6 +42,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 if (changedEvent.NewState.State == changedEvent.OldState.State)
                     // We only care about changed state
                     return;
+                
                 foreach (var app in appContext.Applications)
                 {
                     var entityId =
@@ -49,13 +50,14 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                             throw new InvalidOperationException(), _hostEnvironment.IsDevelopment());
                     if (entityId != changedEvent.NewState.EntityId) continue;
 
-                    var appState = changedEvent.NewState?.State == "on"
-                        ? ApplicationState.Enabled
-                        : ApplicationState.Disabled;
-
-                    await app.SetStateAsync(
-                        appState
-                    );
+                    if (changedEvent.NewState?.State == "on")
+                    {
+                        await app.EnableAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await app.DisableAsync().ConfigureAwait(false);
+                    }
                     break;
                 }
             }).Subscribe();

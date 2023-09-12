@@ -335,7 +335,7 @@ public class AppStateManagerTests
             }.ToJsonElement()
         });
         // ASSERT
-        appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Once);
+        appMock.Verify(n => n.DisableAsync(), Times.Once);
     }
 
     [Fact]
@@ -390,7 +390,7 @@ public class AppStateManagerTests
         });
 
         // ASSERT
-        appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Never);
+        appMock.Verify(n => n.DisableAsync(), Times.Never);
     }
 
     [Fact]
@@ -441,7 +441,7 @@ public class AppStateManagerTests
         });
 
         // ASSERT
-        appMock.Verify(n => n.SetStateAsync(ApplicationState.Disabled), Times.Never);
+        appMock.Verify(n => n.DisableAsync(), Times.Never);
     }
 
     private (Mock<IHomeAssistantConnection> connection, IServiceProvider serviceProvider) SetupProviderAndMocks()

@@ -181,7 +181,7 @@ public class AppModelTests
 
         // CHECK
         loadApps.First(n => n.Id == "LocalAppsWithErrors.MyAppLocalAppWithError")
-            .State.Should().Be(ApplicationState.Error);
+            .Enabled.Should().BeTrue();
 
         // Verify that the error is logged
         loggerMock.Verify(

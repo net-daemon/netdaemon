@@ -28,6 +28,18 @@ internal class Application : IApplication
 
     public string Id => _appFactory.Id;
 
+    public bool Enabled => State is ApplicationState.Enabled or ApplicationState.Running;
+
+    public async Task EnableAsync()
+    {
+        await LoadApplication(ApplicationState.Enabled);
+    }
+
+    public async Task DisableAsync()
+    {
+        await UnloadApplication(ApplicationState.Disabled);
+    }
+
     public ApplicationState State
     {
         get

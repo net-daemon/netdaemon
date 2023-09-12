@@ -10,14 +10,17 @@ public interface IApplication : IAsyncDisposable
     /// </summary>
     string? Id { get; }
 
-    /// <summary>
-    ///     Current state of the application
-    /// </summary>
-    ApplicationState State { get; }
+    // Indicates if this application is currently Enabled
+    public bool Enabled { get; }
 
     /// <summary>
-    ///     Sets state for application
+    /// Enables the App and loads if possible
     /// </summary>
-    /// <param name="state">The state to set</param>
-    Task SetStateAsync(ApplicationState state);
+    public Task EnableAsync();
+
+    
+    /// <summary>
+    /// Disable the app and unload (Dispose) it if it is running
+    /// </summary>
+    public Task DisableAsync();
 }
