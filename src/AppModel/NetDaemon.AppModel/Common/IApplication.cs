@@ -10,7 +10,9 @@ public interface IApplication : IAsyncDisposable
     /// </summary>
     string? Id { get; }
 
-    // Indicates if this application is currently Enabled
+    /// <summary>
+    /// Indicates if this application is currently Enabled
+    /// </summary>
     public bool Enabled { get; }
 
     /// <summary>
@@ -18,9 +20,14 @@ public interface IApplication : IAsyncDisposable
     /// </summary>
     public Task EnableAsync();
 
-    
     /// <summary>
     /// Disable the app and unload (Dispose) it if it is running
     /// </summary>
     public Task DisableAsync();
+
+    /// <summary>
+    /// The currently running instance of the app (if any)
+    /// </summary>
+    public object? Instance { get; }
+
 }

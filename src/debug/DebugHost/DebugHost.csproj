@@ -30,6 +30,7 @@
         <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
+        <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj" />
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj" />
         <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
         <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />

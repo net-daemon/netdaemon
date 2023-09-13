@@ -12,11 +12,15 @@ internal class AppModelImpl : IAppModel
         _provider = provider;
     }
 
+    public IAppModelContext? CurrentAppModelContext { get; private set;  }
+
     public async Task<IAppModelContext> LoadNewApplicationContext(CancellationToken cancellationToken)
     {
-        // Create a new AppModelContext
-        var appModelContext = _provider.GetRequiredService<IAppModelContext>();
+        var appModelContext = ActivatorUtilities.CreateInstance<AppModelContext>(_provider);
         await appModelContext.InitializeAsync(cancellationToken);
+        
+        // Assign to CurrentAppModelContext so it can be resolved via DI  
+        CurrentAppModelContext = appModelContext;
         return appModelContext;
     }
 }

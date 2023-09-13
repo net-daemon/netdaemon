@@ -31,8 +31,12 @@ internal class AppModelContext : IAppModelContext
         foreach (var factory in filteredFactories)
         {
             var app = ActivatorUtilities.CreateInstance<Application>(_provider, factory);
-            await app.InitializeAsync().ConfigureAwait(false);
             _applications.Add(app);
+        }
+        
+        foreach (var application in _applications)
+        {
+            await application.InitializeAsync();
         }
 
         _logger.LogInformation("Finished loading applications: {state}",

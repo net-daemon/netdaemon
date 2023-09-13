@@ -40,6 +40,9 @@ internal class Application : IApplication
         await UnloadApplication(ApplicationState.Disabled);
     }
 
+    public object? Instance => ApplicationContext?.Instance;
+
+    // TODO: see if we can remove this and refactor the possible states 
     public ApplicationState State
     {
         get
@@ -51,6 +54,7 @@ internal class Application : IApplication
         }
     }
 
+    // TODO: see if we can remove this and refactor the possible states 
     public async Task SetStateAsync(ApplicationState state)
     {
         switch (state)
@@ -72,7 +76,10 @@ internal class Application : IApplication
 
     public async ValueTask DisposeAsync()
     {
-        if (ApplicationContext is not null) await ApplicationContext.DisposeAsync().ConfigureAwait(false);
+        if (ApplicationContext is not null)
+        {
+            await ApplicationContext.DisposeAsync().ConfigureAwait(false);
+            ApplicationContext = null;        }
     }
 
     private async Task UnloadApplication(ApplicationState state)

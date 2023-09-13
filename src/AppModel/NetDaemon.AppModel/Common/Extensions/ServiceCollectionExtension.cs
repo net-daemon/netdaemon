@@ -121,8 +121,9 @@ public static class ServiceCollectionExtensions
         services
             .AddSingleton<AppModelImpl>()
             .AddSingleton<IAppModel>(s => s.GetRequiredService<AppModelImpl>())
-            .AddTransient<AppModelContext>()
-            .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelContext>())
+            
+            // IAppModelContext is resolved via AppModelImpl which it itself a Singleton, so it will return the current AppModelContext
+            .AddTransient<IAppModelContext>(s => s.GetRequiredService<AppModelImpl>().CurrentAppModelContext ?? throw new InvalidOperationException("No AppModelContext is currently loaded"))
             .AddTransient<FocusFilter>()
             .AddScopedConfigurationBinder()
             .AddScopedAppServices()

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Tts;
 using NetDaemon.Extensions.MqttEntityManager;
+using NetDaemon.Extensions.Scheduler;
 
 #pragma warning disable CA1812
 
@@ -23,6 +24,7 @@ try
                       // change type of compilation here
                       // .AddAppsFromSource(true)
                       .AddAppsFromAssembly(Assembly.GetEntryAssembly()!)
+                      .AddNetDaemonScheduler()
                       // Remove this is you are not running the integration!
                       .AddNetDaemonStateManager()
               )
