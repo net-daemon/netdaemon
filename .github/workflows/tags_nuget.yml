@@ -52,4 +52,4 @@ jobs:
       - name: 🎁 Pack Mqtt extensions
         run: dotnet pack src/Extensions/NetDaemon.Extensions.MqttEntityManager/NetDaemon.Extensions.MqttEntityManager.csproj --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }} -p:Version=${{ steps.version.outputs.version }}
       - name: 📨 Push to nuget
-        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --no-symbols
+        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
