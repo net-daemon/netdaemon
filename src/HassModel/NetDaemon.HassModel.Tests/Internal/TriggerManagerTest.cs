@@ -80,7 +80,7 @@ public class TriggerManagerTest
         // Act
         var incomingTriggersTask = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
 
-        await ((IAsyncDisposable)_triggerManager).DisposeAsync().ConfigureAwait(false);
+        await ((IAsyncDisposable)_triggerManager).DisposeAsync();
         
         // Assert, Dispose should unsubscribe with HA AND stop any messages that do pass        
         

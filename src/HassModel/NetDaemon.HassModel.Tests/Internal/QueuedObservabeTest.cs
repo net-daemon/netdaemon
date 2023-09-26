@@ -21,7 +21,7 @@ public class QueuedObservabeTest
         source.OnNext(1);
         source.OnNext(2);
         source.OnNext(3);
-        await queue.DisposeAsync().ConfigureAwait(false);
+        await queue.DisposeAsync();
 
         subscriber.Verify(s => s.OnNext(1), Times.Once);
         subscriber.Verify(s => s.OnNext(2), Times.Once);
@@ -49,7 +49,7 @@ public class QueuedObservabeTest
         source.OnNext(1);
         source.OnNext(2);
         source.OnNext(3);
-        await queue1.DisposeAsync().ConfigureAwait(false);
+        await queue1.DisposeAsync();
 
         // all events should reach the first subscriber
         subscriber.Verify(s => s.OnNext(1), Times.Once);
@@ -94,7 +94,7 @@ public class QueuedObservabeTest
         
         var waitTask2 = scope2ObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event2"));
         testSubject.OnNext("Event2");
-        await waitTask2.ConfigureAwait(false);
+        await waitTask2;
         
         scope1AObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
         scope1BObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
@@ -119,9 +119,9 @@ public class QueuedObservabeTest
         // since it can be aborted by the cancellation token                                                                                                             
         var waitOnCallTask = subscriber.WaitForInvocation(n => n.OnNext(1));
         source.OnNext(1);
-        await waitOnCallTask.ConfigureAwait(false);
+        await waitOnCallTask;
 
-        await queue.DisposeAsync().ConfigureAwait(false);
+        await queue.DisposeAsync();
         subscriber.Verify(s => s.OnNext(1));
     }
 
@@ -138,7 +138,7 @@ public class QueuedObservabeTest
 
         source.OnNext(1);
 
-        await queue.DisposeAsync().ConfigureAwait(false);
+        await queue.DisposeAsync();
         // Verify that an error has been logged
         loggerMock.Verify(
             x => x.Log(
@@ -162,10 +162,10 @@ public class QueuedObservabeTest
 
         var waitOnCallTask = subscriber.WaitForInvocation(n => n.OnNext(1));
         source.OnNext(1);
-        await waitOnCallTask.ConfigureAwait(false);
+        await waitOnCallTask;
         source.HasObservers.Should().BeTrue();
 
-        await queue.DisposeAsync().ConfigureAwait(false);
+        await queue.DisposeAsync();
         source.HasObservers.Should().BeFalse();
     }
 }

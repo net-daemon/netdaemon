@@ -140,7 +140,7 @@ public class AppScopedHaContextProviderTest
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         _hassEventSubjectMock.OnCompleted();
         
-        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false);
+        await ((IAsyncDisposable)serviceScope).DisposeAsync();
         
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()), Times.Once);
@@ -167,7 +167,7 @@ public class AppScopedHaContextProviderTest
         _hassEventSubjectMock.OnNext(_sampleHassEvent with { EventType = "other_type" });
         _hassEventSubjectMock.OnCompleted();
 
-        await ((IAsyncDisposable)serviceScope).DisposeAsync().ConfigureAwait(false);
+        await ((IAsyncDisposable)serviceScope).DisposeAsync();
 
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
