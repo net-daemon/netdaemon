@@ -15,7 +15,7 @@ public class BackgroundTaskTrackerTests
     }
 
     [Fact]
-    public void TestBackgroundTaskNormalNotLogError()
+    public async Task TestBackgroundTaskNormalNotLogError()
     {
         bool isCalled;
 
@@ -33,13 +33,13 @@ public class BackgroundTaskTrackerTests
 
         if (task.Key is not null)
             // We still have a task in queue so wait for it max 5000 ms
-            task.Key.Wait(timedCancellationTokenSource.Token);
+            await task.Key.WaitAsync(timedCancellationTokenSource.Token);
 
         isCalled.Should().BeTrue();
     }
 
     [Fact]
-    public void TestBackgroundTaskThrowsExceptionWillLogError()
+    public async Task TestBackgroundTaskThrowsExceptionWillLogError()
     {
 #pragma warning disable CS1998
         async Task CallMeAndIThrowError()
@@ -56,7 +56,7 @@ public class BackgroundTaskTrackerTests
 
         if (task.Key is not null)
             // We still have a task in queue so wait for it max 5000 ms
-            task.Key.Wait(timedCancellationTokenSource.Token);
+            await task.Key.WaitAsync(timedCancellationTokenSource.Token);
 
         _loggerMock.Verify(
             x => x.Log(
