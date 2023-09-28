@@ -3,14 +3,10 @@
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
 public record Entity : IEntityCore
 {
-    /// <summary>
-    /// The IHAContext
-    /// </summary>
+    /// <inheritdoc />
     public IHaContext HaContext { get; }
 
-    /// <summary>
-    /// Entity id being handled by this entity
-    /// </summary>
+    /// <inheritdoc />
     public string EntityId { get; }
 
     /// <summary>
@@ -32,58 +28,27 @@ public record Entity : IEntityCore
         EntityId = entity.EntityId;
     }
         
-    /// <summary>
-    /// Area name of entity
-    /// </summary>
+    /// <inheritdoc />
     public string? Area => HaContext.GetAreaFromEntityId(EntityId)?.Name;
 
-    /// <summary>The current state of this Entity</summary>
+    /// <inheritdoc />
     public string? State => EntityState?.State;
 
-    /// <summary>
-    /// The current Attributes of this Entity
-    /// </summary>
+    /// <inheritdoc />
     public virtual object? Attributes => EntityState?.Attributes;
 
-    /// <summary>
-    /// The full state of this Entity
-    /// </summary>
+    /// <inheritdoc />
     public virtual EntityState? EntityState => HaContext.GetState(EntityId);
 
-    /// <summary>
-    /// Observable that emits all state changes, including attribute changes.<br/>
-    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// bedroomLight.StateAllChanges()
-    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128 
-    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
-    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
-    /// </code>
-    /// </example>
+    /// <inheritdoc />
     public virtual IObservable<StateChange> StateAllChanges() =>
         HaContext.StateAllChanges().Where(e => e.Entity.EntityId == EntityId);
 
-    /// <summary>
-    /// Observable that emits state changes where New.State != Old.State<br/>
-    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// disabledLight.StateChanges()
-    ///    .Where(s =&gt; s.New?.State == "on")
-    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
-    /// </code>
-    /// </example>
+    /// <inheritdoc />
     public virtual IObservable<StateChange> StateChanges() =>
         StateAllChanges().StateChangesOnly();
 
-    /// <summary>
-    /// Calls a service using this entity as the target
-    /// </summary>
-    /// <param name="service">Name of the service to call. If the Domain of the service is the same as the domain of the Entity it can be omitted</param>
-    /// <param name="data">Data to provide</param>
+    /// <inheritdoc />
     public virtual void CallService(string service, object? data = null)
     {
         EntityExtensions.CallService(this, service, data);
