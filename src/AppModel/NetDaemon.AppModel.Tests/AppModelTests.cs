@@ -79,7 +79,7 @@ public class AppModelTests
         Assert.Null((MyAppLocalApp?) application.ApplicationContext?.Instance);
 
         // set state to enabled
-        await application.SetStateAsync(ApplicationState.Enabled).ConfigureAwait(false);
+        await application.EnableAsync().ConfigureAwait(false);
         application.State.Should().Be(ApplicationState.Running);
         Assert.NotNull((MyAppLocalApp?) application.ApplicationContext?.Instance);
 
@@ -118,7 +118,7 @@ public class AppModelTests
         Assert.NotNull((MyAppLocalAppWithDispose?) application.ApplicationContext?.Instance);
 
         // set state to enabled
-        await application.SetStateAsync(ApplicationState.Disabled).ConfigureAwait(false);
+        await application.DisableAsync().ConfigureAwait(false);
         application.State.Should().Be(ApplicationState.Disabled);
         Assert.Null((MyAppLocalAppWithDispose?) application.ApplicationContext?.Instance);
     }
@@ -133,21 +133,6 @@ public class AppModelTests
         // CHECK
         var appContext = loadApps.Where(n => n.Id == "SomeId");
         appContext.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public async Task TestSetStateToRunningShouldThrowException()
-    {
-        // ARRANGE
-        var provider = Mock.Of<IServiceProvider>();
-        var logger = Mock.Of<ILogger<Application>>();
-        var factory = Mock.Of<IAppFactory>();
-        
-        // ACT
-        var app = new Application(provider, logger, factory);
-
-        // CHECK
-        await Assert.ThrowsAsync<ArgumentException>(() => app.SetStateAsync(ApplicationState.Running));
     }
 
     [Fact]
@@ -222,10 +207,13 @@ public class AppModelTests
         // check the application instance is init ok
         var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithAsyncDispose");
         var app = (MyAppLocalAppWithAsyncDispose?) application.ApplicationContext?.Instance;
-        application.State.Should().Be(ApplicationState.Running);
+        application.IsRunning.Should().BeTrue();
+        application.Enabled.Should().BeTrue();
         await application.DisposeAsync().ConfigureAwait(false);
         app!.AsyncDisposeIsCalled.Should().BeTrue();
         app.DisposeIsCalled.Should().BeFalse();
+        application.IsRunning.Should().BeFalse();
+        application.Enabled.Should().BeTrue();
     }
 
     [Fact]

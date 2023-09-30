@@ -4,36 +4,27 @@ namespace NetDaemon.AppModel.Internal;
 
 internal class AppModelContext : IAppModelContext
 {
-    private readonly List<Application> _applications = new();
+    private readonly List<Application> _applications;
 
-    private readonly IEnumerable<IAppFactoryProvider> _appFactoryProviders;
-    private readonly IServiceProvider _provider;
-    private readonly FocusFilter _focusFilter;
-    private ILogger<AppModelContext> _logger;
+    private readonly ILogger<AppModelContext> _logger;
     private bool _isDisposed;
 
     public AppModelContext(IEnumerable<IAppFactoryProvider> appFactoryProviders, IServiceProvider provider, FocusFilter focusFilter, ILogger<AppModelContext> logger)
     {
-        _appFactoryProviders = appFactoryProviders;
-        _provider = provider;
-        _focusFilter = focusFilter;
         _logger = logger;
+        
+        var factories = appFactoryProviders.SelectMany(p => p.GetAppFactories()).ToList();
+
+        var filteredFactories =  focusFilter.FilterFocusApps(factories);
+
+        _applications = filteredFactories.Select(factory => ActivatorUtilities.CreateInstance<Application>(provider, factory))
+            .ToList();
     }
 
-    public IReadOnlyCollection<IApplication> Applications => _applications;
+    public IReadOnlyCollection<IApplication> Applications => _applications.AsReadOnly();
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        var factories = _appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
-
-        var filteredFactories =  _focusFilter.FilterFocusApps(factories);
-
-        foreach (var factory in filteredFactories)
-        {
-            var app = ActivatorUtilities.CreateInstance<Application>(_provider, factory);
-            _applications.Add(app);
-        }
-        
         foreach (var application in _applications)
         {
             await application.InitializeAsync();
