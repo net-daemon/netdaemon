@@ -243,6 +243,8 @@ public class HassMockStartup : IHostedService
                         
                         _eventSubscriptions.Add(hassMessage.Id);
 
+                        // We wait so the subscription is added before we send the event
+                        await Task.Delay(500).ConfigureAwait(false);
                         await ReplaceIdInResponseAndSendMsg(
                             "event.json",
                             hassMessage.Id,
