@@ -12,8 +12,8 @@ public static class VersionHelper
     /// <summary>
     /// Returns current version of NetDaemon
     /// </summary>
-    public static string GeneratorVersion { get; } =
-        Assembly.GetAssembly(typeof(Generator))!.GetName().Version!.ToString();
+    public static Version GeneratorVersion { get; } =
+        Assembly.GetAssembly(typeof(Generator))!.GetName().Version!;
 
     /// <summary>
     /// Pretty prints version information to console

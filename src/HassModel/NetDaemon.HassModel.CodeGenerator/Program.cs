@@ -17,8 +17,10 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
 //This is used as a command line switch rather than a configuration key. There is no key value following it to interpret.
 generationSettings.GenerateOneFilePerEntity = args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-fpe");
 
-var controller = new Controller(generationSettings, haSettings);
 VersionHelper.PrintVersion();
+DependencyValidator.ValidatePackageRefrences();
+
+var controller = new Controller(generationSettings, haSettings);
 await controller.RunAsync().ConfigureAwait(false);
 
 Console.WriteLine();
