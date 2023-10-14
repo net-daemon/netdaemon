@@ -45,7 +45,7 @@ public interface IHaContext
     /// <returns>Returns a JsonElement containing the service result</returns>
     public Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null,
         object? data = null);
-    
+
     /// <summary>
     /// Get area for a single entity
     /// </summary>
