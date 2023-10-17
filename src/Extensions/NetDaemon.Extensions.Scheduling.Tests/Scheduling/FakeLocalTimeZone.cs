@@ -6,7 +6,7 @@ namespace NetDaemon.Extensions.Scheduling.Tests;
 /// <summary>
 /// Helper class to fake timezone for localtime
 /// </summary>
-internal class FakeLocalTimeZone : IDisposable
+internal sealed class FakeLocalTimeZone : IDisposable
 {
     private readonly TimeZoneInfo _actualLocalTimeZoneInfo;
 

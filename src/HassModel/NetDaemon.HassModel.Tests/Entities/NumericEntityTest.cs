@@ -34,7 +34,7 @@ public class NumericEntityTest
         numericEntity.State!.Value!.Should().Be(12.3d);
         numericEntity.EntityState!.State!.Value!.Should().Be(12.3d);
         numericEntity.StateAllChanges().Where(e => e.New?.State > 1.2);
-        // Act: WithAttributesAs 
+        // Act: WithAttributesAs
         var withAttributes = numericEntity.WithAttributesAs<TestSensorAttributes>();
 
         // Assert
@@ -77,7 +77,7 @@ public class NumericEntityTest
         withAttributes.EntityState!.Attributes!.units.Should().Be("Celcius");
         withAttributes.EntityState!.Attributes!.setPoint.Should().Be(21.5);
 
-        // Act: AsNumeric() 
+        // Act: AsNumeric()
         var numericWithAttributes = withAttributes.AsNumeric();
 
         numericWithAttributes.State!.Value!.Should().Be(12.3d);
@@ -93,7 +93,7 @@ public class NumericEntityTest
 
     }
 
-    record TestSensorAttributes(double setPoint, string units);
+    sealed record TestSensorAttributes(double setPoint, string units);
 
     [Fact]
     public void ShouldShowStateChangesFromContext()

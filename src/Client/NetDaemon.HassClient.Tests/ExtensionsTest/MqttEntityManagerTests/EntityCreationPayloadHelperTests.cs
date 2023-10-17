@@ -7,7 +7,7 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
 public class EntityCreationPayloadHelperTests
 {
-    class PayloadTestData : IEnumerable<object[]>
+    sealed class PayloadTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -17,19 +17,19 @@ public class EntityCreationPayloadHelperTests
                 J(new { state_topic = (object)null!, json_attributes_topic = (object)null!, object_id = (object)null! }),
                 "should output basic concrete options"
             };
-            
+
             yield return new object[]
             {
                 new EntityCreationPayload {}, new { extra = "data" },
                 J(new { state_topic = (object)null!, json_attributes_topic = (object)null!, object_id = (object)null!, extra = "data" }), "should merge a new property"
             };
-            
+
             yield return new object[]
             {
                 new EntityCreationPayload { StateTopic = "/state"}, new {},
                 J(new { state_topic = "/state", json_attributes_topic = (object)null!, object_id = (object)null!  }), "should pick up values"
             };
-            
+
             yield return new object[]
             {
                 new EntityCreationPayload { StateTopic = "/state"}, new { state_topic = "/new-state"},

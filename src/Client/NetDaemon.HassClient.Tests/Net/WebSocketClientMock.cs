@@ -1,6 +1,6 @@
 namespace NetDaemon.HassClient.Tests.Net;
 
-internal class WebSocketClientMock : Mock<IWebSocketClient>
+internal sealed class WebSocketClientMock : Mock<IWebSocketClient>
 {
     private readonly Channel<byte[]> _responseMessageChannel = Channel.CreateBounded<byte[]>(100);
 
@@ -47,7 +47,7 @@ internal class WebSocketClientMock : Mock<IWebSocketClient>
 
                     if (msg.Length - _currentReadPosition > buffer.Length)
                     {
-                        // Handle websocket messages that have 
+                        // Handle websocket messages that have
                         // size bigger than buffer, so chunk it up
                         msg.AsMemory(_currentReadPosition, buffer.Length).CopyTo(buffer);
                         _currentMultiSpanMessage = msg;

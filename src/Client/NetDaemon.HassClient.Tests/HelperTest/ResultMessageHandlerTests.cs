@@ -62,21 +62,21 @@ public class ResultMessageHandlerTests
 
 
 
-    private async Task<HassMessage> SomeSuccessfulResult()
+    private static async Task<HassMessage> SomeSuccessfulResult()
     {
         // Simulate som time
         await Task.Delay(100);
         return new HassMessage {Success = true};
     }
 
-    private async Task<HassMessage> SomeUnSuccessfulResult()
+    private static async Task<HassMessage> SomeUnSuccessfulResult()
     {
         // Simulate som time
         await Task.Delay(100);
         return new HassMessage {Success = false};
     }
 
-    private async Task<HassMessage> SomeUnSuccessfulResultThrowsException()
+    private static async Task<HassMessage> SomeUnSuccessfulResultThrowsException()
     {
         // Simulate som time
         await Task.Delay(100);

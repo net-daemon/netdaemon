@@ -28,10 +28,10 @@ using NetDaemon.HassModel.Entities.Core;
 
 namespace HomeAssistantGenerated;
 
-public partial class Entities
+public partial class TestEntities
 {
     private readonly IHaContext _haContext;
-    public Entities(IHaContext haContext)
+    public TestEntities(IHaContext haContext)
     {
         _haContext = haContext;
     }

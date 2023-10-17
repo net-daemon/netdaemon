@@ -15,11 +15,11 @@ namespace NetDaemon.HassModel.Tests.CodeGenerator;
 public class CodeGeneratorTest
 {
     private readonly CodeGenerationSettings _settings = new() { Namespace = "RootNameSpace" };
-    
+
     [Fact]
     public void RunCodeGenEmpy()
     {
-        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, Array.Empty<HassState>(), new HassServiceDomain[0]);
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, Array.Empty<HassState>(), Array.Empty<HassServiceDomain>());
 
         code.DescendantNodes().OfType<FileScopedNamespaceDeclarationSyntax>().First().Name.ToString().Should().Be("RootNameSpace");
 
@@ -61,7 +61,7 @@ public class CodeGeneratorTest
                         """;
         CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
     }
-        
+
     [Fact]
     public void TestEntityDuplictateNormalizedName()
     {
@@ -87,8 +87,8 @@ public class CodeGeneratorTest
                         }
                         """;
         CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
-    }    
-    
+    }
+
     [Fact]
     public void TestEntityInvalidCSharpName()
     {
@@ -114,8 +114,8 @@ public class CodeGeneratorTest
                         }
                         """;
         CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
-    }        
-    
+    }
+
     [Fact]
     public void TestNumericSensorEntityGeneration()
     {
@@ -125,12 +125,12 @@ public class CodeGeneratorTest
             new() {
                 EntityId = "number.living_bass",
                 AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
-            },           
+            },
             new()
             {
                 EntityId = "input_number.target_temperature",
                 AttributesJson = new { unit_of_measurement = "Kwh", }.AsJsonElement()
-            },                
+            },
             new()
             {
                 EntityId = "sensor.daily_power_consumption",
@@ -139,7 +139,7 @@ public class CodeGeneratorTest
             new()
             {
                 EntityId = "sensor.Pir",
-            },            
+            },
             new()
             {
                 EntityId = "proximity.home",
@@ -176,22 +176,22 @@ public class CodeGeneratorTest
                         """;
         CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
     }
-        
+
     [Fact]
     public void TestNumberExtensionMethodGeneration()
     {
-        var entityStates = new HassState[] { 
+        var entityStates = new HassState[] {
             new() {
                 EntityId = "number.living_bass",
                 AttributesJson = new { unit_of_measurement = "%", }.AsJsonElement()
-            },           
+            },
             new() {
                 EntityId = "unknown.number",
                 AttributesJson = new { unit_of_measurement = "pcs", }.AsJsonElement()
-            },           
+            },
             new() {
                 EntityId = "unknown.string",
-            },           
+            },
         };
 
         var hassServiceDomains = new HassServiceDomain[] {
@@ -210,7 +210,7 @@ public class CodeGeneratorTest
                 }
             }
         };
-            
+
         var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, hassServiceDomains);
         var appCode = """
                         using NetDaemon.HassModel.Entities;
@@ -238,7 +238,7 @@ public class CodeGeneratorTest
             new()
             {
                 EntityId = "light.light1",
-                AttributesJson = new 
+                AttributesJson = new
                 {
                     brightness = 255L,
                     friendly_name = "attic",
@@ -252,7 +252,7 @@ public class CodeGeneratorTest
                 }.AsJsonElement()
             },
         };
-            
+
         var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = false }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
 
         var appCode = """
@@ -278,7 +278,7 @@ public class CodeGeneratorTest
         CodeGenTestHelper.AssertCodeCompiles(generatedCode, appCode);
     }
 
-    
+
     [Fact]
     public void TestAttributeClassGenerationSkipBaseProperties()
     {
@@ -287,7 +287,7 @@ public class CodeGeneratorTest
             new()
             {
                 EntityId = "light.light1",
-                AttributesJson = new 
+                AttributesJson = new
                 {
                     brightness = 30,
                     start_date = new DateTime(2010, 12, 23, 23, 12, 00),
@@ -299,7 +299,7 @@ public class CodeGeneratorTest
                 }.AsJsonElement()
             },
         };
-            
+
         var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings with { UseAttributeBaseClasses = true }, entityStates, Array.Empty<HassServiceDomain>()).ToString();
         generatedCode.Should().NotContain("Brightness", because: "It is in the base class");
 
@@ -325,5 +325,5 @@ public class CodeGeneratorTest
                     """;
         CodeGenTestHelper.AssertCodeCompiles(generatedCode, appCode);
     }
-    
+
 }

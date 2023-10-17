@@ -142,7 +142,7 @@ public class AppModelTests
         var provider = Mock.Of<IServiceProvider>();
         var logger = Mock.Of<ILogger<Application>>();
         var factory = Mock.Of<IAppFactory>();
-        
+
         // ACT
         var app = new Application(provider, logger, factory);
 
@@ -311,7 +311,7 @@ public class AppModelTests
         Assert.NotNull(application.ApplicationContext?.Instance);
     }
 
-    internal class FakeAppStateManager : IAppStateManager
+    internal sealed class FakeAppStateManager : IAppStateManager
     {
         public ApplicationState? State { get; set; }
 

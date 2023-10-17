@@ -42,3 +42,13 @@ dotnet_diagnostic.CA1002.severity = none
 dotnet_diagnostic.CA1707.severity = none
 # Avoid uninstantiated internal classes
 dotnet_diagnostic.CA1812.severity = none
+#Identifiers should not have incorrect suffix
+dotnet_diagnostic.CA1711.severity = none
+#Pass System.Uri objects instead of strings
+dotnet_diagnostic.CA2234.severity = none
+#Nested types should not be visible
+dotnet_diagnostic.CA1034.severity = none
+#Static holder types should be Static or NotInheritable
+dotnet_diagnostic.CA1052.severity = none
+#Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = none

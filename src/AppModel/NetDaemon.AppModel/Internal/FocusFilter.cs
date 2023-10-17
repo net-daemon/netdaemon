@@ -32,7 +32,7 @@ class FocusFilter
             return allApps;
         }
 
-        _logger.LogWarning($"Found {focusApps.Count} [Focus] apps, skipping all other apps");
+        _logger.LogWarning("Found {AppCount} [Focus] apps, skipping all other apps", focusApps.Count);
         return focusApps;
     }
 }

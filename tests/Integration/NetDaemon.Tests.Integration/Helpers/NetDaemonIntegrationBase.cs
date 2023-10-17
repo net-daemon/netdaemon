@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
     {
         _homeAssistantLifetime = homeAssistantLifetime;
         // Some test frameworks like xUnit use a custom synchronization context that causes deadlocks when blocking on async code (such as IHost.Start) especially on machines with less resources.
-        _netDaemon = RunWithoutSynchronizationContext(StartNetDaemon); 
+        _netDaemon = RunWithoutSynchronizationContext(StartNetDaemon);
         _scope = _netDaemon.Services.CreateAsyncScope();
     }
 
@@ -37,7 +38,7 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    { "HomeAssistant:Port", _homeAssistantLifetime.Port.ToString() },
+                    { "HomeAssistant:Port", _homeAssistantLifetime.Port.ToString(CultureInfo.InvariantCulture) },
                     { "HomeAssistant:Token", _homeAssistantLifetime.AccessToken }
                 });
             })
@@ -50,14 +51,14 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
         netDeamon.Start();
         return netDeamon;
     }
-    
+
     /// <summary>
     /// Runs the specified function without a synchronization context and restores the synchronization context afterwards.
     /// </summary>
     /// <param name="func"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    private T RunWithoutSynchronizationContext<T>(Func<T> func)
+    private static T RunWithoutSynchronizationContext<T>(Func<T> func)
     {
         // Capture the current synchronization context so we can restore it later.
         // We don't have to be afraid of other threads here as this is a ThreadStatic.
@@ -77,5 +78,6 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
     {
         await _scope.DisposeAsync();
         _netDaemon.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

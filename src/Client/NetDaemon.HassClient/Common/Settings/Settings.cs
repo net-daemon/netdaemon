@@ -32,7 +32,7 @@ public class HomeAssistantSettings
     ///     We do not recommend to use this to bypass certificate errors.
     ///     Use other means to handle it by using valid certificates
     /// </remarks>
-    public bool InsecureBypassCertificateErrors { get; set; } = false;
+    public bool InsecureBypassCertificateErrors { get; set; }
 
     /// <summary>
     ///     Path to websocket API, this can be different for add-on and core

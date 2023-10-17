@@ -20,7 +20,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly AsyncLazy<IObservable<HassEvent>> _lazyAllEventsObservable;
 
     #endregion
-    
+
     /// <summary>
     ///     Default constructor
     /// </summary>
@@ -43,7 +43,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         // to all events. If people wants that they can provide a "*" type and get the same thing
         _lazyAllEventsObservable = new AsyncLazy<IObservable<HassEvent>>(async Task<IObservable<HassEvent>>() =>
             await SubscribeToHomeAssistantEventsInternalAsync(null, _internalCancelSource.Token));
-            
+
         if (_transportPipeline.WebSocketState != WebSocketState.Open)
             throw new ApplicationException(
                 $"Expected WebSocket state 'Open' got '{_transportPipeline.WebSocketState}'");
@@ -76,10 +76,10 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         // The id if the message we used to subscribe should be used as the filter for the event messages
         var observableResult = _hassMessageSubject.Where(n => n.Type == "event" && n.Id == result?.Id)
             .Select(n => n.Event!);
-        
+
         return observableResult;
     }
-    
+
     public async Task WaitForConnectionToCloseAsync(CancellationToken cancelToken)
     {
         var combinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
@@ -200,7 +200,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             _messageIdSemaphore.Release();
         }
     }
-    
+
     private async Task HandleNewMessages()
     {
         try

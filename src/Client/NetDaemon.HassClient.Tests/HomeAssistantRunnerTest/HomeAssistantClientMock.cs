@@ -2,7 +2,7 @@ using NetDaemon.HassClient.Tests.HomeAssistantClientTest;
 
 namespace NNetDaemon.HassClient.Tests.HomeAssistantRunnerTest;
 
-internal class HomeAssistantClientMock : Mock<IHomeAssistantClient>
+internal sealed class HomeAssistantClientMock : Mock<IHomeAssistantClient>
 {
     private readonly HomeAssistantConnectionMock _haConnectionMock = new();
 

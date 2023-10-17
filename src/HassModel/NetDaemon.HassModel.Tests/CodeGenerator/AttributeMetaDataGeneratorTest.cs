@@ -12,21 +12,21 @@ public class AttributeMetaDataGeneratorTest
     [Fact]
     public void SameAttributeDifferentTypes_obect()
     {
-        var entityStates = new HassState[] { 
-            new() { AttributesJson = new { size = "Large", }.AsJsonElement() },           
-            new() { AttributesJson = new { size = 2, }.AsJsonElement() },           
+        var entityStates = new HassState[] {
+            new() { AttributesJson = new { size = "Large", }.AsJsonElement() },
+            new() { AttributesJson = new { size = 2, }.AsJsonElement() },
         };
 
         var metadata = AttributeMetaDataGenerator.GetMetaDataFromEntityStates(entityStates);
 
         metadata.Should().BeEquivalentTo(new[] { new EntityAttributeMetaData("size", "Size", typeof(object)) });
     }
-    
+
     [Fact]
     public void SameAttributeDifferentArrayTypes_obect()
     {
-        var entityStates = new HassState[] { 
-            new() { AttributesJson = new { values = new []{new []{ 1,2,3 }, new []{ 2,3,4 } }, }.AsJsonElement() },           
+        var entityStates = new HassState[] {
+            new() { AttributesJson = new { values = new []{new []{ 1,2,3 }, new []{ 2,3,4 } }, }.AsJsonElement() },
         };
 
         var metadata = AttributeMetaDataGenerator.GetMetaDataFromEntityStates(entityStates).ToArray();
@@ -39,7 +39,7 @@ public class AttributeMetaDataGeneratorTest
     }
 
 
-    private EntityAttributeMetaData? SerializeAndDeserialize(EntityAttributeMetaData input)
+    private static EntityAttributeMetaData? SerializeAndDeserialize(EntityAttributeMetaData input)
     {
         var serializeOptions = new JsonSerializerOptions()
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Text.Json;
@@ -73,7 +74,7 @@ public class CalendarTests : NetDaemonIntegrationBase
     /// <remarks>
     ///     This test tests the CallServiceWithResponse using the Calendar integration.
     ///     The integration is setup part of setting up the HomeAssistantTestContainer
-    /// 
+    ///
     ///     The test uses HA events to start test and return result
     ///     since app instances are not available in tests
     ///     1. Create a calendar item to test
@@ -92,7 +93,7 @@ public class CalendarTests : NetDaemonIntegrationBase
         // Then we create a task that waits for the result using a custom event
         var waitTask = haContext.Events.Where(e => e.EventType == "custom_calendar_events").FirstAsync().ToTask();
         var act = async () => await waitTask.ConfigureAwait(false);
-        
+
         // Trigger the start of the test
         haContext.SendEvent("start_test_custom_calendar_events");
         var result = (await act.Should().CompleteWithinAsync(5000.Milliseconds())).Subject;
@@ -103,7 +104,7 @@ public class CalendarTests : NetDaemonIntegrationBase
         events!.Events.Should().NotBeNull();
         events!.Events.Count.Should().Be(1);
         events!.Events[0].Summary.Should().Be("Test");
-        
+
         async Task AddTestCalendarItem()
         {
             await haConnection.SendCommandAndReturnResponseRawAsync(new AddCalendarEventCommand
@@ -114,8 +115,8 @@ public class CalendarTests : NetDaemonIntegrationBase
                 {
                     Summary = "Test",
                     Description = "A test calendar event",
-                    Start = DateTime.Parse("2023-07-27T22:00:00"),
-                    End = DateTime.Parse("2023-07-27T23:00:00")
+                    Start = DateTime.Parse("2023-07-27T22:00:00", CultureInfo.InvariantCulture),
+                    End = DateTime.Parse("2023-07-27T23:00:00", CultureInfo.InvariantCulture)
                 }
             }, CancellationToken.None);
         }

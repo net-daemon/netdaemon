@@ -12,7 +12,7 @@ public class MetaDataMergerTest
             {
                 new EntityMetaData("light.living", "Livingroom spots", "Living"),
                 new EntityMetaData("light.kitchen", "Kitchen light", "Kitchen")
-            }, 
+            },
             new []
             {
                 new EntityAttributeMetaData("brightness", "Brightness", typeof(double))
@@ -22,7 +22,7 @@ public class MetaDataMergerTest
             {
                 new EntityMetaData("light.bedroom", "nightlight", "Bedroom"),
                 new EntityMetaData("light.kitchen", "Kitchen light new name", "Kitchen")
-            }, 
+            },
             new []
             {
                 new EntityAttributeMetaData("off_brightness", "OffBrightness", typeof(double))
@@ -43,7 +43,7 @@ public class MetaDataMergerTest
 
         result.Should().BeEquivalentTo(expected);
     }
-    
+
     [Fact]
     public void DeduplictateCSharpName()
     {
@@ -73,7 +73,7 @@ public class MetaDataMergerTest
         result.Should().BeEquivalentTo(expected);
     }
 
-    
+
     [Fact]
     public void MergeTypes()
     {
@@ -99,14 +99,14 @@ public class MetaDataMergerTest
 
         var result = TestAttributeMerge(previous, current, true);
 
-        var expected = new EntityAttributeMetaData [0];
+        var expected = Array.Empty<EntityAttributeMetaData>();
 
         result.Should().BeEquivalentTo(expected);
     }
-    
-    private IReadOnlyCollection<EntityAttributeMetaData> TestAttributeMerge(IReadOnlyList<EntityAttributeMetaData> previousAttr, IReadOnlyList<EntityAttributeMetaData> currentAttr, bool useBaseType = false)
+
+    private static IReadOnlyCollection<EntityAttributeMetaData> TestAttributeMerge(IReadOnlyList<EntityAttributeMetaData> previousAttr, IReadOnlyList<EntityAttributeMetaData> currentAttr, bool useBaseType = false)
     {
-        var previous = new EntitiesMetaData{Domains = new []{new EntityDomainMetadata("light", false, Array.Empty<EntityMetaData>(), 
+        var previous = new EntitiesMetaData{Domains = new []{new EntityDomainMetadata("light", false, Array.Empty<EntityMetaData>(),
             previousAttr)}};
 
         var current =  new EntitiesMetaData{Domains =new []{new EntityDomainMetadata("light", false, Array.Empty<EntityMetaData>(),

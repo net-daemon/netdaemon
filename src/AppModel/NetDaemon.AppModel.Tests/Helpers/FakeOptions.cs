@@ -1,6 +1,6 @@
 namespace NetDaemon.AppModel.Tests.Helpers;
 
-internal class FakeOptions : IOptions<AppConfigurationLocationSetting>
+internal sealed class FakeOptions : IOptions<AppConfigurationLocationSetting>
 {
     public FakeOptions(string path)
     {

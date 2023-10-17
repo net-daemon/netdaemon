@@ -15,7 +15,7 @@ internal static class EntityIdParser
     public static (string domain, string identifier) Extract(string entityId)
     {
         if (string.IsNullOrWhiteSpace(entityId))
-            throw new ArgumentException(nameof(entityId));
+            throw new ArgumentException($"{nameof(entityId)} cannot be null or whitespace",nameof(entityId));
 
         var components = entityId.Split('.', 2);
         if (components.Length != 2 ||

@@ -60,7 +60,7 @@ internal class MessageSender : IMessageSender
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message, e);
+            _logger.LogError(e, "Failed to publish MQTT message to to {Topic}: {Message}", message.Topic, message.ConvertPayloadToString());
             throw new MqttPublishException(e.Message, e);
         }
     }

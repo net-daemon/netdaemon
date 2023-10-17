@@ -171,7 +171,7 @@ public class ConfigTests
 
 #region -- Test classes --
 
-internal class InjectMeWithConfigPlease
+internal sealed class InjectMeWithConfigPlease
 {
     public InjectMeWithConfigPlease(IAppConfig<TestSettings> settings)
     {
@@ -181,7 +181,7 @@ internal class InjectMeWithConfigPlease
     public IAppConfig<TestSettings> Settings { get; }
 }
 
-internal class TestSettings
+internal sealed class TestSettings
 {
     public string AString { get; set; } = string.Empty;
 }

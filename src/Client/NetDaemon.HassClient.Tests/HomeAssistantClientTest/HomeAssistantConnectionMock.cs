@@ -1,6 +1,6 @@
 namespace NetDaemon.HassClient.Tests.HomeAssistantClientTest;
 
-internal class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
+internal sealed class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
 {
     private readonly Channel<HassConfig> _responseConfigMessageChannel = Channel.CreateBounded<HassConfig>(10);
 

@@ -152,7 +152,7 @@ internal class MqttEntityManager : IMqttEntityManager
         return EntityCreationPayloadHelper.Merge(concreteOptions, additionalConfig);
     }
 
-    private bool IsAvailabilityTopicRequired(EntityCreationOptions? options)
+    private static bool IsAvailabilityTopicRequired(EntityCreationOptions? options)
     {
         return options != null && (!string.IsNullOrWhiteSpace(options.PayloadAvailable) ||
                                    !string.IsNullOrWhiteSpace(options.PayloadNotAvailable));
