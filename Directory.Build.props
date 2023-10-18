@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
+  </PropertyGroup>
+</Project>
