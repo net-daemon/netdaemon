@@ -33,7 +33,7 @@ public class HomeAssistantApiManagerExtensionTests
             n => n.PostApiCallAsync<HassState>("states/entityId", It.IsAny<CancellationToken>(), It.IsAny<object?>()),
             Times.Once);
 
-        var argData = apiManagerMock.Invocations.First().Arguments[2]!;
+        var argData = apiManagerMock.Invocations[0].Arguments[2]!;
         argData.GetType().GetProperty("state")!.GetValue(argData, null)!.Should()
             .Be("state");
         var attributes = argData.GetType().GetProperty("attributes")!.GetValue(argData, null)!;

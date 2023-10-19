@@ -58,7 +58,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .ConfigureAwait(false);
         result.Should().NotBeNull();
     }
-    
+
     [Fact]
     public async Task TestGetDevicesShouldHaveCorrectCounts()
     {
@@ -196,7 +196,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .Should()
             .BeEquivalentTo("state_changed");
 
-        // We test the state changed 
+        // We test the state changed
         var changedEvent = haEvent.ToStateChangedEvent();
         changedEvent!.EntityId
             .Should()
@@ -237,7 +237,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .Should()
             .BeEquivalentTo("state_changed");
 
-        // We test the state changed 
+        // We test the state changed
         var changedEvent = haEvent.ToStateChangedEvent();
         changedEvent!.EntityId
             .Should()
@@ -308,7 +308,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .Should()
             .BeEquivalentTo("state_changed");
 
-        // We test the state changed 
+        // We test the state changed
         var firstChangedEvent = firstHaEvent.ToStateChangedEvent();
         var secondChangedEvent = secondHaEvent.ToStateChangedEvent();
 
@@ -397,7 +397,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         states!.Should().HaveCount(19);
     }
 
-    private record AttributeTest
+    private sealed record AttributeTest
     {
         [JsonPropertyName("battery_level")] public int BatteryLevel { get; init; }
     }

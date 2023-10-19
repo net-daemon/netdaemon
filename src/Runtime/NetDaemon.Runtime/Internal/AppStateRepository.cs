@@ -62,7 +62,7 @@ internal class AppStateRepository : IAppStateRepository
             .ToHashSet();
 
         var notUsedHelperIds = helpers.Where(n =>
-            !entityIds.Contains($"input_boolean.{n.Name}") && (n.Id.StartsWith("netdaemon_")||n.Id.StartsWith("dev_netdaemon_")));
+            !entityIds.Contains($"input_boolean.{n.Name}") && (n.Id.StartsWith("netdaemon_", StringComparison.Ordinal)||n.Id.StartsWith("dev_netdaemon_", StringComparison.Ordinal)));
 
         foreach (var helper in notUsedHelperIds)
             await haConnection.DeleteInputBooleanHelperAsync(helper.Id, token).ConfigureAwait(false);

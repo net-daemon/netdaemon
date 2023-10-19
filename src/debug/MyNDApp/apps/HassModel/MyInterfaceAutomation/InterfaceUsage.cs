@@ -16,10 +16,10 @@ public class InterfaceUsage
 {
     public InterfaceUsage(IHaContext haContext, ILogger<InterfaceUsage> logger, IScheduler scheduler)
     {
-        var entities = new Entities(haContext);
+        var entities = new TestEntities(haContext);
         IEnumerable<ILightEntityCore> lights = new[] { entities.Light.Zolder, entities.Light.Woonkamer };
-        
-        
+
+
         // pass generated types to the library using the commonly known interfaces
         var myLibraryClass = new MyLibraryClass(entities.Light.Zolder, lights);
 

@@ -12,10 +12,10 @@ public class HomeAssistantLifetime : IAsyncLifetime
         .WithResourceMapping(new DirectoryInfo("./HA/config"), "/config")
         .WithVersion(Environment.GetEnvironmentVariable("HomeAssistantVersion") ?? HomeAssistantContainerBuilder.DefaultVersion)
         .Build();
-    
-    public string? AccessToken;
+
+    public string? AccessToken { get; set; }
     public ushort Port => _homeassistant.Port;
-    
+
     public async Task InitializeAsync()
     {
         await _homeassistant.StartAsync();

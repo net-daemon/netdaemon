@@ -167,14 +167,14 @@ public class ConfigurationBinderTests
     {
     }
 
-    internal class ClassWithoutDefaultConstructorShouldNotSerialize
+    internal sealed class ClassWithoutDefaultConstructorShouldNotSerialize
     {
         private ClassWithoutDefaultConstructorShouldNotSerialize()
         {
         }
     }
 
-    internal class ClassThatThrowsOnConstructor
+    internal sealed class ClassThatThrowsOnConstructor
     {
         public ClassThatThrowsOnConstructor()
         {

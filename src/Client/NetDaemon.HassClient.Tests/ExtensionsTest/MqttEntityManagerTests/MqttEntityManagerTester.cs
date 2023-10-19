@@ -255,14 +255,14 @@ public class MqttEntityManagerTester
     }
 
 
-    private Dictionary<string, object>? PayloadToDictionary(byte[] payload)
+    private static Dictionary<string, object>? PayloadToDictionary(byte[] payload)
     {
         return JsonSerializer.Deserialize<Dictionary<string, object>>(
             Encoding.Default.GetString(payload)
         );
     }
 
-    private IOptions<MqttConfiguration> GetOptions()
+    private static IOptions<MqttConfiguration> GetOptions()
     {
         var options = new Mock<IOptions<MqttConfiguration>>();
 

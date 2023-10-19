@@ -11,4 +11,15 @@ public class HomeAssistantApiCallException : ApplicationException
         Code = code;
     }
 
+    public HomeAssistantApiCallException()
+    {
+    }
+
+    public HomeAssistantApiCallException(string message) : base(message)
+    {
+    }
+
+    public HomeAssistantApiCallException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

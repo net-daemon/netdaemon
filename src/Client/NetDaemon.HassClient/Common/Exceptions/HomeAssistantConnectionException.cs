@@ -12,4 +12,16 @@ public class HomeAssistantConnectionException : Exception
     }
 
     public DisconnectReason Reason { get; set; }
+
+    public HomeAssistantConnectionException()
+    {
+    }
+
+    public HomeAssistantConnectionException(string message) : base(message)
+    {
+    }
+
+    public HomeAssistantConnectionException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

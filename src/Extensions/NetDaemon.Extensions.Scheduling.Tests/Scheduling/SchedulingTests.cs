@@ -213,7 +213,7 @@ public class SchedulerExtensionTest
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
-        // sets the date to a specific time 
+        // sets the date to a specific time
         var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
         testScheduler.AdvanceTo(dueTime.Ticks);
 
@@ -227,7 +227,7 @@ public class SchedulerExtensionTest
     public void SchedulePeriodicStopsAfterDisposeOfScheduler()
     {
         var startDate = new DateTimeOffset(2022, 01, 12, 13, 8, 2, TimeSpan.FromHours(5));
-        int called = 0; 
+        int called = 0;
         var inner = new TestScheduler();
         inner.AdvanceTo(startDate.Ticks);
 
@@ -238,18 +238,18 @@ public class SchedulerExtensionTest
 
         inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         called.Should().Be(2);
-        
+
         disposable.Dispose();
         inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         called.Should().Be(2);
-    }    
+    }
 
-    
+
     [Fact]
     public void SchedulePeriodicStopsAfterDisposeOfSubscriber()
     {
         var startDate = new DateTimeOffset(2022, 01, 12, 13, 8, 2, TimeSpan.FromHours(5));
-        int called = 0; 
+        int called = 0;
         var inner = new TestScheduler();
         inner.AdvanceTo(startDate.Ticks);
 
@@ -260,9 +260,9 @@ public class SchedulerExtensionTest
 
         inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         called.Should().Be(2);
-        
+
         sub.Dispose();
         inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         called.Should().Be(2);
-    }    
+    }
 }

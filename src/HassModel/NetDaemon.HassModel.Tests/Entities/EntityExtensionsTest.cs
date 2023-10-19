@@ -29,13 +29,13 @@ public class EntityExtensionsTest
         GetEntityWitState(state).IsOff().Should().Be(isOn);
         GetEntityWitState(state).EntityState.IsOff().Should().Be(isOn);
     }
-        
-    private Entity GetEntityWitState(string? state)
+
+    private static Entity GetEntityWitState(string? state)
     {
         var haContextMock = new Mock<IHaContext>();
 
         var entityState = new EntityState { State = state };
-            
+
         haContextMock.Setup(t => t.GetState("domain.testEntity")).Returns(entityState);
         return new Entity(haContextMock.Object, "domain.testEntity");
     }

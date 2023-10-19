@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 
 namespace NetDaemon.HassClient.Tests.Integration;
 
@@ -9,7 +10,7 @@ namespace NetDaemon.HassClient.Tests.Integration;
 public class HomeAssistantMock : IAsyncDisposable
 {
     public const int RecieiveBufferSize = 1024 * 4;
-    public readonly IHost HomeAssistantHost;
+    public IHost HomeAssistantHost { get; }
 
     public HomeAssistantMock()
     {
@@ -19,7 +20,7 @@ public class HomeAssistantMock : IAsyncDisposable
         var addressFeature = server.Features.Get<IServerAddressesFeature>() ?? throw new NullReferenceException();
         foreach (var address in addressFeature.Addresses)
         {
-            ServerPort = int.Parse(address.Split(':').Last());
+            ServerPort = int.Parse(address.Split(':').Last(), CultureInfo.InvariantCulture);
             break;
         }
     }
@@ -156,7 +157,7 @@ public class HassMockStartup : IHostedService
             await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Integration", "Testdata",
                 responseMessageFileName)).ConfigureAwait(false);
         // All testdata has id=3 so easy to replace it
-        msg = msg.Replace("\"id\": 3", $"\"id\": {id}");
+        msg = msg.Replace("\"id\": 3", $"\"id\": {id}", StringComparison.Ordinal);
         var bytes = Encoding.UTF8.GetBytes(msg);
 
         await websocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length),
@@ -240,7 +241,7 @@ public class HassMockStartup : IHostedService
                             "result_msg.json",
                             hassMessage.Id,
                             webSocket).ConfigureAwait(false);
-                        
+
                         _eventSubscriptions.Add(hassMessage.Id);
 
                         // We wait so the subscription is added before we send the event
@@ -307,7 +308,7 @@ public class HassMockStartup : IHostedService
                         break;
                     case "fake_service_event":
                         // Here we fake the server sending a service
-                        // event by returning success and then 
+                        // event by returning success and then
                         // return a service event
                         await ReplaceIdInResponseAndSendMsg(
                             "result_msg.json",
@@ -359,7 +360,7 @@ public class HassMockStartup : IHostedService
             }
             catch
             {
-                // Just fail silently                
+                // Just fail silently
             }
         }
     }
@@ -403,7 +404,7 @@ public class HassMockStartup : IHostedService
                 }
                 case WebSocketState.Open:
                 {
-                    // Do full close 
+                    // Do full close
                     await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token)
                         .ConfigureAwait(false);
                     if (ws.State != WebSocketState.Closed)
@@ -418,13 +419,13 @@ public class HassMockStartup : IHostedService
         }
     }
 
-    private class AuthMessage
+    private sealed class AuthMessage
     {
         [JsonPropertyName("type")] public string Type { get; set; } = string.Empty;
         [JsonPropertyName("access_token")] public string AccessToken { get; set; } = string.Empty;
     }
 
-    private class SendCommandMessage
+    private sealed class SendCommandMessage
     {
         [JsonPropertyName("type")] public string Type { get; set; } = string.Empty;
         [JsonPropertyName("id")] public int Id { get; set; } = 0;

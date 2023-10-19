@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
@@ -13,7 +14,6 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </summary>
 internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
-    private const int RetryMaximumSeconds = 15;
     private readonly ILogger<AssuredMqttConnection> _logger;
     private readonly Task _connectionTask;
     private IManagedMqttClient? _mqttClient;
@@ -50,7 +50,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
-        _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}", 
+        _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
 
         var clientOptions = new ManagedMqttClientOptionsBuilder()
@@ -64,15 +64,15 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
         _mqttClient.ConnectedAsync += MqttClientOnConnectedAsync;
         _mqttClient.DisconnectedAsync += MqttClientOnDisconnectedAsync;
-        
+
         await _mqttClient.StartAsync(clientOptions);
-        
+
         _logger.LogTrace("MQTT client is ready");
     }
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
-        _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));   
+        _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));
         return Task.CompletedTask;
     }
 
@@ -86,7 +86,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine($"{arg.Exception?.Message} ({arg.Reason})");     // Note: arg.ReasonString is always null
+        sb.AppendLine(CultureInfo.InvariantCulture, $"{arg.Exception?.Message} ({arg.Reason})");     // Note: arg.ReasonString is always null
         var ex = arg.Exception?.InnerException;
         while (ex != null)
         {

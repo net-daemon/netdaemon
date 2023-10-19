@@ -31,7 +31,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
         CancellationToken cancelToken)
     {
         var websocketUri = GetHomeAssistantWebSocketUri(host, port, ssl, websocketPath);
-        _logger.LogDebug("Connecting to Home Assistant websocket on {path}", websocketUri);
+        _logger.LogDebug("Connecting to Home Assistant websocket on {Path}", websocketUri);
         var ws = _webSocketClientFactory.New();
 
         try
@@ -41,7 +41,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
             var transportPipeline = _transportPipelineFactory.New(ws);
 
             var hassVersionInfo = await HandleAuthorizationSequenceAndReturnHassVersionInfo(token, transportPipeline, cancelToken).ConfigureAwait(false);
-            
+
             if (VersionHelper.ReplaceBeta(hassVersionInfo) >= new Version(2022, 9))
             {
                 await AddCoalesceSupport(transportPipeline, cancelToken).ConfigureAwait(false);
@@ -65,17 +65,17 @@ internal class HomeAssistantClient : IHomeAssistantClient
         }
     }
 
-    private async Task AddCoalesceSupport(IWebSocketClientTransportPipeline transportPipeline, CancellationToken cancelToken)
+    private static async Task AddCoalesceSupport(IWebSocketClientTransportPipeline transportPipeline, CancellationToken cancelToken)
     {
         var supportedFeaturesCommandMsg = new SupportedFeaturesCommand
             {Id = 1, Features = new Features() { CoalesceMessages = 1 }};
-        
+
         // Send the supported features command
         await transportPipeline.SendMessageAsync(
             supportedFeaturesCommandMsg,
             cancelToken
         ).ConfigureAwait(false);
-        
+
         // Get the result from command
         var resultMsg = await transportPipeline
             .GetNextMessagesAsync<HassMessage>(cancelToken).ConfigureAwait(false);
@@ -129,7 +129,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
         switch (authResultMessage.Single().Type)
         {
             case "auth_ok":
-                
+
                 return authResultMessage[0].HaVersion;
 
             case "auth_invalid":

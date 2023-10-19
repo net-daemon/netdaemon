@@ -35,7 +35,7 @@ internal class AppModelContext : IAppModelContext
             _applications.Add(app);
         }
 
-        _logger.LogInformation("Finished loading applications: {state}",
+        _logger.LogInformation("Finished loading applications: {State}",
             string.Join(", ", Enum.GetValues<ApplicationState>().Select(possibleState => $"{possibleState} {_applications.Count(app => app.State == possibleState)}")));
     }
 
@@ -48,7 +48,7 @@ internal class AppModelContext : IAppModelContext
         {
             await appInstance.DisposeAsync().ConfigureAwait(false);
         }
-        
+
         _applications.Clear();
     }
 }

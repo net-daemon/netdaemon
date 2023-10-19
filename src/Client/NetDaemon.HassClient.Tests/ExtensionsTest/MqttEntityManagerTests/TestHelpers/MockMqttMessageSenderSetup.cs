@@ -10,7 +10,7 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestH
 /// These are helpers that set up mock mqtt factories and connection, and allow a message to be sent through
 /// the mock client and capture the message that would have been published
 /// </summary>
-internal class MockMqttMessageSenderSetup
+internal sealed class MockMqttMessageSenderSetup
 {
     public AssuredMqttConnection Connection { get; private set; } = null!;
     public Mock<IManagedMqttClient> MqttClient { get; private set; } = null!;
@@ -56,11 +56,11 @@ internal class MockMqttMessageSenderSetup
         Connection = new AssuredMqttConnection(new Mock<ILogger<AssuredMqttConnection>>().Object, MqttFactory,
             options.Object);
     }
-    
+
     private void SetupMessageSender()
     {
         var logger = new Mock<ILogger<MessageSender>>().Object;
         MessageSender = new MessageSender(logger, Connection);
-        
+
     }
 }

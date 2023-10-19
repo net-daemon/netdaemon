@@ -2,7 +2,7 @@ using System.Reactive.Linq;
 
 namespace NetDaemon.HassClient.Debug;
 
-internal class DebugService : BackgroundService
+internal sealed class DebugService : BackgroundService
 {
     private const int TimeoutInSeconds = 5;
 
@@ -53,14 +53,14 @@ internal class DebugService : BackgroundService
         _logger.LogInformation("HassClient connected and processing events");
         var hassEvents = await connection.SubscribeToHomeAssistantEventsAsync(null, _cancelToken ?? CancellationToken.None).ConfigureAwait(false);
         hassEvents.Subscribe(HandleEvent);
-      
+
     }
 
     private void OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
         _logger.LogInformation("HassClient disconnected cause of {Reason}, connect retry in {Timeout} seconds",
             TimeoutInSeconds, reason);
-        // Here you would typically cancel and dispose any functions  
+        // Here you would typically cancel and dispose any functions
         // using the connection
         if (_connection is not null) _connection = null;
     }

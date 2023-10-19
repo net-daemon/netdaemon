@@ -38,25 +38,25 @@ public class BasicTests : NetDaemonIntegrationBase
     {
         var haContext = Services.GetRequiredService<IHaContext>();
         var optionToSet = GetDifferentOptionThanCurrentlySelected(haContext);
-        
+
         var waitTask = haContext.StateChanges()
             .Where(n => n.Entity.EntityId == "input_text.test_result")
             .FirstAsync()
             .ToTask();
-        
+
         haContext.CallService(
             "input_select",
             "select_option",
             ServiceTarget.FromEntities("input_select.who_cooks"),
             new {option = optionToSet});
-        
+
         var act = async () => await waitTask.ConfigureAwait(false);
-        
+
         var result = (await act.Should().CompleteWithinAsync(5000.Milliseconds())).Subject;
         result.New!.State.Should().Be(optionToSet);
     }
 
-    private string GetDifferentOptionThanCurrentlySelected(IHaContext haContext)
+    private static string GetDifferentOptionThanCurrentlySelected(IHaContext haContext)
     {
         var currentState = haContext.GetState("input_select.who_cooks")?.State
                            ?? throw new InvalidOperationException();

@@ -11,18 +11,18 @@ using NetDaemon.HassModel.CodeGenerator.Model;
 
 namespace NetDaemon.HassModel.Tests.CodeGenerator;
 
-internal class CodeGenTestHelper
+internal sealed class CodeGenTestHelper
 {
     public static CompilationUnitSyntax GenerateCompilationUnit(
-        CodeGenerationSettings codeGenerationSettings, 
-        IReadOnlyCollection<HassState> states, 
+        CodeGenerationSettings codeGenerationSettings,
+        IReadOnlyCollection<HassState> states,
         IReadOnlyCollection<HassServiceDomain> services)
     {
         var metaData = EntityMetaDataGenerator.GetEntityDomainMetaData(states);
         metaData = EntityMetaDataMerger.Merge(codeGenerationSettings, new EntitiesMetaData(), metaData);
         var generatedTypes = Generator.GenerateTypes(metaData.Domains, services).ToArray();
         return Generator.BuildCompilationUnit(codeGenerationSettings.Namespace, generatedTypes);
-        
+
     }
 
     public static void AssertCodeCompiles(string generated,  string appCode)
@@ -47,7 +47,7 @@ internal class CodeGenTestHelper
 
         // Ignore obsolete warnings
         if (warningsOrErrors.All(n => n.Id == "CS0618")) return;
-        
+
         var msg = new StringBuilder("Compile of generated code failed.\r\n");
         foreach (var diagnostic in warningsOrErrors)
         {
@@ -56,13 +56,13 @@ internal class CodeGenTestHelper
 
         msg.AppendLine();
         msg.AppendLine("generated.cs");
-        
-        // output the generated code including line numbers to help debugging 
+
+        // output the generated code including line numbers to help debugging
         var linesWithNumbers = generated.Split(new [] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
                 .Select((l, i) => $"{i+1,5}: {l}");
-        
+
         msg.AppendJoin(Environment.NewLine, linesWithNumbers);
-            
+
         Assert.Fail(msg.ToString());
     }
 }

@@ -109,7 +109,7 @@ public class WebSocketTransportPipelineTests
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             await DefaultPipeline.GetNextMessagesAsync<HassMessage>(CancellationToken.None).ConfigureAwait(false));
 
-        // CloseOutput should always be called when 
+        // CloseOutput should always be called when
         // a close frame are sent from the remote websocket
         WsMock.Verify(n =>
             n.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));

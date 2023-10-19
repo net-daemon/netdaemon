@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic.CompilerServices;
@@ -66,7 +67,7 @@ internal class ConfigurationBinding : IConfigurationBinding
             BindProperty(property, instance, configuration);
     }
 
-    private void ThrowIfReadonlyCollection(object? instance)
+    private static void ThrowIfReadonlyCollection(object? instance)
     {
         var typ = instance?.GetType()!;
 
@@ -265,7 +266,7 @@ internal class ConfigurationBinding : IConfigurationBinding
             }
             else if (keyTypeIsEnum)
             {
-                var key = Convert.ToInt32(Enum.Parse(keyType, child.Key));
+                var key = Convert.ToInt32(Enum.Parse(keyType, child.Key), CultureInfo.InvariantCulture);
                 setter.SetValue(dictionary, item, new object[] { key });
             }
         }
