@@ -1,19 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <PackageId>JoySoftware.NetDaemon.Client</PackageId>
-        <Version>21.47.1</Version>
+        <PackageId>NetDaemon.Client</PackageId>
+        <Version>23.42.0</Version>
         <Authors>helto4real</Authors>
-        <Company>JoySoftware</Company>
+        <Company>NetDaemon</Company>
         <description>A .Net client for Home Assistant</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
             A client for manage the free open source home automations software Home Assisstant written in .Net.
-            Please see https://github.com/helto4real/net-hassclient/blob/main/README.md for docs.
         </PackageDescription>
         <PackageReleaseNotes>This package is used internally by NetDaemon and not intended to be used directly. That means things could change if needed without prior notice</PackageReleaseNotes>
         <tags>Home Assistant</tags>
@@ -21,7 +20,7 @@
     </PropertyGroup>
 
     <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-    
+
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<NoWarn>1701;1702;IL2121;CS1591</NoWarn>
 	</PropertyGroup>

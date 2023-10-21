@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon.Extensions.Scheduler</RootNamespace>
     <PackageId>JoySoftware.NetDaemon.Extensions.Scheduling</PackageId>
-    <Version>21.47.1</Version>
+    <Version>23.42.0</Version>
     <Authors>helto4real</Authors>
     <Company>JoySoftware</Company>
     <description>Scheduling extensions for NetDaemon</description>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-  
+
   <ItemGroup>
     <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />

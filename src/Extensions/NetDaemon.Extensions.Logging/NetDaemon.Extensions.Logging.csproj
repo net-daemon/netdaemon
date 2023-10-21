@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <LangVersion>10.0</LangVersion>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>12.0</LangVersion>
         <Nullable>enable</Nullable>
         <RootNamespace>NetDaemon</RootNamespace>
-        <PackageId>JoySoftware.NetDaemon.Extensions.Logging</PackageId>
-        <Version>21.47.1</Version>
+        <PackageId>NetDaemon.Extensions.Logging</PackageId>
+        <Version>23.42.0</Version>
         <Authors>helto4real</Authors>
-        <Company>JoySoftware</Company>
+        <Company>NetDaemon</Company>
         <description>Scheduling extensions for NetDaemon</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-    
+
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />

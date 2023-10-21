@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>NetDaemon.HassModel.Integration</RootNamespace>
-        <PackageId>JoySoftware.NetDaemon.HassModel.Integration</PackageId>
-        <Version>21.47.1</Version>
+        <PackageId>NetDaemon.HassModel.Integration</PackageId>
+        <Version>23.42.0</Version>
         <Authors>frankbakkernl, helto4real</Authors>
         <Company>JoySoftware</Company>
         <description>A .net core appdaemon for Home Assistant</description>
@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-    
+
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
         <PackageReference Include="System.Reactive" Version="6.0.0" />
@@ -50,5 +50,5 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DocumentationFile>bin\Release\NetDaemon.HassModel.Integration.xml</DocumentationFile>
     </PropertyGroup>
-    
+
 </Project>
