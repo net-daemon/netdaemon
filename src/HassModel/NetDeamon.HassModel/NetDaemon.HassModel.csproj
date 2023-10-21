@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <LangVersion>11</LangVersion>
+        <LangVersion>12</LangVersion>
         <RootNamespace>NetDaemon.HassModel</RootNamespace>
-        <PackageId>JoySoftware.NetDaemon.HassModel</PackageId>
-        <Version>21.47.1</Version>
+        <PackageId>NetDaemon.HassModel</PackageId>
+        <Version>23.42.0</Version>
         <Authors>frankbakkernl, helto4real</Authors>
-        <Company>JoySoftware</Company>
+        <Company>NetDaemon</Company>
         <description>A .net core appdaemon for Home Assistant</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-    
+
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
@@ -30,10 +30,10 @@
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
-        </AssemblyAttribute>        
+        </AssemblyAttribute>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>NetDaemon.Runtime.Tests</_Parameter1>
-        </AssemblyAttribute>        
+        </AssemblyAttribute>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
         </AssemblyAttribute>

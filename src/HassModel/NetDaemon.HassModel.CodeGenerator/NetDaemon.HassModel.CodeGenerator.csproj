@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
-        <PackageId>JoySoftware.NetDaemon.HassModel.CodeGen</PackageId>
-        <Version>21.47.1</Version>
+        <PackageId>NetDaemon.HassModel.CodeGen</PackageId>
+        <Version>23.42.0</Version>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>nd-codegen</ToolCommandName>
         <Authors>frankbakkernl, helto4real</Authors>
-        <Company>JoySoftware</Company>
+        <Company>NetDaemon</Company>
         <description>A .net core appdaemon for Home Assistant, the code generator tool for dotnet cli</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
