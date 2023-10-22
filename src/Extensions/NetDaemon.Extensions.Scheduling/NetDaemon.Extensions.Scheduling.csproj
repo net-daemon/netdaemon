@@ -5,10 +5,10 @@
     <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>NetDaemon.Extensions.Scheduler</RootNamespace>
-    <PackageId>JoySoftware.NetDaemon.Extensions.Scheduling</PackageId>
+    <PackageId>NetDaemon.Extensions.Scheduling</PackageId>
     <Version>23.42.0</Version>
     <Authors>helto4real</Authors>
-    <Company>JoySoftware</Company>
+    <Company>NetDaemon</Company>
     <description>Scheduling extensions for NetDaemon</description>
     <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

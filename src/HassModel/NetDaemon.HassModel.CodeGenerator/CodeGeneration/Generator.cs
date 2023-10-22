@@ -34,8 +34,8 @@ internal static class Generator
             .AddMembers(generatedTypes)
             .NormalizeWhitespace();
     }
-    
-    
+
+
     private static SyntaxTrivia[] GetFileHeader()
     {
         string headerText = @$"
@@ -46,16 +46,16 @@ internal static class Generator
         //
         // *** Make sure the version of the codegen tool and your nugets Joysoftware.NetDaemon.* have the same version.***
         // You can use following command to keep it up to date with the latest version:
-        //   dotnet tool update JoySoftware.NetDaemon.HassModel.CodeGen
+        //   dotnet tool update NetDaemon.HassModel.CodeGen
         //
-        // To update this file with latest entities run this command in your project directory: 
+        // To update this file with latest entities run this command in your project directory:
         //   dotnet tool run nd-codegen
         //
         // In the template projects we provided a convenience powershell script that will update
         // the codegen and nugets to latest versions update_all_dependencies.ps1.
         //
         // For more information: https://netdaemon.xyz/docs/v3/hass_model/hass_model_codegen
-        // For more information about NetDaemon: https://netdaemon.xyz/  
+        // For more information about NetDaemon: https://netdaemon.xyz/
         // </auto-generated>
         //------------------------------------------------------------------------------";
 
@@ -63,5 +63,5 @@ internal static class Generator
 
         SyntaxTrivia[] header = lines.SelectMany(l => new[] { Comment(l), LineFeed }).ToArray();
         return header;
-    }    
+    }
 }
