@@ -14,8 +14,7 @@ internal class YamlConfigurationFileParser
 {
     private readonly Stack<string> _context = new();
 
-    private readonly IDictionary<string, string?> _data =
-        new SortedDictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+    private readonly SortedDictionary<string, string?> _data = new(StringComparer.OrdinalIgnoreCase);
 
     private string _currentPath = string.Empty;
 
