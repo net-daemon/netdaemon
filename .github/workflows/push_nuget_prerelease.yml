@@ -1,0 +1,47 @@
+﻿
+#### Publish tags to docker hub
+name: 📦 Push to nuget pre-release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Enter version number"
+        required: true
+        default: "21.43.0"
+      pre:
+        type: choice
+        description: Pre-release tag
+        required: true
+        options:
+          - alpha
+          - beta
+          - rc
+jobs:
+  deploy_nuget:
+    name: 📦 publish nuget packages manual version
+    runs-on: ubuntu-latest
+    environment: CI - release environment
+    steps:
+      - name: 📤 Checkout the repository
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
+      - name: 🥅 Install .Net 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+          dotnet-quality: 'preview'
+      - name: 🔖 Set version number
+        run: |
+          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ github.event.inputs.tag }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+      - name: 🎁 Pack
+        run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-${{ github.event.inputs.pre }} -p:Version=${{ github.event.inputs.tag }}-${{ github.event.inputs.pre }}
+        #- name: 📨 Push to nuget
+        #run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
