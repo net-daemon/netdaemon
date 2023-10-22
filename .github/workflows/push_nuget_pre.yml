@@ -33,12 +33,11 @@ jobs:
           latest=$(git describe --tags $(git rev-list --tags --max-count=1))
           echo Current version:    $latest
           echo "::set-output name=version::$latest"
-
-      - name: 🥅 Install .Net 7
-        uses: actions/setup-dotnet@v1
+      - name: 🥅 Install .Net 8
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "7.0.x" # SDK Version
-
+          dotnet-version: '8.0.x'
+          dotnet-quality: 'preview'
       - name: 🔖 Set version number
         run: |
           sed -i "/        private const string Version = /c\        private const string Version =  \"${{ github.event.inputs.tag }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
