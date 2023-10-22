@@ -1,15 +1,16 @@
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:8.0 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim-amd64 as netbuilder
+#FROM mcr.microsoft.com/dotnet/sdk:8.0 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
 RUN echo "I am running on ${BUILDPLATFORM}"
 RUN echo "building for ${TARGETPLATFORM}"
-
 RUN export TARGETPLATFORM="${TARGETPLATFORM}"
 
 # Copy the source to docker container
 COPY ./src /usr/src
+
 RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.csproj -o "/daemon"
 
 # Final stage, create the runtime container
