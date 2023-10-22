@@ -6,7 +6,7 @@ if [ ! -d "/data" ]; then
 fi
 
 if [[ -z "${NetDaemon__ApplicationAssembly}" ]]; then
-    echo -e "\\033[32mStarting NetDaemon V3 runtime ...\\033[0m" >&2
+    echo -e "\\033[32mStarting NetDaemon V4 runtime ...\\033[0m" >&2
     cd "${daemondir}" || exit 1
     exec dotnet NetDaemon.Host.Default.dll
 else

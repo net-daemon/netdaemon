@@ -8,7 +8,7 @@ declare Mqtt__Password
 
 # Set configuration values to environment variables
 NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
-Logging__Loglevel__Default=$(bashio::config 'log_level') 
+Logging__Loglevel__Default=$(bashio::config 'log_level')
 NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
 
 if bashio::services.available "mqtt"; then
@@ -55,17 +55,17 @@ else
         bashio::exit.nok "Assembly needs to point to a .dll file!"
     fi
 
-    # make path relative to data folder (/config/netdaemon if addon) 
+    # make path relative to data folder (/config/netdaemon if addon)
     # if the path is a relative path
     if [[ "${NetDaemon__ApplicationAssembly}" != "/"* ]]; then
         export NetDaemon__ApplicationAssembly="/config/netdaemon3/${NetDaemon__ApplicationAssembly}"
-    fi 
+    fi
 
     # The provided application source is ether a project or pre-compiled .Net application
     if ! bashio::fs.file_exists "${NetDaemon__ApplicationAssembly}"; then
         bashio::exit.nok "The assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings."
     fi
-    
+
     bashio::log.info "Starting NetDaemon V3 pre-built Runtime using assembly ${NetDaemon__ApplicationAssembly}..."
     cd "$(dirname "${NetDaemon__ApplicationAssembly}")" ||  bashio::exit.nok "Could not change directory to run project"
 

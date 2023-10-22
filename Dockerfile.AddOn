@@ -1,6 +1,6 @@
 # No admin support yet, we need to build the websocket API
 # Pre-build .NET NetDaemon core project
-FROM  mcr.microsoft.com/dotnet/sdk:8.0 as netbuilder
+FROM  mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim-amd64 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -17,8 +17,8 @@ RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.c
 FROM ghcr.io/net-daemon/netdaemon_addonbase:8
 
 # # Install S6 and the Admin site
-COPY ./Docker/rootfs/etc/services.d/NetDaemonAddOnApp /etc/services.d/NetDaemonAddOnApp
-
+COPY --chmod=755 ./Docker/rootfs/etc/services.d/netdaemon_addon /etc/s6-overlay/s6-rc.d/netdaemon_addon
+COPY --chmod=755 ./Docker/rootfs/etc/s6-overlay/s6-rc.d/usr/netdaemon_addon etc/s6-overlay/s6-rc.d/user/contents.d/netdaemon_addon
 # COPY admin
 # COPY --from=builder /admin /admin
 COPY --from=netbuilder /daemon /daemon

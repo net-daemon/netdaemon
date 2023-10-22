@@ -19,7 +19,7 @@ FROM ghcr.io/net-daemon/netdaemon_base:8
 # # Install S6 and the Admin site
 # COPY ./Docker/rootfs/etc/services.d/NetDaemonAdmin /etc/services.d/NetDaemonAdmin
 COPY --chmod=755 ./Docker/rootfs/etc/services.d/netdaemon /etc/s6-overlay/s6-rc.d/netdaemon
-COPY --chmod=755 ./Docker/rootfs/etc/s6-overlay/s6-rc.d/usr etc/s6-overlay/s6-rc.d/user/contents.d
+COPY --chmod=755 ./Docker/rootfs/etc/s6-overlay/s6-rc.d/usr/netdaemon etc/s6-overlay/s6-rc.d/user/contents.d/netdaemon
 # COPY admin
 # COPY --from=builder /admin /admin
 COPY --from=netbuilder /daemon /daemon
