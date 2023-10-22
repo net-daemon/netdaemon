@@ -1,0 +1,46 @@
+#!/bin/bash
+
+declare daemondir="/daemon"
+
+if [ ! -d "/data" ]; then
+    echo -e "\\033[31mMissing mapping to apps, please map '/data' to your apps folder\\033[0m" >&2
+    exit 1
+fi
+
+if [[ -z "${NetDaemon__ApplicationAssembly}" ]]; then
+    echo -e "\\033[32mStarting NetDaemon V3 runtime ...\\033[0m" >&2
+    cd "${daemondir}" || exit 1
+    exec dotnet NetDaemon.Host.Default.dll
+else
+    if [[ "${NetDaemon__ApplicationAssembly}" == *".csproj" ]]; then
+        echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
+        exit 1
+    fi
+
+    if [[ "${NetDaemon__ApplicationAssembly}" != *".dll" ]]; then
+        echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
+        exit 1
+    fi
+
+    # make path relative to data folder (/config/netdaemon if addon)
+    # if the path is a relative path
+    if [[ "${NetDaemon__ApplicationAssembly}" != "/"* ]]; then
+        export NetDaemon__ApplicationAssembly="/data/${NetDaemon__ApplicationAssembly}"
+    fi
+
+    # The provided application source is ether a project or pre-compiled .Net application
+    if [[ ! -f "${NetDaemon__ApplicationAssembly}" ]]; then
+        echo -e "\\033[31mThe assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
+        exit 1
+    fi
+
+    echo -e "\\033[32mStarting NetDaemon V3 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
+    cd "$(dirname "${NetDaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
+
+    if [[ "${PWD}" != "$(dirname "${NetDaemon__ApplicationAssembly}")" ]]; then
+        echo -e "\\033[31mCould not change directory to run custom project\\033[0m" >&2
+        exit 1
+    fi
+
+    exec dotnet "$(basename "${NetDaemon__ApplicationAssembly}")"
+fi

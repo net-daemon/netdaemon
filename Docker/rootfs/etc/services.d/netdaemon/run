@@ -1,7 +1,5 @@
-#!/usr/bin/with-contenv bash
-
+#!/command/with-contenv bash
 declare daemondir="/daemon"
-
 if [ ! -d "/data" ]; then
     echo -e "\\033[31mMissing mapping to apps, please map '/data' to your apps folder\\033[0m" >&2
     exit 1
@@ -22,11 +20,11 @@ else
         exit 1
     fi
 
-    # make path relative to data folder (/config/netdaemon if addon) 
+    # make path relative to data folder (/config/netdaemon if addon)
     # if the path is a relative path
     if [[ "${NetDaemon__ApplicationAssembly}" != "/"* ]]; then
         export NetDaemon__ApplicationAssembly="/data/${NetDaemon__ApplicationAssembly}"
-    fi 
+    fi
 
     # The provided application source is ether a project or pre-compiled .Net application
     if [[ ! -f "${NetDaemon__ApplicationAssembly}" ]]; then
