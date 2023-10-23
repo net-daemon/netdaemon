@@ -27,6 +27,7 @@
         </None>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj" />
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
         <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
         <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />

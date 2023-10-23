@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime;
 using System.Text.RegularExpressions;
@@ -8,7 +9,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
 
@@ -71,7 +74,7 @@ internal class Compiler : ICompiler
         return CSharpCompilation.Create(
             $"daemon_apps_{Path.GetRandomFileName()}.dll",
             syntaxTrees.ToArray(),
-            metaDataReference.ToArray(),
+            metaDataReference,
             new CSharpCompilationOptions(
                 OutputKind.DynamicallyLinkedLibrary,
                 optimizationLevel: _useDebug ? OptimizationLevel.Debug : OptimizationLevel.Release,
@@ -81,7 +84,7 @@ internal class Compiler : ICompiler
         );
     }
 
-    private static IEnumerable<MetadataReference> GetDefaultReferences()
+    private static List<MetadataReference> GetDefaultReferences()
     {
         var metaDataReference = new List<MetadataReference>(10)
         {
