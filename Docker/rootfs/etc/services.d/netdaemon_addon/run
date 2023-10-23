@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv /usr/bin/bashio
+#!/command/with-contenv /usr/bin/bashio
 
 # Optional MQTT configuration
 declare Mqtt__Host
