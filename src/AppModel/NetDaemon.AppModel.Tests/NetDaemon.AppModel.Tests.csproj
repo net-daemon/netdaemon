@@ -39,6 +39,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="../NetDaemon.AppModel/NetDaemon.AppModel.csproj" />
+        <ProjectReference Include="../NetDaemon.AppModel.SourceDeployedApps/NetDaemon.AppModel.SourceDeployedApps.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="Compiler/Fixtures/**" />
