@@ -85,6 +85,14 @@ internal class NetDaemonRuntime : IRuntime
         CancellationToken cancelToken)
     {
         _logger.LogInformation("Successfully connected to Home Assistant");
+
+        if (_applicationModelContext is not null)
+        {
+            // Something wrong with unloading and disposing apps on restart of HA, we need to prevent apps loading multiple times
+            _logger.LogWarning("Applications were not successfully disposed during restart, skippin loading apps again");
+            return;
+        }
+
         IsConnected = true;
 
         await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
@@ -108,13 +116,13 @@ internal class NetDaemonRuntime : IRuntime
                     Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
             else
                 _logger.LogDebug("Loading applications with no configuration folder");
-            
+
             _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
             // Handle state change for apps if registered
             var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
             if (appStateHandler == null) return;
-            
+
             await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
         }
         catch (Exception e)
@@ -144,7 +152,14 @@ internal class NetDaemonRuntime : IRuntime
                 reasonString, TimeoutInSeconds);
         }
 
-        await DisposeApplicationsAsync().ConfigureAwait(false);
+        try
+        {
+            await DisposeApplicationsAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error disposing applications");
+        }
         IsConnected = false;
     }
 
@@ -153,7 +168,7 @@ internal class NetDaemonRuntime : IRuntime
         if (_applicationModelContext is not null)
         {
             await _applicationModelContext.DisposeAsync();
-            
+
             _applicationModelContext = null;
         }
     }
@@ -163,7 +178,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         if (_isDisposed) return;
         _isDisposed = true;
-        
+
         await DisposeApplicationsAsync().ConfigureAwait(false);
         _runnerCancelationSource?.Cancel();
         try
