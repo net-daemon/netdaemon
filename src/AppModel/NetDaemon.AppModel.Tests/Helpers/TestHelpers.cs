@@ -1,10 +1,13 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NetDaemon.AppModel.Internal;
 
 namespace NetDaemon.AppModel.Tests.Helpers;
 
 public static class TestHelpers
 {
+
     internal static async Task<IReadOnlyCollection<IApplication>> GetLocalApplicationsFromYamlConfigPath(string path)
     {
         var builder = Host.CreateDefaultBuilder()
@@ -12,6 +15,27 @@ public static class TestHelpers
             {
                 // get apps from test project
                 services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
+            })
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                config.AddYamlAppConfig(
+                    Path.Combine(AppContext.BaseDirectory,
+                        path));
+            })
+            .Build();
+        var appModel = builder.Services.GetService<IAppModel>();
+        var appModelContext = await appModel!.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
+        return appModelContext.Applications;
+    }
+
+    internal static async Task<IReadOnlyCollection<IApplication>> GetLocalApplicationsFromYamlConfigPath(string path, ILogger<Application> logger)
+    {
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                // get apps from test project
+                services.AddAppsFromAssembly(Assembly.GetExecutingAssembly());
+                services.AddTransient<ILogger<Application>>(_ => logger);
             })
             .ConfigureAppConfiguration((_, config) =>
             {
