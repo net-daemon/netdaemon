@@ -4,7 +4,7 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
 {
     private readonly IHomeAssistantClient _client;
 
-    // The internal token source will make sure we 
+    // The internal token source will make sure we
     // always cancel operations on dispose
     private readonly CancellationTokenSource _internalTokenSource = new();
     private readonly Subject<IHomeAssistantConnection> _onConnectSubject = new();
@@ -69,16 +69,8 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
         CancellationToken cancelToken)
     {
         var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalTokenSource.Token, cancelToken);
-        var isRetry = false;
         while (!combinedToken.IsCancellationRequested)
         {
-            if (isRetry)
-            {
-                _logger.LogDebug("Client disconnected, retrying in {Seconds} seconds...", timeout.TotalSeconds);
-                // This is a retry
-                await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
-            }
-
             try
             {
                 CurrentConnection = await _client.ConnectAsync(host, port, ssl, token, websocketPath, combinedToken.Token)
@@ -88,22 +80,22 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
                 _onConnectSubject.OnNext(CurrentConnection);
                 await eventsTask.ConfigureAwait(false);
             }
-            catch (HomeAssistantConnectionException de)
+            catch (HomeAssistantConnectionException de) when (de.Reason == DisconnectReason.Unauthorized)
             {
-                switch (de.Reason)
-                {
-                    case DisconnectReason.Unauthorized:
-                        _logger.LogDebug("User token unauthorized! Will not retry connecting...");
-                        _onDisconnectSubject.OnNext(DisconnectReason.Unauthorized);
-                        return;
-                    case DisconnectReason.NotReady:
-                        _logger.LogDebug("Home Assistant is not ready yet!");
-                        _onDisconnectSubject.OnNext(DisconnectReason.NotReady);
-                        break;
-                }
+                _logger.LogError("User token unauthorized! Will not retry connecting...");
+                await DisposeConnectionAsync();
+                _onDisconnectSubject.OnNext(DisconnectReason.Unauthorized);
+                return;
+            }
+            catch (HomeAssistantConnectionException de) when (de.Reason == DisconnectReason.NotReady)
+            {
+                _logger.LogInformation("Home Assistant is not ready yet!");
+                await DisposeConnectionAsync();
+                _onDisconnectSubject.OnNext(DisconnectReason.NotReady);
             }
             catch (OperationCanceledException)
             {
+                await DisposeConnectionAsync();
                 if (_internalTokenSource.IsCancellationRequested)
                 {
                     // We have internal cancellation due to dispose
@@ -117,26 +109,30 @@ internal class HomeAssistantRunner : IHomeAssistantRunner
             }
             catch (Exception e)
             {
-                _logger.LogDebug(e,"Error running HassClient");
+                _logger.LogError(e, "Error running HassClient");
+                await DisposeConnectionAsync();
                 _onDisconnectSubject.OnNext(DisconnectReason.Error);
+            }
+
+            await DisposeConnectionAsync();
+            _logger.LogInformation("Client disconnected, retrying in {Seconds} seconds...", timeout.TotalSeconds);
+            await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
+        }
+    }
+
+    private async Task DisposeConnectionAsync()
+    {
+        if (CurrentConnection is not null)
+        {
+            // Just try to dispose the connection silently
+            try
+            {
+                await CurrentConnection.DisposeAsync().ConfigureAwait(false);
             }
             finally
             {
-                if (CurrentConnection is not null)
-                {
-                    // Just try to dispose the connection silently
-                    try
-                    {
-                        await CurrentConnection.DisposeAsync().ConfigureAwait(false);
-                    }
-                    finally
-                    {
-                        CurrentConnection = null;
-                    }
-                }
+                CurrentConnection = null;
             }
-
-            isRetry = true;
         }
     }
 }
