@@ -152,7 +152,14 @@ internal class NetDaemonRuntime : IRuntime
                 reasonString, TimeoutInSeconds);
         }
 
-        await DisposeApplicationsAsync().ConfigureAwait(false);
+        try
+        {
+            await DisposeApplicationsAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error disposing applications");
+        }
         IsConnected = false;
     }
 

@@ -58,20 +58,43 @@ internal class Application : IApplication
         }
     }
 
+    /// <summary>
+    ///    Unloads the application and log any errors.If application unload takes longer than 3 seconds it will log a warning and return.
+    /// </summary>
+    private async Task UnloadContextAsync()
+    {
+        if (ApplicationContext is not null)
+        {
+            try
+            {
+               await ApplicationContext.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                if (e is TimeoutException)
+                    _logger.LogError("Unloading the app '{App}' takes longer than expected, please check for blocking code", Id);
+                else
+                    _logger.LogError(e, "Unloading the app '{App}' failed", Id);
+
+                ApplicationContext = null;
+                return;
+            }
+        }
+
+        ApplicationContext = null;
+        _logger.LogDebug("Successfully unloaded app {Id}", Id);
+    }
+
     public async ValueTask DisposeAsync()
     {
-        if (ApplicationContext is not null) await ApplicationContext.DisposeAsync().ConfigureAwait(false);
+        await UnloadContextAsync().ConfigureAwait(false);
     }
 
     private async Task UnloadApplication(ApplicationState state)
     {
-        if (ApplicationContext is not null)
-        {
-            await ApplicationContext.DisposeAsync().ConfigureAwait(false);
-            ApplicationContext = null;
-            _logger.LogInformation("Successfully unloaded app {Id}", Id);
-            await SaveStateIfStateManagerExistAsync(state).ConfigureAwait(false);
-        }
+        await UnloadContextAsync().ConfigureAwait(false);
+
+        await SaveStateIfStateManagerExistAsync(state).ConfigureAwait(false);
     }
 
     private async Task LoadApplication(ApplicationState state)
