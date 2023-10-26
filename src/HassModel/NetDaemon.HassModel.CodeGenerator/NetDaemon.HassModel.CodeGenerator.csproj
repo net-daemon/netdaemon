@@ -10,13 +10,13 @@
         <ToolCommandName>nd-codegen</ToolCommandName>
         <Authors>frankbakkernl, helto4real</Authors>
         <Company>NetDaemon</Company>
-        <description>A .net core appdaemon for Home Assistant, the code generator tool for dotnet cli</description>
+        <description>The code NetDaemon generator tool for dotnet cli</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-            A application model for writing automations for the free open source home automations software Home Assisstant written in .net 5.
+          The code generation dotnet tool for NetDaemon.
+          Please see https://github.com/net-daemon/netdaemon.
         </PackageDescription>
-        <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
         <tags>Home Assistant</tags>
     </PropertyGroup>
 

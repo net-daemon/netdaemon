@@ -13,6 +13,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
             A client for manage the free open source home automations software Home Assisstant written in .Net.
+            Please see https://github.com/net-daemon/netdaemon.
         </PackageDescription>
         <PackageReleaseNotes>This package is used internally by NetDaemon and not intended to be used directly. That means things could change if needed without prior notice</PackageReleaseNotes>
         <tags>Home Assistant</tags>

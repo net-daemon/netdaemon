@@ -7,12 +7,12 @@
         <Version>23.42.0</Version>
         <Authors>helto4real</Authors>
         <Company>NetDaemon</Company>
-        <description>Runtime</description>
+        <description>Runtime environment of NetDaemon</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-            Runtime package for NetDeamon
-            Please see https://netdaemon.xyz for docs.
+          The runtime environment for NetDaemon.
+          Please see https://github.com/net-daemon/netdaemon.
         </PackageDescription>
         <tags>Home Assistant</tags>
         <RootNamespace>NetDaemon.Runtime</RootNamespace>

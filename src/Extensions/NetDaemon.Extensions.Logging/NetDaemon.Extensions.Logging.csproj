@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <LangVersion>12.0</LangVersion>
         <Nullable>enable</Nullable>
         <RootNamespace>NetDaemon</RootNamespace>
         <PackageId>NetDaemon.Extensions.Logging</PackageId>
@@ -13,9 +12,9 @@
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-            This package contains scheduling features for NetDaemon.
+            Logging features for NetDaemon.
+            Please see https://github.com/net-daemon/netdaemon.
         </PackageDescription>
-        <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
         <tags>Home Assistant, NetDaemon</tags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>

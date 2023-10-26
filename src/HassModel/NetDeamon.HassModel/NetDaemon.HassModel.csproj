@@ -3,19 +3,18 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <LangVersion>12</LangVersion>
         <RootNamespace>NetDaemon.HassModel</RootNamespace>
         <PackageId>NetDaemon.HassModel</PackageId>
         <Version>23.42.0</Version>
         <Authors>frankbakkernl, helto4real</Authors>
         <Company>NetDaemon</Company>
-        <description>A .net core appdaemon for Home Assistant</description>
+        <description>Application level API for communicating with Home Assistant from NetDaemon</description>
         <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageDescription>
-          A application model for writing automations for the free open source home automations software Home Assisstant written in .net 5.
+          HassModel Application level API for communicating with Home Assistant from NetDaemon
+          Please see https://github.com/net-daemon/netdaemon.
         </PackageDescription>
-        <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
         <tags>Home Assistant</tags>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>

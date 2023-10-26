@@ -39,10 +39,9 @@
     </PackageReference>
     <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
   </ItemGroup>
-
 
 </Project>
