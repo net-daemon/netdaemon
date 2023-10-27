@@ -18,7 +18,7 @@ on:
           - rc
 jobs:
   deploy_nuget:
-    name: 📦 publish nuget packages manual version
+    name: 📦 publish nuget pre-release packages manual version
     runs-on: ubuntu-latest
     environment: CI - release environment
     steps:
