@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="JoySoftware.NetDaemon.AppModel" Version="23.38.0" />
-    <PackageReference Include="JoySoftware.NetDaemon.Runtime" Version="23.38.0" />
+    <PackageReference Include="JoySoftware.NetDaemon.Runtime" Version="23.43.1" />
     <PackageReference Include="JoySoftware.NetDaemon.HassModel" Version="23.38.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Client" Version="23.38.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Scheduling" Version="23.38.0" />
