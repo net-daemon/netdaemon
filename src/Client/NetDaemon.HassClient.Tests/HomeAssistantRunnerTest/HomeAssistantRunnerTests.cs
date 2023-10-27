@@ -70,6 +70,8 @@ public class HomeAssistantRunnerTests
             DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
+        DefaultRunner.CurrentConnection.Should().BeNull();
+
         try
         {
             cancelSource.Cancel();
@@ -108,6 +110,8 @@ public class HomeAssistantRunnerTests
             DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
+        DefaultRunner.CurrentConnection.Should().BeNull();
+
         try
         {
             cancelSource.Cancel();
@@ -146,6 +150,8 @@ public class HomeAssistantRunnerTests
             DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
+        DefaultRunner.CurrentConnection.Should().BeNull();
+
         try
         {
             cancelSource.Cancel();
@@ -176,6 +182,7 @@ public class HomeAssistantRunnerTests
         // await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         cancelSource.Cancel();
         var reason = await disconnectionTask.ConfigureAwait(false);
+        DefaultRunner.CurrentConnection.Should().BeNull();
         try
         {
             await runnerTask.ConfigureAwait(false);

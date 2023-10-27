@@ -30,6 +30,7 @@ public class ResultMessageHandlerTests
     [Fact]
     public async Task TestTaskCompleteWithErrorResultShouldLogWarning()
     {
+        // TODO: Test sometimes fails in CI
         var task = SomeUnSuccessfulResult();
         _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
@@ -40,6 +41,7 @@ public class ResultMessageHandlerTests
     [Fact]
     public async Task TestTaskCompleteWithExceptionShouldLogError()
     {
+        // TODO: Test sometimes fails in CI
         var task = SomeUnSuccessfulResultThrowsException();
         _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
