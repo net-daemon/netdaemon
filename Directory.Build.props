@@ -17,7 +17,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!--Properties for nuget which are always the same-->
+  <!--Properties for nuget which are usually the same-->
   <PropertyGroup>
     <Authors>helto4real</Authors>
     <Company>NetDaemon</Company>
