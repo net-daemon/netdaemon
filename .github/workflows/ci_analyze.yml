@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - dotnet8
 jobs:
     sonarscanner:
         name: 🔍 SonarScanner
