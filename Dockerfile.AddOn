@@ -10,7 +10,7 @@ RUN echo "building for ${TARGETPLATFORM}"
 RUN export TARGETPLATFORM="${TARGETPLATFORM}"
 
 # Copy the source to docker container
-COPY ./src /usr/src
+COPY . /usr
 RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.csproj -o "/daemon"
 
 # Final stage, create the runtime container
