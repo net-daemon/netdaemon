@@ -1,21 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
     <RootNamespace>NetDaemon.Extensions.Scheduler</RootNamespace>
     <PackageId>NetDaemon.Extensions.Scheduling</PackageId>
-    <Version>23.42.0</Version>
-    <Authors>helto4real</Authors>
-    <Company>NetDaemon</Company>
     <description>Scheduling extensions for NetDaemon</description>
-    <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageDescription>
       Scheduling features for NetDaemon.
       Please see https://github.com/net-daemon/netdaemon.
     </PackageDescription>
-    <tags>Home Assistant, NetDaemon</tags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

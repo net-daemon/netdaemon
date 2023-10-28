@@ -1,43 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.12.0"/>
+    <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23503-02"/>
+    <PackageReference Include="Microsoft.Reactive.Testing" Version="6.0.1-preview.1"/>
+    <PackageReference Include="Moq" Version="4.20.69"/>
+    <PackageReference Include="xunit" Version="2.5.3"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
 
-        <IsPackable>false</IsPackable>
-
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="6.12.0" />
-        <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23479.6" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.2.23479.6" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23503-02" />
-        <PackageReference Include="Microsoft.Reactive.Testing" Version="6.0.1-preview.1" />
-        <PackageReference Include="Moq" Version="4.20.69" />
-        <PackageReference Include="xunit" Version="2.5.3" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="6.0.0">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="coverlet.msbuild" Version="6.0.0">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\NetDaemon.HassModel.CodeGenerator\NetDaemon.HassModel.CodeGenerator.csproj" />
-        <ProjectReference Include="..\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
-        <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NetDaemon.HassModel.CodeGenerator\NetDaemon.HassModel.CodeGenerator.csproj"/>
+    <ProjectReference Include="..\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj"/>
+    <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj"/>
+  </ItemGroup>
 
 </Project>

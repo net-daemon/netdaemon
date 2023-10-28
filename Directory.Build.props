@@ -8,4 +8,21 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
   </PropertyGroup>
+
+  <!--Some sensible defaults for all projects, can be overriden in the projects themselves-->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--Properties for nuget which are always the same-->
+  <PropertyGroup>
+    <Authors>helto4real</Authors>
+    <Company>NetDaemon</Company>
+    <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <tags>Home Assistant, NetDaemon</tags>
+  </PropertyGroup>
 </Project>

@@ -1,54 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <RootNamespace>NetDaemon.HassModel.Integration</RootNamespace>
-        <PackageId>NetDaemon.HassModel.Integration</PackageId>
-        <Version>23.42.0</Version>
-        <Authors>frankbakkernl, helto4real</Authors>
-        <Company>NetDaemon</Company>
-        <description>NetDaemon Home Assitant integration specific featurs of NetDaemon</description>
-        <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageDescription>
-          NetDaemon features that rely on having the NetDaemon Home Assitant integration installed.
-          Please see https://github.com/net-daemon/netdaemon.
-        </PackageDescription>
-        <tags>Home Assistant</tags>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>NetDaemon.HassModel.Integration</PackageId>
+    <Authors>frankbakkernl, helto4real</Authors>
+    <description>NetDaemon Home Assitant integration specific featurs of NetDaemon</description>
+    <PackageDescription>
+      NetDaemon features that rely on having the NetDaemon Home Assitant integration installed.
+      Please see https://github.com/net-daemon/netdaemon.
+    </PackageDescription>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
 
-    <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
+  <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets"/>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-        <PackageReference Include="System.Reactive" Version="6.0.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+    <PackageReference Include="System.Reactive" Version="6.0.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-            <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
-        </AssemblyAttribute>
-    </ItemGroup>
-    <PropertyGroup>
-        <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
-    </PropertyGroup>
-    <PropertyGroup>
-        <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DocumentationFile>bin\Debug\NetDaemon.HassModel.Integration.xml</DocumentationFile>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DocumentationFile>bin\Release\NetDaemon.HassModel.Integration.xml</DocumentationFile>
-    </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DocumentationFile>bin\Debug\NetDaemon.HassModel.Integration.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DocumentationFile>bin\Release\NetDaemon.HassModel.Integration.xml</DocumentationFile>
+  </PropertyGroup>
 
 </Project>
