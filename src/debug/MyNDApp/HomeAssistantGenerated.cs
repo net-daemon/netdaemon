@@ -5,7 +5,7 @@
 //
 // *** Make sure the version of the codegen tool and your nugets Joysoftware.NetDaemon.* have the same version.***
 // You can use following command to keep it up to date with the latest version:
-//   dotnet tool update JoySoftware.NetDaemon.HassModel.CodeGen
+//   dotnet tool update NetDaemon.HassModel.CodeGen
 //
 // To update this file with latest entities run this command in your project directory:
 //   dotnet tool run nd-codegen
@@ -28,10 +28,10 @@ using NetDaemon.HassModel.Entities.Core;
 
 namespace HomeAssistantGenerated;
 
-public partial class Entities
+public partial class TestEntities
 {
     private readonly IHaContext _haContext;
-    public Entities(IHaContext haContext)
+    public TestEntities(IHaContext haContext)
     {
         _haContext = haContext;
     }

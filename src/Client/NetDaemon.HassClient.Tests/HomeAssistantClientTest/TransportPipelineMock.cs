@@ -1,6 +1,6 @@
 namespace NetDaemon.HassClient.Tests.HomeAssistantClientTest;
 
-internal class TransportPipelineMock : Mock<IWebSocketClientTransportPipeline>
+internal sealed class TransportPipelineMock : Mock<IWebSocketClientTransportPipeline>
 {
     private readonly Channel<HassMessage> _responseMessageChannel = Channel.CreateBounded<HassMessage>(100);
     private readonly Channel<HassAuthResponse> _authResponseMessageChannel = Channel.CreateBounded<HassAuthResponse>(2);

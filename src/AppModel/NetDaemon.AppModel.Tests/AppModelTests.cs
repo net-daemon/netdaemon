@@ -37,12 +37,35 @@ public class AppModelTests
         var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local").ConfigureAwait(false);
 
         // CHECK
-        loadApps.Should().HaveCount(6);
+        loadApps.Should().HaveCount(7);
 
         // check the application instance is init ok
         var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalApp");
         var instance = (MyAppLocalApp?) application.ApplicationContext?.Instance;
         instance!.Settings.AString.Should().Be("Hello world!");
+    }
+
+    [Fact]
+    public async Task TestSlowDisposableAppShouldLogWarning()
+    {
+        // ARRANGE
+        var loggerMock = new Mock<ILogger<Application>>();
+
+        // ACT
+        var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local", loggerMock.Object).ConfigureAwait(false);
+
+        // CHECK
+        // check the application instance is init ok
+        var application = (Application) loadApps.First(n => n.Id == "LocalApps.SlowDisposableApp");
+        await application.DisposeAsync().ConfigureAwait(false);
+
+        loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((_, __) => true),
+                It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception?, string>>((_, _) => true)), Times.Once);
     }
 
     [Fact]
@@ -142,7 +165,7 @@ public class AppModelTests
         var provider = Mock.Of<IServiceProvider>();
         var logger = Mock.Of<ILogger<Application>>();
         var factory = Mock.Of<IAppFactory>();
-        
+
         // ACT
         var app = new Application(provider, logger, factory);
 
@@ -311,7 +334,7 @@ public class AppModelTests
         Assert.NotNull(application.ApplicationContext?.Instance);
     }
 
-    internal class FakeAppStateManager : IAppStateManager
+    internal sealed class FakeAppStateManager : IAppStateManager
     {
         public ApplicationState? State { get; set; }
 

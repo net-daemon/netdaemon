@@ -3,7 +3,7 @@ using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers.HassClient;
 
-internal class HaContextMock : Mock<IHaContext>
+internal sealed class HaContextMock : Mock<IHaContext>
 {
     public HaContextMock()
     {

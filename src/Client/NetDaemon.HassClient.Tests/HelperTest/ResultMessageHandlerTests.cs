@@ -30,6 +30,7 @@ public class ResultMessageHandlerTests
     [Fact]
     public async Task TestTaskCompleteWithErrorResultShouldLogWarning()
     {
+        // TODO: Test sometimes fails in CI
         var task = SomeUnSuccessfulResult();
         _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
@@ -40,6 +41,7 @@ public class ResultMessageHandlerTests
     [Fact]
     public async Task TestTaskCompleteWithExceptionShouldLogError()
     {
+        // TODO: Test sometimes fails in CI
         var task = SomeUnSuccessfulResultThrowsException();
         _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
@@ -62,24 +64,24 @@ public class ResultMessageHandlerTests
 
 
 
-    private async Task<HassMessage> SomeSuccessfulResult()
+    private static async Task<HassMessage> SomeSuccessfulResult()
     {
         // Simulate som time
-        await Task.Delay(100);
+        await Task.Delay(400);
         return new HassMessage {Success = true};
     }
 
-    private async Task<HassMessage> SomeUnSuccessfulResult()
+    private static async Task<HassMessage> SomeUnSuccessfulResult()
     {
         // Simulate som time
-        await Task.Delay(100);
+        await Task.Delay(400);
         return new HassMessage {Success = false};
     }
 
-    private async Task<HassMessage> SomeUnSuccessfulResultThrowsException()
+    private static async Task<HassMessage> SomeUnSuccessfulResultThrowsException()
     {
         // Simulate som time
-        await Task.Delay(100);
+        await Task.Delay(400);
         throw new InvalidOperationException("Ohh noooo!");
     }
 }

@@ -46,8 +46,8 @@ public class AppScopedHaContextProviderTest
         _hassConnectionMock.Verify(
             c => c.SendCommandAsync<CallServiceCommand>(expectedCommand,
                 It.IsAny<CancellationToken>()), Times.Once);
-    }    
-    
+    }
+
     [Fact]
     public async Task TestCallServiceWithResponseAsync()
     {
@@ -55,11 +55,11 @@ public class AppScopedHaContextProviderTest
 
         var serviceTarget = ServiceTarget.FromEntity("domain.entity");
         var serviceData = new { Name = "value" };
-        
+
         await haContext.CallServiceWithResponseAsync("domain", "service", serviceTarget, serviceData);
 
-        // The following expected structure to be called by the underlying connection 
-        
+        // The following expected structure to be called by the underlying connection
+
         // {
         //     Id = 0,
         //     Type = "execute_script",
@@ -79,12 +79,12 @@ public class AppScopedHaContextProviderTest
         //         }
         //     }
         // }
-        
+
         // Hack since verify did not work on that complex object
-        var result = _hassConnectionMock.Invocations.Single(e => 
+        var result = _hassConnectionMock.Invocations.Single(e =>
             e.Method.Name == "SendCommandAndReturnResponseAsync" &&
             e.Arguments[0] is CallExecuteScriptCommand);
-        
+
         var executeCommand = result.Arguments[0] as CallExecuteScriptCommand;
 
         executeCommand!.Sequence[0].GetType().GetProperty("service")!.GetValue(executeCommand.Sequence[0])!.Should().Be("domain.service");
@@ -113,13 +113,13 @@ public class AppScopedHaContextProviderTest
                         },
                         ""old_state"": {
                             ""state"": ""oldState""
-                        } 
+                        }
                     }
                     ".AsJsonElement()
         });
 
         haContext.GetState("TestDomain.TestEntity")!.State!.Should().Be("newState");
-        // the state should come from the state cache so we do not expect a call to HassClient.GetState 
+        // the state should come from the state cache so we do not expect a call to HassClient.GetState
     }
 
 
@@ -139,12 +139,12 @@ public class AppScopedHaContextProviderTest
         // Act
         _hassEventSubjectMock.OnNext(_sampleHassEvent);
         _hassEventSubjectMock.OnCompleted();
-        
+
         await ((IAsyncDisposable)serviceScope).DisposeAsync();
-        
+
         // Assert
         eventObserverMock.Verify(e => e.OnNext(It.IsAny<Event>()), Times.Once);
-        var @event = eventObserverMock.Invocations.First().Arguments[0] as Event;
+        var @event = eventObserverMock.Invocations[0].Arguments[0] as Event;
         @event!.Origin.Should().Be(_sampleHassEvent.Origin);
         @event.EventType.Should().Be(_sampleHassEvent.EventType);
         @event.TimeFired.Should().Be(_sampleHassEvent.TimeFired);
@@ -172,7 +172,7 @@ public class AppScopedHaContextProviderTest
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
         typedEventObserverMock.Verify(e => e.OnCompleted(), Times.Once);
-        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations.First().Arguments[0];
+        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations[0].Arguments[0];
 
         @event.Data!.command.Should().Be("flip");
         @event.Data!.endpoint_id.Should().Be(2);
@@ -187,7 +187,7 @@ public class AppScopedHaContextProviderTest
         var serviceScope = provider.CreateScope();
 
         var haContext = serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
-        
+
         Mock<IObserver<Event>> eventObserverMock = new();
         haContext.Events.Subscribe(eventObserverMock.Object);
 
@@ -221,7 +221,7 @@ public class AppScopedHaContextProviderTest
 
         backgroundTrackerMock.Verify(n => n.TrackBackgroundTask(It.IsAny<Task?>(), It.IsAny<string>()), Times.Once);
     }
-    
+
     [Fact]
     public async Task TestThatSendEventTrackBackgroundTask()
     {
@@ -239,7 +239,7 @@ public class AppScopedHaContextProviderTest
     {
         var provider = await CreateServiceProvider();
         var haContext = provider.CreateScope().ServiceProvider.GetRequiredService<IHaContext>();
-        
+
         return haContext;
     }
 

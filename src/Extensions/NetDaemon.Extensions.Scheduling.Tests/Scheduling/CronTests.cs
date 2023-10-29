@@ -44,7 +44,7 @@ public class CronTests
         sched = new TestScheduler();
         count = 0;
         sched.AdvanceTo(new DateTime(2020, 2, 3, 8, 0, 28).Ticks);
-        var subSec = sched.ScheduleCron("*/30 0 * * * *", () => count++, hasSeconds: true); // 0 and 30 seconds after every whole hour 
+        var subSec = sched.ScheduleCron("*/30 0 * * * *", () => count++, hasSeconds: true); // 0 and 30 seconds after every whole hour
 
         sched.AdvanceTo(new DateTime(2020, 2, 3, 8, minute: 0, second: 29).Ticks);
         count.Should().Be(0);
@@ -54,7 +54,7 @@ public class CronTests
 
         sched.AdvanceTo(new DateTime(2020, 2, 3, 8, minute: 1, second: 1).Ticks);
         count.Should().Be(1);
-        
+
         sched.AdvanceBy(TimeSpan.FromMinutes(10).Ticks);
         count.Should().Be(1);
 
@@ -86,11 +86,11 @@ public class CronTests
 
         sched.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         count.Should().Be(1);
-        
+
         sched.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
         count.Should().Be(2, because: "Action should still fire after previous Exception");
     }
-    
+
     [Fact]
     public void TestCronLocalTime()
     {
@@ -98,7 +98,7 @@ public class CronTests
         {
             var count = 0;
             var sched = new TestScheduler();
-            var universalTime = new DateTime(2022, 1, 12, 4, 59, 30, DateTimeKind.Local).ToUniversalTime();  
+            var universalTime = new DateTime(2022, 1, 12, 4, 59, 30, DateTimeKind.Local).ToUniversalTime();
             sched.AdvanceTo(universalTime.Ticks);
 
             sched.ScheduleCron("0 5 * * *", () => count++);
@@ -107,7 +107,7 @@ public class CronTests
             count.Should().Be(1, because: "Cron should be interpreted as local time");
         }
     }
-    
+
     [Fact]
     public void TestCronDSTForwards()
     {
@@ -115,7 +115,7 @@ public class CronTests
         {
             var count = 0;
             var sched = new TestScheduler();
-            
+
             var justBeforeDST = new DateTime(2022, 3, 27, 1, 0, 0, DateTimeKind.Local).ToUniversalTime();
             var justAfterDST = new DateTime(2022, 3, 27, 3, 0, 0, DateTimeKind.Local).ToUniversalTime();
             sched.AdvanceTo(justBeforeDST.Ticks);
@@ -125,8 +125,8 @@ public class CronTests
             sched.AdvanceTo(justAfterDST.Ticks);
             count.Should().Be(60, because: "Only 1 hour has passed between 1 and 3 AM");
         }
-    }    
-    
+    }
+
 
     [Fact]
     public void TestCronDSTBackwards()
@@ -145,11 +145,11 @@ public class CronTests
             sched.AdvanceTo(justAfterDST.Ticks);
             count.Should().Be(3 * 60, because: "3 hours have passed between 1 and 3 AM");
         }
-    }    
-    
-    
+    }
+
+
     [Fact]
-    public void AllExeptionsAreLogged()
+    public void AllExceptionsAreLogged()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -160,7 +160,7 @@ public class CronTests
 
         var netDaemonScheduler = new DisposableScheduler(testScheduler).WrapWithLogger(loggerMock.Object);
 
-        netDaemonScheduler.ScheduleCron("* * * * *", () => throw new Exception("hello"));
+        netDaemonScheduler.ScheduleCron("* * * * *", () => throw new InvalidOperationException("hello"));
 
         // ACT and ASSERT
         testScheduler.AdvanceBy(TimeSpan.FromMinutes(5).Ticks);
@@ -171,6 +171,6 @@ public class CronTests
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(5));
-    }    
+                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Exactly(5));
+    }
 }

@@ -5,7 +5,7 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
 public class EntityIdParserTests
 {
-    class GoodEntityIdTestData : IEnumerable<object[]>
+    sealed class GoodEntityIdTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -18,8 +18,8 @@ public class EntityIdParserTests
             return GetEnumerator();
         }
     }
-    
-    class BadEntityIdTestData : IEnumerable<object[]>
+
+    sealed class BadEntityIdTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -33,7 +33,7 @@ public class EntityIdParserTests
             return GetEnumerator();
         }
     }
-    
+
     [Theory]
     [ClassData(typeof(GoodEntityIdTestData))]
     public void CanExtract(string entityId, (string domain, string identifier) expected)
@@ -42,7 +42,7 @@ public class EntityIdParserTests
 
         response.Should().Be(expected);
     }
-    
+
     [Theory]
     [ClassData(typeof(BadEntityIdTestData))]
     public void FailsOnBadData(string entityId)
@@ -59,15 +59,15 @@ public class EntityIdParserTests
         Action act = () => EntityIdParser.Extract(null!);
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("entityId");
+            .WithMessage("*entityId*");
     }
-    
+
     [Fact]
     public void ThrowsOnEmpty()
     {
         Action act = () => EntityIdParser.Extract("  ");
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("entityId");
+            .WithMessage("*entityId*");
     }
 }

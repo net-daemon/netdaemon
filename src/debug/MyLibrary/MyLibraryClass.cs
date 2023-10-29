@@ -5,8 +5,8 @@ namespace MyLibrary;
 
 public class MyLibraryClass
 {
-    public LightEntity Target;
-    public IEnumerable<ILightEntityCore> TargetList;
+    public LightEntity Target { get; set; }
+    public IEnumerable<ILightEntityCore> TargetList { get; set; }
 
     public MyLibraryClass(ILightEntityCore target, IEnumerable<ILightEntityCore> lights)
     {
@@ -18,8 +18,8 @@ public class MyLibraryClass
     {
         Target.Toggle();
     }
-    
-    
+
+
     public void Increment()
     {
         var current = (long)(Target.Attributes?.Brightness ?? 0);
@@ -33,14 +33,14 @@ public class MyLibraryClass
             Target.TurnOff();
         }
     }
-    
-    
+
+
     public void ToggleTargetList()
     {
         TargetList.Toggle();
     }
-    
-    
+
+
     public void HalfBrightness()
     {
         TargetList.TurnOn(brightnessPct: 50);

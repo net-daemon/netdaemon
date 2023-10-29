@@ -3,7 +3,7 @@ using NetDaemon.HassModel.Entities;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers.HassClient;
 
-record TestEntity : Entity<TestEntity, EntityState<TestEntityAttributes>, TestEntityAttributes>
+sealed record TestEntity : Entity<TestEntity, EntityState<TestEntityAttributes>, TestEntityAttributes>
 {
     public TestEntity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
 }

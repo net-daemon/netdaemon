@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - dev
+      - dotnet8
   pull_request:
     branches:
       - main
       - dev
+      - dotnet8
   schedule:
     - cron: "0 2 * * *" # run at 2 AM UTC
 jobs:
@@ -20,11 +22,11 @@ jobs:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
 
-      - name: 🥅 Install .Net 7
-        uses: actions/setup-dotnet@v1
+      - name: 🥅 Install .Net 8
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "7.0.x" # SDK Version
-
+          dotnet-version: '8.0.x'
+          dotnet-quality: 'preview'
       - name: 🔍 Enable problem matchers
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 
@@ -39,7 +41,7 @@ jobs:
           dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Client/NetDaemon.HassClient.Tests -- RunConfiguration.CollectSourceInformation=true
           dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/AppModel/NetDaemon.AppModel.Tests -- RunConfiguration.CollectSourceInformation=true
           dotnet test -v minimal --no-build --configuration Release --logger GitHubActions '/p:CollectCoverage=true;CoverletOutputFormat="json,lcov,cobertura";MergeWith=${{github.workspace}}/codecover.json;CoverletOutput=${{github.workspace}}/codecover' src/Runtime/NetDaemon.Runtime.Tests -- RunConfiguration.CollectSourceInformation=true
-          
+
       - name: 👀 Integration Tests
         run: |
           echo "## ❔ Integration test results" >> $GITHUB_STEP_SUMMARY

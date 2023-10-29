@@ -26,7 +26,7 @@ internal class AppModelContext : IAppModelContext
     {
         var factories = _appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
 
-        var filteredFactories =  _focusFilter.FilterFocusApps(factories);
+        var filteredFactories = _focusFilter.FilterFocusApps(factories);
 
         foreach (var factory in filteredFactories)
         {
@@ -35,7 +35,7 @@ internal class AppModelContext : IAppModelContext
             _applications.Add(app);
         }
 
-        _logger.LogInformation("Finished loading applications: {state}",
+        _logger.LogInformation("Finished loading applications: {State}",
             string.Join(", ", Enum.GetValues<ApplicationState>().Select(possibleState => $"{possibleState} {_applications.Count(app => app.State == possibleState)}")));
     }
 
@@ -44,11 +44,11 @@ internal class AppModelContext : IAppModelContext
         if (_isDisposed) return;
         _isDisposed = true;
 
-        foreach (var appInstance in _applications)
-        {
-            await appInstance.DisposeAsync().ConfigureAwait(false);
-        }
-        
+        // Get all tasks for disposing the apps with a timeout
+        var disposeTasks = _applications.Select(app => app.DisposeAsync().AsTask()).ToList();
+
+        await Task.WhenAll(disposeTasks).ConfigureAwait(false);
+
         _applications.Clear();
     }
 }

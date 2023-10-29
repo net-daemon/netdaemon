@@ -5,5 +5,5 @@
 /// </summary>
 internal record CompileSettings
 {
-    public bool UseDebug { get; set; } = false;
+    public bool UseDebug { get; set; }
 }

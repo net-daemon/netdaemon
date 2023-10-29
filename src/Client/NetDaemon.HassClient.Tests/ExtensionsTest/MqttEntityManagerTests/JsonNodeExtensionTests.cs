@@ -11,7 +11,7 @@ public class JsonNodeExtensionTests
     /// <summary>
     /// Test data for simple key=value structs
     /// </summary>
-    class SimpleMergeTestData : IEnumerable<object[]>
+    sealed class SimpleMergeTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -140,7 +140,7 @@ public class JsonNodeExtensionTests
         var j1 = J(o1);
         j1.AddRange(J(o2));
         var combined = JsonConvert.DeserializeObject<dynamic>(j1.ToJsonString());
-        
+
         Assert.Equal("1", combined?.a.ToString());
         Assert.Equal("2", combined?.b.ToString());
         Assert.Equal("3", combined?.c.ToString());

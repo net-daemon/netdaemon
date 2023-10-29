@@ -4,39 +4,24 @@ using NetDaemon.HassModel;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal class NetDaemonRuntime : IRuntime
-{
-    private const string Version = "custom_compiled";
-    private const int TimeoutInSeconds = 30;
-    private readonly ICacheManager _cacheManager;
-
-    private readonly HomeAssistantSettings _haSettings;
-    private readonly IHomeAssistantRunner _homeAssistantRunner;
-    private readonly IOptions<AppConfigurationLocationSetting> _locationSettings;
-
-    private readonly ILogger<NetDaemonRuntime> _logger;
-    private readonly IServiceProvider _serviceProvider;
-    private IAppModelContext? _applicationModelContext;
-    private CancellationToken? _stoppingToken;
-    private CancellationTokenSource? _runnerCancelationSource;
-
-    public bool IsConnected;
-
-    public NetDaemonRuntime(
-        IHomeAssistantRunner homeAssistantRunner,
+internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
         IOptions<AppConfigurationLocationSetting> locationSettings,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
-    {
-        _haSettings = settings.Value;
-        _homeAssistantRunner = homeAssistantRunner;
-        _locationSettings = locationSettings;
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-        _cacheManager = cacheManager;
-    }
+    : IRuntime
+{
+    private const string Version = "custom_compiled";
+    private const int TimeoutInSeconds = 30;
+
+    private readonly HomeAssistantSettings _haSettings = settings.Value;
+
+    private IAppModelContext? _applicationModelContext;
+    private CancellationToken? _stoppingToken;
+    private CancellationTokenSource? _runnerCancelationSource;
+
+    public bool IsConnected;
 
     // These internals are used primarily for testing purposes
     internal IReadOnlyCollection<IApplication> ApplicationInstances =>
@@ -48,21 +33,21 @@ internal class NetDaemonRuntime : IRuntime
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
+        logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
 
         _stoppingToken = stoppingToken;
 
-        _homeAssistantRunner.OnConnect
+        homeAssistantRunner.OnConnect
             .Select(async c => await OnHomeAssistantClientConnected(c, stoppingToken).ConfigureAwait(false))
             .Subscribe();
-        _homeAssistantRunner.OnDisconnect
+        homeAssistantRunner.OnDisconnect
             .Select(async s => await OnHomeAssistantClientDisconnected(s).ConfigureAwait(false))
             .Subscribe();
         try
         {
             _runnerCancelationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
 
-            _runnerTask = _homeAssistantRunner.RunAsync(
+            _runnerTask = homeAssistantRunner.RunAsync(
                 _haSettings.Host,
                 _haSettings.Port,
                 _haSettings.Ssl,
@@ -84,10 +69,18 @@ internal class NetDaemonRuntime : IRuntime
         IHomeAssistantConnection haConnection,
         CancellationToken cancelToken)
     {
-        _logger.LogInformation("Successfully connected to Home Assistant");
+        logger.LogInformation("Successfully connected to Home Assistant");
+
+        if (_applicationModelContext is not null)
+        {
+            // Something wrong with unloading and disposing apps on restart of HA, we need to prevent apps loading multiple times
+            logger.LogWarning("Applications were not successfully disposed during restart, skippin loading apps again");
+            return;
+        }
+
         IsConnected = true;
 
-        await _cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
+        await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
         await LoadNewAppContextAsync(haConnection, cancelToken);
 
@@ -97,29 +90,29 @@ internal class NetDaemonRuntime : IRuntime
 
     private async Task LoadNewAppContextAsync(IHomeAssistantConnection haConnection, CancellationToken cancelToken)
     {
-        var appModel = _serviceProvider.GetService<IAppModel>();
+        var appModel = serviceProvider.GetService<IAppModel>();
         if (appModel == null) return;
 
         try
         {
             // this logging is a bit weird in this class
-            if (!string.IsNullOrEmpty(_locationSettings.Value.ApplicationConfigurationFolder))
-                _logger.LogDebug("Loading applications from folder {Path}",
-                    Path.GetFullPath(_locationSettings.Value.ApplicationConfigurationFolder));
+            if (!string.IsNullOrEmpty(locationSettings.Value.ApplicationConfigurationFolder))
+                logger.LogDebug("Loading applications from folder {Path}",
+                    Path.GetFullPath(locationSettings.Value.ApplicationConfigurationFolder));
             else
-                _logger.LogDebug("Loading applications with no configuration folder");
-            
+                logger.LogDebug("Loading applications with no configuration folder");
+
             _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
             // Handle state change for apps if registered
-            var appStateHandler = _serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
+            var appStateHandler = serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
             if (appStateHandler == null) return;
-            
+
             await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "   Failed to initialize apps");
+            logger.LogError(e, "   Failed to initialize apps");
             throw;
         }
     }
@@ -128,7 +121,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         if (_stoppingToken?.IsCancellationRequested == true || reason == DisconnectReason.Client)
         {
-            _logger.LogInformation("HassClient disconnected cause of user stopping");
+            logger.LogInformation("HassClient disconnected cause of user stopping");
         }
         else
         {
@@ -140,11 +133,18 @@ internal class NetDaemonRuntime : IRuntime
                 DisconnectReason.NotReady => "home assistant not ready yet",
                 _ => "unknown error"
             };
-            _logger.LogInformation("Home Assistant disconnected due to {Reason}, connect retry in {TimeoutInSeconds} seconds",
+            logger.LogInformation("Home Assistant disconnected due to {Reason}, connect retry in {TimeoutInSeconds} seconds",
                 reasonString, TimeoutInSeconds);
         }
 
-        await DisposeApplicationsAsync().ConfigureAwait(false);
+        try
+        {
+            await DisposeApplicationsAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error disposing applications");
+        }
         IsConnected = false;
     }
 
@@ -153,7 +153,7 @@ internal class NetDaemonRuntime : IRuntime
         if (_applicationModelContext is not null)
         {
             await _applicationModelContext.DisposeAsync();
-            
+
             _applicationModelContext = null;
         }
     }
@@ -163,7 +163,7 @@ internal class NetDaemonRuntime : IRuntime
     {
         if (_isDisposed) return;
         _isDisposed = true;
-        
+
         await DisposeApplicationsAsync().ConfigureAwait(false);
         _runnerCancelationSource?.Cancel();
         try

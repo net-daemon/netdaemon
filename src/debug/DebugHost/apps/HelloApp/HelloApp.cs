@@ -8,7 +8,7 @@ using NetDaemon.HassModel;
 namespace Apps;
 
 [NetDaemonApp]
-// [Focus]
+[Focus]
 public sealed class HelloApp : IAsyncDisposable
 {
     private readonly ILogger<HelloApp> _logger;
@@ -20,12 +20,13 @@ public sealed class HelloApp : IAsyncDisposable
         {
             logger.LogInformation("Hello testevent");
         });
-        // ha?.CallService("notify", "persistent_notification", data: new { message = "Notify me", title = "Hello world!" });
+        ha?.CallService("notify", "persistent_notification", data: new { message = "Notify me", title = "Hello world!" });
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
+        await Task.Delay(5000);
         _logger.LogInformation("disposed app");
-        return ValueTask.CompletedTask;
+        //return ValueTask.CompletedTask;
     }
 }

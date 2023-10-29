@@ -5,7 +5,7 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
 public class ByteArrayHelperTests
 {
-    class GoodData : IEnumerable<object[]>
+    sealed class GoodData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {

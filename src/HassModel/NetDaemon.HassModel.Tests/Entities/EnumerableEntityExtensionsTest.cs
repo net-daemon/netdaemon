@@ -75,11 +75,11 @@ public class EnumerableEntityExtensionsTest
         new[] { switch1, switch2 }.CallService("set_state", data);
 
         haMock.Verify(m => m.CallService("switch", "set_state", It.IsAny<ServiceTarget>(), data));
-        haMock.Invocations.First().Arguments[2].As<ServiceTarget>().EntityIds
+        haMock.Invocations[0].Arguments[2].As<ServiceTarget>().EntityIds
             .Should().BeEquivalentTo("switch.Living1", "switch.Living2");
         haMock.VerifyNoOtherCalls();
     }
-    
+
     [Fact]
     public void TestCallServiceWithDomainInService()
     {
@@ -93,11 +93,11 @@ public class EnumerableEntityExtensionsTest
         new[] { switch1, switch2 }.CallService("homeassistant.turn_on", data);
 
         haMock.Verify(m => m.CallService("homeassistant", "turn_on", It.IsAny<ServiceTarget>(), data));
-        haMock.Invocations.First().Arguments[2].As<ServiceTarget>().EntityIds
+        haMock.Invocations[0].Arguments[2].As<ServiceTarget>().EntityIds
             .Should().BeEquivalentTo("switch.Living1", "light.Living2");
         haMock.VerifyNoOtherCalls();
-    }    
-    
+    }
+
     [Fact]
     public void TestCallServiceWithDifferentDomainsNotAllowed()
     {
@@ -110,5 +110,5 @@ public class EnumerableEntityExtensionsTest
         var data = new { Name = "John", Age = 12 };
         var action = () => new[] { switch1, switch2 }.CallService("turn_on", data);
         action.Should().Throw<InvalidOperationException>();
-    }    
+    }
 }

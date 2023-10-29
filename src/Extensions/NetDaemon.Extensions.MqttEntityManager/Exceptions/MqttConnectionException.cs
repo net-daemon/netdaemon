@@ -11,7 +11,7 @@ public class MqttConnectionException : Exception
     /// <param name="msg"></param>
     public MqttConnectionException(string msg) : base(msg)
     {}
-    
+
     /// <summary>
     /// MQTT connection failed
     /// </summary>
@@ -19,4 +19,11 @@ public class MqttConnectionException : Exception
     /// <param name="innerException"></param>
     public MqttConnectionException(string msg, Exception innerException) : base(msg, innerException)
     {}
+
+    /// <summary>
+    /// MQTT connection failed
+    /// </summary>
+    public MqttConnectionException()
+    {
+    }
 }

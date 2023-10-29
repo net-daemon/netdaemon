@@ -1,6 +1,6 @@
 namespace NetDaemon.HassClient.Tests.Integration;
 
-internal record TestContext : IAsyncDisposable
+internal sealed record TestContext : IAsyncDisposable
 {
     public Mock<ILogger<HomeAssistantClient>> HomeAssistantLogger { get; init; } = new();
     public Mock<ILogger<IWebSocketClientTransportPipeline>> TransportPipelineLogger { get; init; } = new();

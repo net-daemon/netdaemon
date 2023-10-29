@@ -1,9 +1,10 @@
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
 /*
-    Attribution to the devs at https://github.com/andrewlock/NetEscapades.Configuration for providing most of the code 
+    Attribution to the devs at https://github.com/andrewlock/NetEscapades.Configuration for providing most of the code
     for the file parser. Thanks a lot!
 */
 
@@ -13,8 +14,7 @@ internal class YamlConfigurationFileParser
 {
     private readonly Stack<string> _context = new();
 
-    private readonly IDictionary<string, string?> _data =
-        new SortedDictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+    private readonly SortedDictionary<string, string?> _data = new(StringComparer.OrdinalIgnoreCase);
 
     private string _currentPath = string.Empty;
 
@@ -60,7 +60,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlScalarNode(string context, YamlScalarNode yamlValue)
     {
-        //a node with a single 1-1 mapping 
+        //a node with a single 1-1 mapping
         EnterContext(context);
         var currentKey = _currentPath;
 
@@ -95,7 +95,7 @@ internal class YamlConfigurationFileParser
 
     private void VisitYamlSequenceNode(YamlSequenceNode node)
     {
-        for (var i = 0; i < node.Children.Count; i++) VisitYamlNode(i.ToString(), node.Children[i]);
+        for (var i = 0; i < node.Children.Count; i++) VisitYamlNode(i.ToString(CultureInfo.InvariantCulture), node.Children[i]);
     }
 
     private void EnterContext(string context)
