@@ -1,4 +1,3 @@
-#### Build and tests all pushes, also code coverage
 name: 📦 Publish pre-release from dev branch
 on:
   release:
