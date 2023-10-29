@@ -52,3 +52,11 @@ dotnet_diagnostic.CA1034.severity = none
 dotnet_diagnostic.CA1052.severity = none
 #Do not raise reserved exception types
 dotnet_diagnostic.CA2201.severity = none
+
+dotnet_diagnostic.CA1854.severity = none
+#The enum member 'Itself' has the same constant value
+dotnet_diagnostic.CA1069.severity = none
+#Do not create task without passing TaskScheduler
+dotnet_diagnostic.CA2008.severity = none
+#Use concrete types
+dotnet_diagnostic.CA1859.severity = none

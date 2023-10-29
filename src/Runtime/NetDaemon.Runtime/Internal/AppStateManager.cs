@@ -4,32 +4,22 @@ using NetDaemon.AppModel;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateUpdates, IDisposable
+internal class AppStateManager(IAppStateRepository appStateRepository,
+    IHostEnvironment hostEnvironment) : IAppStateManager, IHandleHomeAssistantAppStateUpdates, IDisposable
 {
-    private readonly IAppStateRepository _appStateRepository;
-    private readonly IHostEnvironment _hostEnvironment;
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly ConcurrentDictionary<string, ApplicationState> _stateCache = new();
-
-    public AppStateManager(
-        IAppStateRepository appStateRepository,
-        IHostEnvironment hostEnvironment
-    )
-    {
-        _appStateRepository = appStateRepository;
-        _hostEnvironment = hostEnvironment;
-    }
 
     public async Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
         _stateCache.Clear();
-        if (appContext.Applications.Count > 0 && !_hostEnvironment.IsDevelopment())
-            await _appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
+        if (appContext.Applications.Count > 0 && !hostEnvironment.IsDevelopment())
+            await appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
                 _cancelTokenSource.Token);
 
         var hassEvents = await haConnection.SubscribeToHomeAssistantEventsAsync(null, _cancelTokenSource.Token)
             .ConfigureAwait(false);
-        
+
         hassEvents
             .Where(n => n.EventType == "state_changed")
             .Select(async s =>
@@ -46,7 +36,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
                 {
                     var entityId =
                         EntityMapperHelper.ToEntityIdFromApplicationId(app.Id ??
-                            throw new InvalidOperationException(), _hostEnvironment.IsDevelopment());
+                            throw new InvalidOperationException(), hostEnvironment.IsDevelopment());
                     if (entityId != changedEvent.NewState.EntityId) continue;
 
                     var appState = changedEvent.NewState?.State == "on"
@@ -65,7 +55,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     {
         if (_stateCache.TryGetValue(applicationId, out var applicationState)) return applicationState;
 
-        return await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
+        return await appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
             .ConfigureAwait(false)
             ? ApplicationState.Enabled
             : ApplicationState.Disabled;
@@ -75,7 +65,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
     {
         _stateCache[applicationId] = state;
 
-        var isEnabled = await _appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
+        var isEnabled = await appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
             .ConfigureAwait(false);
 
         // Only update state if it is different from current
@@ -84,7 +74,7 @@ internal class AppStateManager : IAppStateManager, IHandleHomeAssistantAppStateU
             (state == ApplicationState.Disabled && isEnabled)
             )
         {
-            await _appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
+            await appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
                 .ConfigureAwait(false);
         }
     }

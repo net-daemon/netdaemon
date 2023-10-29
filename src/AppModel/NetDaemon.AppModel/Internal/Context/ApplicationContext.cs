@@ -2,7 +2,7 @@ using NetDaemon.AppModel.Internal.AppFactories;
 
 namespace NetDaemon.AppModel.Internal;
 
-internal sealed class ApplicationContext
+internal sealed class ApplicationContext : IAsyncDisposable
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;

@@ -120,20 +120,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         where T : CommandMessage
     {
         var resultMessageTask = await SendCommandAsyncInternal(command, cancelToken);
+        var result = await resultMessageTask.WaitAsync(TimeSpan.FromMilliseconds(WaitForResultTimeout), cancelToken);
 
-        var awaitedTask = await Task.WhenAny(resultMessageTask, Task.Delay(WaitForResultTimeout, cancelToken));
-
-        if (awaitedTask != resultMessageTask)
-            // We have a timeout
-            throw new InvalidOperationException(
-                $"Send command ({command.Type}) did not get response in timely fashion. Sent command is {command.ToJsonElement()}");
-
-        if (resultMessageTask.Result.Success ?? false)
-            return resultMessageTask.Result;
+        if (result.Success ?? false)
+            return result;
 
         // Non successful command should throw exception
         throw new InvalidOperationException(
-            $"Failed command ({command.Type}) error: {resultMessageTask.Result.Error}.  Sent command is {command.ToJsonElement()}");
+            $"Failed command ({command.Type}) error: {result.Error}.  Sent command is {command.ToJsonElement()}");
     }
 
     public async ValueTask DisposeAsync()
@@ -148,7 +142,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         }
 
         if (!_internalCancelSource.IsCancellationRequested)
-            _internalCancelSource.Cancel();
+            await _internalCancelSource.CancelAsync();
 
         // Gracefully wait for task or timeout
         await Task.WhenAny(
@@ -158,6 +152,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
         await _transportPipeline.DisposeAsync().ConfigureAwait(false);
         _internalCancelSource.Dispose();
+        _hassMessageSubject.Dispose();
+        await _resultMessageHandler.DisposeAsync();
+        _messageIdSemaphore.Dispose();
     }
 
     public Task<T?> GetApiCallAsync<T>(string apiPath, CancellationToken cancelToken)
@@ -231,7 +228,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             _logger.LogTrace("Stop processing new messages");
             // make sure we always cancel any blocking operations
             if (!_internalCancelSource.IsCancellationRequested)
-                _internalCancelSource.Cancel();
+                await _internalCancelSource.CancelAsync();
         }
     }
 

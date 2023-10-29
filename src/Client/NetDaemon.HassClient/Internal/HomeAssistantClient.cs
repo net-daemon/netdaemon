@@ -1,25 +1,11 @@
 namespace NetDaemon.Client.Internal;
 
-internal class HomeAssistantClient : IHomeAssistantClient
-{
-    private readonly IHomeAssistantConnectionFactory _connectionFactory;
-    private readonly ILogger<IHomeAssistantClient> _logger;
-    private readonly IWebSocketClientTransportPipelineFactory _transportPipelineFactory;
-    private readonly IWebSocketClientFactory _webSocketClientFactory;
-
-    public HomeAssistantClient(
-        ILogger<IHomeAssistantClient> logger,
+internal class HomeAssistantClient(ILogger<IHomeAssistantClient> logger,
         IWebSocketClientFactory webSocketClientFactory,
         IWebSocketClientTransportPipelineFactory transportPipelineFactory,
-        IHomeAssistantConnectionFactory connectionFactory
-    )
-    {
-        _logger = logger;
-        _webSocketClientFactory = webSocketClientFactory;
-        _transportPipelineFactory = transportPipelineFactory;
-        _connectionFactory = connectionFactory;
-    }
-
+        IHomeAssistantConnectionFactory connectionFactory)
+    : IHomeAssistantClient
+{
     public Task<IHomeAssistantConnection> ConnectAsync(string host, int port, bool ssl, string token,
         CancellationToken cancelToken)
     {
@@ -31,14 +17,14 @@ internal class HomeAssistantClient : IHomeAssistantClient
         CancellationToken cancelToken)
     {
         var websocketUri = GetHomeAssistantWebSocketUri(host, port, ssl, websocketPath);
-        _logger.LogDebug("Connecting to Home Assistant websocket on {Path}", websocketUri);
-        var ws = _webSocketClientFactory.New();
+        logger.LogDebug("Connecting to Home Assistant websocket on {Path}", websocketUri);
+        var ws = webSocketClientFactory.New();
 
         try
         {
             await ws.ConnectAsync(websocketUri, cancelToken).ConfigureAwait(false);
 
-            var transportPipeline = _transportPipelineFactory.New(ws);
+            var transportPipeline = transportPipelineFactory.New(ws);
 
             var hassVersionInfo = await HandleAuthorizationSequenceAndReturnHassVersionInfo(token, transportPipeline, cancelToken).ConfigureAwait(false);
 
@@ -47,7 +33,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
                 await AddCoalesceSupport(transportPipeline, cancelToken).ConfigureAwait(false);
             }
 
-            var connection = _connectionFactory.New(transportPipeline);
+            var connection = connectionFactory.New(transportPipeline);
 
             if (await CheckIfRunning(connection, cancelToken).ConfigureAwait(false)) return connection;
             await connection.DisposeAsync().ConfigureAwait(false);
@@ -55,12 +41,12 @@ internal class HomeAssistantClient : IHomeAssistantClient
         }
         catch (OperationCanceledException)
         {
-            _logger.LogDebug("Connect to Home Assistant was cancelled");
+            logger.LogDebug("Connect to Home Assistant was cancelled");
             throw;
         }
         catch (Exception e)
         {
-            _logger.LogDebug(e, "Error connecting to Home Assistant");
+            logger.LogDebug(e, "Error connecting to Home Assistant");
             throw;
         }
     }
@@ -111,7 +97,7 @@ internal class HomeAssistantClient : IHomeAssistantClient
         var connectTimeoutTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancelToken);
         connectTimeoutTokenSource.CancelAfter(5000);
         // Begin the authorization sequence
-        // Expect 'auth_required' 
+        // Expect 'auth_required'
         var msg = await transportPipeline.GetNextMessagesAsync<HassMessage>(connectTimeoutTokenSource.Token)
             .ConfigureAwait(false);
         if (msg[0].Type != "auth_required")
