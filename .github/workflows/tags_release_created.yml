@@ -1,11 +1,41 @@
-#### Publish tags to docker hub
-name: 📦 Deploy dev docker
+#### Build and tests all pushes, also code coverage
+name: 📦 Publish pre-release from dev branch
 on:
-  push:
-    branches:
-      - dev
-
+  release:
+    types:
+      - created
+      - updated
 jobs:
+  deploy_nuget_pre-release:
+    name: 📦 publish pre-release nuget packages from dev
+    runs-on: ubuntu-latest
+    environment: CI - release environment
+    steps:
+      - name: 📤 Checkout the repository
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
+
+      - name: 🥅 Install .Net 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.0.x" # SDK Version
+
+      - name: 🔖 Set version number
+        run: |
+          sed -i '/        private const string Version = /c\        private const string Version =  "${{ steps.version.outputs.version }}-beta";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+      - name: 🎁 Pack
+        run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}-beta -p:Version=${{ steps.version.outputs.version }}-beta
+      - name: 📨 Push to nuget
+        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+
   deploy_docker_addon_dev:
     name: 📦 Deploy to Docker add-on dev
     runs-on: ubuntu-latest
@@ -13,11 +43,17 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
       - name: 📆 Set version in code and docker files
         run: |
           echo setting source version:    dev
-          sed -i '/    private const string Version = /c\    private const string Version = "dev";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="dev"' ${{github.workspace}}/Dockerfile.AddOn
+          sed -i '/    private const string Version = /c\    private const string Version = "${{ steps.version.outputs.version }}-beta";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}-beta"' ${{github.workspace}}/Dockerfile.AddOn
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: 🔧 Set up Docker Buildx
@@ -57,11 +93,17 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
+      - name: ⏭️ Get next version
+        id: version
+        run: |
+          latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo Current version:    $latest
+          echo "::set-output name=version::$latest"
       - name: 📆 Set version number
         run: |
           echo setting source version:    dev
-          sed -i '/    private const string Version = /c\    private const string Version = "dev";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="dev"' ${{github.workspace}}/Dockerfile.AddOn
+          sed -i '/    private const string Version = /c\    private const string Version = "${{ steps.version.outputs.version }}-beta";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="${{ steps.version.outputs.version }}-beta"' ${{github.workspace}}/Dockerfile.AddOn
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: 🔧 Set up Docker Buildx
@@ -93,3 +135,4 @@ jobs:
             --compress \
             --tag netdaemon/netdaemon4:dev \
             --tag ghcr.io/net-daemon/netdaemon4:dev
+
