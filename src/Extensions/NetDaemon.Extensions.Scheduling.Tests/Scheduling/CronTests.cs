@@ -149,7 +149,7 @@ public class CronTests
 
 
     [Fact]
-    public void AllExeptionsAreLogged()
+    public void AllExceptionsAreLogged()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -171,6 +171,6 @@ public class CronTests
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(5));
+                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Exactly(5));
     }
 }
