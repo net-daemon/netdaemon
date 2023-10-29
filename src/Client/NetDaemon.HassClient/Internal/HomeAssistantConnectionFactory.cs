@@ -1,21 +1,10 @@
 namespace NetDaemon.Client.Internal;
 
-internal class HomeAssistantConnectionFactory : IHomeAssistantConnectionFactory
+internal class HomeAssistantConnectionFactory(ILogger<IHomeAssistantConnection> logger,
+    IHomeAssistantApiManager apiManager) : IHomeAssistantConnectionFactory
 {
-    private readonly IHomeAssistantApiManager _apiManager;
-    private readonly ILogger<IHomeAssistantConnection> _logger;
-
-    public HomeAssistantConnectionFactory(
-        ILogger<IHomeAssistantConnection> logger,
-        IHomeAssistantApiManager apiManager
-    )
-    {
-        _logger = logger;
-        _apiManager = apiManager;
-    }
-
     public IHomeAssistantConnection New(IWebSocketClientTransportPipeline transportPipeline)
     {
-        return new HomeAssistantConnection(_logger, transportPipeline, _apiManager);
+        return new HomeAssistantConnection(logger, transportPipeline, apiManager);
     }
 }

@@ -67,21 +67,21 @@ public class ResultMessageHandlerTests
     private static async Task<HassMessage> SomeSuccessfulResult()
     {
         // Simulate som time
-        await Task.Delay(100);
+        await Task.Delay(400);
         return new HassMessage {Success = true};
     }
 
     private static async Task<HassMessage> SomeUnSuccessfulResult()
     {
         // Simulate som time
-        await Task.Delay(100);
+        await Task.Delay(400);
         return new HassMessage {Success = false};
     }
 
     private static async Task<HassMessage> SomeUnSuccessfulResultThrowsException()
     {
         // Simulate som time
-        await Task.Delay(100);
+        await Task.Delay(400);
         throw new InvalidOperationException("Ohh noooo!");
     }
 }

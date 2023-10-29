@@ -4,23 +4,14 @@ using NetDaemon.Client.Internal.Exceptions;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal class AppStateRepository : IAppStateRepository
+internal class AppStateRepository(IHomeAssistantRunner runner, IHostEnvironment hostEnvironment) : IAppStateRepository
 {
-    private readonly IHomeAssistantRunner _runner;
-    private readonly IHostEnvironment _hostEnvironment;
-
-    public AppStateRepository(IHomeAssistantRunner runner, IHostEnvironment hostEnvironment)
-    {
-        _runner = runner;
-        _hostEnvironment = hostEnvironment;
-    }
-
     public async Task<bool> GetOrCreateAsync(string applicationId, CancellationToken token)
     {
-        var haConnection = _runner.CurrentConnection ??
+        var haConnection = runner.CurrentConnection ??
                            throw new InvalidOperationException();
 
-        var entityId = EntityMapperHelper.ToEntityIdFromApplicationId(applicationId, _hostEnvironment.IsDevelopment());
+        var entityId = EntityMapperHelper.ToEntityIdFromApplicationId(applicationId, hostEnvironment.IsDevelopment());
 
         try
         {
@@ -42,10 +33,10 @@ internal class AppStateRepository : IAppStateRepository
 
     public async Task UpdateAsync(string applicationId, bool enabled, CancellationToken token)
     {
-        var haConnection = _runner.CurrentConnection ??
+        var haConnection = runner.CurrentConnection ??
                            throw new InvalidOperationException();
 
-        var entityId = EntityMapperHelper.ToEntityIdFromApplicationId(applicationId, _hostEnvironment.IsDevelopment());
+        var entityId = EntityMapperHelper.ToEntityIdFromApplicationId(applicationId, hostEnvironment.IsDevelopment());
 
         await haConnection.CallServiceAsync("input_boolean", enabled ? "turn_on" : "turn_off",
             new HassTarget {EntityIds = new[] {entityId}},
@@ -54,11 +45,11 @@ internal class AppStateRepository : IAppStateRepository
 
     public async Task RemoveNotUsedStatesAsync(IReadOnlyCollection<string> applicationIds, CancellationToken token)
     {
-        var haConnection = _runner.CurrentConnection ??
+        var haConnection = runner.CurrentConnection ??
                            throw new InvalidOperationException();
         var helpers = await haConnection.ListInputBooleanHelpersAsync(token).ConfigureAwait(false);
 
-        var entityIds = applicationIds.Select(n => EntityMapperHelper.ToEntityIdFromApplicationId(n, _hostEnvironment.IsDevelopment()))
+        var entityIds = applicationIds.Select(n => EntityMapperHelper.ToEntityIdFromApplicationId(n, hostEnvironment.IsDevelopment()))
             .ToHashSet();
 
         var notUsedHelperIds = helpers.Where(n =>

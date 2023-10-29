@@ -7,7 +7,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 public static class DependencyValidator
 {
     /// <summary>
-    /// Check if the PackageReferences for the NetDameon Nugets match the version of the nd-codegen tool 
+    /// Check if the PackageReferences for the NetDameon Nugets match the version of the nd-codegen tool
     /// </summary>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     public static void ValidatePackageRefrences()
@@ -15,7 +15,7 @@ public static class DependencyValidator
         try
         {
             var packages = GetProjects().SelectMany(project => GetPackageReferences(project).Select(package => (project, package)));
-            var mismatches = packages.Where(p => p.package.name.StartsWith("JoySoftware.NetDaemon.", StringComparison.InvariantCulture) && p.package.version != VersionHelper.GeneratorVersion.ToString(3)).ToList();
+            var mismatches = packages.Where(p => p.package.name.StartsWith("NetDaemon.", StringComparison.InvariantCulture) && p.package.version != VersionHelper.GeneratorVersion.ToString(3)).ToList();
             if (mismatches.Any())
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -38,14 +38,14 @@ public static class DependencyValidator
     }
 
     public static IEnumerable<string> GetProjects() => Directory.GetFiles(".", "*.csproj", SearchOption.AllDirectories);
-    
+
     private static IEnumerable<(string name, string version)>GetPackageReferences(string projectFilePath)
     {
         var csproj = new XmlDocument();
         csproj.Load(projectFilePath);
         var nodes = csproj.SelectNodes("//PackageReference[@Include and @Version]");
         if (nodes is null) yield break;
-        
+
         foreach (XmlNode packageReference in nodes)
         {
             var packageName = packageReference.Attributes?["Include"]?.Value;

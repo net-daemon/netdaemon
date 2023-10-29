@@ -1,49 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <LangVersion>11</LangVersion>
-        <RootNamespace>NetDaemon.HassModel</RootNamespace>
-        <PackageId>JoySoftware.NetDaemon.HassModel</PackageId>
-        <Version>21.47.1</Version>
-        <Authors>frankbakkernl, helto4real</Authors>
-        <Company>JoySoftware</Company>
-        <description>A .net core appdaemon for Home Assistant</description>
-        <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageDescription>
-          A application model for writing automations for the free open source home automations software Home Assisstant written in .net 5.
-        </PackageDescription>
-        <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
-        <tags>Home Assistant</tags>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>NetDaemon.HassModel</PackageId>
+    <Authors>frankbakkernl, helto4real</Authors>
+    <description>Application level API for communicating with Home Assistant from NetDaemon</description>
+    <PackageDescription>
+      HassModel Application level API for communicating with Home Assistant from NetDaemon
+      Please see https://github.com/net-daemon/netdaemon.
+    </PackageDescription>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
 
-    <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-    
-    <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-      <PackageReference Include="System.Reactive" Version="6.0.0" />
-    </ItemGroup>
-    <ItemGroup>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-            <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
-        </AssemblyAttribute>        
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-            <_Parameter1>NetDaemon.Runtime.Tests</_Parameter1>
-        </AssemblyAttribute>        
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-            <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
-        </AssemblyAttribute>
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Internal\Extensions" />
-    </ItemGroup>
+  <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets"/>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+    <PackageReference Include="System.Reactive" Version="6.0.0"/>
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>NetDaemon.HassModel.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>NetDaemon.Runtime.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Internal\Extensions"/>
+  </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

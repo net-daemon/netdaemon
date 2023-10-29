@@ -70,5 +70,6 @@ internal class ResultMessageHandler : IAsyncDisposable
         {
             await Task.WhenAny( Task.WhenAll(_backgroundTasks.Keys), Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
         }
+        _tokenSource.Dispose();
     }
 }

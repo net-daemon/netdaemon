@@ -1,33 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
     <RootNamespace>NetDaemon.Extensions.Scheduler</RootNamespace>
-    <PackageId>JoySoftware.NetDaemon.Extensions.Scheduling</PackageId>
-    <Version>21.47.1</Version>
-    <Authors>helto4real</Authors>
-    <Company>JoySoftware</Company>
+    <PackageId>NetDaemon.Extensions.Scheduling</PackageId>
     <description>Scheduling extensions for NetDaemon</description>
-    <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageDescription>
-      This package contains scheduling features for NetDaemon.
+      Scheduling features for NetDaemon.
+      Please see https://github.com/net-daemon/netdaemon.
     </PackageDescription>
-    <PackageReleaseNotes>Please advice this is still in beta</PackageReleaseNotes>
-    <tags>Home Assistant, NetDaemon</tags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
-  
+
   <ItemGroup>
     <PackageReference Include="Cronos" Version="0.7.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.5.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.6.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>11.0</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>Debug</RootNamespace>
+    <IsPackable>false</IsPackable>
  </PropertyGroup>
   <ItemGroup>
     <None Update="$(MSBuildProjectDir)appsettings.json">
@@ -27,7 +28,7 @@
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Scheduling" Version="23.38.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Logging" Version="23.38.0" />
     <PackageReference Include="JoySoftware.NetDaemon.Extensions.Tts" Version="23.38.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>

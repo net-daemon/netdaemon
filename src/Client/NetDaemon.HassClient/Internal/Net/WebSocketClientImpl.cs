@@ -59,12 +59,6 @@ internal class WebSocketClientImpl : IWebSocketClient
         await Task.FromException(new NotImplementedException()).ConfigureAwait(false);
     }
 
-    public Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer,
-        CancellationToken cancellationToken)
-    {
-        return Task.FromException<WebSocketReceiveResult>(new NotImplementedException());
-    }
-
     public ValueTask<ValueWebSocketReceiveResult> ReceiveAsync(Memory<byte> buffer,
         CancellationToken cancellationToken)
     {

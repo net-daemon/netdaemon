@@ -68,7 +68,7 @@ public class SchedulerExtensionTest
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Once);
+                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Once);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class SchedulerExtensionTest
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Once);
+                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Once);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class SchedulerExtensionTest
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(5));
+                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Exactly(5));
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public class SchedulerExtensionTest
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)), Times.Exactly(4));
+                It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Exactly(4));
     }
 
     [Fact]
