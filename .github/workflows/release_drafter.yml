@@ -39,3 +39,5 @@ jobs:
           name: ${{ steps.version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run pre-release on dev
+        uses: ./.github/workflows/tags_release_created.yml
