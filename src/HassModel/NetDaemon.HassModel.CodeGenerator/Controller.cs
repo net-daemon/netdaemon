@@ -23,10 +23,10 @@ internal class Controller
     private string EntityMetaDataFileName => Path.Combine(OutputFolder, "EntityMetaData.json");
     private string ServicesMetaDataFileName => Path.Combine(OutputFolder, "ServicesMetaData.json");
 
-    private string OutputFolder => string.IsNullOrEmpty(_generationSettings.OutputFolder) 
-        ? Directory.GetParent(Path.GetFullPath(_generationSettings.OutputFile))!.FullName 
+    private string OutputFolder => string.IsNullOrEmpty(_generationSettings.OutputFolder)
+        ? Directory.GetParent(Path.GetFullPath(_generationSettings.OutputFile))!.FullName
         : _generationSettings.OutputFolder;
-    
+
     public async Task RunAsync()
     {
         var (hassStates, servicesMetaData) = await HaRepositry.GetHaData(_haSettings).ConfigureAwait(false);
@@ -38,9 +38,33 @@ internal class Controller
         await Save(mergedEntityMetaData, EntityMetaDataFileName).ConfigureAwait(false);
         await Save(servicesMetaData, ServicesMetaDataFileName).ConfigureAwait(false);
 
-        var generatedTypes = Generator.GenerateTypes(mergedEntityMetaData.Domains, ServiceMetaDataParser.Parse(servicesMetaData!.Value));
+        var hassServiceDomains = ServiceMetaDataParser.Parse(servicesMetaData!.Value, out var deserializationErrors);
+        CheckParseErrors(deserializationErrors);
+
+        var generatedTypes = Generator.GenerateTypes(mergedEntityMetaData.Domains, hassServiceDomains);
 
         SaveGeneratedCode(generatedTypes);
+    }
+
+    internal static void CheckParseErrors(List<DeserializationError> parseErrors)
+    {
+        if (parseErrors.Count == 0) return;
+
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("""
+                          Errors occured while parsing metadata from Home Assistant for one or more services.
+                          This is usually caused by metadata from HA that is not in the expected JSON format.
+                          nd-codegen will try to continue to generate code for other services.
+                          """);
+        Console.ResetColor();
+        foreach (var deserializationError in parseErrors)
+        {
+            Console.WriteLine();
+            Console.WriteLine(deserializationError.Exception);
+            Console.WriteLine(deserializationError.Context + " = ");
+            Console.Out.Flush();
+            Console.WriteLine(JsonSerializer.Serialize(deserializationError.Element, new JsonSerializerOptions{WriteIndented = true}));
+        }
     }
 
     internal async Task<EntitiesMetaData> LoadEntitiesMetaDataAsync()
@@ -72,7 +96,7 @@ internal class Controller
         await using var _ = fileStream.ConfigureAwait(false);
         await JsonSerializer.SerializeAsync(fileStream, merged, JsonSerializerOptions).ConfigureAwait(false);
     }
-    
+
     private static JsonSerializerOptions JsonSerializerOptions =>
         new()
         {
@@ -80,7 +104,7 @@ internal class Controller
             WriteIndented = true,
             Converters = { new ClrTypeJsonConverter() }
         };
-    
+
     private void SaveGeneratedCode(MemberDeclarationSyntax[] generatedTypes)
     {
         if (!_generationSettings.GenerateOneFilePerEntity)

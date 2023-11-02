@@ -1,12 +1,15 @@
 ﻿namespace NetDaemon.HassModel.CodeGenerator.Model;
 
+public record DeserializationError(Exception Exception, string? Context, JsonElement Element);
+
 internal static class ServiceMetaDataParser
 {
-    public static readonly JsonSerializerOptions SnakeCaseNamingPolicySerializerOptions = new()
-    {
-        PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance
-    };
 
+    public static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance,
+        Converters = { new StringAsDoubleConverter() }
+    };
 
     public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element) => Parse(element, out _);
 
@@ -15,62 +18,69 @@ internal static class ServiceMetaDataParser
     /// </summary>
     /// <param name="element">JsonElement containing the result data</param>
     /// <param name="errors">Outputs Any Exceptions during deserialization</param>
-    public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element, out List<Exception> errors)
+    public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element, out List<DeserializationError> errors)
     {
-        errors = new List<Exception>();
+        errors = new List<DeserializationError>();
         if (element.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException("Not expected result from the GetServices result");
 
         var hassServiceDomains = new List<HassServiceDomain>();
-        foreach (var property in element.EnumerateObject())
+        foreach (var domainProperty in element.EnumerateObject())
         {
             try
             {
                 var hassServiceDomain = new HassServiceDomain
                 {
-                    Domain = property.Name,
-                    Services = GetServices(property.Value)
+                    Domain = domainProperty.Name,
+                    Services = GetServices(domainProperty.Value, errors, domainProperty.Name)
                 };
                 hassServiceDomains.Add(hassServiceDomain);
             }
             catch (JsonException e)
             {
-                Console.Error.WriteLine($"JSON deserialization of {nameof(HassServiceDomain)} failed: {e.Message}");
-                Console.Error.WriteLine($"Deserialization source was: {property.Value}");
-                errors.Add(e);
+                errors.Add(new (e, domainProperty.Name, domainProperty.Value));
             }
         }
         return hassServiceDomains;
     }
 
-    private static IReadOnlyCollection<HassService> GetServices(JsonElement element)
+    private static IReadOnlyCollection<HassService> GetServices(JsonElement domainElement, List<DeserializationError> errors, string context)
     {
-        return element.EnumerateObject()
+        return domainElement.EnumerateObject()
             .Select(serviceDomainProperty =>
-                GetService(serviceDomainProperty.Name, serviceDomainProperty.Value)).ToList();
-    }
+                GetService(serviceDomainProperty.Name, serviceDomainProperty.Value, errors, context))
+            .OfType<HassService>().ToList();
+  }
 
-    private static HassService GetService(string service, JsonElement element)
+    private static HassService? GetService(string serviceName, JsonElement serviceElement, List<DeserializationError> errors, string context)
     {
-        var result = element.Deserialize<HassService>(SnakeCaseNamingPolicySerializerOptions)! with
+        try
         {
-            Service = service,
-        };
-
-        if (element.TryGetProperty("fields", out var fieldProperty))
-        {
-            result = result with
+            var result = serviceElement.Deserialize<HassService>(SerializerOptions)! with
             {
-                Fields = fieldProperty.EnumerateObject().Select(p => GetField(p.Name, p.Value)).ToList()
+                Service = serviceName,
             };
-        }
 
-        return result;
+            if (serviceElement.TryGetProperty("fields", out var fieldProperty))
+            {
+                result = result with
+                {
+                    Fields = fieldProperty.EnumerateObject().Select(p => GetField(p.Name, p.Value)).ToList()
+                };
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            errors.Add(new (ex, $"{context}.{serviceName}", serviceElement));
+            return null;
+        }
     }
 
     private static HassServiceField GetField(string fieldName, JsonElement element)
     {
-        return element.Deserialize<HassServiceField>(SnakeCaseNamingPolicySerializerOptions)! with
+        return element.Deserialize<HassServiceField>(SerializerOptions)! with
         {
             Field = fieldName,
         };
