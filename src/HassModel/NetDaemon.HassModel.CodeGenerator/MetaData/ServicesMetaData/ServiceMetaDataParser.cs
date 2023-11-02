@@ -7,15 +7,20 @@ internal static class ServiceMetaDataParser
         PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance
     };
 
+
+    public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element) => Parse(element, out _);
+
     /// <summary>
     ///     Parses all json elements to instance result from GetServices call
     /// </summary>
     /// <param name="element">JsonElement containing the result data</param>
-    public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element)
+    /// <param name="errors">Outputs Any Exceptions during deserialization</param>
+    public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element, out List<Exception> errors)
     {
+        errors = new List<Exception>();
         if (element.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException("Not expected result from the GetServices result");
-       
+
         var hassServiceDomains = new List<HassServiceDomain>();
         foreach (var property in element.EnumerateObject())
         {
@@ -32,6 +37,7 @@ internal static class ServiceMetaDataParser
             {
                 Console.Error.WriteLine($"JSON deserialization of {nameof(HassServiceDomain)} failed: {e.Message}");
                 Console.Error.WriteLine($"Deserialization source was: {property.Value}");
+                errors.Add(e);
             }
         }
         return hassServiceDomains;
@@ -41,10 +47,10 @@ internal static class ServiceMetaDataParser
     {
         return element.EnumerateObject()
             .Select(serviceDomainProperty =>
-                GetServiceFields(serviceDomainProperty.Name, serviceDomainProperty.Value)).ToList();
+                GetService(serviceDomainProperty.Name, serviceDomainProperty.Value)).ToList();
     }
 
-    private static HassService GetServiceFields(string service, JsonElement element)
+    private static HassService GetService(string service, JsonElement element)
     {
         var result = element.Deserialize<HassService>(SnakeCaseNamingPolicySerializerOptions)! with
         {

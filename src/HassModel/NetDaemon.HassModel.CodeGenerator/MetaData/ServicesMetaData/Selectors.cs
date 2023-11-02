@@ -6,7 +6,7 @@ namespace NetDaemon.HassModel.CodeGenerator.Model;
 internal record Selector()
 {
     public bool Multiple { get; init; }
-    
+
     public string? Type { get; init; }
 }
 
@@ -45,12 +45,18 @@ internal record NumberSelector : Selector
     [Required]
     public double Max { get; init; }
 
-    public float? Step { get; init; }
+
+    // Step can also contain the string "any" which is not usefull for our purpose, se we deserialize as a string and then try to parse as a double
+    [JsonPropertyName("step")]
+    public string? StepValue { get; init; }
+
+    [JsonIgnore]
+    public double? Step => double.TryParse(StepValue, out var d) ? d: null;
 
     public string? UnitOfMeasurement { get; init; }
 }
 
-internal record TargetSelector : Selector 
+internal record TargetSelector : Selector
 {
     [JsonConverter(typeof(SingleObjectAsArrayConverter<EntitySelector>))]
     public EntitySelector[] Entity { get; init; } = Array.Empty<EntitySelector>();
