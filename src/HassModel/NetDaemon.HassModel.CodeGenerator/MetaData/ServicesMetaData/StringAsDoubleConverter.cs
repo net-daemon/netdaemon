@@ -11,8 +11,14 @@ class StringAsDoubleConverter : JsonConverter<double?>
         {
             JsonTokenType.Number => reader.GetDouble(),
             JsonTokenType.String => double.TryParse(reader.GetString(), out var d) ? d : null,
-            _ => null,
+            _ => Skip(ref reader)
         };
+    }
+
+    double? Skip(ref Utf8JsonReader reader)
+    {
+        reader.Skip();
+        return null;
     }
 
     public override void Write(Utf8JsonWriter writer, double? value, JsonSerializerOptions options) => throw new NotSupportedException();
