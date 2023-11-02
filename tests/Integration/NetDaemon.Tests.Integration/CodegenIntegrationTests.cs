@@ -24,7 +24,9 @@ public class CodegenIntegrationTests : NetDaemonIntegrationBase
         var haConnection = Services.GetRequiredService<IHomeAssistantConnection>();
 
         var element = await haConnection.GetServicesAsync(new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).ConfigureAwait(false) ?? throw new InvalidOperationException("Failed to get services");
-        var serviceMetadata = ServiceMetaDataParser.Parse(element);
+        var serviceMetadata = ServiceMetaDataParser.Parse(element, out var errors);
+
+        errors.Should().BeEmpty();
         serviceMetadata.Count.Should().NotBe(0);
 
         var lightDomain = serviceMetadata.FirstOrDefault(n => n.Domain == "switch") ?? throw new InvalidOperationException("Expected domain light to be present");
