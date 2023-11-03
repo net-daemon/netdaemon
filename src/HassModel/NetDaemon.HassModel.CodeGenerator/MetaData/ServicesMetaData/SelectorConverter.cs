@@ -25,7 +25,7 @@ class SelectorConverter : JsonConverter<Selector>
             return new Selector { Type = selectorName};
         }
 
-        var deserialize = (Selector?)element.Deserialize(selectorType, ServiceMetaDataParser.SnakeCaseNamingPolicySerializerOptions);
+        var deserialize = (Selector?)element.Deserialize(selectorType, ServiceMetaDataParser.SerializerOptions);
         deserialize ??= (Selector)Activator.CreateInstance(selectorType)!;
 
         return deserialize with { Type = selectorName };

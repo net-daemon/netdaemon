@@ -33,7 +33,7 @@ public class ServicesGeneratorTest
                         Service = "turn_on",
                         Fields = new HassServiceField[] {
                             new() { Field = "transition", Selector = new NumberSelector(), },
-                            new() { Field = "brightness", Selector = new NumberSelector { StepValue = "0.2" }, }
+                            new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2d }, }
                         },
                         Target = new TargetSelector
                         {
