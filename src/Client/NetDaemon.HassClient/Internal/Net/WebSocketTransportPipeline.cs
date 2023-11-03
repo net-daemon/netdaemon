@@ -43,6 +43,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
         }
 
         await _ws.DisposeAsync().ConfigureAwait(false);
+        _internalCancelSource.Dispose();
     }
 
     public async ValueTask<T[]> GetNextMessagesAsync<T>(CancellationToken cancelToken) where T : class
@@ -57,7 +58,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
         try
         {
             // First we start the serialization task that will process
-            // the pipeline for new data written from websocket input 
+            // the pipeline for new data written from websocket input
             // We want the processing to start before we read data
             // from the websocket so the pipeline is not getting full
             var serializeTask = ReadMessagesFromPipelineAndSerializeAsync<T>(combinedTokenSource.Token);
@@ -163,14 +164,14 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
                     await SendCorrectCloseFrameToRemoteWebSocket().ConfigureAwait(false);
 
                     // Cancel so the write thread is canceled before pipe is complete
-                    _internalCancelSource.Cancel();
+                    await _internalCancelSource.CancelAsync();
                 }
             }
         }
         finally
         {
-            // We have successfully read the whole message, 
-            // make available to reader 
+            // We have successfully read the whole message,
+            // make available to reader
             // even if failure or we cannot reset the pipe
             await _pipe.Writer.CompleteAsync().ConfigureAwait(false);
         }
@@ -215,7 +216,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
                 }
                 case WebSocketState.Open:
                 {
-                    // Do full close 
+                    // Do full close
                     await _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token)
                         .ConfigureAwait(false);
                     if (_ws.State != WebSocketState.Closed)
@@ -233,7 +234,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
             // After the websocket is properly closed
             // we can safely cancel all actions
             if (!_internalCancelSource.IsCancellationRequested)
-                _internalCancelSource.Cancel();
+                await _internalCancelSource.CancelAsync();
         }
     }
 }

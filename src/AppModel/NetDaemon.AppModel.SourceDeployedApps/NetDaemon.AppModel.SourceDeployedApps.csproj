@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>NetDaemon.AppModel.SourceDeployedApps</PackageId>
+    <description>Application model extension for source deployed apps for NetDaemon</description>
+    <PackageDescription>
+      Provides NetDaemons Source deployed apps feature
+      Please see https://github.com/net-daemon/netdaemon.
+    </PackageDescription>
+    <RootNamespace>NetDaemon.AppModel</RootNamespace>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets"/>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-2.final"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+    <PackageReference Include="System.Reactive" Version="6.0.0"/>
+    <PackageReference Include="System.IO.Pipelines" Version="7.0.0"/>
+    <PackageReference Include="Roslynator.Analyzers" Version="4.6.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="YamlDotNet" Version="13.7.1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NetDaemon.AppModel\NetDaemon.AppModel.csproj"/>
+  </ItemGroup>
+
+</Project>

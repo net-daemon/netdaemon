@@ -1,8 +1,7 @@
 using System.Reflection;
 using NetDaemon.AppModel.Internal.AppAssemblyProviders;
-using NetDaemon.AppModel.Internal.AppFactories;
 using NetDaemon.AppModel.Internal.AppFactoryProviders;
-using NetDaemon.AppModel.Internal.Compiler;
+
 using NetDaemon.AppModel.Internal.Config;
 
 namespace NetDaemon.AppModel;
@@ -29,7 +28,7 @@ public static class ServiceCollectionExtensions
         bool? focus = default) where TAppType : class
     {
         return services
-            .AddAppModelIfNotExist()
+            .AddNetDaemonAppModel()
             .AddSingleton<IAppFactoryProvider>(SingleAppFactoryProvider.Create(factoryFunc, id, focus));
     }
 
@@ -41,8 +40,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAppsFromAssembly(this IServiceCollection services, Assembly assembly)
     {
         return services
-            .AddAppModelIfNotExist()
-            .AddAppFactoryIfNotExists()
+            .AddNetDaemonAppModel()
             .AddSingleton<IAppAssemblyProvider>(new AppAssemblyProvider(assembly));
     }
 
@@ -64,55 +62,16 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddNetDaemonApp(this IServiceCollection services, Type type)
     {
         return services
-            .AddAppModelIfNotExist()
+            .AddNetDaemonAppModel()
             .AddSingleton(SingleAppFactoryProvider.Create(type));
     }
 
     /// <summary>
-    ///     Add apps from c# source code using the configuration source to find path
+    /// Adds the basic requirements for the NetDaemon application model
     /// </summary>
-    /// <param name="services">Services</param>
-    /// <param name="useDebug">Override UseDebug in CompileSettings</param>
-    public static IServiceCollection AddAppsFromSource(this IServiceCollection services, bool useDebug = false)
-    {
-        // We make sure we only add AppModel services once
-        services
-            .AddAppModelIfNotExist()
-            .AddAppFactoryIfNotExists()
-            .AddSingleton<Compiler>()
-            .AddSingleton<ICompiler>(s => s.GetRequiredService<Compiler>())
-            .AddSingleton<SyntaxTreeResolver>()
-            .AddSingleton<ISyntaxTreeResolver>(s => s.GetRequiredService<SyntaxTreeResolver>())
-            .AddOptions<CompileSettings>().Configure(settings => settings.UseDebug = useDebug);
-
-        // We need to compile it here so we can dynamically add the service providers
-        var assemblyResolver = ActivatorUtilities.CreateInstance<DynamicallyCompiledAppAssemblyProvider>(services.BuildServiceProvider());
-        services.RegisterDynamicFunctions(assemblyResolver.GetAppAssembly());
-
-        // And now register the assembly resolver that will have the assembly already compiled
-        services.AddSingleton(assemblyResolver);
-        services.AddSingleton<IAppAssemblyProvider>(s => s.GetRequiredService<DynamicallyCompiledAppAssemblyProvider>());
-
-        return services;
-    }
-
-    private static IServiceCollection RegisterDynamicFunctions(this IServiceCollection services, Assembly assembly)
-    {
-        var methods = assembly.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Public))
-                          .Where(m => m.GetCustomAttribute<ServiceCollectionExtensionAttribute>() != null).ToArray() ??
-                      Array.Empty<MethodInfo>();
-
-        if (methods.Any(
-                m => m.GetParameters().Length != 1 && m.GetParameters()[0].GetType() != typeof(IServiceProvider)))
-            throw new InvalidOperationException(
-                "Methods with [ServiceCollectionExtension] Attribute should have exactly one parameter of type IServiceCollection");
-
-        foreach (var methodInfo in methods) methodInfo.Invoke(null, new object?[] {services});
-
-        return services;
-    }
-
-    private static IServiceCollection AddAppModelIfNotExist(this IServiceCollection services)
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddNetDaemonAppModel(this IServiceCollection services)
     {
         // Check if we already registered
         if (services.Any(n => n.ImplementationType == typeof(AppModelImpl)))
@@ -126,7 +85,8 @@ public static class ServiceCollectionExtensions
             .AddTransient<FocusFilter>()
             .AddScopedConfigurationBinder()
             .AddScopedAppServices()
-            .AddConfigManagement();
+            .AddConfigManagement()
+            .AddAppFactoryIfNotExists();
         return services;
     }
 
