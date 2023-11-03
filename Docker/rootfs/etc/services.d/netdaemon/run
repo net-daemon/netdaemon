@@ -32,7 +32,7 @@ else
         exit 1
     fi
 
-    echo -e "\\033[32mStarting NetDaemon V3 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
+    echo -e "\\033[32mStarting NetDaemon V4 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
     cd "$(dirname "${NetDaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
     if [[ "${PWD}" != "$(dirname "${NetDaemon__ApplicationAssembly}")" ]]; then

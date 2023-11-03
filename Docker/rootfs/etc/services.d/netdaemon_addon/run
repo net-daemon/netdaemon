@@ -66,7 +66,7 @@ else
         bashio::exit.nok "The assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings."
     fi
 
-    bashio::log.info "Starting NetDaemon V3 pre-built Runtime using assembly ${NetDaemon__ApplicationAssembly}..."
+    bashio::log.info "Starting NetDaemon V4 pre-built Runtime using assembly ${NetDaemon__ApplicationAssembly}..."
     cd "$(dirname "${NetDaemon__ApplicationAssembly}")" ||  bashio::exit.nok "Could not change directory to run project"
 
     exec dotnet "$(basename "${NetDaemon__ApplicationAssembly}")"
