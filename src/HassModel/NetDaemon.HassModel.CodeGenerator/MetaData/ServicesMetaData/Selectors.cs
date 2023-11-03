@@ -39,19 +39,11 @@ internal record EntitySelector : Selector
 
 internal record NumberSelector : Selector
 {
-    [Required]
-    public double Min { get; init; }
+    public double? Min { get; init; }
 
-    [Required]
-    public double Max { get; init; }
+    public double? Max { get; init; }
 
-
-    // Step can also contain the string "any" which is not usefull for our purpose, se we deserialize as a string and then try to parse as a double
-    [JsonPropertyName("step")]
-    public string? StepValue { get; init; }
-
-    [JsonIgnore]
-    public double? Step => double.TryParse(StepValue, out var d) ? d: null;
+    public double? Step { get; init; }
 
     public string? UnitOfMeasurement { get; init; }
 }
