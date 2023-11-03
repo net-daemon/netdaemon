@@ -4,14 +4,11 @@ name: 📦 Push to nuget pre-release
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Enter version number"
-        required: true
-        default: "21.43.0"
       pre:
         type: choice
         description: Pre-release tag
         required: true
+        default: "alpha"
         options:
           - alpha
           - beta
@@ -30,9 +27,21 @@ jobs:
       - name: ⏭️ Get next version
         id: version
         run: |
+          declare -i newpost
           latest=$(git describe --tags $(git rev-list --tags --max-count=1))
+          latestpre=$(echo "$latest" | awk '{split($0,a,"."); print a[1] "." a[2]}')
+          datepre=$(date --utc '+%y.%-W')
+          if [[ "$latestpre" == "$datepre" ]]; then
+              latestpost=$(echo "$latest" | awk '{split($0,a,"."); print a[3]}')
+              newpost=$latestpost+1
+          else
+              newpost=0
+          fi
           echo Current version:    $latest
-          echo "::set-output name=version::$latest"
+          echo New target version: $datepre.$newpost
+          echo "version=$datepre.$newpost" >> $GITHUB_OUTPUT
+          # Get the build number
+          echo "build=$(git rev-list $(git rev-list --tags --no-walk --max-count=1)..HEAD --count)" >> $GITHUB_OUTPUT
       - name: 🥅 Install .Net 8
         uses: actions/setup-dotnet@v3
         with:
@@ -40,8 +49,8 @@ jobs:
           dotnet-quality: 'preview'
       - name: 🔖 Set version number
         run: |
-          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ github.event.inputs.tag }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
       - name: 🎁 Pack
-        run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ github.event.inputs.tag }}-${{ github.event.inputs.pre }} -p:Version=${{ github.event.inputs.tag }}-${{ github.event.inputs.pre }}
-      - name: 📨 Push to nuget
-        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+        run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }} -p:Version=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}
+          #      - name: 📨 Push to nuget
+          #run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
