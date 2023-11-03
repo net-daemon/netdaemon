@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-rc.2.23479.6"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.2.23479.6"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.2.23479.6"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-2.final"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-3.final"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
     <PackageReference Include="System.Reactive" Version="6.0.0"/>
     <PackageReference Include="System.IO.Pipelines" Version="7.0.0"/>
