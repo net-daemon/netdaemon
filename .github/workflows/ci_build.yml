@@ -4,13 +4,9 @@ on:
   push:
     branches:
       - main
-      - dev
-      - dotnet8
   pull_request:
     branches:
       - main
-      - dev
-      - dotnet8
   schedule:
     - cron: "0 2 * * *" # run at 2 AM UTC
 jobs:
