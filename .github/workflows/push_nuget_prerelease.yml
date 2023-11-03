@@ -52,5 +52,5 @@ jobs:
           sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
       - name: 🎁 Pack
         run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }} -p:Version=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}
-          #      - name: 📨 Push to nuget
-          #run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+      - name: 📨 Push to nuget
+        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json

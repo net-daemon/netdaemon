@@ -8,6 +8,7 @@ on:
         type: choice
         description: Pre-release tag
         required: true
+        default: "alpha"
         options:
           - alpha
           - beta
