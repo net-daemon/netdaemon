@@ -63,10 +63,6 @@ public sealed class HomeAssistantMock : IAsyncDisposable
         await HomeAssistantHost.WaitForShutdownAsync().ConfigureAwait(false);
     }
 
-    public void Dispose()
-    {
-        throw new NotImplementedException();
-    }
 }
 
 /// <summary>
