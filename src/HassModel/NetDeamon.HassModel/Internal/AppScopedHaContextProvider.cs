@@ -71,7 +71,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
             .ConfigureAwait(false);
        return result?.Response;
     }
-    
+
     public IObservable<StateChange> StateAllChanges()
     {
         return _queuedObservable.Where(n =>
@@ -89,12 +89,10 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         _backgroundTaskTracker.TrackBackgroundTask(_apiManager.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (!_tokenSource.IsCancellationRequested)
-            _tokenSource.Cancel();
+            await _tokenSource.CancelAsync();
         _tokenSource.Dispose();
-        
-        return ValueTask.CompletedTask;
     }
 }

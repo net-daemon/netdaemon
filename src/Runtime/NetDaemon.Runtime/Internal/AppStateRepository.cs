@@ -1,6 +1,6 @@
 ﻿using System.Net;
+using NetDaemon.Client.Exceptions;
 using NetDaemon.Client.HomeAssistant.Model;
-using NetDaemon.Client.Internal.Exceptions;
 
 namespace NetDaemon.Runtime.Internal;
 

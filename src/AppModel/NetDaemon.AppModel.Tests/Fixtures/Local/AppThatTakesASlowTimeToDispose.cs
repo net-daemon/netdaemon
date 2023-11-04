@@ -3,7 +3,7 @@ namespace LocalApps;
 
 
 [NetDaemonApp]
-public class SlowDisposableApp : IDisposable
+public sealed class SlowDisposableApp : IDisposable
 {
     public SlowDisposableApp()
     {

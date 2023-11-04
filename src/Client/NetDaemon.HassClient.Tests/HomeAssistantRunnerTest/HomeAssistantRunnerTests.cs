@@ -1,3 +1,4 @@
+using NetDaemon.Client.Exceptions;
 using NNetDaemon.HassClient.Tests.HomeAssistantRunnerTest;
 
 namespace NetDaemon.HassClient.Tests.HomeAssistantRunnerTest;
@@ -33,7 +34,7 @@ public class HomeAssistantRunnerTests
         DefaultRunner.CurrentConnection.Should().NotBeNull();
         try
         {
-            cancelSource.Cancel();
+            await cancelSource.CancelAsync();
             await runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -74,7 +75,7 @@ public class HomeAssistantRunnerTests
 
         try
         {
-            cancelSource.Cancel();
+            await cancelSource.CancelAsync();
             await runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -114,7 +115,7 @@ public class HomeAssistantRunnerTests
 
         try
         {
-            cancelSource.Cancel();
+            await cancelSource.CancelAsync();
             await runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -154,7 +155,7 @@ public class HomeAssistantRunnerTests
 
         try
         {
-            cancelSource.Cancel();
+            await cancelSource.CancelAsync();
             await runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -180,7 +181,7 @@ public class HomeAssistantRunnerTests
             DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
 
         // await DefaultRunner.DisposeAsync().ConfigureAwait(false);
-        cancelSource.Cancel();
+        await cancelSource.CancelAsync();
         var reason = await disconnectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().BeNull();
         try
@@ -222,7 +223,7 @@ public class HomeAssistantRunnerTests
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
         {
-            cancelSource.Cancel();
+            await cancelSource.CancelAsync();
             await runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException)

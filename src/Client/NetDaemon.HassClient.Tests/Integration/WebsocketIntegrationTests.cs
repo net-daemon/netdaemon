@@ -1,3 +1,5 @@
+using NetDaemon.Client.Exceptions;
+
 namespace NetDaemon.HassClient.Tests.Integration;
 
 public class WebsocketIntegrationTests : IntegrationTestBase
@@ -337,7 +339,7 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .Should()
             .NotBeNull();
 
-        secondChangedEvent!.NewState!.Attributes!.FirstOrDefault(n => n.Key == "battery_level")!
+        secondChangedEvent.NewState!.Attributes!.FirstOrDefault(n => n.Key == "battery_level")!
             .Should()
             .NotBeNull();
     }

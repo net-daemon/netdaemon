@@ -1,4 +1,3 @@
-[*.cs]
-dotnet_diagnostic.xUnit1030.severity = none
+﻿[*.cs]
 #Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly
 dotnet_diagnostic.CA1861.severity = none

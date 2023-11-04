@@ -51,7 +51,7 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
                 await homeAssistantConnection
                     .CallServiceAsync("tts", ttsMessage.Service, data, hassTarget, _cancellationTokenSource.Token)
                     .ConfigureAwait(false);
-                // Wait for media player to report state 
+                // Wait for media player to report state
                 await Task.Delay(InternalTimeForTtsDelay, _cancellationTokenSource.Token).ConfigureAwait(false);
                 var state = await homeAssistantConnection
                     .GetEntityStateAsync(ttsMessage.EntityId, _cancellationTokenSource.Token).ConfigureAwait(false);
@@ -83,9 +83,9 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        _cancellationTokenSource.Cancel();
+        await _cancellationTokenSource.CancelAsync();
         await _processTtsTask.ConfigureAwait(false);
         _cancellationTokenSource.Dispose();
     }
-    
+
 }

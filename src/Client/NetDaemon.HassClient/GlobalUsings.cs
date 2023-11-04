@@ -24,7 +24,6 @@ global using NetDaemon.Client.Internal;
 global using NetDaemon.Client.Internal.Helpers;
 global using NetDaemon.Client.Internal.Json;
 global using NetDaemon.Client.Internal.Net;
-global using NetDaemon.Client.Exceptions;
 global using NetDaemon.Client.Internal.Extensions;
 global using NetDaemon.Client.Internal.HomeAssistant.Commands;
 global using NetDaemon.Client.Internal.HomeAssistant.Messages;

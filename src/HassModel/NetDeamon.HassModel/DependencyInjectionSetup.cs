@@ -5,7 +5,7 @@ using NetDaemon.Infrastructure.ObservableHelpers;
 namespace NetDaemon.HassModel;
 
 /// <summary>
-/// Setup methods for services configuration 
+/// Setup methods for services configuration
 /// </summary>
 public static class DependencyInjectionSetup
 {
@@ -14,7 +14,8 @@ public static class DependencyInjectionSetup
     /// </summary>
     public static IHostBuilder UseAppScopedHaContext(this IHostBuilder hostBuilder)
     {
-        if (hostBuilder == null) throw new ArgumentNullException(nameof(hostBuilder));
+
+        ArgumentNullException.ThrowIfNull(hostBuilder, nameof(hostBuilder));
 
         return hostBuilder
             .ConfigureServices((_, services) => services.AddScopedHaContext());

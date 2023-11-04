@@ -13,7 +13,7 @@ public static class HaContextExtensions
     /// </remarks>
     public static IObservable<StateChange> StateChanges(this IHaContext haContext)
     {
-        if (haContext == null) throw new ArgumentNullException(nameof(haContext));
+        ArgumentNullException.ThrowIfNull(haContext, nameof(haContext));
         return haContext.StateAllChanges().StateChangesOnly();
     }
 
@@ -21,7 +21,7 @@ public static class HaContextExtensions
     /// Creates a new Entity instance
     /// </summary>
     public static Entity Entity(this IHaContext haContext, string entityId) => new (haContext, entityId);
- 
+
     /// <summary>
     /// Filters events on their EventType and retrieves their data in a types object
     /// </summary>

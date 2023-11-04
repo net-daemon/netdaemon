@@ -15,7 +15,7 @@ class StringAsDoubleConverter : JsonConverter<double?>
         };
     }
 
-    double? Skip(ref Utf8JsonReader reader)
+    static double? Skip(ref Utf8JsonReader reader)
     {
         reader.Skip();
         return null;

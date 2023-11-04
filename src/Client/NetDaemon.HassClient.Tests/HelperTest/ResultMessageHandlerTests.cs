@@ -1,6 +1,6 @@
 ﻿namespace NetDaemon.HassClient.Tests.HelperTest;
 
-public class ResultMessageHandlerTests
+public class ResultMessageHandlerTests : IAsyncDisposable
 {
     private readonly Mock<ILogger<ResultMessageHandler>> _loggerMock = new();
     private readonly ResultMessageHandler _resultMessageHandler;
@@ -83,5 +83,11 @@ public class ResultMessageHandlerTests
         // Simulate som time
         await Task.Delay(400);
         throw new InvalidOperationException("Ohh noooo!");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _resultMessageHandler.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 }

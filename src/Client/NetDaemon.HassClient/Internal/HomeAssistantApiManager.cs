@@ -1,4 +1,4 @@
-using NetDaemon.Client.Internal.Exceptions;
+using NetDaemon.Client.Exceptions;
 
 namespace NetDaemon.Client.Internal;
 

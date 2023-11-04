@@ -1,0 +1,7 @@
+﻿ [*.cs]
+# Warning CA1862 : Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase' (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862)
+dotnet_diagnostic.CA1862.severity = none 
+# Warning CA1860 : Prefer comparing 'Count' to 0 rather than using 'Any()'
+dotnet_diagnostic.CA1860.severity = none
+# Warning CA1869 : Avoid creating a new 'JsonSerializerOptions' instance for every 
+dotnet_diagnostic.CA1869.severity = none

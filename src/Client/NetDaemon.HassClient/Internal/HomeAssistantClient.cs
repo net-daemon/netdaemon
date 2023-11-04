@@ -1,3 +1,5 @@
+using NetDaemon.Client.Exceptions;
+
 namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantClient(ILogger<IHomeAssistantClient> logger,

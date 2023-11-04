@@ -14,7 +14,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 ///     {
 ///         target.CallService("press");
 ///     }
-/// 
+///
 ///     ///<summary>Press the input button entity.</summary>
 ///     public static void Press(this IEnumerable<InputButtonEntity> target)
 ///     {
@@ -28,7 +28,7 @@ internal static class ExtensionMethodsGenerator
     public static IEnumerable<MemberDeclarationSyntax> Generate(IEnumerable<HassServiceDomain> serviceDomains, IReadOnlyCollection<EntityDomainMetadata> entityDomains)
     {
         var entityClassNameByDomain = entityDomains.ToLookup(e => e.Domain, e => e.CoreInterfaceName ?? e.EntityClassName);
-        
+
         return serviceDomains
             .Select(sd => GenerateDomainExtensionClass(sd, entityClassNameByDomain))
             .OfType<MemberDeclarationSyntax>(); // filter out nulls
@@ -41,7 +41,7 @@ internal static class ExtensionMethodsGenerator
             .SelectMany(service => GenerateExtensionMethodsForService(serviceDomain.Domain, service, entityClassNameByDomain))
             .ToArray();
 
-        if (!serviceMethodDeclarations.Any()) return null;
+        if (serviceMethodDeclarations.Length == 0) return null;
 
         return ClassDeclaration(GetEntityDomainExtensionMethodClassName(serviceDomain.Domain))
                 .AddMembers(serviceMethodDeclarations)
@@ -51,9 +51,9 @@ internal static class ExtensionMethodsGenerator
 
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
     {
-        // There can be multiple Target Domains, so generate methods for each 
+        // There can be multiple Target Domains, so generate methods for each
         var targetEntityDomains = service.Target?.Entity.SelectMany(e => e.Domain) ?? Array.Empty<string>();
-        
+
         return targetEntityDomains.SelectMany(targetEntityDomain => GenerateExtensionMethodsForService(domain, service, targetEntityDomain, entityClassNameByDomain));
     }
 
@@ -92,7 +92,7 @@ internal static class ExtensionMethodsGenerator
                     """)!
             .WithSummaryComment(service.Description);
     }
-    
+
     private static MemberDeclarationSyntax ExtensionMethodWithClassArgument(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
         return ParseMemberDeclaration($$"""
@@ -103,7 +103,7 @@ internal static class ExtensionMethodsGenerator
                     """)!
             .WithSummaryComment(service.Description);
     }
-    
+
     private static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
         return ParseMemberDeclaration($$"""

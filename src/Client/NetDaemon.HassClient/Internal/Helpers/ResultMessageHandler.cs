@@ -2,17 +2,11 @@
 
 namespace NetDaemon.Client.Internal.Helpers;
 
-internal class ResultMessageHandler : IAsyncDisposable
+internal class ResultMessageHandler(ILogger logger) : IAsyncDisposable
 {
     internal int WaitForResultTimeout = 20000;
     private readonly CancellationTokenSource _tokenSource = new();
     private readonly ConcurrentDictionary<Task<HassMessage>, object?> _backgroundTasks = new();
-    private readonly ILogger _logger;
-
-    public ResultMessageHandler(ILogger logger)
-    {
-        _logger = logger;
-    }
 
     public void HandleResult(Task<HassMessage> returnMessageTask, CommandMessage originalCommand)
     {
@@ -33,7 +27,7 @@ internal class ResultMessageHandler : IAsyncDisposable
                 if (awaitedTask != task)
                 {
                     // We have a timeout
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         "Command ({CommandType}) did not get response in timely fashion.  Sent command is {CommandMessage}",
                         command.Type, command);
                 }
@@ -42,14 +36,14 @@ internal class ResultMessageHandler : IAsyncDisposable
                 var result = await task.ConfigureAwait(false);
                 if (!result.Success ?? false)
                 {
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         "Failed command ({CommandType}) error: {ErrorResult}.  Sent command is {CommandMessage}",
                         command.Type, result.Error, command);
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Exception waiting for result message  Sent command is {CommandMessage}", command);
+                logger.LogError(e, "Exception waiting for result message  Sent command is {CommandMessage}", command);
             }
             finally
             {

@@ -2,7 +2,7 @@ namespace NetDaemon.HassClient.Tests.Integration;
 
 public class IntegrationTestBase : IClassFixture<HomeAssistantServiceFixture>
 {
-    protected readonly CancellationTokenSource TokenSource = new(TestSettings.DefaultTimeout);
+    protected CancellationTokenSource TokenSource { get; } = new(TestSettings.DefaultTimeout);
 
     protected IntegrationTestBase(HomeAssistantServiceFixture fixture)
     {
