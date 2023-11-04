@@ -7,7 +7,7 @@ namespace NetDaemon.HassClient.Tests.Integration;
 ///     The Home Assistant Mock class implements a fake Home Assistant server by
 ///     exposing the websocket api and fakes responses to requests.
 /// </summary>
-public class HomeAssistantMock : IAsyncDisposable
+public sealed class HomeAssistantMock : IAsyncDisposable
 {
     public const int RecieiveBufferSize = 1024 * 4;
     public IHost HomeAssistantHost { get; }
@@ -30,7 +30,6 @@ public class HomeAssistantMock : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await Stop().ConfigureAwait(false);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
