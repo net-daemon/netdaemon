@@ -13,7 +13,7 @@ internal static class ServicesGenerator
 
         yield return GenerateRootServicesType(domains);
 
-        foreach (var domainServicesGroup in serviceDomains.Where(sd => sd.Services?.Any() == true).GroupBy(x => x.Domain, x => x.Services))
+        foreach (var domainServicesGroup in serviceDomains.Where(sd => sd.Services.Any() == true).GroupBy(x => x.Domain, x => x.Services))
         {
             var domain = domainServicesGroup.Key!;
             var domainServices = domainServicesGroup
@@ -110,7 +110,7 @@ internal static class ServicesGenerator
         }
         else
         {
-            // method using arguments object 
+            // method using arguments object
             yield return ParseMemberDeclaration($$"""
                         void {{serviceMethodName}}({{JoinList(targetParam, serviceArguments.TypeName)}} data)
                         {
@@ -121,7 +121,7 @@ internal static class ServicesGenerator
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment);
 
-            // method using arguments as separate parameters 
+            // method using arguments as separate parameters
             yield return ParseMemberDeclaration($$"""
                         void {{serviceMethodName}}({{JoinList(targetParam, serviceArguments.GetParametersList())}})
                         {

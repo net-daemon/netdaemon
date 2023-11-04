@@ -4,7 +4,7 @@ using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
-public class BackgroundTaskTrackerTests
+public class BackgroundTaskTrackerTests : IAsyncDisposable
 {
     private readonly BackgroundTaskTracker _backgroundTaskTracker;
     private readonly Mock<ILogger<BackgroundTaskTracker>> _loggerMock = new();
@@ -65,5 +65,11 @@ public class BackgroundTaskTrackerTests
                 It.Is<It.IsAnyType>((_, __) => true),
                 It.IsAny<Exception>(),
                 It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Once);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _backgroundTaskTracker.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 }

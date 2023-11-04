@@ -8,32 +8,24 @@ namespace NetDaemon.HassModel.CodeGenerator;
 #pragma warning disable CA1303
 #pragma warning disable CA2000 // because of await using ... configureAwait()
 
-internal class Controller
+internal class Controller(CodeGenerationSettings generationSettings, HomeAssistantSettings haSettings)
 {
     private const string ResourceName = "NetDaemon.HassModel.CodeGenerator.MetaData.DefaultMetadata.DefaultEntityMetaData.json";
-    private readonly CodeGenerationSettings _generationSettings;
-    private readonly HomeAssistantSettings _haSettings;
-
-    public Controller(CodeGenerationSettings generationSettings, HomeAssistantSettings haSettings)
-    {
-        _generationSettings = generationSettings;
-        _haSettings = haSettings;
-    }
 
     private string EntityMetaDataFileName => Path.Combine(OutputFolder, "EntityMetaData.json");
     private string ServicesMetaDataFileName => Path.Combine(OutputFolder, "ServicesMetaData.json");
 
-    private string OutputFolder => string.IsNullOrEmpty(_generationSettings.OutputFolder)
-        ? Directory.GetParent(Path.GetFullPath(_generationSettings.OutputFile))!.FullName
-        : _generationSettings.OutputFolder;
+    private string OutputFolder => string.IsNullOrEmpty(generationSettings.OutputFolder)
+        ? Directory.GetParent(Path.GetFullPath(generationSettings.OutputFile))!.FullName
+        : generationSettings.OutputFolder;
 
     public async Task RunAsync()
     {
-        var (hassStates, servicesMetaData) = await HaRepositry.GetHaData(_haSettings).ConfigureAwait(false);
+        var (hassStates, servicesMetaData) = await HaRepositry.GetHaData(haSettings).ConfigureAwait(false);
 
         var previousEntityMetadata = await LoadEntitiesMetaDataAsync().ConfigureAwait(false);
         var currentEntityMetaData = EntityMetaDataGenerator.GetEntityDomainMetaData(hassStates);
-        var mergedEntityMetaData = EntityMetaDataMerger.Merge(_generationSettings, previousEntityMetadata, currentEntityMetaData);
+        var mergedEntityMetaData = EntityMetaDataMerger.Merge(generationSettings, previousEntityMetadata, currentEntityMetaData);
 
         await Save(mergedEntityMetaData, EntityMetaDataFileName).ConfigureAwait(false);
         await Save(servicesMetaData, ServicesMetaDataFileName).ConfigureAwait(false);
@@ -107,17 +99,17 @@ internal class Controller
 
     private void SaveGeneratedCode(MemberDeclarationSyntax[] generatedTypes)
     {
-        if (!_generationSettings.GenerateOneFilePerEntity)
+        if (!generationSettings.GenerateOneFilePerEntity)
         {
             Console.WriteLine("Generating single file for all entities.");
-            var unit = Generator.BuildCompilationUnit(_generationSettings.Namespace, generatedTypes.ToArray());
+            var unit = Generator.BuildCompilationUnit(generationSettings.Namespace, generatedTypes.ToArray());
 
-            Directory.CreateDirectory(Directory.GetParent(_generationSettings.OutputFile)!.FullName);
+            Directory.CreateDirectory(Directory.GetParent(generationSettings.OutputFile)!.FullName);
 
-            using var writer = new StreamWriter(_generationSettings.OutputFile);
+            using var writer = new StreamWriter(generationSettings.OutputFile);
             unit.WriteTo(writer);
 
-            Console.WriteLine(Path.GetFullPath(_generationSettings.OutputFile));
+            Console.WriteLine(Path.GetFullPath(generationSettings.OutputFile));
         }
         else
         {
@@ -127,7 +119,7 @@ internal class Controller
 
             foreach (var type in generatedTypes)
             {
-                var unit = Generator.BuildCompilationUnit(_generationSettings.Namespace, type);
+                var unit = Generator.BuildCompilationUnit(generationSettings.Namespace, type);
                 using var writer = new StreamWriter(Path.Combine(OutputFolder, $"{unit.GetClassName()}.cs"));
                 unit.WriteTo(writer);
             }

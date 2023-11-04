@@ -63,12 +63,17 @@ public class HomeAssistantMock : IAsyncDisposable
         await HomeAssistantHost.StopAsync().ConfigureAwait(false);
         await HomeAssistantHost.WaitForShutdownAsync().ConfigureAwait(false);
     }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 /// <summary>
 ///     The class implementing the mock hass server
 /// </summary>
-public class HassMockStartup : IHostedService
+public sealed class HassMockStartup : IHostedService, IDisposable
 {
     private readonly byte[] _authOkMessage =
         File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Integration", "Testdata", "auth_ok.json"));
@@ -89,10 +94,9 @@ public class HassMockStartup : IHostedService
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _cancelSource.Cancel();
-        return Task.CompletedTask;
+        await _cancelSource.CancelAsync();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment e)
@@ -429,5 +433,10 @@ public class HassMockStartup : IHostedService
     {
         [JsonPropertyName("type")] public string Type { get; set; } = string.Empty;
         [JsonPropertyName("id")] public int Id { get; set; } = 0;
+    }
+
+    public void Dispose()
+    {
+        _cancelSource.Dispose();
     }
 }

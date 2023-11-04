@@ -1,6 +1,6 @@
 namespace NetDaemon.Client.Internal.Net;
 
-internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipeline
+internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket) : IWebSocketClientTransportPipeline
 {
     /// <summary>
     ///     Default Json serialization options, Hass expects intended
@@ -13,12 +13,7 @@ internal class WebSocketClientTransportPipeline : IWebSocketClientTransportPipel
 
     private readonly CancellationTokenSource _internalCancelSource = new();
     private readonly Pipe _pipe = new();
-    private readonly IWebSocketClient _ws;
-
-    public WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket)
-    {
-        _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
-    }
+    private readonly IWebSocketClient _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
 
     private static int DefaultTimeOut => 5000;
 

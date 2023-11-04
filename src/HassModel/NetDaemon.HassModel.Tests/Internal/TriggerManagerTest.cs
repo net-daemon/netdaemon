@@ -12,7 +12,7 @@ using NetDaemon.HassModel.Tests.TestHelpers;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
-public class TriggerManagerTest
+public sealed class TriggerManagerTest : IDisposable
 {
     private readonly ITriggerManager _triggerManager;
 
@@ -48,14 +48,14 @@ public class TriggerManagerTest
         serviceCollection.AddScopedHaContext();
 
         var haRunnerMock = new Mock<IHomeAssistantRunner>();
-        
+
         haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
         serviceCollection.AddSingleton(_ => haRunnerMock.Object);
 
         var provider = serviceCollection.BuildServiceProvider();
 
         return provider;
-    }    
+    }
 
 
     [Fact]
@@ -67,13 +67,13 @@ public class TriggerManagerTest
 
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message }}});
-        
+
         // Assert
         await incomingTriggersTask.Should()
             .CompleteWithinAsync(TimeSpan.FromSeconds(1), "the message should have arrived by now")
             .WithResult(message);
     }
-    
+
     [Fact]
     public async Task NoMoreTriggersAfterDispose()
     {
@@ -81,19 +81,19 @@ public class TriggerManagerTest
         var incomingTriggersTask = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
 
         await ((IAsyncDisposable)_triggerManager).DisposeAsync();
-        
-        // Assert, Dispose should unsubscribe with HA AND stop any messages that do pass        
-        
+
+        // Assert, Dispose should unsubscribe with HA AND stop any messages that do pass
+
         _messageSubject.OnNext(new HassMessage(){Id = nextMessageId, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = new JsonElement() }}});
-        
+
         await incomingTriggersTask.Should()
             .NotCompleteWithinAsync(TimeSpan.FromSeconds(1), "no messages should arrive after being disposed");
-        
+
         _hassConnectionMock.Verify(m => m.SendCommandAndReturnHassMessageResponseAsync(
             new UnsubscribeEventsCommand(nextMessageId), It.IsAny<CancellationToken>()));
-    }    
-    
+    }
+
 
     [Fact]
     public async Task RegisterTriggerCorrectMessagesPerSubscription()
@@ -103,24 +103,29 @@ public class TriggerManagerTest
 
         nextMessageId = 7;
         var incomingTriggersTask7 = _triggerManager.RegisterTrigger(new {}).FirstAsync().ToTask().ToFunc();
-        
+
         var message6 = new { tag = "six" }.AsJsonElement();
         var message7 = new { tag = "seven" }.AsJsonElement();
 
         _messageSubject.OnNext(new HassMessage{Id = 6, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message6 }}});
-        
+
 
         _messageSubject.OnNext(new HassMessage{Id = 7, Event = new HassEvent(){Variables = new HassVariable()
             {TriggerElement = message7 }}});
-        
+
         // Assert
         await incomingTriggersTask6.Should()
             .CompleteWithinAsync(TimeSpan.FromSeconds(1), $"{nameof(message6)} should have arrived by now")
             .WithResult(message6);
-        
+
         await incomingTriggersTask7.Should()
             .CompleteWithinAsync(TimeSpan.FromSeconds(1), $"{nameof(message7)} should have arrived by now")
             .WithResult(message7);
+    }
+
+    public void Dispose()
+    {
+        _messageSubject.Dispose();
     }
 }

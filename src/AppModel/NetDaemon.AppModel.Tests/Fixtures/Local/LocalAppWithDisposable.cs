@@ -1,7 +1,7 @@
 namespace LocalApps;
 
 [NetDaemonApp]
-public class MyAppLocalAppWithAsyncDispose : IAsyncDisposable, IDisposable
+public sealed class MyAppLocalAppWithAsyncDispose : IAsyncDisposable, IDisposable
 {
     public bool AsyncDisposeIsCalled { get; private set; }
     public bool DisposeIsCalled { get; private set; }
@@ -21,7 +21,7 @@ public class MyAppLocalAppWithAsyncDispose : IAsyncDisposable, IDisposable
 }
 
 [NetDaemonApp]
-public class MyAppLocalAppWithDispose : IDisposable
+public sealed class MyAppLocalAppWithDispose : IDisposable
 {
     public bool DisposeIsCalled { get; private set; }
 

@@ -11,7 +11,7 @@ using NetDaemon.HassModel.Tests.TestHelpers;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
-public class AppScopedHaContextProviderTest
+public sealed class AppScopedHaContextProviderTest : IDisposable
 {
     private readonly Mock<IHomeAssistantConnection> _hassConnectionMock = new();
     private readonly Subject<HassEvent> _hassEventSubjectMock = new();
@@ -278,4 +278,10 @@ public class AppScopedHaContextProviderTest
     }
 
     public record TestEventData(string command, int endpoint_id, string otherField);
+
+    public void Dispose()
+    {
+       _hassEventSubjectMock.Dispose();
+       GC.SuppressFinalize(this);
+    }
 }

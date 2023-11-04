@@ -19,7 +19,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
     private IAppModelContext? _applicationModelContext;
     private CancellationToken? _stoppingToken;
-    private CancellationTokenSource? _runnerCancelationSource;
+    private CancellationTokenSource? _runnerCancellationSource;
 
     public bool IsConnected;
 
@@ -45,7 +45,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             .Subscribe();
         try
         {
-            _runnerCancelationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            _runnerCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
 
             _runnerTask = homeAssistantRunner.RunAsync(
                 _haSettings.Host,
@@ -54,7 +54,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 _haSettings.Token,
                 _haSettings.WebsocketPath,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
-                _runnerCancelationSource.Token);
+                _runnerCancellationSource.Token);
 
             // Make sure we only return after the connection is made and initialization is ready
             await _startedAndConnected.Task;
@@ -165,11 +165,13 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         _isDisposed = true;
 
         await DisposeApplicationsAsync().ConfigureAwait(false);
-        _runnerCancelationSource?.Cancel();
+        if (_runnerCancellationSource is not null)
+            await _runnerCancellationSource.CancelAsync();
         try
         {
             await _runnerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
+        _runnerCancellationSource?.Dispose();
     }
 }

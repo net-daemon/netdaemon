@@ -20,23 +20,23 @@ public sealed class ClientApp : IAsyncDisposable
         new
         {
             platform = "state",
-            entity_id = new string[] { "media_player.vardagsrum" },
-            from = new string[] { "idle", "playing" },
+            entity_id = new[] { "media_player.vardagsrum" },
+            from = new[] { "idle", "playing" },
             to = "off"
         });
 
-        triggerObservable.Subscribe(n => 
+        triggerObservable.Subscribe(n =>
             _logger.LogCritical("Got trigger message: {Message}", n)
         );
-                
+
         var timePatternTriggerObservable = triggerManager.RegisterTrigger<TimePatternResult>(new
         {
             platform = "time_pattern",
             id = "some id",
             seconds = "/1"
         });
-        
-        var disposedSubscription = timePatternTriggerObservable.Subscribe(n => 
+
+        var disposedSubscription = timePatternTriggerObservable.Subscribe(n =>
             _logger.LogCritical("Got trigger message: {Message}", n)
         );
     }
@@ -46,7 +46,7 @@ public sealed class ClientApp : IAsyncDisposable
         _logger.LogInformation("disposed app");
         return ValueTask.CompletedTask;
     }
-    
+
     record TimePatternResult(string id, string alias, string platform, DateTimeOffset now, string description);
 }
 

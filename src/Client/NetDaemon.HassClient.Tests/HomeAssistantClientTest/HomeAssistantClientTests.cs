@@ -1,3 +1,4 @@
+using NetDaemon.Client.Exceptions;
 using NetDaemon.HassClient.Tests.Net;
 
 namespace NetDaemon.HassClient.Tests.HomeAssistantClientTest;
@@ -39,7 +40,7 @@ public class HomeAssistantClientTests
 
         connection.Should().NotBeNull();
     }
-    
+
     [Fact]
     public async Task TestConnectWithOldVersionHomeAShouldReturnConnection()
     {
@@ -111,7 +112,7 @@ public class HomeAssistantClientTests
         );
         return GetDefaultHomeAssistantClient();
     }
-    
+
     /// <summary>
     ///     Return a pre authenticated and running state
     ///     HomeAssistantClient
@@ -143,7 +144,7 @@ public class HomeAssistantClientTests
                 Success = true
             } //{"id":1,"type":"result","success":true,"result":null}
         );
-        
+
         // The add the fake config state that says running
         _haConnectionMock.AddConfigResponseMessage(
             new HassConfig
@@ -152,8 +153,8 @@ public class HomeAssistantClientTests
             }
         );
         return GetDefaultHomeAssistantClient();
-    }    
-    
+    }
+
     /// <summary>
     ///     Return a pre authenticated and running state
     ///     HomeAssistantClient with version less than 2023.9.x

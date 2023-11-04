@@ -1,9 +1,4 @@
 ﻿namespace NetDaemon.Client.Internal.Helpers;
 
-public class AsyncLazy<T> : Lazy<Task<T>>
-{
-    public AsyncLazy(Func<Task<T>> taskFactory) :
-        base(() => Task.Factory.StartNew(taskFactory).Unwrap())
-    {
-    }
-}
+public class AsyncLazy<T>(Func<Task<T>> taskFactory) : Lazy<Task<T>>(()
+    => Task.Factory.StartNew(taskFactory).Unwrap());

@@ -30,7 +30,7 @@ public class TestRuntime
         var instances = service.ApplicationInstances;
 
         instances.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
-        timedCancellationSource.Cancel();
+        await timedCancellationSource.CancelAsync();
         await runnerTask.ConfigureAwait(false);
     }
 
@@ -103,7 +103,7 @@ public class TestRuntime
                 State = "on"
             });
 
-        timedCancellationSource.Cancel();
+        await timedCancellationSource.CancelAsync();
         await runnerTask.ConfigureAwait(false);
     }
     

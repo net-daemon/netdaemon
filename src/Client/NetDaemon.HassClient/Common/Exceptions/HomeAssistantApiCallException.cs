@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace NetDaemon.Client.Internal.Exceptions;
+namespace NetDaemon.Client.Exceptions;
 
 [SuppressMessage("", "RCS1194")]
 public class HomeAssistantApiCallException : Exception
