@@ -69,23 +69,39 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         IHomeAssistantConnection haConnection,
         CancellationToken cancelToken)
     {
-        logger.LogInformation("Successfully connected to Home Assistant");
-
-        if (_applicationModelContext is not null)
+        try
         {
-            // Something wrong with unloading and disposing apps on restart of HA, we need to prevent apps loading multiple times
-            logger.LogWarning("Applications were not successfully disposed during restart, skippin loading apps again");
-            return;
+            logger.LogInformation("Successfully connected to Home Assistant");
+
+            if (_applicationModelContext is not null)
+            {
+                // Something wrong with unloading and disposing apps on restart of HA, we need to prevent apps loading multiple times
+                logger.LogWarning("Applications were not successfully disposed during restart, skippin loading apps again");
+                return;
+            }
+
+            IsConnected = true;
+
+            await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
+
+            await LoadNewAppContextAsync(haConnection, cancelToken);
+
+            _startedAndConnected.SetResult();
         }
-
-        IsConnected = true;
-
-        await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
-
-        await LoadNewAppContextAsync(haConnection, cancelToken);
-
-        // Now signal that StartAsync may return
-        _startedAndConnected.SetResult();
+        catch (Exception ex)
+        {
+            if (!_startedAndConnected.Task.IsCompleted)
+            {
+                // This means this was the first time we connected and StartAsync is still awaiting _startedAndConnected
+                // By setting the exception on the task it will propagate up.
+                _startedAndConnected.SetException(ex);
+            }
+            else
+            {
+                // There is none waiting for this event handler to finish so we need to Log the exception here
+                logger.LogCritical(ex, "Error re-initializing after reconnect to Home Assistant");
+            }
+        }
     }
 
     private async Task LoadNewAppContextAsync(IHomeAssistantConnection haConnection, CancellationToken cancelToken)
@@ -93,28 +109,20 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         var appModel = serviceProvider.GetService<IAppModel>();
         if (appModel == null) return;
 
-        try
-        {
-            // this logging is a bit weird in this class
-            if (!string.IsNullOrEmpty(locationSettings.Value.ApplicationConfigurationFolder))
-                logger.LogDebug("Loading applications from folder {Path}",
-                    Path.GetFullPath(locationSettings.Value.ApplicationConfigurationFolder));
-            else
-                logger.LogDebug("Loading applications with no configuration folder");
+        // this logging is a bit weird in this class
+        if (!string.IsNullOrEmpty(locationSettings.Value.ApplicationConfigurationFolder))
+            logger.LogDebug("Loading applications from folder {Path}",
+                Path.GetFullPath(locationSettings.Value.ApplicationConfigurationFolder));
+        else
+            logger.LogDebug("Loading applications with no configuration folder");
 
-            _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
+        _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
-            // Handle state change for apps if registered
-            var appStateHandler = serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
-            if (appStateHandler == null) return;
+        // Handle state change for apps if registered
+        var appStateHandler = serviceProvider.GetService<IHandleHomeAssistantAppStateUpdates>();
+        if (appStateHandler == null) return;
 
-            await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "   Failed to initialize apps");
-            throw;
-        }
+        await appStateHandler.InitializeAsync(haConnection, _applicationModelContext);
     }
 
     private async Task OnHomeAssistantClientDisconnected(DisconnectReason reason)

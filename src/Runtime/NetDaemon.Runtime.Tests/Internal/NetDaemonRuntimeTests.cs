@@ -92,6 +92,61 @@ public class NetDaemonRuntimeTests
     }
 
     [Fact]
+    public async Task TestOnConnectError()
+    {
+        var cancelSource = new CancellationTokenSource(5000);
+        var homeAssistantRunnerMock = new Mock<IHomeAssistantRunner>();
+        var homeAssistantConnectionMock = new Mock<IHomeAssistantConnection>();
+        var appModelMock = new Mock<IAppModel>();
+        var loggerMock = new Mock<ILogger<NetDaemonRuntime>>();
+        var scopedContext = new Mock<AppScopedHaContextProvider>();
+        var cacheMangerMock = new Mock<ICacheManager>();
+
+        var connectSubject = new Subject<IHomeAssistantConnection>();
+        var disconnectSubject = new Subject<DisconnectReason>();
+        homeAssistantRunnerMock.SetupGet(n => n.OnConnect).Returns(connectSubject);
+        homeAssistantRunnerMock.SetupGet(n => n.OnDisconnect).Returns(disconnectSubject);
+        homeAssistantRunnerMock.Setup(n => n.RunAsync(
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<bool>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<TimeSpan>(),
+                It.IsAny<CancellationToken>()))
+            .Callback(() => { connectSubject.OnNext(homeAssistantConnectionMock.Object); })
+            .Returns(() => Task.Delay(-1, cancelSource.Token));
+
+        homeAssistantRunnerMock.SetupGet(n => n.CurrentConnection)
+            .Returns(homeAssistantConnectionMock.Object);
+
+        cacheMangerMock.Setup(m => m.InitializeAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Something wrong while initializing"));
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddScopedHaContext();
+        var hassEventSubject = new Subject<HassEvent>();
+        serviceCollection.AddTransient<IObservable<HassEvent>>(_ => hassEventSubject);
+        serviceCollection.AddSingleton(_ => homeAssistantRunnerMock.Object);
+        serviceCollection.AddScoped(_ => scopedContext);
+        serviceCollection.AddSingleton(appModelMock.Object);
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        await using var runtime = new NetDaemonRuntime(
+            homeAssistantRunnerMock.Object,
+            new FakeHassSettingsOptions(),
+            new FakeApplicationLocationSettingsOptions(),
+            serviceProvider,
+            loggerMock.Object,
+            cacheMangerMock.Object
+        );
+
+        var startAsync = runtime.StartAsync(cancelSource.Token);
+        connectSubject.OnNext(homeAssistantConnectionMock.Object);
+        Func<Task> startingTask = ()=> startAsync;
+        await startingTask.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
     public async Task TestOnDisconnect()
     {
         var cancelSource = new CancellationTokenSource(5000);
@@ -153,21 +208,11 @@ public class NetDaemonRuntimeTests
 
     private class FakeHassSettingsOptions : IOptions<HomeAssistantSettings>
     {
-        public FakeHassSettingsOptions()
-        {
-            Value = new HomeAssistantSettings();
-        }
+        public HomeAssistantSettings Value { get; } = new();
+    }
 
-        public HomeAssistantSettings Value { get; }
-    }    
-    
     private class FakeApplicationLocationSettingsOptions : IOptions<AppConfigurationLocationSetting>
     {
-        public FakeApplicationLocationSettingsOptions()
-        {
-            Value = new AppConfigurationLocationSetting {ApplicationConfigurationFolder = "/test"};
-        }
-
-        public AppConfigurationLocationSetting Value { get; }
+        public AppConfigurationLocationSetting Value { get; } = new() {ApplicationConfigurationFolder = "/test"};
     }
 }
