@@ -35,7 +35,7 @@ public class ResultMessageHandlerTests : IAsyncDisposable
         _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
         task.IsCompletedSuccessfully.Should().BeTrue();
-        _loggerMock.VerifyWarningWasCalled("Failed command (test) error: (null).  Sent command is CommandMessage { Type = test, Id = 0 }");
+        _loggerMock.VerifyErrorWasCalled("""Failed command (test) error: (null).  Sent command is {"id":0,"type":"test"}""");
     }
 
     [Fact]
@@ -43,11 +43,11 @@ public class ResultMessageHandlerTests : IAsyncDisposable
     {
         // TODO: Test sometimes fails in CI
         var task = SomeUnSuccessfulResultThrowsException();
-        _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
+        _resultMessageHandler.HandleResult(task, new CallServiceCommand {Type = "test", Service = "light.turn_on", ServiceData = new {brightness = 2.3 }});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
         task.IsCompletedSuccessfully.Should().BeFalse();
         task.IsFaulted.Should().BeTrue();
-        _loggerMock.VerifyErrorWasCalled("Exception waiting for result message  Sent command is CommandMessage { Type = test, Id = 0 }");
+        _loggerMock.VerifyErrorWasCalled("""Exception waiting for result message  Sent command is {"domain":"","service":"light.turn_on","service_data":{"brightness":2.3},"target":null,"id":0,"type":"test"}""");
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class ResultMessageHandlerTests : IAsyncDisposable
         _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
         await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
         task.IsCompletedSuccessfully.Should().BeTrue();
-        _loggerMock.VerifyWarningWasCalled("Command (test) did not get response in timely fashion.  Sent command is CommandMessage { Type = test, Id = 0 }");
+        _loggerMock.VerifyWarningWasCalled("""Command (test) did not get response in timely fashion.  Sent command is {"id":0,"type":"test"}""");
     }
 
 
