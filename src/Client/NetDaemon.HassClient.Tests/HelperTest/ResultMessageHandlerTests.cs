@@ -1,22 +1,31 @@
-﻿namespace NetDaemon.HassClient.Tests.HelperTest;
+﻿using Microsoft.Extensions.Time.Testing;
 
-public class ResultMessageHandlerTests : IAsyncDisposable
+namespace NetDaemon.HassClient.Tests.HelperTest;
+
+public sealed class ResultMessageHandlerTests : IAsyncLifetime, IAsyncDisposable
 {
     private readonly Mock<ILogger<ResultMessageHandler>> _loggerMock = new();
     private readonly ResultMessageHandler _resultMessageHandler;
+    private readonly FakeTimeProvider _fakeTimeProvider;
+
+    private readonly CallServiceCommand _callServiceCommand = new() { Domain = "light", Service = "turn_on", ServiceData = new {brightness = 2.3 }};
+    private readonly string _callServiceCommandJson = """{"domain":"light","service":"turn_on","service_data":{"brightness":2.3},"target":null,"id":0,"type":"call_service"}""";
 
     public ResultMessageHandlerTests()
     {
-        _resultMessageHandler = new ResultMessageHandler(_loggerMock.Object);
+        _fakeTimeProvider = new FakeTimeProvider();
+        _resultMessageHandler = new ResultMessageHandler(_loggerMock.Object, _fakeTimeProvider);
     }
 
     [Fact]
     public async Task TestTaskCompleteWithoutLog()
     {
-        var task = SomeSuccessfulResult();
-        _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
-        await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
-        task.IsCompletedSuccessfully.Should().BeTrue();
+        var tcs = new TaskCompletionSource<HassMessage>();
+
+        _resultMessageHandler.HandleResult(tcs.Task, new CommandMessage {Type = "test"});
+        tcs.SetResult(new HassMessage {Success = true});
+        await FlushMessageHandler().ConfigureAwait(false);
+
         _loggerMock.Verify(
             x => x.Log(
                 It.IsAny<LogLevel>(),
@@ -26,68 +35,88 @@ public class ResultMessageHandlerTests : IAsyncDisposable
                 It.Is<Func<It.IsAnyType, Exception, string>>((_, _) => true)!), Times.Never());
     }
 
-
     [Fact]
-    public async Task TestTaskCompleteWithErrorResultShouldLogWarning()
+    public async Task TestTaskCompleteWithErrorResultShouldLogError()
     {
-        // TODO: Test sometimes fails in CI
-        var task = SomeUnSuccessfulResult();
-        _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
-        await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
-        task.IsCompletedSuccessfully.Should().BeTrue();
-        _loggerMock.VerifyErrorWasCalled("""Failed command (test) error: (null).  Sent command is {"id":0,"type":"test"}""");
+        var tcs = new TaskCompletionSource<HassMessage>();
+
+        _resultMessageHandler.HandleResult(tcs.Task, _callServiceCommand);
+        tcs.SetResult(new HassMessage { Success = false, Error = new HassError { Code = 42, Message = "Unable to do what you asked" }});
+
+        await FlushMessageHandler().ConfigureAwait(false);
+        _loggerMock.VerifyErrorWasCalled($"Failed command (call_service) error: HassError {{ Code = 42, Message = Unable to do what you asked }}.  Sent command is {_callServiceCommandJson}");
     }
 
     [Fact]
     public async Task TestTaskCompleteWithExceptionShouldLogError()
     {
-        // TODO: Test sometimes fails in CI
-        var task = SomeUnSuccessfulResultThrowsException();
-        _resultMessageHandler.HandleResult(task, new CallServiceCommand {Type = "test", Service = "light.turn_on", ServiceData = new {brightness = 2.3 }});
-        await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
-        task.IsCompletedSuccessfully.Should().BeFalse();
-        task.IsFaulted.Should().BeTrue();
-        _loggerMock.VerifyErrorWasCalled("""Exception waiting for result message  Sent command is {"domain":"","service":"light.turn_on","service_data":{"brightness":2.3},"target":null,"id":0,"type":"test"}""");
+        var tcs = new TaskCompletionSource<HassMessage>();
+        _resultMessageHandler.HandleResult(tcs.Task, _callServiceCommand);
+
+        tcs.SetException(new InvalidOperationException("Ohh noooo!"));
+
+        await FlushMessageHandler();
+        _loggerMock.VerifyErrorWasCalled($"Exception waiting for result message.  Sent command is {_callServiceCommandJson}");
     }
 
     [Fact]
     public async Task TestTaskCompleteWithTimeoutShouldLogWarning()
     {
-        _resultMessageHandler.WaitForResultTimeout = 1;
+        var tcs = new TaskCompletionSource<HassMessage>();
+        _resultMessageHandler.HandleResult(tcs.Task, _callServiceCommand);
 
-        var task = SomeSuccessfulResult();
-        _resultMessageHandler.HandleResult(task, new CommandMessage {Type = "test"});
-        await _resultMessageHandler.DisposeAsync().ConfigureAwait(false);
-        task.IsCompletedSuccessfully.Should().BeTrue();
-        _loggerMock.VerifyWarningWasCalled("""Command (test) did not get response in timely fashion.  Sent command is {"id":0,"type":"test"}""");
+        // simulate a call that takes one minute
+        _fakeTimeProvider.Advance(TimeSpan.FromMinutes(1));
+        tcs.SetResult(new HassMessage());
+
+        await FlushMessageHandler();
+        _loggerMock.VerifyWarningWasCalled($"Command (call_service) did not get response in timely fashion.  Sent command is {_callServiceCommandJson}");
     }
 
 
-
-    private static async Task<HassMessage> SomeSuccessfulResult()
+    [Fact]
+    public async Task TestTaskCompleteWithTimeoutAndErrorShouldLogTwice()
     {
-        // Simulate som time
-        await Task.Delay(400);
-        return new HassMessage {Success = true};
+        var tcs = new TaskCompletionSource<HassMessage>();
+        _resultMessageHandler.HandleResult(tcs.Task, _callServiceCommand);
+
+        // simulate a call that takes one minute and then returns an error
+        _fakeTimeProvider.Advance(TimeSpan.FromMinutes(1));
+        tcs.SetResult(new HassMessage { Success = false, Error = new HassError { Code = 42, Message = "Unable to do what you asked" }});
+
+        await FlushMessageHandler();
+        _loggerMock.VerifyWarningWasCalled($"Command (call_service) did not get response in timely fashion.  Sent command is {_callServiceCommandJson}");
+        _loggerMock.VerifyErrorWasCalled($"Failed command (call_service) error: HassError {{ Code = 42, Message = Unable to do what you asked }}.  Sent command is {_callServiceCommandJson}");
     }
 
-    private static async Task<HassMessage> SomeUnSuccessfulResult()
+    [Fact]
+    public async Task TestTaskCompleteWithTimeoutAndExceptionShouldLogTwice()
     {
-        // Simulate som time
-        await Task.Delay(400);
-        return new HassMessage {Success = false};
+        var tcs = new TaskCompletionSource<HassMessage>();
+        _resultMessageHandler.HandleResult(tcs.Task, _callServiceCommand);
+
+        // simulate a call that takes one minute and then throws an Exception
+        _fakeTimeProvider.Advance(TimeSpan.FromMinutes(1));
+        tcs.SetException(new InvalidOperationException("Ohh noooo!"));
+
+        await FlushMessageHandler();
+        _loggerMock.VerifyWarningWasCalled($"Command (call_service) did not get response in timely fashion.  Sent command is {_callServiceCommandJson}");
+        _loggerMock.VerifyErrorWasCalled($"Exception waiting for result message.  Sent command is {_callServiceCommandJson}");
     }
 
-    private static async Task<HassMessage> SomeUnSuccessfulResultThrowsException()
+    async Task FlushMessageHandler()
     {
-        // Simulate som time
-        await Task.Delay(400);
-        throw new InvalidOperationException("Ohh noooo!");
+        await _resultMessageHandler.WaitPendingBackgroundTasksAsync()
+            .WaitAsync(TimeSpan.FromMilliseconds(100)) // avoid blocking the test in case something is wrong
+            .ConfigureAwait(false);
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    Task IAsyncLifetime.DisposeAsync() => DisposeAsync().AsTask();
 
     public async ValueTask DisposeAsync()
     {
         await _resultMessageHandler.DisposeAsync();
-        GC.SuppressFinalize(this);
     }
 }
