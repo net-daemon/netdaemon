@@ -15,9 +15,9 @@
   <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets"/>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-    <PackageReference Include="System.Reactive" Version="6.0.1-preview.1" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
