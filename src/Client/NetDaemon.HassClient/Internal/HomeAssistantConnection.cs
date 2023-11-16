@@ -37,7 +37,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         _apiManager = apiManager;
         _logger = logger;
 
-        _resultMessageHandler = new ResultMessageHandler(_logger);
+        _resultMessageHandler = new ResultMessageHandler(_logger, TimeProvider.System);
 
         // We lazily cache same observable for all events. There are no reason we should use multiple subscriptions
         // to all events. If people wants that they can provide a "*" type and get the same thing
@@ -111,7 +111,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         var hassMessage =
             await SendCommandAndReturnHassMessageResponseAsync(command, cancelToken).ConfigureAwait(false);
 
-        // The SendCommmandsAndReturnHAssMessageResponse will throw if not successful so just ignore errors here
+        // The SendCommandsAndReturnHAssMessageResponse will throw if not successful so just ignore errors here
         return hassMessage?.ResultElement;
     }
 

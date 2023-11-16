@@ -2,68 +2,75 @@
 
 namespace NetDaemon.Client.Internal.Helpers;
 
-internal class ResultMessageHandler(ILogger logger) : IAsyncDisposable
+/// <summary>
+/// Handles the result of a 'fire and forget` Message tp Home Assistant
+/// We mainly make sure that any Errors from HA or technical exceptions will get logged correctly
+/// We also track the tasks so we can await for all pending tasks to finish
+/// </summary>
+internal class ResultMessageHandler(ILogger logger, TimeProvider _timeProvider) : IAsyncDisposable
 {
-    internal int WaitForResultTimeout = 20000;
+    private readonly TimeSpan WaitForResultTimeout = TimeSpan.FromSeconds(20);
     private readonly CancellationTokenSource _tokenSource = new();
-    private readonly ConcurrentDictionary<Task<HassMessage>, object?> _backgroundTasks = new();
+    private readonly ConcurrentDictionary<Task, object?> _backgroundTasks = new();
 
     public void HandleResult(Task<HassMessage> returnMessageTask, CommandMessage originalCommand)
     {
-        TrackBackgroundTask(returnMessageTask, originalCommand);
+        var withErrorHandling = HandleResultError(returnMessageTask, originalCommand);
+
+        // Save the task in the dictionary and remove it when it is done
+        // this allows us to wait for all pending background tasks to finish
+        _backgroundTasks.TryAdd(withErrorHandling, null);
+        withErrorHandling.ContinueWith(_ => _backgroundTasks.TryRemove(withErrorHandling, out var _));
     }
 
-    private void TrackBackgroundTask(Task<HassMessage> task, CommandMessage command)
+    private async Task HandleResultError(Task<HassMessage> returnMessageTask, CommandMessage originalCommand)
     {
-        _backgroundTasks.TryAdd(task, null);
-
-        [SuppressMessage("", "CA1031")]
-        async Task Wrap()
+        try
         {
             try
             {
-                var awaitedTask = await Task.WhenAny(task, Task.Delay(WaitForResultTimeout, _tokenSource.Token)).ConfigureAwait(false);
+                await returnMessageTask.WaitAsync(WaitForResultTimeout, _timeProvider, _tokenSource.Token);
+            }
+            catch (TimeoutException)
+            {
+                logger.LogWarning("Command ({CommandType}) did not get response in timely fashion.  Sent command is {CommandMessage}",
+                    originalCommand.Type, originalCommand.GetJsonString());
+            }
 
-                if (awaitedTask != task)
-                {
-                    // We have a timeout
-                    logger.LogWarning(
-                        "Command ({CommandType}) did not get response in timely fashion.  Sent command is {CommandMessage}",
-                        command.Type, command);
-                }
-                // We wait for the task even if there was a timeout so we make sure
-                // we catch the original error
-                var result = await task.ConfigureAwait(false);
-                if (!result.Success ?? false)
-                {
-                    logger.LogWarning(
-                        "Failed command ({CommandType}) error: {ErrorResult}.  Sent command is {CommandMessage}",
-                        command.Type, result.Error, command);
-                }
-            }
-            catch (Exception e)
+            // We wait for the task even if there was a timeout so if we eventually do get a result it will be logged
+            // we catch the original error
+            var result = await returnMessageTask.ConfigureAwait(false);
+            if (!result.Success ?? false)
             {
-                logger.LogError(e, "Exception waiting for result message  Sent command is {CommandMessage}", command);
-            }
-            finally
-            {
-                _backgroundTasks.TryRemove(task, out var _);
+                logger.LogError("Failed command ({CommandType}) error: {ErrorResult}.  Sent command is {CommandMessage}",
+                    originalCommand.Type, result.Error, originalCommand.GetJsonString());
             }
         }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Exception waiting for result message.  Sent command is {CommandMessage}", originalCommand.GetJsonString());
+        }
+    }
 
-        // We do not handle task here cause exceptions
-        // are handled in the Wrap local functions and
-        // all tasks should be cancelable
-        _ = Wrap();
+    public async Task WaitPendingBackgroundTasksAsync()
+    {
+        if (!_backgroundTasks.IsEmpty)
+        {
+            await Task.WhenAll(_backgroundTasks.Keys).ConfigureAwait(false);
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        // Wait for the tasks to complete max 5 seconds
-        if (!_backgroundTasks.IsEmpty)
+        try
         {
-            await Task.WhenAny( Task.WhenAll(_backgroundTasks.Keys), Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+            await WaitPendingBackgroundTasksAsync().WaitAsync(TimeSpan.FromSeconds(5), _timeProvider).ConfigureAwait(false);
         }
+        catch (TimeoutException e)
+        {
+            logger.LogError(e, "One or requests are still pending while closing connection to Home Assistant");
+        }
+
         _tokenSource.Dispose();
     }
 }
