@@ -1,11 +1,13 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
+using NetDaemon.Models;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -48,8 +50,42 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
     }
 
+    private async Task<MqttConfiguration?> RequestMqttConfiguration()
+    {
+        try
+        {
+            var hassToken = Environment.GetEnvironmentVariable("HASS_TOKEN");
+            if (hassToken != null)
+            {
+                _logger.LogTrace("Querying Home Assitant Supervisor for MQTT service configuration");
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", hassToken);
+                var responseStream = await httpClient.GetStreamAsync("http://supervisor/services/mqtt").ConfigureAwait(false);
+                var response = await JsonSerializer.DeserializeAsync<HASupervisorResult<MqttConfiguration>>(responseStream).ConfigureAwait(false);
+                if (response?.Result.Equals("ok", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return response.Data;
+                }
+            }
+        }
+        catch
+        {
+            _logger.LogTrace("Unable to get MQTT configuration from Home Assistant");
+        }
+        return null;
+    }
+
     private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
     {
+        if (string.IsNullOrEmpty(mqttConfig.Host))
+        {
+            var newConfig = await RequestMqttConfiguration();
+            if (newConfig != null)
+            {
+                mqttConfig = newConfig;
+            }
+        }
+
         _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
 
