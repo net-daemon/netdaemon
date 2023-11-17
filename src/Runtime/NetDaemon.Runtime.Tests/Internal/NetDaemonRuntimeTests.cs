@@ -94,17 +94,6 @@ public class NetDaemonRuntimeTests
         VerifyNoErrorsLogged();
     }
 
-    public void VerifyNoErrorsLogged()
-    {
-        _loggerMock.Verify(
-            x => x.Log(
-                It.Is<LogLevel>(l => l >= LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!), times: Times.Never);
-    }
-
     [Fact]
     public async Task TestOnConnectError()
     {
@@ -170,6 +159,17 @@ public class NetDaemonRuntimeTests
         serviceCollection.AddSingleton(_loggerMock.Object);
         serviceCollection.AddTransient<NetDaemonRuntime>();
         return serviceCollection.BuildServiceProvider().GetRequiredService<NetDaemonRuntime>();
+    }
+
+    private void VerifyNoErrorsLogged()
+    {
+        _loggerMock.Verify(
+            x => x.Log(
+                It.Is<LogLevel>(l => l >= LogLevel.Error),
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!), times: Times.Never);
     }
 
     private class FakeHassSettingsOptions : IOptions<HomeAssistantSettings>
