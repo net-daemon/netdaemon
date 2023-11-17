@@ -1,6 +1,5 @@
 ﻿using System.Reactive.Subjects;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Discovery;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
 using NetDaemon.HassModel.Internal;
@@ -10,7 +9,6 @@ namespace NetDaemon.Runtime.Tests.Internal;
 
 public class NetDaemonRuntimeTests
 {
-    private CancellationTokenSource _cancelSource = new(5000);
     private Mock<IHomeAssistantRunner> _homeAssistantRunnerMock = new();
     private Mock<IHomeAssistantConnection> _homeAssistantConnectionMock = new();
     private Mock<IAppModel> _appModelMock = new();
@@ -157,7 +155,7 @@ public class NetDaemonRuntimeTests
                 It.IsAny<string>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<CancellationToken>()))
-            .Returns(async () => { await Task.Delay(-1, _cancelSource.Token); });
+            .Returns(async () => new TaskCompletionSource().Task);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddScopedHaContext();
