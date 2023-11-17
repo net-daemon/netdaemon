@@ -7,7 +7,7 @@ using NetDaemon.Runtime.Internal;
 
 namespace NetDaemon.Runtime.Tests.Internal;
 
-public class NetDaemonRuntimeTests
+public class NetDaemonRuntimeTests : IDisposable
 {
     private Mock<IHomeAssistantRunner> _homeAssistantRunnerMock = new();
     private Mock<IHomeAssistantConnection> _homeAssistantConnectionMock = new();
@@ -130,8 +130,6 @@ public class NetDaemonRuntimeTests
                 It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!), times: Times.Once);
     }
 
-
-
     private NetDaemonRuntime SetupNetDaemonRuntime()
     {
         _homeAssistantRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_homeAssistantConnectionMock.Object);
@@ -144,7 +142,7 @@ public class NetDaemonRuntimeTests
                 It.IsAny<string>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<CancellationToken>()))
-            .Returns(async () => new TaskCompletionSource().Task);
+            .Returns(new TaskCompletionSource().Task);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddScopedHaContext();
@@ -180,5 +178,11 @@ public class NetDaemonRuntimeTests
     private class FakeApplicationLocationSettingsOptions : IOptions<AppConfigurationLocationSetting>
     {
         public AppConfigurationLocationSetting Value { get; } = new() {ApplicationConfigurationFolder = "/test"};
+    }
+
+    public void Dispose()
+    {
+        _connectSubject.Dispose();
+        _disconnectSubject.Dispose();
     }
 }
