@@ -86,7 +86,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
             await LoadNewAppContextAsync(haConnection, cancelToken);
 
-            _startedAndConnected.SetResult();
+            _startedAndConnected.TrySetResult();
         }
         catch (Exception ex)
         {
