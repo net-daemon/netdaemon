@@ -7,7 +7,7 @@ using NetDaemon.Runtime.Internal;
 
 namespace NetDaemon.Runtime.Tests.Internal;
 
-public class NetDaemonRuntimeTests : IDisposable
+public sealed class NetDaemonRuntimeTests : IDisposable
 {
     private Mock<IHomeAssistantRunner> _homeAssistantRunnerMock = new();
     private Mock<IHomeAssistantConnection> _homeAssistantConnectionMock = new();
