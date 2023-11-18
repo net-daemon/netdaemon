@@ -53,7 +53,9 @@ export \
     Mqtt__Username \
     Mqtt__Password \
     Mqtt__UseTls \
-    Mqtt__IgnoreCertValidationErrors\
+    Mqtt__IgnoreCertificateChainErrors \
+    Mqtt__IgnoreCertificateRevocationErrors \
+    Mqtt__AllowUntrustedCertificates \
     NetDaemon__ApplicationAssembly \
     Logging__Loglevel__Default \
     NetDaemon__ApplicationConfigurationFolder
