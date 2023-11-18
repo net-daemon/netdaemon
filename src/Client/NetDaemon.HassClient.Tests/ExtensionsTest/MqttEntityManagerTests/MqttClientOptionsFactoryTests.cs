@@ -102,8 +102,6 @@ public class MqttClientOptionsFactoryTests
     [Fact]
     public void CreatesFullyCustomizedConfiguration()
     {
-        // This is the bare minimum necessary to establish a connection to an MQTT broker that doesn't use TLS
-        // or require authentication. The default port is 1883 and a TCP connection is used.
         var mqttConfiguration = new MqttConfiguration
         {
             Host = "broker",
