@@ -15,23 +15,26 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
     private readonly ILogger<AssuredMqttConnection> _logger;
+    private readonly IMqttClientOptionsFactory _mqttClientOptionsFactory;
     private readonly Task _connectionTask;
     private IManagedMqttClient? _mqttClient;
     private bool _disposed;
 
     /// <summary>
-    /// Wrapper to assure an MQTT connection
+    /// Initializes a new instance of the <see cref="AssuredMqttConnection"/> class.
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="mqttFactory"></param>
-    /// <param name="mqttConfig"></param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="mqttClientOptionsFactory">The MQTT client options factory.</param>
+    /// <param name="mqttFactory">The MQTT factory wrapper.</param>
+    /// <param name="mqttConfig">The MQTT configuration.</param>
     public AssuredMqttConnection(
         ILogger<AssuredMqttConnection> logger,
+        IMqttClientOptionsFactory mqttClientOptionsFactory,
         IMqttFactoryWrapper mqttFactory,
         IOptions<MqttConfiguration> mqttConfig)
     {
         _logger = logger;
-
+        _mqttClientOptionsFactory = mqttClientOptionsFactory;
         _logger.LogTrace("MQTT initiating connection");
         _connectionTask = Task.Run(() => ConnectAsync(mqttConfig.Value, mqttFactory));
     }
@@ -53,12 +56,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
             mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
 
-        var clientOptions = new ManagedMqttClientOptionsBuilder()
-            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-            .WithClientOptions(new MqttClientOptionsBuilder()
-                .WithTcpServer(mqttConfig.Host, mqttConfig.Port)
-                .WithCredentials(mqttConfig.UserName, mqttConfig.Password))
-            .Build();
+        var clientOptions = _mqttClientOptionsFactory.CreateClientOptions(mqttConfig);
 
         _mqttClient = mqttFactory.CreateManagedMqttClient();
 

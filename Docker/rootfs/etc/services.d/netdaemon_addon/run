@@ -3,22 +3,41 @@
 # Optional MQTT configuration
 declare Mqtt__Host
 declare Mqtt__Port
-declare Mqtt__Username
+declare Mqtt__ClientId
+declare Mqtt__DiscoveryPrefix
+declare Mqtt__UserName
 declare Mqtt__Password
+declare Mqtt__UseTls
+declare Mqtt__IgnoreCertificateChainErrors
+declare Mqtt__IgnoreCertificateRevocationErrors
+declare Mqtt__AllowUntrustedCertificates
 
 # Set configuration values to environment variables
 NetDaemon__ApplicationAssembly=$(bashio::config 'app_assembly')
 Logging__Loglevel__Default=$(bashio::config 'log_level')
 NetDaemon__ApplicationConfigurationFolder=$(bashio::config 'app_config_folder')
 
-if bashio::services.available "mqtt"; then
+Mqtt__DiscoveryPrefix=$(bashio::config 'mqtt_discoveryprefix' 'homeassistant')
+Mqtt__UseTls=$(bashio::config 'mqtt_use_tls' 'false')
+Mqtt__AllowUntrustedCertificates=$(bashio::config 'mqtt_allow_untrusted_certificates' 'false')
+Mqtt__IgnoreCertificateChainErrors=$(bashio::config 'mqtt_ignore_certificate_chain_errors' 'false')
+Mqtt__IgnoreCertificateRevocationErrors=$(bashio::config 'mqtt_ignore_certificate_revocation_errors' 'false')
+
+Mqtt__ClientId=$(bashio::config 'mqtt_client_id' '')
+
+if bashio::config.has_value "mqtt_host"; then
+    Mqtt__Host=$(bashio::config 'mqtt_host')
+    Mqtt__Port=$(bashio::config 'mqtt_port' '1883')
+    Mqtt__Username=$(bashio::config 'mqtt_username' '')
+    Mqtt__Password=$(bashio::config 'mqtt_password' '')
+elif bashio::services.available "mqtt"; then
     Mqtt__Host=$(bashio::services 'mqtt' 'host')
     Mqtt__Port=$(bashio::services 'mqtt' 'port')
     Mqtt__Username=$(bashio::services 'mqtt' 'username')
     Mqtt__Password=$(bashio::services 'mqtt' 'password')
 else
     bashio::log.warning \
-        "No MQTT add-on installed, MQTT features will not work."
+        "No MQTT add-on installed and manual broker configuration was not specified. MQTT features will not work."
 fi
 
 export \
@@ -29,8 +48,12 @@ export \
     HomeAssistant__Token="${SUPERVISOR_TOKEN}" \
     Mqtt__Host \
     Mqtt__Port \
+    Mqtt__ClientId \
+    Mqtt__DiscoveryPrefix \
     Mqtt__Username \
     Mqtt__Password \
+    Mqtt__UseTls \
+    Mqtt__IgnoreCertValidationErrors\
     NetDaemon__ApplicationAssembly \
     Logging__Loglevel__Default \
     NetDaemon__ApplicationConfigurationFolder
