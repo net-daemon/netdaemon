@@ -26,20 +26,13 @@ public class MqttClientOptionsFactory : IMqttClientOptionsFactory
                     clientOptionsBuilder.WithCredentials(mqttConfig.UserName, mqttConfig.Password);
                 }
 
-                if (!string.IsNullOrEmpty(mqttConfig.ClientId))
-                {
-                    clientOptionsBuilder.WithClientId(mqttConfig.ClientId);
-                }
-
                 if (mqttConfig.UseTls)
                 {
                     clientOptionsBuilder.WithTlsOptions(tlsOptionsBuilder =>
                     {
                         tlsOptionsBuilder
                             .UseTls()
-                            .WithAllowUntrustedCertificates(mqttConfig.AllowUntrustedCertificates)
-                            .WithIgnoreCertificateChainErrors(mqttConfig.IgnoreCertificateChainErrors)
-                            .WithIgnoreCertificateRevocationErrors(mqttConfig.IgnoreCertificateRevocationErrors);
+                            .WithAllowUntrustedCertificates(mqttConfig.AllowUntrustedCertificates);
                     });
                 }
             })

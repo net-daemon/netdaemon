@@ -128,7 +128,7 @@ internal class MqttEntityManager : IMqttEntityManager
         return await _messageSubscriber.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
     }
 
-    private string BuildCreationPayload(string domain, string identifier, string configPath,
+    private static string BuildCreationPayload(string domain, string identifier, string configPath,
         EntityCreationOptions? options, object? additionalConfig)
     {
         var availabilityRequired = IsAvailabilityTopicRequired(options);
@@ -158,15 +158,15 @@ internal class MqttEntityManager : IMqttEntityManager
                                    !string.IsNullOrWhiteSpace(options.PayloadNotAvailable));
     }
 
-    private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
+    private static string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
 
-    private string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";
+    private static string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";
 
-    private string RootPath(string domain, string identifier) => $"{_config.DiscoveryPrefix}/{domain}/{identifier}";
+    private static string RootPath(string domain, string identifier) => $"homeassistant/{domain}/{identifier}";
 
-    private string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
+    private static string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
 
-    private string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
+    private static string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
 
-    private string AvailabilityPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/availability";
+    private static string AvailabilityPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/availability";
 }
