@@ -71,7 +71,7 @@ else
     # make path relative to data folder (/config/netdaemon if addon)
     # if the path is a relative path
     if [[ "${NetDaemon__ApplicationAssembly}" != "/"* ]]; then
-        export NetDaemon__ApplicationAssembly="/config/netdaemon3/${NetDaemon__ApplicationAssembly}"
+        export NetDaemon__ApplicationAssembly="${NetDaemon__ApplicationConfigurationFolder}/${NetDaemon__ApplicationAssembly}"
     fi
 
     # The provided application source is ether a project or pre-compiled .Net application
