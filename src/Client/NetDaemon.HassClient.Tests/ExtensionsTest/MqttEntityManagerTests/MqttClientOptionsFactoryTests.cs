@@ -32,8 +32,6 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeFalse();
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateRevocationErrors.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateChainErrors.Should().BeFalse();
     }
 
     [Fact]
@@ -60,10 +58,8 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeTrue();
 
-        // These would only get set to true if UseTls is true
+        // This would only get set to true if it and UseTls are both true
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateRevocationErrors.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateChainErrors.Should().BeFalse();
     }
 
     [Fact]
@@ -73,9 +69,7 @@ public class MqttClientOptionsFactoryTests
         {
             Host = "broker",
             UseTls = false,
-            AllowUntrustedCertificates = true,
-            IgnoreCertificateChainErrors = true,
-            IgnoreCertificateRevocationErrors = true
+            AllowUntrustedCertificates = true
         };
 
         var mqttClientOptions = MqttClientOptionsFactory.CreateClientOptions(mqttConfiguration);
@@ -93,10 +87,8 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeFalse();
 
-        // These would only get set to true if UseTls was true. In this test, it's not
+        // This would only get set to true if it and UseTls are both true
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateRevocationErrors.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateChainErrors.Should().BeFalse();
     }
 
     [Fact]
@@ -108,11 +100,8 @@ public class MqttClientOptionsFactoryTests
             Port = 1234,
             UserName = "testuser",
             Password = "testpassword",
-            ClientId = "testclient",
             UseTls = true,
-            AllowUntrustedCertificates = true,
-            IgnoreCertificateChainErrors = true,
-            IgnoreCertificateRevocationErrors = true
+            AllowUntrustedCertificates = true
         };
 
         var mqttClientOptions = MqttClientOptionsFactory.CreateClientOptions(mqttConfiguration);
@@ -134,8 +123,6 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeTrue();
         mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeTrue();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateRevocationErrors.Should().BeTrue();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.IgnoreCertificateChainErrors.Should().BeTrue();
     }
 
     [Fact]

@@ -269,7 +269,8 @@ public class MqttEntityManagerTester
         options.Setup(o => o.Value)
             .Returns(() => new MqttConfiguration
             {
-                Host = "localhost", UserName = "id", DiscoveryPrefix = "homeassistant"
+                Host = "localhost", 
+                UserName = "id"
             });
 
         return options.Object;
