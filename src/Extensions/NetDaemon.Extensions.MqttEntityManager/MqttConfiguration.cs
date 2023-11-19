@@ -26,6 +26,11 @@ public class MqttConfiguration
     public string? Password { get; set; }
 
     /// <summary>
+    /// Discovery Prefix, defaults to "homeassistant"
+    /// </summary>
+    public string DiscoveryPrefix { get; set; } = "homeassistant";
+    
+    /// <summary>
     /// Use TLS to connect to MQTT broker, defaults to false
     /// </summary>
     public bool UseTls { get; set; }

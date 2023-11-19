@@ -1,11 +1,11 @@
 ﻿#region
 
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 using NetDaemon.Extensions.MqttEntityManager.Models;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 #endregion
 
@@ -20,8 +20,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
-    private readonly IMessageSender    _messageSender;
-    private readonly IMessageSubscriber  _messageSubscriber;
+    private readonly IMessageSender _messageSender;
+    private readonly IMessageSubscriber _messageSubscriber;
 
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -128,7 +128,7 @@ internal class MqttEntityManager : IMqttEntityManager
         return await _messageSubscriber.SubscribeTopicAsync(CommandPath(domain, identifier)).ConfigureAwait(false);
     }
 
-    private static string BuildCreationPayload(string domain, string identifier, string configPath,
+    private string BuildCreationPayload(string domain, string identifier, string configPath,
         EntityCreationOptions? options, object? additionalConfig)
     {
         var availabilityRequired = IsAvailabilityTopicRequired(options);
@@ -158,15 +158,15 @@ internal class MqttEntityManager : IMqttEntityManager
                                    !string.IsNullOrWhiteSpace(options.PayloadNotAvailable));
     }
 
-    private static string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
+    private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
 
-    private static string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";
+    private string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";
 
-    private static string RootPath(string domain, string identifier) => $"homeassistant/{domain}/{identifier}";
+    private string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
 
-    private static string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
+    private string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
 
-    private static string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
+    private string AvailabilityPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/availability";
 
-    private static string AvailabilityPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/availability";
+    private string RootPath(string domain, string identifier) => $"{_config.DiscoveryPrefix}/{domain}/{identifier}";
 }

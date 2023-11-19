@@ -5,6 +5,7 @@ declare Mqtt__Host
 declare Mqtt__Port
 declare Mqtt__UserName
 declare Mqtt__Password
+declare Mqtt__DiscoveryPrefix
 declare Mqtt__UseTls
 declare Mqtt__AllowUntrustedCertificates
 
@@ -29,6 +30,7 @@ else
 fi
 
 # Optional settings - Toggle "Show unused optional configuration options" to reveal
+Mqtt__DiscoveryPrefix=$(bashio::config 'mqtt_discovery_prefix' 'homeassistant')
 Mqtt__UseTls=$(bashio::config 'mqtt_use_tls' 'false')
 Mqtt__AllowUntrustedCertificates=$(bashio::config 'mqtt_allow_untrusted_certificates' 'false')
 
@@ -42,6 +44,7 @@ export \
     Mqtt__Port \
     Mqtt__UserName \
     Mqtt__Password \
+    Mqtt__DiscoveryPrefix \
     Mqtt__UseTls \
     Mqtt__AllowUntrustedCertificates \
     NetDaemon__ApplicationAssembly \
