@@ -42,7 +42,7 @@ if ! bashio::fs.file_exists "/data/options.json"; then
 fi
 
 if ! bashio::config.has_value "app_assembly"; then
-    bashio::log.info "Starting NetDaemon V3 Runtime ..."
+    bashio::log.info "Starting NetDaemon V4 Runtime ..."
     cd "${daemondir}" || bashio::exit.nok "${daemondir} does not exist"
     exec dotnet NetDaemon.Host.Default.dll
 else
