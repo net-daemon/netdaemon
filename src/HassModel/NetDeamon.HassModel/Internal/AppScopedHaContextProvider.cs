@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Threading;
-using NetDaemon.Client.HomeAssistant.Extensions;
+﻿using NetDaemon.Client.HomeAssistant.Extensions;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;

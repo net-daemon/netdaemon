@@ -1,7 +1,5 @@
-﻿using System;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-using System.Threading;
 
 namespace NetDaemon.Extensions.Scheduler;
 

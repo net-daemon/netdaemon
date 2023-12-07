@@ -1,9 +1,7 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("NetDaemon.Extensions.Scheduling.Tests")]

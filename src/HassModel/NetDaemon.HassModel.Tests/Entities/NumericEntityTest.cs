@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Reactive.Linq;
 using System.Text.Json;
-using System.Threading;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using NetDaemon.HassModel.Tests.TestHelpers.HassClient;

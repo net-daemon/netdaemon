@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Threading;
 using NetDaemon.Client.HomeAssistant.Extensions;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.Infrastructure.ObservableHelpers;

@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Subjects;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using NetDaemon.HassModel.Internal;
 using NetDaemon.HassModel.Tests.TestHelpers;

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Text.Json;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;

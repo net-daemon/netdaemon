@@ -1,0 +1,1491 @@
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Common\Attributes\NetDaemonAppAttribute.cs
+FN:11,System.String NetDaemon.AppModel.NetDaemonAppAttribute::get_Id()
+FNDA:135,System.String NetDaemon.AppModel.NetDaemonAppAttribute::get_Id()
+DA:12,135
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Common\Extensions\IConfigurationBuilderExtensions.cs
+FN:17,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddJsonAppConfig(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.String)
+FNDA:2,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddJsonAppConfig(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.String)
+DA:18,2
+DA:19,2
+DA:20,2
+DA:21,6
+DA:22,2
+DA:23,2
+FN:30,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddYamlAppConfig(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.String)
+FNDA:31,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddYamlAppConfig(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.String)
+DA:31,31
+DA:32,31
+DA:33,31
+DA:34,100
+DA:35,31
+DA:36,31
+FN:39,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddYamlFile(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.String,System.Boolean,System.Boolean)
+FNDA:70,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddYamlFile(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.String,System.Boolean,System.Boolean)
+DA:40,70
+DA:41,70
+DA:42,70
+FN:45,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddYamlFile(Microsoft.Extensions.Configuration.IConfigurationBuilder,Microsoft.Extensions.FileProviders.IFileProvider,System.String,System.Boolean,System.Boolean)
+FNDA:70,Microsoft.Extensions.Configuration.IConfigurationBuilder NetDaemon.AppModel.ConfigurationBuilderExtensions::AddYamlFile(Microsoft.Extensions.Configuration.IConfigurationBuilder,Microsoft.Extensions.FileProviders.IFileProvider,System.String,System.Boolean,System.Boolean)
+DA:46,70
+DA:47,70
+DA:48,70
+DA:49,70
+DA:50,70
+DA:51,70
+DA:53,70
+DA:54,70
+DA:55,70
+DA:56,70
+DA:57,70
+DA:58,70
+DA:59,70
+DA:60,70
+DA:61,70
+DA:62,70
+BRDA:47,2,0,70
+BRDA:47,2,1,0
+BRDA:47,15,0,70
+BRDA:49,25,0,0
+BRDA:49,25,1,70
+BRDA:47,15,1,70
+LF:31
+LH:31
+BRF:6
+BRH:4
+FNF:4
+FNH:4
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Common\Extensions\ServiceCollectionExtension.cs
+FN:29,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddNetDaemonApp(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func`2<System.IServiceProvider,TAppType>,System.String,System.Nullable`1<System.Boolean>)
+FNDA:6,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddNetDaemonApp(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func`2<System.IServiceProvider,TAppType>,System.String,System.Nullable`1<System.Boolean>)
+DA:30,6
+DA:31,6
+DA:32,6
+DA:33,6
+DA:34,6
+FN:41,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppsFromAssembly(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly)
+FNDA:18,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppsFromAssembly(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly)
+DA:42,18
+DA:43,18
+DA:44,18
+DA:45,18
+DA:46,18
+DA:47,18
+FN:54,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddNetDaemonApp(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:4,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddNetDaemonApp(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:55,4
+DA:56,4
+DA:57,4
+FN:64,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddNetDaemonApp(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type)
+FNDA:4,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddNetDaemonApp(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type)
+DA:65,4
+DA:66,4
+DA:67,4
+DA:68,4
+DA:69,4
+FN:75,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppsFromSource(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean)
+FNDA:13,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppsFromSource(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean)
+DA:76,13
+DA:78,13
+DA:79,13
+DA:80,13
+DA:81,13
+DA:82,15
+DA:83,13
+DA:84,15
+DA:85,28
+DA:88,13
+DA:89,13
+DA:92,12
+DA:93,22
+DA:95,12
+DA:96,12
+FN:98,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::RegisterDynamicFunctions(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly)
+FNDA:12,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::RegisterDynamicFunctions(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly)
+DA:99,12
+DA:100,60
+DA:101,2
+DA:102,12
+DA:104,12
+DA:105,14
+DA:106,0
+DA:107,0
+DA:109,42
+DA:111,12
+DA:112,12
+BRDA:100,85,0,0
+BRDA:100,85,1,12
+BRDA:104,133,0,0
+BRDA:104,133,1,12
+BRDA:109,185,1,2
+BRDA:109,185,0,12
+BRDA:105,9,0,0
+BRDA:105,9,1,2
+FN:114,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppModelIfNotExist(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:41,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppModelIfNotExist(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:115,41
+DA:117,933
+DA:118,3
+DA:120,38
+DA:121,38
+DA:122,13
+DA:123,38
+DA:124,13
+DA:125,38
+DA:126,38
+DA:127,38
+DA:128,38
+DA:129,38
+DA:130,41
+BRDA:117,40,0,3
+BRDA:117,40,1,38
+FN:132,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppFactoryIfNotExists(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:31,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddAppFactoryIfNotExists(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:133,31
+DA:134,1153
+DA:135,2
+DA:137,29
+DA:138,29
+DA:139,50
+DA:140,31
+BRDA:134,40,0,2
+BRDA:134,40,1,29
+FN:142,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddScopedConfigurationBinder(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:38,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddScopedConfigurationBinder(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:143,38
+DA:144,38
+DA:145,38
+DA:146,50
+DA:147,38
+DA:148,38
+FN:150,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddScopedAppServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:38,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddScopedAppServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:151,38
+DA:152,38
+DA:153,38
+DA:154,38
+DA:155,38
+DA:156,38
+FN:158,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddConfigManagement(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+FNDA:38,Microsoft.Extensions.DependencyInjection.IServiceCollection NetDaemon.AppModel.ServiceCollectionExtensions::AddConfigManagement(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+DA:159,38
+DA:160,38
+DA:161,38
+DA:162,38
+LF:82
+LH:80
+BRF:12
+BRH:9
+FNF:11
+FNH:11
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Common\Settings\AppLocationSettings.cs
+FN:10,System.String NetDaemon.AppModel.AppConfigurationLocationSetting::get_ApplicationConfigurationFolder()
+FNDA:45,System.String NetDaemon.AppModel.AppConfigurationLocationSetting::get_ApplicationConfigurationFolder()
+DA:11,45
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Application.cs
+FN:26,NetDaemon.AppModel.Internal.ApplicationContext NetDaemon.AppModel.Internal.Application::get_ApplicationContext()
+FNDA:123,NetDaemon.AppModel.Internal.ApplicationContext NetDaemon.AppModel.Internal.Application::get_ApplicationContext()
+DA:27,123
+FN:28,System.String NetDaemon.AppModel.Internal.Application::get_Id()
+FNDA:154,System.String NetDaemon.AppModel.Internal.Application::get_Id()
+DA:29,154
+FN:33,NetDaemon.AppModel.ApplicationState NetDaemon.AppModel.Internal.Application::get_State()
+FNDA:8,NetDaemon.AppModel.ApplicationState NetDaemon.AppModel.Internal.Application::get_State()
+DA:34,8
+DA:35,8
+DA:36,1
+DA:38,7
+DA:39,8
+BRDA:35,9,0,1
+BRDA:35,9,1,7
+BRDA:38,21,0,5
+BRDA:38,21,1,2
+FN:15,System.Void NetDaemon.AppModel.Internal.Application::.ctor(System.IServiceProvider,Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.Application>,NetDaemon.AppModel.Internal.AppFactories.IAppFactory)
+FNDA:59,System.Void NetDaemon.AppModel.Internal.Application::.ctor(System.IServiceProvider,Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.Application>,NetDaemon.AppModel.Internal.AppFactories.IAppFactory)
+DA:16,59
+DA:17,59
+DA:18,59
+DA:19,59
+DA:20,59
+DA:23,59
+DA:24,59
+FN:61,System.Void NetDaemon.AppModel.Internal.Application/<DisposeAsync>d__16::MoveNext()
+FNDA:2,System.Void NetDaemon.AppModel.Internal.Application/<DisposeAsync>d__16::MoveNext()
+DA:62,2
+DA:63,4
+DA:64,2
+BRDA:63,34,0,2
+BRDA:63,34,1,2
+FN:87,System.Void NetDaemon.AppModel.Internal.Application/<InitializeAsync>d__19::MoveNext()
+FNDA:58,System.Void NetDaemon.AppModel.Internal.Application/<InitializeAsync>d__19::MoveNext()
+DA:88,58
+DA:89,58
+DA:90,56
+DA:91,58
+BRDA:89,161,0,56
+BRDA:89,161,1,58
+FN:93,System.Void NetDaemon.AppModel.Internal.Application/<InstanceApplication>d__20::MoveNext()
+FNDA:57,System.Void NetDaemon.AppModel.Internal.Application/<InstanceApplication>d__20::MoveNext()
+DA:94,57
+DA:96,57
+DA:97,57
+DA:100,48
+DA:101,48
+DA:102,48
+DA:103,48
+DA:104,0
+DA:105,0
+DA:106,0
+DA:108,48
+DA:109,0
+DA:111,48
+DA:112,48
+DA:113,48
+DA:114,9
+DA:115,9
+DA:116,9
+DA:117,9
+DA:118,9
+DA:119,57
+BRDA:103,279,0,0
+BRDA:103,279,1,48
+BRDA:108,341,0,0
+BRDA:108,341,1,48
+FN:77,System.Void NetDaemon.AppModel.Internal.Application/<LoadApplication>d__18::MoveNext()
+FNDA:1,System.Void NetDaemon.AppModel.Internal.Application/<LoadApplication>d__18::MoveNext()
+DA:78,1
+DA:82,1
+DA:83,1
+DA:84,1
+DA:85,1
+BRDA:83,149,0,1
+BRDA:83,149,1,1
+FN:121,System.Void NetDaemon.AppModel.Internal.Application/<SaveStateIfStateManagerExistAsync>d__21::MoveNext()
+FNDA:59,System.Void NetDaemon.AppModel.Internal.Application/<SaveStateIfStateManagerExistAsync>d__21::MoveNext()
+DA:122,59
+DA:123,59
+DA:124,9
+DA:125,59
+BRDA:123,34,0,9
+BRDA:123,34,1,59
+FN:42,System.Void NetDaemon.AppModel.Internal.Application/<SetStateAsync>d__15::MoveNext()
+FNDA:12,System.Void NetDaemon.AppModel.Internal.Application/<SetStateAsync>d__15::MoveNext()
+DA:43,12
+DA:44,12
+DA:47,1
+DA:48,1
+DA:50,1
+DA:51,1
+DA:53,9
+DA:54,9
+DA:55,9
+DA:57,1
+DA:59,11
+BRDA:44,65,1,1
+BRDA:44,65,2,1
+BRDA:44,65,4,9
+BRDA:44,65,3,1
+BRDA:44,65,0,11
+FN:127,System.Void NetDaemon.AppModel.Internal.Application/<ShouldInstanceApplicationAsync>d__22::MoveNext()
+FNDA:58,System.Void NetDaemon.AppModel.Internal.Application/<ShouldInstanceApplicationAsync>d__22::MoveNext()
+DA:128,58
+DA:129,58
+DA:130,49
+DA:131,9
+DA:132,9
+DA:133,58
+BRDA:129,31,0,49
+BRDA:129,31,1,9
+FN:66,System.Void NetDaemon.AppModel.Internal.Application/<UnloadApplication>d__17::MoveNext()
+FNDA:1,System.Void NetDaemon.AppModel.Internal.Application/<UnloadApplication>d__17::MoveNext()
+DA:67,1
+DA:68,1
+DA:69,1
+DA:70,1
+DA:71,1
+DA:72,1
+DA:73,1
+DA:74,1
+DA:75,1
+BRDA:68,45,0,1
+BRDA:68,45,1,1
+LF:77
+LH:73
+BRF:25
+BRH:23
+FNF:12
+FNH:12
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppModel.cs
+FN:9,System.Void NetDaemon.AppModel.Internal.AppModelImpl::.ctor(System.IServiceProvider)
+FNDA:13,System.Void NetDaemon.AppModel.Internal.AppModelImpl::.ctor(System.IServiceProvider)
+DA:10,13
+DA:11,13
+DA:12,13
+DA:13,13
+FN:15,System.Void NetDaemon.AppModel.Internal.AppModelImpl/<LoadNewApplicationContext>d__2::MoveNext()
+FNDA:13,System.Void NetDaemon.AppModel.Internal.AppModelImpl/<LoadNewApplicationContext>d__2::MoveNext()
+DA:16,13
+DA:18,13
+DA:19,13
+DA:20,13
+DA:21,13
+LF:9
+LH:9
+BRF:0
+BRH:0
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppModelContext.cs
+FN:20,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.IApplication> NetDaemon.AppModel.Internal.AppModelContext::get_Applications()
+FNDA:13,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.IApplication> NetDaemon.AppModel.Internal.AppModelContext::get_Applications()
+DA:21,13
+FN:6,System.Void NetDaemon.AppModel.Internal.AppModelContext::.ctor(System.Collections.Generic.IEnumerable`1<NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider>,System.IServiceProvider,NetDaemon.AppModel.Internal.FocusFilter)
+FNDA:13,System.Void NetDaemon.AppModel.Internal.AppModelContext::.ctor(System.Collections.Generic.IEnumerable`1<NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider>,System.IServiceProvider,NetDaemon.AppModel.Internal.FocusFilter)
+DA:7,13
+DA:14,13
+DA:15,13
+DA:16,13
+DA:17,13
+DA:18,13
+DA:19,13
+FN:24,System.Collections.Generic.IEnumerable`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppModelContext/<>c::<InitializeAsync>b__8_0(NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider)
+FNDA:26,System.Collections.Generic.IEnumerable`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppModelContext/<>c::<InitializeAsync>b__8_0(NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider)
+DA:25,26
+FN:37,System.Void NetDaemon.AppModel.Internal.AppModelContext/<DisposeAsync>d__9::MoveNext()
+FNDA:0,System.Void NetDaemon.AppModel.Internal.AppModelContext/<DisposeAsync>d__9::MoveNext()
+DA:38,0
+DA:39,0
+DA:40,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:45,0
+DA:47,0
+DA:48,0
+BRDA:39,28,0,0
+BRDA:39,28,1,0
+BRDA:42,235,1,0
+BRDA:42,235,0,0
+FN:23,System.Void NetDaemon.AppModel.Internal.AppModelContext/<InitializeAsync>d__8::MoveNext()
+FNDA:13,System.Void NetDaemon.AppModel.Internal.AppModelContext/<InitializeAsync>d__8::MoveNext()
+DA:24,13
+DA:27,13
+DA:29,155
+DA:30,58
+DA:31,58
+DA:32,58
+DA:33,58
+DA:34,58
+DA:35,13
+BRDA:29,349,1,58
+BRDA:29,349,0,13
+LF:27
+LH:18
+BRF:6
+BRH:2
+FNF:5
+FNH:4
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Context\ApplicationContext.cs
+FN:26,System.Object NetDaemon.AppModel.Internal.ApplicationContext::get_Instance()
+FNDA:60,System.Object NetDaemon.AppModel.Internal.ApplicationContext::get_Instance()
+DA:27,60
+FN:6,System.Void NetDaemon.AppModel.Internal.ApplicationContext::.ctor(System.IServiceProvider,NetDaemon.AppModel.Internal.AppFactories.IAppFactory)
+FNDA:58,System.Void NetDaemon.AppModel.Internal.ApplicationContext::.ctor(System.IServiceProvider,NetDaemon.AppModel.Internal.AppFactories.IAppFactory)
+DA:7,58
+DA:11,58
+DA:12,58
+DA:15,58
+DA:16,58
+DA:20,58
+DA:21,115
+DA:24,58
+DA:25,49
+BRDA:21,56,0,57
+BRDA:21,56,1,58
+FN:35,System.Void NetDaemon.AppModel.Internal.ApplicationContext/<DisposeAsync>d__8::MoveNext()
+FNDA:3,System.Void NetDaemon.AppModel.Internal.ApplicationContext/<DisposeAsync>d__8::MoveNext()
+DA:36,3
+DA:38,3
+DA:40,3
+DA:42,3
+DA:43,3
+DA:45,3
+DA:48,1
+DA:49,1
+DA:51,2
+DA:52,2
+DA:55,3
+DA:56,3
+DA:58,3
+DA:59,3
+BRDA:38,42,0,0
+BRDA:38,42,1,3
+BRDA:42,82,0,3
+BRDA:42,82,1,3
+BRDA:45,143,0,2
+BRDA:45,143,1,1
+BRDA:45,168,1,2
+BRDA:45,168,0,3
+BRDA:55,377,0,3
+BRDA:55,377,1,3
+FN:29,System.Void NetDaemon.AppModel.Internal.ApplicationContext/<InitializeAsync>d__7::MoveNext()
+FNDA:48,System.Void NetDaemon.AppModel.Internal.ApplicationContext/<InitializeAsync>d__7::MoveNext()
+DA:30,48
+DA:31,48
+DA:32,9
+DA:33,48
+BRDA:31,50,0,9
+BRDA:31,50,1,48
+LF:28
+LH:28
+BRF:14
+BRH:13
+FNF:4
+FNH:4
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Context\ApplicationScope.cs
+FN:9,NetDaemon.AppModel.Internal.ApplicationContext NetDaemon.AppModel.Internal.ApplicationScope::get_ApplicationContext()
+FNDA:2,NetDaemon.AppModel.Internal.ApplicationContext NetDaemon.AppModel.Internal.ApplicationScope::get_ApplicationContext()
+DA:10,2
+DA:11,2
+BRDA:10,7,0,1
+BRDA:10,7,1,1
+FN:11,System.Void NetDaemon.AppModel.Internal.ApplicationScope::set_ApplicationContext(NetDaemon.AppModel.Internal.ApplicationContext)
+FNDA:58,System.Void NetDaemon.AppModel.Internal.ApplicationScope::set_ApplicationContext(NetDaemon.AppModel.Internal.ApplicationContext)
+DA:12,58
+LF:3
+LH:3
+BRF:2
+BRH:2
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\FocusFilter.cs
+FN:17,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.FocusFilter::FilterFocusApps(System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory>)
+FNDA:13,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.FocusFilter::FilterFocusApps(System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory>)
+DA:18,13
+DA:19,73
+DA:21,24
+DA:23,10
+DA:24,2
+DA:25,2
+DA:26,2
+DA:28,2
+DA:29,0
+DA:30,0
+DA:31,0
+DA:32,0
+DA:35,2
+DA:36,2
+DA:37,13
+BRDA:21,55,0,11
+BRDA:21,55,1,2
+BRDA:23,125,1,2
+BRDA:23,125,0,2
+BRDA:28,162,0,0
+BRDA:28,162,1,2
+FN:10,System.Void NetDaemon.AppModel.Internal.FocusFilter::.ctor(Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.FocusFilter>,Microsoft.Extensions.Hosting.IHostEnvironment)
+FNDA:13,System.Void NetDaemon.AppModel.Internal.FocusFilter::.ctor(Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.FocusFilter>,Microsoft.Extensions.Hosting.IHostEnvironment)
+DA:11,13
+DA:12,13
+DA:13,13
+DA:14,13
+DA:15,13
+LF:20
+LH:16
+BRF:6
+BRH:5
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Config\AppConfig.cs
+FN:22,T NetDaemon.AppModel.Internal.Config.AppConfig`1::get_Value()
+FNDA:11,T NetDaemon.AppModel.Internal.Config.AppConfig`1::get_Value()
+DA:23,11
+FN:6,System.Void NetDaemon.AppModel.Internal.Config.AppConfig`1::.ctor(Microsoft.Extensions.Configuration.IConfiguration,NetDaemon.AppModel.Internal.Config.IConfigurationBinding,Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.Config.AppConfig`1<T>>)
+FNDA:12,System.Void NetDaemon.AppModel.Internal.Config.AppConfig`1::.ctor(Microsoft.Extensions.Configuration.IConfiguration,NetDaemon.AppModel.Internal.Config.IConfigurationBinding,Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.Config.AppConfig`1<T>>)
+DA:7,12
+DA:8,12
+DA:9,12
+DA:10,12
+DA:12,12
+DA:13,1
+DA:14,1
+DA:15,1
+DA:16,1
+DA:18,11
+DA:19,11
+DA:20,11
+DA:21,12
+BRDA:12,43,0,1
+BRDA:12,43,1,11
+BRDA:19,111,0,0
+BRDA:19,111,1,11
+LF:14
+LH:14
+BRF:4
+BRH:3
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Config\ConfigurationBinding.cs
+FN:36,T NetDaemon.AppModel.Internal.Config.ConfigurationBinding::ToObject(Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:28,T NetDaemon.AppModel.Internal.Config.ConfigurationBinding::ToObject(Microsoft.Extensions.Configuration.IConfiguration)
+DA:37,28
+DA:38,28
+DA:39,19
+DA:40,19
+DA:41,19
+BRDA:39,25,0,0
+BRDA:39,25,1,19
+FN:51,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::GetObject(Microsoft.Extensions.Configuration.IConfiguration,System.Type)
+FNDA:28,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::GetObject(Microsoft.Extensions.Configuration.IConfiguration,System.Type)
+DA:52,28
+DA:53,28
+DA:54,19
+FN:56,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindNonScalar(Microsoft.Extensions.Configuration.IConfiguration,System.Object)
+FNDA:20,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindNonScalar(Microsoft.Extensions.Configuration.IConfiguration,System.Object)
+DA:57,20
+DA:58,20
+DA:63,20
+DA:65,130
+DA:66,43
+DA:67,12
+BRDA:58,7,1,20
+BRDA:65,67,1,43
+BRDA:65,67,0,12
+BRDA:58,7,0,12
+FN:69,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::ThrowIfReadonlyCollection(System.Object)
+FNDA:20,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::ThrowIfReadonlyCollection(System.Object)
+DA:70,20
+DA:71,20
+DA:73,20
+DA:74,4
+DA:75,4
+DA:78,16
+DA:79,0
+DA:80,0
+DA:82,16
+BRDA:71,2,0,0
+BRDA:71,2,1,20
+BRDA:73,38,0,4
+BRDA:73,38,1,16
+BRDA:78,76,0,0
+BRDA:78,76,1,16
+FN:84,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindProperty(System.Reflection.PropertyInfo,System.Object,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:43,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindProperty(System.Reflection.PropertyInfo,System.Object,Microsoft.Extensions.Configuration.IConfiguration)
+DA:85,43
+DA:87,43
+DA:88,43
+DA:89,5
+DA:91,38
+DA:92,38
+DA:94,38
+DA:97,0
+DA:99,38
+DA:101,68
+DA:102,39
+BRDA:87,8,0,0
+BRDA:87,8,1,43
+BRDA:87,22,0,38
+BRDA:87,22,1,5
+BRDA:87,44,1,38
+BRDA:92,63,0,0
+BRDA:92,63,1,38
+BRDA:94,76,0,23
+BRDA:94,76,1,15
+BRDA:94,87,1,38
+BRDA:101,127,0,34
+BRDA:87,44,0,39
+BRDA:94,87,0,39
+BRDA:101,127,1,39
+FN:104,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindToCollection(System.Reflection.TypeInfo,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:9,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindToCollection(System.Reflection.TypeInfo,Microsoft.Extensions.Configuration.IConfiguration)
+DA:105,9
+DA:106,9
+DA:107,9
+DA:108,9
+DA:109,9
+DA:110,9
+DA:111,9
+BRDA:107,41,0,0
+BRDA:107,41,1,9
+FN:114,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::AttemptBindToCollectionInterfaces(System.Type,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:39,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::AttemptBindToCollectionInterfaces(System.Type,Microsoft.Extensions.Configuration.IConfiguration)
+DA:115,39
+DA:116,39
+DA:118,61
+DA:120,17
+DA:121,17
+DA:123,1
+DA:125,16
+DA:126,16
+DA:127,1
+DA:128,1
+DA:129,1
+DA:130,1
+DA:131,1
+DA:132,1
+DA:133,1
+DA:136,15
+DA:137,15
+DA:138,6
+DA:139,6
+DA:140,6
+DA:141,6
+DA:142,6
+DA:143,6
+DA:146,9
+DA:147,9
+DA:149,1
+DA:151,8
+DA:152,8
+DA:154,4
+DA:156,4
+DA:157,4
+DA:158,39
+BRDA:118,19,0,22
+BRDA:118,19,1,17
+BRDA:121,56,0,1
+BRDA:121,56,1,16
+BRDA:126,100,0,1
+BRDA:126,100,1,15
+BRDA:137,205,0,6
+BRDA:137,205,1,9
+BRDA:147,302,0,1
+BRDA:147,302,1,8
+BRDA:152,343,0,4
+BRDA:152,343,1,4
+BRDA:157,380,0,1
+BRDA:157,380,1,3
+FN:160,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindInstance(System.Type,System.Object,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:102,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindInstance(System.Type,System.Object,Microsoft.Extensions.Configuration.IConfiguration)
+DA:161,102
+DA:163,102
+DA:165,102
+DA:166,102
+DA:167,102
+DA:168,59
+DA:169,59
+DA:172,59
+DA:175,43
+DA:178,43
+DA:179,39
+DA:181,39
+DA:182,55
+DA:184,23
+DA:185,18
+DA:188,22
+DA:189,22
+DA:190,0
+DA:191,0
+DA:192,0
+DA:193,22
+DA:194,1
+DA:195,1
+DA:196,1
+DA:198,21
+DA:200,21
+DA:201,21
+DA:202,1
+DA:205,20
+DA:206,13
+DA:208,14
+DA:209,89
+BRDA:163,21,0,0
+BRDA:163,21,1,102
+BRDA:166,39,0,0
+BRDA:166,39,1,102
+BRDA:167,52,0,59
+BRDA:167,52,1,43
+BRDA:167,73,0,59
+BRDA:169,84,0,0
+BRDA:169,84,1,59
+BRDA:167,73,1,43
+BRDA:175,114,0,0
+BRDA:175,114,1,43
+BRDA:178,132,0,39
+BRDA:182,153,0,16
+BRDA:182,153,1,23
+BRDA:178,132,1,22
+BRDA:189,202,0,0
+BRDA:189,202,1,22
+BRDA:193,229,0,1
+BRDA:193,229,1,21
+BRDA:201,281,0,1
+BRDA:201,281,1,20
+FN:211,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::CreateInstance(System.Type)
+FNDA:23,System.Object NetDaemon.AppModel.Internal.Config.ConfigurationBinding::CreateInstance(System.Type)
+DA:212,23
+DA:213,23
+DA:215,25
+DA:217,21
+DA:218,2
+DA:219,3
+DA:220,1
+DA:221,1
+DA:224,19
+DA:225,43
+DA:226,20
+DA:229,18
+DA:230,18
+DA:232,1
+DA:233,1
+DA:234,1
+DA:236,18
+BRDA:215,14,0,22
+BRDA:215,14,1,1
+BRDA:215,27,0,2
+BRDA:215,27,1,21
+BRDA:217,43,0,2
+BRDA:219,59,0,1
+BRDA:219,59,1,1
+BRDA:217,43,1,19
+BRDA:226,138,0,1
+BRDA:226,138,1,18
+BRDA:225,6,0,18
+BRDA:225,6,1,6
+FN:238,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindDictionary(System.Object,System.Type,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:7,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindDictionary(System.Object,System.Type,Microsoft.Extensions.Configuration.IConfiguration)
+DA:239,7
+DA:240,7
+DA:243,7
+DA:244,7
+DA:245,7
+DA:247,7
+DA:249,1
+DA:251,6
+DA:252,6
+DA:254,44
+DA:255,13
+DA:256,13
+DA:257,13
+DA:258,13
+DA:259,13
+DA:260,13
+DA:261,13
+DA:262,13
+DA:263,13
+DA:264,13
+DA:265,13
+DA:266,0
+DA:267,0
+DA:268,0
+DA:269,0
+DA:270,0
+DA:271,13
+DA:272,7
+BRDA:247,54,0,1
+BRDA:247,54,1,6
+BRDA:247,67,1,6
+BRDA:251,86,0,0
+BRDA:251,86,1,6
+BRDA:254,272,1,13
+BRDA:260,147,1,13
+BRDA:261,171,0,13
+BRDA:261,171,1,0
+BRDA:266,213,0,0
+BRDA:266,213,1,13
+BRDA:260,147,0,19
+BRDA:254,272,0,6
+BRDA:247,67,0,7
+FN:274,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindCollection(System.Object,System.Type,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:10,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindCollection(System.Object,System.Type,Microsoft.Extensions.Configuration.IConfiguration)
+DA:275,10
+DA:276,10
+DA:279,10
+DA:280,10
+DA:281,10
+DA:283,72
+DA:285,21
+DA:286,21
+DA:287,21
+DA:288,21
+DA:289,21
+DA:290,42
+DA:291,21
+DA:292,0
+DA:293,0
+DA:295,0
+DA:296,10
+BRDA:280,29,0,0
+BRDA:280,29,1,10
+BRDA:283,119,1,21
+BRDA:290,84,0,21
+BRDA:290,84,1,21
+BRDA:283,119,0,10
+FN:298,System.Array NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindArray(System.Array,Microsoft.Extensions.Configuration.IConfiguration)
+FNDA:1,System.Array NetDaemon.AppModel.Internal.Config.ConfigurationBinding::BindArray(System.Array,Microsoft.Extensions.Configuration.IConfiguration)
+DA:299,1
+DA:300,1
+DA:301,1
+DA:302,1
+DA:303,1
+DA:305,1
+DA:308,1
+DA:310,6
+DA:312,2
+DA:313,2
+DA:314,2
+DA:315,2
+DA:316,2
+DA:317,4
+DA:318,2
+DA:319,0
+DA:320,0
+DA:322,0
+DA:324,1
+DA:325,1
+BRDA:302,32,0,0
+BRDA:302,32,1,1
+BRDA:308,62,0,0
+BRDA:308,62,1,1
+BRDA:310,143,1,2
+BRDA:317,103,0,2
+BRDA:317,103,1,2
+BRDA:310,143,0,1
+FN:327,System.Boolean NetDaemon.AppModel.Internal.Config.ConfigurationBinding::TryConvertValue(System.Type,System.String,System.Object&,System.Exception&)
+FNDA:59,System.Boolean NetDaemon.AppModel.Internal.Config.ConfigurationBinding::TryConvertValue(System.Type,System.String,System.Object&,System.Exception&)
+DA:328,59
+DA:329,59
+DA:330,59
+DA:331,59
+DA:332,0
+DA:333,0
+DA:334,0
+DA:337,59
+DA:338,0
+DA:339,0
+DA:340,0
+DA:341,0
+DA:343,0
+DA:346,59
+DA:347,59
+DA:348,43
+DA:350,43
+DA:351,43
+DA:352,43
+DA:353,0
+DA:354,0
+DA:355,0
+DA:356,0
+DA:358,43
+DA:365,16
+DA:366,16
+DA:367,16
+DA:368,0
+DA:369,0
+DA:370,0
+DA:373,16
+DA:374,59
+BRDA:331,26,0,0
+BRDA:331,26,1,59
+BRDA:337,50,0,0
+BRDA:337,50,1,59
+BRDA:337,78,0,0
+BRDA:339,91,0,0
+BRDA:339,91,1,0
+BRDA:340,107,0,0
+BRDA:340,107,1,0
+BRDA:337,78,1,59
+BRDA:347,160,0,43
+BRDA:347,160,1,16
+FN:376,System.Type NetDaemon.AppModel.Internal.Config.ConfigurationBinding::FindOpenGenericInterface(System.Type,System.Type)
+FNDA:148,System.Type NetDaemon.AppModel.Internal.Config.ConfigurationBinding::FindOpenGenericInterface(System.Type,System.Type)
+DA:377,148
+DA:378,148
+DA:379,148
+DA:380,148
+DA:381,16
+DA:383,132
+DA:384,295
+DA:385,148
+BRDA:379,27,0,77
+BRDA:379,27,1,71
+BRDA:379,51,0,16
+BRDA:379,51,1,132
+BRDA:384,11,0,99
+BRDA:384,11,1,64
+FN:387,System.Collections.Generic.IEnumerable`1<System.Reflection.PropertyInfo> NetDaemon.AppModel.Internal.Config.ConfigurationBinding::GetAllProperties(System.Reflection.TypeInfo)
+FNDA:16,System.Collections.Generic.IEnumerable`1<System.Reflection.PropertyInfo> NetDaemon.AppModel.Internal.Config.ConfigurationBinding::GetAllProperties(System.Reflection.TypeInfo)
+DA:388,16
+DA:389,16
+DA:391,16
+DA:393,16
+DA:394,16
+DA:395,16
+DA:396,16
+DA:397,32
+DA:399,16
+DA:400,16
+BRDA:397,76,1,16
+BRDA:395,30,0,0
+BRDA:395,30,1,16
+BRDA:395,42,0,0
+BRDA:395,42,1,16
+BRDA:397,76,0,16
+FN:22,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::.ctor(System.IServiceProvider)
+FNDA:29,System.Void NetDaemon.AppModel.Internal.Config.ConfigurationBinding::.ctor(System.IServiceProvider)
+DA:23,29
+DA:24,29
+DA:25,29
+DA:26,29
+LF:241
+LH:209
+BRF:128
+BRH:102
+FNF:16
+FNH:16
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Config\Yaml\YamlConfigurationFileParser.cs
+FN:21,System.Collections.Generic.IDictionary`2<System.String,System.String> NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::Parse(System.IO.Stream)
+FNDA:70,System.Collections.Generic.IDictionary`2<System.String,System.String> NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::Parse(System.IO.Stream)
+DA:22,70
+DA:23,70
+DA:24,70
+DA:26,70
+DA:27,70
+DA:29,69
+DA:30,69
+DA:33,69
+DA:35,69
+DA:36,69
+BRDA:29,61,0,0
+BRDA:29,61,1,69
+FN:38,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlNodePair(System.Collections.Generic.KeyValuePair`2<YamlDotNet.RepresentationModel.YamlNode,YamlDotNet.RepresentationModel.YamlNode>)
+FNDA:714,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlNodePair(System.Collections.Generic.KeyValuePair`2<YamlDotNet.RepresentationModel.YamlNode,YamlDotNet.RepresentationModel.YamlNode>)
+DA:39,714
+DA:40,714
+DA:41,714
+DA:42,714
+DA:43,714
+BRDA:41,33,0,0
+BRDA:41,33,1,714
+FN:45,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlNode(System.String,YamlDotNet.RepresentationModel.YamlNode)
+FNDA:1214,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlNode(System.String,YamlDotNet.RepresentationModel.YamlNode)
+DA:46,1214
+DA:47,1214
+DA:50,765
+DA:51,765
+DA:53,209
+DA:54,209
+DA:56,240
+DA:57,240
+DA:59,1214
+BRDA:47,15,0,449
+BRDA:47,25,0,240
+BRDA:47,15,1,765
+BRDA:47,25,1,209
+BRDA:47,35,1,240
+BRDA:47,35,0,1214
+FN:61,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlScalarNode(System.String,YamlDotNet.RepresentationModel.YamlScalarNode)
+FNDA:765,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlScalarNode(System.String,YamlDotNet.RepresentationModel.YamlScalarNode)
+DA:62,765
+DA:64,765
+DA:65,765
+DA:67,765
+DA:68,765
+DA:69,765
+BRDA:67,29,0,765
+BRDA:67,29,1,0
+FN:71,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlMappingNode(YamlDotNet.RepresentationModel.YamlMappingNode)
+FNDA:278,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlMappingNode(YamlDotNet.RepresentationModel.YamlMappingNode)
+DA:72,278
+DA:73,2976
+DA:74,278
+BRDA:73,37,1,714
+BRDA:73,37,0,278
+FN:76,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlMappingNode(System.String,YamlDotNet.RepresentationModel.YamlMappingNode)
+FNDA:209,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlMappingNode(System.String,YamlDotNet.RepresentationModel.YamlMappingNode)
+DA:77,209
+DA:79,209
+DA:81,209
+DA:83,209
+DA:84,209
+FN:86,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlSequenceNode(System.String,YamlDotNet.RepresentationModel.YamlSequenceNode)
+FNDA:240,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlSequenceNode(System.String,YamlDotNet.RepresentationModel.YamlSequenceNode)
+DA:87,240
+DA:89,240
+DA:91,240
+DA:93,240
+DA:94,240
+FN:96,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlSequenceNode(YamlDotNet.RepresentationModel.YamlSequenceNode)
+FNDA:240,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::VisitYamlSequenceNode(YamlDotNet.RepresentationModel.YamlSequenceNode)
+DA:97,240
+DA:98,1980
+DA:99,240
+BRDA:98,51,1,500
+BRDA:98,51,0,240
+FN:101,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::EnterContext(System.String)
+FNDA:1214,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::EnterContext(System.String)
+DA:102,1214
+DA:103,1214
+DA:104,1214
+DA:105,1214
+FN:107,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::ExitContext()
+FNDA:1214,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::ExitContext()
+DA:108,1214
+DA:109,1214
+DA:110,1214
+DA:111,1214
+FN:113,System.Boolean NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::IsNullValue(YamlDotNet.RepresentationModel.YamlScalarNode)
+FNDA:765,System.Boolean NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::IsNullValue(YamlDotNet.RepresentationModel.YamlScalarNode)
+DA:114,765
+DA:115,765
+DA:116,765
+DA:117,765
+BRDA:115,8,0,765
+BRDA:115,28,0,765
+BRDA:115,41,0,765
+BRDA:115,54,0,765
+BRDA:115,28,1,0
+BRDA:115,41,1,0
+BRDA:115,54,1,0
+BRDA:115,8,1,0
+FN:13,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::.ctor()
+FNDA:70,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationFileParser::.ctor()
+DA:14,70
+DA:16,70
+DA:17,70
+DA:19,70
+LF:62
+LH:62
+BRF:24
+BRH:17
+FNF:12
+FNH:12
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Config\Yaml\YamlConfigurationProvider.cs
+FN:11,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationProvider::Load(System.IO.Stream)
+FNDA:70,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationProvider::Load(System.IO.Stream)
+DA:12,70
+DA:13,70
+DA:15,70
+DA:16,69
+FN:6,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationProvider::.ctor(NetDaemon.AppModel.Internal.Config.YamlConfigurationSource)
+FNDA:70,System.Void NetDaemon.AppModel.Internal.Config.YamlConfigurationProvider::.ctor(NetDaemon.AppModel.Internal.Config.YamlConfigurationSource)
+DA:7,70
+DA:8,70
+DA:9,70
+LF:7
+LH:7
+BRF:0
+BRH:0
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Config\Yaml\YamlConfigurationSource.cs
+FN:7,Microsoft.Extensions.Configuration.IConfigurationProvider NetDaemon.AppModel.Internal.Config.YamlConfigurationSource::Build(Microsoft.Extensions.Configuration.IConfigurationBuilder)
+FNDA:70,Microsoft.Extensions.Configuration.IConfigurationProvider NetDaemon.AppModel.Internal.Config.YamlConfigurationSource::Build(Microsoft.Extensions.Configuration.IConfigurationBuilder)
+DA:8,70
+DA:9,70
+DA:10,70
+DA:11,70
+BRDA:9,7,0,0
+BRDA:9,7,1,70
+LF:4
+LH:4
+BRF:2
+BRH:1
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Compiler\CollectableAssemblyLoadContext.cs
+FN:12,System.Reflection.Assembly NetDaemon.AppModel.Internal.Compiler.CollectibleAssemblyLoadContext::Load(System.Reflection.AssemblyName)
+FNDA:10,System.Reflection.Assembly NetDaemon.AppModel.Internal.Compiler.CollectibleAssemblyLoadContext::Load(System.Reflection.AssemblyName)
+DA:13,10
+DA:14,10
+DA:15,10
+FN:7,System.Void NetDaemon.AppModel.Internal.Compiler.CollectibleAssemblyLoadContext::.ctor()
+FNDA:15,System.Void NetDaemon.AppModel.Internal.Compiler.CollectibleAssemblyLoadContext::.ctor()
+DA:8,15
+DA:9,15
+DA:10,15
+LF:6
+LH:6
+BRF:0
+BRH:0
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Compiler\Compiler.cs
+FN:15,NetDaemon.AppModel.Internal.Compiler.CollectibleAssemblyLoadContext NetDaemon.AppModel.Internal.Compiler.CompiledAssemblyResult::get_AssemblyContext()
+FNDA:70,NetDaemon.AppModel.Internal.Compiler.CollectibleAssemblyLoadContext NetDaemon.AppModel.Internal.Compiler.CompiledAssemblyResult::get_AssemblyContext()
+DA:16,70
+FN:34,NetDaemon.AppModel.Internal.Compiler.CompiledAssemblyResult NetDaemon.AppModel.Internal.Compiler.Compiler::Compile()
+FNDA:15,NetDaemon.AppModel.Internal.Compiler.CompiledAssemblyResult NetDaemon.AppModel.Internal.Compiler.Compiler::Compile()
+DA:35,15
+DA:36,15
+DA:38,15
+DA:40,15
+DA:41,15
+DA:43,15
+DA:45,15
+DA:46,14
+DA:47,14
+DA:48,14
+DA:49,14
+DA:50,14
+DA:53,1
+DA:54,1
+DA:56,1
+DA:58,1
+DA:59,1
+DA:60,1
+DA:61,14
+BRDA:41,26,0,13
+BRDA:41,26,1,2
+BRDA:45,76,0,14
+BRDA:48,90,1,2
+BRDA:48,90,0,14
+BRDA:45,76,1,1
+FN:63,System.Void NetDaemon.AppModel.Internal.Compiler.Compiler::Dispose()
+FNDA:2,System.Void NetDaemon.AppModel.Internal.Compiler.Compiler::Dispose()
+DA:64,2
+DA:65,2
+FN:67,Microsoft.CodeAnalysis.CSharp.CSharpCompilation NetDaemon.AppModel.Internal.Compiler.Compiler::GetSharpCompilation()
+FNDA:15,Microsoft.CodeAnalysis.CSharp.CSharpCompilation NetDaemon.AppModel.Internal.Compiler.Compiler::GetSharpCompilation()
+DA:68,15
+DA:69,15
+DA:70,15
+DA:72,15
+DA:73,15
+DA:74,15
+DA:75,15
+DA:76,15
+DA:77,15
+DA:78,15
+DA:79,15
+DA:80,15
+DA:81,15
+DA:82,15
+DA:83,15
+BRDA:72,63,0,13
+BRDA:72,63,1,2
+FN:85,System.Collections.Generic.IEnumerable`1<Microsoft.CodeAnalysis.MetadataReference> NetDaemon.AppModel.Internal.Compiler.Compiler::GetDefaultReferences()
+FNDA:15,System.Collections.Generic.IEnumerable`1<Microsoft.CodeAnalysis.MetadataReference> NetDaemon.AppModel.Internal.Compiler.Compiler::GetDefaultReferences()
+DA:86,15
+DA:87,15
+DA:88,15
+DA:89,15
+DA:90,15
+DA:91,15
+DA:92,15
+DA:93,15
+DA:94,15
+DA:95,15
+DA:96,15
+DA:97,15
+DA:98,15
+DA:99,15
+DA:100,15
+DA:101,15
+DA:103,7107
+DA:104,3531
+DA:105,3420
+DA:107,15
+DA:109,15
+DA:110,15
+BRDA:103,611,1,3531
+BRDA:104,545,0,3486
+BRDA:104,545,1,45
+BRDA:104,569,0,3420
+BRDA:104,569,1,3531
+BRDA:103,611,0,15
+BRDA:107,620,0,0
+BRDA:107,620,1,15
+FN:112,System.String NetDaemon.AppModel.Internal.Compiler.Compiler::PrettyPrintCompileError(Microsoft.CodeAnalysis.Emit.EmitResult)
+FNDA:1,System.String NetDaemon.AppModel.Internal.Compiler.Compiler::PrettyPrintCompileError(Microsoft.CodeAnalysis.Emit.EmitResult)
+DA:113,1
+DA:114,1
+DA:116,5
+DA:117,3
+DA:118,1
+DA:120,1
+DA:121,1
+BRDA:116,84,1,1
+BRDA:116,84,0,1
+FN:23,System.Void NetDaemon.AppModel.Internal.Compiler.Compiler::.ctor(NetDaemon.AppModel.Internal.Compiler.ISyntaxTreeResolver,Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.Compiler.Compiler>,Microsoft.Extensions.Options.IOptions`1<NetDaemon.AppModel.Internal.Compiler.CompileSettings>)
+FNDA:15,System.Void NetDaemon.AppModel.Internal.Compiler.Compiler::.ctor(NetDaemon.AppModel.Internal.Compiler.ISyntaxTreeResolver,Microsoft.Extensions.Logging.ILogger`1<NetDaemon.AppModel.Internal.Compiler.Compiler>,Microsoft.Extensions.Options.IOptions`1<NetDaemon.AppModel.Internal.Compiler.CompileSettings>)
+DA:24,15
+DA:25,15
+DA:26,15
+DA:27,15
+DA:28,15
+DA:29,15
+DA:30,15
+DA:31,15
+DA:32,15
+LF:75
+LH:75
+BRF:18
+BRH:17
+FNF:7
+FNH:7
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Compiler\CompileSettings.cs
+FN:7,System.Boolean NetDaemon.AppModel.Internal.Compiler.CompileSettings::get_UseDebug()
+FNDA:45,System.Boolean NetDaemon.AppModel.Internal.Compiler.CompileSettings::get_UseDebug()
+DA:8,45
+LF:1
+LH:1
+BRF:0
+BRH:0
+FNF:1
+FNH:1
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\Compiler\SyntaxTreeResolver.cs
+FN:18,System.Collections.Generic.IReadOnlyCollection`1<Microsoft.CodeAnalysis.SyntaxTree> NetDaemon.AppModel.Internal.Compiler.SyntaxTreeResolver::GetSyntaxTrees()
+FNDA:15,System.Collections.Generic.IReadOnlyCollection`1<Microsoft.CodeAnalysis.SyntaxTree> NetDaemon.AppModel.Internal.Compiler.SyntaxTreeResolver::GetSyntaxTrees()
+DA:19,15
+DA:20,15
+DA:22,15
+DA:23,15
+DA:24,15
+DA:25,15
+DA:27,15
+DA:29,15
+DA:30,15
+DA:31,15
+DA:32,15
+DA:33,30
+DA:34,15
+DA:35,15
+FN:10,System.Void NetDaemon.AppModel.Internal.Compiler.SyntaxTreeResolver::.ctor(Microsoft.Extensions.Options.IOptions`1<NetDaemon.AppModel.AppConfigurationLocationSetting>)
+FNDA:15,System.Void NetDaemon.AppModel.Internal.Compiler.SyntaxTreeResolver::.ctor(Microsoft.Extensions.Options.IOptions`1<NetDaemon.AppModel.AppConfigurationLocationSetting>)
+DA:11,15
+DA:12,15
+DA:13,15
+DA:14,15
+DA:15,15
+DA:16,15
+LF:20
+LH:20
+BRF:0
+BRH:0
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppFactoryProviders\AssemblyAppFactoryProvider.cs
+FN:16,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppFactoryProviders.AssemblyAppFactoryProvider::GetAppFactories()
+FNDA:21,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppFactoryProviders.AssemblyAppFactoryProvider::GetAppFactories()
+DA:17,21
+DA:18,21
+DA:19,22
+DA:20,22
+DA:21,21
+DA:22,96
+DA:23,21
+DA:24,21
+BRDA:18,85,0,1
+BRDA:18,85,1,21
+FN:26,System.Boolean NetDaemon.AppModel.Internal.AppFactoryProviders.AssemblyAppFactoryProvider::IsNetDaemonAppType(System.Type)
+FNDA:1196,System.Boolean NetDaemon.AppModel.Internal.AppFactoryProviders.AssemblyAppFactoryProvider::IsNetDaemonAppType(System.Type)
+DA:27,1196
+DA:28,1196
+DA:29,86
+DA:30,86
+DA:33,1110
+DA:34,1196
+BRDA:28,7,0,1168
+BRDA:28,15,0,1168
+BRDA:28,7,1,28
+BRDA:28,15,1,28
+BRDA:28,28,0,86
+BRDA:28,28,1,1110
+FN:10,System.Void NetDaemon.AppModel.Internal.AppFactoryProviders.AssemblyAppFactoryProvider::.ctor(System.Collections.Generic.IEnumerable`1<NetDaemon.AppModel.Internal.AppAssemblyProviders.IAppAssemblyProvider>)
+FNDA:21,System.Void NetDaemon.AppModel.Internal.AppFactoryProviders.AssemblyAppFactoryProvider::.ctor(System.Collections.Generic.IEnumerable`1<NetDaemon.AppModel.Internal.AppAssemblyProviders.IAppAssemblyProvider>)
+DA:11,21
+DA:12,21
+DA:13,21
+DA:14,21
+LF:18
+LH:18
+BRF:8
+BRH:8
+FNF:3
+FNH:3
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppFactoryProviders\FuncAppFactoryProvider.cs
+FN:7,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppFactoryProviders.FuncAppFactoryProvider::GetAppFactories()
+FNDA:0,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppFactoryProviders.FuncAppFactoryProvider::GetAppFactories()
+DA:8,0
+DA:9,0
+LF:2
+LH:0
+BRF:0
+BRH:0
+FNF:1
+FNH:0
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppFactoryProviders\SingleAppFactoryProvider.cs
+FN:14,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::GetAppFactories()
+FNDA:10,System.Collections.Generic.IReadOnlyCollection`1<NetDaemon.AppModel.Internal.AppFactories.IAppFactory> NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::GetAppFactories()
+DA:15,10
+DA:16,10
+DA:17,10
+FN:20,NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::Create(System.Func`2<System.IServiceProvider,TAppType>,System.String,System.Nullable`1<System.Boolean>)
+FNDA:6,NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::Create(System.Func`2<System.IServiceProvider,TAppType>,System.String,System.Nullable`1<System.Boolean>)
+DA:21,6
+DA:22,6
+DA:23,6
+DA:24,6
+FN:26,NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::Create(System.Type,System.String,System.Nullable`1<System.Boolean>)
+FNDA:4,NetDaemon.AppModel.Internal.AppFactoryProviders.IAppFactoryProvider NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::Create(System.Type,System.String,System.Nullable`1<System.Boolean>)
+DA:27,4
+DA:28,4
+DA:29,4
+DA:30,4
+FN:8,System.Void NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::.ctor(NetDaemon.AppModel.Internal.AppFactories.IAppFactory)
+FNDA:10,System.Void NetDaemon.AppModel.Internal.AppFactoryProviders.SingleAppFactoryProvider::.ctor(NetDaemon.AppModel.Internal.AppFactories.IAppFactory)
+DA:9,10
+DA:10,10
+DA:11,10
+DA:12,10
+LF:15
+LH:15
+BRF:0
+BRH:0
+FNF:4
+FNH:4
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppFactories\FuncAppFactory.cs
+FN:17,System.String NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::GetAppId(System.Type)
+FNDA:105,System.String NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::GetAppId(System.Type)
+DA:18,105
+DA:19,105
+DA:20,105
+DA:22,105
+DA:23,0
+DA:24,0
+DA:27,105
+DA:28,105
+BRDA:20,9,0,0
+BRDA:20,9,1,105
+BRDA:20,21,0,89
+BRDA:20,21,1,105
+BRDA:22,39,0,0
+BRDA:22,39,1,105
+FN:30,System.Boolean NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::GetAppFocus(System.Type)
+FNDA:105,System.Boolean NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::GetAppFocus(System.Type)
+DA:31,105
+DA:32,105
+DA:33,105
+FN:35,System.Object NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::Create(System.IServiceProvider)
+FNDA:60,System.Object NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::Create(System.IServiceProvider)
+DA:36,60
+DA:37,60
+DA:38,51
+FN:39,System.String NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::get_Id()
+FNDA:195,System.String NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::get_Id()
+DA:40,195
+FN:41,System.Boolean NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::get_HasFocus()
+FNDA:66,System.Boolean NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::get_HasFocus()
+DA:42,66
+FN:45,NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::Create(System.Func`2<System.IServiceProvider,TAppType>,System.String,System.Nullable`1<System.Boolean>)
+FNDA:6,NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::Create(System.Func`2<System.IServiceProvider,TAppType>,System.String,System.Nullable`1<System.Boolean>)
+DA:46,6
+DA:47,6
+DA:48,6
+FN:51,NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::Create(System.Type,System.String,System.Nullable`1<System.Boolean>)
+FNDA:100,NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::Create(System.Type,System.String,System.Nullable`1<System.Boolean>)
+DA:52,100
+DA:53,100
+DA:54,100
+FN:56,System.Func`2<System.IServiceProvider,System.Object> NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::CreateFactoryFunc(System.Type)
+FNDA:100,System.Func`2<System.IServiceProvider,System.Object> NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::CreateFactoryFunc(System.Type)
+DA:57,100
+DA:58,159
+DA:59,100
+FN:8,System.Void NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::.ctor(System.Func`2<System.IServiceProvider,System.Object>,System.Type,System.String,System.Nullable`1<System.Boolean>)
+FNDA:106,System.Void NetDaemon.AppModel.Internal.AppFactories.FuncAppFactory::.ctor(System.Func`2<System.IServiceProvider,System.Object>,System.Type,System.String,System.Nullable`1<System.Boolean>)
+DA:9,106
+DA:10,106
+DA:11,106
+DA:13,106
+DA:14,106
+DA:15,106
+BRDA:13,18,0,105
+BRDA:13,18,1,106
+BRDA:14,43,0,105
+BRDA:14,43,1,1
+LF:31
+LH:29
+BRF:10
+BRH:8
+FNF:9
+FNH:9
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppAssemblyProviders\AppAssemblyProvider.cs
+FN:14,System.Reflection.Assembly NetDaemon.AppModel.Internal.AppAssemblyProviders.AppAssemblyProvider::GetAppAssembly()
+FNDA:16,System.Reflection.Assembly NetDaemon.AppModel.Internal.AppAssemblyProviders.AppAssemblyProvider::GetAppAssembly()
+DA:15,16
+DA:16,16
+DA:17,16
+FN:8,System.Void NetDaemon.AppModel.Internal.AppAssemblyProviders.AppAssemblyProvider::.ctor(System.Reflection.Assembly)
+FNDA:18,System.Void NetDaemon.AppModel.Internal.AppAssemblyProviders.AppAssemblyProvider::.ctor(System.Reflection.Assembly)
+DA:9,18
+DA:10,18
+DA:11,18
+DA:12,18
+LF:7
+LH:7
+BRF:0
+BRH:0
+FNF:2
+FNH:2
+end_of_record
+SF:C:\git\netdaemon\src\AppModel\NetDaemon.AppModel\Internal\AppAssemblyProviders\DynamicallyCompiledAppAssemblyProvider.cs
+FN:18,System.Reflection.Assembly NetDaemon.AppModel.Internal.AppAssemblyProviders.DynamicallyCompiledAppAssemblyProvider::GetAppAssembly()
+FNDA:23,System.Reflection.Assembly NetDaemon.AppModel.Internal.AppAssemblyProviders.DynamicallyCompiledAppAssemblyProvider::GetAppAssembly()
+DA:19,23
+DA:21,23
+DA:22,10
+DA:24,13
+DA:25,12
+DA:26,12
+DA:27,12
+DA:28,22
+BRDA:21,15,0,10
+BRDA:21,15,1,13
+FN:30,System.Void NetDaemon.AppModel.Internal.AppAssemblyProviders.DynamicallyCompiledAppAssemblyProvider::Dispose()
+FNDA:0,System.Void NetDaemon.AppModel.Internal.AppAssemblyProviders.DynamicallyCompiledAppAssemblyProvider::Dispose()
+DA:31,0
+DA:32,0
+DA:33,0
+DA:35,0
+DA:36,0
+DA:37,0
+BRDA:32,12,1,0
+BRDA:32,12,0,0
+FN:12,System.Void NetDaemon.AppModel.Internal.AppAssemblyProviders.DynamicallyCompiledAppAssemblyProvider::.ctor(NetDaemon.AppModel.Internal.Compiler.ICompiler)
+FNDA:13,System.Void NetDaemon.AppModel.Internal.AppAssemblyProviders.DynamicallyCompiledAppAssemblyProvider::.ctor(NetDaemon.AppModel.Internal.Compiler.ICompiler)
+DA:13,13
+DA:14,13
+DA:15,13
+DA:16,13
+LF:18
+LH:12
+BRF:4
+BRH:2
+FNF:3
+FNH:2
+end_of_record

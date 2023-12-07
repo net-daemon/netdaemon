@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NetDaemon.HassModel.CodeGenerator;
+﻿using NetDaemon.HassModel.CodeGenerator;
 
 namespace NetDaemon.HassModel.Tests.CodeGenerator;
 

@@ -2,7 +2,6 @@
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Text.Json;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client;
 using NetDaemon.Client.Common.HomeAssistant.Model;

@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace NetDaemon.HassModel.Internal;
+﻿namespace NetDaemon.HassModel.Internal;
 
 internal class CacheManager : ICacheManager
 {

@@ -1,6 +1,5 @@
 ﻿using System.Reactive.Subjects;
 using System.Text.Json;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;

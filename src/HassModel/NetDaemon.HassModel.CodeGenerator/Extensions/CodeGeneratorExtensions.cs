@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetDaemon.HassModel.CodeGenerator.Extensions
+﻿namespace NetDaemon.HassModel.CodeGenerator.Extensions
 {
     internal static class CodeGeneratorExtensions
     {
