@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 
 namespace NetDaemon.HassModel.Tests.TestHelpers;
 

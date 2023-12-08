@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp;
 using NetDaemon.HassModel.CodeGenerator.CodeGeneration;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;

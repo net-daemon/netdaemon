@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using NetDaemon.Extensions.Scheduler;
+﻿using NetDaemon.Extensions.Scheduler;
 using Xunit;
 
 namespace NetDaemon.Extensions.Scheduling.Tests;

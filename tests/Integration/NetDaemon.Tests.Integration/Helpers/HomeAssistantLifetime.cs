@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
+﻿using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;

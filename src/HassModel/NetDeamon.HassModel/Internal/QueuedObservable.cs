@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;

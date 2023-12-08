@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace NetDaemon.Extensions.Scheduler;
 
 /// <summary>
