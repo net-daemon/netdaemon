@@ -12,7 +12,7 @@ internal static class EnumerateAllGenerator
                                                                            _haContext.GetAllEntities()
                                                                                .Where(e => e.EntityId.StartsWith("{domainPrefix}."))
                                                                                .Select(e => new {entityClassName}(e));
-                                                                       """);
+                                                                       """)!;
 
         return domainPrefix == "sensor" ? [enumerateAllMethod, ..GenerateEnumerateAllSensor()] : [enumerateAllMethod];
     }
@@ -30,7 +30,7 @@ internal static class EnumerateAllGenerator
                                                      .Where(e => e.EntityId.StartsWith("sensor.")
                                                              && !(e.EntityState?.AttributesJson?.TryGetProperty("unit_of_measurement", out _) ?? false))
                                                      .Select(e => new SensorEntity(e));
-                                             """),
+                                             """)!,
 
         SyntaxFactory.ParseMemberDeclaration("""
                                              /// <summary>Enumerates all numeric sensor entities currently registered (at runtime) in Home Assistant as NumericSensorEntity</summary>
@@ -39,6 +39,6 @@ internal static class EnumerateAllGenerator
                                                      .Where(e => e.EntityId.StartsWith("sensor.")
                                                                  && (e.EntityState?.AttributesJson?.TryGetProperty("unit_of_measurement", out _) ?? false))
                                                      .Select(e => new NumericSensorEntity(e));
-                                             """)
+                                             """)!
     ];
 }
