@@ -16,7 +16,7 @@ internal static class EntitiesGenerator
 
         foreach (var domainMetadata in metaData.GroupBy(m => m.EntitiesForDomainClassName))
         {
-            yield return GenerateEntiesForDomainClass(domainMetadata.Key, domainMetadata);
+            yield return GenerateEntitiesForDomainClass(domainMetadata.Key, domainMetadata.ToList());
         }
         foreach (var domainMetadata in metaData)
         {
@@ -56,9 +56,11 @@ internal static class EntitiesGenerator
     /// <summary>
     /// Generates the class with all the properties for the Entities of one domain
     /// </summary>
-    private static TypeDeclarationSyntax GenerateEntiesForDomainClass(string className, IEnumerable<EntityDomainMetadata> entitySets)
+    private static TypeDeclarationSyntax GenerateEntitiesForDomainClass(string className, IList<EntityDomainMetadata> entitySets)
     {
         var entityClass = ClassWithInjectedHaContext(className);
+
+        entityClass = entityClass.AddMembers(EnumerateAllGenerator.GenerateEnumerateMethods(entitySets[0].Domain, entitySets[0].EntityClassName));
 
         var entityProperty = entitySets.SelectMany(s=>s.Entities.Select(e => GenerateEntityProperty(e, s.EntityClassName))).ToArray();
 
@@ -87,7 +89,7 @@ internal static class EntitiesGenerator
         {
             baseClass += $", {coreinterface}";
         }
-        
+
         var (className, variableName) = GetNames<IHaContext>();
         var classDeclaration = $$"""
             record {{domainMetaData.EntityClassName}} : {{baseClass}}
