@@ -13,23 +13,36 @@ public class AssuredMqttConnectionTests
 
         var mqttClient = new Mock<IManagedMqttClient>();
         var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
+        var mqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
+        var mqttConfigurationOptions = new Mock<IOptions<MqttConfiguration>>();
 
-        var conn = new AssuredMqttConnection(logger.Object, mqttFactory, GetMockOptions());
+        ConfigureMockOptions(mqttConfigurationOptions);
+
+        mqttClientOptionsFactory.Setup(f => f.CreateClientOptions(It.Is<MqttConfiguration>(o => o.Host == "localhost" && o.UserName == "id")))
+            .Returns(new ManagedMqttClientOptions())
+            .Verifiable(Times.Once);
+
+        var conn = new AssuredMqttConnection(logger.Object, mqttClientOptionsFactory.Object, mqttFactory, mqttConfigurationOptions.Object);
         var returnedClient = await conn.GetClientAsync();
 
         returnedClient.Should().Be(mqttClient.Object);
+
+        mqttClientOptionsFactory.VerifyAll();
+        mqttConfigurationOptions.VerifyAll();
     }
 
-    private static IOptions<MqttConfiguration> GetMockOptions()
+    private static void ConfigureMockOptions(Mock<IOptions<MqttConfiguration>> mockOptions, Action<MqttConfiguration>? configuration = null)
     {
-        var options = new Mock<IOptions<MqttConfiguration>>();
+        var mqttConfiguration = new MqttConfiguration
+        {
+            Host = "localhost",
+            UserName = "id"
+        };
 
-        options.Setup(o => o.Value)
-            .Returns(() =>  new MqttConfiguration
-            {
-                Host = "localhost", UserName = "id"
-            });
+        configuration?.Invoke(mqttConfiguration);
 
-        return options.Object;
+        mockOptions.SetupGet(o => o.Value)
+            .Returns(() => mqttConfiguration)
+            .Verifiable(Times.Once);
     }
 }

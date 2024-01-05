@@ -22,7 +22,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor");
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? Array.Empty<byte>() );
+        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? Array.Empty<byte>());
 
         payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
@@ -269,7 +269,9 @@ public class MqttEntityManagerTester
         options.Setup(o => o.Value)
             .Returns(() => new MqttConfiguration
             {
-                Host = "localhost", UserName = "id", DiscoveryPrefix = "homeassistant"
+                Host = "localhost",
+                UserName = "id",
+                DiscoveryPrefix = "homeassistant"
             });
 
         return options.Object;
