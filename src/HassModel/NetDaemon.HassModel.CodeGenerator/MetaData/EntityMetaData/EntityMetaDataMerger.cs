@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json.Serialization;
 using NetDaemon.HassModel.Entities.Core;
 

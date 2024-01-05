@@ -2,17 +2,10 @@ using System.Reflection;
 
 namespace NetDaemon.AppModel.Internal.AppAssemblyProviders;
 
-internal class AppAssemblyProvider : IAppAssemblyProvider
+internal class AppAssemblyProvider(Assembly assembly) : IAppAssemblyProvider
 {
-    private readonly Assembly _assembly;
-
-    public AppAssemblyProvider(Assembly assembly)
-    {
-        _assembly = assembly;
-    }
-
     public Assembly GetAppAssembly()
     {
-        return _assembly;
+        return assembly;
     }
 }

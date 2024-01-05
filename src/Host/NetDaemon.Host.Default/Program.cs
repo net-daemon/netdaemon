@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Loader;
+﻿using System.Runtime.Loader;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
 using NetDaemon.Extensions.Logging;

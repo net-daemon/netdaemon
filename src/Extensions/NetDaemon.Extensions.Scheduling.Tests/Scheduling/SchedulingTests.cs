@@ -1,5 +1,3 @@
-using System;
-using System.Reactive.Concurrency;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

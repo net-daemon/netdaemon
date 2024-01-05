@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Concurrency;
 using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using NetDaemon.Extensions.Scheduler;

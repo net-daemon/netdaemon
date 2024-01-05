@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace NetDaemon.Client.HomeAssistant.Model;
+﻿namespace NetDaemon.Client.HomeAssistant.Model;
 
 public record InputBooleanHelper
 {

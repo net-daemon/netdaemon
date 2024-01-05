@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace NetDaemon.AppModel.Internal.Config;
 

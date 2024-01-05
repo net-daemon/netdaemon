@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Tests.Internal;

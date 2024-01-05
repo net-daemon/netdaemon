@@ -1,9 +1,7 @@
-﻿using System;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using NetDaemon.Runtime;
 using NetDaemon.AppModel;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Extensions.Logging;
 using NetDaemon.Extensions.Tts;
 using NetDaemon.Extensions.MqttEntityManager;

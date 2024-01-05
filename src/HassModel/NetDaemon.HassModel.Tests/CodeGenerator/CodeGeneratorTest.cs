@@ -1,10 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
@@ -151,6 +145,7 @@ public class CodeGeneratorTest
                         using NetDaemon.HassModel.Entities;
                         using NetDaemon.HassModel;
                         using RootNameSpace;
+                        using System.Collections.Generic;
 
                         public class Root
                         {
@@ -171,6 +166,10 @@ public class CodeGeneratorTest
 
                                 ProximityEntity homeProximity = entities.Proximity.Home;
                                 double? distance = homeProximity.State;
+
+                                IEnumerable<SensorEntity> allSensors = entities.Sensor.EnumerateAll();
+                                IEnumerable<SensorEntity> nonNumericSensors = entities.Sensor.EnumerateAllNonNumeric();
+                                IEnumerable<NumericSensorEntity> numericSensors = entities.Sensor.EnumerateAllNumeric();
                              }
                         }
                         """;

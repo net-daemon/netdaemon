@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel;

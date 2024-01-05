@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reactive.Subjects;
-using System.Threading;
+﻿using System.Reactive.Subjects;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;

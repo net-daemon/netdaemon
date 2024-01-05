@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace NetDaemon.HassModel;
+﻿namespace NetDaemon.HassModel;
 
 /// <summary>
 /// Allows initialization and refreshing of the HassModel internal caches

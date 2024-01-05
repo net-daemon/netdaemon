@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Serilog.Sinks.SystemConsole.Themes;
+﻿using Serilog.Sinks.SystemConsole.Themes;
 
 namespace NetDaemon.Extensions.Logging.Internal;
 

@@ -1,6 +1,3 @@
-using System.Text.Json.Serialization;
-using NetDaemon.Client.HomeAssistant.Model;
-
 namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
 internal record CreateInputBooleanHelperCommand : CommandMessage

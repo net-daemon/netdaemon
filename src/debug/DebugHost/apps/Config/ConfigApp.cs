@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using NetDaemon.AppModel;
+﻿using NetDaemon.AppModel;
 
 namespace Apps;
 

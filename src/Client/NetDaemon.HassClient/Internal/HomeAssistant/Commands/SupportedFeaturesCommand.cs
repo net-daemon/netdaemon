@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-
-namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
+﻿namespace NetDaemon.Client.Internal.HomeAssistant.Commands;
 
 internal record SupportedFeaturesCommand : CommandMessage
 {
