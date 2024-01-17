@@ -36,8 +36,52 @@ public class AttributeMetaDataGeneratorTest
         copy.Should().Be(metadata.First());
     }
 
+    [Fact]
+    public void AllNullShouldBeNull()
+    {
+        var entityStates = new HassState[] {
+            new() { AttributesJson = new { size = (object?)null, }.AsJsonElement() },
+            new() { AttributesJson = new { size = (object?)null, }.AsJsonElement() },
+        };
 
-    private static EntityAttributeMetaData? SerializeAndDeserialize(EntityAttributeMetaData input)
+        var metadata = AttributeMetaDataGenerator.GetMetaDataFromEntityStates(entityStates);
+
+        metadata.Should().BeEquivalentTo(new[] { new EntityAttributeMetaData("size", "Size", null) });
+    }
+
+    [Fact]
+    public void IncludeSaveAndMergeState()
+    {
+        // first we have a few lights that are ON and therefore have a brightness propert as a double
+        var entityStates = new HassState[] {
+            new() {EntityId = "light.attic", AttributesJson = new { brightness = 2.1d, }.AsJsonElement() },
+            new() {EntityId = "light.livingroom", AttributesJson = new { brightness = 2.2d, }.AsJsonElement() },
+        };
+
+        var metadata = AttributeMetaDataGenerator.GetMetaDataFromEntityStates(entityStates).ToList();
+        // lets pretend it gets saved and reloaded from disk
+        metadata = SerializeAndDeserialize(metadata);
+
+        // now get new metadata while the lights are off (brightness = null)
+        var newEntityStates = new HassState[] {
+            new() {EntityId = "light.attic", AttributesJson = new { brightness = (object?)null, }.AsJsonElement() },
+            new() {EntityId = "light.livingroom", AttributesJson = new { brightness = (object?)null, }.AsJsonElement() },
+        };
+
+        var newMetadata = AttributeMetaDataGenerator.GetMetaDataFromEntityStates(newEntityStates).ToList();
+
+        // merge the previous and current metadata
+        var merged = EntityMetaDataMerger.Merge(new CodeGenerationSettings(),
+            new EntitiesMetaData { Domains = new []{new EntityDomainMetadata("light", false, Array.Empty<EntityMetaData>(), metadata!)}},
+            new EntitiesMetaData { Domains = new []{new EntityDomainMetadata("light", false, Array.Empty<EntityMetaData>(), newMetadata)}}
+            );
+
+        // We should still have Brightness as a double
+        merged.Domains.First().Attributes.Should().BeEquivalentTo(new[] { new EntityAttributeMetaData("brightness", "Brightness", typeof(double)) });
+    }
+
+
+    private static T? SerializeAndDeserialize<T>(T input)
     {
         var serializeOptions = new JsonSerializerOptions()
         {
@@ -47,7 +91,7 @@ public class AttributeMetaDataGeneratorTest
         };
 
         var json = JsonSerializer.Serialize(input, serializeOptions);
-        return JsonSerializer.Deserialize<EntityAttributeMetaData>(json, serializeOptions);
+        return JsonSerializer.Deserialize<T>(json, serializeOptions);
     }
 
 }

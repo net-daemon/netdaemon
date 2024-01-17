@@ -16,15 +16,15 @@ internal static class AttributeTypeGenerator
     ///
     ///     [JsonPropertyName("color_mode")]
     ///     public string? ColorMode { get; init; }
-    ///    
+    ///
     ///     [JsonPropertyName("color_temp")]
     ///     public double? ColorTemp { get; init; }
-    /// }   
+    /// }
     /// </example>
     public static RecordDeclarationSyntax GenerateAttributeRecord(EntityDomainMetadata domain)
     {
         var propertyDeclarations = domain.Attributes
-            .Select(a => AutoPropertyGetInit($"{a.ClrType.GetFriendlyName()}?", a.CSharpName)
+            .Select(a => AutoPropertyGetInit($"{(a.ClrType ?? typeof(object)).GetFriendlyName()}?", a.CSharpName)
                 .ToPublic()
                 .WithJsonPropertyName(a.JsonName));
 
