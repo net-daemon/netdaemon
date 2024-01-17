@@ -1,11 +1,11 @@
 ﻿#region
 
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 using NetDaemon.Extensions.MqttEntityManager.Models;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 #endregion
 
@@ -20,8 +20,8 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MqttEntityManager : IMqttEntityManager
 {
     private readonly MqttConfiguration _config;
-    private readonly IMessageSender    _messageSender;
-    private readonly IMessageSubscriber  _messageSubscriber;
+    private readonly IMessageSender _messageSender;
+    private readonly IMessageSubscriber _messageSubscriber;
 
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -162,11 +162,11 @@ internal class MqttEntityManager : IMqttEntityManager
 
     private string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";
 
-    private string RootPath(string domain, string identifier) => $"{_config.DiscoveryPrefix}/{domain}/{identifier}";
-
     private string StatePath(string domain, string identifier) => $"{RootPath(domain, identifier)}/state";
 
     private string CommandPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/set";
 
     private string AvailabilityPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/availability";
+
+    private string RootPath(string domain, string identifier) => $"{_config.DiscoveryPrefix}/{domain}/{identifier}";
 }

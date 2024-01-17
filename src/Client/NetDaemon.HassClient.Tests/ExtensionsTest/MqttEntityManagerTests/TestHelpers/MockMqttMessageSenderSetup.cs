@@ -13,6 +13,8 @@ internal sealed class MockMqttMessageSenderSetup
 {
     public AssuredMqttConnection Connection { get; private set; } = null!;
     public Mock<IManagedMqttClient> MqttClient { get; private set; } = null!;
+    public Mock<IMqttClientOptionsFactory> MqttClientOptionsFactory { get; private set; } = null!;
+
     public MqttFactoryWrapper MqttFactory { get; private set; } = null!;
     public MessageSender MessageSender { get; private set; } = null!;
     public MqttApplicationMessage LastPublishedMessage { get; set; } = null!;
@@ -41,18 +43,29 @@ internal sealed class MockMqttMessageSenderSetup
     /// <returns></returns>
     private void SetupMockMqtt()
     {
+        var mqttConfiguration = new MqttConfiguration
+        {
+            Host = "localhost",
+            UserName = "id"
+        };
+
         var options = new Mock<IOptions<MqttConfiguration>>();
 
         options.Setup(o => o.Value)
-            .Returns(() => new MqttConfiguration
-            {
-                Host = "localhost", UserName = "id"
-            });
+            .Returns(() => mqttConfiguration);
 
         MqttClient = new Mock<IManagedMqttClient>();
+        MqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
         MqttFactory = new MqttFactoryWrapper(MqttClient.Object);
 
-        Connection = new AssuredMqttConnection(new Mock<ILogger<AssuredMqttConnection>>().Object, MqttFactory,
+        MqttClientOptionsFactory
+            .Setup(o => o.CreateClientOptions(mqttConfiguration))
+            .Returns(new ManagedMqttClientOptions());
+
+        Connection = new AssuredMqttConnection(
+            new Mock<ILogger<AssuredMqttConnection>>().Object,
+            MqttClientOptionsFactory.Object,
+            MqttFactory,
             options.Object);
     }
 
