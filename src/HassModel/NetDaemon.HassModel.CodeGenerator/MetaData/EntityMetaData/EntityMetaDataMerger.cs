@@ -9,11 +9,11 @@ internal static class EntityMetaDataMerger
 #pragma warning disable CS0618 // Type or member is obsolete
     private static readonly Type[] _possibleBaseTypes = typeof(LightAttributesBase).Assembly.GetTypes();
 #pragma warning restore CS0618 // Type or member is obsolete
-    
+
     // We need to merge the previously saved metadata with the current metadata from HA
     // We do this because sometimes entities do not provide all their attributes,
     // like a Light only has a brightness attribute when it is turned on
-    // 
+    //
     // data structure:
     // [ {
     //   "domain": "weather",
@@ -21,7 +21,7 @@ internal static class EntityMetaDataMerger
     //   "entities": [ {
     //       "id": "",
     //       "friendlyName":""
-    //   }] 
+    //   }]
     //   "attributes" : [ {
     //       "jsonName": "temperature",
     //       "cSharpName": "Temperature",
@@ -49,7 +49,7 @@ internal static class EntityMetaDataMerger
             previous = SetBaseTypes(previous);
             current = SetBaseTypes(current);
         }
-        
+
         return previous with
         {
             Domains = FullOuterJoin(previous.Domains, current.Domains, p => (p.Domain.ToLowerInvariant(), p.IsNumeric), MergeDomains)
@@ -72,11 +72,11 @@ internal static class EntityMetaDataMerger
             Domains = entitiesMetaData.Domains.Select(m => DeriveFromBasetype(m, _possibleBaseTypes)).ToList()
         };
     }
-    
+
     private static EntityDomainMetadata DeriveFromBasetype(EntityDomainMetadata domainMetadata, IReadOnlyCollection<Type> possibleBaseTypes)
     {
         var baseType = possibleBaseTypes.FirstOrDefault(t => t.Name == domainMetadata.AttributesClassName + "Base");
-        
+
         var basePropertyJsonNames = baseType?.GetProperties()
             .Select(p => p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? p.Name)
             .ToHashSet() ?? new HashSet<string>();
@@ -93,60 +93,57 @@ internal static class EntityMetaDataMerger
         // Only keep entities from Current but merge the attributes
         return current with
         {
-            Attributes = MergeAttributeSets(previous.Attributes, current.Attributes).ToList()
+            Attributes = FullOuterJoin(previous.Attributes, current.Attributes, a => a.JsonName, MergeAttributes).ToList()
         };
     }
 
-    private static IEnumerable<EntityAttributeMetaData> MergeAttributeSets(
-        IReadOnlyCollection<EntityAttributeMetaData> previousAttributes,
-        IEnumerable<EntityAttributeMetaData> currentAttributes)
-    {
-        return FullOuterJoin(previousAttributes, currentAttributes, a => a.JsonName, MergeAttributes);
-    }
-    
     private static EntityAttributeMetaData MergeAttributes(EntityAttributeMetaData previous, EntityAttributeMetaData current)
     {
         // for Attributes matching by the JsonName keep the previous
-        // this makes sure the preferred CSharpName stays the same
+        // this makes sure the preferred CSharpName stays the same, we only merge the types
         return previous with
         {
-            // In case the ClrType derived from the current metadata is not the same as the previous
-            // we will use 'object' for safety
-            
-            ClrType = previous.ClrType == current.ClrType ? previous.ClrType : typeof(object),
-            // There is a possible issue here when one of the ClrTypes is 'object'
-            // It can be object because either all inputs where JsonValueKind.Null, or there are
-            // multiple possible input types.
-            // Right here we dont actually know which it was, we will assume there were multiple,
-            // so the resulting type will stay object 
+            ClrType = MergeTypes(previous.ClrType, current.ClrType)
         };
+    }
+
+    private static Type? MergeTypes(Type? previous, Type? current)
+    {
+        // null for previous or current type means we did not get any non-null values to determine a type from
+        // so if previous or current is null we use the other.
+        // if for some reason the type has changed we use object to support both.
+        return
+            previous == current ? previous :
+            previous is null ? current :
+            current is null ? previous :
+            typeof(object);
     }
 
     private static EntityDomainMetadata HandleDuplicateCSharpNames(EntityDomainMetadata entitiesMetaData)
     {
         // This hashset will initially have all Member names in the base class.
-        // We will then also add all new names to this set so we are sure they will all be unique 
+        // We will then also add all new names to this set so we are sure they will all be unique
         var reservedCSharpNames = entitiesMetaData.AttributesBaseClass?
             .GetMembers().Select(p => p.Name).ToHashSet() ?? new HashSet<string>();
 
         var withDeDuplicatedCSharpNames = entitiesMetaData.Attributes
             .GroupBy(t => t.CSharpName)
             .SelectMany(s => DeDuplicateCSharpNames(s.Key, s, reservedCSharpNames)).ToList();
-        
+
         return entitiesMetaData with
         {
             Attributes = withDeDuplicatedCSharpNames
         };
     }
-    
+
     private static IEnumerable<EntityAttributeMetaData> DeDuplicateCSharpNames(
-        string preferredCSharpName, IEnumerable<EntityAttributeMetaData> items, 
+        string preferredCSharpName, IEnumerable<EntityAttributeMetaData> items,
         ISet<string> reservedCSharpNames)
     {
         var list = items.ToList();
         if (list.Count == 1 && reservedCSharpNames.Add(preferredCSharpName))
         {
-            // Just one Attribute with this preferredCSharpName AND it was not taken yet 
+            // Just one Attribute with this preferredCSharpName AND it was not taken yet
             return new[] { list[0]};
         }
 
@@ -167,7 +164,7 @@ internal static class EntityMetaDataMerger
     }
 
     /// <summary>
-    /// Full outer join two sets based on a key and merge the matches 
+    /// Full outer join two sets based on a key and merge the matches
     /// </summary>
     /// <returns>
     /// All items from previous and current that dont match
@@ -175,19 +172,19 @@ internal static class EntityMetaDataMerger
     /// </returns>
     private static IEnumerable<T> FullOuterJoin<T, TKey>(
         IEnumerable<T> previous,
-        IEnumerable<T> current, 
-        Func<T, TKey> keySelector, 
+        IEnumerable<T> current,
+        Func<T, TKey> keySelector,
         Func<T,T,T> merger) where TKey : notnull
     {
         var previousLookup = previous.ToDictionary(keySelector);
         var currentLookup = current.ToLookup(keySelector);
-            
+
         var inPrevious = previousLookup
             .Select(p => (previous: p.Value, current: currentLookup[p.Key].FirstOrDefault()))
-            .Select(t => t.current == null 
-                ? t.previous // Item in previous doe snot exist in current, return previous 
+            .Select(t => t.current == null
+                ? t.previous // Item in previous doe snot exist in current, return previous
                 : merger(t.previous, t.current)); // match, so call merge delegate
-        
+
         var onlyInCurrent = currentLookup.Where(l => !previousLookup.ContainsKey(l.Key)).SelectMany(l => l);
         return inPrevious.Concat(onlyInCurrent);
     }

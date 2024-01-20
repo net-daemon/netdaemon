@@ -103,6 +103,26 @@ public class MetaDataMergerTest
         result.Should().BeEquivalentTo(expected);
     }
 
+
+
+    [Fact]
+    public void NullAndDoubleMergesToDouble()
+    {
+        var previous = new [] { new EntityAttributeMetaData("brightness", "Brightness", null) };
+        var current = new [] { new EntityAttributeMetaData("brightness", "Brightness", typeof(double)) };
+
+        var result = TestAttributeMerge(previous, current);
+
+        var expected = new [] { new EntityAttributeMetaData("brightness", "Brightness", typeof(double)) };
+
+        result.Should().BeEquivalentTo(expected);
+
+        // swap current and previous and merge again, should have same result
+        result = TestAttributeMerge(current, previous);
+        result.Should().BeEquivalentTo(expected);
+    }
+
+
     private static IReadOnlyCollection<EntityAttributeMetaData> TestAttributeMerge(IReadOnlyList<EntityAttributeMetaData> previousAttr, IReadOnlyList<EntityAttributeMetaData> currentAttr, bool useBaseType = false)
     {
         var previous = new EntitiesMetaData{Domains = new []{new EntityDomainMetadata("light", false, Array.Empty<EntityMetaData>(),

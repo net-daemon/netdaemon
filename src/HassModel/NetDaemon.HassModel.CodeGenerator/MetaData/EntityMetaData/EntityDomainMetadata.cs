@@ -9,28 +9,28 @@ record EntitiesMetaData
 
 record EntityDomainMetadata(
     string Domain,
-    
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] 
+
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     bool IsNumeric,
-    
+
     IReadOnlyList<EntityMetaData> Entities,
-    
+
     IReadOnlyList<EntityAttributeMetaData> Attributes
     )
 {
-    private static readonly HashSet<string> CoreInterfaces = 
+    private static readonly HashSet<string> CoreInterfaces =
         typeof(IEntityCore).Assembly.GetTypes()
             .Where(t => t.IsInterface && t.IsAssignableTo(typeof(IEntityCore)))
             .Select(t => t.Name)
             .ToHashSet();
-    
+
     private readonly string prefixedDomain = (IsNumeric && EntityIdHelper.MixedDomains.Contains(Domain)  ? "numeric_" : "") + Domain;
 
     [JsonIgnore]
     public string EntityClassName => $"{prefixedDomain}Entity".ToValidCSharpPascalCase();
 
     /// <summary>
-    /// Returns the name of the corresponding Core Interface if it exists, or null if it does not 
+    /// Returns the name of the corresponding Core Interface if it exists, or null if it does not
     /// </summary>
     [JsonIgnore]
     public string? CoreInterfaceName
@@ -54,4 +54,4 @@ record EntityDomainMetadata(
 
 record EntityMetaData(string id, string? friendlyName, string cSharpName);
 
-record EntityAttributeMetaData(string JsonName, string CSharpName, Type ClrType);
+record EntityAttributeMetaData(string JsonName, string CSharpName, Type? ClrType);
