@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using NetDaemon.AppModel;
 using NetDaemon.Extensions.MqttEntityManager;
@@ -89,7 +90,7 @@ public class MqttEntityManagerApp : IAsyncInitializable
                 .ConfigureAwait(false);
 
             // Change state of the new sensor, set an attribute to right now
-            await _entityManager.SetStateAsync(stateChangeId, "shiny")
+            await _entityManager.SetStateAsync(stateChangeId, "dull")
                 .ConfigureAwait(false);
             await _entityManager.SetAttributesAsync(stateChangeId, new { updated = DateTime.UtcNow })
                 .ConfigureAwait(false);
@@ -118,6 +119,9 @@ public class MqttEntityManagerApp : IAsyncInitializable
             var removed = _ha.Entity(binarySensorId).State == null;
             _logger.LogInformation("Removed Entity: {Removed}", removed);
 
+            // Advanced example - create a device called "Car Charger" and attach five sensors to it
+            await CreateDeviceAndMultipleSensors();
+
             // Remove other entities
             // SET BREAKPOINT HERE if you want to check the entities in Home Assistant
             await _entityManager.RemoveAsync(hotDogSensorId).ConfigureAwait(false);
@@ -126,11 +130,124 @@ public class MqttEntityManagerApp : IAsyncInitializable
             await _entityManager.RemoveAsync(overrideSensorId).ConfigureAwait(false);
             await _entityManager.RemoveAsync(helToSwitchId).ConfigureAwait(false);
             await _entityManager.RemoveAsync(stateChangeId).ConfigureAwait(false);
+
+            await RemoveDeviceAndMultipleSensors();
         }
         catch (Exception e)
         {
             _logger.LogError(e, e.Message);
             throw;
         }
+    }
+
+    private async Task CreateDeviceAndMultipleSensors()
+    {
+        // This device will have five sensors. We tie all of the sensors together
+        // by sharing the same `identifiers` list with each sensor.
+        var identifiers = new[] { "car_charger" };
+
+        // It is important that all sensors share the same State Topic so that
+        // we can update all values in one go.
+        // You will see that in each sensor, the `value_template` defines how
+        // we extract the sensor value from the multiple update.
+        var stateTopic = "homeassistant/sensor/car_charger/state";
+
+        // First we define the device that will own all the sensors. This is passed
+        // when we create the first of the sensors.
+        var device = new { identifiers = identifiers, name = "Car Charger", model = "ABC X1", manufacturer = "Voltium", sw_version = 1.22 };
+
+        // Create the first sensor for temperature. This requires a unique entity ID
+        // and value_template, but needs to include the shared state topic and device info
+        await _entityManager.CreateAsync("sensor.car_charger_temperature", new EntityCreationOptions
+        {
+            Name = "Temperature",
+            DeviceClass = "temperature",
+        }, new
+        {
+            unit_of_measurement = "\u00b0C",
+            state_topic = stateTopic,   // Note the override of the state topic
+            value_template = "{{ value_json.temperature }}", // and value from state
+            device             // Links the sensors together
+        }).ConfigureAwait(false);
+
+        // The next sensor is charging progress, so again has a unique entity ID and value
+        // template, and also shares the state topic and device info
+        await _entityManager.CreateAsync("sensor.car_charger_progress", new EntityCreationOptions
+        {
+            Name = "Progress"
+        }, new
+        {
+            unit_of_measurement = "%",
+            icon = "mdi:progress-clock",
+            state_topic = stateTopic,
+            value_template = "{{ value_json.progress }}",
+            device
+        }).ConfigureAwait(false);
+
+        // Then a voltage sensor
+        await _entityManager.CreateAsync("sensor.car_charger_voltage", new EntityCreationOptions
+        {
+            Name = "Voltage",
+            DeviceClass = "voltage"
+        }, new
+        {
+            unit_of_measurement = "V",
+            state_topic = stateTopic,
+            value_template = "{{ value_json.voltage }}",
+            device
+        }).ConfigureAwait(false);
+
+        // ...followed by a battery sensor. This has a special meaning in Home Assistant
+        // as entities with the device class of `battery` can be used in automations to
+        // identify which are running low
+        await _entityManager.CreateAsync("sensor.car_charger_battery", new EntityCreationOptions
+        {
+            Name = "Battery",
+            DeviceClass = "battery"
+        }, new
+        {
+            unit_of_measurement = "%",
+            state_topic = stateTopic,
+            value_template = "{{ value_json.battery }}",
+            device
+        }).ConfigureAwait(false);
+
+        // and finally, a mode sensor that can be represented as a string
+        await _entityManager.CreateAsync("sensor.car_charger_mode", new EntityCreationOptions
+        {
+            Name = "Mode",
+        }, new
+        {
+            icon = "mdi:list-status",
+            state_topic = stateTopic,
+            value_template = "{{ value_json.mode }}",
+            device
+        }).ConfigureAwait(false);
+
+        // Now that we have everything set up we can post an update to the shared state topic.
+        // This needs to be a JSON string comprising all of the values we want to set so let's
+        // start with a dynamic object and then JSON it
+        var newState = new
+        {
+            temperature = 47,
+            progress = 75,
+            voltage = 23,
+            battery = 19,
+            mode = "Charging"
+        };
+
+        await _entityManager.SetStateAsync("sensor.car_charger", JsonSerializer.Serialize(newState))
+            .ConfigureAwait(false);
+    }
+
+    private async Task RemoveDeviceAndMultipleSensors()
+    {
+        await _entityManager.RemoveAsync("sensor.car_charger").ConfigureAwait(false);
+        await _entityManager.RemoveAsync("sensor.car_charger_battery").ConfigureAwait(false);
+        await _entityManager.RemoveAsync("sensor.car_charger_mode").ConfigureAwait(false);
+        await _entityManager.RemoveAsync("sensor.car_charger_progress").ConfigureAwait(false);
+        await _entityManager.RemoveAsync("sensor.car_charger_temperature").ConfigureAwait(false);
+        await _entityManager.RemoveAsync("sensor.car_charger_voltage").ConfigureAwait(false);
+
     }
 }
