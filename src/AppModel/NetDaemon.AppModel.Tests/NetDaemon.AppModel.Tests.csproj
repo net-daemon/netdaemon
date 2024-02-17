@@ -6,7 +6,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="6.12.0"/>
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -14,11 +14,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="System.Reactive" Version="6.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0-release-23619-01"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="Moq" Version="4.20.70" />
-    <PackageReference Include="xunit" Version="2.6.5" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
+    <PackageReference Include="xunit" Version="2.7.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -32,15 +32,15 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../NetDaemon.AppModel/NetDaemon.AppModel.csproj"/>
-    <ProjectReference Include="../NetDaemon.AppModel.SourceDeployedApps/NetDaemon.AppModel.SourceDeployedApps.csproj"/>
+    <ProjectReference Include="../NetDaemon.AppModel/NetDaemon.AppModel.csproj" />
+    <ProjectReference Include="../NetDaemon.AppModel.SourceDeployedApps/NetDaemon.AppModel.SourceDeployedApps.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Compiler/Fixtures/**"/>
-    <Compile Remove="Fixtures/Dynamic/**"/>
-    <Compile Remove="Fixtures/DynamicWithFocus/**"/>
-    <Compile Remove="Fixtures/DynamicWithServiceCollection/**"/>
-    <Compile Remove="Fixtures/DynamicError/**"/>
+    <Compile Remove="Compiler/Fixtures/**" />
+    <Compile Remove="Fixtures/Dynamic/**" />
+    <Compile Remove="Fixtures/DynamicWithFocus/**" />
+    <Compile Remove="Fixtures/DynamicWithServiceCollection/**" />
+    <Compile Remove="Fixtures/DynamicError/**" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Compiler/Fixtures/**">
