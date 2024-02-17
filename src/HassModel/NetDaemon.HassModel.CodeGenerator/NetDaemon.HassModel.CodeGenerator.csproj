@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.9.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.10.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -40,11 +40,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj"/>
+    <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="MetaData\DefaultMetadata\DefaultEntityMetaData.json"/>
+    <EmbeddedResource Include="MetaData\DefaultMetadata\DefaultEntityMetaData.json" />
   </ItemGroup>
 
   <PropertyGroup>

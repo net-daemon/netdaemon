@@ -27,10 +27,12 @@ Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or i
 
 https://netdaemon.xyz/docs/v3/started/installation
 
-## Example apps
+## Developer notes
 
-Please check out the apps being developed for netdaemon3. Since documentation is still lacking behind it will be best looking at real code 😊. To check out the new HassModel examples, please checkout the descriptions what user has adopted it below.
+- Check out [NetDaemon developer site](https://netdaemon.xyz/docs/developer)
 
-| User                                                               | Description                                 |
-| ------------------------------------------------------------------ | ------------------------------------------- |
-| [@helto4real](https://github.com/helto4real/NetDaemon3Automations) | Tomas netdaemon3 apps running in production |
+Check out `dotnet-outdated-tool` for automatic upgrades of all projects nuget packages.
+
+```bash
+dotnet outdated --pre-release Never --upgrade
+```

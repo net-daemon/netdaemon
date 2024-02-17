@@ -11,20 +11,20 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets"/>
+  <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.9.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.10.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj"/>
+    <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>

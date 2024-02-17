@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.9.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.10.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -23,13 +23,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj"/>
-    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj"/>
-    <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj"/>
-    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj"/>
-    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj"/>
-    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj"/>
-    <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj"/>
+    <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj" />
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
+    <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Scheduling\NetDaemon.Extensions.Scheduling.csproj" />
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj" />
+    <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
