@@ -2,14 +2,13 @@ namespace NetDaemon.Runtime.Internal;
 
 internal class RuntimeService(IRuntime runtime, ILogger<RuntimeService> logger) : BackgroundService
 {
-    public override async Task StartAsync(CancellationToken cancellationToken)
+    private Task? task;
+    private CancellationTokenSource _stoppingTokenSource = new();
+
+    public override Task StartAsync(CancellationToken _)
     {
-        try
-        {
-            await runtime.StartAsync(cancellationToken);
-            await base.StartAsync(cancellationToken);
-        }
-        catch (OperationCanceledException) { }
+        task = runtime.StartAsync(_stoppingTokenSource.Token);
+        return Task.CompletedTask;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
@@ -17,7 +16,12 @@ internal class RuntimeService(IRuntime runtime, ILogger<RuntimeService> logger) 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("NetDaemon RuntimeService is stopping");
+        await _stoppingTokenSource.CancelAsync();
         await runtime.DisposeAsync();
-        await base.StopAsync(cancellationToken);
+        if (task is not null)
+        {
+            await task;
+        }
+        _stoppingTokenSource.Dispose();
     }
 }

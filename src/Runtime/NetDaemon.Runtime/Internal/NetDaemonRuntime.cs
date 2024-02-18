@@ -57,7 +57,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 _runnerCancellationSource.Token);
 
             // Make sure we only return after the connection is made and initialization is ready
-            await _startedAndConnected.Task;
+            await Task.WhenAny( _startedAndConnected.Task, _runnerTask);
         }
         catch (OperationCanceledException)
         {

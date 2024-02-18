@@ -87,11 +87,11 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             catch (OperationCanceledException)
             {
                 await DisposeConnectionAsync();
-                if (_internalTokenSource.IsCancellationRequested)
+                if (combinedToken.IsCancellationRequested)
                 {
                     // We have internal cancellation due to dispose
                     // just return without any further due
-                    return;
+                    break;
                 }
 
                 _onDisconnectSubject.OnNext(cancelToken.IsCancellationRequested
@@ -107,7 +107,17 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
 
             await DisposeConnectionAsync();
             logger.LogInformation("Client disconnected, retrying in {Seconds} seconds...", timeout.TotalSeconds);
-            await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
+            if (!combinedToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+            }
         }
     }
 
