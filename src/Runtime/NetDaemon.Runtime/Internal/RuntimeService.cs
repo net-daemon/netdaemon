@@ -24,4 +24,10 @@ internal class RuntimeService(IRuntime runtime, ILogger<RuntimeService> logger) 
         }
         _stoppingTokenSource.Dispose();
     }
+
+    public override void Dispose()
+    {
+        _stoppingTokenSource.Dispose();
+        base.Dispose();
+    }
 }
