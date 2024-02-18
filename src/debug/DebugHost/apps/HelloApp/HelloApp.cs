@@ -21,10 +21,9 @@ public sealed class HelloApp : IAsyncDisposable
         ha?.CallService("notify", "persistent_notification", data: new { message = "Notify me", title = "Hello world!" });
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        await Task.Delay(5000);
         _logger.LogInformation("disposed app");
-        //return ValueTask.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
