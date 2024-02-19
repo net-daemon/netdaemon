@@ -4,12 +4,13 @@ using NetDaemon.HassModel;
 
 namespace NetDaemon.Runtime.Internal;
 
-internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
-        IOptions<HomeAssistantSettings> settings,
-        IOptions<AppConfigurationLocationSetting> locationSettings,
-        IServiceProvider serviceProvider,
-        ILogger<NetDaemonRuntime> logger,
-        ICacheManager cacheManager)
+internal class NetDaemonRuntime(
+    IHomeAssistantRunner homeAssistantRunner,
+    IOptions<HomeAssistantSettings> settings,
+    IOptions<AppConfigurationLocationSetting> locationSettings,
+    IServiceProvider serviceProvider,
+    ILogger<NetDaemonRuntime> logger,
+    ICacheManager cacheManager)
     : IRuntime
 {
     private const string Version = "custom_compiled";
@@ -29,7 +30,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
     private readonly TaskCompletionSource _startedAndConnected = new();
 
-    private Task _runnerTask = Task.CompletedTask;
+    private Task? _runnerTask;
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
@@ -80,12 +81,10 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 return;
             }
 
-            IsConnected = true;
-
             await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
             await LoadNewAppContextAsync(haConnection, cancelToken);
-
+            IsConnected = true;
             _startedAndConnected.TrySetResult();
         }
         catch (Exception ex)
@@ -167,6 +166,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
     }
 
     private bool _isDisposed;
+
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;
@@ -177,7 +177,10 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             await _runnerCancellationSource.CancelAsync();
         try
         {
-            await _runnerTask.ConfigureAwait(false);
+            if (_runnerTask is not null)
+            {
+                await _runnerTask.ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException) { }
         _runnerCancellationSource?.Dispose();

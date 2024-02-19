@@ -22,7 +22,8 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     [Fact]
     public async Task TestStartAsyncAsync()
     {
-        await using var runtime = SetupNetDaemonRuntime();
+        using CancellationTokenSource fakeRunnerCancellationSource = new();
+        await using var runtime = SetupNetDaemonRuntime(fakeRunnerCancellationSource.Token);
         var startingTask = runtime.StartAsync(CancellationToken.None);
 
         _connectSubject.HasObservers.Should().BeTrue();
@@ -34,8 +35,9 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     [Fact]
     public async Task TestOnConnect()
     {
-        await using var runtime = SetupNetDaemonRuntime();
-        var startingTask = runtime.StartAsync(CancellationToken.None);
+        using CancellationTokenSource fakeRunnerCancellationSource = new();
+        await using var runtime = SetupNetDaemonRuntime(fakeRunnerCancellationSource.Token);
+        using var startingTask = runtime.StartAsync(CancellationToken.None);
 
         startingTask.IsCompleted.Should().BeFalse();
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -49,7 +51,8 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     [Fact]
     public async Task TestOnDisconnect()
     {
-        await using var runtime = SetupNetDaemonRuntime();
+        using CancellationTokenSource fakeRunnerCancellationSource = new();
+        await using var runtime = SetupNetDaemonRuntime(fakeRunnerCancellationSource.Token);
         var startingTask = runtime.StartAsync(CancellationToken.None);
 
         // First make sure we add an connection
@@ -69,7 +72,8 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     [Fact]
     public async Task TestReconnect()
     {
-        await using var runtime = SetupNetDaemonRuntime();
+        using CancellationTokenSource fakeRunnerCancellationSource = new();
+        await using var runtime = SetupNetDaemonRuntime(fakeRunnerCancellationSource.Token);
         var startingTask = runtime.StartAsync(CancellationToken.None);
 
         // First make sure we add an connection
@@ -99,19 +103,23 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     {
         _cacheManagerMock.Setup(m => m.InitializeAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Something wrong while initializing"));
 
-        await using var runtime = SetupNetDaemonRuntime();
+        // We need to make sure we cancel the runtime after 3 seconds so we don't wait forever
+        using CancellationTokenSource fakeRunnerCancellationSource = new(3000);
+        await using var runtime = SetupNetDaemonRuntime(fakeRunnerCancellationSource.Token);
 
         var startAsync = runtime.StartAsync(CancellationToken.None);
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
-        Func<Task> startingTask = ()=> startAsync;
-        await startingTask.Should().ThrowAsync<InvalidOperationException>();
+
+        await startAsync;
+        runtime.IsConnected.Should().BeFalse();
     }
 
 
     [Fact]
     public async Task TestOnReConnectError()
     {
-        await using var runtime = SetupNetDaemonRuntime();
+        using CancellationTokenSource fakeRunnerCancellationSource = new();
+        await using var runtime = SetupNetDaemonRuntime(fakeRunnerCancellationSource.Token);
 
         var startAsync = runtime.StartAsync(CancellationToken.None);
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -130,7 +138,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
                 It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!), times: Times.Once);
     }
 
-    private NetDaemonRuntime SetupNetDaemonRuntime()
+    private NetDaemonRuntime SetupNetDaemonRuntime(CancellationToken tokenSource)
     {
         _homeAssistantRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_homeAssistantConnectionMock.Object);
         _homeAssistantRunnerMock.SetupGet(n => n.OnConnect).Returns(_connectSubject);
@@ -140,9 +148,14 @@ public sealed class NetDaemonRuntimeTests : IDisposable
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 It.IsAny<string>(),
+                It.IsAny<string>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<CancellationToken>()))
-            .Returns(new TaskCompletionSource().Task);
+            .Returns(() =>
+            {
+                // We set a 5 seconds delay instead of infinite in case we have a bad test
+                return Task.Delay(5000, tokenSource);
+            });
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddScopedHaContext();
