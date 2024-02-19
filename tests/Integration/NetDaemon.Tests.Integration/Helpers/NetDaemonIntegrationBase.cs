@@ -10,19 +10,16 @@ using Xunit;
 namespace NetDaemon.Tests.Integration.Helpers;
 
 [Collection("HomeAssistant collection")]
-public class NetDaemonIntegrationBase : IAsyncDisposable
+public class NetDaemonIntegrationBase : IAsyncLifetime
 {
     public IServiceProvider Services => _scope.ServiceProvider;
     private readonly HomeAssistantLifetime _homeAssistantLifetime;
-    private readonly IHost _netDaemon;
-    private readonly AsyncServiceScope _scope;
+    private IHost? _netDaemon;
+    private AsyncServiceScope _scope;
 
     public NetDaemonIntegrationBase(HomeAssistantLifetime homeAssistantLifetime)
     {
         _homeAssistantLifetime = homeAssistantLifetime;
-        // Some test frameworks like xUnit use a custom synchronization context that causes deadlocks when blocking on async code (such as IHost.Start) especially on machines with less resources.
-        _netDaemon = RunWithoutSynchronizationContext(StartNetDaemon);
-        _scope = _netDaemon.Services.CreateAsyncScope();
     }
 
     private IHost StartNetDaemon()
@@ -70,10 +67,26 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task InitializeAsync()
     {
-        await _scope.DisposeAsync();
-        _netDaemon.Dispose();
-        GC.SuppressFinalize(this);
+        // Some test frameworks like xUnit use a custom synchronization context that causes deadlocks when blocking on async code (such as IHost.Start) especially on machines with less resources.
+        _netDaemon = RunWithoutSynchronizationContext(StartNetDaemon);
+        _scope = _netDaemon.Services.CreateAsyncScope();
+        // Wait for the NetDaemon to connect to Home Assistant
+        // It is never a good idea to use delays to make sure NetDaemon is connected correctly
+        // but I have no good ideas how to solve this in a better way right now.
+        // It fails sometimes due to it have not filled the state cache before the tests starts
+        await Task.Delay(5000);
+    }
+
+    public async Task DisposeAsync()
+    {
+
+            await _scope.DisposeAsync();
+
+        if (_netDaemon is not null)
+        {
+            _netDaemon.Dispose();
+        }
     }
 }
