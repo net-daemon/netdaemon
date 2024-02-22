@@ -56,8 +56,14 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
                 _runnerCancellationSource.Token);
 
+            // make sure we cancel the task if the stoppingToken is cancelled
+            stoppingToken.Register(() =>
+            {
+                _startedAndConnected.TrySetCanceled();
+            });
             // Make sure we only return after the connection is made and initialization is ready
             await _startedAndConnected.Task;
+
         }
         catch (OperationCanceledException)
         {
