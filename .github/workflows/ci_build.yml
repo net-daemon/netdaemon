@@ -59,11 +59,12 @@ jobs:
           path-to-lcov: ${{github.workspace}}/codecover.info
 
       - name: 📨 Publish coverage to codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           flags: unittests # optional
           name: codecov-umbrella # optional
           files: ${{github.workspace}}/codecover.info
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true # optional (default = false)
 
       - name: Discord failure notification
