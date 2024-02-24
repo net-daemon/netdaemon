@@ -31,6 +31,7 @@ try
         .RunAsync()
         .ConfigureAwait(false);
 }
+catch (OperationCanceledException) {} // Ignore
 catch (Exception e)
 {
     Console.WriteLine($"Failed to start host... {e}");

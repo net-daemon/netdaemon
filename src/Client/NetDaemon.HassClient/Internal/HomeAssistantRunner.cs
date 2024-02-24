@@ -100,13 +100,18 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error running HassClient");
+                // In most cases this is just normal when client fails to connect so we log as debug
+                logger.LogDebug(e, "Unhandled exception connecting to Home Assistant!");
                 await DisposeConnectionAsync();
                 _onDisconnectSubject.OnNext(DisconnectReason.Error);
             }
 
             await DisposeConnectionAsync();
-            logger.LogInformation("Client disconnected, retrying in {Seconds} seconds...", timeout.TotalSeconds);
+
+            if (combinedToken.IsCancellationRequested)
+                return; // If we are cancelled we should not retry
+
+            logger.LogInformation("Client connection failed, retrying in {Seconds} seconds...", timeout.TotalSeconds);
             await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
         }
     }

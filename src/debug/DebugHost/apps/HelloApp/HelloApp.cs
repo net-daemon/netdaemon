@@ -23,7 +23,7 @@ public sealed class HelloApp : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await Task.Delay(5000);
+        //await Task.Delay(5000);
         _logger.LogInformation("disposed app");
         //return ValueTask.CompletedTask;
     }
