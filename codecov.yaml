@@ -1,0 +1,16 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  precision: 0
+  round: down
+  range: "70...100"
+  status:
+    project:
+      tests:  # declare a new status context "tests"
+        target: 70%  # we always want 70% coverage here
+    patch:
+      default:
+        # basic
+        target: auto
+        threshold: 10%
