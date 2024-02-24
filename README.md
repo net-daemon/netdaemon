@@ -13,7 +13,8 @@ Please see [https://netdaemon.xyz](https://netdaemon.xyz/docs/v3/started/get_sta
 NetDaemon runtime version 4 is built for .NET 8 and C# 12. Version 4 is from release 2023xx and forward.
 
 ### Versioning
-The V3 uses CalVer versioning and is always the current version. Looking for V2 versions and updates, please use version `22.1.x`.
+The NetDaemon nuget packaged uses CalVer versioning system. The versioning is in the format `YYYY.WW.PATCH` where `YYYY.WW`
+is the year and weeknumber (01-52). `PATCH` is the patch version of the release.
 
 ## Issues
 
@@ -23,15 +24,22 @@ If you have issues or suggestions of improvements, please [add an issue](https:/
 
 Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or if you want to contribute and help others.
 
-## Install NetDaemon
+## Get started with NetDaemon
 
-https://netdaemon.xyz/docs/v3/started/installation
+https://netdaemon.xyz/docs/user/started/get_started/
 
 ## Developer notes
 
 - Check out [NetDaemon developer site](https://netdaemon.xyz/docs/developer)
 
 Check out `dotnet-outdated-tool` for automatic upgrades of all projects nuget packages.
+
+Install the tool by running:
+```bash
+dotnet tool install --global dotnet-outdated-tool
+```
+
+Then run the following command to upgrade all packages to the latest version:
 
 ```bash
 dotnet outdated --pre-release Never --upgrade
