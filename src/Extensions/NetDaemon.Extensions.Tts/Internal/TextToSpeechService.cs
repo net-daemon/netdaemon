@@ -20,7 +20,7 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
 
     public void Speak(string entityId, string message, string service, string? language, object? options)
     {
-        _ttsMessageChannel.Writer.TryWrite(
+        _ = _ttsMessageChannel.Writer.TryWrite(
             new TtsMessage
             {
                 EntityId = entityId,
@@ -32,60 +32,90 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
         );
     }
 
+    public void Speak(string entityId, string message, string service, bool? cache, string? language = null, object? options = null)
+    {
+        _ = _ttsMessageChannel.Writer.TryWrite(
+            new TtsMessage
+            {
+                EntityId = entityId,
+                Message = message,
+                Service = service,
+                Cache = cache,
+                Language = language,
+                Options = options
+            }
+        );
+    }
+
     [SuppressMessage("", "CA1031", Justification = "We need to log unexpected errors")]
     private async Task ProcessTtsMessages()
     {
-        await foreach(var ttsMessage in  _ttsMessageChannel.Reader.ReadAllAsync(_cancellationTokenSource.Token).ConfigureAwait(false))
+        try
         {
-            try
+            await foreach (var ttsMessage in _ttsMessageChannel.Reader.ReadAllAsync(_cancellationTokenSource.Token).ConfigureAwait(false))
             {
-                var homeAssistantConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
-
-                var hassTarget = new HassTarget {EntityIds = new[] {ttsMessage.EntityId}};
-                var data = new
+                try
                 {
-                    message = ttsMessage.Message,
-                    language = ttsMessage.Language,
-                    options = ttsMessage.Options
-                };
-                await homeAssistantConnection
-                    .CallServiceAsync("tts", ttsMessage.Service, data, hassTarget, _cancellationTokenSource.Token)
-                    .ConfigureAwait(false);
-                // Wait for media player to report state
-                await Task.Delay(InternalTimeForTtsDelay, _cancellationTokenSource.Token).ConfigureAwait(false);
-                var state = await homeAssistantConnection
-                    .GetEntityStateAsync(ttsMessage.EntityId, _cancellationTokenSource.Token).ConfigureAwait(false);
+                    var homeAssistantConnection = _provider.GetRequiredService<IHomeAssistantConnection>();
 
-                if (state?.Attributes is null ||
-                    !state.Attributes.TryGetValue("media_duration", out var durationAttribute)) continue;
+                    var hassTarget = new HassTarget { EntityIds = new[] { ttsMessage.EntityId } };
+                    var data = new
+                    {
+                        message = ttsMessage.Message,
+                        language = ttsMessage.Language,
+                        options = ttsMessage.Options,
+                        cache = ttsMessage.Cache ?? true
+                    };
+                    await homeAssistantConnection
+                        .CallServiceAsync("tts", ttsMessage.Service, data, hassTarget, _cancellationTokenSource.Token)
+                        .ConfigureAwait(false);
+                    // Wait for media player to report state
+                    await Task.Delay(InternalTimeForTtsDelay, _cancellationTokenSource.Token).ConfigureAwait(false);
+                    var state = await homeAssistantConnection
+                        .GetEntityStateAsync(ttsMessage.EntityId, _cancellationTokenSource.Token).ConfigureAwait(false);
 
-                var durationElement = (JsonElement) durationAttribute;
-                var duration = durationElement.GetDouble();
-                // We wait the remaining duration plus 500 ms to make sure the speech is done
-                var delayInMilliSeconds = (int) Math.Round(duration * 1000) -
-                    InternalTimeForTtsDelay + 500;
-                if (delayInMilliSeconds > 0)
-                    await Task.Delay(delayInMilliSeconds, _cancellationTokenSource.Token).ConfigureAwait(false);
+                    if (state?.Attributes is null ||
+                        !state.Attributes.TryGetValue("media_duration", out var durationAttribute)) continue;
+
+                    var durationElement = (JsonElement)durationAttribute;
+                    var duration = durationElement.GetDouble();
+                    // We wait the remaining duration plus 500 ms to make sure the speech is done
+                    var delayInMilliSeconds = (int)Math.Round(duration * 1000) -
+                        InternalTimeForTtsDelay + 500;
+                    if (delayInMilliSeconds > 0)
+                        await Task.Delay(delayInMilliSeconds, _cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // We exit the loop
+                    return;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Unexpected error in processing of text-to-speech messages");
+                }
             }
-            catch (OperationCanceledException)
-            {
-                // We exit the loop
-                return;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Unexpected error in processing of text-to-speech messages");
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            // We exit due to normal cancellation
         }
     }
 
     private const int InternalTimeForTtsDelay = 2500;
 
+    private bool _disposed;
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
         await _cancellationTokenSource.CancelAsync();
         await _processTtsTask.ConfigureAwait(false);
         _cancellationTokenSource.Dispose();
     }
-
 }
