@@ -14,4 +14,15 @@ public interface ITextToSpeechService
     /// <param name="language">The language to use</param>
     /// <param name="options">Tts provider specific options</param>
     void Speak(string entityId, string message, string service, string? language = null, object? options = null);
+
+    /// <summary>
+    ///     Speak a message to a media player
+    /// </summary>
+    /// <param name="entityId">Entity id of the media player to play speech</param>
+    /// <param name="message">The message spoken</param>
+    /// <param name="service">The tts service to use</param>
+    /// <param name="cache">Set the caching parameter</param>
+    /// <param name="language">The language to use</param>
+    /// <param name="options">Tts provider specific options</param>
+    void Speak(string entityId, string message, string service, bool? cache, string? language = null, object? options = null);
 }
