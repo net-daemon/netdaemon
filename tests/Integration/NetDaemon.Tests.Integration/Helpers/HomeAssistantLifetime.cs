@@ -1,12 +1,14 @@
-﻿using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
+﻿using Microsoft.Extensions.Logging;
+using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;
 
-public class HomeAssistantLifetime : IAsyncLifetime
+public class HomeAssistantLifetime() : IAsyncLifetime
 {
     private readonly HomeAssistantContainer _homeassistant = new HomeAssistantContainerBuilder()
         .WithResourceMapping(new DirectoryInfo("./HA/config"), "/config")
+        .WithLogger(LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<HomeAssistantContainer>())
         .WithVersion(Environment.GetEnvironmentVariable("HomeAssistantVersion") ?? HomeAssistantContainerBuilder.DefaultVersion)
         .Build();
 
@@ -29,3 +31,4 @@ public class HomeAssistantLifetime : IAsyncLifetime
         await _homeassistant.StopAsync();
     }
 }
+
