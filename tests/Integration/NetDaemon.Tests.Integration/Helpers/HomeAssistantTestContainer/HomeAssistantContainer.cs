@@ -18,7 +18,7 @@ public class HomeAssistantContainer : DockerContainer
         BaseAddress = new Uri($"http://localhost:{Port}")
     };
 
-    public HomeAssistantContainer(HomeAssistantConfiguration configuration, ILogger logger) : base(configuration, logger)
+    public HomeAssistantContainer(HomeAssistantConfiguration configuration) : base(configuration)
     {
         _configuration = configuration;
     }
@@ -49,7 +49,7 @@ public class HomeAssistantContainer : DockerContainer
         Client.DefaultRequestHeaders.Clear();
         Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-        
+
     }
     private async Task AddLocalCalendarIntegration()
     {
@@ -87,10 +87,10 @@ public class HomeAssistantContainer : DockerContainer
 
 public record HomeAssistantAuthorizeResult(
     [property:JsonPropertyName("auth_code")][property:System.Text.Json.Serialization.JsonRequired]string AuthCode);
-    
+
 public record HomeAssistantTokenResult(
-    [property:JsonPropertyName("access_token")][property:System.Text.Json.Serialization.JsonRequired]string AccessToken, 
-    [property:JsonPropertyName("token_type")][property:System.Text.Json.Serialization.JsonRequired]string TokenType, 
-    [property:JsonPropertyName("refresh_token")][property:System.Text.Json.Serialization.JsonRequired]string RefreshToken, 
-    [property:JsonPropertyName("expires_in")][property:System.Text.Json.Serialization.JsonRequired]int ExpiresIn, 
+    [property:JsonPropertyName("access_token")][property:System.Text.Json.Serialization.JsonRequired]string AccessToken,
+    [property:JsonPropertyName("token_type")][property:System.Text.Json.Serialization.JsonRequired]string TokenType,
+    [property:JsonPropertyName("refresh_token")][property:System.Text.Json.Serialization.JsonRequired]string RefreshToken,
+    [property:JsonPropertyName("expires_in")][property:System.Text.Json.Serialization.JsonRequired]int ExpiresIn,
     [property:JsonPropertyName("ha_auth_provider")][property:System.Text.Json.Serialization.JsonRequired]string HaAuthProvider);

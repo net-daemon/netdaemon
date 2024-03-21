@@ -1,6 +1,7 @@
 ﻿using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
+using Microsoft.Extensions.Logging;
 
 namespace NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 
@@ -10,7 +11,7 @@ public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantConta
     public const string DefaultClientId = "http://dummyClientId";
     public const string DefaultUsername = "username";
     public const string DefaultPassword = "password";
-    
+
     public HomeAssistantContainerBuilder() : this(new HomeAssistantConfiguration())
     {
         DockerResourceConfiguration = Init().DockerResourceConfiguration;
@@ -43,7 +44,7 @@ public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantConta
     public override HomeAssistantContainer Build()
     {
         Validate();
-        return new HomeAssistantContainer(DockerResourceConfiguration, TestcontainersSettings.Logger);
+        return new HomeAssistantContainer(DockerResourceConfiguration );
     }
 
     protected override HomeAssistantContainerBuilder Clone(IResourceConfiguration<CreateContainerParameters> resourceConfiguration)
