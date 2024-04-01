@@ -20,7 +20,7 @@ public static class DependencyInjectionSetup
             .ConfigureServices((_, services) => services.AddScopedHaContext());
     }
 
-    internal static void AddScopedHaContext(this IServiceCollection services)
+    public static void AddScopedHaContext(this IServiceCollection services)
     {
         services.AddSingleton<EntityStateCache>();
         services.AddSingleton<EntityAreaCache>();
