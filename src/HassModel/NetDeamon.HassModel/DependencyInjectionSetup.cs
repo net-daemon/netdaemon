@@ -20,6 +20,9 @@ public static class DependencyInjectionSetup
             .ConfigureServices((_, services) => services.AddScopedHaContext());
     }
 
+    /// <summary>
+    /// Registers services for using the IHaContext interface scoped to NetDeamonApps
+    /// </summary>
     public static void AddScopedHaContext(this IServiceCollection services)
     {
         services.AddSingleton<EntityStateCache>();
