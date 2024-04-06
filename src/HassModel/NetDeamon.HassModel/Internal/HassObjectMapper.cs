@@ -1,4 +1,6 @@
-﻿namespace NetDaemon.HassModel.Internal;
+﻿using NetDaemon.Client.Common.HomeAssistant.Model;
+
+namespace NetDaemon.HassModel.Internal;
 
 internal static class HassObjectMapper
 {
@@ -55,11 +57,34 @@ internal static class HassObjectMapper
         };
     }
 
-    public static Area Map(this HassArea hassArea)
+    public static Area Map(this HassArea hassArea, IHaRegistry registry)
     {
-        return new Area
+        return new Area(registry)
         {
-            Name = hassArea.Name
+            Name = hassArea.Name,
+            Id = hassArea.Id,
+        };
+    }
+
+    public static Device Map(this HassDevice hassDevice, IHaRegistry registry, Area? area)
+    {
+        return new Device(registry)
+        {
+            Name = hassDevice.Name,
+            Id = hassDevice.Id ?? "Unavailable",
+            Area = area
+        };
+    }
+
+    public static Label Map(this HassLabel hassLabel, IHaRegistry registry)
+    {
+        return new Label(registry)
+        {
+            Name = hassLabel.Name,
+            Id = hassLabel.LabelId ?? "Unavailable",
+            Color = hassLabel.Color,
+            Icon = hassLabel.Icon,
+            Description = hassLabel.Description,
         };
     }
 }

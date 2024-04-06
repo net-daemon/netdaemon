@@ -11,26 +11,25 @@ namespace NetDaemon.HassModel.Internal;
 internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 {
     private readonly IHomeAssistantApiManager _apiManager;
-    private readonly EntityAreaCache _entityAreaCache;
     private readonly EntityStateCache _entityStateCache;
 
     private readonly IHomeAssistantRunner _hassRunner;
     private readonly IQueuedObservable<HassEvent> _queuedObservable;
     private readonly IBackgroundTaskTracker _backgroundTaskTracker;
+    private readonly HaRegistry _haRegistry;
 
     private readonly CancellationTokenSource _tokenSource = new();
 
     public AppScopedHaContextProvider(
         EntityStateCache entityStateCache,
-        EntityAreaCache entityAreaCache,
         IHomeAssistantRunner hassRunner,
         IHomeAssistantApiManager apiManager,
         IQueuedObservable<HassEvent> queuedObservable,
-        IBackgroundTaskTracker backgroundTaskTracker
+        IBackgroundTaskTracker backgroundTaskTracker,
+        HaRegistry haRegistry
     )
     {
         _entityStateCache = entityStateCache;
-        _entityAreaCache = entityAreaCache;
         _hassRunner = hassRunner;
         _apiManager = apiManager;
 
@@ -38,6 +37,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
         _queuedObservable = queuedObservable;
         _backgroundTaskTracker = backgroundTaskTracker;
+        _haRegistry = haRegistry;
         _queuedObservable.Initialize(_entityStateCache.AllEvents);
     }
 
@@ -48,8 +48,11 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public Area? GetAreaFromEntityId(string entityId)
     {
-        return _entityAreaCache.GetArea(entityId)?.Map();
+        return _haRegistry.GetEntityRegistration(entityId).Area;
     }
+
+    public EntityRegistration GetEntityRegistration(string entityId) => _haRegistry.GetEntityRegistration(entityId);
+    public IHaRegistry Registry => _haRegistry;
 
     public IReadOnlyList<Entity> GetAllEntities()
     {

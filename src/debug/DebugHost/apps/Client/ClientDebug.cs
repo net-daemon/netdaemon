@@ -8,9 +8,9 @@ namespace Apps;
 // [Focus]
 public sealed class ClientApp : IAsyncDisposable
 {
-    private readonly ILogger<HelloApp> _logger;
+    private readonly ILogger<ClientApp> _logger;
 
-    public ClientApp(ILogger<HelloApp> logger, ITriggerManager triggerManager)
+    public ClientApp(ILogger<ClientApp> logger, ITriggerManager triggerManager)
     {
         _logger = logger;
 

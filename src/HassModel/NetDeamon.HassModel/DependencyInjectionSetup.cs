@@ -26,7 +26,10 @@ public static class DependencyInjectionSetup
     public static void AddScopedHaContext(this IServiceCollection services)
     {
         services.AddSingleton<EntityStateCache>();
-        services.AddSingleton<EntityAreaCache>();
+        services.AddSingleton<RegistryCache>();
+        services.AddScoped<HaRegistry>();
+
+        services.AddScoped<IHaRegistry>(sp => sp.GetRequiredService<IHaContext>().Registry);
         services.AddScoped<AppScopedHaContextProvider>();
         services.AddScoped<BackgroundTaskTracker>();
         services.AddScoped<IBackgroundTaskTracker>(s => s.GetRequiredService<BackgroundTaskTracker>());

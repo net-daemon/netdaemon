@@ -31,11 +31,11 @@ public record Entity : IEntityCore
         HaContext = entity.HaContext;
         EntityId = entity.EntityId;
     }
-        
+
     /// <summary>
     /// Area name of entity
     /// </summary>
-    public string? Area => HaContext.GetAreaFromEntityId(EntityId)?.Name;
+    public string? Area => Registration.Area?.Name;
 
     /// <summary>The current state of this Entity</summary>
     public string? State => EntityState?.State;
@@ -57,7 +57,7 @@ public record Entity : IEntityCore
     /// <example>
     /// <code>
     /// bedroomLight.StateAllChanges()
-    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128 
+    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128
     ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
     ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
     /// </code>
@@ -88,6 +88,8 @@ public record Entity : IEntityCore
     {
         EntityExtensions.CallService(this, service, data);
     }
+
+    public EntityRegistration Registration => HaContext.GetEntityRegistration(EntityId);
 }
 
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
@@ -112,8 +114,8 @@ public abstract record Entity<TEntity, TEntityState, TAttributes> : Entity
 
     /// <inheritdoc />
     public override IObservable<StateChange<TEntity, TEntityState>> StateAllChanges() =>
-        base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)this, 
-            Entities.EntityState.Map<TEntityState>(e.Old), 
+        base.StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)this,
+            Entities.EntityState.Map<TEntityState>(e.Old),
             Entities.EntityState.Map<TEntityState>(e.New)));
 
     /// <inheritdoc />
@@ -121,16 +123,16 @@ public abstract record Entity<TEntity, TEntityState, TAttributes> : Entity
 
     private static TEntityState? MapState(EntityState? state) => Entities.EntityState.Map<TEntityState>(state);
 }
-    
+
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
 public record Entity<TAttributes> : Entity<Entity<TAttributes>, EntityState<TAttributes>, TAttributes>
     where TAttributes : class
 {
     // This type is needed because the base type has a recursive type parameter so it can not be used as a return value
-        
+
     /// <summary>Copy constructor from IEntityCore</summary>
     public Entity(IEntityCore entity) : base(entity) { }
-        
+
     /// <summary>Constructor from haContext and entityId</summary>
     public Entity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
 }
