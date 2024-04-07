@@ -52,10 +52,10 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public Area? GetAreaFromEntityId(string entityId)
     {
-        return _haRegistry.GetEntityRegistration(entityId).Area;
+        return _haRegistry.GetEntityRegistration(entityId)?.Area;
     }
 
-    public EntityRegistration GetEntityRegistration(string entityId) => _haRegistry.GetEntityRegistration(entityId);
+    public EntityRegistration? GetEntityRegistration(string entityId) => _haRegistry.GetEntityRegistration(entityId);
     public IHaRegistry Registry => _haRegistry;
 
     public IReadOnlyList<Entity> GetAllEntities()

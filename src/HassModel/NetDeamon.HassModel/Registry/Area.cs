@@ -17,6 +17,8 @@ public record Area
     public string? Name { get; init; }
     public string? Id { get; init; }
 
+    public Floor? Floor { get; init; }
+
     public IReadOnlyCollection<Device> Devices => _registry.GetDevicesForArea(this).ToList();
     public IReadOnlyCollection<Entity> Entities => _registry.GetEntitiesForArea(this).ToList();
 

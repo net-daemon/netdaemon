@@ -16,7 +16,15 @@ internal class HaRegistry : IHaRegistry
         var hassEntity = _registryCache.GetHassEntityById(entityId);
         if (hassEntity is null) return null;
 
-        return BuildEntityRegistration(hassEntity);
+        var area = _registryCache.GetAreaForEntity(hassEntity)?.Map(this);
+        var device = _registryCache.GetDeviceById(hassEntity.DeviceId)?.Map(this, area);
+
+        return new EntityRegistration(this)
+        {
+            Area = area,
+            Device = device,
+            Labels = _registryCache.GetLabelsForEntity(hassEntity.EntityId).Select(l => l.Map(this)).ToList(),
+        };
     }
 
 
@@ -40,26 +48,24 @@ internal class HaRegistry : IHaRegistry
         return _registryCache.GetEntitiesForLabel(label.Id).Select(e => _haContext.Entity(e.EntityId!));
     }
 
-    public Label GetLabelById(string labelId)
+    public Label? GetLabelById(string labelId)
     {
         return _registryCache.GetLabelById(labelId).Map(this);
     }
 
-    public IEnumerable<Area> GetAreasForFloor(Floor floor)
+    public Floor? GetFloorById(string? floorId)
     {
-        return _registryCache.GetAreasForFloor(floor.Id).Map(this);
+        return _registryCache.GetFloorById(floorId)?.Map(this);
     }
 
-    private EntityRegistration BuildEntityRegistration(HassEntity hassEntity, Area? area = null, Device? device = null)
+    public IEnumerable<Area> GetAreasForLabel(Label label)
     {
-        area ??= _registryCache.GetAreaForEntity(hassEntity)?.Map(this);
-        device ??= _registryCache.GetDeviceById(hassEntity.DeviceId)?.Map(this, area);
+        // todo:
+        return Array.Empty<Area>();
+    }
 
-        return new EntityRegistration(this)
-        {
-            Area = area,
-            Device = device,
-            Labels = _registryCache.GetLabelsForEntity(hassEntity.EntityId).Select(l => l.Map(this)).ToList(),
-        };
+    public IEnumerable<Area> GetAreasForFloor(Floor floor)
+    {
+        return _registryCache.GetAreasForFloor(floor.Id).Select(a=>a.Map(this));
     }
 }

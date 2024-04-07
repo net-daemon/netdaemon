@@ -53,9 +53,7 @@ public interface IHaContext
     /// <returns></returns>
     Area? GetAreaFromEntityId(string entityId);
 
-    EntityRegistration GetEntityRegistration(string entityId);
-
-    IHaRegistry Registry { get; }
+    EntityRegistration? GetEntityRegistration(string entityId);
 
     /// <summary>
     /// Sends an event to Home Assistant

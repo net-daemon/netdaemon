@@ -11,10 +11,10 @@ namespace Apps;
 [Focus]
 public sealed class LabelApp : IAsyncInitializable
 {
-    private readonly ILogger<HelloApp> _logger;
+    private readonly ILogger<LabelApp> _logger;
     private readonly IHomeAssistantConnection _conn;
 
-    public LabelApp(ILogger<HelloApp> logger, IHomeAssistantConnection conn)
+    public LabelApp(ILogger<LabelApp> logger, IHomeAssistantConnection conn)
     {
         _logger = logger;
         _conn = conn;

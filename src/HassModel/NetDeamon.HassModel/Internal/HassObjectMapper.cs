@@ -1,6 +1,4 @@
-﻿using NetDaemon.Client.Common.HomeAssistant.Model;
-
-namespace NetDaemon.HassModel.Internal;
+﻿namespace NetDaemon.HassModel.Internal;
 
 internal static class HassObjectMapper
 {
@@ -63,7 +61,8 @@ internal static class HassObjectMapper
         {
             Name = hassArea.Name,
             Id = hassArea.Id,
-            Labels = hassArea.Labels.Select(registry.GetLabelById).ToList()
+            Labels = hassArea.Labels.Select(registry.GetLabelById).OfType<Label>().ToList(),
+            Floor = registry.GetFloorById(hassArea.FloorId),
         };
     }
 
@@ -74,7 +73,7 @@ internal static class HassObjectMapper
             Name = hassDevice.Name,
             Id = hassDevice.Id ?? "Unavailable",
             Area = area,
-            Labels = hassDevice.Labels.Select(registry.GetLabelById).ToList()
+            Labels = hassDevice.Labels.Select(registry.GetLabelById).OfType<Label>().ToList()
         };
     }
 
@@ -83,10 +82,21 @@ internal static class HassObjectMapper
         return new Label(registry)
         {
             Name = hassLabel.Name,
-            Id = hassLabel.LabelId ?? "Unavailable",
+            Id = hassLabel.Id ?? "Unavailable",
             Color = hassLabel.Color,
             Icon = hassLabel.Icon,
             Description = hassLabel.Description,
+        };
+    }
+
+    public static Floor Map(this HassFloor hassFloor, IHaRegistry registry)
+    {
+        return new Floor(registry)
+        {
+            Name = hassFloor.Name,
+            Id = hassFloor.Id ?? "Unavailable",
+            Level = hassFloor.Level,
+            Icon = hassFloor.Icon,
         };
     }
 }

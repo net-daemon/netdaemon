@@ -15,11 +15,11 @@ public sealed class HelloApp2 : IAsyncDisposable
     public HelloApp2(IHaContext ha, ILogger<HelloApp2> logger)
     {
         _logger = logger;
-        var boilerConnected = ha.Entity("binary_sensor.opentherm_gateway_otgw_otgw_boiler_connected");
+        var boilerConnected = ha.Entity("switch.heating_valve_kitchen");
         var labels = boilerConnected.Registration.Labels;
-
+        var all = ha.GetAllEntities();
         var criticalEntities = ha.GetAllEntities().Where(e => e.Registration.Labels.Any(l => l.Name == "critical"));
-        criticalEntities.StateChanges().Where(s => s.New.State == "unavailable").Subscribe(e => logger.LogCritical("Entity {entity} became unavailable", e.Entity.EntityId));
+        //criticalEntities.StateChanges().Where(s => s.New?.State == "unavailable").Subscribe(e => logger.LogCritical("Entity {Entity} became unavailable", e.Entity.EntityId));
     }
 
     public async ValueTask DisposeAsync()

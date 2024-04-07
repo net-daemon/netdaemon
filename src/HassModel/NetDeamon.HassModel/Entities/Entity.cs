@@ -89,7 +89,10 @@ public record Entity : IEntityCore
         EntityExtensions.CallService(this, service, data);
     }
 
-    public EntityRegistration Registration => HaContext.GetEntityRegistration(EntityId);
+    /// <summary>
+    /// Data from the HA Entity Registry regarding this Entity
+    /// </summary>
+    public EntityRegistration? Registration => HaContext.GetEntityRegistration(EntityId);
 }
 
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>

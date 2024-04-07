@@ -7,4 +7,7 @@ public record HassArea
 
     [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; }
 
+    [JsonPropertyName("floor_id")] public string? FloorId { get; init; }
+
+    [JsonPropertyName("icon")] public string? Icon { get; init; }
 }
