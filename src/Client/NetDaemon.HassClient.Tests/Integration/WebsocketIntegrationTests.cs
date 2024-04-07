@@ -163,6 +163,34 @@ public class WebsocketIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task TestGetLabelsShouldHaveCorrectCountsAndName()
+    {
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+        var labels = await ctx.HomeAssistantConnection
+            .GetLabelsAsync(TokenSource.Token)
+            .ConfigureAwait(false);
+
+        labels.Should().HaveCount(2);
+        labels!.FirstOrDefault(n => n.Id == "label1")?.Name
+            .Should()
+            .BeEquivalentTo("Label 1");
+    }
+
+    [Fact]
+    public async Task TestGetFloorsShoulsHaveCorrectCountsAndName()
+    {
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+        var floors = await ctx.HomeAssistantConnection
+            .GetFloorsAsync(TokenSource.Token)
+            .ConfigureAwait(false);
+
+        floors.Should().HaveCount(2);
+        floors!.FirstOrDefault(n => n.Id == "floor0")?.Name
+            .Should()
+            .BeEquivalentTo("Floor 0");
+    }
+
+    [Fact]
     public async Task TestErrorReturnShouldThrowException()
     {
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
