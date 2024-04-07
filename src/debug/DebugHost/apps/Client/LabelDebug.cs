@@ -33,6 +33,18 @@ public sealed class LabelApp : IAsyncInitializable
         {
             _logger.LogInformation("Label: {Label}", label);
         }
+
+        _logger.LogInformation("Getting floors");
+        var floors = await _conn.GetFloorsAsync(cancellationToken).ConfigureAwait(false);
+        if (floors == null)
+        {
+            _logger.LogInformation("No floors found");
+            return;
+        }
+        foreach (var floor in floors)
+        {
+            _logger.LogInformation("Floor: {Floor}", floor);
+        }
     }
 }
 
