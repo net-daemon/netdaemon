@@ -44,6 +44,33 @@ public static class HomeAssistantConnectionExtensions
                 (new SimpleCommand("config/area_registry/list"), cancelToken).ConfigureAwait(false);
     }
 
+
+    /// <summary>
+    ///     Get all labels from Home Assistant
+    /// </summary>
+    /// <param name="connection">connected Home Assistant instance</param>
+    /// <param name="cancelToken">cancellation token</param>
+    public static async Task<IReadOnlyCollection<HassLabel>?> GetLabelsAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
+            .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassLabel>>
+                (new SimpleCommand("config/label_registry/list"), cancelToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Get all floors from Home Assistant
+    /// </summary>
+    /// <param name="connection">connected Home Assistant instance</param>
+    /// <param name="cancelToken">cancellation token</param>
+    public static async Task<IReadOnlyCollection<HassFloor>?> GetFloorsAsync(this IHomeAssistantConnection connection,
+        CancellationToken cancelToken)
+    {
+        return await connection
+            .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassFloor>>
+                (new SimpleCommand("config/floor_registry/list"), cancelToken).ConfigureAwait(false);
+    }
+
     /// <summary>
     ///     Get all devices from Home Assistant
     /// </summary>

@@ -287,6 +287,20 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                             webSocket).ConfigureAwait(false);
 
                         break;
+                    case "config/label_registry/list":
+                        await ReplaceIdInResponseAndSendMsg(
+                            "result_get_labels.json",
+                            hassMessage.Id,
+                            webSocket).ConfigureAwait(false);
+
+                        break;
+                    case "config/floor_registry/list":
+                        await ReplaceIdInResponseAndSendMsg(
+                            "result_get_floors.json",
+                            hassMessage.Id,
+                            webSocket).ConfigureAwait(false);
+
+                        break;
                     case "config/device_registry/list":
                         await ReplaceIdInResponseAndSendMsg(
                             "result_get_devices.json",
@@ -339,6 +353,8 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                         }
 
                         return;
+                    default:
+                        throw new ApplicationException($"Unknown message type {hassMessage.Type}");
                 }
             }
         }

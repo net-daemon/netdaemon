@@ -1,0 +1,21 @@
+{
+    "id": 3,
+    "type": "result",
+    "success": true,
+    "result": [
+        {
+            "aliases": [],
+            "floor_id": "floor0",
+            "icon": null,
+            "level": 0,
+            "name": "Floor 0"
+        },
+        {
+            "aliases": [],
+            "floor_id": "floor1",
+            "icon": null,
+            "level": 1,
+            "name": "Floor 1"
+        }
+    ]
+}
