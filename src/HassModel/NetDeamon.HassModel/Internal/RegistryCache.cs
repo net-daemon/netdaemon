@@ -14,6 +14,7 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     private Dictionary<string, HassDevice> _devicesById = new();
     private Dictionary<string, HassArea> _areasById = new ();
     private Dictionary<string, HassEntity> _entitesById = new ();
+    private Dictionary<string, HassLabel> _labelsById = new ();
 
     private ILookup<string?, HassEntity> _entitiesByAreaId = Array.Empty<HassEntity>().ToLookup(e=>e.AreaId);
     private ILookup<string?, HassEntity> _entitiesByDeviceId = Array.Empty<HassEntity>().ToLookup(e=>e.DeviceId);
@@ -88,7 +89,7 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
             return entity.AreaId;
         }
 
-        return entity?.DeviceId is null ? null : _devicesById.GetValueOrDefault(entity?.DeviceId!)?.AreaId;
+        return entity?.DeviceId is null ? null : _devicesById.GetValueOrDefault(entity.DeviceId!)?.AreaId;
     }
 
     private void HandleEvent(HassEvent hassEvent)
@@ -106,5 +107,15 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     public IEnumerable<HassEntity> GetEntitiesForLabel(string labelId)
     {
         return _entities.Where(e => e.Labels.Any(l => l == labelId));
+    }
+
+    public HassLabel GetLabelById(string labelId)
+    {
+        return _labelsById[labelId];
+    }
+
+    public object GetAreasForFloor(string floorId)
+    {
+        throw new NotImplementedException();
     }
 }

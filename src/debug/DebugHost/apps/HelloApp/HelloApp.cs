@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using Microsoft.Extensions.Logging;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
+using NetDaemon.HassModel.Entities;
 
 namespace Apps;
 
@@ -18,6 +19,7 @@ public sealed class HelloApp2 : IAsyncDisposable
         var labels = boilerConnected.Registration.Labels;
 
         var criticalEntities = ha.GetAllEntities().Where(e => e.Registration.Labels.Any(l => l.Name == "critical"));
+        criticalEntities.StateChanges().Where(s => s.New.State == "unavailable").Subscribe(e => logger.LogCritical("Entity {entity} became unavailable", e.Entity.EntityId));
     }
 
     public async ValueTask DisposeAsync()

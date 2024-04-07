@@ -63,6 +63,7 @@ internal static class HassObjectMapper
         {
             Name = hassArea.Name,
             Id = hassArea.Id,
+            Labels = hassArea.Labels.Select(registry.GetLabelById).ToList()
         };
     }
 
@@ -72,7 +73,8 @@ internal static class HassObjectMapper
         {
             Name = hassDevice.Name,
             Id = hassDevice.Id ?? "Unavailable",
-            Area = area
+            Area = area,
+            Labels = hassDevice.Labels.Select(registry.GetLabelById).ToList()
         };
     }
 

@@ -26,7 +26,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         IHomeAssistantApiManager apiManager,
         IQueuedObservable<HassEvent> queuedObservable,
         IBackgroundTaskTracker backgroundTaskTracker,
-        HaRegistry haRegistry
+        IServiceProvider serviceProvider
     )
     {
         _entityStateCache = entityStateCache;
@@ -37,8 +37,12 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
         _queuedObservable = queuedObservable;
         _backgroundTaskTracker = backgroundTaskTracker;
-        _haRegistry = haRegistry;
+
         _queuedObservable.Initialize(_entityStateCache.AllEvents);
+
+        // The HaRegistry needs a reference to this AppScopedHaContextProvider And we ned the reference
+        // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
+        _haRegistry = ActivatorUtilities.CreateInstance<HaRegistry>(serviceProvider, this);
     }
 
     public EntityState? GetState(string entityId)

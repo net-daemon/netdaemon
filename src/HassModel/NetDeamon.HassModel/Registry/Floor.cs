@@ -1,12 +1,10 @@
-using System.Reflection.Metadata;
-
 namespace NetDaemon.HassModel.Entities;
 
-public record Label
+public class Floor
 {
     private readonly IHaRegistry _registry;
 
-    public Label(IHaRegistry registry)
+    public Floor(IHaRegistry registry)
     {
         _registry = registry;
     }
@@ -17,5 +15,5 @@ public record Label
     public string Description { get; init; }
     public string Color { get; init; }
 
-    public IEnumerable<Entity> Entities => _registry.GetEntitiesForLabel(this);
+    public IEnumerable<Area> Entities => _registry.GetAreasForFloor(this);
 }

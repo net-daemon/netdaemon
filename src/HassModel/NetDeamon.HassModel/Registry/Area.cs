@@ -18,5 +18,7 @@ public record Area
     public string? Id { get; init; }
 
     public IReadOnlyCollection<Device> Devices => _registry.GetDevicesForArea(this).ToList();
-    public IReadOnlyCollection<EntityRegistration> Entities => _registry.GetEntitiesForArea(this).ToList();
+    public IReadOnlyCollection<Entity> Entities => _registry.GetEntitiesForArea(this).ToList();
+
+    public IReadOnlyCollection<Label> Labels { get; init; } = Array.Empty<Label>();
 }
