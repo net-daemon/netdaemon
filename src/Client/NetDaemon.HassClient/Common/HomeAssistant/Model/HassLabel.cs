@@ -12,21 +12,3 @@ public record HassLabel
 
     [JsonPropertyName("name")] public string? Name { get; init; }
 }
-/*
- {
-  "version": 1,
-  "minor_version": 1,
-  "key": "core.label_registry",
-  "data": {
-    "labels": [
-      {
-        "color": "green",
-        "description": null,
-        "icon": "mdi:chair-rolling",
-        "label_id": "tomas",
-        "name": "Tomas"
-      }
-    ]
-  }
-}
-*/
