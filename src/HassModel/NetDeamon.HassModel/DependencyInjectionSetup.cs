@@ -9,7 +9,7 @@ namespace NetDaemon.HassModel;
 public static class DependencyInjectionSetup
 {
     /// <summary>
-    /// Registers services for using the IHaContext interface scoped to NetDemonApps
+    /// Registers services for using the IHaContext interface scoped to NetDeamonApps
     /// </summary>
     public static IHostBuilder UseAppScopedHaContext(this IHostBuilder hostBuilder)
     {
@@ -20,7 +20,10 @@ public static class DependencyInjectionSetup
             .ConfigureServices((_, services) => services.AddScopedHaContext());
     }
 
-    internal static void AddScopedHaContext(this IServiceCollection services)
+    /// <summary>
+    /// Registers services for using the IHaContext interface scoped to NetDeamonApps
+    /// </summary>
+    public static void AddScopedHaContext(this IServiceCollection services)
     {
         services.AddSingleton<EntityStateCache>();
         services.AddSingleton<EntityAreaCache>();
