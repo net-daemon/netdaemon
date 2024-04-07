@@ -163,6 +163,17 @@ public class WebsocketIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task TestGetLabelsShouldHaveCorrectCounts()
+    {
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+        var labels = await ctx.HomeAssistantConnection
+            .GetLabelsAsync(TokenSource.Token)
+            .ConfigureAwait(false);
+
+        labels.Should().HaveCount(2);
+    }
+
+    [Fact]
     public async Task TestErrorReturnShouldThrowException()
     {
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);

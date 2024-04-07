@@ -346,6 +346,8 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                         }
 
                         return;
+                    default:
+                        throw new ApplicationException($"Unknown message type {hassMessage.Type}");
                 }
             }
         }
