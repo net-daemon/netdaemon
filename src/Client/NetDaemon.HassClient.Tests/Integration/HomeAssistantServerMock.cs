@@ -287,6 +287,13 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                             webSocket).ConfigureAwait(false);
 
                         break;
+                    case "config/label_registry/list":
+                        await ReplaceIdInResponseAndSendMsg(
+                            "result_get_labels.json",
+                            hassMessage.Id,
+                            webSocket).ConfigureAwait(false);
+
+                        break;
                     case "config/device_registry/list":
                         await ReplaceIdInResponseAndSendMsg(
                             "result_get_devices.json",
