@@ -4,9 +4,9 @@ namespace NetDaemon.HassModel.Entities;
 
 public record Label
 {
-    private readonly IHaRegistry _registry;
+    private readonly IHaRegistryNavigator _registry;
 
-    internal Label(IHaRegistry registry)
+    internal Label(IHaRegistryNavigator registry)
     {
         _registry = registry;
     }
@@ -18,6 +18,4 @@ public record Label
     public string? Color { get; init; }
 
     public IEnumerable<Entity> Entities => _registry.GetEntitiesForLabel(this);
-
-    public IEnumerable<Area> Areas => _registry.GetAreasForLabel(this);
 }

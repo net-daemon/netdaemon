@@ -1,15 +1,17 @@
-﻿namespace NetDaemon.HassModel;
+namespace NetDaemon.HassModel;
 
-internal interface IHaRegistry
+public interface IHaRegistry
 {
-    EntityRegistration? GetEntityRegistration(string entityId);
-    IEnumerable<Device> GetDevicesForArea(Area area);
-    IEnumerable<Entity> GetEntitiesForArea(Area area);
-    IEnumerable<Entity> GetEntitiesForDevice(Device device);
-    IEnumerable<Entity> GetEntitiesForLabel(Label label);
+    IReadOnlyCollection<Floor> Floors { get; }
+    IReadOnlyCollection<EntityRegistration> Entities { get; }
+    IReadOnlyCollection<Area> Areas { get; }
+    IReadOnlyCollection<Device> Devices { get; }
+    IReadOnlyCollection<Label> Labels { get; }
 
-    Label? GetLabelById(string labelId);
-    IEnumerable<Area> GetAreasForFloor(Floor floor);
-    Floor? GetFloorById(string? id);
-    IEnumerable<Area> GetAreasForLabel(Label label);
+    EntityRegistration? GetEntityRegistration(string entityId);
+    Device? GetDevice(string deviceId);
+    Area? GetArea(string areaId);
+
+    Floor? GetFloor(string floorId);
+    Label? GetLabel(string labelId);
 }

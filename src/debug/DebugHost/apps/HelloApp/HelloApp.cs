@@ -12,13 +12,13 @@ public sealed class HelloApp2 : IAsyncDisposable
 {
     private readonly ILogger<HelloApp2> _logger;
 
-    public HelloApp2(IHaContext ha, ILogger<HelloApp2> logger)
+    public HelloApp2(IHaContext ha, ILogger<HelloApp2> logger, IHaRegistry registry)
     {
         _logger = logger;
         var boilerConnected = ha.Entity("switch.heating_valve_kitchen");
         var labels = boilerConnected.Registration.Labels;
-        var all = ha.GetAllEntities();
-        var criticalEntities = ha.GetAllEntities().Where(e => e.Registration.Labels.Any(l => l.Name == "critical"));
+        var all = registry.Entities;
+        var criticalEntities = ha.GetAllEntities().Where(e => e.Registration?.Labels.Any(l => l.Name == "critical") ?? false);
         //criticalEntities.StateChanges().Where(s => s.New?.State == "unavailable").Subscribe(e => logger.LogCritical("Entity {Entity} became unavailable", e.Entity.EntityId));
     }
 

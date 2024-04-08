@@ -5,9 +5,9 @@
 /// </summary>
 public record Area
 {
-    private readonly IHaRegistry _registry;
+    private readonly IHaRegistryNavigator _registry;
 
-    internal Area(IHaRegistry registry)
+    internal Area(IHaRegistryNavigator registry)
     {
         _registry = registry;
     }

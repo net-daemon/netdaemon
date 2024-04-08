@@ -55,29 +55,29 @@ internal static class HassObjectMapper
         };
     }
 
-    public static Area Map(this HassArea hassArea, IHaRegistry registry)
+    public static Area Map(this HassArea hassArea, IHaRegistryNavigator registry)
     {
         return new Area(registry)
         {
             Name = hassArea.Name,
             Id = hassArea.Id,
-            Labels = hassArea.Labels.Select(registry.GetLabelById).OfType<Label>().ToList(),
-            Floor = registry.GetFloorById(hassArea.FloorId),
+            Labels = hassArea.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
+            Floor = registry.GetFloor(hassArea.FloorId),
         };
     }
 
-    public static Device Map(this HassDevice hassDevice, IHaRegistry registry, Area? area)
+    public static Device Map(this HassDevice hassDevice, IHaRegistryNavigator registry)
     {
         return new Device(registry)
         {
             Name = hassDevice.Name,
             Id = hassDevice.Id ?? "Unavailable",
-            Area = area,
-            Labels = hassDevice.Labels.Select(registry.GetLabelById).OfType<Label>().ToList()
+            Area = hassDevice.AreaId is null ? null : registry.GetArea(hassDevice.AreaId),
+            Labels = hassDevice.Labels.Select(registry.GetLabel).OfType<Label>().ToList()
         };
     }
 
-    public static Label Map(this HassLabel hassLabel, IHaRegistry registry)
+    public static Label Map(this HassLabel hassLabel, IHaRegistryNavigator registry)
     {
         return new Label(registry)
         {
@@ -89,7 +89,7 @@ internal static class HassObjectMapper
         };
     }
 
-    public static Floor Map(this HassFloor hassFloor, IHaRegistry registry)
+    public static Floor Map(this HassFloor hassFloor, IHaRegistryNavigator registry)
     {
         return new Floor(registry)
         {
@@ -99,4 +99,17 @@ internal static class HassObjectMapper
             Icon = hassFloor.Icon,
         };
     }
+    public static EntityRegistration Map(this HassEntity hassEntity, IHaRegistryNavigator registry)
+    {
+        var device = hassEntity.DeviceId is null ? null : registry.GetDevice(hassEntity.DeviceId);
+        var areaId = hassEntity.AreaId ?? device?.Area?.Id;
+
+        return new EntityRegistration
+        {
+            Area = areaId is null ? null : registry.GetArea(areaId),
+            Device = device,
+            Labels = hassEntity.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
+        };
+    }
+
 }

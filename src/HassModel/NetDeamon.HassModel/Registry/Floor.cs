@@ -2,9 +2,9 @@ namespace NetDaemon.HassModel.Entities;
 
 public class Floor
 {
-    private readonly IHaRegistry _registry;
+    private readonly IHaRegistryNavigator _registry;
 
-    internal Floor(IHaRegistry registry)
+    internal Floor(IHaRegistryNavigator registry)
     {
         _registry = registry;
     }

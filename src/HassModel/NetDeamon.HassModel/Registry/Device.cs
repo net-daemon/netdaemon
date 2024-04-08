@@ -2,9 +2,9 @@ namespace NetDaemon.HassModel.Entities;
 
 public record Device
 {
-    private readonly IHaRegistry _registry;
+    private readonly IHaRegistryNavigator _registry;
 
-    internal Device(IHaRegistry registry)
+    internal Device(IHaRegistryNavigator registry)
     {
         _registry = registry;
     }

@@ -50,13 +50,14 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         return _entityStateCache.GetState(entityId).Map();
     }
 
+    [Obsolete("Use Registry to navigate Entities, Devices and Areas")]
     public Area? GetAreaFromEntityId(string entityId)
     {
         return _haRegistry.GetEntityRegistration(entityId)?.Area;
     }
 
     public EntityRegistration? GetEntityRegistration(string entityId) => _haRegistry.GetEntityRegistration(entityId);
-    public IHaRegistry Registry => _haRegistry;
+    public IHaRegistryNavigator Registry => _haRegistry;
 
     public IReadOnlyList<Entity> GetAllEntities()
     {
