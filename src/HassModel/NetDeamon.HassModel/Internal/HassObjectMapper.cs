@@ -62,7 +62,7 @@ internal static class HassObjectMapper
             Name = hassArea.Name,
             Id = hassArea.Id,
             Labels = hassArea.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
-            Floor = registry.GetFloor(hassArea.FloorId),
+            Floor = hassArea.FloorId is null ? null : registry.GetFloor(hassArea.FloorId),
         };
     }
 

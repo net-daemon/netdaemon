@@ -16,7 +16,7 @@ public sealed class HelloApp2 : IAsyncDisposable
     {
         _logger = logger;
         var boilerConnected = ha.Entity("switch.heating_valve_kitchen");
-        var labels = boilerConnected.Registration.Labels;
+        var labels = boilerConnected.Registration?.Labels;
         var all = registry.Entities;
         var criticalEntities = ha.GetAllEntities().Where(e => e.Registration?.Labels.Any(l => l.Name == "critical") ?? false);
         //criticalEntities.StateChanges().Where(s => s.New?.State == "unavailable").Subscribe(e => logger.LogCritical("Entity {Entity} became unavailable", e.Entity.EntityId));

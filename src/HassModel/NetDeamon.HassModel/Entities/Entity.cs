@@ -35,7 +35,7 @@ public record Entity : IEntityCore
     /// <summary>
     /// Area name of entity
     /// </summary>
-    public string? Area => Registration.Area?.Name;
+    public string? Area => Registration?.Area?.Name;
 
     /// <summary>The current state of this Entity</summary>
     public string? State => EntityState?.State;
@@ -90,7 +90,7 @@ public record Entity : IEntityCore
     }
 
     /// <summary>
-    /// Data from the HA Entity Registry regarding this Entity
+    /// Data from the HA Entity Registry, Like Device, Area and Labels regarding this Entity
     /// </summary>
     public EntityRegistration? Registration => HaContext.GetEntityRegistration(EntityId);
 }
