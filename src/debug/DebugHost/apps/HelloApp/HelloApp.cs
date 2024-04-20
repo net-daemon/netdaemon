@@ -14,6 +14,9 @@ public sealed class HelloApp2 : IAsyncDisposable
 
     public HelloApp2(IHaContext ha, ILogger<HelloApp2> logger, IHaRegistry registry)
     {
+        var home = new Home(registry);
+        home.Floors.Downstairs.Areas.SelectMany(a => a.Entities);
+
         _logger = logger;
         var boilerConnected = ha.Entity("switch.heating_valve_kitchen");
         var labels = boilerConnected.Registration?.Labels;
@@ -28,4 +31,23 @@ public sealed class HelloApp2 : IAsyncDisposable
         _logger.LogInformation("disposed app");
         //return ValueTask.CompletedTask;
     }
+}
+
+record Home(IHaRegistry HaRegistry)
+{
+    public MyFloors Floors => new MyFloors(HaRegistry);
+}
+
+record MyFloors(IHaRegistry Registry)
+{
+    public Floor Downstairs => Registry.GetFloor("downstairs");
+    public Floor Upstairs => Registry.GetFloor("upstairs");
+    public Floor Attic => Registry.GetFloor("upstairs");
+}
+
+record AtticFloorAreas(IHaRegistry HaRegistry)
+{
+    public IEnumerable<Area> Areas;
+    public Area Study => HaRegistry.GetArea("study");
+
 }

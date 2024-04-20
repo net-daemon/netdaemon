@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Runtime.InteropServices;
 using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
@@ -9,14 +9,12 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     private IDisposable? _eventSubscription;
 
     // Just in case this cache is used before it is initialized we will initialize all
-    // these dictionaries and lookups empty to avoid exceptions
-    private IReadOnlyCollection<HassEntity> _entities = new Collection<HassEntity>();
-
-    private Dictionary<string, HassLabel> _labelsById = new ();
-    private Dictionary<string, HassFloor> _floorsById = new();
-    private Dictionary<string, HassArea> _areasById = new ();
-    private Dictionary<string, HassDevice> _devicesById = new();
-    private Dictionary<string, HassEntity> _entitiesById = new ();
+    // these dictionaries and lookups empty to avoid exceptions and not having to make these nullable
+    private Dictionary<string, HassLabel> _labelsById = [];
+    private Dictionary<string, HassFloor> _floorsById = [];
+    private Dictionary<string, HassArea> _areasById = [];
+    private Dictionary<string, HassDevice> _devicesById = [];
+    private Dictionary<string, HassEntity> _entitiesById = [];
 
     private ILookup<string?, HassEntity> _entitiesByAreaId = Array.Empty<HassEntity>().ToLookup(e=>e.AreaId);
     private ILookup<string?, HassEntity> _entitiesByDeviceId = Array.Empty<HassEntity>().ToLookup(e=>e.DeviceId);
@@ -24,49 +22,96 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     private ILookup<string?, HassArea> _areasByFloorId = Array.Empty<HassArea>().ToLookup(e => e.FloorId);
     private ILookup<string, HassEntity> _entitiesByLabel = Array.Empty<HassEntity>().ToLookup(e =>default(string)!);
 
+    // We use this connection here during startup, and after we have received .._registry_updates events. In both cases we expect the connection to be available
+    private IHomeAssistantConnection CurrentConnection => hassRunner.CurrentConnection ?? throw new InvalidOperationException("Home assistantConnection is not available ");
+
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         _cancellationToken = cancellationToken;
 
-        var events = await hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null, _cancellationToken).ConfigureAwait(false);
-        _eventSubscription = events.Where(e => e.EventType is
-            "entity_registry_updated" or
-            "device_registry_updated" or
-            "area_registry_updated" or
-            "label_registry_updated" or
-            "floor_registry_updated")
-            .Subscribe(e => { _ = UpdateCache(); }); // TODO, handel error sin async code
+        var events = await CurrentConnection.SubscribeToHomeAssistantEventsAsync(null, _cancellationToken).ConfigureAwait(false);
 
-        await UpdateCache().ConfigureAwait(false);
+        _eventSubscription = events.Where(e => e.EventType.EndsWith("_registry_updated", StringComparison.Ordinal))
+            .Subscribe(e => {_ = RegistryUpdated(e.EventType); });
+
+        logger.LogInformation("Initializing RegistryCache");
+
+        await ReloadEntities();
+        await ReloadDevices();
+        await ReloadAreas();
+        await ReloadLabels();
+        await ReloadFloors();
+        UpdateEntitiesByAreaId();
     }
 
-    private async Task UpdateCache()
+    private async Task RegistryUpdated(string eventType)
     {
-        logger.LogInformation("Updating RegistryCache");
-        _ = hassRunner.CurrentConnection ?? throw new InvalidOperationException();
+        logger.LogInformation("Received {Event}: Updating RegistryCache", eventType);
 
-        _entities = await hassRunner.CurrentConnection.GetEntitiesAsync(_cancellationToken).ConfigureAwait(false) ?? Array.Empty<HassEntity>();
-        _entitiesById = _entities
-            .Where(e => !string.IsNullOrEmpty(e.EntityId))
-            .ToDictionary(e => e.EntityId!);
-        _entitiesByLabel = _entities.SelectMany(e => e.Labels.Select(l => (e, l))).ToLookup(t => t.l, t => t.e);
+        var task = eventType switch
+        {
+            "entity_registry_updated" => ReloadEntities(),
+            "device_registry_updated" => ReloadDevices(),
+            "area_registry_updated"   => ReloadAreas(),
+            "label_registry_updated"  => ReloadLabels(),
+            "floor_registry_updated"  => ReloadFloors(),
+            _ => Task.CompletedTask
+        };
+        try
+        {
+            await task.ConfigureAwait(true);
+            UpdateEntitiesByAreaId();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Exception updating RegistryCache");
+        }
+    }
 
-        var devices = await hassRunner.CurrentConnection.GetDevicesAsync(_cancellationToken).ConfigureAwait(false) ?? Array.Empty<HassDevice>();
-        _devicesById = devices.ToDictionary(k => k.Id!, v => v);
+    private async Task ReloadEntities()
+    {
+        var entities = await CurrentConnection.GetEntitiesAsync(_cancellationToken).ConfigureAwait(false) ?? [];
+        _entitiesById = SafeToDictionaryById(entities, e => e.EntityId);
+        _entitiesByLabel = entities.SelectMany(e => e.Labels.Select(l => (e, l))).ToLookup(t => t.l, t => t.e);
+        _entitiesByDeviceId = entities.ToLookup(e => e.DeviceId);
+    }
 
-        var areas = await hassRunner.CurrentConnection.GetAreasAsync(_cancellationToken).ConfigureAwait(false) ?? Array.Empty<HassArea>();
-        _areasById = areas.ToDictionary(k => k.Id!, v => v);
-        _areasByFloorId = areas.ToLookup(a => a.FloorId);
-
-        var labels = await hassRunner.CurrentConnection.GetLabelsAsync(_cancellationToken).ConfigureAwait(false) ?? Array.Empty<HassLabel>();
-        _labelsById = labels.ToDictionary(l => l.Id!);
-
-        var floors = await hassRunner.CurrentConnection.GetFloorsAsync(_cancellationToken).ConfigureAwait(false) ?? Array.Empty<HassFloor>();
-        _floorsById = floors.ToDictionary(f =>f.Id!);
-
-        _entitiesByAreaId = _entities.ToLookup(FindArea);
-        _entitiesByDeviceId = _entities.ToLookup(e => e.DeviceId);
+    private async Task ReloadDevices()
+    {
+        var devices = await CurrentConnection.GetDevicesAsync(_cancellationToken).ConfigureAwait(false) ?? [];
+        _devicesById = SafeToDictionaryById(devices, k => k.Id);
         _devicesByAreaId = devices.ToLookup(d => d.AreaId);
+    }
+
+
+    private async Task ReloadAreas()
+    {
+        var areas = await CurrentConnection.GetAreasAsync(_cancellationToken).ConfigureAwait(false) ?? [];
+        _areasById = SafeToDictionaryById(areas, k => k.Id);
+        _areasByFloorId = areas.ToLookup(a => a.FloorId);
+    }
+
+    private async Task ReloadFloors()
+    {
+        var floors = await CurrentConnection.GetFloorsAsync(_cancellationToken).ConfigureAwait(false) ?? [];
+        _floorsById = SafeToDictionaryById(floors, f =>f.Id);
+    }
+
+    private async Task ReloadLabels()
+    {
+        var labels = await CurrentConnection.GetLabelsAsync(_cancellationToken).ConfigureAwait(false) ?? [];
+        _labelsById = SafeToDictionaryById(labels, l => l.Id);
+    }
+
+    private void UpdateEntitiesByAreaId()
+    {
+        _entitiesByAreaId = _entitiesById.Values.ToLookup(FindArea);
+    }
+
+    private static Dictionary<string, T> SafeToDictionaryById<T>(IEnumerable<T> input, Func<T, string?> keySelector)
+    {
+        return input.Select(item => (item, key: keySelector(item))).Where(t => t.key is not null)
+            .DistinctBy(t => t.item).ToDictionary(t => t.key!, t => t.item);
     }
 
     public IEnumerable<HassEntity> GetEntities() => _entitiesById.Values;
@@ -82,7 +127,7 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     public HassLabel? GetLabelById(string? labelId) => labelId is null ? null : _labelsById[labelId];
 
 
-    public IEnumerable<HassEntity> GetEntitiesForArea(string? areaId) => _entitiesByAreaId[areaId];
+    public IEnumerable<HassEntity> GetEntitiesForArea(string? areaIld) => _entitiesByAreaId[areaId];
 
     public IEnumerable<HassEntity> GetEntitiesForDevice(string? deviceId) => _entitiesByDeviceId[deviceId];
 
@@ -95,12 +140,9 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
 
     private string? FindArea(HassEntity? entity)
     {
-        if (!string.IsNullOrEmpty(entity?.AreaId))
-        {
-            return entity.AreaId;
-        }
-
-        return entity?.DeviceId is null ? null : _devicesById.GetValueOrDefault(entity.DeviceId!)?.AreaId;
+        // Usually an entity gets its area via the device, but it can be overriden at the entity level so we
+        // first check if the entity has an area and then if it has a device which has an area
+        return !string.IsNullOrEmpty(entity?.AreaId) ? entity.AreaId : GetDeviceById(entity?.DeviceId)?.AreaId;
     }
 
     public void Dispose()

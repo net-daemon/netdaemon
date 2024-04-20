@@ -40,7 +40,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
         _queuedObservable.Initialize(_entityStateCache.AllEvents);
 
-        // The HaRegistry needs a reference to this AppScopedHaContextProvider And we ned the reference
+        // The HaRegistry needs a reference to this AppScopedHaContextProvider And we need the reference
         // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
         _haRegistry = ActivatorUtilities.CreateInstance<HaRegistry>(serviceProvider, this);
     }
