@@ -4,7 +4,7 @@ using NetDaemon.HassModel.Entities;
 
 namespace MyLibrary;
 
-public partial record LightEntity : Entity<LightEntity, EntityState<LightAttributes>, LightAttributes>, ILightEntityCore
+public partial record LightEntity : Entity<EntityState<LightAttributes>, LightAttributes>, ILightEntityCore
 {
     public LightEntity(IHaContext haContext, string entityId) : base(haContext, entityId)
     {
