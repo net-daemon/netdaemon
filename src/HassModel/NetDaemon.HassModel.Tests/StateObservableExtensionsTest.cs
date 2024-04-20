@@ -11,11 +11,11 @@ public sealed class StateObservableExtensionsTest : IDisposable
     private readonly Subject<StateChange> _subject = new();
 
     private readonly TestScheduler _testScheduler = new();
-    private readonly IObservable<NumericStateChange> _numericStateChangeObservable;
+    private readonly IObservable<StateChange<NumericEntity, NumericEntityState>> _numericStateChangeObservable;
 
     public StateObservableExtensionsTest()
     {
-        _numericStateChangeObservable = _subject.Select(e => new NumericStateChange(new NumericEntity(e.Entity),
+        _numericStateChangeObservable = _subject.Select(e => new StateChange<NumericEntity, NumericEntityState>(new NumericEntity(e.Entity),
                                                                     EntityState.Map<NumericEntityState>(e.Old),
                                                                     EntityState.Map<NumericEntityState>(e.New)));
     }

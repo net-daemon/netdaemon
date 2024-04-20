@@ -17,7 +17,7 @@ public static class EnumerableEntityExtensions
     ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateAllChanges(this IEnumerable<Entity> entities) =>
+    public static IObservable<StateChange> StateAllChanges(this IEnumerable<IEntityCore> entities) =>
         entities.Select(t => t.StateAllChanges()).Merge();
 
     /// <summary>
@@ -31,7 +31,7 @@ public static class EnumerableEntityExtensions
     ///    .Subscribe(e =&gt; e.Entity.TurnOff());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateChanges(this IEnumerable<Entity> entities) =>
+    public static IObservable<StateChange> StateChanges(this IEnumerable<IEntityCore> entities) =>
         entities.StateAllChanges().StateChangesOnly();
 
     /// <summary>
@@ -46,9 +46,11 @@ public static class EnumerableEntityExtensions
     ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
     /// </code>
     /// </example>
-    public static IObservable<StateChange<Entity<TEntityState, TAttributes>, TEntityState>> StateAllChanges<TEntityState, TAttributes>(this IEnumerable<Entity<TEntityState, TAttributes>> entities)
+    public static IObservable<StateChange<TEntity, TEntityState>> StateAllChanges<TEntity, TEntityState, TAttributes>(this IEnumerable<IEntity<TEntity, TEntityState, TAttributes>> entities)
+        where TEntity : Entity<TEntityState, TAttributes>
         where TEntityState : EntityState<TAttributes>
-        where TAttributes : class =>
+        where TAttributes : class
+        =>
         entities.Select(t => t.StateAllChanges()).Merge();
 
     /// <summary>
@@ -62,9 +64,11 @@ public static class EnumerableEntityExtensions
     ///    .Subscribe(e =&gt; e.Entity.TurnOff());
     /// </code>
     /// </example>
-    public static IObservable<StateChange<Entity<TEntityState, TAttributes>, TEntityState>> StateChanges<TEntityState, TAttributes>(this IEnumerable<Entity<TEntityState, TAttributes>> entities)
+    public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes>(this IEnumerable<IEntity<TEntity, TEntityState, TAttributes>> entities)
+        where TEntity : Entity<TEntityState, TAttributes>
         where TEntityState : EntityState<TAttributes>
-        where TAttributes : class =>
+        where TAttributes : class
+        =>
         entities.StateAllChanges().StateChangesOnly();
 
     /// <summary>

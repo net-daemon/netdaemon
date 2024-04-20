@@ -83,6 +83,11 @@ public abstract record Entity<TEntityState, TAttributes> : Entity
     private static TEntityState? MapState(EntityState? state) => Entities.EntityState.Map<TEntityState>(state);
 }
 
+public interface IEntity<TEntity, TEntityState, TAttributes> : IEntityCore
+{
+
+}
+
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
 public record Entity<TAttributes> : Entity<EntityState<TAttributes>, TAttributes>
     where TAttributes : class

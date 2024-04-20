@@ -68,7 +68,7 @@ public static class EntityExtensions
     ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateAllChanges(this Entity entity) =>
+    public static IObservable<StateChange> StateAllChanges(this IEntityCore entity) =>
         entity.HaContext.StateAllChanges().Where(e => e.Entity.EntityId == entity.EntityId);
 
     /// <summary>
@@ -82,41 +82,22 @@ public static class EntityExtensions
     ///    .Subscribe(e =&gt; e.Entity.TurnOff());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateChanges(this Entity entity) =>
+    public static IObservable<StateChange> StateChanges(this IEntityCore entity) =>
         entity.StateAllChanges().StateChangesOnly();
 
-    public static IObservable<NumericStateChange> StateChanges(this NumericEntity entity) =>
-        entity.StateAllChanges().StateChangesOnly();
 
-    public static IObservable<NumericStateChange> StateAllChanges(this NumericEntity entity) =>
-        ((Entity)entity).StateAllChanges().Select(e => new NumericStateChange(entity,
-            Entities.EntityState.Map<NumericEntityState>(e.Old),
-            Entities.EntityState.Map<NumericEntityState>(e.New)));
-
-    /// <inheritdoc />
-    public static IObservable<StateChange<Entity<TEntityState, TAttributes>, TEntityState>> StateAllChanges<TEntityState, TAttributes>(this Entity<TEntityState, TAttributes> entity)
+    public static IObservable<StateChange<TEntity, TEntityState>> StateAllChanges<TEntity, TEntityState, TAttributes>(this IEntity<TEntity, TEntityState, TAttributes> entity)
+        where TEntity : Entity<TEntityState, TAttributes>
         where TEntityState : EntityState<TAttributes>
         where TAttributes : class
         =>
-            ((Entity)entity).StateAllChanges().Select(e => new StateChange<Entity<TEntityState, TAttributes>, TEntityState>(entity,
+            ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)entity,
             Entities.EntityState.Map<TEntityState>(e.Old),
             Entities.EntityState.Map<TEntityState>(e.New)));
 
-    /// <inheritdoc />
-    public static IObservable<StateChange<Entity<TEntityState, TAttributes>, TEntityState>> StateChanges<TEntityState, TAttributes>(this Entity<TEntityState, TAttributes> entity)
+    public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes>(this IEntity<TEntity, TEntityState, TAttributes> entity)
+        where TEntity : Entity<TEntityState, TAttributes>
         where TEntityState : EntityState<TAttributes>
-        where TAttributes : class
-        => entity.StateAllChanges().StateChangesOnly();
-
-    /// <inheritdoc />
-    public static IObservable<NumericStateChange<NumericEntity<TEntityState, TAttributes>, TEntityState>> StateAllChanges<TEntityState, TAttributes>(this NumericEntity<TEntityState, TAttributes> entity)
-        where TEntityState : NumericEntityState<TAttributes>
-        where TAttributes : class
-        => ((Entity<TEntityState, TAttributes>)entity).StateAllChanges().Select(e => new NumericStateChange<NumericEntity<TEntityState, TAttributes>, TEntityState>(entity, e.Old, e.New));
-
-    /// <inheritdoc />
-    public static IObservable<NumericStateChange<NumericEntity<TEntityState, TAttributes>, TEntityState>> StateChanges<TEntityState, TAttributes>(this NumericEntity<TEntityState, TAttributes> entity)
-        where TEntityState : NumericEntityState<TAttributes>
         where TAttributes : class
         => entity.StateAllChanges().StateChangesOnly();
 
@@ -137,4 +118,22 @@ public static class EntityExtensions
 
         entity.HaContext.CallService(serviceDomain, serviceName, ServiceTarget.FromEntity(entity.EntityId), data);
     }
+}
+
+public static class NumericEntityExtensions
+{
+    public static IObservable<StateChange<NumericEntity, NumericEntityState> > StateChanges(this NumericEntity entity) =>
+        entity.StateAllChanges().StateChangesOnly();
+
+    public static IObservable<StateChange<NumericEntity, NumericEntityState>> StateAllChanges(this NumericEntity entity) =>
+        ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<NumericEntity, NumericEntityState>(entity,
+            Entities.EntityState.Map<NumericEntityState>(e.Old),
+            Entities.EntityState.Map<NumericEntityState>(e.New)));
+
+    public static IObservable<StateChange<NumericEntity<TAttributes>, NumericEntityState>> StateAllChanges<TAttributes>(this NumericEntity<TAttributes> entity)
+        where TAttributes : class
+        =>
+        ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<NumericEntity<TAttributes>, NumericEntityState>(entity,
+            Entities.EntityState.Map<NumericEntityState>(e.Old),
+            Entities.EntityState.Map<NumericEntityState>(e.New)));
 }
