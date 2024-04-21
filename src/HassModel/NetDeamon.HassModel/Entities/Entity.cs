@@ -59,19 +59,26 @@ public record Entity : IEntityCore
     {
         EntityExtensions.CallService(this, service, data);
     }
+
+    /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
+    public virtual Entity<EntityState<string ,TAttributes>, TAttributes, string> WithAttributesAs<TAttributes>()
+        where TAttributes : class
+        => new(this);
 }
 
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
-public abstract record Entity<TEntityState, TAttributes> : Entity
-    where TEntityState : EntityState<TAttributes>
+public record Entity<TEntityState, TAttributes, TState> : Entity
+    where TEntityState : EntityState<TState ,TAttributes>
     where TAttributes : class
 {
+    public new TState? State => EntityState.State;
+
     /// <summary>Copy constructor from IEntityCore</summary>
-    protected Entity(IEntityCore entity) : base(entity)
+    public Entity(IEntityCore entity) : base(entity)
     { }
 
     /// <summary>Constructor from haContext and entityId</summary>
-    protected Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
+    public Entity(IHaContext haContext, string entityId) : base(haContext, entityId)
     { }
 
     /// <inheritdoc />
@@ -80,23 +87,18 @@ public abstract record Entity<TEntityState, TAttributes> : Entity
     /// <inheritdoc />
     public override TEntityState? EntityState => MapState(base.EntityState);
 
+    /// <summary>Gets a NumericEntity from a given Entity</summary>
+    public Entity<EntityState<double? ,TAttributes>, TAttributes, double?> AsNumeric() => new(this);
+
+    /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
+    public override Entity<EntityState<string ,T>, T, string> WithAttributesAs<T>()
+        where T : class
+        => new(this);
+
     private static TEntityState? MapState(EntityState? state) => Entities.EntityState.Map<TEntityState>(state);
 }
 
-public interface IEntity<TEntity, TEntityState, TAttributes> : IEntityCore
+public interface IEntity<out TEntity, out TEntityState, out TAttributes, out TState> : IEntityCore
 {
 
-}
-
-/// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
-public record Entity<TAttributes> : Entity<EntityState<TAttributes>, TAttributes>
-    where TAttributes : class
-{
-    // This type is needed because the base type has a recursive type parameter so it can not be used as a return value
-
-    /// <summary>Copy constructor from IEntityCore</summary>
-    public Entity(IEntityCore entity) : base(entity) { }
-
-    /// <summary>Constructor from haContext and entityId</summary>
-    public Entity(IHaContext haContext, string entityId) : base(haContext, entityId) { }
 }

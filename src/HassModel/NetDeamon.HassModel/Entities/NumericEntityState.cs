@@ -11,17 +11,3 @@ public record NumericEntityState : EntityState
     /// <summary>The state converted to double if possible, null if it is not</summary>
     public new double? State => FormatHelpers.ParseAsDouble(base.State);
 }
-
-/// <summary>
-/// State for a Numeric Entity with specific types of Attributes
-/// </summary>
-public record NumericEntityState<TAttributes> : EntityState<TAttributes>
-    where TAttributes : class
-{
-    /// <summary>Copy constructor from base class</summary>
-    public NumericEntityState(EntityState source) : base(source)
-    { }
-
-    /// <summary>The state converted to double if possible, null if it is not</summary>
-    public new double? State => FormatHelpers.ParseAsDouble(base.State);
-}

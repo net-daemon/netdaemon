@@ -1,5 +1,4 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.HassModel.Tests.TestHelpers;
 using NetDaemon.HassModel.Tests.TestHelpers.HassClient;

@@ -65,8 +65,8 @@ public class NumericEntityTest
         var entity = new Entity(haContextMock.Object, entityId);
 
         // Act: WithAttributesAs
-        Entity<TestSensorAttributes> withAttributes = entity.WithAttributesAs<TestSensorAttributes>();
-        NumericEntity<TestSensorAttributes> numericEntity = withAttributes.AsNumeric();
+        Entity<EntityState<string, TestSensorAttributes>, TestSensorAttributes, string> withAttributes = entity.WithAttributesAs<TestSensorAttributes>();
+        Entity<EntityState<double?, TestSensorAttributes>, TestSensorAttributes, double?> numericEntity = withAttributes.AsNumeric();
 
         // Assert
         withAttributes.State.Should().Be("12.3", because: "State  is still a string");
@@ -158,18 +158,18 @@ public class NumericEntityTest
             @new: new EntityState { State = "2" }));
 
         // Assert
-        stateChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
+        stateChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericTestEntity, EntityState<double, TestEntityAttributes>>>
         (e => e.Entity.State.Equals(3.14) &&
               e.Old!.State.Equals(1.0) &&
               e.New!.State.Equals(2.0))), Times.Once);
         stateChangeObserverMock.VerifyNoOtherCalls();
 
-        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
+        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericTestEntity, EntityState<double, TestEntityAttributes>>>
         (e => e.Entity.State.Equals(3.14) &&
               e.Old!.State.Equals(1.0) &&
               e.New!.State.Equals(2.0))), Times.Once);
 
-        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericTestEntity, NumericEntityState<TestEntityAttributes>>>
+        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericTestEntity, EntityState<double, TestEntityAttributes>>>
         (e => e.Entity.State.Equals(3.14) &&
               e.Old!.State.Equals(1.0) &&
               e.New!.State.Equals(1.0))), Times.Once);

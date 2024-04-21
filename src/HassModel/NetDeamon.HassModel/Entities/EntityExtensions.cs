@@ -33,26 +33,6 @@ public static class EntityExtensions
     /// <returns>true if the state equals "off", otherwise false</returns>
     public static bool IsOff([NotNullWhen(true)] this Entity? entity) => entity?.EntityState?.IsOff() ?? false;
 
-    /// <summary>Gets a NumericEntity from a given Entity</summary>
-    public static NumericEntity AsNumeric(this Entity entity) => new(entity);
-
-    /// <summary>Gets a NumericEntity from a given Entity</summary>
-    public static NumericEntity<TAttributes>
-        AsNumeric<TEntityState, TAttributes>(this Entity<TEntityState, TAttributes> entity)
-        where TEntityState : EntityState<TAttributes>
-        where TAttributes : class
-        => new(entity);
-
-    /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
-    public static Entity<TAttributes> WithAttributesAs<TAttributes>(this Entity entity)
-        where TAttributes : class
-        => new(entity);
-
-    /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
-    public static NumericEntity<TAttributes> WithAttributesAs<TAttributes>(this NumericEntity entity)
-        where TAttributes : class
-        => new (entity);
-
     internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
         => changes.Where(c => c.New?.State != c.Old?.State);
 
@@ -86,18 +66,18 @@ public static class EntityExtensions
         entity.StateAllChanges().StateChangesOnly();
 
 
-    public static IObservable<StateChange<TEntity, TEntityState>> StateAllChanges<TEntity, TEntityState, TAttributes>(this IEntity<TEntity, TEntityState, TAttributes> entity)
-        where TEntity : Entity<TEntityState, TAttributes>
-        where TEntityState : EntityState<TAttributes>
+    public static IObservable<StateChange<TEntity, TEntityState>> StateAllChanges<TEntity, TEntityState, TAttributes, TState>(this IEntity<TEntity, TEntityState, TAttributes, TState> entity)
+        where TEntity : Entity
+        where TEntityState : EntityState
         where TAttributes : class
         =>
             ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)entity,
             Entities.EntityState.Map<TEntityState>(e.Old),
             Entities.EntityState.Map<TEntityState>(e.New)));
 
-    public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes>(this IEntity<TEntity, TEntityState, TAttributes> entity)
-        where TEntity : Entity<TEntityState, TAttributes>
-        where TEntityState : EntityState<TAttributes>
+    public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes, TState>(this IEntity<TEntity, TEntityState, TAttributes, TState> entity)
+        where TEntity : Entity
+        where TEntityState : EntityState
         where TAttributes : class
         => entity.StateAllChanges().StateChangesOnly();
 
@@ -118,22 +98,4 @@ public static class EntityExtensions
 
         entity.HaContext.CallService(serviceDomain, serviceName, ServiceTarget.FromEntity(entity.EntityId), data);
     }
-}
-
-public static class NumericEntityExtensions
-{
-    public static IObservable<StateChange<NumericEntity, NumericEntityState> > StateChanges(this NumericEntity entity) =>
-        entity.StateAllChanges().StateChangesOnly();
-
-    public static IObservable<StateChange<NumericEntity, NumericEntityState>> StateAllChanges(this NumericEntity entity) =>
-        ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<NumericEntity, NumericEntityState>(entity,
-            Entities.EntityState.Map<NumericEntityState>(e.Old),
-            Entities.EntityState.Map<NumericEntityState>(e.New)));
-
-    public static IObservable<StateChange<NumericEntity<TAttributes>, NumericEntityState>> StateAllChanges<TAttributes>(this NumericEntity<TAttributes> entity)
-        where TAttributes : class
-        =>
-        ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<NumericEntity<TAttributes>, NumericEntityState>(entity,
-            Entities.EntityState.Map<NumericEntityState>(e.Old),
-            Entities.EntityState.Map<NumericEntityState>(e.New)));
 }
