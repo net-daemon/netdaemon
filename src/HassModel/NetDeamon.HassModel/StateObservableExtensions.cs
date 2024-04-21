@@ -25,7 +25,7 @@ public static class StateObservableExtensions
         this IObservable<StateChange<TEntity, TEntityState>> observable,
         Func<TEntityState?, bool> predicate,
         TimeSpan timeSpan)
-        where TEntity : Entity
+        where TEntity : Entity<Entity, EntityState<string, object>, object, string>
         where TEntityState : EntityState
         => observable.WhenStateIsFor(predicate, timeSpan, Scheduler.Default);
 
@@ -61,7 +61,7 @@ public static class StateObservableExtensions
         Func<TEntityState?, bool> predicate,
         TimeSpan timeSpan,
         IScheduler scheduler)
-        where TEntity : Entity
+        where TEntity : IEntityCore
         where TEntityState : EntityState
     {
         ArgumentNullException.ThrowIfNull(observable, nameof(observable));

@@ -11,7 +11,7 @@ public record StateChange
     /// <param name="entity"></param>
     /// <param name="old"></param>
     /// <param name="new"></param>
-    public StateChange(Entity entity, EntityState? old, EntityState? @new)
+    public StateChange(IEntityCore entity, EntityState? old, EntityState? @new)
     {
         Entity = entity;
         New    = @new;
@@ -19,7 +19,7 @@ public record StateChange
     }
 
     /// <summary>The Entity that changed</summary>
-    public virtual Entity Entity { get; } = default!; // Somehow this is needed to avoid a warning about this field being initialized
+    public virtual IEntityCore Entity { get; } = default!; // Somehow this is needed to avoid a warning about this field being initialized
 
     /// <summary>The old state of the entity</summary>
     public virtual EntityState? Old { get; }
@@ -29,12 +29,12 @@ public record StateChange
 }
 
 /// <summary>
-/// Represents a state change event for a strong typed entity and state 
+/// Represents a state change event for a strong typed entity and state
 /// </summary>
 /// <typeparam name="TEntity">The Type</typeparam>
 /// <typeparam name="TEntityState"></typeparam>
 public record StateChange<TEntity, TEntityState> : StateChange
-    where TEntity : Entity
+    where TEntity : IEntityCore
     where TEntityState : EntityState
 {
     /// <summary>
@@ -48,7 +48,7 @@ public record StateChange<TEntity, TEntityState> : StateChange
     }
 
     /// <inheritdoc/>
-    public override TEntity Entity => (TEntity)base.Entity;
+    public new TEntity Entity => (TEntity)base.Entity;
 
     /// <inheritdoc/>
     public override TEntityState? New => (TEntityState?)base.New;
