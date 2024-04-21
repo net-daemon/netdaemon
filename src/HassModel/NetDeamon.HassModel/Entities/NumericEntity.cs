@@ -3,7 +3,7 @@
 /// <summary>
 /// Entity that has a numeric (double) State value
 /// </summary>
-public record NumericEntity : Entity<EntityState<double, object>, object, double>
+public record NumericEntity : Entity<NumericEntity, EntityState<double, object>, object, double>
 {
     /// <summary>Copy constructor from base class</summary>
     public NumericEntity(IEntityCore entity) : base(entity) { }

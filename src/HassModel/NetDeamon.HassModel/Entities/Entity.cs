@@ -61,15 +61,48 @@ public record Entity : IEntityCore
     }
 
     /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
-    public virtual Entity<EntityState<string ,TAttributes>, TAttributes, string> WithAttributesAs<TAttributes>()
+    public Entity<Entity, EntityState<string ,TAttributes>, TAttributes, string> WithAttributesAs<TAttributes>()
         where TAttributes : class
         => new(this);
+
+    /// <summary>Gets a NumericEntity from a given Entity</summary>
+    public Entity<Entity, EntityState<double? , object>, object, double?> AsNumeric() => new(this);
+
+    /// <summary>
+    /// Observable that emits all state changes, including attribute changes.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// bedroomLight.StateAllChanges()
+    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128
+    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
+    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
+    /// </code>
+    /// </example>
+    public virtual IObservable<StateChange> StateAllChanges() =>
+        HaContext.StateAllChanges().Where(e => e.Entity.EntityId == EntityId);
+
+    /// <summary>
+    /// Observable that emits state changes where New.State != Old.State<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// disabledLight.StateChanges()
+    ///    .Where(s =&gt; s.New?.State == "on")
+    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
+    /// </code>
+    /// </example>
+    public virtual IObservable<StateChange> StateChanges() =>
+        StateAllChanges().StateChangesOnly();
 }
 
 /// <summary>Represents a Home Assistant entity with its state, changes and services</summary>
-public record Entity<TEntityState, TAttributes, TState> : Entity
+public record Entity<TEntity, TEntityState, TAttributes, TState> : Entity
     where TEntityState : EntityState<TState ,TAttributes>
     where TAttributes : class
+    where TEntity : Entity<TEntity, TEntityState, TAttributes, TState>
 {
     public new TState? State => EntityState.State;
 
@@ -88,17 +121,19 @@ public record Entity<TEntityState, TAttributes, TState> : Entity
     public override TEntityState? EntityState => MapState(base.EntityState);
 
     /// <summary>Gets a NumericEntity from a given Entity</summary>
-    public Entity<EntityState<double? ,TAttributes>, TAttributes, double?> AsNumeric() => new(this);
+    public new Entity<TEntity, EntityState<double? ,TAttributes>, TAttributes, double?> AsNumeric() => new(this);
 
     /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
-    public override Entity<EntityState<string ,T>, T, string> WithAttributesAs<T>()
+    public new Entity<TEntity, EntityState<TState ,T>, T, TState> WithAttributesAs<T>()
         where T : class
         => new(this);
 
     private static TEntityState? MapState(EntityState? state) => Entities.EntityState.Map<TEntityState>(state);
-}
 
-public interface IEntity<out TEntity, out TEntityState, out TAttributes, out TState> : IEntityCore
-{
+    public override IObservable<StateChange<TEntity, TEntityState>> StateAllChanges() =>
+            StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)this,
+                Entities.EntityState.Map<TEntityState>(e.Old),
+                Entities.EntityState.Map<TEntityState>(e.New)));
 
+    public override IObservable<StateChange<TEntity, TEntityState>> StateChanges() => StateAllChanges().StateChangesOnly();
 }

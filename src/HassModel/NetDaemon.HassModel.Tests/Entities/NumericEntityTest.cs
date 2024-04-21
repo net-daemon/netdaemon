@@ -65,8 +65,8 @@ public class NumericEntityTest
         var entity = new Entity(haContextMock.Object, entityId);
 
         // Act: WithAttributesAs
-        Entity<EntityState<string, TestSensorAttributes>, TestSensorAttributes, string> withAttributes = entity.WithAttributesAs<TestSensorAttributes>();
-        Entity<EntityState<double?, TestSensorAttributes>, TestSensorAttributes, double?> numericEntity = withAttributes.AsNumeric();
+        var withAttributes = entity.WithAttributesAs<TestSensorAttributes>();
+        var numericEntity = withAttributes.AsNumeric();
 
         // Assert
         withAttributes.State.Should().Be("12.3", because: "State  is still a string");
@@ -116,18 +116,18 @@ public class NumericEntityTest
             @new: new EntityState { State = "2" }));
 
         // Assert
-        stateChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericEntity, NumericEntityState>>
+        stateChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericEntity, EntityState<double,object>>>
         (e => e.Entity.State.Equals(3.14) &&
               e.Old!.State.Equals(1.0) &&
               e.New!.State.Equals(2.0))), Times.Once);
         stateChangeObserverMock.VerifyNoOtherCalls();
 
-        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericEntity, NumericEntityState>>
+        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericEntity, EntityState<double,object>>>
         (e => e.Entity.State.Equals(3.14) &&
               e.Old!.State.Equals(1.0) &&
               e.New!.State.Equals(2.0))), Times.Once);
 
-        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericEntity, NumericEntityState>>
+        stateAllChangeObserverMock.Verify(o => o.OnNext(It.Is<StateChange<NumericEntity, EntityState<double,object>>>
         (e => e.Entity.State.Equals(3.14) &&
               e.Old!.State.Equals(1.0) &&
               e.New!.State.Equals(1.0))), Times.Once);

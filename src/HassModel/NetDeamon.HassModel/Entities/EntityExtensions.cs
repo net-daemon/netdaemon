@@ -37,51 +37,6 @@ public static class EntityExtensions
         => changes.Where(c => c.New?.State != c.Old?.State);
 
     /// <summary>
-    /// Observable that emits all state changes, including attribute changes.<br/>
-    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// bedroomLight.StateAllChanges()
-    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128
-    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
-    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
-    /// </code>
-    /// </example>
-    public static IObservable<StateChange> StateAllChanges(this IEntityCore entity) =>
-        entity.HaContext.StateAllChanges().Where(e => e.Entity.EntityId == entity.EntityId);
-
-    /// <summary>
-    /// Observable that emits state changes where New.State != Old.State<br/>
-    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive state changes.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// disabledLight.StateChanges()
-    ///    .Where(s =&gt; s.New?.State == "on")
-    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
-    /// </code>
-    /// </example>
-    public static IObservable<StateChange> StateChanges(this IEntityCore entity) =>
-        entity.StateAllChanges().StateChangesOnly();
-
-
-    public static IObservable<StateChange<TEntity, TEntityState>> StateAllChanges<TEntity, TEntityState, TAttributes, TState>(this IEntity<TEntity, TEntityState, TAttributes, TState> entity)
-        where TEntity : Entity
-        where TEntityState : EntityState
-        where TAttributes : class
-        =>
-            ((IEntityCore)entity).StateAllChanges().Select(e => new StateChange<TEntity, TEntityState>((TEntity)entity,
-            Entities.EntityState.Map<TEntityState>(e.Old),
-            Entities.EntityState.Map<TEntityState>(e.New)));
-
-    public static IObservable<StateChange<TEntity, TEntityState>> StateChanges<TEntity, TEntityState, TAttributes, TState>(this IEntity<TEntity, TEntityState, TAttributes, TState> entity)
-        where TEntity : Entity
-        where TEntityState : EntityState
-        where TAttributes : class
-        => entity.StateAllChanges().StateChangesOnly();
-
-    /// <summary>
     /// Calls a service using this entity as the target
     /// </summary>
     /// <param name="entity">The Entity to call the service for</param>
