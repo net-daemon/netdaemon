@@ -11,6 +11,6 @@ internal sealed class HaContextMock : Mock<IHaContext>
         Setup(m => m.Events).Returns(EventsSubject);
     }
 
-    public Subject<StateChange> StateAllChangeSubject { get; } = new();
+    public Subject<IStateChange> StateAllChangeSubject { get; } = new();
     public Subject<Event> EventsSubject { get; } = new();
 }

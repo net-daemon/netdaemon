@@ -11,9 +11,9 @@ public class EnumerableEntityExtensionsTest
     [Fact]
     public void TestStateChanges()
     {
-        var observerMock = new Mock<IObserver<StateChange>>();
+        var observerMock = new Mock<IObserver<IStateChange>>();
 
-        Subject<StateChange> stateChangesSubject = new();
+        Subject<IStateChange> stateChangesSubject = new();
         var haMock = new Mock<IHaContext>();
         haMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
 
@@ -23,23 +23,23 @@ public class EnumerableEntityExtensionsTest
         // Act: Subscribe to both entities
         using var _ = new[] { switch1, switch2 }.StateChanges().Subscribe(observerMock.Object);
 
-        stateChangesSubject.OnNext(new StateChange(switch1, new EntityState { State = "OldState1" }, new EntityState { State = "NewState1" }));
+        stateChangesSubject.OnNext(new StateChange<Entity, EntityState>(switch1, new EntityState { State = "OldState1" }, new EntityState { State = "NewState1" }));
 
-        observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch1 && s.New!.State == "NewState1")), Times.Once);
+        observerMock.Verify(m => m.OnNext(It.Is<IStateChange>(s => s.Entity == switch1 && s.New!.State == "NewState1")), Times.Once);
         observerMock.VerifyNoOtherCalls();
 
-        stateChangesSubject.OnNext(new StateChange(switch2, new EntityState { State = "OldState2" }, new EntityState { State = "NewState2" }));
+        stateChangesSubject.OnNext(new StateChange<Entity, EntityState>(switch2, new EntityState { State = "OldState2" }, new EntityState { State = "NewState2" }));
 
-        observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch2 && s.New!.State == "NewState2")), Times.Once);
+        observerMock.Verify(m => m.OnNext(It.Is<IStateChange>(s => s.Entity == switch2 && s.New!.State == "NewState2")), Times.Once);
         observerMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public void TestTypedStateChanges()
     {
-        var observerMock = new Mock<IObserver<StateChange>>();
+        var observerMock = new Mock<IObserver<IStateChange>>();
 
-        Subject<StateChange> stateChangesSubject = new();
+        Subject<IStateChange> stateChangesSubject = new();
         var haMock = new Mock<IHaContext>();
         haMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
 
@@ -49,17 +49,17 @@ public class EnumerableEntityExtensionsTest
         // Act: Subscribe to both entities, filter on attribute
         using var _ = new[] { switch1, switch2 }.StateAllChanges().Where(e => e.New?.Attributes?.Name == "Do").Subscribe(observerMock.Object);
 
-        stateChangesSubject.OnNext(new StateChange(switch1,
+        stateChangesSubject.OnNext(new StateChange<TestEntity, EntityState>(switch1,
             new EntityState { State = "State", AttributesJson = new { name = "John" }.AsJsonElement() },
             new EntityState { State = "State", AttributesJson = new { name = "Do" }.AsJsonElement() }
         ));
 
-        observerMock.Verify(m => m.OnNext(It.Is<StateChange>(s => s.Entity == switch1 && s.New!.State == "State")), Times.Once);
+        observerMock.Verify(m => m.OnNext(It.Is<IStateChange>(s => s.Entity == switch1 && s.New!.State == "State")), Times.Once);
         observerMock.VerifyNoOtherCalls();
 
-        stateChangesSubject.OnNext(new StateChange(switch2, new EntityState { State = "OldState2" }, new EntityState { State = "NewState2" }));
+        stateChangesSubject.OnNext(new StateChange<TestEntity, EntityState>(switch2, new EntityState { State = "OldState2" }, new EntityState { State = "NewState2" }));
 
-        observerMock.Verify(m => m.OnNext(It.IsAny<StateChange>()), Times.Once);
+        observerMock.Verify(m => m.OnNext(It.IsAny<IStateChange>()), Times.Once);
     }
 
     [Fact]

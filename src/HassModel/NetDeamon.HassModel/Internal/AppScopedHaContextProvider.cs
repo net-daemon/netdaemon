@@ -70,7 +70,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
        return result?.Response;
     }
 
-    public IObservable<StateChange> StateAllChanges()
+    public IObservable<IStateChange> StateAllChanges()
     {
         return _queuedObservable.Where(n =>
             n.EventType == "state_changed")

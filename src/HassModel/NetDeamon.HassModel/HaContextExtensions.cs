@@ -11,7 +11,7 @@ public static class HaContextExtensions
     /// <remarks>
     /// Old state != New state
     /// </remarks>
-    public static IObservable<StateChange> StateChanges(this IHaContext haContext)
+    public static IObservable<IStateChange> StateChanges(this IHaContext haContext)
     {
         ArgumentNullException.ThrowIfNull(haContext, nameof(haContext));
         return haContext.StateAllChanges().StateChangesOnly();

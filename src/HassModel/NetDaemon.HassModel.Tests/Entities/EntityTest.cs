@@ -53,27 +53,27 @@ public class EntityTest
     [Fact]
     public void ShouldShowStateChangesFromContext()
     {
-        var stateChangesSubject = new Subject<StateChange>();
+        var stateChangesSubject = new Subject<IStateChange>();
         var haContextMock = new Mock<IHaContext>();
         haContextMock.Setup(h => h.StateAllChanges()).Returns(stateChangesSubject);
 
         var target = new TestEntity(haContextMock.Object, "domain.testEntity");
-        var stateChangeObserverMock = new Mock<IObserver<StateChange>>();
-        var stateAllChangeObserverMock = new Mock<IObserver<StateChange>>();
+        var stateChangeObserverMock = new Mock<IObserver<IStateChange>>();
+        var stateAllChangeObserverMock = new Mock<IObserver<IStateChange>>();
 
         target.StateAllChanges().Subscribe(stateAllChangeObserverMock.Object);
         target.StateChanges().Subscribe(stateChangeObserverMock.Object);
 
         stateChangesSubject.OnNext(
-            new StateChange(target, new EntityState { State = "old" },
+            new StateChange<TestEntity, EntityState>(target, new EntityState { State = "old" },
                 new EntityState { State = "new" }));
 
         stateChangesSubject.OnNext(
-            new StateChange(target, new EntityState() { State = "same" },
+            new StateChange<TestEntity, EntityState>(target, new EntityState { State = "same" },
                 new EntityState { State = "same" }));
 
-        stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>()), Times.Once);
-        stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<StateChange>()), Times.Exactly(2));
+        stateChangeObserverMock.Verify(o => o.OnNext(It.IsAny<IStateChange>()), Times.Once);
+        stateAllChangeObserverMock.Verify(o => o.OnNext(It.IsAny<IStateChange>()), Times.Exactly(2));
     }
 
     [Fact]

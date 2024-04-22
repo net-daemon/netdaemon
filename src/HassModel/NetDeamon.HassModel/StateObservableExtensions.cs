@@ -11,9 +11,9 @@ public static class StateObservableExtensions
     /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
     [Obsolete("Use the overload with IScheduler instead")]
-    public static IObservable<StateChange> WhenStateIsFor(
-        this IObservable<StateChange> observable,
-        Func<EntityState?, bool> predicate,
+    public static IObservable<IStateChange> WhenStateIsFor(
+        this IObservable<IStateChange> observable,
+        Func<IEntityState?, bool> predicate,
         TimeSpan timeSpan)
         => observable.WhenStateIsFor(predicate, timeSpan, Scheduler.Default);
 
@@ -32,9 +32,9 @@ public static class StateObservableExtensions
     /// <summary>
     /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
-    public static IObservable<StateChange> WhenStateIsFor(
-        this IObservable<StateChange> observable,
-        Func<EntityState?, bool> predicate,
+    public static IObservable<IStateChange> WhenStateIsFor(
+        this IObservable<IStateChange> observable,
+        Func<IEntityState?, bool> predicate,
         TimeSpan timeSpan,
         IScheduler scheduler)
     {

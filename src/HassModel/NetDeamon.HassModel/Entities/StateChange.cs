@@ -1,31 +1,21 @@
 ﻿namespace NetDaemon.HassModel.Entities;
 
-/// <summary>
-/// Represents a state change event for an entity
-/// </summary>
-public record StateChange
+public interface IStateChange
 {
     /// <summary>
-    /// This should not be used under normal circumstances but can be used for unit testing of apps
+    /// The Entity that changed
     /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="old"></param>
-    /// <param name="new"></param>
-    public StateChange(IEntityCore entity, EntityState? old, EntityState? @new)
-    {
-        Entity = entity;
-        New    = @new;
-        Old    = old;
-    }
+    IEntityCore Entity { get; }
 
-    /// <summary>The Entity that changed</summary>
-    public virtual IEntityCore Entity { get; } = default!; // Somehow this is needed to avoid a warning about this field being initialized
+    /// <summary>
+    /// The old state of the entity
+    /// </summary>
+    IEntityState? New { get; }
 
-    /// <summary>The old state of the entity</summary>
-    public virtual EntityState? Old { get; }
-
-    /// <summary>The new state of the entity</summary>
-    public virtual EntityState? New { get; }
+    /// <summary>
+    /// The new state of the entity
+    /// </summary>
+    IEntityState? Old { get; }
 }
 
 /// <summary>
@@ -33,9 +23,9 @@ public record StateChange
 /// </summary>
 /// <typeparam name="TEntity">The Type</typeparam>
 /// <typeparam name="TEntityState"></typeparam>
-public record StateChange<TEntity, TEntityState> : StateChange
+public record StateChange<TEntity, TEntityState> : IStateChange
     where TEntity : IEntityCore
-    where TEntityState : EntityState
+    where TEntityState : IEntityState
 {
     /// <summary>
     /// This should not be used under normal circumstances but can be used for unit testing of apps
@@ -43,16 +33,24 @@ public record StateChange<TEntity, TEntityState> : StateChange
     /// <param name="entity"></param>
     /// <param name="old"></param>
     /// <param name="new"></param>
-    public StateChange(TEntity entity, TEntityState? old, TEntityState? @new) : base(entity, old, @new)
+    public StateChange(TEntity entity, TEntityState? old, TEntityState? @new)
     {
+        Entity = entity;
+        New    = @new;
+        Old    = old;
     }
 
-    /// <inheritdoc/>
-    public new TEntity Entity => (TEntity)base.Entity;
+    /// <summary>The Entity that changed</summary>
+    public virtual TEntity Entity { get; }
 
-    /// <inheritdoc/>
-    public override TEntityState? New => (TEntityState?)base.New;
+    /// <summary>The old state of the entity</summary>
+    public virtual TEntityState? New { get; }
 
-    /// <inheritdoc/>
-    public override TEntityState? Old => (TEntityState?)base.Old;
+    /// <summary>The new state of the entity</summary>
+    public virtual TEntityState? Old { get; }
+    IEntityCore IStateChange.Entity => Entity;
+
+    IEntityState? IStateChange.New => New;
+
+    IEntityState? IStateChange.Old => Old;
 }

@@ -87,7 +87,7 @@ public class NumericEntityTest
         numericWithAttributes.EntityState!.Attributes!.units.Should().Be("Celcius");
         numericWithAttributes.EntityState!.Attributes!.setPoint.Should().Be(21.5);
 
-        haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity, new EntityState(), new EntityState()));
+        haContextMock.StateAllChangeSubject.OnNext(new StateChange<Entity, EntityState>(entity, new EntityState(), new EntityState()));
         numericWithAttributes.StateAllChanges().Where(e => e.New?.State > 1.2 && e.Entity != null).Subscribe();
 
     }
@@ -107,11 +107,11 @@ public class NumericEntityTest
         var stateAllChangeObserverMock = target.StateAllChanges().SubscribeMock();
         var stateChangeObserverMock = target.StateChanges().SubscribeMock();
 
-        haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
+        haContextMock.StateAllChangeSubject.OnNext(new StateChange<Entity, EntityState>(entity,
             old: new EntityState { State = "1" },
             @new: new EntityState { State = "1" }));
 
-        haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
+        haContextMock.StateAllChangeSubject.OnNext(new StateChange<Entity, EntityState>(entity,
             old: new EntityState { State = "1" },
             @new: new EntityState { State = "2" }));
 
@@ -149,11 +149,11 @@ public class NumericEntityTest
         haContextMock.Setup(m => m.GetState(entity.EntityId)).Returns(new EntityState() { State = "3.14" });
 
         // Act
-        haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
+        haContextMock.StateAllChangeSubject.OnNext(new StateChange<Entity, EntityState>(entity,
             old: new EntityState { State = "1" },
             @new: new EntityState { State = "1" }));
 
-        haContextMock.StateAllChangeSubject.OnNext(new StateChange(entity,
+        haContextMock.StateAllChangeSubject.OnNext(new StateChange<Entity, EntityState>(entity,
             old: new EntityState { State = "1" },
             @new: new EntityState { State = "2" }));
 

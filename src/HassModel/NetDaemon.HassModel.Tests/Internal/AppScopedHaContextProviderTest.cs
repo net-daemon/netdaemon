@@ -95,8 +95,8 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     public async Task TestStateChange()
     {
         var haContext = await CreateTargetAsync();
-        var stateAllChangesObserverMock = new Mock<IObserver<StateChange>>();
-        var stateChangesObserverMock = new Mock<IObserver<StateChange>>();
+        var stateAllChangesObserverMock = new Mock<IObserver<IStateChange>>();
+        var stateChangesObserverMock = new Mock<IObserver<IStateChange>>();
 
         haContext.StateAllChanges().Subscribe(stateAllChangesObserverMock.Object);
         haContext.StateChanges().Subscribe(stateChangesObserverMock.Object);

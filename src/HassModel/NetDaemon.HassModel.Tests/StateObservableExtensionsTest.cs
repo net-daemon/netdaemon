@@ -8,7 +8,7 @@ namespace NetDaemon.HassModel.Tests;
 
 public sealed class StateObservableExtensionsTest : IDisposable
 {
-    private readonly Subject<StateChange> _subject = new();
+    private readonly Subject<IStateChange> _subject = new();
 
     private readonly TestScheduler _testScheduler = new();
     private readonly IObservable<StateChange<NumericEntity, NumericEntityState>> _numericStateChangeObservable;
@@ -63,7 +63,7 @@ public sealed class StateObservableExtensionsTest : IDisposable
     private void TriggerStateChange(long tick, string old, string @new)
     {
         _testScheduler.AdvanceTo(tick);
-        _subject.OnNext(new StateChange(new Entity(Mock.Of<IHaContext>(), "Dummy"), new EntityState { State = old }, new EntityState { State = @new }));
+        _subject.OnNext(new StateChange<Entity, EntityState>(new Entity(Mock.Of<IHaContext>(), "Dummy"), new EntityState { State = old }, new EntityState { State = @new }));
     }
 
     public void Dispose()

@@ -17,7 +17,7 @@ public static class EnumerableEntityExtensions
     ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateAllChanges(this IEnumerable<Entity> entities) =>
+    public static IObservable<IStateChange> StateAllChanges(this IEnumerable<Entity> entities) =>
         entities.Select(t => t.StateAllChanges()).Merge();
 
     /// <summary>
@@ -31,7 +31,7 @@ public static class EnumerableEntityExtensions
     ///    .Subscribe(e =&gt; e.Entity.TurnOff());
     /// </code>
     /// </example>
-    public static IObservable<StateChange> StateChanges(this IEnumerable<Entity> entities) =>
+    public static IObservable<IStateChange> StateChanges(this IEnumerable<Entity> entities) =>
         entities.StateAllChanges().StateChangesOnly();
 
     /// <summary>

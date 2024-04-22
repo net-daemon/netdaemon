@@ -10,14 +10,14 @@ public static class EntityExtensions
     /// </summary>
     /// <param name="entityState">The state to check</param>
     /// <returns>true if the state equals "on", otherwise false</returns>
-    public static bool IsOn([NotNullWhen(true)] this EntityState? entityState) => string.Equals(entityState?.State, "on", StringComparison.OrdinalIgnoreCase);
+    public static bool IsOn([NotNullWhen(true)] this IEntityState? entityState) => string.Equals(entityState?.State, "on", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Checks if an EntityState has the state "off"
     /// </summary>
     /// <param name="entityState">The state to check</param>
     /// <returns>true if the state equals "off", otherwise false</returns>
-    public static bool IsOff([NotNullWhen(true)] this EntityState? entityState) => string.Equals(entityState?.State, "off", StringComparison.OrdinalIgnoreCase);
+    public static bool IsOff([NotNullWhen(true)] this IEntityState? entityState) => string.Equals(entityState?.State, "off", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Checks if an Entity has the state "on"
@@ -33,7 +33,7 @@ public static class EntityExtensions
     /// <returns>true if the state equals "off", otherwise false</returns>
     public static bool IsOff([NotNullWhen(true)] this Entity? entity) => entity?.EntityState?.IsOff() ?? false;
 
-    internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
+    internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : IStateChange
         => changes.Where(c => c.New?.State != c.Old?.State);
 
     /// <summary>

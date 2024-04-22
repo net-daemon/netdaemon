@@ -15,9 +15,6 @@ public record NumericEntity<TAttributes> : Entity<NumericEntity<TAttributes>, En
     /// <summary>The current state of this Entity converted to double if possible, null if it is not</summary>
     public new double? State => EntityState?.State;
 
-    /// <inheritdoc/>
-    public override EntityState<double?, TAttributes>? EntityState => base.EntityState == null ? null : new (base.EntityState);
-
     /// <summary>Gets a new Entity from this Entity with the specified type of attributes</summary>
     public new NumericEntity<T> WithAttributesAs<T>()
         where T : class

@@ -6,14 +6,14 @@
 public interface IHaContext
 {
     /// <summary>
-    /// All Events from Home Assistant 
+    /// All Events from Home Assistant
     /// </summary>
     IObservable<Event> Events { get; }
 
     /// <summary>
     /// The observable state stream, all changes including attributes
     /// </summary>
-    IObservable<StateChange> StateAllChanges();
+    IObservable<IStateChange> StateAllChanges();
 
     /// <summary>
     /// Get state for a single entity
