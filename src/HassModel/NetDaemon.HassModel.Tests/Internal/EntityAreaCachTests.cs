@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Subjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
@@ -52,12 +53,12 @@ public class EntityAreaCachTests
         var serviceColletion = new ServiceCollection();
         _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
 
-        using var cache = new RegistryCache(haRunnerMock.Object, Mock.Of<ILogger<RegistryCache>>());
+        using var cache = new RegistryCache(haRunnerMock.Object, NullLogger<RegistryCache>.Instance);
 
         // Act
         await cache.InitializeAsync(CancellationToken.None);
         // Assert
-        var area = cache.GetAreaById("sensor.sensor1");
+        var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
         Assert.Equal("Area Name", area!.Name);
     }
@@ -114,7 +115,7 @@ public class EntityAreaCachTests
         await cache.InitializeAsync(CancellationToken.None);
 
         // Assert
-        var area = cache.GetAreaById("sensor.sensor1");
+        var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
         Assert.Equal("Area Name", area!.Name);
     }
@@ -171,7 +172,7 @@ public class EntityAreaCachTests
         await cache.InitializeAsync(CancellationToken.None);
 
         // Assert
-        var area = cache.GetAreaById("sensor.sensor1");
+        var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
         Assert.Equal("Area2 Name", area!.Name);
     }
@@ -237,10 +238,10 @@ public class EntityAreaCachTests
             });
 
         // Act 3: now fire a area registry update
-        testSubject.OnNext(new HassEvent { EventType = "area_registry_updated" });
+        testSubject.OnNext(new HassEvent { EventType = "entity_registry_updated" });
 
         // Assert
-        var area = cache.GetAreaById("sensor.sensor1");
+        var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
         Assert.Equal("Area2 Name", area!.Name);
     }
