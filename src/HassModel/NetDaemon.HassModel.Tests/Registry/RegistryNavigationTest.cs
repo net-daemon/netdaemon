@@ -9,13 +9,12 @@ namespace NetDaemon.HassModel.Tests.Registry;
 
 public class RegistryNavigationTest
 {
-    private Mock<IHomeAssistantConnection> _connectionMock;
+    private readonly Mock<IHomeAssistantConnection> _connectionMock;
 
     public RegistryNavigationTest()
     {
         _connectionMock = new Mock<IHomeAssistantConnection>();
         _connectionMock.Setup(m => m.SubscribeToHomeAssistantEventsAsync(null, It.IsAny<CancellationToken>())).ReturnsAsync(new Subject<HassEvent>());
-
     }
 
     private async Task<HaRegistry> InitializeCacheAndBuildRegistry()
@@ -35,19 +34,20 @@ public class RegistryNavigationTest
     {
         SetupCommandResult("config/entity_registry/list",
             [
-                new HassEntity { EntityId = "light.mb_nightlight", AreaId = "master_bedroom" },
+                new HassEntity { EntityId = "light.mb_nightlight", AreaId = "master_bedroom"},
                 new HassEntity { EntityId = "light.babyroom_nightlight", AreaId = "baby_room", Labels = ["stay_on"] },
+                new HassEntity { EntityId = "sensor.babyroom_humidity", DeviceId = "24:AB:1B:9A"},
             ]);
 
         SetupCommandResult("config/device_registry/list",
             [
-                new HassDevice { Id = "24:AB:1B:9A", Name = "" }
+                new HassDevice { Id = "24:AB:1B:9A", Name = "SomeSensor" , AreaId = "baby_room"}
             ]);
 
         SetupCommandResult("config/area_registry/list",
             [
                 new HassArea { Name = "Master Bedroom", Id = "master_bedroom", FloorId = "upstairs", Labels = ["bedroom"] },
-                new HassArea { Name = "Baby room", Id = "baby room", FloorId = "upstairs", Labels = ["bedroom"] },
+                new HassArea { Name = "Baby room", Id = "baby_room", FloorId = "upstairs", Labels = ["bedroom"] },
 
                 new HassArea { Name = "Study", Id = "study", FloorId = "attic" },
                 new HassArea { Name = "Storage", Id = "storage", FloorId = "attic" },
@@ -72,11 +72,37 @@ public class RegistryNavigationTest
 
         // Assert, navigate the model
 
+        registry.Entities.Should().BeEquivalentTo(
+        [
+            new { Id = "light.mb_nightlight" },
+            new { Id = "light.babyroom_nightlight" },
+            new { Id = "sensor.babyroom_humidity" },
+        ]);
+
+        registry.Devices.Should().BeEquivalentTo(
+        [
+            new { Name = "SomeSensor" },
+        ]);
+
+        registry.Areas.Should().BeEquivalentTo(
+        [
+            new { Name = "Master Bedroom" },
+            new { Name = "Baby room" },
+            new { Name = "Study" },
+            new { Name = "Storage" },
+        ]);
+
         registry.Floors.Should().BeEquivalentTo(
         [
             new { Name = "DownStairs" },
             new { Name = "Upstairs" },
             new { Name = "Attic" },
+        ]);
+
+        registry.Labels.Should().BeEquivalentTo(
+        [
+            new { Name = "Bedroom" },
+            new { Name = "Stay On" },
         ]);
 
         registry.GetFloor("attic")!.Areas.Should().BeEquivalentTo([
@@ -93,6 +119,22 @@ public class RegistryNavigationTest
         registry.GetLabel("stay_on")!.Entities.Should().Contain(e => e.EntityId == "light.babyroom_nightlight");
 
         registry.GetEntityRegistration("light.mb_nightlight")!.Area!.Name.Should().Be("Master Bedroom");
+
+        registry.GetDevice("24:AB:1B:9A")!.Entities.Should().BeEquivalentTo(
+        [
+            new { EntityId = "sensor.babyroom_humidity" }
+        ]);
+
+        var area = registry.GetArea("baby_room")!;
+
+        area.Devices.Should().BeEquivalentTo([
+            new { Name = "SomeSensor" }
+        ]);
+        area.Entities.Should().BeEquivalentTo([
+            new { EntityId = "light.babyroom_nightlight" },
+            new { EntityId = "sensor.babyroom_humidity" },
+        ]);
+
     }
 
     private  void SetupCommandResult<TResult>(string command, IReadOnlyCollection<TResult> result)

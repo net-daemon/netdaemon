@@ -106,6 +106,8 @@ internal static class HassObjectMapper
 
         return new EntityRegistration
         {
+            Id = hassEntity.EntityId,
+            Name = hassEntity.Name,
             Area = areaId is null ? null : registry.GetArea(areaId),
             Device = device,
             Labels = hassEntity.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),

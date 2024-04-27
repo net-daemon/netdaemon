@@ -6,6 +6,16 @@
 public record EntityRegistration
 {
     /// <summary>
+    /// The Entities Id
+    /// </summary>
+    public string? Id { get; init; }
+
+    /// <summary>
+    /// The Name of this Entity
+    /// </summary>
+    public string? Name { get; init; }
+
+    /// <summary>
     /// The Area of this Entity
     /// </summary>
     public Area? Area { get; init; }
