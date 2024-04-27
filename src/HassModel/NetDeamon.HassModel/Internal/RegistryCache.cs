@@ -127,7 +127,7 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     public HassLabel? GetLabelById(string? labelId) => labelId is null ? null : _labelsById[labelId];
 
 
-    public IEnumerable<HassEntity> GetEntitiesForArea(string? areaIld) => _entitiesByAreaId[areaId];
+    public IEnumerable<HassEntity> GetEntitiesForArea(string? areaId) => _entitiesByAreaId[areaId];
 
     public IEnumerable<HassEntity> GetEntitiesForDevice(string? deviceId) => _entitiesByDeviceId[deviceId];
 

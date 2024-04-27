@@ -16,7 +16,6 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     private readonly IHomeAssistantRunner _hassRunner;
     private readonly IQueuedObservable<HassEvent> _queuedObservable;
     private readonly IBackgroundTaskTracker _backgroundTaskTracker;
-    private readonly HaRegistry _haRegistry;
 
     private readonly CancellationTokenSource _tokenSource = new();
 
@@ -42,8 +41,11 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
         // The HaRegistry needs a reference to this AppScopedHaContextProvider And we need the reference
         // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
-        _haRegistry = ActivatorUtilities.CreateInstance<HaRegistry>(serviceProvider, this);
+        Registry = ActivatorUtilities.CreateInstance<HaRegistry>(serviceProvider, this);
     }
+
+    // By making the HaRegistry instance internal it can also be registered as scoped in the DI container and injected into applications
+    internal HaRegistry Registry { get; }
 
     public EntityState? GetState(string entityId)
     {
@@ -53,11 +55,10 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     [Obsolete("Use Registry to navigate Entities, Devices and Areas")]
     public Area? GetAreaFromEntityId(string entityId)
     {
-        return _haRegistry.GetEntityRegistration(entityId)?.Area;
+        return GetEntityRegistration(entityId)?.Area;
     }
 
-    public EntityRegistration? GetEntityRegistration(string entityId) => _haRegistry.GetEntityRegistration(entityId);
-    public IHaRegistryNavigator Registry => _haRegistry;
+    public EntityRegistration? GetEntityRegistration(string entityId) => Registry.GetEntityRegistration(entityId);
 
     public IReadOnlyList<Entity> GetAllEntities()
     {

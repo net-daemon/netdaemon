@@ -53,6 +53,11 @@ public interface IHaContext
     /// <returns></returns>
     Area? GetAreaFromEntityId(string entityId);
 
+    /// <summary>
+    /// Gets the EntityRegistration for a given EntityId
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <returns></returns>
     EntityRegistration? GetEntityRegistration(string entityId);
 
     /// <summary>
