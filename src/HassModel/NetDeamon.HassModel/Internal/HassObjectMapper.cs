@@ -40,7 +40,9 @@ internal static class HassObjectMapper
         {
             AreaIds = target.AreaIds,
             DeviceIds = target.DeviceIds,
-            EntityIds = target.EntityIds
+            EntityIds = target.EntityIds,
+            FloorIds = target.FloorIds,
+            LabelIds = target.LabelIds
         };
     }
 

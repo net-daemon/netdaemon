@@ -22,4 +22,16 @@ public record HassTarget
     /// </summary>
     [JsonPropertyName("area_id")]
     public IReadOnlyCollection<string>? AreaIds { get; init; }
+
+    /// <summary>
+    ///     Zero or more floor ids to target with the service call
+    /// </summary>
+    [JsonPropertyName("floor_id")]
+    public IReadOnlyCollection<string>? FloorIds { get; init; }
+
+    /// <summary>
+    ///     Zero or more floor ids to target with the service call
+    /// </summary>
+    [JsonPropertyName("label_id")]
+    public IReadOnlyCollection<string>? LabelIds { get; init; }
 }

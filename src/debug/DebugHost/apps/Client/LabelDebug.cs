@@ -8,7 +8,6 @@ using NetDaemon.Client.HomeAssistant.Extensions;
 namespace Apps;
 
 [NetDaemonApp]
-[Focus]
 public sealed class LabelApp : IAsyncInitializable
 {
     private readonly ILogger<LabelApp> _logger;
