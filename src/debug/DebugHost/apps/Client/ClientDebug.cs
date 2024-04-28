@@ -5,7 +5,6 @@ using NetDaemon.HassModel;
 namespace Apps;
 
 [NetDaemonApp]
-// [Focus]
 public sealed class ClientApp : IAsyncDisposable
 {
     private readonly ILogger<ClientApp> _logger;

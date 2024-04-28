@@ -3,7 +3,6 @@
 namespace Apps;
 
 [NetDaemonApp]
-// [Focus]
 public class ConfigApp
 {
     public ConfigApp(IAppConfig<AppConfig> config)
