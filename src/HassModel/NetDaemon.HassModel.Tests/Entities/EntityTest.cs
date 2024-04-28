@@ -94,7 +94,7 @@ public class EntityTest
     {
         // Arrange
         var haContextMock = new Mock<IHaContext>();
-        haContextMock.Setup(t => t.GetAreaFromEntityId("domain.testEntity")).Returns(new Area() { Name = "Area Name" });
+        haContextMock.Setup(t => t.GetEntityRegistration("domain.testEntity")).Returns(new EntityRegistration(){Area = new Area(Mock.Of<IHaRegistryNavigator>()) { Name = "Area Name" }});
 
         // Act
         var target = new TestEntity(haContextMock.Object, "domain.testEntity");

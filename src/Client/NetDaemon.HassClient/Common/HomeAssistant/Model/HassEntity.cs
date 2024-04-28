@@ -13,4 +13,6 @@ public record HassEntity
     [JsonPropertyName("icon")] public string? Icon { get; init; }
 
     [JsonPropertyName("platform")] public string? Platform { get; init; }
+
+    [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = Array.Empty<string>();
 }

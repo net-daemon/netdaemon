@@ -9,7 +9,7 @@ namespace NetDaemon.HassModel;
 public static class DependencyInjectionSetup
 {
     /// <summary>
-    /// Registers services for using the IHaContext interface scoped to NetDeamonApps
+    /// Registers services for using the IHaContext interface scoped to NetDaemonApps
     /// </summary>
     public static IHostBuilder UseAppScopedHaContext(this IHostBuilder hostBuilder)
     {
@@ -21,13 +21,17 @@ public static class DependencyInjectionSetup
     }
 
     /// <summary>
-    /// Registers services for using the IHaContext interface scoped to NetDeamonApps
+    /// Registers services for using the IHaContext interface scoped to NetDaemonApps
     /// </summary>
     public static void AddScopedHaContext(this IServiceCollection services)
     {
         services.AddSingleton<EntityStateCache>();
-        services.AddSingleton<EntityAreaCache>();
+        services.AddSingleton<RegistryCache>();
+        services.AddScoped<HaRegistry>();
+
         services.AddScoped<AppScopedHaContextProvider>();
+        services.AddScoped<IHaRegistry>(sp => sp.GetRequiredService<AppScopedHaContextProvider>().Registry);
+        services.AddScoped<IHaRegistryNavigator>(sp => sp.GetRequiredService<AppScopedHaContextProvider>().Registry);
         services.AddScoped<BackgroundTaskTracker>();
         services.AddScoped<IBackgroundTaskTracker>(s => s.GetRequiredService<BackgroundTaskTracker>());
         services.AddTransient<ICacheManager, CacheManager>();

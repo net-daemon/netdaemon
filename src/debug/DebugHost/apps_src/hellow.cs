@@ -9,9 +9,9 @@ namespace Apps;
 [Focus]
 public sealed class HelloAppSrc : IAsyncDisposable
 {
-    private readonly ILogger<HelloApp> _logger;
+    private readonly ILogger<HelloAppSrc> _logger;
 
-    public HelloAppSrc(IHaContext ha, ILogger<HelloApp> logger)
+    public HelloAppSrc(IHaContext ha, ILogger<HelloAppSrc> logger)
     {
         _logger = logger;
         ha?.Events.Where(n => n.EventType == "test_event").Subscribe( n =>

@@ -11,7 +11,6 @@ namespace NetDaemon.HassModel.Internal;
 internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 {
     private readonly IHomeAssistantApiManager _apiManager;
-    private readonly EntityAreaCache _entityAreaCache;
     private readonly EntityStateCache _entityStateCache;
 
     private readonly IHomeAssistantRunner _hassRunner;
@@ -22,15 +21,14 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public AppScopedHaContextProvider(
         EntityStateCache entityStateCache,
-        EntityAreaCache entityAreaCache,
         IHomeAssistantRunner hassRunner,
         IHomeAssistantApiManager apiManager,
         IQueuedObservable<HassEvent> queuedObservable,
-        IBackgroundTaskTracker backgroundTaskTracker
+        IBackgroundTaskTracker backgroundTaskTracker,
+        IServiceProvider serviceProvider
     )
     {
         _entityStateCache = entityStateCache;
-        _entityAreaCache = entityAreaCache;
         _hassRunner = hassRunner;
         _apiManager = apiManager;
 
@@ -38,18 +36,29 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
         _queuedObservable = queuedObservable;
         _backgroundTaskTracker = backgroundTaskTracker;
+
         _queuedObservable.Initialize(_entityStateCache.AllEvents);
+
+        // The HaRegistry needs a reference to this AppScopedHaContextProvider And we need the reference
+        // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
+        Registry = ActivatorUtilities.CreateInstance<HaRegistry>(serviceProvider, this);
     }
+
+    // By making the HaRegistry instance internal it can also be registered as scoped in the DI container and injected into applications
+    internal HaRegistry Registry { get; }
 
     public EntityState? GetState(string entityId)
     {
         return _entityStateCache.GetState(entityId).Map();
     }
 
+    [Obsolete("Use Registry to navigate Entities, Devices and Areas")]
     public Area? GetAreaFromEntityId(string entityId)
     {
-        return _entityAreaCache.GetArea(entityId)?.Map();
+        return GetEntityRegistration(entityId)?.Area;
     }
+
+    public EntityRegistration? GetEntityRegistration(string entityId) => Registry.GetEntityRegistration(entityId);
 
     public IReadOnlyList<Entity> GetAllEntities()
     {

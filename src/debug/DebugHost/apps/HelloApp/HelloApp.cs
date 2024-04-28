@@ -14,11 +14,11 @@ public sealed class HelloApp : IAsyncDisposable
     public HelloApp(IHaContext ha, ILogger<HelloApp> logger)
     {
         _logger = logger;
-        ha?.Events.Where(n => n.EventType == "test_event").Subscribe( n =>
+        ha.Events.Where(n => n.EventType == "test_event").Subscribe( _ =>
         {
             logger.LogInformation("Hello testevent");
         });
-        ha?.CallService("notify", "persistent_notification", data: new { message = "Notify me", title = "Hello world!" });
+        ha.CallService("notify", "persistent_notification", data: new { message = "Notify me", title = "Hello world!" });
     }
 
     public async ValueTask DisposeAsync()

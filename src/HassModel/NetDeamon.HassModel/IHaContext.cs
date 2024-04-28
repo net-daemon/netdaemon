@@ -6,7 +6,7 @@
 public interface IHaContext
 {
     /// <summary>
-    /// All Events from Home Assistant 
+    /// All Events from Home Assistant
     /// </summary>
     IObservable<Event> Events { get; }
 
@@ -52,6 +52,13 @@ public interface IHaContext
     /// <param name="entityId"></param>
     /// <returns></returns>
     Area? GetAreaFromEntityId(string entityId);
+
+    /// <summary>
+    /// Gets the EntityRegistration for a given EntityId
+    /// </summary>
+    /// <param name="entityId"></param>
+    /// <returns></returns>
+    EntityRegistration? GetEntityRegistration(string entityId);
 
     /// <summary>
     /// Sends an event to Home Assistant

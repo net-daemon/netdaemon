@@ -1,4 +1,4 @@
-﻿namespace NetDaemon.Client.HomeAssistant.Model;
+namespace NetDaemon.Client.HomeAssistant.Model;
 
 public record HassLabel
 {
