@@ -48,6 +48,54 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     }
 
     [Fact]
+    public async void TestCallServiceWithFloor()
+    {
+        var haContext = await CreateTargetAsync();
+
+        var target = new ServiceTarget { FloorIds = ["floor1", "floor2"] };
+        var data = new { Name = "value" };
+        haContext.CallService("domain", "service", target, data);
+
+        var expectedCommand = new CallServiceCommand
+        {
+            Domain = "domain",
+            Service = "service",
+            ServiceData = data,
+            Target = new HassTarget
+            {
+                FloorIds = target.FloorIds
+            }
+        };
+        _hassConnectionMock.Verify(
+            c => c.SendCommandAsync<CallServiceCommand>(expectedCommand,
+                It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async void TestCallServiceWithLabel()
+    {
+        var haContext = await CreateTargetAsync();
+
+        var target = new ServiceTarget { LabelIds = ["label1", "label2"] };
+        var data = new { Name = "value" };
+        haContext.CallService("domain", "service", target, data);
+
+        var expectedCommand = new CallServiceCommand
+        {
+            Domain = "domain",
+            Service = "service",
+            ServiceData = data,
+            Target = new HassTarget
+            {
+                LabelIds = target.LabelIds
+            }
+        };
+        _hassConnectionMock.Verify(
+            c => c.SendCommandAsync<CallServiceCommand>(expectedCommand,
+                It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task TestCallServiceWithResponseAsync()
     {
         var haContext = await CreateTargetAsync();
@@ -266,7 +314,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
         serviceCollection.AddScopedHaContext();
 
         var backgroundTaskTrackerMock = new Mock<IBackgroundTaskTracker>();
-        serviceCollection.AddScoped<Mock<IBackgroundTaskTracker>>(_=> backgroundTaskTrackerMock);
+        serviceCollection.AddScoped<Mock<IBackgroundTaskTracker>>(_ => backgroundTaskTrackerMock);
         serviceCollection.AddScoped(_ => backgroundTaskTrackerMock.Object);
 
         var provider = serviceCollection.BuildServiceProvider();
@@ -280,7 +328,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
 
     public void Dispose()
     {
-       _hassEventSubjectMock.Dispose();
-       GC.SuppressFinalize(this);
+        _hassEventSubjectMock.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

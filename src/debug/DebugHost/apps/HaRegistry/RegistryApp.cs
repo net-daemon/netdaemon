@@ -18,6 +18,6 @@ public sealed class RegistryApp
         //         .Where(x => x.EntityId.StartsWith("input_boolean.")));
         //
         // upstairsBooleans.ToList().ForEach(x => x.CallService("toggle"));
-        ha.CallService("input_boolean", "toggle", new ServiceTarget{ FloorIds = new string[] { "upstairs" } });
+        ha.CallService("input_boolean", "toggle", new ServiceTarget{ FloorIds = ["upstairs"] });
     }
 }
