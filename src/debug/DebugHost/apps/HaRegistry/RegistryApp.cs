@@ -6,7 +6,6 @@ using NetDaemon.HassModel.Entities;
 namespace Apps;
 
 [NetDaemonApp]
-[Focus]
 public sealed class RegistryApp
 {
     public RegistryApp(IHaRegistry haRegistry, IHaContext ha)
