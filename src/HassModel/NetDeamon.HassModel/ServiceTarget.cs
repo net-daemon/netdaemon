@@ -49,4 +49,14 @@ public class ServiceTarget
     /// Ids of Areas to invoke a service on
     /// </summary>
     public IReadOnlyCollection<string>? AreaIds { get; init; }
+
+    /// <summary>
+    /// Ids of floors to invoke a service on
+    /// </summary>
+    public IReadOnlyCollection<string>? FloorIds { get; init; }
+
+    /// <summary>
+    /// Ids of labels to invoke a service on
+    /// </summary>
+    public IReadOnlyCollection<string>? LabelIds { get; init; }
 }

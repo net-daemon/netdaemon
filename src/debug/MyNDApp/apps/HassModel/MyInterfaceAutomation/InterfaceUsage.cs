@@ -11,7 +11,7 @@ using NetDaemon.HassModel.Entities;
 namespace Debug.apps.HassModel.MyInterfaceAutomation;
 
 [NetDaemonApp]
-[Focus]
+//[Focus]
 public class InterfaceUsage
 {
     public InterfaceUsage(IHaContext haContext, ILogger<InterfaceUsage> logger, IScheduler scheduler)
