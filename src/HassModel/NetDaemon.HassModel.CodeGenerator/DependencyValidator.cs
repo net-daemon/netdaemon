@@ -60,7 +60,7 @@ public static class DependencyValidator
             var version = packageReference.Attributes?["Version"]?.Value;
             if (packageName is not null && version is not null)
             {
-                packageName = TrimPreReleaseVersion(packageName);
+                version = TrimPreReleaseVersion(version);
                 yield return (packageName, version);
             }
         }
