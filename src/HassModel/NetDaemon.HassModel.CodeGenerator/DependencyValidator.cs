@@ -38,6 +38,15 @@ public static class DependencyValidator
 
     public static IEnumerable<string> GetProjects() => Directory.GetFiles(".", "*.csproj", SearchOption.AllDirectories);
 
+    /// <summary>
+    /// Trims the pre-release information from a version string
+    /// </summary>
+    internal static string TrimPreReleaseVersion(string version)
+    {
+        var parts = version.Split('-');
+        return parts[0];
+    }
+
     private static IEnumerable<(string name, string version)>GetPackageReferences(string projectFilePath)
     {
         var csproj = new XmlDocument();
@@ -51,6 +60,7 @@ public static class DependencyValidator
             var version = packageReference.Attributes?["Version"]?.Value;
             if (packageName is not null && version is not null)
             {
+                packageName = TrimPreReleaseVersion(packageName);
                 yield return (packageName, version);
             }
         }
