@@ -24,7 +24,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     };
 
     [Fact]
-    public async void TestCallService()
+    public async Task TestCallService()
     {
         var haContext = await CreateTargetAsync();
 
@@ -48,7 +48,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     }
 
     [Fact]
-    public async void TestCallServiceWithFloor()
+    public async Task TestCallServiceWithFloor()
     {
         var haContext = await CreateTargetAsync();
 
@@ -72,7 +72,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     }
 
     [Fact]
-    public async void TestCallServiceWithLabel()
+    public async Task TestCallServiceWithLabel()
     {
         var haContext = await CreateTargetAsync();
 

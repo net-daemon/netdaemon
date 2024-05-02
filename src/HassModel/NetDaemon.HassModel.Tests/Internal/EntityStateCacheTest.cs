@@ -11,7 +11,7 @@ namespace NetDaemon.HassModel.Tests.Internal;
 public class EntityStateCacheTest
 {
     [Fact]
-    public async void StateChangeEventIsFirstStoredInCacheThanForwarded()
+    public async Task StateChangeEventIsFirstStoredInCacheThanForwarded()
     {
         var entityId = "sensor.test";
 
@@ -36,7 +36,7 @@ public class EntityStateCacheTest
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testSubject
             );
-        
+
         var serviceColletion = new ServiceCollection();
         _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
         var sp = serviceColletion.BuildServiceProvider();
@@ -83,7 +83,7 @@ public class EntityStateCacheTest
     }
 
     [Fact]
-    public async void AllEntityIds_returnsInitialPlusChangedEntities()
+    public async Task AllEntityIds_returnsInitialPlusChangedEntities()
     {
         // Arrange
         using var testSubject = new Subject<HassEvent>();
@@ -103,12 +103,12 @@ public class EntityStateCacheTest
             });
 
         var serviceColletion = new ServiceCollection();
-        
+
         _hassConnectionMock.Setup(n =>
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testSubject
             );
-        
+
         var sp = serviceColletion.BuildServiceProvider();
 
         using var cache = new EntityStateCache(haRunnerMock.Object, sp);

@@ -8,7 +8,7 @@ namespace NetDaemon.HassModel.Tests.Internal;
 public class QueuedObservabeTest
 {
     [Fact]
-    public async void EventsSouldbeforwarded()
+    public async Task EventsSouldbeforwarded()
     {
         var source = new Subject<int>();
 
@@ -28,7 +28,7 @@ public class QueuedObservabeTest
     }
 
     [Fact]
-    public async void SubscribersShouldNotBlockEachOther()
+    public async Task SubscribersShouldNotBlockEachOther()
     {
         var source = new Subject<int>();
 
@@ -90,11 +90,11 @@ public class QueuedObservabeTest
         await Task.WhenAll(waitTasks);
 
         await scoped1.DisposeAsync();
-        
+
         var waitTask2 = scope2ObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event2"));
         testSubject.OnNext("Event2");
         await waitTask2;
-        
+
         scope1AObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
         scope1BObserverMock.Verify(o => o.OnNext("Event2"), Times.Never, "Event should not reach Observer of disposed scope");
         scope2ObserverMock.Verify(o => o.OnNext("Event2"), Times.Once);
@@ -115,7 +115,7 @@ public class QueuedObservabeTest
         queue.Subscribe(subscriber.Object);
 
         // It is not enough that DisposeAsync waits on task
-        // since it can be aborted by the cancellation token                                                                                                             
+        // since it can be aborted by the cancellation token
         var waitOnCallTask = subscriber.WaitForInvocation(n => n.OnNext(1));
         source.OnNext(1);
         await waitOnCallTask;
