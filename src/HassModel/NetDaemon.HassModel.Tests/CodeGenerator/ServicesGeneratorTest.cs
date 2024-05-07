@@ -101,6 +101,9 @@ public class ServicesGeneratorTest
                         }
 
                     },
+                    new() {
+                        Service = "reload",
+                    },
                 ]
             }
         };
@@ -121,6 +124,9 @@ public class ServicesGeneratorTest
 
                             s.Script.TurnOff(new ServiceTarget());
                             s.Script.TurnOff(new ServiceTarget(), new { });
+
+                            s.Script.Reload();
+                            s.Script.Reload(new { });
 
                             ScriptEntity script = new RootNameSpace.ScriptEntity(ha, "script.testScript");
 
