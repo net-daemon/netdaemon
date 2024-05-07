@@ -97,21 +97,11 @@ internal static class ServicesGenerator
 
         if (serviceArguments is null)
         {
-            if (service.Target is not null)
-            {
-                targetParam = $"{targetParam}, object? data = null";
-                targetArg = "target, data";
-            }
-            else
-            {
-                targetParam = "object? data = null";
-                targetArg = "null, data";
-            }
             // method without arguments
             yield return ParseMemberDeclaration($$"""
-                        void {{serviceMethodName}}({{targetParam}})
+                        void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, "object? data = null")}})
                         {
-                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}});
+                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{CommaSeparateNonEmpty(targetArg, "data")}});
                         }
                         """)!
                 .ToPublic()
@@ -122,7 +112,7 @@ internal static class ServicesGenerator
         {
             // method using arguments object
             yield return ParseMemberDeclaration($$"""
-                        void {{serviceMethodName}}({{JoinList(targetParam, serviceArguments.TypeName)}} data)
+                        void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, serviceArguments.TypeName)}} data)
                         {
                             {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, data);
                         }
@@ -133,7 +123,7 @@ internal static class ServicesGenerator
 
             // method using arguments as separate parameters
             yield return ParseMemberDeclaration($$"""
-                        void {{serviceMethodName}}({{JoinList(targetParam, serviceArguments.GetParametersList())}})
+                        void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, serviceArguments.GetParametersList())}})
                         {
                             {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
                         }
@@ -145,5 +135,5 @@ internal static class ServicesGenerator
         }
     }
 
-    private static string JoinList(params string?[] args) => string.Join(", ", args.Where(s => !string.IsNullOrEmpty(s)));
+    private static string CommaSeparateNonEmpty(params string?[] args) => string.Join(", ", args.Where(s => !string.IsNullOrEmpty(s)));
 }
