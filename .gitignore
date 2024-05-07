@@ -55,6 +55,7 @@ codecover_merged.info
 # User-specific files
 .idea/
 appsettings.Development.json
+appsettings.development.json
 
 **/core
 
@@ -63,3 +64,8 @@ appsettings.Development.json
 # remove HA integration test files from git
 tests/Integration/HA/config/*
 !tests/Integration/HA/config/*.yaml
+
+# remove codegenerated files
+HomeAssistantGenerated.cs
+EntityMetaData.json
+ServicesMetaData.json
