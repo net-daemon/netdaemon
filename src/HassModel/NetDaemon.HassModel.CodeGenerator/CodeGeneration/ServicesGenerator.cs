@@ -100,12 +100,13 @@ internal static class ServicesGenerator
             if (service.Target is not null)
             {
                 targetParam = $"{targetParam}, object? data = null";
+                targetArg = "target, data";
             }
             else
             {
                 targetParam = "object? data = null";
+                targetArg = "null, data";
             }
-            targetArg = "null, data";
             // method without arguments
             yield return ParseMemberDeclaration($$"""
                         void {{serviceMethodName}}({{targetParam}})
