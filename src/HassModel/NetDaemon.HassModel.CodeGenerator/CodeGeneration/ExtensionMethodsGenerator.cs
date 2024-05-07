@@ -85,9 +85,9 @@ internal static class ExtensionMethodsGenerator
     private static MemberDeclarationSyntax ExtensionMethodWithoutArguments(HassService service, string serviceName, string entityTypeName)
     {
         return ParseMemberDeclaration($$"""
-                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target)
+                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, object? data = null)
                     {
-                        target.CallService("{{serviceName}}");
+                        target.CallService("{{serviceName}}", data);
                     }
                     """)!
             .WithSummaryComment(service.Description);
