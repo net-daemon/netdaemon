@@ -83,6 +83,61 @@ public class ServicesGeneratorTest
     }
 
     [Fact]
+    public void TestServicesGenerationWithAndWithoutProvidingDataForServicesWithoutTargetOrFields()
+    {
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "script.script1" },
+        };
+
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "script",
+                Services = [
+                    new() {
+                        Service = "turn_off",
+                        Target = new TargetSelector
+                        {
+                            Entity = [new EntitySelector { Domain = ["script"] }]
+                        }
+
+                    },
+                ]
+            }
+        };
+
+        // Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+
+        var appCode = """
+                    using NetDaemon.HassModel;
+                    using NetDaemon.HassModel.Entities;
+                    using RootNameSpace;
+
+                    public class Root
+                    {
+                        public void Run(IHaContext ha)
+                        {
+                            var s = new RootNameSpace.Services(ha);
+
+                            s.Script.TurnOff(new ServiceTarget());
+                            s.Script.TurnOff(new ServiceTarget(), new { });
+
+                            ScriptEntity script = new RootNameSpace.ScriptEntity(ha, "script.testScript");
+
+                            script.TurnOff(new { });
+                            script.TurnOff();
+
+                            IScriptEntityCore scriptCore = script;
+                            scriptCore.TurnOff();
+                            scriptCore.TurnOff(new { });
+                        }
+                    }
+                    """;
+
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
+    [Fact]
     public void TestServiceWithoutAnyTargetEntity_ExtensionMethodSkipped()
     {
         var readOnlyCollection = new HassState[] {

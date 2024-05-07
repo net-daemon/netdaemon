@@ -97,7 +97,14 @@ internal static class ServicesGenerator
 
         if (serviceArguments is null)
         {
-            targetParam = "object? data";
+            if (service.Target is not null)
+            {
+                targetParam = $"{targetParam}, object? data = null";
+            }
+            else
+            {
+                targetParam = "object? data = null";
+            }
             targetArg = "null, data";
             // method without arguments
             yield return ParseMemberDeclaration($$"""
