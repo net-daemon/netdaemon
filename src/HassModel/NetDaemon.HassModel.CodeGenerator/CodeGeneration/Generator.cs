@@ -53,7 +53,7 @@ internal static class Generator
         // In the template projects we provided a convenience powershell script that will update
         // the codegen and nugets to latest versions update_all_dependencies.ps1.
         //
-        // For more information: https://netdaemon.xyz/docs/v3/hass_model/hass_model_codegen
+        // For more information: https://netdaemon.xyz/docs/user/hass_model/hass_model_codegen
         // For more information about NetDaemon: https://netdaemon.xyz/
         // </auto-generated>
         //------------------------------------------------------------------------------";
