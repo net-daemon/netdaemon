@@ -2,4 +2,4 @@
 dotnet_diagnostic.xUnit1030.severity = none
 # Warning CA1861 : Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861)
 dotnet_diagnostic.CA1861.severity= none
-
+dotnet_diagnostic.CS0618.severity = none
