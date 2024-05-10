@@ -35,13 +35,14 @@ public static class IntegrationHaContextExtensions
     /// <param name="entityId">EntityId of the entity to create</param>
     /// <param name="state">Entity state</param>
     /// <param name="attributes">Entity attributes</param>
+    [Obsolete("SetEntityState is deprecated, use the MQTT extension instead to create entities.")]
     public static void SetEntityState(this IHaContext haContext, string entityId, string state,
         object? attributes = null)
     {
         ArgumentNullException.ThrowIfNull(haContext);
         var currentState = haContext.GetState(entityId);
         var service = currentState is null ? "entity_create" : "entity_update";
-        // We have an integration that will help persist 
+        // We have an integration that will help persist
         haContext.CallService("netdaemon", service,
             data: new
             {
