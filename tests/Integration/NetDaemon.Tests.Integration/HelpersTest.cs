@@ -11,6 +11,8 @@ using NetDaemon.HassModel.Entities;
 using NetDaemon.Tests.Integration.Helpers;
 using Xunit;
 
+namespace NetDaemon.Tests.Integration;
+
 public class HelpersTests(HomeAssistantLifetime homeAssistantLifetime) : NetDaemonIntegrationBase(homeAssistantLifetime)
 {
     [Fact]
