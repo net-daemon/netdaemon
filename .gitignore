@@ -26,6 +26,9 @@ codecover
 codecover.info
 codecover_merged.json
 codecover_merged.info
+**/coverage.json
+**/coverage.cobertura.xml
+**/coverage.info
 
 ### VisualStudioCode ###
 # Setting files
@@ -54,12 +57,9 @@ codecover_merged.info
 ### Jetbrains / Rider ###
 # User-specific files
 .idea/
-appsettings.Development.json
-appsettings.development.json
+appsettings.[Dd]evelopment.json
 
 **/core
-
-**/coverage.json
 
 # remove HA integration test files from git
 tests/Integration/HA/config/*
