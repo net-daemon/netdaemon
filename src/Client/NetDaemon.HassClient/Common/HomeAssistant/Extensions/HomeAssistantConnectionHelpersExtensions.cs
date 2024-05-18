@@ -28,6 +28,41 @@ public static class HomeAssistantConnectionHelpersExtensions
         this IHomeAssistantConnection connection, CancellationToken cancelToken)
     {
         return await connection.SendCommandAndReturnResponseAsync<ListInputBooleanHelperCommand, IReadOnlyCollection< InputBooleanHelper>>(
-            new ListInputBooleanHelperCommand(), cancelToken) ?? Array.Empty<InputBooleanHelper>();
+            new ListInputBooleanHelperCommand(), cancelToken) ?? [];
+    }
+
+    public static async Task<InputNumberHelper?> CreateInputNumberHelperAsync(
+        this IHomeAssistantConnection connection,
+        string name, double min, double max, double? step, double? initial, string? unitOfMeasurement, string? mode, CancellationToken cancelToken)
+    {
+        return await connection.SendCommandAndReturnResponseAsync<CreateInputNumberHelperCommand, InputNumberHelper?>(
+            new CreateInputNumberHelperCommand
+            {
+                Name = name,
+                Min = min,
+                Max = max,
+                Step = step,
+                Initial = initial,
+                UnitOfMeasurement = unitOfMeasurement,
+                Mode = mode
+            }, cancelToken).ConfigureAwait(false);
+    }
+
+    public static async Task DeleteInputNumberHelperAsync(
+        this IHomeAssistantConnection connection,
+        string inputNumberId, CancellationToken cancelToken)
+    {
+        await connection.SendCommandAndReturnResponseAsync<DeleteInputNumberHelperCommand, object?>(
+            new DeleteInputNumberHelperCommand
+            {
+                InputNumberId = inputNumberId
+            }, cancelToken).ConfigureAwait(false);
+    }
+
+    public static async Task<IReadOnlyCollection< InputNumberHelper>> ListInputNumberHelpersAsync(
+        this IHomeAssistantConnection connection, CancellationToken cancelToken)
+    {
+        return await connection.SendCommandAndReturnResponseAsync<ListInputNumberHelperCommand, IReadOnlyCollection< InputNumberHelper>>(
+            new ListInputNumberHelperCommand(), cancelToken) ?? [];
     }
 }
