@@ -25,8 +25,10 @@ public class MqttClientOptionsFactoryTests
         mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
         var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
-        mqttClientChannelOptions.Server.Should().Be("broker");
-        mqttClientChannelOptions.Port.Should().Be(1883);
+
+        var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
+        ipEndpoint.Host.Should().Be("broker");
+        ipEndpoint.Port.Should().Be(1883);
 
         mqttClientOptions.ClientOptions.Credentials.Should().BeNull();
 
@@ -51,8 +53,10 @@ public class MqttClientOptionsFactoryTests
         mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
         var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
-        mqttClientChannelOptions.Server.Should().Be("broker");
-        mqttClientChannelOptions.Port.Should().Be(1883);
+
+        var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
+        ipEndpoint.Host.Should().Be("broker");
+        ipEndpoint.Port.Should().Be(1883);
 
         mqttClientOptions.ClientOptions.Credentials.Should().BeNull();
 
@@ -80,8 +84,10 @@ public class MqttClientOptionsFactoryTests
         mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
         var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
-        mqttClientChannelOptions.Server.Should().Be("broker");
-        mqttClientChannelOptions.Port.Should().Be(1883);
+
+        var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
+        ipEndpoint.Host.Should().Be("broker");
+        ipEndpoint.Port.Should().Be(1883);
 
         mqttClientOptions.ClientOptions.Credentials.Should().BeNull();
 
@@ -112,8 +118,10 @@ public class MqttClientOptionsFactoryTests
         mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
         var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
-        mqttClientChannelOptions.Server.Should().Be("broker");
-        mqttClientChannelOptions.Port.Should().Be(1234);
+
+        var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
+        ipEndpoint.Host.Should().Be("broker");
+        ipEndpoint.Port.Should().Be(1234);
 
         mqttClientOptions.ClientOptions.Credentials.Should().NotBeNull();
         mqttClientOptions.ClientOptions.Credentials.Should().BeOfType<MqttClientCredentials>();
