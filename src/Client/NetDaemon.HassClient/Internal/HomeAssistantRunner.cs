@@ -12,7 +12,6 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
 
     private readonly Subject<DisconnectReason> _onDisconnectSubject = new();
 
-
     private Task? _runTask;
 
     public IObservable<IHomeAssistantConnection> OnConnect => _onConnectSubject;
@@ -38,6 +37,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
         await _internalTokenSource.CancelAsync();
 
         if (_runTask?.IsCompleted == false)
+        {
             try
             {
                 await Task.WhenAny(
@@ -49,6 +49,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             {
                 // Ignore errors
             }
+        }
 
         _onConnectSubject.Dispose();
         _onDisconnectSubject.Dispose();

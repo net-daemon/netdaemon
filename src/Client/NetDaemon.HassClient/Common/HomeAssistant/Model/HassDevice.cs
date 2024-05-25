@@ -17,6 +17,5 @@ public record HassDevice
 
     [JsonPropertyName("name_by_user")] public string? NameByUser { get; init; }
 
-    [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = Array.Empty<string>();
-
+    [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = [];
 }

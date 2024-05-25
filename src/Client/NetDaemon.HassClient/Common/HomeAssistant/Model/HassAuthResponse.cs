@@ -2,6 +2,5 @@
 
 public record HassAuthResponse : HassMessageBase
 {
-    [JsonPropertyName("ha_version")] public string HaVersion { get; init; } = String.Empty;
-
+    [JsonPropertyName("ha_version")] public string HaVersion { get; init; } = string.Empty;
 }

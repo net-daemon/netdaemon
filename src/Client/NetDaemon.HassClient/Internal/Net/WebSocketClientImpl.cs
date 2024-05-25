@@ -20,10 +20,7 @@ internal class WebSocketClientImpl : IWebSocketClient
         _ws = new ClientWebSocket();
 
         if (bypassCertificateErrors)
-            _ws.Options.RemoteCertificateValidationCallback = (_, cert, _, sslPolicyErrors) =>
-            {
-                return sslPolicyErrors == SslPolicyErrors.None || true;
-            };
+            _ws.Options.RemoteCertificateValidationCallback = (_, _, _, sslPolicyErrors) => sslPolicyErrors == SslPolicyErrors.None || true;
     }
 
     public WebSocketState State => _ws.State;
