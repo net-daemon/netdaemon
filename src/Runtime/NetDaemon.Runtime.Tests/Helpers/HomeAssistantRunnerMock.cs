@@ -31,7 +31,7 @@ internal class HomeAssistantRunnerMock : Mock<IHomeAssistantRunner>
             }
             );
     }
-    
+
     public void MockConnect() => ConnectMock.OnNext(ClientMock.ConnectionMock.Object);
 }
 
@@ -101,7 +101,7 @@ internal class HomeAssistantConnectionMock : Mock<IHomeAssistantConnection>
         }
         catch (Exception e)
         {
-            System.Console.WriteLine(e.Message);
+            Console.WriteLine(e.Message);
         }
     }
 

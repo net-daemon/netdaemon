@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DotNet.Testcontainers.Containers;
-using Microsoft.Extensions.Logging;
 
 namespace NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 
@@ -86,11 +85,11 @@ public class HomeAssistantContainer : DockerContainer
 }
 
 public record HomeAssistantAuthorizeResult(
-    [property:JsonPropertyName("auth_code")][property:System.Text.Json.Serialization.JsonRequired]string AuthCode);
+    [property:JsonPropertyName("auth_code")][property:JsonRequired]string AuthCode);
 
 public record HomeAssistantTokenResult(
-    [property:JsonPropertyName("access_token")][property:System.Text.Json.Serialization.JsonRequired]string AccessToken,
-    [property:JsonPropertyName("token_type")][property:System.Text.Json.Serialization.JsonRequired]string TokenType,
-    [property:JsonPropertyName("refresh_token")][property:System.Text.Json.Serialization.JsonRequired]string RefreshToken,
-    [property:JsonPropertyName("expires_in")][property:System.Text.Json.Serialization.JsonRequired]int ExpiresIn,
-    [property:JsonPropertyName("ha_auth_provider")][property:System.Text.Json.Serialization.JsonRequired]string HaAuthProvider);
+    [property:JsonPropertyName("access_token")][property:JsonRequired]string AccessToken,
+    [property:JsonPropertyName("token_type")][property:JsonRequired]string TokenType,
+    [property:JsonPropertyName("refresh_token")][property:JsonRequired]string RefreshToken,
+    [property:JsonPropertyName("expires_in")][property:JsonRequired]int ExpiresIn,
+    [property:JsonPropertyName("ha_auth_provider")][property:JsonRequired]string HaAuthProvider);

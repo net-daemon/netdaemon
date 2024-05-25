@@ -9,8 +9,8 @@ public class EntityIdParserTests
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return new object[] { "domain.id", new ValueTuple<string, string>("domain", "id") };
-            yield return new object[] { "domain.id.with.dots", new ValueTuple<string, string>("domain", "id.with.dots") };
+            yield return ["domain.id", new ValueTuple<string, string>("domain", "id")];
+            yield return ["domain.id.with.dots", new ValueTuple<string, string>("domain", "id.with.dots")];
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -23,9 +23,9 @@ public class EntityIdParserTests
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return new object[] { "no-dots"};
-            yield return new object[] { "domain."};
-            yield return new object[] { ".identifier"};
+            yield return ["no-dots"];
+            yield return ["domain."];
+            yield return [".identifier"];
         }
 
         IEnumerator IEnumerable.GetEnumerator()

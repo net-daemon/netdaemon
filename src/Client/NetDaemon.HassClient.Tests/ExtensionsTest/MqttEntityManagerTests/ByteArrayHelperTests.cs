@@ -9,8 +9,8 @@ public class ByteArrayHelperTests
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return new object[] { null!, "" };
-            yield return new object[] { new byte[] { 0x68, 0x65, 0x6c, 0x6c, 0x6f}, "hello" };
+            yield return [null!, ""];
+            yield return [new byte[] { 0x68, 0x65, 0x6c, 0x6c, 0x6f}, "hello"];
         }
 
         IEnumerator IEnumerable.GetEnumerator()

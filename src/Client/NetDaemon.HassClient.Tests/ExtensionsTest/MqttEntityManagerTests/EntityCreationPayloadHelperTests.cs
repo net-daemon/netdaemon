@@ -11,30 +11,30 @@ public class EntityCreationPayloadHelperTests
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return new object[]
-            {
+            yield return
+            [
                 new EntityCreationPayload(), new { },
                 J(new { state_topic = (object)null!, json_attributes_topic = (object)null!, object_id = (object)null! }),
                 "should output basic concrete options"
-            };
+            ];
 
-            yield return new object[]
-            {
+            yield return
+            [
                 new EntityCreationPayload {}, new { extra = "data" },
                 J(new { state_topic = (object)null!, json_attributes_topic = (object)null!, object_id = (object)null!, extra = "data" }), "should merge a new property"
-            };
+            ];
 
-            yield return new object[]
-            {
+            yield return
+            [
                 new EntityCreationPayload { StateTopic = "/state"}, new {},
                 J(new { state_topic = "/state", json_attributes_topic = (object)null!, object_id = (object)null!  }), "should pick up values"
-            };
+            ];
 
-            yield return new object[]
-            {
+            yield return
+            [
                 new EntityCreationPayload { StateTopic = "/state"}, new { state_topic = "/new-state"},
                 J(new { state_topic = "/new-state", json_attributes_topic = (object)null!, object_id = (object)null!  }), "should override concrete values"
-            };
+            ];
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

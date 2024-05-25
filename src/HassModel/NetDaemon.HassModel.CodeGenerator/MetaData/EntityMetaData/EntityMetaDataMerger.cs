@@ -79,7 +79,7 @@ internal static class EntityMetaDataMerger
 
         var basePropertyJsonNames = baseType?.GetProperties()
             .Select(p => p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? p.Name)
-            .ToHashSet() ?? new HashSet<string>();
+            .ToHashSet() ?? [];
 
         return domainMetadata with
         {
@@ -124,7 +124,7 @@ internal static class EntityMetaDataMerger
         // This hashset will initially have all Member names in the base class.
         // We will then also add all new names to this set so we are sure they will all be unique
         var reservedCSharpNames = entitiesMetaData.AttributesBaseClass?
-            .GetMembers().Select(p => p.Name).ToHashSet() ?? new HashSet<string>();
+            .GetMembers().Select(p => p.Name).ToHashSet() ?? [];
 
         var withDeDuplicatedCSharpNames = entitiesMetaData.Attributes
             .GroupBy(t => t.CSharpName)

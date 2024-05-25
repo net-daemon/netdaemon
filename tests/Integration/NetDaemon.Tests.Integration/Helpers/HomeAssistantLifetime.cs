@@ -4,7 +4,7 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;
 
-public class HomeAssistantLifetime() : IAsyncLifetime
+public class HomeAssistantLifetime : IAsyncLifetime
 {
     private readonly HomeAssistantContainer _homeassistant = new HomeAssistantContainerBuilder()
         .WithResourceMapping(new DirectoryInfo("./HA/config"), "/config")
@@ -26,7 +26,7 @@ public class HomeAssistantLifetime() : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        var (stdout, stderr) = await _homeassistant.GetLogsAsync();
+        var (_, stderr) = await _homeassistant.GetLogsAsync();
         Console.WriteLine($"Writing Homeassistant logs to console:{Environment.NewLine}{stderr}{Environment.NewLine}End of Homeassistant logs");
         await _homeassistant.StopAsync();
     }

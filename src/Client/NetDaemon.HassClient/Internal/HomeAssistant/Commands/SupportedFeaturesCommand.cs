@@ -7,7 +7,7 @@ internal record SupportedFeaturesCommand : CommandMessage
         Type = "supported_features";
     }
 
-    [JsonPropertyName("features")] public Features? Features { get; init; } = null;
+    [JsonPropertyName("features")] public Features? Features { get; init; }
 }
 
 internal record Features

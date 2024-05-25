@@ -13,7 +13,7 @@ public class MessageSenderTests
         await mqttSetup.MessageSender.SendMessageAsync("topic", "payload", true, MqttQualityOfServiceLevel.AtMostOnce);
         var publishedMessage = mqttSetup.LastPublishedMessage;
 
-        var payloadAsText = System.Text.Encoding.Default.GetString(publishedMessage.PayloadSegment.Array ?? Array.Empty<byte>());
+        var payloadAsText = System.Text.Encoding.Default.GetString(publishedMessage.PayloadSegment.Array ?? []);
 
         publishedMessage.Topic.Should().Be("topic");
         payloadAsText.Should().Be("payload");

@@ -261,12 +261,12 @@ internal class ConfigurationBinding : IConfigurationBinding
             if (keyType == typeof(string))
             {
                 var key = child.Key;
-                setter.SetValue(dictionary, item, new object[] { key });
+                setter.SetValue(dictionary, item, [key]);
             }
             else if (keyTypeIsEnum)
             {
                 var key = Convert.ToInt32(Enum.Parse(keyType, child.Key), CultureInfo.InvariantCulture);
-                setter.SetValue(dictionary, item, new object[] { key });
+                setter.SetValue(dictionary, item, [key]);
             }
         }
     }
@@ -287,7 +287,7 @@ internal class ConfigurationBinding : IConfigurationBinding
                     itemType,
                     null,
                     section);
-                if (item != null) addMethod.Invoke(collection, new[] { item });
+                if (item != null) addMethod.Invoke(collection, [item]);
             }
             catch
             {

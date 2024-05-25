@@ -31,7 +31,7 @@ internal sealed class MockMqttMessageSenderSetup
     {
         // Ensure that when the MQTT Client is called its published message is saved
         MqttClient.Setup(m => m.EnqueueAsync(It.IsAny<MqttApplicationMessage>()))
-            .Callback<MqttApplicationMessage>((message) =>
+            .Callback<MqttApplicationMessage>(message =>
             {
                 LastPublishedMessage = message;
             });

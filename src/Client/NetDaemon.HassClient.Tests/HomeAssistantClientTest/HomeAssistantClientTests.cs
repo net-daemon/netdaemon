@@ -96,7 +96,7 @@ public class HomeAssistantClientTests
             }
         );
         _pipeline.AddAuthResponse(
-            new HassAuthResponse()
+            new HassAuthResponse
             {
                 Type = "auth_ok",
                 HaVersion = "2023.1.0"
@@ -130,7 +130,7 @@ public class HomeAssistantClientTests
             }
         );
         _pipeline.AddAuthResponse(
-            new HassAuthResponse()
+            new HassAuthResponse
             {
                 Type = "auth_ok",
                 HaVersion = "2023.1.0"
@@ -172,7 +172,7 @@ public class HomeAssistantClientTests
             }
         );
         _pipeline.AddAuthResponse(
-            new HassAuthResponse()
+            new HassAuthResponse
             {
                 Type = "auth_ok",
                 HaVersion = "2022.8.99"

@@ -15,7 +15,7 @@ public class ServiceTargetTest
     [Fact]
     public void ServiceTargetShouldContainCorrectEntities()
     {
-        var serviceTarget = ServiceTarget.FromEntities(new[] { "light.kitchen", "light.livingroom" });
+        var serviceTarget = ServiceTarget.FromEntities(["light.kitchen", "light.livingroom"]);
 
         serviceTarget.EntityIds.Should().BeEquivalentTo("light.kitchen", "light.livingroom");
     }

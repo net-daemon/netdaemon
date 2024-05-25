@@ -33,7 +33,7 @@ internal record EntitySelector : Selector
     public string? Integration { get; init; }
 
     [JsonConverter(typeof(StringAsArrayConverter))]
-    public string[] Domain { get; init; } = Array.Empty<string>();
+    public string[] Domain { get; init; } = [];
 }
 
 internal record NumberSelector : Selector
@@ -50,6 +50,6 @@ internal record NumberSelector : Selector
 internal record TargetSelector : Selector
 {
     [JsonConverter(typeof(SingleObjectAsArrayConverter<EntitySelector>))]
-    public EntitySelector[] Entity { get; init; } = Array.Empty<EntitySelector>();
+    public EntitySelector[] Entity { get; init; } = [];
 }
 

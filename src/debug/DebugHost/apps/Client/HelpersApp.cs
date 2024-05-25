@@ -8,11 +8,9 @@ namespace Apps;
 [NetDaemonApp]
 public sealed class HelperApp(IHomeAssistantConnection conn) : IAsyncInitializable
 {
-    private readonly IHomeAssistantConnection _conn = conn;
-
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        await _conn.CreateInputNumberHelperAsync(
+        await conn.CreateInputNumberHelperAsync(
                 name: "MyNumberHelper",
                 min: 0,
                 max: 100.0,

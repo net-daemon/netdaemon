@@ -200,7 +200,7 @@ public class CodeGeneratorTest
                     new() {
                         Service = "set_value",
                         Target = new TargetSelector {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "number" } } }
+                            Entity = [new EntitySelector { Domain = ["number"] }]
                         },
                         Fields = new HassServiceField[] {
                             new() { Field = "value", Selector = new NumberSelector(), },

@@ -113,7 +113,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     {
         await using var runtime = SetupNetDaemonRuntime();
 
-        var startAsync = runtime.StartAsync(CancellationToken.None);
+        _ = runtime.StartAsync(CancellationToken.None);
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
         _disconnectSubject.OnNext(DisconnectReason.Client);
 
