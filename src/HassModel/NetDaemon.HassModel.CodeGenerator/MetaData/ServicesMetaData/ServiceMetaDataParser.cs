@@ -20,7 +20,7 @@ internal static class ServiceMetaDataParser
     /// <param name="errors">Outputs Any Exceptions during deserialization</param>
     public static IReadOnlyCollection<HassServiceDomain> Parse(JsonElement element, out List<DeserializationError> errors)
     {
-        errors = new List<DeserializationError>();
+        errors = [];
         if (element.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException("Not expected result from the GetServices result");
 

@@ -30,7 +30,7 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
         var netDeamon = Host.CreateDefaultBuilder()
             .UseNetDaemonAppSettings()
             .UseNetDaemonRuntime()
-            .ConfigureAppConfiguration((context, config) =>
+            .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {

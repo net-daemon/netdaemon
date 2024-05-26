@@ -16,7 +16,7 @@ public static class HassEventExtensions
                           throw new NullReferenceException("DataElement cannot be empty");
         return jsonElement.Deserialize<HassStateChangedEventData>();
     }
-    
+
     /// <summary>
     ///     Convert a HassEvent to CallServiceEvent
     /// </summary>

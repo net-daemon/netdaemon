@@ -161,13 +161,13 @@ public static class HomeAssistantConnectionExtensions
         CancellationToken? cancelToken = null
     )
     {
-        var response = await connection
+        return await connection
             .SendCommandAndReturnResponseAsync<CallExecuteScriptCommand, HassServiceResult>
             (
                 new()
                 {
-                   Sequence = new object[]
-                   {
+                   Sequence =
+                   [
                        new
                        {
                            service = $"{domain}.{service}",
@@ -180,10 +180,9 @@ public static class HomeAssistantConnectionExtensions
                            stop = "done",
                            response_variable = "service_result"
                        }
-                   }
+                   ]
                 },
                 cancelToken ?? CancellationToken.None).ConfigureAwait(false);
-        return response;
     }
 
     /// <summary>
@@ -223,10 +222,9 @@ public static class HomeAssistantConnectionExtensions
     {
         var triggerCommand = new SubscribeTriggerCommand(trigger);
 
-        var msg = await connection.SendCommandAndReturnHassMessageResponseAsync
+        return await connection.SendCommandAndReturnHassMessageResponseAsync
                       (triggerCommand, cancelToken).ConfigureAwait(false) ??
                   throw new NullReferenceException("Unexpected null return from command");
-        return msg;
     }
 
     public static async Task UnsubscribeEventsAsync(this IHomeAssistantConnection connection,

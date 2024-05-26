@@ -21,10 +21,7 @@ internal static class HttpHelper
     {
         return new HttpClientHandler
         {
-            ServerCertificateCustomValidationCallback = (_, cert, _, sslPolicyErrors) =>
-            {
-                return sslPolicyErrors == SslPolicyErrors.None || true;
-            }
+            ServerCertificateCustomValidationCallback = (_, _, _, sslPolicyErrors) => sslPolicyErrors == SslPolicyErrors.None || true
         };
     }
 }

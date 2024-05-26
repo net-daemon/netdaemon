@@ -164,7 +164,7 @@ public sealed class HassMockStartup : IHostedService, IDisposable
     }
 
 
-    private readonly ConcurrentBag<int> _eventSubscriptions = new();
+    private readonly ConcurrentBag<int> _eventSubscriptions = [];
 
     /// <summary>
     ///     Process incoming websocket requests to simulate Home Assistant websocket API

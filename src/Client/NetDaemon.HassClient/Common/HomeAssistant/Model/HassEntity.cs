@@ -14,5 +14,5 @@ public record HassEntity
 
     [JsonPropertyName("platform")] public string? Platform { get; init; }
 
-    [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = Array.Empty<string>();
+    [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = [];
 }

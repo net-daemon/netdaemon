@@ -104,16 +104,15 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
             {
                 // This is a coalesced message containing multiple messages so we need to
                 // deserialize it as an array
-                var obj = message.Deserialize<T[]>() ?? throw new ApplicationException(
+                return message.Deserialize<T[]>() ?? throw new ApplicationException(
                     "Deserialization of websocket returned empty result (null)");
-                return obj;
             }
             else
             {
                 // This is normal message and we deserialize it as object
                 var obj = message.Deserialize<T>() ?? throw new ApplicationException(
                     "Deserialization of websocket returned empty result (null)");
-                return new T[] { obj };
+                return [obj];
             }
         }
         finally

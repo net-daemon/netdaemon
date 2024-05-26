@@ -106,8 +106,8 @@ public class TestRuntime
         await timedCancellationSource.CancelAsync();
         await runnerTask.ConfigureAwait(false);
     }
-    
-    
+
+
     [Fact]
     public async Task TestShutdownHostShutDownApps()
     {
@@ -126,11 +126,11 @@ public class TestRuntime
         var runnerTask = host.StartAsync(timedCancellationSource.Token);
 
         haRunner.MockConnect();
-        await runnerTask.WaitAsync(timedCancellationSource.Token).ConfigureAwait(false);;
+        await runnerTask.WaitAsync(timedCancellationSource.Token).ConfigureAwait(false);
 
         await host.StopAsync(timedCancellationSource.Token).WaitAsync(timedCancellationSource.Token).ConfigureAwait(false);
         host.Dispose();
-        
+
         disposableApp.Verify(m=>m.DisposeAsync(), Times.Once);
     }
 

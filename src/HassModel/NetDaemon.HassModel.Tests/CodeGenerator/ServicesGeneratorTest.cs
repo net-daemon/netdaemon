@@ -24,7 +24,7 @@ public class ServicesGeneratorTest
                         Service = "turn_off",
                         Target = new TargetSelector
                         {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "light" } } }
+                            Entity = [new EntitySelector { Domain = ["light"] }]
                         }
 
                     },
@@ -36,7 +36,7 @@ public class ServicesGeneratorTest
                         },
                         Target = new TargetSelector
                         {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "light" } } }
+                            Entity = [new EntitySelector { Domain = ["light"] }]
                         }
                     }
                 }
@@ -159,14 +159,14 @@ public class ServicesGeneratorTest
                         Service = "dig",
                         Target = new TargetSelector
                         {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "humidifiers" } } }
+                            Entity = [new EntitySelector { Domain = ["humidifiers"] }]
                         },
                     },
                     new() {
                         Service = "orbit",
                         Target = new TargetSelector
                         {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "orbiter" } } }
+                            Entity = [new EntitySelector { Domain = ["orbiter"] }]
                         },
                     }
                 },
@@ -216,7 +216,7 @@ public class ServicesGeneratorTest
                         Service = "push_button",
                         Target = new TargetSelector
                         {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "uselessbox" } } }
+                            Entity = [new EntitySelector { Domain = ["uselessbox"] }]
                         },
                     },
                 },
@@ -260,7 +260,7 @@ public class ServicesGeneratorTest
                     new() {
                         Service = "set_value",
                         Target = new TargetSelector {
-                            Entity = new[] { new EntitySelector { Domain = new[] { "light" } } }
+                            Entity = [new EntitySelector { Domain = ["light"] }]
                         },
                         Fields = new HassServiceField[] {
                             new() { Field = "class", Selector = new NumberSelector(), },

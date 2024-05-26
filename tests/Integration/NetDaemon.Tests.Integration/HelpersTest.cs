@@ -7,7 +7,6 @@ using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Extensions;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel;
-using NetDaemon.HassModel.Entities;
 using NetDaemon.Tests.Integration.Helpers;
 using Xunit;
 
@@ -15,13 +14,13 @@ namespace NetDaemon.Tests.Integration;
 
 public class HelpersTests(HomeAssistantLifetime homeAssistantLifetime) : NetDaemonIntegrationBase(homeAssistantLifetime)
 {
-    [Fact]
     /// <summary>
     ///    Tests the CRUD operations of number helper
     /// </summary>
     /// <remarks>
     ///      We need ot test these operations in serial since we cannont rely on test order
     /// </remarks>
+    [Fact]
     public async Task HelpersTest_CRUD_Should_WorkOnHelpers()
     {
         var cancelToken = new CancellationTokenSource(5000).Token;

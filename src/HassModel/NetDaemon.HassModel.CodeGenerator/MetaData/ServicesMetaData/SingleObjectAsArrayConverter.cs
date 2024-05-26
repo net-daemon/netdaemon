@@ -11,7 +11,7 @@ class SingleObjectAsArrayConverter<T> : JsonConverter<T[]>
     {
         if (reader.TokenType == JsonTokenType.StartObject)
         {
-            return new [] { JsonSerializer.Deserialize<T>(ref reader, options)! };
+            return [JsonSerializer.Deserialize<T>(ref reader, options)!];
         }
 
         return JsonSerializer.Deserialize<T[]>(ref reader, options);

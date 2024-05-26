@@ -2,8 +2,8 @@
 
 internal static class EntityIdHelper
 {
-    public static readonly string[] NumericDomains = { "input_number", "number", "proximity" };
-    public static readonly string[] MixedDomains = { "sensor" };
+    public static readonly string[] NumericDomains = ["input_number", "number", "proximity"];
+    public static readonly string[] MixedDomains = ["sensor"];
 
     public static string GetDomain(string str)
     {

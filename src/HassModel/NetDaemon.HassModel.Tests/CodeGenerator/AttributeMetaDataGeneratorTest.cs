@@ -24,7 +24,7 @@ public class AttributeMetaDataGeneratorTest
     public void SameAttributeDifferentArrayTypes_obect()
     {
         var entityStates = new HassState[] {
-            new() { AttributesJson = new { values = new []{new []{ 1,2,3 }, new []{ 2,3,4 } }, }.AsJsonElement() },
+            new() { AttributesJson = new { values = new []{ [1,2,3], new []{ 2,3,4 } }, }.AsJsonElement() },
         };
 
         var metadata = AttributeMetaDataGenerator.GetMetaDataFromEntityStates(entityStates).ToArray();

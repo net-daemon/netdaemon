@@ -4,7 +4,7 @@ namespace NetDaemon.AppModel.Internal;
 
 internal class AppModelContext : IAppModelContext
 {
-    private readonly List<Application> _applications = new();
+    private readonly List<Application> _applications = [];
 
     private readonly IEnumerable<IAppFactoryProvider> _appFactoryProviders;
     private readonly IServiceProvider _provider;

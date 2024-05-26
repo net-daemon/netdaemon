@@ -45,7 +45,7 @@ IConfigurationRoot GetConfigurationRoot()
 
         // finally override with Environment vars or commandline
         .AddEnvironmentVariables()
-        .AddCommandLine(args, new Dictionary<string, string>()
+        .AddCommandLine(args, new Dictionary<string, string>
         {
             ["-o"] = "CodeGeneration:OutputFile",
             ["-f"] = "CodeGeneration:OutputFolder",

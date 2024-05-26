@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddNetDaemonAppModel()
-            .AddSingleton<IAppFactoryProvider>(SingleAppFactoryProvider.Create(factoryFunc, id, focus));
+            .AddSingleton(SingleAppFactoryProvider.Create(factoryFunc, id, focus));
     }
 
     /// <summary>

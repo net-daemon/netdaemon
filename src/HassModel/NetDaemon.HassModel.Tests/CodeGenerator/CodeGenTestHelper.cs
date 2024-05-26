@@ -56,7 +56,7 @@ internal sealed class CodeGenTestHelper
         msg.AppendLine("generated.cs");
 
         // output the generated code including line numbers to help debugging
-        var linesWithNumbers = generated.Split(new [] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
+        var linesWithNumbers = generated.Split(["\r\n", "\r", "\n"], StringSplitOptions.None)
                 .Select((l, i) => $"{i+1,5}: {l}");
 
         msg.AppendJoin(Environment.NewLine, linesWithNumbers);

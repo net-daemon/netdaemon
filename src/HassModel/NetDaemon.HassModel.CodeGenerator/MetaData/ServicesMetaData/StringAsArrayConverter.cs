@@ -12,7 +12,7 @@ class StringAsArrayConverter : JsonConverter<string[]>
     {
         if (reader.TokenType == JsonTokenType.String)
         {
-            return new []{ reader.GetString() ?? throw new UnreachableException("Token is expected to be a string") };
+            return [reader.GetString() ?? throw new UnreachableException("Token is expected to be a string")];
         }
 
         return JsonSerializer.Deserialize<string[]>(ref reader, options);

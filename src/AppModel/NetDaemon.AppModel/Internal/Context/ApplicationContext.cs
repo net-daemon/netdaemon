@@ -39,7 +39,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
 
         _isDisposed = true;
 
-        if (_cancelTokenSource.IsCancellationRequested == false)
+        if (!_cancelTokenSource.IsCancellationRequested)
             await _cancelTokenSource.CancelAsync();
 
         switch (Instance)
