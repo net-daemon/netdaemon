@@ -9,7 +9,7 @@ internal record HassServiceField
     [JsonConverter(typeof(NullableBoolJsonConverter))]
     public bool? Required { get; init; }
     public object? Example { get; init; }
-    
+
     [JsonConverter(typeof(SelectorConverter))]
     public Selector? Selector { get; init; }
 }

@@ -247,6 +247,56 @@ public class ServicesGeneratorTest
     }
 
     [Fact]
+    public void TestServiceWithReturnvalueWithoutAnyMethods()
+    {
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "weather.hometown" },
+        };
+
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "weather",
+                Services = [
+                    new() {
+                        Service = "get_forecast",
+                        Target = new TargetSelector
+                        {
+                            Entity = [new EntitySelector { Domain = ["weather"] }]
+                        },
+                        Response = new Response
+                        {
+                            Optional = true,
+                        }
+                    },
+                ],
+            }
+        };
+
+        // Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+        code.ToString().Should().NotContain("DumbthingsEntityExtensionMethods",
+            because:"There is no entity for any of the services in dumbthings");
+
+        var appCode = """
+                    using System.Threading.Tasks;
+                    using NetDaemon.HassModel;
+                    using NetDaemon.HassModel.Entities;
+                    using RootNameSpace;
+
+                    public class Root
+                    {
+                        public async Task Run(Entities entities, Services services)
+                        {
+                            // But the Method on the Dumbthings service class should still exist
+                            var x = await services.Weather.GetForecastAsync(new ServiceTarget());
+                        }
+                    }
+                  """;
+
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
+   [Fact]
     public void TestServiceWithKeyWordFieldName_ParamEscaped()
     {
         var readOnlyCollection = new HassState[] {

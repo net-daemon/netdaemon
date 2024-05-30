@@ -107,6 +107,19 @@ internal static class ServicesGenerator
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment);
+            // method without arguments and with response
+            if (service.Response is not null)
+            {
+                yield return ParseMemberDeclaration($$"""
+                            Task<JsonElement?> {{serviceMethodName}}Async({{CommaSeparateNonEmpty(targetParam, "object? data = null")}})
+                            {
+                                return {{haContextVariableName}}.CallServiceWithResponseAsync("{{domain}}", "{{serviceName}}", {{CommaSeparateNonEmpty(targetArg, "data")}});
+                            }
+                            """)!
+                    .ToPublic()
+                    .WithSummaryComment(service.Description)
+                    .AppendTrivia(targetComment);
+            }
         }
         else
         {
@@ -132,6 +145,31 @@ internal static class ServicesGenerator
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment)
                 .AppendParameterComments(serviceArguments);
+            if (service.Response is not null)
+            {
+                // method using arguments object
+                yield return ParseMemberDeclaration($$"""
+                            Task<JsonElement?> {{serviceMethodName}}Async({{CommaSeparateNonEmpty(targetParam, serviceArguments.TypeName)}} data)
+                            {
+                                return {{haContextVariableName}}.CallServiceWithResponseAsync("{{domain}}", "{{serviceName}}", {{targetArg}}, data);
+                            }
+                            """)!
+                    .ToPublic()
+                    .WithSummaryComment(service.Description)
+                    .AppendTrivia(targetComment);
+
+                // method using arguments as separate parameters
+                yield return ParseMemberDeclaration($$"""
+                            Task<JsonElement?> {{serviceMethodName}}Async({{CommaSeparateNonEmpty(targetParam, serviceArguments.GetParametersList())}})
+                            {
+                                return {{haContextVariableName}}.CallServiceWithResponseAsync("{{domain}}", "{{serviceName}}", {{targetArg}}, {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                            }
+                            """)!
+                    .ToPublic()
+                    .WithSummaryComment(service.Description)
+                    .AppendTrivia(targetComment)
+                    .AppendParameterComments(serviceArguments);
+            }
         }
     }
 

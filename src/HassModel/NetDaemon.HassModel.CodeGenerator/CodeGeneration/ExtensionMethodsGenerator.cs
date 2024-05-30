@@ -52,7 +52,7 @@ internal static class ExtensionMethodsGenerator
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
     {
         // There can be multiple Target Domains, so generate methods for each
-        var targetEntityDomains = service.Target?.Entity.SelectMany(e => e.Domain) ?? Array.Empty<string>();
+        var targetEntityDomains = service.Target?.Entity.SelectMany(e => e.Domain) ?? [];
 
         return targetEntityDomains.SelectMany(targetEntityDomain => GenerateExtensionMethodsForService(domain, service, targetEntityDomain, entityClassNameByDomain));
     }
@@ -69,16 +69,33 @@ internal static class ExtensionMethodsGenerator
 
         if (serviceArguments is null)
         {
-            yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName);
-            yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName);
+            if (service.Response is not null)
+            {
+                yield return ExtensionMethodWithoutArgumentsAsync(service, serviceName, entityTypeName);
+                // No support for IEnumerable<Entity> with async methods
+            }
+            else
+            {
+                yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName);
+                yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName);
+            }
         }
         else
         {
-            yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments);
-            yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments);
+            if (service.Response is not null)
+            {
+                yield return ExtensionMethodWithClassArgumentAsync(service, serviceName, entityTypeName, serviceArguments);
+                yield return ExtensionMethodWithSeparateArgumentsAsync(service, serviceName, entityTypeName, serviceArguments);
+                // No support for IEnumerable<Entity> with async methods
+            }
+            else
+            {
+                yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments);
+                yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments);
 
-            yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments);
-            yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments);
+                yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments);
+                yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments);
+            }
         }
     }
 
@@ -88,6 +105,17 @@ internal static class ExtensionMethodsGenerator
                     public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, object? data = null)
                     {
                         target.CallService("{{serviceName}}", data);
+                    }
+                    """)!
+            .WithSummaryComment(service.Description);
+    }
+
+    private static MemberDeclarationSyntax ExtensionMethodWithoutArgumentsAsync(HassService service, string serviceName, string entityTypeName)
+    {
+        return ParseMemberDeclaration($$"""
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, object? data = null)
+                    {
+                        return target.CallServiceWithResponseAsync("{{serviceName}}", data);
                     }
                     """)!
             .WithSummaryComment(service.Description);
@@ -104,12 +132,36 @@ internal static class ExtensionMethodsGenerator
             .WithSummaryComment(service.Description);
     }
 
+    private static MemberDeclarationSyntax ExtensionMethodWithClassArgumentAsync(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    {
+        return ParseMemberDeclaration($$"""
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.TypeName}} data)
+                    {
+                        return target.CallServiceWithResponseAsync("{{serviceName}}", data);
+                    }
+                    """)!
+            .WithSummaryComment(service.Description);
+    }
+
     private static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
         return ParseMemberDeclaration($$"""
                     public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
                     {
                         target.CallService("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                    }
+                    """)!
+            .WithSummaryComment(service.Description)
+            .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
+            .AppendParameterComments(serviceArguments);
+    }
+
+    private static MemberDeclarationSyntax ExtensionMethodWithSeparateArgumentsAsync(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    {
+        return ParseMemberDeclaration($$"""
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
+                    {
+                        return target.CallServiceWithResponseAsync("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
                     }
                     """)!
             .WithSummaryComment(service.Description)
