@@ -83,6 +83,70 @@ public class ServicesGeneratorTest
     }
 
     [Fact]
+    public void TestServicesWithReturnValueGeneration()
+    {
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "weather.mytown" },
+        };
+
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "weather",
+                Services = new HassService[] {
+                    new() {
+                        Service = "get_forecast",
+                        Target = new TargetSelector
+                        {
+                            Entity = [new EntitySelector { Domain = ["weather"] }]
+                        },
+                        Fields = [
+                            new() { Field = "FakeAttribute", Selector = new NumberSelector(), },
+                            new() { Field = "AnotherFakeAttribute", Selector = new NumberSelector { Step = 0.2d }, }
+                        ],
+                        Response = new Response
+                        {
+                            Optional = true,
+                        }
+
+                    }
+                }
+            }
+        };
+
+        // Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+
+        var appCode = """
+                    using System.Threading.Tasks;
+                    using NetDaemon.HassModel;
+                    using NetDaemon.HassModel.Entities;
+                    using RootNameSpace;
+
+                    public class Root
+                    {
+                        public async Task Run(IHaContext ha)
+                        {
+                            var s = new RootNameSpace.Services(ha);
+
+                            var retVal = await s.Weather.GetForecastAsync(new ServiceTarget() );
+                            retVal = await s.Weather.GetForecastAsync(new ServiceTarget(), new (){ FakeAttribute = 12L, AnotherFakeAttribute = 12.3f });
+
+                            WeatherEntity weather = new RootNameSpace.WeatherEntity(ha, "weather.mytown");
+                            retVal  = await weather.GetForecastAsync();
+                            retVal  = await weather.GetForecastAsync(new (){ FakeAttribute = 12L, AnotherFakeAttribute = 12.3f } );
+
+                            IWeatherEntityCore weatherCore = weather;
+                            retVal  = await weatherCore.GetForecastAsync();
+                            retVal  = await weatherCore.GetForecastAsync(new (){ FakeAttribute = 12L, AnotherFakeAttribute = 12.3f } );
+
+                        }
+                    }
+                    """;
+
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
+    [Fact]
     public void TestServicesGenerationWithAndWithoutProvidingDataForServicesWithoutTargetOrFields()
     {
         var readOnlyCollection = new HassState[] {

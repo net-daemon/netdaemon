@@ -74,11 +74,8 @@ internal static class ExtensionMethodsGenerator
                 yield return ExtensionMethodWithoutArgumentsAsync(service, serviceName, entityTypeName);
                 // No support for IEnumerable<Entity> with async methods
             }
-            else
-            {
-                yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName);
-                yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName);
-            }
+            yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName);
+            yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName);
         }
         else
         {
@@ -88,14 +85,11 @@ internal static class ExtensionMethodsGenerator
                 yield return ExtensionMethodWithSeparateArgumentsAsync(service, serviceName, entityTypeName, serviceArguments);
                 // No support for IEnumerable<Entity> with async methods
             }
-            else
-            {
-                yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments);
-                yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments);
+            yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments);
+            yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments);
 
-                yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments);
-                yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments);
-            }
+            yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments);
+            yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments);
         }
     }
 
@@ -113,7 +107,7 @@ internal static class ExtensionMethodsGenerator
     private static MemberDeclarationSyntax ExtensionMethodWithoutArgumentsAsync(HassService service, string serviceName, string entityTypeName)
     {
         return ParseMemberDeclaration($$"""
-                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, object? data = null)
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, object? data = null)
                     {
                         return target.CallServiceWithResponseAsync("{{serviceName}}", data);
                     }
@@ -135,7 +129,7 @@ internal static class ExtensionMethodsGenerator
     private static MemberDeclarationSyntax ExtensionMethodWithClassArgumentAsync(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
         return ParseMemberDeclaration($$"""
-                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.TypeName}} data)
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, {{serviceArguments.TypeName}} data)
                     {
                         return target.CallServiceWithResponseAsync("{{serviceName}}", data);
                     }
@@ -159,7 +153,7 @@ internal static class ExtensionMethodsGenerator
     private static MemberDeclarationSyntax ExtensionMethodWithSeparateArgumentsAsync(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
     {
         return ParseMemberDeclaration($$"""
-                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
                     {
                         return target.CallServiceWithResponseAsync("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
                     }
