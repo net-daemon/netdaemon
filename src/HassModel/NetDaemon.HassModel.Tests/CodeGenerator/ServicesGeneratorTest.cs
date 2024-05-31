@@ -92,7 +92,7 @@ public class ServicesGeneratorTest
         var hassServiceDomains = new HassServiceDomain[] {
             new() {
                 Domain = "weather",
-                Services = new HassService[] {
+                Services = [
                     new() {
                         Service = "get_forecast",
                         Target = new TargetSelector
@@ -109,7 +109,7 @@ public class ServicesGeneratorTest
                         }
 
                     }
-                }
+                ]
             }
         };
 
@@ -138,6 +138,7 @@ public class ServicesGeneratorTest
                             IWeatherEntityCore weatherCore = weather;
                             retVal  = await weatherCore.GetForecastAsync();
                             retVal  = await weatherCore.GetForecastAsync(new (){ FakeAttribute = 12L, AnotherFakeAttribute = 12.3f } );
+                            retVal  = await weatherCore.CallServiceWithResponseAsync( "get_forecast", new { FakeAttribute = 12L, AnotherFakeAttribute = 12.3f });
 
                         }
                     }
