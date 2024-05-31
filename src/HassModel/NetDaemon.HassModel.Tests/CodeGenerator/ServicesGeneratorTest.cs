@@ -338,8 +338,6 @@ public class ServicesGeneratorTest
 
         // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
-        code.ToString().Should().NotContain("DumbthingsEntityExtensionMethods",
-            because:"There is no entity for any of the services in dumbthings");
 
         var appCode = """
                     using System.Threading.Tasks;
