@@ -134,6 +134,7 @@ public class ServicesGeneratorTest
                             WeatherEntity weather = new RootNameSpace.WeatherEntity(ha, "weather.mytown");
                             retVal  = await weather.GetForecastAsync();
                             retVal  = await weather.GetForecastAsync(new (){ FakeAttribute = 12L, AnotherFakeAttribute = 12.3f } );
+                            retVal  = await weather.CallServiceWithResponseAsync( "get_forecast", new { FakeAttribute = 12L, AnotherFakeAttribute = 12.3f });
 
                             IWeatherEntityCore weatherCore = weather;
                             retVal  = await weatherCore.GetForecastAsync();
