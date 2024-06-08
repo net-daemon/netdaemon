@@ -43,6 +43,44 @@ public class ServiceMetaDataParserTest
     }
 
     [Fact]
+    public void TestServicesWithReturnValueCanBeParsed()
+    {
+      var sample = """
+          {
+             "weather": {
+               "foo_with_return_value": {
+                 "name": "Foo",
+                   "description": "Foo with return value",
+                   "fields": {},
+                   "target": {
+                     "entity": {}
+                   },
+                   "response": {
+                     "optional": false
+                   }
+               },
+               "foo_with_optional_return_value": {
+                 "name": "Foo optional",
+                   "description": "Foo with optional return value",
+                   "fields": {},
+                   "target": {
+                     "entity": {}
+                   },
+                   "response": {
+                     "optional": true
+                   }
+               }
+             }
+          }
+          """;
+      var res = Parse(sample);
+      res.Should().HaveCount(1);
+      res.First().Domain.Should().Be("weather");
+      res.First().Services.ElementAt(0).Response!.Optional.Should().BeFalse();
+      res.First().Services.ElementAt(1).Response!.Optional.Should().BeTrue();
+    }
+
+    [Fact]
     public void TestMultiDomainTarget()
     {
       var sample = """

@@ -52,7 +52,7 @@ internal static class ExtensionMethodsGenerator
     private static IEnumerable<MemberDeclarationSyntax> GenerateExtensionMethodsForService(string domain, HassService service, ILookup<string, string> entityClassNameByDomain)
     {
         // There can be multiple Target Domains, so generate methods for each
-        var targetEntityDomains = service.Target?.Entity.SelectMany(e => e.Domain) ?? Array.Empty<string>();
+        var targetEntityDomains = service.Target?.Entity.SelectMany(e => e.Domain) ?? [];
 
         return targetEntityDomains.SelectMany(targetEntityDomain => GenerateExtensionMethodsForService(domain, service, targetEntityDomain, entityClassNameByDomain));
     }
@@ -69,51 +69,105 @@ internal static class ExtensionMethodsGenerator
 
         if (serviceArguments is null)
         {
-            yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName);
-            yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName);
+            if (service.Response is not null)
+            {
+                yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName, true);
+                // No support for IEnumerable<Entity> with async methods for now may be added later
+            }
+            yield return ExtensionMethodWithoutArguments(service, serviceName, entityTypeName, false);
+            yield return ExtensionMethodWithoutArguments(service, serviceName, enumerableTargetTypeName, false);
         }
         else
         {
-            yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments);
-            yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments);
+            if (service.Response is not null)
+            {
+                yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments, true);
+                yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments, true);
+                // No support for IEnumerable<Entity> with async methods now may be added later
+            }
+            yield return ExtensionMethodWithClassArgument(service, serviceName, entityTypeName, serviceArguments, false);
+            yield return ExtensionMethodWithClassArgument(service, serviceName, enumerableTargetTypeName, serviceArguments, false);
 
-            yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments);
-            yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments);
+            yield return ExtensionMethodWithSeparateArguments(service, serviceName, entityTypeName, serviceArguments, false);
+            yield return ExtensionMethodWithSeparateArguments(service, serviceName, enumerableTargetTypeName, serviceArguments, false);
         }
     }
 
-    private static MemberDeclarationSyntax ExtensionMethodWithoutArguments(HassService service, string serviceName, string entityTypeName)
+    private static MemberDeclarationSyntax ExtensionMethodWithoutArguments(HassService service, string serviceName, string entityTypeName, bool generateAsync)
     {
-        return ParseMemberDeclaration($$"""
+        if (generateAsync)
+        {
+            return ParseMemberDeclaration($$"""
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, object? data = null)
+                    {
+                        return target.CallServiceWithResponseAsync("{{serviceName}}", data);
+                    }
+                    """)!
+                .WithSummaryComment(service.Description);
+        }
+        else
+        {
+            return ParseMemberDeclaration($$"""
                     public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, object? data = null)
                     {
                         target.CallService("{{serviceName}}", data);
                     }
                     """)!
-            .WithSummaryComment(service.Description);
+                .WithSummaryComment(service.Description);
+        }
     }
 
-    private static MemberDeclarationSyntax ExtensionMethodWithClassArgument(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    private static MemberDeclarationSyntax ExtensionMethodWithClassArgument(HassService service, string serviceName, string entityTypeName,
+            ServiceArguments serviceArguments, bool isAsync)
     {
-        return ParseMemberDeclaration($$"""
+        if (isAsync)
+        {
+            return ParseMemberDeclaration($$"""
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, {{serviceArguments.TypeName}} data)
+                    {
+                        return target.CallServiceWithResponseAsync("{{serviceName}}", data);
+                    }
+                    """)!
+                .WithSummaryComment(service.Description);
+        }
+        else
+        {
+            return ParseMemberDeclaration($$"""
                     public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.TypeName}} data)
                     {
                         target.CallService("{{serviceName}}", data);
                     }
                     """)!
-            .WithSummaryComment(service.Description);
+                .WithSummaryComment(service.Description);
+        }
     }
 
-    private static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName, ServiceArguments serviceArguments)
+    static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName,
+            ServiceArguments serviceArguments, bool isAsync)
     {
-        return ParseMemberDeclaration($$"""
+        if (isAsync)
+        {
+            return ParseMemberDeclaration($$"""
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
+                    {
+                        return target.CallServiceWithResponseAsync("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                    }
+                    """)!
+                .WithSummaryComment(service.Description)
+                .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
+                .AppendParameterComments(serviceArguments);
+        }
+        else
+        {
+            return ParseMemberDeclaration($$"""
                     public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
                     {
                         target.CallService("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
                     }
                     """)!
-            .WithSummaryComment(service.Description)
-            .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
-            .AppendParameterComments(serviceArguments);
+                .WithSummaryComment(service.Description)
+                .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
+                .AppendParameterComments(serviceArguments);
+        }
     }
 }

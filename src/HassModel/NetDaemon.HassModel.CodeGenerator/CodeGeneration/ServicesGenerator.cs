@@ -98,36 +98,98 @@ internal static class ServicesGenerator
         if (serviceArguments is null)
         {
             // method without arguments
-            yield return ParseMemberDeclaration($$"""
+            foreach (var method in GenerateServiceMethodWithoutArguments(serviceMethodName, targetParam, targetComment, targetArg, domain, serviceName, haContextVariableName, service))
+            {
+                yield return method;
+            }
+        }
+        else
+        {
+            // method using arguments object
+            foreach (var method in GenerateServiceMethodWithArguments(serviceMethodName, serviceArguments, targetParam, targetComment, targetArg, domain, serviceName, haContextVariableName, service))
+            {
+                yield return method;
+            }
+        }
+    }
+
+    private static IEnumerable<MemberDeclarationSyntax> GenerateServiceMethodWithoutArguments(
+            string serviceMethodName, string? targetParam,
+            SyntaxTrivia? targetComment, string targetArg, string domain, string serviceName,
+            string haContextVariableName, HassService service)
+    {
+        yield return ParseMemberDeclaration($$"""
                         void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, "object? data = null")}})
                         {
                             {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{CommaSeparateNonEmpty(targetArg, "data")}});
                         }
                         """)!
+            .ToPublic()
+            .WithSummaryComment(service.Description)
+            .AppendTrivia(targetComment);
+
+        if (service.Response is not null)
+        {
+            yield return ParseMemberDeclaration($$"""
+                            Task<JsonElement?> {{serviceMethodName}}Async({{CommaSeparateNonEmpty(targetParam, "object? data = null")}})
+                            {
+                                return {{haContextVariableName}}.CallServiceWithResponseAsync("{{domain}}", "{{serviceName}}", {{CommaSeparateNonEmpty(targetArg, "data")}});
+                            }
+                            """)!
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment);
         }
-        else
-        {
-            // method using arguments object
-            yield return ParseMemberDeclaration($$"""
+    }
+
+    private static IEnumerable<MemberDeclarationSyntax> GenerateServiceMethodWithArguments(
+            string serviceMethodName, ServiceArguments serviceArguments, string? targetParam,
+            SyntaxTrivia? targetComment, string targetArg, string domain, string serviceName,
+            string haContextVariableName, HassService service)
+    {
+        // method using arguments object
+        yield return ParseMemberDeclaration($$"""
                         void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, serviceArguments.TypeName)}} data)
                         {
                             {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, data);
                         }
                         """)!
+            .ToPublic()
+            .WithSummaryComment(service.Description)
+            .AppendTrivia(targetComment);
+
+        // method using arguments as separate parameters
+        yield return ParseMemberDeclaration($$"""
+                        void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, serviceArguments.GetParametersList())}})
+                        {
+                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                        }
+                        """)!
+            .ToPublic()
+            .WithSummaryComment(service.Description)
+
+            .AppendParameterComments(serviceArguments);
+
+        if (service.Response is not null)
+        {
+            // method using arguments object
+            yield return ParseMemberDeclaration($$"""
+                            Task<JsonElement?> {{serviceMethodName}}Async({{CommaSeparateNonEmpty(targetParam, serviceArguments.TypeName)}} data)
+                            {
+                                return {{haContextVariableName}}.CallServiceWithResponseAsync("{{domain}}", "{{serviceName}}", {{targetArg}}, data);
+                            }
+                            """)!
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment);
 
             // method using arguments as separate parameters
             yield return ParseMemberDeclaration($$"""
-                        void {{serviceMethodName}}({{CommaSeparateNonEmpty(targetParam, serviceArguments.GetParametersList())}})
-                        {
-                            {{haContextVariableName}}.CallService("{{domain}}", "{{serviceName}}", {{targetArg}}, {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
-                        }
-                        """)!
+                            Task<JsonElement?> {{serviceMethodName}}Async({{CommaSeparateNonEmpty(targetParam, serviceArguments.GetParametersList())}})
+                            {
+                                return {{haContextVariableName}}.CallServiceWithResponseAsync("{{domain}}", "{{serviceName}}", {{targetArg}}, {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                            }
+                            """)!
                 .ToPublic()
                 .WithSummaryComment(service.Description)
                 .AppendTrivia(targetComment)

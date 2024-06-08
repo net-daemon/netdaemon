@@ -10,4 +10,5 @@ internal record HassService
     [JsonIgnore]
     public IReadOnlyCollection<HassServiceField>? Fields { get; init; }
     public TargetSelector? Target { get; init; }
+    public Response? Response { get; init; }
 }
