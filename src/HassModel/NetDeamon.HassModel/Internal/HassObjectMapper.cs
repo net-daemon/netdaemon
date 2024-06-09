@@ -75,7 +75,13 @@ internal static class HassObjectMapper
             Name = hassDevice.Name,
             Id = hassDevice.Id ?? "Unavailable",
             Area = hassDevice.AreaId is null ? null : registry.GetArea(hassDevice.AreaId),
-            Labels = hassDevice.Labels.Select(registry.GetLabel).OfType<Label>().ToList()
+            Labels = hassDevice.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
+            Manufacturer = hassDevice.Manufacturer,
+            Model = hassDevice.Model,
+            ConfigurationUrl = hassDevice.ConfigurationUrl,
+            SerialNumber = hassDevice.SerialNumber,
+            HardwareVersion = hassDevice.HardwareVersion,
+            SoftwareVersion = hassDevice.SoftwareVersion
         };
     }
 
@@ -113,6 +119,7 @@ internal static class HassObjectMapper
             Area = areaId is null ? null : registry.GetArea(areaId),
             Device = device,
             Labels = hassEntity.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
+            Platform = hassEntity.Platform,
         };
     }
 

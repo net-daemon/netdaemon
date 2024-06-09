@@ -18,4 +18,9 @@ public record HassDevice
     [JsonPropertyName("name_by_user")] public string? NameByUser { get; init; }
 
     [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = [];
+
+    [JsonPropertyName("configuration_url")] public string? ConfigurationUrl { get; init; }
+    [JsonPropertyName("hw_version")] public string? HardwareVersion { get; init; }
+    [JsonPropertyName("sw_version")] public string? SoftwareVersion { get; init; }
+    [JsonPropertyName("serial_number")] public string? SerialNumber { get; init; }
 }

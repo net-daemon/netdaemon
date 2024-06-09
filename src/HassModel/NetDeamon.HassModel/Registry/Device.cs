@@ -36,4 +36,34 @@ public record Device
     /// The Labels of this Device
     /// </summary>
     public IReadOnlyCollection<Label> Labels { get; init; } = Array.Empty<Label>();
+
+    /// <summary>
+    /// The manufacturer of this Device, if available
+    /// </summary>
+    public string? Manufacturer { get; init; }
+
+    /// <summary>
+    /// The model of this Device, if available
+    /// </summary>
+    public string? Model { get; init; }
+
+    /// <summary>
+    /// A URL on which the device or service can be configured
+    /// </summary>
+    public string? ConfigurationUrl { get; init; }
+
+    /// <summary>
+    /// The hardware version of this Device, if available
+    /// </summary>
+    public string? HardwareVersion { get; init; }
+
+    /// <summary>
+    /// The software version of this Device, if available
+    /// </summary>
+    public string? SoftwareVersion { get; init; }
+
+    /// <summary>
+    /// The serial number of this Device, if available
+    /// </summary>
+    public string? SerialNumber { get; init; }
 }
