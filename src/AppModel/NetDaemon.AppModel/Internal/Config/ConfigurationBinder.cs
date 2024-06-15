@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.Extensions.Configuration
+namespace Microsoft.Extensions.Configuration.Copied
 {
     /// <summary>
     /// Static helper class that allows binding strongly typed objects to configuration values.
@@ -50,7 +51,7 @@ namespace Microsoft.Extensions.Configuration
         [RequiresUnreferencedCode(TrimmingWarningMessage)]
         public static T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(this IConfiguration configuration, Action<BinderOptions>? configureOptions)
         {
-            ThrowHelper.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(configuration);
 
             object? result = configuration.Get(typeof(T), configureOptions);
             if (result == null)
@@ -88,15 +89,16 @@ namespace Microsoft.Extensions.Configuration
             this IConfiguration configuration,
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
             Type type,
-            Action<BinderOptions>? configureOptions)
+            Action<BinderOptions>? configureOptions,
+            IServiceProvider? serviceProvider)
         {
-            ThrowHelper.ThrowIfNull(configuration);
-            ThrowHelper.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(type);
 
             var options = new BinderOptions();
             configureOptions?.Invoke(options);
             var bindingPoint = new BindingPoint();
-            BindInstance(type, bindingPoint, config: configuration, options: options, isParentCollection: false);
+            BindInstance(type, bindingPoint, config: configuration, options: options, isParentCollection: false, serviceProvider);
             return bindingPoint.Value;
         }
 
@@ -110,7 +112,7 @@ namespace Microsoft.Extensions.Configuration
         [RequiresUnreferencedCode(InstanceGetTypeTrimmingWarningMessage)]
         public static void Bind(this IConfiguration configuration, string key, object? instance)
         {
-            ThrowHelper.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(configuration);
             configuration.GetSection(key).Bind(instance);
         }
 
@@ -132,16 +134,16 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="configureOptions">Configures the binder options.</param>
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode(InstanceGetTypeTrimmingWarningMessage)]
-        public static void Bind(this IConfiguration configuration, object? instance, Action<BinderOptions>? configureOptions)
+        public static void Bind(this IConfiguration configuration, object? instance, Action<BinderOptions>? configureOptions, IServiceProvider? serviceProvider)
         {
-            ThrowHelper.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(configuration);
 
             if (instance != null)
             {
                 var options = new BinderOptions();
                 configureOptions?.Invoke(options);
                 var bindingPoint = new BindingPoint(instance, isReadOnly: true);
-                BindInstance(instance.GetType(), bindingPoint, configuration, options, false);
+                BindInstance(instance.GetType(), bindingPoint, configuration, options, false, serviceProvider);
             }
         }
 
@@ -206,8 +208,8 @@ namespace Microsoft.Extensions.Configuration
             Type type, string key,
             object? defaultValue)
         {
-            ThrowHelper.ThrowIfNull(configuration);
-            ThrowHelper.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(type);
 
             IConfigurationSection section = configuration.GetSection(key);
             string? value = section.Value;
@@ -220,7 +222,7 @@ namespace Microsoft.Extensions.Configuration
 
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode(PropertyTrimmingWarningMessage)]
-        private static void BindProperties(object instance, IConfiguration configuration, BinderOptions options)
+        private static void BindProperties(object instance, IConfiguration configuration, BinderOptions options, IServiceProvider? serviceProvider)
         {
             List<PropertyInfo> modelProperties = GetAllProperties(instance.GetType());
 
@@ -240,7 +242,7 @@ namespace Microsoft.Extensions.Configuration
 
                 if (missingPropertyNames != null)
                 {
-                    throw new InvalidOperationException(SR.Format(SR.Error_MissingConfig,
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture,  "{0}' was set on the provided {1}, but the following properties were not found on the instance of {2}: {3}",
                         nameof(options.ErrorOnUnknownConfiguration), nameof(BinderOptions), instance.GetType(),
                         string.Join(", ", missingPropertyNames)));
                 }
@@ -248,13 +250,13 @@ namespace Microsoft.Extensions.Configuration
 
             foreach (PropertyInfo property in modelProperties)
             {
-                BindProperty(property, instance, configuration, options);
+                BindProperty(property, instance, configuration, options, serviceProvider);
             }
         }
 
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode(PropertyTrimmingWarningMessage)]
-        private static void BindProperty(PropertyInfo property, object instance, IConfiguration config, BinderOptions options)
+        private static void BindProperty(PropertyInfo property, object instance, IConfiguration config, BinderOptions options, IServiceProvider? serviceProvider)
         {
             // We don't support set only, non public, or indexer properties
             if (property.GetMethod == null ||
@@ -273,7 +275,8 @@ namespace Microsoft.Extensions.Configuration
                 propertyBindingPoint,
                 config.GetSection(GetPropertyName(property)),
                 options,
-                false);
+                false,
+                serviceProvider);
 
             // For property binding, there are some cases when HasNewValue is not set in BindingPoint while a non-null Value inside that object can be retrieved from the property getter.
             // As example, when binding a property which not having a configuration entry matching this property and the getter can initialize the Value.
@@ -291,7 +294,8 @@ namespace Microsoft.Extensions.Configuration
             BindingPoint bindingPoint,
             IConfiguration config,
             BinderOptions options,
-            bool isParentCollection)
+            bool isParentCollection,
+            IServiceProvider? serviceProvider)
         {
             // if binding IConfigurationSection, break early
             if (type == typeof(IConfigurationSection))
@@ -326,7 +330,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (!bindingPoint.IsReadOnly)
                     {
-                        bindingPoint.SetValue(BindArray(type, (IEnumerable?)bindingPoint.Value, config, options));
+                        bindingPoint.SetValue(BindArray(type, (IEnumerable?)bindingPoint.Value, config, options, serviceProvider));
                     }
 
                     // for getter-only collection properties that we can't add to, nothing more we can do
@@ -347,7 +351,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (!bindingPoint.IsReadOnly || bindingPoint.Value is not null)
                     {
-                        object? newValue = BindSet(type, (IEnumerable?)bindingPoint.Value, config, options);
+                        object? newValue = BindSet(type, (IEnumerable?)bindingPoint.Value, config, options, serviceProvider);
                         if (!bindingPoint.IsReadOnly && newValue != null)
                         {
                             bindingPoint.SetValue(newValue);
@@ -371,7 +375,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (!bindingPoint.IsReadOnly || bindingPoint.Value is not null)
                     {
-                        object? newValue = BindDictionaryInterface(bindingPoint.Value, type, config, options);
+                        object? newValue = BindDictionaryInterface(bindingPoint.Value, type, config, options, serviceProvider);
                         if (!bindingPoint.IsReadOnly && newValue != null)
                         {
                             bindingPoint.SetValue(newValue);
@@ -401,7 +405,7 @@ namespace Microsoft.Extensions.Configuration
                     }
                     else
                     {
-                        bindingPoint.SetValue(CreateInstance(type, config, options));
+                        bindingPoint.SetValue(CreateInstance(type, config, options, serviceProvider));
                     }
                 }
 
@@ -413,18 +417,18 @@ namespace Microsoft.Extensions.Configuration
 
                 if (dictionaryInterface != null)
                 {
-                    BindDictionary(bindingPoint.Value, dictionaryInterface, config, options);
+                    BindDictionary(bindingPoint.Value, dictionaryInterface, config, options, serviceProvider);
                 }
                 else
                 {
                     Type? collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
                     if (collectionInterface != null)
                     {
-                        BindCollection(bindingPoint.Value, collectionInterface, config, options);
+                        BindCollection(bindingPoint.Value, collectionInterface, config, options, serviceProvider);
                     }
                     else
                     {
-                        BindProperties(bindingPoint.Value, config, options);
+                        BindProperties(bindingPoint.Value, config, options, serviceProvider);
                     }
                 }
             }
@@ -433,7 +437,7 @@ namespace Microsoft.Extensions.Configuration
                 if (isParentCollection && bindingPoint.Value is null && string.IsNullOrEmpty(configValue))
                 {
                     // If we don't have an instance, try to create one
-                    bindingPoint.TrySetValue(CreateInstance(type, config, options));
+                    bindingPoint.TrySetValue(CreateInstance(type, config, options, serviceProvider));
                 }
             }
         }
@@ -446,13 +450,14 @@ namespace Microsoft.Extensions.Configuration
                                         DynamicallyAccessedMemberTypes.NonPublicConstructors)]
             Type type,
             IConfiguration config,
-            BinderOptions options)
+            BinderOptions options,
+            IServiceProvider? serviceProvider)
         {
             Debug.Assert(!type.IsArray);
 
             if (type.IsInterface || type.IsAbstract)
             {
-                throw new InvalidOperationException(SR.Format(SR.Error_CannotActivateAbstractOrInterface, type));
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Cannot create instance of type '{0}' because it is either abstract or an interface.", type));
             }
 
             ConstructorInfo[] constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
@@ -462,12 +467,12 @@ namespace Microsoft.Extensions.Configuration
 
             if (!type.IsValueType && constructors.Length == 0)
             {
-                throw new InvalidOperationException(SR.Format(SR.Error_MissingPublicInstanceConstructor, type));
+                throw new InvalidOperationException();
             }
 
             if (constructors.Length > 1 && !hasParameterlessConstructor)
             {
-                throw new InvalidOperationException(SR.Format(SR.Error_MultipleParameterizedConstructors, type));
+                throw new InvalidOperationException();
             }
 
             if (constructors.Length == 1 && !hasParameterlessConstructor)
@@ -477,7 +482,7 @@ namespace Microsoft.Extensions.Configuration
 
                 if (!CanBindToTheseConstructorParameters(parameters, out string nameOfInvalidParameter))
                 {
-                    throw new InvalidOperationException(SR.Format(SR.Error_CannotBindToConstructorParameter, type, nameOfInvalidParameter));
+                    throw new InvalidOperationException();
                 }
 
 
@@ -485,14 +490,14 @@ namespace Microsoft.Extensions.Configuration
 
                 if (!DoAllParametersHaveEquivalentProperties(parameters, properties, out string nameOfInvalidParameters))
                 {
-                    throw new InvalidOperationException(SR.Format(SR.Error_ConstructorParametersDoNotMatchProperties, type, nameOfInvalidParameters));
+                    throw new InvalidOperationException();
                 }
 
                 object?[] parameterValues = new object?[parameters.Length];
 
                 for (int index = 0; index < parameters.Length; index++)
                 {
-                    parameterValues[index] = BindParameter(parameters[index], type, config, options);
+                    parameterValues[index] = BindParameter(parameters[index], type, config, options, serviceProvider);
                 }
 
                 return constructor.Invoke(parameterValues);
@@ -505,10 +510,10 @@ namespace Microsoft.Extensions.Configuration
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(SR.Format(SR.Error_FailedToActivate, type), ex);
+                throw;// new InvalidOperationException(ex);
             }
 
-            return instance ?? throw new InvalidOperationException(SR.Format(SR.Error_FailedToActivate, type));
+            return instance ?? throw new InvalidOperationException();
         }
 
         private static bool DoAllParametersHaveEquivalentProperties(ParameterInfo[] parameters,
@@ -553,11 +558,10 @@ namespace Microsoft.Extensions.Configuration
 
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode("Cannot statically analyze what the element type is of the value objects in the dictionary so its members may be trimmed.")]
-        private static object? BindDictionaryInterface(
-            object? source,
+        private static object? BindDictionaryInterface(object? source,
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
             Type dictionaryType,
-            IConfiguration config, BinderOptions options)
+            IConfiguration config, BinderOptions options, IServiceProvider? serviceProvider)
         {
             // IDictionary<K,V> is guaranteed to have exactly two parameters
             Type keyType = dictionaryType.GenericTypeArguments[0];
@@ -611,7 +615,7 @@ namespace Microsoft.Extensions.Configuration
             Debug.Assert(source is not null);
             Debug.Assert(addMethod is not null);
 
-            BindDictionary(source, dictionaryType, config, options);
+            BindDictionary(source, dictionaryType, config, options, serviceProvider);
 
             return source;
         }
@@ -628,7 +632,7 @@ namespace Microsoft.Extensions.Configuration
             object dictionary,
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
             Type dictionaryType,
-            IConfiguration config, BinderOptions options)
+            IConfiguration config, BinderOptions options, IServiceProvider? serviceProvider)
         {
             Debug.Assert(dictionaryType.IsGenericType &&
                          (dictionaryType.GetGenericTypeDefinition() == typeof(IDictionary<,>) || dictionaryType.GetGenericTypeDefinition() == typeof(Dictionary<,>)));
@@ -675,7 +679,8 @@ namespace Microsoft.Extensions.Configuration
                         bindingPoint: valueBindingPoint,
                         config: child,
                         options: options,
-                        true);
+                        true,
+                        serviceProvider);
                     if (valueBindingPoint.HasNewValue)
                     {
                         indexerProperty.SetValue(dictionary, valueBindingPoint.Value, new object[] { key });
@@ -685,8 +690,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (options.ErrorOnUnknownConfiguration)
                     {
-                        throw new InvalidOperationException(SR.Format(SR.Error_GeneralErrorWhenBinding,
-                            nameof(options.ErrorOnUnknownConfiguration)), ex);
+                        throw new InvalidOperationException("error", ex);
                     }
                 }
             }
@@ -698,7 +702,7 @@ namespace Microsoft.Extensions.Configuration
             object collection,
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
             Type collectionType,
-            IConfiguration config, BinderOptions options)
+            IConfiguration config, BinderOptions options, IServiceProvider? serviceProvider)
         {
             // ICollection<T> is guaranteed to have exactly one parameter
             Type itemType = collectionType.GenericTypeArguments[0];
@@ -714,7 +718,8 @@ namespace Microsoft.Extensions.Configuration
                         bindingPoint: itemBindingPoint,
                         config: section,
                         options: options,
-                        true);
+                        true,
+                        serviceProvider);
                     if (itemBindingPoint.HasNewValue)
                     {
                         addMethod?.Invoke(collection, new[] { itemBindingPoint.Value });
@@ -724,8 +729,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (options.ErrorOnUnknownConfiguration)
                     {
-                        throw new InvalidOperationException(SR.Format(SR.Error_GeneralErrorWhenBinding,
-                            nameof(options.ErrorOnUnknownConfiguration)), ex);
+                        throw new InvalidOperationException("erro", ex);
                     }
 
                 }
@@ -734,14 +738,14 @@ namespace Microsoft.Extensions.Configuration
 
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode("Cannot statically analyze what the element type is of the Array so its members may be trimmed.")]
-        private static Array BindArray(Type type, IEnumerable? source, IConfiguration config, BinderOptions options)
+        private static Array BindArray(Type type, IEnumerable? source, IConfiguration config, BinderOptions options, IServiceProvider? serviceProvider)
         {
             Type elementType;
             if (type.IsArray)
             {
                 if (type.GetArrayRank() > 1)
                 {
-                    throw new InvalidOperationException(SR.Format(SR.Error_UnsupportedMultidimensionalArray, type));
+                    throw new InvalidOperationException();
                 }
                 elementType = type.GetElementType()!;
             }
@@ -770,7 +774,8 @@ namespace Microsoft.Extensions.Configuration
                         bindingPoint: itemBindingPoint,
                         config: section,
                         options: options,
-                        isParentCollection: true);
+                        isParentCollection: true,
+                        serviceProvider);
                     if (itemBindingPoint.HasNewValue)
                     {
                         list.Add(itemBindingPoint.Value);
@@ -780,8 +785,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (options.ErrorOnUnknownConfiguration)
                     {
-                        throw new InvalidOperationException(SR.Format(SR.Error_GeneralErrorWhenBinding,
-                            nameof(options.ErrorOnUnknownConfiguration)), ex);
+                        throw new InvalidOperationException("", ex);
                     }
                 }
             }
@@ -793,7 +797,7 @@ namespace Microsoft.Extensions.Configuration
 
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode("Cannot statically analyze what the element type is of the Array so its members may be trimmed.")]
-        private static object? BindSet(Type type, IEnumerable? source, IConfiguration config, BinderOptions options)
+        private static object? BindSet(Type type, IEnumerable? source, IConfiguration config, BinderOptions options, IServiceProvider? serviceProvider)
         {
             Type elementType = type.GetGenericArguments()[0];
 
@@ -839,7 +843,8 @@ namespace Microsoft.Extensions.Configuration
                         bindingPoint: itemBindingPoint,
                         config: section,
                         options: options,
-                        true);
+                        true,
+                        serviceProvider);
                     if (itemBindingPoint.HasNewValue)
                     {
                         arguments[0] = itemBindingPoint.Value;
@@ -851,8 +856,7 @@ namespace Microsoft.Extensions.Configuration
                 {
                     if (options.ErrorOnUnknownConfiguration)
                     {
-                        throw new InvalidOperationException(SR.Format(SR.Error_GeneralErrorWhenBinding,
-                            nameof(options.ErrorOnUnknownConfiguration)), ex);
+                        throw new InvalidOperationException("", ex);
                     }
                 }
             }
@@ -892,7 +896,7 @@ namespace Microsoft.Extensions.Configuration
                 }
                 catch (Exception ex)
                 {
-                    error = new InvalidOperationException(SR.Format(SR.Error_FailedBinding, path, type), ex);
+                    error = new InvalidOperationException("", ex);
                 }
                 return true;
             }
@@ -905,7 +909,7 @@ namespace Microsoft.Extensions.Configuration
                 }
                 catch (FormatException ex)
                 {
-                    error = new InvalidOperationException(SR.Format(SR.Error_FailedBinding, path, type), ex);
+                    error = new InvalidOperationException("", ex);
                 }
                 return true;
             }
@@ -1011,13 +1015,13 @@ namespace Microsoft.Extensions.Configuration
         [RequiresDynamicCode(DynamicCodeWarningMessage)]
         [RequiresUnreferencedCode(PropertyTrimmingWarningMessage)]
         private static object? BindParameter(ParameterInfo parameter, Type type, IConfiguration config,
-            BinderOptions options)
+            BinderOptions options, IServiceProvider? serviceProvider)
         {
             string? parameterName = parameter.Name;
 
             if (parameterName is null)
             {
-                throw new InvalidOperationException(SR.Format(SR.Error_ParameterBeingBoundToIsUnnamed, type));
+                throw new InvalidOperationException("");
             }
 
             var propertyBindingPoint = new BindingPoint(initialValue: config.GetSection(parameterName).Value, isReadOnly: false);
@@ -1027,7 +1031,8 @@ namespace Microsoft.Extensions.Configuration
                 propertyBindingPoint,
                 config.GetSection(parameterName),
                 options,
-                false);
+                false,
+                serviceProvider);
 
             if (propertyBindingPoint.Value is null)
             {
@@ -1037,7 +1042,7 @@ namespace Microsoft.Extensions.Configuration
                 }
                 else
                 {
-                    throw new InvalidOperationException(SR.Format(SR.Error_ParameterHasNoMatchingConfig, type, parameterName));
+                    throw new InvalidOperationException("");
                 }
             }
 
@@ -1046,7 +1051,7 @@ namespace Microsoft.Extensions.Configuration
 
         private static string GetPropertyName(PropertyInfo property)
         {
-            ThrowHelper.ThrowIfNull(property);
+            ArgumentNullException.ThrowIfNull(property);
 
             // Check for a custom property name used for configuration key binding
             foreach (var attributeData in property.GetCustomAttributesData())
