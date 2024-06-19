@@ -50,7 +50,9 @@ public record Device
     /// <summary>
     /// A URL on which the device or service can be configured
     /// </summary>
+    #pragma warning disable CA1056 // It's ok for this URL to be a string
     public string? ConfigurationUrl { get; init; }
+    #pragma warning restore CA1056
 
     /// <summary>
     /// The hardware version of this Device, if available
