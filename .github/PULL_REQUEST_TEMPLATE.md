@@ -1,5 +1,5 @@
 <!--
-  You are amazing! Thanks for contributing to our project!
+  You are amazing! Thanks for contributing to NetDaemon. 🎉
   Please, DO NOT DELETE ANY TEXT from this template! (unless instructed).
 -->
 ## Breaking change
@@ -55,14 +55,12 @@
 
 - [ ] The code change is tested and works locally.
 - [ ] Local tests pass. **Your PR cannot be merged unless tests pass**
-- [ ] There is no commented out code in this PR.
-- [ ] I have followed the [development checklist][dev-checklist]
-- [ ] The code compiles without warnings (code quality chek)
+- [ ] The code compiles without warnings (code quality check)
 - [ ] Tests have been added to verify that the new code works.
 
-If user exposed functionality or configuration variables are added/changed:
+If user exposed functionality or configuration are added/changed:
 
-- [ ] Documentation added/updated for [www.home-assistant.io][docs-repository]
+- [ ] Documentation added/updated for http://netdaemon.xtz
 
 
 <!--
@@ -70,4 +68,5 @@ If user exposed functionality or configuration variables are added/changed:
 
   Below, some useful links you could explore:
 -->
-[docs-repository]: https://github.com/net-daemon/docs
+[Docs repository]: https://github.com/net-daemon/docs
+[Developer documentation]: https://netdaemon.xyz/docs/developer/

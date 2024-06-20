@@ -1,6 +1,6 @@
 ---
 name: Report a bug with NetDaemon
-about: Report an issue with NetDaemon
+about: Report an bug with NetDaemon
 title: ''
 labels: ''
 assignees: ''
