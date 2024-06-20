@@ -29,4 +29,9 @@ public record EntityRegistration
     /// The Labels of this Entity
     /// </summary>
     public IReadOnlyCollection<Label> Labels { get; init; } = Array.Empty<Label>();
+
+    /// <summary>
+    /// An identifier for the integration that created this Entity
+    /// </summary>
+    public string? Platform { get; init; }
 }
