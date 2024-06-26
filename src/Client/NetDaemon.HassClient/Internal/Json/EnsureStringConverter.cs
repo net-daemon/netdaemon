@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace NetDaemon.Client.Internal.Json;
 
 /// <summary>
-/// Converts a Json element that can be a string or a string array
+/// Converts a Json element that can be a string or returns null if it is not a string
 /// </summary>
 class EnsureStringConverter : JsonConverter<string?>
 {
@@ -14,6 +14,7 @@ class EnsureStringConverter : JsonConverter<string?>
             return reader.GetString() ?? throw new UnreachableException("Token is expected to be a string");
         }
 
+        // Skip the children of current token
         reader.Skip();
         return null;
     }
