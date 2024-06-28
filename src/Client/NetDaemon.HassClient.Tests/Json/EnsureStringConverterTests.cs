@@ -1,4 +1,6 @@
 
+using NetDaemon.Client.Internal.Json;
+
 namespace NetDaemon.HassClient.Tests.Json;
 
 public class EnsureStringConverterTests
@@ -6,11 +8,7 @@ public class EnsureStringConverterTests
     /// <summary>
     ///     Default Json serialization options, Hass expects intended
     /// </summary>
-    private readonly JsonSerializerOptions _defaultSerializerOptions = new()
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    private readonly JsonSerializerOptions _defaultSerializerOptions = DefaultSerializerOptions.DeserializationOptions;
 
     [Fact]
     public void TestConvertAValidString()
