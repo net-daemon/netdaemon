@@ -56,7 +56,7 @@ public record CalendarEvent
     [JsonPropertyName("description")] public string Description { get; init; } = default!;
 }
 
-public record CreateCalendarEvent
+public record AddCalendarEvent
 {
     [JsonPropertyName("dtstart")] public DateTime Start { get; init; }
     [JsonPropertyName("dtend")] public DateTime End { get; init; }
@@ -67,7 +67,7 @@ public record CreateCalendarEvent
 public record AddCalendarEventCommand : CommandMessage
 {
     [JsonPropertyName("entity_id")] public string EntityId { get; init; } = default!;
-    [JsonPropertyName("event")] public CreateCalendarEvent Event { get; init; } = default!;
+    [JsonPropertyName("event")] public AddCalendarEvent Event { get; init; } = default!;
 }
 
 public class CalendarTests : NetDaemonIntegrationBase
@@ -120,7 +120,7 @@ public class CalendarTests : NetDaemonIntegrationBase
             {
                 Type = "calendar/event/create",
                 EntityId = "calendar.cal",
-                Event = new CreateCalendarEvent
+                Event = new AddCalendarEvent
                 {
                     Summary = "Test",
                     Description = "A test calendar event",
