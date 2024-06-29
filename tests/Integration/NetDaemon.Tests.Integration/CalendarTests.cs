@@ -26,12 +26,13 @@ public class CalendarApp
         // We wait for the test to send an event to start the test and we send back a event with the result
         haContext.Events.Where(s => s.EventType == "start_test_custom_calendar_events").SubscribeAsync(async _ =>
         {
-            var result = await haContext.CallServiceWithResponseAsync("calendar", "list_events",
+            var result = await haContext.CallServiceWithResponseAsync("calendar", "get_events",
                 ServiceTarget.FromEntity("calendar.cal"),
                 new { start_date_time = "2023-07-26 00:00:00", end_date_time = "2023-07-28 00:00:00" });
+
             if (result is not null)
             {
-                var events = result.Value.Deserialize<CalendarEvents>();
+                var events = result.Value.GetProperty("calendar.cal").Deserialize<CalendarEvents>();
                 if (events is not null)
                     // This is a way to get the results back in the tests since app instances are not available
                     haContext.SendEvent("custom_calendar_events", new { events });
@@ -42,9 +43,20 @@ public class CalendarApp
     public CalendarEvents? Events { get; set; }
 }
 
-public record CalendarEvents([property: JsonPropertyName("events")] List<CalendarEvent> Events);
+public record CalendarEvents
+{
+        [JsonPropertyName("events")] public List<CalendarEvent> Events { get; init; } = [];
+}
 
 public record CalendarEvent
+{
+    [JsonPropertyName("start")] public DateTime Start { get; init; }
+    [JsonPropertyName("end")] public DateTime End { get; init; }
+    [JsonPropertyName("summary")] public string Summary { get; init; } = default!;
+    [JsonPropertyName("description")] public string Description { get; init; } = default!;
+}
+
+public record CreateCalendarEvent
 {
     [JsonPropertyName("dtstart")] public DateTime Start { get; init; }
     [JsonPropertyName("dtend")] public DateTime End { get; init; }
@@ -55,7 +67,7 @@ public record CalendarEvent
 public record AddCalendarEventCommand : CommandMessage
 {
     [JsonPropertyName("entity_id")] public string EntityId { get; init; } = default!;
-    [JsonPropertyName("event")] public CalendarEvent Event { get; init; } = default!;
+    [JsonPropertyName("event")] public CreateCalendarEvent Event { get; init; } = default!;
 }
 
 public class CalendarTests : NetDaemonIntegrationBase
@@ -85,6 +97,7 @@ public class CalendarTests : NetDaemonIntegrationBase
 
         // First create the calendar item that will be returned
         await AddTestCalendarItem();
+        await Task.Delay(500); // Wait for the event to be processed
 
         // Then we create a task that waits for the result using a custom event
         var waitTask = haContext.Events.Where(e => e.EventType == "custom_calendar_events").FirstAsync().ToTask();
@@ -107,7 +120,7 @@ public class CalendarTests : NetDaemonIntegrationBase
             {
                 Type = "calendar/event/create",
                 EntityId = "calendar.cal",
-                Event = new CalendarEvent
+                Event = new CreateCalendarEvent
                 {
                     Summary = "Test",
                     Description = "A test calendar event",
