@@ -26,8 +26,9 @@ public class HomeAssistantContainerBuilder : ContainerBuilder<HomeAssistantConta
         base.Init()
             .WithImage($"homeassistant/home-assistant:{DefaultVersion}")
             .WithPortBinding(8123, true)
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilHttpRequestIsSucceeded(request => request.ForPort(8123).ForPath("/")))
+            .WithWaitStrategy(
+                Wait.ForUnixContainer().
+                UntilHttpRequestIsSucceeded(request => request.ForPort(8123).ForPath("/")))
             .WithUsername(DefaultUsername)
             .WithPassword(DefaultPassword)
             .WithClientId(DefaultClientId)
