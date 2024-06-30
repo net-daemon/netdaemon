@@ -64,8 +64,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             });
             // Make sure we only return after the connection is made and initialization is ready
             await _startedAndConnected.Task;
-            logger.LogInformation("NetDaemon runtime exiting.");
-
         }
         catch (OperationCanceledException)
         {
