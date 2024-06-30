@@ -1,7 +1,7 @@
 namespace NetDaemon.Client.Internal.Helpers;
 
 /// <summary>
-///  Progeressively increases timeout from a min valuye to a max value with a step
+///  Progeressively increases timeout from a min value to a max value with a step
 /// </summary>
 public class ProgressiveTimeout
 {
