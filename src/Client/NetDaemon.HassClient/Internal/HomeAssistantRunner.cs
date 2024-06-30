@@ -12,7 +12,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
 
     private readonly Subject<DisconnectReason> _onDisconnectSubject = new();
 
-    private const int MaxTimeoutInSeconds = 80;
+    private readonly TimeSpan MaxTimeoutInSeconds = TimeSpan.FromSeconds(80);
 
     private Task? _runTask;
 
@@ -62,7 +62,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
     private async Task InternalRunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout,
         CancellationToken cancelToken)
     {
-        var progressiveTimeout = new ProgressiveTimeout((int)timeout.TotalSeconds, MaxTimeoutInSeconds, 2.0);
+        var progressiveTimeout = new ProgressiveTimeout(timeout, MaxTimeoutInSeconds, 2.0);
         var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalTokenSource.Token, cancelToken);
         while (!combinedToken.IsCancellationRequested)
         {
@@ -120,9 +120,9 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             if (combinedToken.IsCancellationRequested)
                 return; // If we are cancelled we should not retry
 
-            var waitTimeout = progressiveTimeout.GetNextTimeout();
-            logger.LogInformation("Client connection failed, retrying in {Seconds} seconds...", waitTimeout);
-            await Task.Delay(TimeSpan.FromSeconds(waitTimeout), combinedToken.Token).ConfigureAwait(false);
+            var waitTimeout = progressiveTimeout.Timeout;
+            logger.LogInformation("Client connection failed, retrying in {Seconds} seconds...", waitTimeout.TotalSeconds);
+            await Task.Delay(waitTimeout, combinedToken.Token).ConfigureAwait(false);
         }
     }
 

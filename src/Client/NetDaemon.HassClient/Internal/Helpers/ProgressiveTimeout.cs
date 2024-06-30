@@ -5,14 +5,14 @@ namespace NetDaemon.Client.Internal.Helpers;
 /// </summary>
 public class ProgressiveTimeout
 {
-    private readonly int _initialTimeout;
-    private readonly int _maxTimeout;
+    private readonly TimeSpan _initialTimeout;
+    private readonly TimeSpan _maxTimeout;
     private readonly double _increaseFactor;
-    private int _currentTimeout;
+    private TimeSpan _currentTimeout;
 
-    public ProgressiveTimeout(int initialTimeout, int maxTimeout, double increaseFactor)
+    public ProgressiveTimeout(TimeSpan initialTimeout, TimeSpan maxTimeout, double increaseFactor)
     {
-        if (initialTimeout <= 0)
+        if (initialTimeout <= TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(initialTimeout), "Initial timeout must be greater than zero.");
 
         if (maxTimeout < initialTimeout)
@@ -27,11 +27,15 @@ public class ProgressiveTimeout
         _currentTimeout = initialTimeout;
     }
 
-    public int GetNextTimeout()
+    public TimeSpan Timeout
     {
-        int timeout = _currentTimeout;
-        _currentTimeout = Math.Min((int)(_currentTimeout * _increaseFactor), _maxTimeout);
-        return timeout;
+        get
+        {
+            var timeout = _currentTimeout;
+            var progressTimeout = _currentTimeout * _increaseFactor;
+            _currentTimeout = progressTimeout > _maxTimeout ? _maxTimeout : progressTimeout;
+            return timeout;
+        }
     }
 
     public void Reset()
