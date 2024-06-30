@@ -49,7 +49,7 @@ jobs:
           dotnet-quality: 'preview'
       - name: 🔖 Set version number
         run: |
-          sed -i "/        private const string Version = /c\        private const string Version =  \"${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i "/    private const string Version = /c\    private const string Version =  \"${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}\";" ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
       - name: 🎁 Pack
         run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }} -p:Version=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}
       - name: 📨 Push to nuget
