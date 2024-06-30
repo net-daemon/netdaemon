@@ -46,7 +46,7 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
 
     private async Task RegistryUpdated(string eventType)
     {
-        logger.LogInformation("Received {Event}: Updating RegistryCache", eventType);
+        logger.LogDebug("Received {Event}: Updating RegistryCache", eventType);
 
         var task = eventType switch
         {
