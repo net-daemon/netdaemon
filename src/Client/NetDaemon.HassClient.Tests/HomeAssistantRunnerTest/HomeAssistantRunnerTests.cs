@@ -28,7 +28,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1), cancelSource.Token);
 
         var connection = await connectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().NotBeNull();
@@ -68,7 +68,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().BeNull();
@@ -108,7 +108,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().BeNull();
@@ -148,7 +148,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         DefaultRunner.CurrentConnection.Should().BeNull();
@@ -178,7 +178,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1), cancelSource.Token);
 
         // await DefaultRunner.DisposeAsync().ConfigureAwait(false);
         await cancelSource.CancelAsync();
@@ -218,7 +218,7 @@ public class HomeAssistantRunnerTests
             .ToTask();
 
         var runnerTask =
-            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100), cancelSource.Token);
+            DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1), cancelSource.Token);
 
         var reason = await disconnectionTask.ConfigureAwait(false);
         try
@@ -237,7 +237,7 @@ public class HomeAssistantRunnerTests
     [Fact]
     public async Task TestDisposeShouldDisconnectGracefully()
     {
-        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromMilliseconds(100),
+        var runnerTask = DefaultRunner.RunAsync("host", 0, false, "token", "wspath", TimeSpan.FromSeconds(1),
             CancellationToken.None);
 
         await Task.Delay(500);
