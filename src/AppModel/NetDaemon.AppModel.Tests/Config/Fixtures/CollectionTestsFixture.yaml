@@ -52,3 +52,7 @@ AnotherTestArray:
 AnotherTestEnum:
   - Enum1
   - Enum2
+
+AnotherTestShortEnum:
+  - Enum1
+  - Enum2

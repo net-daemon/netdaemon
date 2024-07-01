@@ -89,6 +89,17 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
+    public void TestAddYamlConfigGetsEnumWithUnderlyingTypeCorrectly()
+    {
+        // ARRANGE
+        // ACT
+        var config = GetObjectFromSection<IEnumerable<TestShortEnum>>("AnotherTestShortEnum");
+        // CHECK
+        config!.Should().HaveCount(2);
+        Enum.GetUnderlyingType(config!.First().GetType()).Should().Be(typeof(ushort));
+    }
+
+    [Fact]
     public void TestAddYamlConfigGetsDictionaryCorrectly()
     {
         // ARRANGE
@@ -156,6 +167,12 @@ public class ConfigurationBinderTests
     }
 
     internal enum TestEnum
+    {
+        Enum1,
+        Enum2
+    }
+
+    internal enum TestShortEnum : ushort
     {
         Enum1,
         Enum2

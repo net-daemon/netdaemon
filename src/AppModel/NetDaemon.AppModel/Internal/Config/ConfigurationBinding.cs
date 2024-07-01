@@ -265,7 +265,8 @@ internal class ConfigurationBinding : IConfigurationBinding
             }
             else if (keyTypeIsEnum)
             {
-                var key = Convert.ToInt32(Enum.Parse(keyType, child.Key), CultureInfo.InvariantCulture);
+                var intType = Enum.GetUnderlyingType(keyType);
+                var key = Convert.ChangeType(Enum.Parse(keyType, child.Key), intType, CultureInfo.InvariantCulture);
                 setter.SetValue(dictionary, item, [key]);
             }
         }
