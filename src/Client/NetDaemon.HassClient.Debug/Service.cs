@@ -58,8 +58,7 @@ internal sealed class DebugService : BackgroundService
 
     private void OnHomeAssistantClientDisconnected(DisconnectReason reason)
     {
-        _logger.LogInformation("HassClient disconnected cause of {Reason}, connect retry in {Timeout} seconds",
-            TimeoutInSeconds, reason);
+        _logger.LogInformation("HassClient disconnected cause of {Reason}", reason);
         // Here you would typically cancel and dispose any functions
         // using the connection
         if (_connection is not null) _connection = null;

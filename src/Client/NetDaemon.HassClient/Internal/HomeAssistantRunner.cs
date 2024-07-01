@@ -12,6 +12,8 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
 
     private readonly Subject<DisconnectReason> _onDisconnectSubject = new();
 
+    private readonly TimeSpan MaxTimeoutInSeconds = TimeSpan.FromSeconds(80);
+
     private Task? _runTask;
 
     public IObservable<IHomeAssistantConnection> OnConnect => _onConnectSubject;
@@ -60,6 +62,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
     private async Task InternalRunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout,
         CancellationToken cancelToken)
     {
+        var progressiveTimeout = new ProgressiveTimeout(timeout, MaxTimeoutInSeconds, 2.0);
         var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalTokenSource.Token, cancelToken);
         while (!combinedToken.IsCancellationRequested)
         {
@@ -67,6 +70,9 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             {
                 CurrentConnection = await client.ConnectAsync(host, port, ssl, token, websocketPath, combinedToken.Token)
                     .ConfigureAwait(false);
+                // We successfully connected so lets reset the progressiveTimeout
+                progressiveTimeout.Reset();
+
                 // Start the event processing before publish the connection
                 var eventsTask = CurrentConnection.WaitForConnectionToCloseAsync(combinedToken.Token);
                 _onConnectSubject.OnNext(CurrentConnection);
@@ -83,6 +89,8 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             {
                 logger.LogInformation("Home Assistant is not ready yet!");
                 await DisposeConnectionAsync();
+                // We have an connection but waiting for Home Assistant to be ready so lets reset the progressiveTimeout
+                progressiveTimeout.Reset();
                 _onDisconnectSubject.OnNext(DisconnectReason.NotReady);
             }
             catch (OperationCanceledException)
@@ -112,8 +120,9 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
             if (combinedToken.IsCancellationRequested)
                 return; // If we are cancelled we should not retry
 
-            logger.LogInformation("Client connection failed, retrying in {Seconds} seconds...", timeout.TotalSeconds);
-            await Task.Delay(timeout, combinedToken.Token).ConfigureAwait(false);
+            var waitTimeout = progressiveTimeout.Timeout;
+            logger.LogInformation("Client connection failed, retrying in {Seconds} seconds...", waitTimeout.TotalSeconds);
+            await Task.Delay(waitTimeout, combinedToken.Token).ConfigureAwait(false);
         }
     }
 

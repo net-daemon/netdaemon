@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using System.Reflection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
 
@@ -12,8 +13,8 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         ICacheManager cacheManager)
     : IRuntime
 {
-    private const string Version = "custom_compiled";
-    private const int TimeoutInSeconds = 30;
+    private const string Version = "local build";
+    private const int TimeoutInSeconds = 5;
 
     private readonly HomeAssistantSettings _haSettings = settings.Value;
 
@@ -25,7 +26,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
     // These internals are used primarily for testing purposes
     internal IReadOnlyCollection<IApplication> ApplicationInstances =>
-        _applicationModelContext?.Applications ?? Array.Empty<IApplication>();
+        _applicationModelContext?.Applications ?? [];
 
     private readonly TaskCompletionSource _startedAndConnected = new();
 
@@ -33,7 +34,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation($"Starting NetDaemon runtime version {Version}.");
+        logger.LogInformation("Starting NetDaemon runtime version {Version}.", Version);
 
         _stoppingToken = stoppingToken;
 
@@ -63,7 +64,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             });
             // Make sure we only return after the connection is made and initialization is ready
             await _startedAndConnected.Task;
-
         }
         catch (OperationCanceledException)
         {
@@ -147,8 +147,8 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 DisconnectReason.NotReady => "home assistant not ready yet",
                 _ => "unknown error"
             };
-            logger.LogInformation("Home Assistant disconnected due to {Reason}, connect retry in {TimeoutInSeconds} seconds",
-                reasonString, TimeoutInSeconds);
+            logger.LogInformation("Home Assistant disconnected due to {Reason}",
+                reasonString );
         }
 
         try
@@ -160,6 +160,12 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             logger.LogError(e, "Error disposing applications");
         }
         IsConnected = false;
+
+        if (reason == DisconnectReason.Unauthorized)
+        {
+            // We will exit the runtime if the token is unauthorized to avoid hammering the server
+            _startedAndConnected.SetResult();
+        }
     }
 
     private async Task DisposeApplicationsAsync()
