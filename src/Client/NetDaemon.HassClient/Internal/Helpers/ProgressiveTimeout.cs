@@ -12,14 +12,9 @@ public class ProgressiveTimeout
 
     public ProgressiveTimeout(TimeSpan initialTimeout, TimeSpan maxTimeout, double increaseFactor)
     {
-        if (initialTimeout <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(initialTimeout), "Initial timeout must be greater than zero.");
-
-        if (maxTimeout < initialTimeout)
-            throw new ArgumentOutOfRangeException(nameof(maxTimeout), "Max timeout must be greater than or equal to initial timeout.");
-
-        if (increaseFactor <= 1)
-            throw new ArgumentOutOfRangeException(nameof(increaseFactor), "Increase factor must be greater than 1.");
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(initialTimeout, TimeSpan.Zero, nameof(initialTimeout));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxTimeout, initialTimeout, nameof(maxTimeout));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(increaseFactor, 1, nameof(increaseFactor));
 
         _initialTimeout = initialTimeout;
         _maxTimeout = maxTimeout;

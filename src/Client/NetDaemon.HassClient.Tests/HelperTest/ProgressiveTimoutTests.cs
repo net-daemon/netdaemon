@@ -22,6 +22,8 @@ public class ProgressiveTimeoutTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressiveTimeout(TimeSpan.Zero, TimeSpan.FromSeconds(100), 2.0));
         // Check that max timeout is greater than start timeout
         Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressiveTimeout(TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(99), 2.0));
+        // Check that max timeout is not same as start timeout
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressiveTimeout(TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(100), 2.0));
         // Check that increase factor is greater than 1
         Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressiveTimeout(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(100), 1.0));
     }
