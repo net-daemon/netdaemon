@@ -5,12 +5,6 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
     /// <summary>
     ///     Default Json serialization options, Hass expects intended
     /// </summary>
-    private readonly JsonSerializerOptions _defaultSerializerOptions = new()
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
     private readonly CancellationTokenSource _internalCancelSource = new();
     private readonly Pipe _pipe = new();
     private readonly IWebSocketClient _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
@@ -81,7 +75,7 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
         );
 
         var result = JsonSerializer.SerializeToUtf8Bytes(message, message.GetType(),
-            _defaultSerializerOptions);
+            DefaultSerializerOptions.SerializationOptions);
 
         return _ws.SendAsync(result, WebSocketMessageType.Text, true, combinedTokenSource.Token);
     }
@@ -104,13 +98,13 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
             {
                 // This is a coalesced message containing multiple messages so we need to
                 // deserialize it as an array
-                return message.Deserialize<T[]>() ?? throw new ApplicationException(
+                return message.Deserialize<T[]>(DefaultSerializerOptions.DeserializationOptions) ?? throw new ApplicationException(
                     "Deserialization of websocket returned empty result (null)");
             }
             else
             {
                 // This is normal message and we deserialize it as object
-                var obj = message.Deserialize<T>() ?? throw new ApplicationException(
+                var obj = message.Deserialize<T>(DefaultSerializerOptions.DeserializationOptions) ?? throw new ApplicationException(
                     "Deserialization of websocket returned empty result (null)");
                 return [obj];
             }

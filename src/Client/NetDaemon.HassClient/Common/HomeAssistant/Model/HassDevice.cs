@@ -22,10 +22,7 @@ public record HassDevice
     #pragma warning disable CA1056 // It's ok for this URL to be a string
     [JsonPropertyName("configuration_url")] public string? ConfigurationUrl { get; init; }
     #pragma warning restore CA1056
-    [JsonConverter(typeof(EnsureStringConverter))]
     [JsonPropertyName("hw_version")] public string? HardwareVersion { get; init; }
-    [JsonConverter(typeof(EnsureStringConverter))]
     [JsonPropertyName("sw_version")] public string? SoftwareVersion { get; init; }
-    [JsonConverter(typeof(EnsureStringConverter))]
     [JsonPropertyName("serial_number")] public string? SerialNumber { get; init; }
 }
