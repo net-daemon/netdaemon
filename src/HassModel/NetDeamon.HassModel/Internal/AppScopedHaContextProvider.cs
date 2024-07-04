@@ -100,6 +100,8 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     {
         if (!_tokenSource.IsCancellationRequested)
             await _tokenSource.CancelAsync();
+        //  Wait for all background tasks to complete before disposing the CancellationTokenSource
+        await _backgroundTaskTracker.DisposeAsync();
         _tokenSource.Dispose();
     }
 }
