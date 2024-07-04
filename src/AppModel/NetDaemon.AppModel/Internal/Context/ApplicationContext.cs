@@ -34,10 +34,13 @@ internal sealed class ApplicationContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // prevent multiple Disposes because the Service Scope will also dispose this
-        if (_isDisposed) return;
+        lock (Instance)
+        {
+            // prevent multiple Disposes because the Service Scope will also dispose this
+            if (_isDisposed) return;
 
-        _isDisposed = true;
+            _isDisposed = true;
+        }
 
         if (!_cancelTokenSource.IsCancellationRequested)
             await _cancelTokenSource.CancelAsync();
