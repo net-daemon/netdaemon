@@ -25,6 +25,10 @@ internal class BackgroundTaskTracker : IBackgroundTaskTracker
             {
                 await task.ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogTrace("Task was canceled processing Home Assistant event: {Description}", description ?? "");
+            }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception processing Home Assistant event: {Description}", description ?? "");
