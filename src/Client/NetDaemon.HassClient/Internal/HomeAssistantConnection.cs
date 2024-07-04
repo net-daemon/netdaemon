@@ -55,6 +55,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task<IObservable<HassEvent>> SubscribeToHomeAssistantEventsAsync(string? eventType,
         CancellationToken cancelToken)
     {
+        cancelToken.ThrowIfCancellationRequested();
         // When subscribe all events, optimize using the same IObservable<HassEvent> if we subscribe multiple times
         if (string.IsNullOrEmpty(eventType))
             return await _lazyAllEventsObservable.Value;
@@ -65,6 +66,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private async Task<IObservable<HassEvent>> SubscribeToHomeAssistantEventsInternalAsync(string? eventType,
         CancellationToken cancelToken)
     {
+        cancelToken.ThrowIfCancellationRequested();
         var combinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
             cancelToken,
             _internalCancelSource.Token

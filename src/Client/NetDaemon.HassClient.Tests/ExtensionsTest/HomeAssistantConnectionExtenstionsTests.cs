@@ -36,21 +36,29 @@ public class HomeAssistantConnectionExtensionsTests
         var cancellationTokenSource = new CancellationTokenSource();
         await cancellationTokenSource.CancelAsync();
 
-        (await connection.GetStatesAsync(cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        // This should not throw an exception
-        await connection.CallServiceAsync("domain", "service", cancelToken: cancellationTokenSource.Token)
-            .ConfigureAwait(false);
-        await connection.CallServiceWithResponseAsync("domain", "service", cancelToken: cancellationTokenSource.Token)
-            .ConfigureAwait(false);
-        (await connection.GetServicesAsync(cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        (await connection.GetLabelsAsync(cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        (await connection.GetConfigAsync(cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        (await connection.GetAreasAsync(cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        (await connection.GetFloorsAsync(cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        (await connection.PingAsync(TimeSpan.FromSeconds(1), cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        (await connection.SubscribeToHomeAssistantEventsAsync(null, cancellationTokenSource.Token).ConfigureAwait(false)).Should().BeNull();
-        // This should not throw an exception
-        await connection.UnsubscribeEventsAsync(0, cancellationTokenSource.Token).ConfigureAwait(false);
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.GetStatesAsync(cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=>
+                connection.CallServiceAsync("domain", "service", cancelToken: cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=>
+                connection.CallServiceWithResponseAsync("domain", "service", cancelToken: cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.GetServicesAsync(cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.GetLabelsAsync(cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.GetAreasAsync(cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.GetFloorsAsync(cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.GetConfigAsync(cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.PingAsync(TimeSpan.FromSeconds(1), cancellationTokenSource.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(()=> connection.UnsubscribeEventsAsync(0, cancellationTokenSource.Token));
+
+        try
+        {
+            // Assert.ThrowsAsync could not be used on this function
+            await connection.SubscribeToHomeAssistantEventsAsync(null, cancellationTokenSource.Token);
+            Assert.Fail("Should throw exception");
+        }
+        catch (OperationCanceledException)
+        {
+            // This should throw an exception
+        }
 
     }
 }

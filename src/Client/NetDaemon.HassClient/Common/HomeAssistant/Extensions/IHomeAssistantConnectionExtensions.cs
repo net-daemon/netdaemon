@@ -13,9 +13,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<IReadOnlyCollection<HassState>?> GetStatesAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassState>>
                 (new SimpleCommand("get_states"), cancelToken).ConfigureAwait(false);
@@ -29,9 +27,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<JsonElement?> GetServicesAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseRawAsync
                 (new SimpleCommand("get_services"), cancelToken).ConfigureAwait(false);
@@ -45,13 +41,12 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<IReadOnlyCollection<HassArea>?> GetAreasAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
                 (new SimpleCommand("config/area_registry/list"), cancelToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     ///     Get all labels from Home Assistant
@@ -61,9 +56,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<IReadOnlyCollection<HassLabel>?> GetLabelsAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassLabel>>
                 (new SimpleCommand("config/label_registry/list"), cancelToken).ConfigureAwait(false);
@@ -77,9 +70,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<IReadOnlyCollection<HassFloor>?> GetFloorsAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassFloor>>
                 (new SimpleCommand("config/floor_registry/list"), cancelToken).ConfigureAwait(false);
@@ -93,9 +84,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<IReadOnlyCollection<HassDevice>?> GetDevicesAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>
                 (new SimpleCommand("config/device_registry/list"), cancelToken).ConfigureAwait(false);
@@ -109,9 +98,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<IReadOnlyCollection<HassEntity>?> GetEntitiesAsync(
         this IHomeAssistantConnection connection, CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return null;
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
                 (new SimpleCommand("config/entity_registry/list"), cancelToken).ConfigureAwait(false);
@@ -125,14 +112,13 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<HassConfig> GetConfigAsync(this IHomeAssistantConnection connection,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return new ();
-
+        cancelToken.ThrowIfCancellationRequested();
         return await connection
                    .SendCommandAndReturnResponseAsync<SimpleCommand, HassConfig>
                        (new SimpleCommand("get_config"), cancelToken).ConfigureAwait(false) ??
                throw new NullReferenceException("Unexpected null return from command");
     }
+
 
     /// <summary>
     ///     Get all configuration from Home Assistant
@@ -152,9 +138,7 @@ public static class HomeAssistantConnectionExtensions
         CancellationToken? cancelToken = null
     )
     {
-        if (cancelToken?.IsCancellationRequested == true)
-            return;
-
+        cancelToken?.ThrowIfCancellationRequested();
         await connection
             .SendCommandAsync
             (
@@ -186,9 +170,7 @@ public static class HomeAssistantConnectionExtensions
         CancellationToken? cancelToken = null
     )
     {
-        if (cancelToken?.IsCancellationRequested == true)
-            return null;
-
+        cancelToken?.ThrowIfCancellationRequested();
         return await connection
             .SendCommandAndReturnResponseAsync<CallExecuteScriptCommand, HassServiceResult>
             (
@@ -222,9 +204,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task<bool> PingAsync(this IHomeAssistantConnection connection, TimeSpan timeout,
         CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return false;
-
+        cancelToken.ThrowIfCancellationRequested();
         var allHassMessages = connection as IHomeAssistantHassMessages
                               ?? throw new InvalidCastException("Unexpected failure to cast");
         try
@@ -251,9 +231,7 @@ public static class HomeAssistantConnectionExtensions
 
     public static async Task<HassMessage> SubscribeToTriggerAsync(this IHomeAssistantConnection connection, object trigger, CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return new();
-
+        cancelToken.ThrowIfCancellationRequested();
         var triggerCommand = new SubscribeTriggerCommand(trigger);
 
         return await connection.SendCommandAndReturnHassMessageResponseAsync
@@ -264,9 +242,7 @@ public static class HomeAssistantConnectionExtensions
     public static async Task UnsubscribeEventsAsync(this IHomeAssistantConnection connection,
         int id, CancellationToken cancelToken)
     {
-        if (cancelToken.IsCancellationRequested)
-            return;
-
+        cancelToken.ThrowIfCancellationRequested();
         var triggerCommand = new UnsubscribeEventsCommand(id);
 
         _ = await connection.SendCommandAndReturnHassMessageResponseAsync
