@@ -26,12 +26,12 @@ public sealed class ServiceApp : IAsyncInitializable
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        var result = await _ha.CallServiceWithResponseAsync("calendar", "list_events", ServiceTarget.FromEntity("calendar.cal"),
+        var result = await _ha.CallServiceWithResponseAsync("calendar", "get_events", ServiceTarget.FromEntity("calendar.cal"),
             data: new { start_date_time = "2023-07-21 00:00:00", end_date_time = "2023-07-22 03:00:00"});
 
         if (result is not null)
         {
-            var events = result.Value.Deserialize<CalendarEvents>(_jsonOptions);
+            var events = result.Value.GetProperty("calendar.cal").Deserialize<CalendarEvents>(_jsonOptions);
             if (events is null)
                 _logger.LogWarning("No results!");
             else
