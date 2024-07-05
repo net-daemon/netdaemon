@@ -63,6 +63,31 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task TestFlushWillTimeoutAfterDefaultWaittime()
+    {
+        var isCalled = false;
+
+        async Task CallMe(CancellationToken cancellationToken)
+        {
+            await Task.Delay(25000, cancellationToken);
+            isCalled = true;
+        }
+
+        using var timedCancellationTokenSource = new CancellationTokenSource(25000);
+
+        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
+
+        await _backgroundTaskTracker.Flush();
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(0);
+        isCalled.Should().BeFalse();
+
+        await timedCancellationTokenSource.CancelAsync();
+    }
+
+    [Fact]
     public async Task TestBackgroundTaskThrowsExceptionWillLogError()
     {
 #pragma warning disable CS1998

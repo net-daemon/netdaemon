@@ -53,7 +53,7 @@ internal class BackgroundTaskTracker : IBackgroundTaskTracker
         // Using a while look here incase new tasks are added while we are waiting
         while (!BackgroundTasks.IsEmpty)
         {
-            var task = await Task.WhenAny( Task.WhenAll(BackgroundTasks.Keys), Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+            var task = await Task.WhenAny( Task.WhenAll(BackgroundTasks.Keys), timeoutTask).ConfigureAwait(false);
             if (task == timeoutTask)
                 break;
         }
