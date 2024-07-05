@@ -234,6 +234,21 @@ public class AppModelTests
     }
 
     [Fact]
+    public async Task TestGetApplicationContextCanDisposeMultipleTimesWithoutExceptions()
+    {
+        // ARRANGE
+        // ACT
+        var loadApps = await TestHelpers.GetLocalApplicationsFromYamlConfigPath("Fixtures/Local");
+
+        // CHECK
+
+        // check the application instance is init ok
+        var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        await application.DisposeAsync().ConfigureAwait(false);
+        await application.DisposeAsync().ConfigureAwait(false);
+    }
+
+    [Fact]
     public async Task TestGetApplicationsLocalWithAsyncDisposable()
     {
         // ARRANGE
