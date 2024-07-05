@@ -112,7 +112,7 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     {
         try
         {
-            if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 1)
+            if (_disposed == 1)
                 return;
 
             action();
