@@ -80,10 +80,11 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
 
         await _backgroundTaskTracker.Flush();
-
-        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(0);
+        // It should still be running after the flush
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
         isCalled.Should().BeFalse();
 
+        // Make sure we cancel it before leaving the tests
         await timedCancellationTokenSource.CancelAsync();
     }
 
