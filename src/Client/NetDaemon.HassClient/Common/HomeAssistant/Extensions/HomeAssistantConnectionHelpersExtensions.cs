@@ -6,7 +6,6 @@ public static class HomeAssistantConnectionHelpersExtensions
         this IHomeAssistantConnection connection,
         string name, CancellationToken cancelToken)
     {
-        cancelToken.ThrowIfCancellationRequested();
         return await connection.SendCommandAndReturnResponseAsync<CreateInputBooleanHelperCommand, InputBooleanHelper?>(
             new CreateInputBooleanHelperCommand
             {
@@ -18,7 +17,6 @@ public static class HomeAssistantConnectionHelpersExtensions
         this IHomeAssistantConnection connection,
         string inputBooleanId, CancellationToken cancelToken)
     {
-        cancelToken.ThrowIfCancellationRequested();
         await connection.SendCommandAndReturnResponseAsync<DeleteInputBooleanHelperCommand, object?>(
             new DeleteInputBooleanHelperCommand
             {
@@ -29,7 +27,6 @@ public static class HomeAssistantConnectionHelpersExtensions
     public static async Task<IReadOnlyCollection< InputBooleanHelper>> ListInputBooleanHelpersAsync(
         this IHomeAssistantConnection connection, CancellationToken cancelToken)
     {
-        cancelToken.ThrowIfCancellationRequested();
         return await connection.SendCommandAndReturnResponseAsync<ListInputBooleanHelperCommand, IReadOnlyCollection< InputBooleanHelper>>(
             new ListInputBooleanHelperCommand(), cancelToken) ?? [];
     }
@@ -38,7 +35,6 @@ public static class HomeAssistantConnectionHelpersExtensions
         this IHomeAssistantConnection connection,
         string name, double min, double max, double? step, double? initial, string? unitOfMeasurement, string? mode, CancellationToken cancelToken)
     {
-        cancelToken.ThrowIfCancellationRequested();
         return await connection.SendCommandAndReturnResponseAsync<CreateInputNumberHelperCommand, InputNumberHelper?>(
             new CreateInputNumberHelperCommand
             {
@@ -56,7 +52,6 @@ public static class HomeAssistantConnectionHelpersExtensions
         this IHomeAssistantConnection connection,
         string inputNumberId, CancellationToken cancelToken)
     {
-        cancelToken.ThrowIfCancellationRequested();
         await connection.SendCommandAndReturnResponseAsync<DeleteInputNumberHelperCommand, object?>(
             new DeleteInputNumberHelperCommand
             {
@@ -67,7 +62,6 @@ public static class HomeAssistantConnectionHelpersExtensions
     public static async Task<IReadOnlyCollection< InputNumberHelper>> ListInputNumberHelpersAsync(
         this IHomeAssistantConnection connection, CancellationToken cancelToken)
     {
-        cancelToken.ThrowIfCancellationRequested();
         return await connection.SendCommandAndReturnResponseAsync<ListInputNumberHelperCommand, IReadOnlyCollection< InputNumberHelper>>(
             new ListInputNumberHelperCommand(), cancelToken) ?? [];
     }
