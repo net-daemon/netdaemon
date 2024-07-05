@@ -38,24 +38,23 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task TestBackgroundTaskWillGetFlushedAndCanelled()
+    public async Task TestBackgroundTaskWillGetAwaitedWhenDisposed()
     {
-        static async Task CallMe(CancellationToken cancellationToken)
-        {
-            await Task.Delay(5000, cancellationToken);
-        }
+        var taskSource1 = new TaskCompletionSource<bool>();
+        var taskSource2 = new TaskCompletionSource<bool>();
+        var taskSource3 = new TaskCompletionSource<bool>();
 
-        using var timedCancellationTokenSource = new CancellationTokenSource(5000);
-
-        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
-        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
-        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource1.Task);
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource2.Task);
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource3.Task);
 
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(3);
 
         var disposeTask = _backgroundTaskTracker.DisposeAsync();
 
-        await timedCancellationTokenSource.CancelAsync();
+        taskSource1.SetResult(true);
+        taskSource2.SetResult(true);
+        taskSource3.SetResult(true);
 
         await disposeTask;
 
@@ -63,29 +62,20 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task TestFlushWillTimeoutAfterDefaultWaittime()
+    public async Task TestDisposeWillTimeoutAfterDefaultWaittime()
     {
-        var isCalled = false;
+        var taskSource = new TaskCompletionSource<bool>();
 
-        async Task CallMe(CancellationToken cancellationToken)
-        {
-            await Task.Delay(25000, cancellationToken);
-            isCalled = true;
-        }
-
-        using var timedCancellationTokenSource = new CancellationTokenSource(25000);
-
-        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource.Task);
 
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
 
         await _backgroundTaskTracker.DisposeAsync();
         // It should still be running after the flush
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
-        isCalled.Should().BeFalse();
 
         // Make sure we cancel it before leaving the tests
-        await timedCancellationTokenSource.CancelAsync();
+        taskSource.SetResult(true);
     }
 
     [Fact]
