@@ -234,7 +234,7 @@ public class AppModelTests
     }
 
     [Fact]
-    public async Task TestGetApplicationContextCanDisposeMultipleTimesWithoutExceptions()
+    public async Task TestApplicationCanDisposeMultipleTimesWithoutExceptions()
     {
         // ARRANGE
         // ACT
@@ -243,7 +243,7 @@ public class AppModelTests
         // CHECK
 
         // check the application instance is init ok
-        var application = (Application) loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
+        var application = loadApps.First(n => n.Id == "LocalApps.MyAppLocalAppWithDispose");
         await application.DisposeAsync().ConfigureAwait(false);
         await application.DisposeAsync().ConfigureAwait(false);
     }
