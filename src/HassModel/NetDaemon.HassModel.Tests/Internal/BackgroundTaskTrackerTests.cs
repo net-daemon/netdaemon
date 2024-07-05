@@ -53,11 +53,11 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
 
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(3);
 
-        var flushTask = _backgroundTaskTracker.Flush();
+        var disposeTask = _backgroundTaskTracker.DisposeAsync();
 
-        timedCancellationTokenSource.CancelAfter(500);
+        await timedCancellationTokenSource.CancelAsync();
 
-        await flushTask;
+        await disposeTask;
 
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(0);
     }
@@ -79,7 +79,7 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
 
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
 
-        await _backgroundTaskTracker.Flush();
+        await _backgroundTaskTracker.DisposeAsync();
         // It should still be running after the flush
         _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
         isCalled.Should().BeFalse();

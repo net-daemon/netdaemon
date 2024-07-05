@@ -10,6 +10,7 @@ namespace NetDaemon.HassModel.Internal;
 [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
 internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 {
+    private volatile bool _isDisposed;
     private readonly IHomeAssistantApiManager _apiManager;
     private readonly EntityStateCache _entityStateCache;
 
@@ -98,10 +99,13 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
         if (!_tokenSource.IsCancellationRequested)
             await _tokenSource.CancelAsync();
         //  Wait for all background tasks to complete before disposing the CancellationTokenSource
-        await _backgroundTaskTracker.Flush();
+        await _backgroundTaskTracker.DisposeAsync();
         _tokenSource.Dispose();
     }
 }

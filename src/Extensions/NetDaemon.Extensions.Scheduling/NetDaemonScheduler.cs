@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace NetDaemon.Extensions.Scheduler;
 internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
 {
     private readonly CancellationTokenSource _cancelTimers;
-    private bool _disposed;
+    private volatile bool _disposed;
 
     private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
     {
@@ -41,26 +42,22 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// <inheritdoc/>
     public IDisposable RunEvery(TimeSpan timespan, Action action)
     {
-        if (_disposed) return DisposableTimer.Empty;
-
-        var result = new DisposableTimer(_cancelTimers.Token);
+        var cts = new CancellationTokenSource();
 
         Observable.Interval(timespan, _reactiveScheduler)
             .Subscribe(
                 _ => RunAction(action),
                 _ => _logger.LogTrace("Exiting timer using trigger with span {Span}",
                     timespan)
-                , result.Token);
+                , cts.Token);
 
-        return result;
+        return Disposable.Create(()=> {cts.Cancel(); cts.Dispose();});
     }
 
     /// <inheritdoc/>
     public IDisposable RunEvery(TimeSpan period, DateTimeOffset startTime, Action action)
     {
-        if (_disposed) return DisposableTimer.Empty;
-
-        var result = new DisposableTimer(_cancelTimers.Token);
+        var cts = new CancellationTokenSource();
 
         Observable.Timer(
                 startTime,
@@ -70,32 +67,29 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
                 _ => RunAction(action),
                 () => _logger.LogTrace("Exiting timer that was scheduled at {StartTime} and every {Period}",
                     startTime, period),
-                result.Token
+                cts.Token
             );
 
-        return result;
+        return Disposable.Create(()=> {cts.Cancel(); cts.Dispose();});
     }
 
     /// <inheritdoc/>
     public IDisposable RunIn(TimeSpan timespan, Action action)
     {
-        if (_disposed) return DisposableTimer.Empty;
-
-        var result = new DisposableTimer(_cancelTimers.Token);
+        var cts = new CancellationTokenSource();
         Observable.Timer(timespan, _reactiveScheduler)
             .Subscribe(
                 _ => RunAction(action),
                 () => _logger.LogTrace("Exiting scheduled run at {Timespan}", timespan)
-                , result.Token);
-        return result;
+                , cts.Token);
+
+        return Disposable.Create(()=> {cts.Cancel(); cts.Dispose();});
     }
 
     /// <inheritdoc/>
     public IDisposable RunAt(DateTimeOffset timeOffset, Action action)
     {
-        if (_disposed) return DisposableTimer.Empty;
-
-        var result = new DisposableTimer(_cancelTimers.Token);
+        var cts = new CancellationTokenSource();
 
         Observable.Timer(
                 timeOffset,
@@ -104,10 +98,10 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
                 _ => RunAction(action),
                 () => _logger.LogTrace("Exiting timer that was scheduled at {TimeOffset}",
                     timeOffset),
-                result.Token
+               cts.Token
             );
 
-        return result;
+        return Disposable.Create(()=> {cts.Cancel(); cts.Dispose();});
     }
 
     /// <inheritdoc/>
