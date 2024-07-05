@@ -169,7 +169,7 @@ public class SchedulerExtensionTest
         int nrOfTimesCalled = 0;
         var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
 
-        var x = netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), () => nrOfTimesCalled++);
+        netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), () => nrOfTimesCalled++);
 
         // ACT and ASSERT
         testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
