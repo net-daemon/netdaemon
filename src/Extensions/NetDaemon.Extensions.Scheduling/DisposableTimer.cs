@@ -1,3 +1,5 @@
+using System.Reactive.Disposables;
+
 namespace NetDaemon.Extensions.Scheduler;
 
 /// <summary>
@@ -8,7 +10,7 @@ public sealed class DisposableTimer : IDisposable
     private readonly CancellationTokenSource _combinedToken;
     private readonly CancellationTokenSource _internalToken;
     private bool _disposed;
-    
+
     /// <summary>
     ///     Constructor
     /// </summary>
@@ -18,6 +20,11 @@ public sealed class DisposableTimer : IDisposable
         _internalToken = new CancellationTokenSource();
         _combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalToken.Token, token);
     }
+
+    /// <summary>
+    ///    Empty disposable timer
+    /// </summary>
+    public static IDisposable Empty => Disposable.Empty;
 
     /// <summary>
     ///     Token to use as cancellation

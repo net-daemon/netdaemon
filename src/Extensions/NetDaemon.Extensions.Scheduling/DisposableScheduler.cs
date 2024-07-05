@@ -6,26 +6,34 @@ namespace NetDaemon.Extensions.Scheduler;
 /// <summary>
 /// IScheduler decorator that will cancel pending scheduled tasks when Disposed
 /// </summary>
-public sealed class DisposableScheduler : IScheduler, IDisposable
+/// <remarks>
+/// Wraps a scheduler to make it cancel all pending subscriptions on dispose.
+/// </remarks>
+public sealed class DisposableScheduler(IScheduler scheduler) : IScheduler, IDisposable
 {
-    private readonly IScheduler _innerScheduler;
+    private readonly IScheduler _innerScheduler = scheduler;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private bool _isDisposed;
-
-    /// <summary>
-    /// Wraps a scheduler to make it cancel all pending subscriptions on dispose.
-    /// </summary>
-    public DisposableScheduler(IScheduler scheduler)
-    {
-        _innerScheduler = scheduler;
-    }
 
     /// <inheritdoc />
     public IDisposable Schedule<TState>(TState state, Func<IScheduler, TState, IDisposable> action)
     {
         if (_isDisposed) return Disposable.Empty;
 
-        return _innerScheduler.Schedule(state, action);
+        CancellationTokenRegistration? cancellationTokenRegistration = null;
+
+        var subscription = _innerScheduler.Schedule(state, (_, d) =>
+        {
+            if (_isDisposed) return Disposable.Empty;
+            // pass this to the action to make sure it will also use this scheduler to schedule subsequent tasks
+            var disposable = action(this, d);
+            cancellationTokenRegistration?.Unregister();
+            return disposable;
+        });
+
+        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(() => subscription.Dispose());
+
+        return subscription;
     }
 
     /// <inheritdoc />
@@ -37,6 +45,7 @@ public sealed class DisposableScheduler : IScheduler, IDisposable
 
         var subscription = _innerScheduler.Schedule(state, dueTime, (_, d) =>
         {
+            if (_isDisposed) return Disposable.Empty;
             // pass this to the action to make sure it will also use this scheduler to schedule subsequent tasks
             var disposable = action(this, d);
             cancellationTokenRegistration?.Unregister();
@@ -57,6 +66,7 @@ public sealed class DisposableScheduler : IScheduler, IDisposable
 
         var subscription = _innerScheduler.Schedule(state, dueTime, (_, d) =>
         {
+            if (_isDisposed) return Disposable.Empty;
             // pass this to the action to make sure it will also use this scheduler to schedule subsequent tasks
             var disposable = action(this, d);
             cancellationTokenRegistration?.Unregister();

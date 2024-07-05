@@ -36,6 +36,21 @@ public class DisposableSchedulerTest
 
 
     [Fact]
+    public void PeriodicSchedulerShouldNotCallActionIfItIsDisposedBeforeUsage()
+    {
+        var (inner, disposableScheduler) = CreateScheduler();
+
+        int called = 0;
+        using var _ = disposableScheduler.SchedulePeriodic(TimeSpan.FromMinutes(1), () => called++);
+
+        // Dispose before the time moves forward and trigger a schedule
+        disposableScheduler.Dispose();
+
+        inner.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+        called.Should().Be(0);
+    }
+
+    [Fact]
     public void SchedulePeriodicStopsAfterDisposeOfDisposableScheduler()
     {
         var (inner, disposableScheduler) = CreateScheduler();

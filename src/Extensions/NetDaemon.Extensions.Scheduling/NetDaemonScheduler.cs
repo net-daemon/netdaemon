@@ -14,6 +14,7 @@ namespace NetDaemon.Extensions.Scheduler;
 internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
 {
     private readonly CancellationTokenSource _cancelTimers;
+    private bool _disposed = false;
 
     private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
     {
@@ -40,6 +41,8 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// <inheritdoc/>
     public IDisposable RunEvery(TimeSpan timespan, Action action)
     {
+        if (_disposed) return DisposableTimer.Empty;
+
         var result = new DisposableTimer(_cancelTimers.Token);
 
         Observable.Interval(timespan, _reactiveScheduler)
@@ -55,6 +58,8 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// <inheritdoc/>
     public IDisposable RunEvery(TimeSpan period, DateTimeOffset startTime, Action action)
     {
+        if (_disposed) return DisposableTimer.Empty;
+
         var result = new DisposableTimer(_cancelTimers.Token);
 
         Observable.Timer(
@@ -74,6 +79,8 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// <inheritdoc/>
     public IDisposable RunIn(TimeSpan timespan, Action action)
     {
+        if (_disposed) return DisposableTimer.Empty;
+
         var result = new DisposableTimer(_cancelTimers.Token);
         Observable.Timer(timespan, _reactiveScheduler)
             .Subscribe(
@@ -86,6 +93,8 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// <inheritdoc/>
     public IDisposable RunAt(DateTimeOffset timeOffset, Action action)
     {
+        if (_disposed) return DisposableTimer.Empty;
+
         var result = new DisposableTimer(_cancelTimers.Token);
 
         Observable.Timer(
@@ -109,6 +118,9 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     {
         try
         {
+            if (_disposed)
+                return;
+
             action();
         }
         catch (OperationCanceledException)
@@ -126,6 +138,9 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// </summary>
     public void Dispose()
     {
+        if (_disposed)
+            return;
+
         _cancelTimers.Cancel();
         _cancelTimers.Dispose();
     }
