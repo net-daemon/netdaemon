@@ -160,6 +160,20 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
+    public void SchedulerShouldNotThrowOnMultipleDisposeCalls()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+
+        // ACT and ASSERT
+        // No exception should be thrown calling dispose multiple times
+        netDaemonScheduler.Dispose();
+        netDaemonScheduler.Dispose();
+    }
+
+    [Fact]
     public void TestRunEveryLogsException()
     {
         // ARRANGE
