@@ -6,7 +6,7 @@ namespace NetDaemon.AppModel.Tests.Context;
 public class ApplicationContextTests
 {
     [Fact]
-    public async Task TestFailedInitializedScopeThrows()
+    public async Task TestApplicationContectIsDisposedMultipleTimesNotThrowsException()
     {
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
         var appFactory = Mock.Of<IAppFactory>();
