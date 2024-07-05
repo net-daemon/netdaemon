@@ -14,7 +14,7 @@ namespace NetDaemon.Extensions.Scheduler;
 internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
 {
     private readonly CancellationTokenSource _cancelTimers;
-    private bool _disposed = false;
+    private bool _disposed;
 
     private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
     {
@@ -143,5 +143,6 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
 
         _cancelTimers.Cancel();
         _cancelTimers.Dispose();
+        _disposed = true;
     }
 }
