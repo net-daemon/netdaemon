@@ -15,7 +15,7 @@ namespace NetDaemon.Extensions.Scheduler;
 internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
 {
     private readonly CancellationTokenSource _cancelTimers;
-    private volatile bool _disposed;
+    private volatile int _disposed; // 0 = false, 1 = true
 
     private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
     {
@@ -112,7 +112,7 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     {
         try
         {
-            if (_disposed)
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 1)
                 return;
 
             action();
@@ -132,11 +132,10 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 1)
             return;
 
         _cancelTimers.Cancel();
         _cancelTimers.Dispose();
-        _disposed = true;
     }
 }

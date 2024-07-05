@@ -9,7 +9,7 @@ public sealed class DisposableTimer : IDisposable
 {
     private readonly CancellationTokenSource _combinedToken;
     private readonly CancellationTokenSource _internalToken;
-    private bool _disposed;
+    private int _disposed; // 0 = false, 1 = true
 
     /// <summary>
     ///     Constructor
@@ -35,11 +35,10 @@ public sealed class DisposableTimer : IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (!_disposed){
-            _internalToken.Cancel();
-            _combinedToken.Dispose();
-            _internalToken.Dispose();
-            _disposed = true;
-        }
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 1)
+            return;
+        _internalToken.Cancel();
+        _combinedToken.Dispose();
+        _internalToken.Dispose();
     }
 }
