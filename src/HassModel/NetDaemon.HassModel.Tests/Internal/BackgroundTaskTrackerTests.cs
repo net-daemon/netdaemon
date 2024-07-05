@@ -38,6 +38,31 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task TestBackgroundTaskWillGetFlushedAndCanelled()
+    {
+        static async Task CallMe(CancellationToken cancellationToken)
+        {
+            await Task.Delay(5000, cancellationToken);
+        }
+
+        using var timedCancellationTokenSource = new CancellationTokenSource(5000);
+
+        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
+        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
+        _backgroundTaskTracker.TrackBackgroundTask(CallMe(timedCancellationTokenSource.Token));
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(3);
+
+        var flushTask = _backgroundTaskTracker.Flush();
+
+        timedCancellationTokenSource.CancelAfter(500);
+
+        await flushTask;
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(0);
+    }
+
+    [Fact]
     public async Task TestBackgroundTaskThrowsExceptionWillLogError()
     {
 #pragma warning disable CS1998
