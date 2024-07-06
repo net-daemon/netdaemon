@@ -68,12 +68,15 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
         _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
     public async Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
         _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
+
         var result = await _hassRunner.CurrentConnection
             .CallServiceWithResponseAsync(domain, service, data, target?.Map(), _tokenSource.Token)
             .ConfigureAwait(false);
@@ -94,6 +97,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void SendEvent(string eventType, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
         _backgroundTaskTracker.TrackBackgroundTask(_apiManager.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
     }
 

@@ -15,7 +15,7 @@ namespace NetDaemon.Extensions.Scheduling.Tests;
 public class SchedulerExtensionTest
 {
     [Fact]
-    public void TestRunInCallsFunction()
+    public void TestRunInCallsAction()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -31,7 +31,7 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
-    public void TestRunInDoesNotCallFunctionIfDisposed()
+    public void TestRunInDoesNotCallActionIfDisposed()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -48,7 +48,7 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
-    public void TestRunInShouldNotCallFunctionIfNotDue()
+    public void TestRunInShouldNotCallActionIfNotDue()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -87,7 +87,7 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
-    public void TestRunAtCallsFunction()
+    public void TestRunAtCallsAction()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -109,7 +109,7 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
-    public void TestRunAtNotCallFunctionIfDisposed()
+    public void TestRunAtNotCallActionIfDisposed()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
