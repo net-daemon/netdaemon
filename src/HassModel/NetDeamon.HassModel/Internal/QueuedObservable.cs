@@ -68,7 +68,7 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
         _queue.Writer.TryComplete();
 
         // now await for the processing loop to be ready so we know all pending events are processed
-        if (_eventHandlingTask != null && !_eventHandlingTask.IsCompleted)
+        if (_eventHandlingTask != null)
             await _eventHandlingTask.ConfigureAwait(false);
 
         _tokenSource.Dispose();
