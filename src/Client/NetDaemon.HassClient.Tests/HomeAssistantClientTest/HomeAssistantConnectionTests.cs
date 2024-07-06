@@ -54,4 +54,12 @@ public class HomeAssistantConnectionTests
 
         await act.Should().ThrowAsync<ObjectDisposedException>();
     }
+
+    [Fact]
+    public async Task HomeAssistantConnectionDisposedMultipleTimesShouldNotThrow()
+    {
+        var homeAssistantConnection = GetDefaultHomeAssistantConnection();
+        await homeAssistantConnection!.DisposeAsync();
+        await homeAssistantConnection!.DisposeAsync();
+    }
 }
