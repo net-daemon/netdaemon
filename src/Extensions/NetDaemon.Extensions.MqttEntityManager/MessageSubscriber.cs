@@ -21,7 +21,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal class MessageSubscriber : IMessageSubscriber, IDisposable
 {
     private readonly SemaphoreSlim _subscriptionSetupLock = new SemaphoreSlim(1);
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
     private bool _subscriptionIsSetup;
     private readonly IAssuredMqttConnection _assuredMqttConnection;
     private readonly ILogger<MessageSubscriber> _logger;
@@ -121,17 +121,16 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
 
     public void Dispose()
     {
-        if (!_isDisposed)
-        {
-            _isDisposed = true;
-            foreach (var observer in _subscribers)
-            {
-                _logger.LogTrace("Disposing {Topic} subscription", observer.Key);
-                observer.Value.Value.OnCompleted();
-                observer.Value.Value.Dispose();
-            }
+        if (_isDisposed) return;
+        _isDisposed = true;
 
-            _subscriptionSetupLock.Dispose();
+        foreach (var observer in _subscribers)
+        {
+            _logger.LogTrace("Disposing {Topic} subscription", observer.Key);
+            observer.Value.Value.OnCompleted();
+            observer.Value.Value.Dispose();
         }
+
+        _subscriptionSetupLock.Dispose();
     }
 }

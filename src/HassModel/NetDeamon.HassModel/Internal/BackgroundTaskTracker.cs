@@ -5,7 +5,7 @@ namespace NetDaemon.HassModel.Internal;
 internal class BackgroundTaskTracker : IBackgroundTaskTracker
 {
     private readonly ILogger<BackgroundTaskTracker> _logger;
-    private volatile int _isDisposed; // 0 = false, 1 = true
+    private volatile bool _isDisposed;
 
     internal readonly ConcurrentDictionary<Task, object?> BackgroundTasks = new();
 
@@ -49,8 +49,8 @@ internal class BackgroundTaskTracker : IBackgroundTaskTracker
 
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.CompareExchange(ref _isDisposed, 1, 0) == 1)
-            return;
+        if (_isDisposed) return;
+        _isDisposed = true;
 
         var timeoutTask = Task.Delay(TimeSpan.FromSeconds(5));
 

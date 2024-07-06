@@ -14,7 +14,7 @@ namespace NetDaemon.HassModel.Internal;
 /// </remarks>
 internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 {
-    private volatile int _isDisposed; // 0 = false, 1 = true
+    private volatile bool _isDisposed;
     private readonly ILogger<IHaContext> _logger;
 
     private readonly Channel<T> _queue = Channel.CreateBounded<T>(100);
@@ -58,8 +58,8 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.CompareExchange(ref _isDisposed, 1, 0) == 1)
-            return;
+        if(_isDisposed) return;
+        _isDisposed = true;
 
         // When disposed unsubscribe from inner observable
         _subscription?.Dispose();

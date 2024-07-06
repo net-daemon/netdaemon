@@ -6,7 +6,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
-    private int _isDisposed; // 0 = false, 1 = true
+    private volatile bool _isDisposed;
 
     public ApplicationContext(IServiceProvider serviceProvider, IAppFactory appFactory)
     {
@@ -34,8 +34,8 @@ internal sealed class ApplicationContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.CompareExchange(ref _isDisposed, 1, 0) == 1)
-            return;
+        if (_isDisposed) return;
+        _isDisposed = true;
 
         if (!_cancelTokenSource.IsCancellationRequested)
             await _cancelTokenSource.CancelAsync();

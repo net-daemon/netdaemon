@@ -178,7 +178,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         }
     }
 
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;
