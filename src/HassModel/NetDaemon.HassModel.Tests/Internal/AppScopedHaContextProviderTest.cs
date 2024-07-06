@@ -48,6 +48,19 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     }
 
     [Fact]
+    public async Task TestCallServiceWithDisposedContextThrowsException()
+    {
+        var haContext = (AppScopedHaContextProvider) await CreateTargetAsync();
+
+        var target = ServiceTarget.FromEntity("domain.entity");
+
+        await haContext.DisposeAsync();
+        var action = ()=> haContext.CallService("domain", "service", target);
+        action.Should().Throw<ObjectDisposedException>();
+
+    }
+
+    [Fact]
     public async Task TestCallServiceWithFloor()
     {
         var haContext = await CreateTargetAsync();
@@ -137,6 +150,19 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
         executeCommand!.Sequence[0].GetType().GetProperty("service")!.GetValue(executeCommand.Sequence[0])!.Should().Be("domain.service");
         executeCommand.Sequence[0].GetType().GetProperty("data")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceData);
         executeCommand.Sequence[0].GetType().GetProperty("target")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceTarget);
+    }
+
+    [Fact]
+    public async Task TestCallServiceWithResponseWithDisposedContextThrowsException()
+    {
+        var haContext = (AppScopedHaContextProvider) await CreateTargetAsync();
+
+        var target = ServiceTarget.FromEntity("domain.entity");
+
+        await haContext.DisposeAsync();
+        var action = async ()=> await haContext.CallServiceWithResponseAsync("domain", "service", target);
+        await action.Should().ThrowAsync<ObjectDisposedException>();
+
     }
 
     [Fact]
@@ -280,6 +306,19 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
         haContext.SendEvent("any_type", null);
 
         backgroundTrackerMock.Verify(n => n.TrackBackgroundTask(It.IsAny<Task?>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task TestSendEventWithDisposedContextThrowsException()
+    {
+        var haContext = (AppScopedHaContextProvider) await CreateTargetAsync();
+
+        var target = ServiceTarget.FromEntity("domain.entity");
+
+        await haContext.DisposeAsync();
+        var action = ()=> haContext.SendEvent("some_event");
+        action.Should().Throw<ObjectDisposedException>();
+
     }
 
     private async Task<IHaContext> CreateTargetAsync()

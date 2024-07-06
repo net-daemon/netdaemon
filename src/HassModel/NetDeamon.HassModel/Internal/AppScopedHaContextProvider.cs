@@ -10,6 +10,7 @@ namespace NetDaemon.HassModel.Internal;
 [SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
 internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 {
+    private volatile bool _isDisposed;
     private readonly IHomeAssistantApiManager _apiManager;
     private readonly EntityStateCache _entityStateCache;
 
@@ -67,12 +68,15 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
         _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
     public async Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
         _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
+
         var result = await _hassRunner.CurrentConnection
             .CallServiceWithResponseAsync(domain, service, data, target?.Map(), _tokenSource.Token)
             .ConfigureAwait(false);
@@ -93,13 +97,19 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void SendEvent(string eventType, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
         _backgroundTaskTracker.TrackBackgroundTask(_apiManager.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
         if (!_tokenSource.IsCancellationRequested)
             await _tokenSource.CancelAsync();
+        //  Wait for all background tasks to complete before disposing the CancellationTokenSource
+        await _backgroundTaskTracker.DisposeAsync();
         _tokenSource.Dispose();
     }
 }

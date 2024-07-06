@@ -10,7 +10,7 @@ internal class AppModelContext : IAppModelContext
     private readonly IServiceProvider _provider;
     private readonly FocusFilter _focusFilter;
     private ILogger<AppModelContext> _logger;
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
 
     public AppModelContext(IEnumerable<IAppFactoryProvider> appFactoryProviders, IServiceProvider provider, FocusFilter focusFilter, ILogger<AppModelContext> logger)
     {

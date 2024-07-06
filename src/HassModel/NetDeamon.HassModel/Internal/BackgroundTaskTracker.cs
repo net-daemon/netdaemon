@@ -5,6 +5,8 @@ namespace NetDaemon.HassModel.Internal;
 internal class BackgroundTaskTracker : IBackgroundTaskTracker
 {
     private readonly ILogger<BackgroundTaskTracker> _logger;
+    private volatile bool _isDisposed;
+
     internal readonly ConcurrentDictionary<Task, object?> BackgroundTasks = new();
 
     public BackgroundTaskTracker(ILogger<BackgroundTaskTracker> logger)
@@ -25,6 +27,10 @@ internal class BackgroundTaskTracker : IBackgroundTaskTracker
             {
                 await task.ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogTrace("Task was canceled processing Home Assistant event: {Description}", description ?? "");
+            }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception processing Home Assistant event: {Description}", description ?? "");
@@ -43,10 +49,17 @@ internal class BackgroundTaskTracker : IBackgroundTaskTracker
 
     public async ValueTask DisposeAsync()
     {
-        // Wait for the tasks to complete max 5 seconds
-        if (!BackgroundTasks.IsEmpty)
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        var timeoutTask = Task.Delay(TimeSpan.FromSeconds(5));
+
+        // Using a while look here incase new tasks are added while we are waiting
+        while (!BackgroundTasks.IsEmpty)
         {
-            await Task.WhenAny( Task.WhenAll(BackgroundTasks.Keys), Task.Delay(TimeSpan.FromSeconds(5))).ConfigureAwait(false);
+            var task = await Task.WhenAny( Task.WhenAll(BackgroundTasks.Keys), timeoutTask).ConfigureAwait(false);
+            if (task == timeoutTask)
+                break;
         }
     }
 }

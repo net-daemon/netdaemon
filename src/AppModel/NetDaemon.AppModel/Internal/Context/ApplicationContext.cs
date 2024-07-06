@@ -6,7 +6,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
 
     public ApplicationContext(IServiceProvider serviceProvider, IAppFactory appFactory)
     {
@@ -34,9 +34,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // prevent multiple Disposes because the Service Scope will also dispose this
         if (_isDisposed) return;
-
         _isDisposed = true;
 
         if (!_cancelTokenSource.IsCancellationRequested)

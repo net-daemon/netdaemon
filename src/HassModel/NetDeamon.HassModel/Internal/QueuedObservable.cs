@@ -14,7 +14,7 @@ namespace NetDaemon.HassModel.Internal;
 /// </remarks>
 internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 {
-    private bool _isDisposed;
+    private volatile bool _isDisposed;
     private readonly ILogger<IHaContext> _logger;
 
     private readonly Channel<T> _queue = Channel.CreateBounded<T>(100);
@@ -35,7 +35,7 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 
     public void Initialize(IObservable<T> innerObservable)
     {
-        _subscription = innerObservable.Subscribe(e => _queue.Writer.TryWrite(e), onCompleted: () => _queue.Writer.Complete());
+        _subscription = innerObservable.Subscribe(e => _queue.Writer.TryWrite(e), onCompleted: async () => await DisposeAsync().ConfigureAwait(false));
         _eventHandlingTask = Task.Run(async () => await HandleNewEvents().ConfigureAwait(false));
     }
 
@@ -58,20 +58,20 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed) return;
+        if(_isDisposed) return;
         _isDisposed = true;
-            
+
         // When disposed unsubscribe from inner observable
         _subscription?.Dispose();
-            
+
         // mark the channel complete, this will break the processing loop when the last event in the channel is processed
-        _queue.Writer.Complete();
-        
+        _queue.Writer.TryComplete();
+
         // now await for the processing loop to be ready so we know all pending events are processed
         if (_eventHandlingTask != null)
             await _eventHandlingTask.ConfigureAwait(false);
-            
-        _tokenSource.Dispose();        
+
+        _tokenSource.Dispose();
         _subject.Dispose();
     }
 }

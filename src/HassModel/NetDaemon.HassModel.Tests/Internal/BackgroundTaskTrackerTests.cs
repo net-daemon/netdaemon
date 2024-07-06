@@ -38,6 +38,47 @@ public sealed class BackgroundTaskTrackerTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task TestBackgroundTaskWillGetAwaitedWhenDisposed()
+    {
+        var taskSource1 = new TaskCompletionSource<bool>();
+        var taskSource2 = new TaskCompletionSource<bool>();
+        var taskSource3 = new TaskCompletionSource<bool>();
+
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource1.Task);
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource2.Task);
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource3.Task);
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(3);
+
+        var disposeTask = _backgroundTaskTracker.DisposeAsync();
+
+        taskSource1.SetResult(true);
+        taskSource2.SetResult(true);
+        taskSource3.SetResult(true);
+
+        await disposeTask;
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task TestDisposeWillTimeoutAfterDefaultWaittime()
+    {
+        var taskSource = new TaskCompletionSource<bool>();
+
+        _backgroundTaskTracker.TrackBackgroundTask(taskSource.Task);
+
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
+
+        await _backgroundTaskTracker.DisposeAsync();
+        // It should still be running after the flush
+        _backgroundTaskTracker.BackgroundTasks.Count.Should().Be(1);
+
+        // Make sure we cancel it before leaving the tests
+        taskSource.SetResult(true);
+    }
+
+    [Fact]
     public async Task TestBackgroundTaskThrowsExceptionWillLogError()
     {
 #pragma warning disable CS1998

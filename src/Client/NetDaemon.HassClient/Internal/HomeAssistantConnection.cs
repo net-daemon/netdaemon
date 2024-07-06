@@ -4,6 +4,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 {
     #region -- private declarations -
 
+    private volatile bool _isDisposed;
+
     private readonly ILogger<IHomeAssistantConnection> _logger;
     private readonly IWebSocketClientTransportPipeline _transportPipeline;
     private readonly IHomeAssistantApiManager _apiManager;
@@ -132,6 +134,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
         try
         {
             await CloseAsync().ConfigureAwait(false);
@@ -159,11 +164,13 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     public Task<T?> GetApiCallAsync<T>(string apiPath, CancellationToken cancelToken)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(HomeAssistantConnection));
         return _apiManager.GetApiCallAsync<T>(apiPath, cancelToken);
     }
 
     public Task<T?> PostApiCallAsync<T>(string apiPath, CancellationToken cancelToken, object? data = null)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(HomeAssistantConnection));
         return _apiManager.PostApiCallAsync<T>(apiPath, cancelToken, data);
     }
 
@@ -171,6 +178,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private async Task<Task<HassMessage>> SendCommandAsyncInternal<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, nameof(HomeAssistantConnection));
+
         // The semaphore can fail to be taken in rare cases so we need
         // to keep this out of the try/finally block so it will not be released
         await _messageIdSemaphore.WaitAsync(cancelToken).ConfigureAwait(false);

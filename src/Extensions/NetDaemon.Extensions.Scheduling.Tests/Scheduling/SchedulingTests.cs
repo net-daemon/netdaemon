@@ -15,7 +15,7 @@ namespace NetDaemon.Extensions.Scheduling.Tests;
 public class SchedulerExtensionTest
 {
     [Fact]
-    public void TestRunInCallsFunction()
+    public void TestRunInCallsAction()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -31,7 +31,24 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
-    public void TestRunInShouldNotCallFunctionIfNotDue()
+    public void TestRunInDoesNotCallActionIfDisposed()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+        bool isCalled = false;
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+        netDaemonScheduler.Dispose();
+        netDaemonScheduler.RunIn(TimeSpan.FromMinutes(1), () => isCalled = true);
+
+        // ACT
+        testScheduler.AdvanceBy(TimeSpan.FromMinutes(1).Ticks);
+
+        // ASSERT
+        Assert.False(isCalled);
+    }
+
+    [Fact]
+    public void TestRunInShouldNotCallActionIfNotDue()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -70,7 +87,7 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
-    public void TestRunAtCallsFunction()
+    public void TestRunAtCallsAction()
     {
         // ARRANGE
         var testScheduler = new TestScheduler();
@@ -89,6 +106,29 @@ public class SchedulerExtensionTest
         Assert.False(isCalled);
         testScheduler.AdvanceBy(TimeSpan.FromMinutes(30).Ticks);
         Assert.True(isCalled);
+    }
+
+    [Fact]
+    public void TestRunAtNotCallActionIfDisposed()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+
+        // sets the date to a specific time so we do not get errors in UTC
+        var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+        testScheduler.AdvanceTo(dueTime.Ticks);
+
+        bool isCalled = false;
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+
+        netDaemonScheduler.Dispose();
+        netDaemonScheduler.RunAt(testScheduler.Now.AddHours(1), () => isCalled = true);
+
+        // ACT and ASSERT
+        testScheduler.AdvanceBy(TimeSpan.FromMinutes(30).Ticks);
+        Assert.False(isCalled);
+        testScheduler.AdvanceBy(TimeSpan.FromMinutes(30).Ticks);
+        Assert.False(isCalled);
     }
 
     [Fact]
@@ -137,6 +177,63 @@ public class SchedulerExtensionTest
     }
 
     [Fact]
+    public void TestRunEveryNotCallsIfDisposedBeforeSchedule()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+        // sets the date to a specific time so we do not get errors in UTC
+        var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+        testScheduler.AdvanceTo(dueTime.Ticks);
+
+        int nrOfTimesCalled = 0;
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+
+        netDaemonScheduler.Dispose();
+        netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), () => nrOfTimesCalled++);
+
+        // ACT and ASSERT
+        testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
+        Assert.Equal(0, nrOfTimesCalled);
+    }
+
+    [Fact]
+    public void TestRunEveryCallsCorrectNrOfTimesIfDisposed()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+        // sets the date to a specific time so we do not get errors in UTC
+        var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+        testScheduler.AdvanceTo(dueTime.Ticks);
+
+        int nrOfTimesCalled = 0;
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+
+        netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), () => nrOfTimesCalled++);
+
+        // ACT and ASSERT
+        testScheduler.AdvanceBy(TimeSpan.FromSeconds(3).Ticks);
+        Assert.Equal(3, nrOfTimesCalled);
+        netDaemonScheduler.Dispose();
+        testScheduler.AdvanceBy(TimeSpan.FromSeconds(3).Ticks);
+        // No other calls thould been made on a disposed scheduler
+        Assert.Equal(3, nrOfTimesCalled);
+    }
+
+    [Fact]
+    public void SchedulerShouldNotThrowOnMultipleDisposeCalls()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+
+        // ACT and ASSERT
+        // No exception should be thrown calling dispose multiple times
+        netDaemonScheduler.Dispose();
+        netDaemonScheduler.Dispose();
+    }
+
+    [Fact]
     public void TestRunEveryLogsException()
     {
         // ARRANGE
@@ -179,6 +276,26 @@ public class SchedulerExtensionTest
         // ACT and ASSERT
         testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
         Assert.Equal(4, nrOfTimesCalled);
+    }
+
+    [Fact]
+    public void TestRunEveryNotCallsUsingForwardTimeWhenDisposed()
+    {
+        // ARRANGE
+        var testScheduler = new TestScheduler();
+        // sets the date to a specific time so we do not get errors in UTC
+        var dueTime = new DateTime(2021, 1, 1, 0, 0, 0);
+        testScheduler.AdvanceTo(dueTime.Ticks);
+
+        int nrOfTimesCalled = 0;
+        var netDaemonScheduler = new NetDaemonScheduler(reactiveScheduler: testScheduler);
+        netDaemonScheduler.Dispose();
+
+        netDaemonScheduler.RunEvery(TimeSpan.FromSeconds(1), testScheduler.Now.AddSeconds(2), () => nrOfTimesCalled++);
+
+        // ACT and ASSERT
+        testScheduler.AdvanceBy(TimeSpan.FromSeconds(5).Ticks);
+        Assert.Equal(0, nrOfTimesCalled);
     }
 
     [Fact]
