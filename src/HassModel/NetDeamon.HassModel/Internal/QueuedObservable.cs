@@ -46,6 +46,8 @@ internal sealed class QueuedObservable<T> : IQueuedObservable<T>
         {
             try
             {
+                if (_isDisposed)
+                    break;
                 _subject.OnNext(@event);
             }
             catch (Exception e)

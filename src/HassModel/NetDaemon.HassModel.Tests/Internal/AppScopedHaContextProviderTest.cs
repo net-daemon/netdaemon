@@ -269,7 +269,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
         _hassEventSubjectMock.OnCompleted();
 
         await ((IAsyncDisposable)serviceScope).DisposeAsync();
-        eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test")));
+        eventObserverMock.Verify(m => m.OnNext(It.Is<Event>(e => e.Origin == "Test"))).Times(0);
         eventObserverMock.Verify(m => m.OnCompleted());
 
 
