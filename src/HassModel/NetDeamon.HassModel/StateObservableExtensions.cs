@@ -53,8 +53,7 @@ public static class StateObservableExtensions
             .Throttle(timeSpan, scheduler)
 
             // But only when the new state matches the predicate we emit it
-            .Where(e => predicate(e.New))
-            .Where(_ => isCompleted == false);
+            .Where(e => predicate(e.New) && isCompleted == false);
     }
 
     /// <summary>
@@ -78,7 +77,6 @@ public static class StateObservableExtensions
             .Do(_ => {}, () => isCompleted = true)
             .Where(e => predicate(e.Old) != predicate(e.New))
             .Throttle(timeSpan, scheduler)
-            .Where(e => predicate(e.New))
-            .Where(_ => isCompleted == false);
+            .Where(e => predicate(e.New) && isCompleted == false);
     }
 }
