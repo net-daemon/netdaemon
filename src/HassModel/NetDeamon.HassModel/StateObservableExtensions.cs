@@ -42,7 +42,10 @@ public static class StateObservableExtensions
         ArgumentNullException.ThrowIfNull(predicate, nameof(predicate));
         ArgumentNullException.ThrowIfNull(scheduler, nameof(scheduler));
 
+        var isCompleted = false;
+
         return observable
+            .Do(_ => {}, () => isCompleted = true)
             // Only process changes that start or stop matching the predicate
             .Where(e => predicate(e.Old) != predicate(e.New))
 
@@ -50,7 +53,8 @@ public static class StateObservableExtensions
             .Throttle(timeSpan, scheduler)
 
             // But only when the new state matches the predicate we emit it
-            .Where(e => predicate(e.New));
+            .Where(e => predicate(e.New))
+            .Where(_ => isCompleted == false);
     }
 
     /// <summary>
@@ -68,9 +72,13 @@ public static class StateObservableExtensions
         ArgumentNullException.ThrowIfNull(predicate, nameof(predicate));
         ArgumentNullException.ThrowIfNull(scheduler, nameof(scheduler));
 
+        var isCompleted = false;
+
         return observable
+            .Do(_ => {}, () => isCompleted = true)
             .Where(e => predicate(e.Old) != predicate(e.New))
             .Throttle(timeSpan, scheduler)
-            .Where(e => predicate(e.New));
+            .Where(e => predicate(e.New))
+            .Where(_ => isCompleted == false);
     }
 }
