@@ -21,6 +21,34 @@ public sealed class StateObservableExtensionsTest : IDisposable
     }
 
     [Fact]
+    public void TestThatWhenStateIsForDoesNotCallActionWhenCompleted()
+    {
+        bool isCalled = false;
+
+        _subject.WhenStateIsFor(n => n?.State == "off", TimeSpan.FromSeconds(10), _testScheduler).Subscribe(_ => { isCalled = true;});
+
+        _subject.OnNext(new StateChange(new Entity(new Mock<IHaContext>().Object, ""), new EntityState { State = "on" }, new EntityState { State = "off" }));
+
+        _subject.OnCompleted();
+
+        isCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TestNumericEntityWhenStateIsForDoesNotCallActionWhenCompleted()
+    {
+        bool isCalled = false;
+
+        _numericStateChangeObservable.WhenStateIsFor(n => n?.State > 20, TimeSpan.FromSeconds(10), _testScheduler).Subscribe(_ => { isCalled = true;});
+
+        _subject.OnNext(new StateChange(new Entity(new Mock<IHaContext>().Object, ""), new EntityState { State = "1" }, new EntityState { State = "30" }));
+
+        _subject.OnCompleted();
+
+        isCalled.Should().BeFalse();
+    }
+
+    [Fact]
     public void WhenNumStateIsForFiresInTime()
     {
         // wait for the sensor to be "on" for at least 10 ticks
