@@ -59,15 +59,8 @@ internal static class ServiceMetaDataParser
             var result = serviceElement.Deserialize<HassService>(SerializerOptions)! with
             {
                 Service = serviceName,
+                Fields = GetFields(serviceElement)
             };
-
-            if (serviceElement.TryGetProperty("fields", out var fieldProperty))
-            {
-                result = result with
-                {
-                    Fields = fieldProperty.EnumerateObject().Select(p => GetField(p.Name, p.Value)).ToList()
-                };
-            }
 
             return result;
         }
@@ -76,6 +69,14 @@ internal static class ServiceMetaDataParser
             errors.Add(new (ex, $"{context}.{serviceName}", serviceElement));
             return null;
         }
+    }
+
+    private static List<HassServiceField> GetFields(JsonElement element)
+    {
+        if (!element.TryGetProperty("fields", out var fieldProperty)) return [];
+
+        // advanced_fields can have nested fields inside, we flatten them to a single list of fields
+        return fieldProperty.EnumerateObject().SelectMany(p => p.Name == "advanced_fields" ? GetFields(p.Value)  : [GetField(p.Name, p.Value)]).ToList();
     }
 
     private static HassServiceField GetField(string fieldName, JsonElement element)

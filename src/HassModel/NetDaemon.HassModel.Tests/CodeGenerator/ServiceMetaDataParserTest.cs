@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.InteropServices.ComTypes;
+using System.Text.Json;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
 
@@ -40,6 +41,38 @@ public class ServiceMetaDataParserTest
       res.Should().HaveCount(1);
       res.First().Domain.Should().Be("homeassistant");
       res.First().Services.ElementAt(1).Target!.Entity.SelectMany(e=>e.Domain).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TestServicesWithAdvancedFieldsCanBeParsed()
+    {
+        var sample = File.ReadAllText(@"CodeGenerator/ServiceMetaDataSamples/Lights.json");
+
+        var res = Parse(sample);
+        res.Should().HaveCount(1);
+        var lightsDomain = res.First();
+
+        lightsDomain.Domain.Should().Be("light");
+        lightsDomain.Services.Select(s => s.Service).Should().BeEquivalentTo("turn_on", "turn_off", "toggle");
+        var turnOnService = lightsDomain.Services.First();
+        turnOnService.Fields!.Select(f => f.Field).Should().BeEquivalentTo(
+            "transition",
+            "rgb_color",
+            "kelvin",
+            "brightness_pct",
+            "brightness_step_pct",
+            "effect",
+            "rgbw_color",
+            "rgbww_color",
+            "color_name",
+            "hs_color",
+            "xy_color",
+            "color_temp",
+            "brightness",
+            "brightness_step",
+            "white",
+            "profile",
+            "flash");
     }
 
     [Fact]
