@@ -32,4 +32,10 @@
     <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="CodeGenerator\ServiceMetaDataSamples\Lights.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
