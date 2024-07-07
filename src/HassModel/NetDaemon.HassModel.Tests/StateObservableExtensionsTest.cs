@@ -21,7 +21,7 @@ public sealed class StateObservableExtensionsTest : IDisposable
     }
 
     [Fact]
-    public void TestThatWhenStateIsForDoesNotCallAction()
+    public void TestThatWhenStateIsForDoesNotCallActionWhenCompleted()
     {
         bool isCalled = false;
 
@@ -35,7 +35,7 @@ public sealed class StateObservableExtensionsTest : IDisposable
     }
 
     [Fact]
-    public void TestNumericEntityWhenStateIsForDoesNotCallAction()
+    public void TestNumericEntityWhenStateIsForDoesNotCallActionWhenCompleted()
     {
         bool isCalled = false;
 
