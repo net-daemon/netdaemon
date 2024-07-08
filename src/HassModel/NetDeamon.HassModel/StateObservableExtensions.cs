@@ -11,28 +11,13 @@ public static class StateObservableExtensions
     /// Ignores the OnCompletion event of the observable
     /// </summary>
     /// <remarks>
-    /// In the case you do not want the action to be called when the observable is completed
-    /// use this method before the use of other methods in the Observalble.
-    /// For example if you use Throttle and you want the action call not to be
-    /// run when you cancel the observable.
-    /// For use-cases where you want to wait for a specific state for a specific time
-    /// use <see cref="WhenStateIsFor"/> instead.
+    /// This can be used in combination with Throttle() to avoid events to be emitted when the
+    /// observable is completed (eg because the app is stopped). Use IgnoreOnComplete(). before
+    /// Throttle() to make sure Throttle will not send events when the app is stopping.
     /// </remarks>
     public static IObservable<T> IgnoreOnComplete<T>(this IObservable<T> source)
         => Observable.Create<T>(observer => source.Subscribe(observer.OnNext, observer.OnError));
 
-    // public static IObservable<StateChange> IgnoreOnComplete(
-    //     this IObservable<StateChange> observable)
-    // {
-    //     ArgumentNullException.ThrowIfNull(observable, nameof(observable));
-    //
-    //     var isCompleted = false;
-    //
-    //     return observable
-    //         .Do(_ => {}, () => isCompleted = true)
-    //         // But only when the new state matches the predicate we emit it
-    //         .Where(_ => isCompleted == false);
-    // }
     /// <summary>
     /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
