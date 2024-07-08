@@ -8,6 +8,17 @@ namespace NetDaemon.HassModel;
 public static class StateObservableExtensions
 {
     /// <summary>
+    /// Ignores the OnCompletion event of the observable
+    /// </summary>
+    /// <remarks>
+    /// This can be used in combination with Throttle() to avoid events to be emitted when the
+    /// observable is completed (eg because the app is stopped). Use IgnoreOnComplete(). before
+    /// Throttle() to make sure Throttle will not send events when the app is stopping.
+    /// </remarks>
+    public static IObservable<T> IgnoreOnComplete<T>(this IObservable<T> source)
+        => Observable.Create<T>(observer => source.Subscribe(observer.OnNext, observer.OnError));
+
+    /// <summary>
     /// Waits for an EntityState to match a predicate for the specified time
     /// </summary>
     [Obsolete("Use the overload with IScheduler instead")]

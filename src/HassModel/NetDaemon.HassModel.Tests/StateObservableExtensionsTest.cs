@@ -21,6 +21,35 @@ public sealed class StateObservableExtensionsTest : IDisposable
     }
 
     [Fact]
+    public void TestThrottleShouldNotCallActionUsingIngoreOnCompleteWhenSubjectCompleted()
+    {
+        bool isCalled = false;
+
+        _subject.Where(n => n?.New?.State == "off").IgnoreOnComplete().Throttle(TimeSpan.FromSeconds(1), _testScheduler).Subscribe(_ => { isCalled = true;});
+
+        _subject.OnNext(new StateChange(new Entity(new Mock<IHaContext>().Object, ""), new EntityState { State = "on" }, new EntityState { State = "off" }));
+
+        _subject.OnCompleted();
+
+        isCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TestThrottleShouldCallActionUsingIngoreOnCompleteInNormalOperation()
+    {
+        bool isCalled = false;
+
+        _subject.Where(n => n?.New?.State == "off").IgnoreOnComplete().Throttle(TimeSpan.FromSeconds(1), _testScheduler).Subscribe(_ => { isCalled = true;});
+
+        _subject.OnNext(new StateChange(new Entity(new Mock<IHaContext>().Object, ""), new EntityState { State = "on" }, new EntityState { State = "off" }));
+
+        _testScheduler.AdvanceBy(TimeSpan.FromSeconds(2).Ticks);
+        _subject.OnCompleted();
+
+        isCalled.Should().BeTrue();
+    }
+
+    [Fact]
     public void TestThatWhenStateIsForDoesNotCallActionWhenCompleted()
     {
         bool isCalled = false;
