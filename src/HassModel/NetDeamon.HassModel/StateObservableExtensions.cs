@@ -8,7 +8,7 @@ namespace NetDaemon.HassModel;
 public static class StateObservableExtensions
 {
     /// <summary>
-    /// Ignores the completion of the observable
+    /// Ignores the OnCompletion event of the observable
     /// </summary>
     /// <remarks>
     /// In the case you do not want the action to be called when the observable is completed
