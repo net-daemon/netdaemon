@@ -281,6 +281,27 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     }
 
     [Fact]
+    public async Task CanCallServiceInEventCompleteDueToDispose()
+    {
+        // Arrange
+        var provider = await CreateServiceProvider();
+        var serviceScope = provider.CreateScope();
+        var haContext = serviceScope.ServiceProvider.GetRequiredService<IHaContext>();
+
+        haContext.Events.Subscribe(onNext: _ => { }, onError: _ => { }, onCompleted:()=>{haContext.CallService("Light", "turn_on");});
+
+        // Disposing the entire Scope will Dispose the AppScopedHaContextProvider, which will then first Dispose its QueuedObservable.
+        // That triggers haContext.Events.OnComplete().
+        // We want to make sure that any code in event handlers for OnComplete is still able to call services
+        await ((IAsyncDisposable)serviceScope).DisposeAsync();
+
+        // Assert
+        _hassConnectionMock.Verify(
+            c => c.SendCommandAsync(It.IsAny<CallServiceCommand>(),
+                It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task TestThatCallServiceTrackBackgroundTask()
     {
         var provider = await CreateServiceProvider();
@@ -368,6 +389,5 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
     public void Dispose()
     {
         _hassEventSubjectMock.Dispose();
-        GC.SuppressFinalize(this);
     }
 }
