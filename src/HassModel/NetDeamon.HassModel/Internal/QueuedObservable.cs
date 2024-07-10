@@ -85,7 +85,7 @@ internal sealed class QueuedObservable<T> : IObservable<T>, IAsyncDisposable
         }
     }
 
-    private static IObserver<T> CatchObserverExceptions<T>(IObserver<T> observer, ILogger logger)
+    private static IObserver<T> CatchObserverExceptions(IObserver<T> observer, ILogger logger)
     {
         return Observer.Create<T>(
             onNext: e =>
