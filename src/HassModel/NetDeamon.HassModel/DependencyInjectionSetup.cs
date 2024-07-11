@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel;
 
@@ -36,8 +35,6 @@ public static class DependencyInjectionSetup
         services.AddScoped<IBackgroundTaskTracker>(s => s.GetRequiredService<BackgroundTaskTracker>());
         services.AddTransient<ICacheManager, CacheManager>();
         services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
-        services.AddScoped<QueuedObservable<HassEvent>>();
-        services.AddScoped<IQueuedObservable<HassEvent>>(s => s.GetRequiredService<QueuedObservable<HassEvent>>());
         services.AddScoped<TriggerManager>();
         services.AddTransient<ITriggerManager>(s => s.GetRequiredService<TriggerManager>());
     }

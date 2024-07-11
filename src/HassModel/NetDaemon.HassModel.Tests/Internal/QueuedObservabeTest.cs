@@ -1,19 +1,19 @@
 ﻿using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetDaemon.HassModel.Internal;
 using NetDaemon.HassModel.Tests.TestHelpers;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
-public class QueuedObservabeTest
+public class QueuedObservableTest
 {
     [Fact]
-    public async Task EventsSouldbeforwarded()
+    public async Task OnNextShouldBeForwarded()
     {
         var source = new Subject<int>();
 
-        var queue = new QueuedObservable<int>(Mock.Of<ILogger<IHaContext>>());
-        queue.Initialize(source);
+        var queue = new QueuedObservable<int>(source, NullLogger.Instance);
 
         var subscriber = new Mock<IObserver<int>>();
         queue.Subscribe(subscriber.Object);
@@ -28,19 +28,47 @@ public class QueuedObservabeTest
     }
 
     [Fact]
+    public async Task OnErrorShouldBeForwarded()
+    {
+        var source = new Subject<int>();
+        var queue = new QueuedObservable<int>(source, NullLogger.Instance);
+        var subscriber = new Mock<IObserver<int>>();
+        queue.Subscribe(subscriber.Object);
+
+        var exception = new Exception("TestException");
+        source.OnError(exception);
+
+        await queue.DisposeAsync();
+        subscriber.Verify(s => s.OnError(exception));
+    }
+
+    [Fact]
+    public async Task? OnCompletedShouldBeForwarded()
+    {
+        var source = new Subject<int>();
+        var queue = new QueuedObservable<int>(source, NullLogger.Instance);
+        var subscriber = new Mock<IObserver<int>>();
+
+        queue.Subscribe(subscriber.Object);
+
+        source.OnCompleted();
+
+        await queue.DisposeAsync();
+        subscriber.Verify(s => s.OnCompleted());
+    }
+
+    [Fact]
     public async Task SubscribersShouldNotBlockEachOther()
     {
         var source = new Subject<int>();
 
-        var queue1 = new QueuedObservable<int>(Mock.Of<ILogger<IHaContext>>());
-        queue1.Initialize(source);
+        var queue1 = new QueuedObservable<int>(source, NullLogger.Instance);
 
         var subscriber = new Mock<IObserver<int>>();
         queue1.Subscribe(subscriber.Object);
 
         // The second subscriber will block the first event
-        var queue2 = new QueuedObservable<int>(Mock.Of<ILogger<IHaContext>>());
-        queue2.Initialize(source);
+        var queue2 = new QueuedObservable<int>(source, NullLogger.Instance);
         var blockSubscribers = new ManualResetEvent(false);
         queue2.Subscribe(_ => blockSubscribers.WaitOne());
 
@@ -62,12 +90,9 @@ public class QueuedObservabeTest
     public async Task WhenScopeIsDisposedSubscribersAreDetached()
     {
         var testSubject = new Subject<string>();
-        var loggerMock = new Mock<ILogger<IHaContext>>();
         // Create 2 ScopedObservables for the same subject
-        var scoped1 = new QueuedObservable<string>(loggerMock.Object);
-        scoped1.Initialize(testSubject);
-        var scoped2 = new QueuedObservable<string>(loggerMock.Object);
-        scoped2.Initialize(testSubject);
+        var scoped1 = new QueuedObservable<string>(testSubject, NullLogger.Instance);
+        var scoped2 = new QueuedObservable<string>(testSubject, NullLogger.Instance);
 
         // First scope has 2 subscribers, second has 1
         var scope1AObserverMock = new Mock<IObserver<string>>();
@@ -78,11 +103,11 @@ public class QueuedObservabeTest
         var scope2ObserverMock = new Mock<IObserver<string>>();
         scoped2.Subscribe(scope2ObserverMock.Object);
 
-        var waitTasks = new Task[]
+        var waitTasks = new[]
         {
-                scope1AObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event1")),
-                scope1BObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event1")),
-                scope2ObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event1"))
+            scope1AObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event1")),
+            scope1BObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event1")),
+            scope2ObserverMock.WaitForInvocationAndVerify(o => o.OnNext("Event1"))
         };
 
         // Now start firing events
@@ -109,8 +134,7 @@ public class QueuedObservabeTest
     public async Task TestQueuedObservableShouldHaveFinishedTasksOnDispose()
     {
         var source = new Subject<int>();
-        var queue = new QueuedObservable<int>(Mock.Of<ILogger<IHaContext>>());
-        queue.Initialize(source);
+        var queue = new QueuedObservable<int>(source, NullLogger.Instance);
         var subscriber = new Mock<IObserver<int>>();
         queue.Subscribe(subscriber.Object);
 
@@ -129,8 +153,7 @@ public class QueuedObservabeTest
     {
         var source = new Subject<int>();
         var loggerMock = new Mock<ILogger<IHaContext>>();
-        var queue = new QueuedObservable<int>(loggerMock.Object);
-        queue.Initialize(source);
+        var queue = new QueuedObservable<int>(source,loggerMock.Object);
         var subscriber = new Mock<IObserver<int>>();
         subscriber.Setup(n => n.OnNext(1)).Throws<InvalidOperationException>();
         queue.Subscribe(subscriber.Object);
@@ -152,9 +175,7 @@ public class QueuedObservabeTest
     public async Task TestQueuedObservableShouldStillHaveSubscribersOnException()
     {
         var source = new Subject<int>();
-        var loggerMock = new Mock<ILogger<IHaContext>>();
-        var queue = new QueuedObservable<int>(loggerMock.Object);
-        queue.Initialize(source);
+        var queue = new QueuedObservable<int>(source, NullLogger.Instance);
         var subscriber = new Mock<IObserver<int>>();
         subscriber.Setup(n => n.OnNext(1)).Throws<InvalidOperationException>();
         queue.Subscribe(subscriber.Object);

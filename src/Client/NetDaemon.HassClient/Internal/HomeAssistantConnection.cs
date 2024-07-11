@@ -164,13 +164,13 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     public Task<T?> GetApiCallAsync<T>(string apiPath, CancellationToken cancelToken)
     {
-        ObjectDisposedException.ThrowIf(_isDisposed, nameof(HomeAssistantConnection));
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
         return _apiManager.GetApiCallAsync<T>(apiPath, cancelToken);
     }
 
     public Task<T?> PostApiCallAsync<T>(string apiPath, CancellationToken cancelToken, object? data = null)
     {
-        ObjectDisposedException.ThrowIf(_isDisposed, nameof(HomeAssistantConnection));
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
         return _apiManager.PostApiCallAsync<T>(apiPath, cancelToken, data);
     }
 
@@ -178,7 +178,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
     private async Task<Task<HassMessage>> SendCommandAsyncInternal<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
-        ObjectDisposedException.ThrowIf(_isDisposed, nameof(HomeAssistantConnection));
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
 
         // The semaphore can fail to be taken in rare cases so we need
         // to keep this out of the try/finally block so it will not be released
