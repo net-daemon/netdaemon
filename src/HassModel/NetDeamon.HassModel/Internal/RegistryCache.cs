@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Reactive.Concurrency;
 using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
@@ -6,7 +6,7 @@ namespace NetDaemon.HassModel.Internal;
 internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCache> logger) : IDisposable
 {
     private CancellationToken _cancellationToken;
-    private IDisposable? _eventSubscription;
+    private readonly List<IDisposable> _toDispose = [];
 
     // Just in case this cache is used before it is initialized we will initialize all
     // these dictionaries and lookups empty to avoid exceptions and not having to make these nullable
@@ -29,10 +29,7 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     {
         _cancellationToken = cancellationToken;
 
-        var events = await CurrentConnection.SubscribeToHomeAssistantEventsAsync(null, _cancellationToken).ConfigureAwait(false);
-
-        _eventSubscription = events.Where(e => e.EventType.EndsWith("_registry_updated", StringComparison.Ordinal))
-            .Subscribe(e => {_ = RegistryUpdated(e.EventType); });
+        await SubscribeRegistryUpdates().ConfigureAwait(false);
 
         logger.LogInformation("Initializing RegistryCache");
 
@@ -44,28 +41,32 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
         UpdateEntitiesByAreaId();
     }
 
-    private async Task RegistryUpdated(string eventType)
+    private async Task SubscribeRegistryUpdates()
     {
-        logger.LogDebug("Received {Event}: Updating RegistryCache", eventType);
+        var events = await CurrentConnection.SubscribeToHomeAssistantEventsAsync(null, _cancellationToken).ConfigureAwait(false);
 
-        var task = eventType switch
-        {
-            "entity_registry_updated" => ReloadEntities(),
-            "device_registry_updated" => ReloadDevices(),
-            "area_registry_updated"   => ReloadAreas(),
-            "label_registry_updated"  => ReloadLabels(),
-            "floor_registry_updated"  => ReloadFloors(),
-            _ => Task.CompletedTask
-        };
-        try
-        {
-            await task.ConfigureAwait(true);
-            UpdateEntitiesByAreaId();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Exception updating RegistryCache");
-        }
+        // each registry has its own registry_updated event that will be send by HA when it is updated
+        SubscribeRegistryUpdate(events, "entity_registry_updated", async ()=> { await ReloadEntities(); UpdateEntitiesByAreaId(); });
+        SubscribeRegistryUpdate(events, "device_registry_updated", async ()=> { await ReloadDevices(); UpdateEntitiesByAreaId(); });
+        SubscribeRegistryUpdate(events, "area_registry_updated", ReloadAreas);
+        SubscribeRegistryUpdate(events, "label_registry_updated", ReloadLabels);
+        SubscribeRegistryUpdate(events, "floor_registry_updated", ReloadFloors);
+    }
+
+    private void SubscribeRegistryUpdate(IObservable<HassEvent> events, string eventType, Func<Task> handler)
+    {
+        _toDispose.Add(events
+            .Where(e => e.EventType == eventType)
+            // On some systems we found the registry_updated events are send frequently without actual user action in HA,
+            // therefore we throttle updating the cache.
+            .ThrottleAfterFirstEvent(TimeSpan.FromMinutes(5), Scheduler.Default)
+            .SubscribeAsync(async _ =>
+                {
+                    logger.LogDebug("Received {Event}: Updating RegistryCache", eventType);
+
+                    await handler();
+                },
+                ex => logger.LogError(ex, "Exception updating RegistryCache")));
     }
 
     private async Task ReloadEntities()
@@ -147,6 +148,6 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
 
     public void Dispose()
     {
-        _eventSubscription?.Dispose();
+        _toDispose.ForEach(d => d.Dispose());
     }
 }
