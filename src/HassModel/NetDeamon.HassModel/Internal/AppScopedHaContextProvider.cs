@@ -1,5 +1,4 @@
 ﻿using NetDaemon.Client.HomeAssistant.Extensions;
-using NetDaemon.Infrastructure.ObservableHelpers;
 
 namespace NetDaemon.HassModel.Internal;
 
@@ -11,12 +10,14 @@ namespace NetDaemon.HassModel.Internal;
 internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 {
     private volatile bool _isDisposed;
+    private volatile bool _isDisposing;
     private readonly IHomeAssistantApiManager _apiManager;
     private readonly EntityStateCache _entityStateCache;
 
     private readonly IHomeAssistantRunner _hassRunner;
-    private readonly IQueuedObservable<HassEvent> _queuedObservable;
+    private readonly QueuedObservable<HassEvent> _queuedObservable;
     private readonly IBackgroundTaskTracker _backgroundTaskTracker;
+    private readonly ILogger<AppScopedHaContextProvider> _logger;
 
     private readonly CancellationTokenSource _tokenSource = new();
 
@@ -24,21 +25,19 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         EntityStateCache entityStateCache,
         IHomeAssistantRunner hassRunner,
         IHomeAssistantApiManager apiManager,
-        IQueuedObservable<HassEvent> queuedObservable,
         IBackgroundTaskTracker backgroundTaskTracker,
-        IServiceProvider serviceProvider
-    )
+        IServiceProvider serviceProvider,
+        ILogger<AppScopedHaContextProvider> logger)
     {
         _entityStateCache = entityStateCache;
         _hassRunner = hassRunner;
         _apiManager = apiManager;
 
-        // Create ScopedObservables for this app
+        // Create QueuedObservable for this app
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
-        _queuedObservable = queuedObservable;
+        _queuedObservable = new QueuedObservable<HassEvent>(_entityStateCache.AllEvents, logger);
         _backgroundTaskTracker = backgroundTaskTracker;
-
-        _queuedObservable.Initialize(_entityStateCache.AllEvents);
+        _logger = logger;
 
         // The HaRegistry needs a reference to this AppScopedHaContextProvider And we need the reference
         // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
@@ -68,13 +67,15 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
-        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
-        _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection?.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
+
+        _backgroundTaskTracker.TrackBackgroundTask(_hassRunner.CurrentConnection.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
     public async Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
-        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
         _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
 
         var result = await _hassRunner.CurrentConnection
@@ -94,22 +95,25 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     public IObservable<Event> Events => _queuedObservable
         .Select(e => e.Map());
 
-
     public void SendEvent(string eventType, object? data = null)
     {
-        ObjectDisposedException.ThrowIf(_isDisposed, nameof(AppScopedHaContextProvider));
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
         _backgroundTaskTracker.TrackBackgroundTask(_apiManager.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed) return;
-        _isDisposed = true;
+        if (_isDisposing) return;
+        _isDisposing = true;
 
-        if (!_tokenSource.IsCancellationRequested)
-            await _tokenSource.CancelAsync();
-        //  Wait for all background tasks to complete before disposing the CancellationTokenSource
-        await _backgroundTaskTracker.DisposeAsync();
+        // The order here is important, we want to allow apps to process their pending events and wait for background tasks to complete
+        // before actually shutting down
+        await _queuedObservable.DisposeAsync().ConfigureAwait(false);
+        await _backgroundTaskTracker.DisposeAsync().ConfigureAwait(false);
+
+        await _tokenSource.CancelAsync().ConfigureAwait(false);
+
+        _isDisposed = true;
         _tokenSource.Dispose();
     }
 }
