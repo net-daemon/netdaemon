@@ -6,6 +6,7 @@
 // - Added a IServiceProvide parameter to the Get method and all other methods on the original class and added the possibility to instance using the IServiceProvider
 // - Added the interface (IConfigurationBinding) and class (ConfigurationBinding) to make the implementation available from the service provider
 // - Supress some warnings rather than fix original code
+// - Removed all ThrowIsNull calls, yes it will be less safe but it is ok, old version did not have this.
 
 using System.Collections;
 using System.ComponentModel;
