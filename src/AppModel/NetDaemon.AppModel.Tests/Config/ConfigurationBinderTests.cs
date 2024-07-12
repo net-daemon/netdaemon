@@ -27,7 +27,8 @@ public class ConfigurationBinderTests
         // ARRANGE
         // ACT
         // CHECK
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<CollectionBindingFaultyIEnumerableTestClass>("TestCollections"));
+        var config = GetObjectFromSection<CollectionBindingIEnumerableWithInitTestClass>("TestCollections");
+        config!.SomeEnumerable.Should().HaveCount(2);
     }
 
     [Fact]
@@ -36,7 +37,8 @@ public class ConfigurationBinderTests
         // ARRANGE
         // ACT
         // CHECK
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<CollectionBindingFaultyIReadOnlyListTestClass>("TestCollections"));
+        var config = GetObjectFromSection<CollectionBindingIReadOnlyListWithInitTestClass>("TestCollections");
+        config!.SomeReadOnlyList.Should().HaveCount(2);
     }
 
     [Fact]
@@ -45,7 +47,8 @@ public class ConfigurationBinderTests
         // ARRANGE
         // ACT
         // CHECK
-        Assert.Throws<InvalidOperationException>(() => GetObjectFromSection<CollectionBindingFaultyIReadOnlyCollectionTestClass>("TestCollections"));
+        var config = GetObjectFromSection<CollectionBindingIReadOnlyCollectionWithInitTestClass>("TestCollections");
+        config!.SomeReadOnlyCollection.Should().HaveCount(2);
     }
 
     [Fact]
@@ -53,8 +56,8 @@ public class ConfigurationBinderTests
     {
         // ARRANGE
         // ACT
-        Assert.Throws<InvalidOperationException>(() =>
-            GetObjectFromSection<CollectionBindingFaultyIReadOnlyDictionaryTestClass>("TestCollections"));
+        var config = GetObjectFromSection<CollectionBindingIReadOnlyDictionaryWithInitTestClass>("TestCollections");
+        config!.SomeReadOnlyDictionary.Should().HaveCount(2);
         // CHECK
     }
 
@@ -63,7 +66,7 @@ public class ConfigurationBinderTests
     {
         // ARRANGE
         // ACT
-        var config = GetObjectFromSection<IEnumerable<string>>("AnotherTestCollections");
+       var config = GetObjectFromSection<IEnumerable<string>>("AnotherTestCollections");
         // CHECK
         config!.Should().HaveCount(3);
     }
@@ -141,6 +144,17 @@ public class ConfigurationBinderTests
         GetObjectFromSection<IDictionary<int, int>>("TestCollections").Should().BeEmpty();
     }
 
+    [Fact]
+    public void TestAddYamlConfigGetsEnumWithUnderlyingTypeCorrectly()
+    {
+        // ARRANGE
+        // ACT
+        var config = GetObjectFromSection<IEnumerable<TestShortEnum>>("AnotherTestShortEnum");
+        // CHECK
+        config!.Should().HaveCount(2);
+        Enum.GetUnderlyingType(config!.First().GetType()).Should().Be(typeof(ushort));
+    }
+
     private static T? GetObjectFromSection<T>(string sectionName)
     {
         var providerMock = new Mock<IServiceProvider>();
@@ -156,6 +170,12 @@ public class ConfigurationBinderTests
     }
 
     internal enum TestEnum
+    {
+        Enum1,
+        Enum2
+    }
+
+    internal enum TestShortEnum : ushort
     {
         Enum1,
         Enum2
@@ -196,23 +216,25 @@ public record CollectionBindingTestClass
     public IDictionary<string, string>? SomeDictionary { get; init; }
 }
 
-public record CollectionBindingFaultyIEnumerableTestClass
+public record CollectionBindingIEnumerableWithInitTestClass
 {
     public IEnumerable<string>? SomeEnumerable { get; init; } = new List<string>();
 }
 
-public record CollectionBindingFaultyIReadOnlyListTestClass
+public record CollectionBindingIReadOnlyListWithInitTestClass
 {
     public IReadOnlyList<string>? SomeReadOnlyList { get; init; } = new List<string>();
 }
 
-public record CollectionBindingFaultyIReadOnlyCollectionTestClass
+public record CollectionBindingIReadOnlyCollectionWithInitTestClass
 {
     public IReadOnlyCollection<string>? SomeReadOnlyCollection { get; init; } = new List<string>();
 }
 
-public record CollectionBindingFaultyIReadOnlyDictionaryTestClass
+public record CollectionBindingIReadOnlyDictionaryWithInitTestClass
 {
     public IReadOnlyDictionary<string, string>? SomeReadOnlyDictionary { get; init; } =
         new Dictionary<string, string>();
 }
+
+

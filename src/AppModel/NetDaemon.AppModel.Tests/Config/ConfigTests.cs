@@ -142,6 +142,7 @@ public class ConfigTests
         app.Settings.Entity2!.ServiceProvider.Should().NotBeNull();
     }
 
+
     private static IConfigurationRoot GetConfigurationRootForYaml(string path)
     {
         return GetConfigurationRoot(path);
