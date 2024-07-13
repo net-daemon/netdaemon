@@ -3,7 +3,7 @@
 // - Added a IServiceProvide parameter to the Get method and all other methods on the original class and added the possibility to instance using the IServiceProvider
 // - Added the interface (IConfigurationBinding) and class (ConfigurationBinding) to make the implementation available from the service provider
 // - Supress some warnings rather than fix original code
-// - Removed all ThrowIsNull calls, yes it will be less safe but it is ok, old version did not have this.
+// - Substituted ThrowHelper with ArgumentNullException.ThrowIfNull
 
 using System.Collections;
 using System.ComponentModel;
@@ -75,7 +75,7 @@ public static class ConfigurationBinder
     [RequiresUnreferencedCode(TrimmingWarningMessage)]
     public static T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(this IConfiguration configuration, IServiceProvider provider, Action<BinderOptions>? configureOptions)
     {
-        //ThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         object? result = configuration.Get(provider, typeof(T), configureOptions);
         if (result == null)
@@ -118,8 +118,8 @@ public static class ConfigurationBinder
         Type type,
         Action<BinderOptions>? configureOptions)
     {
-        //ThrowHelper.ThrowIfNull(configuration);
-        //ThrowHelper.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(type);
 
         var options = new BinderOptions();
         configureOptions?.Invoke(options);
@@ -139,7 +139,7 @@ public static class ConfigurationBinder
     [RequiresUnreferencedCode(InstanceGetTypeTrimmingWarningMessage)]
     public static void Bind(this IConfiguration configuration, IServiceProvider provider, string key, object? instance)
     {
-        //ThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(configuration);
         configuration.GetSection(key).Bind(provider, instance);
     }
 
@@ -165,7 +165,7 @@ public static class ConfigurationBinder
     [RequiresUnreferencedCode(InstanceGetTypeTrimmingWarningMessage)]
     public static void Bind(this IConfiguration configuration, IServiceProvider provider, object? instance, Action<BinderOptions>? configureOptions)
     {
-        //ThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         if (instance != null)
         {
@@ -241,8 +241,8 @@ public static class ConfigurationBinder
         Type type, string key,
         object? defaultValue)
     {
-        //ThrowHelper.ThrowIfNull(configuration);
-        //ThrowHelper.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(type);
 
         IConfigurationSection section = configuration.GetSection(key);
         string? value = section.Value;
@@ -1104,7 +1104,7 @@ public static class ConfigurationBinder
 
     private static string GetPropertyName(PropertyInfo property)
     {
-        //ThrowHelper.ThrowIfNull(property);
+        ArgumentNullException.ThrowIfNull(property);
 
         // Check for a custom property name used for configuration key binding
         foreach (var attributeData in property.GetCustomAttributesData())
