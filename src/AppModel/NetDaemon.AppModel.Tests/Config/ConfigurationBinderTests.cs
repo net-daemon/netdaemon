@@ -22,7 +22,7 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
-    public void TestWhenInitIEnumerableThrowsException()
+    public void TestInitIEnumerableShouldCorrectHaveCount()
     {
         // ARRANGE
         // ACT
@@ -32,7 +32,7 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
-    public void TestWhenInitIReadOnlyListThrowsException()
+    public void TestWhenInitIReadOnlyListShouldHaveCorrectCount()
     {
         // ARRANGE
         // ACT
@@ -42,7 +42,7 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
-    public void TestWhenInitIReadOnlyCollectionThrowsException()
+    public void TestWhenInitIReadOnlyCollectionShouldHaveCorrectCount()
     {
         // ARRANGE
         // ACT
@@ -52,7 +52,7 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
-    public void TestWhenInitIReadOnlyDictionaryThrowsException()
+    public void TestWhenInitIReadOnlyDictionaryShouldHaveCount()
     {
         // ARRANGE
         // ACT
@@ -63,7 +63,7 @@ public class ConfigurationBinderTests
 
     [Fact]
     public void TestAddYamlConfigGetsCollectionsCorrectly()
-    {
+    {o
         // ARRANGE
         // ACT
        var config = GetObjectFromSection<IEnumerable<string>>("AnotherTestCollections");
