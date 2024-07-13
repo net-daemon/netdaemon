@@ -63,10 +63,10 @@ public class ConfigurationBinderTests
 
     [Fact]
     public void TestAddYamlConfigGetsCollectionsCorrectly()
-    {o
+    {
         // ARRANGE
         // ACT
-       var config = GetObjectFromSection<IEnumerable<string>>("AnotherTestCollections");
+        var config = GetObjectFromSection<IEnumerable<string>>("AnotherTestCollections");
         // CHECK
         config!.Should().HaveCount(3);
     }
