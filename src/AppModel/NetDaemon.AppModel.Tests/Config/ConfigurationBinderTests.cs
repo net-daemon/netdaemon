@@ -22,7 +22,7 @@ public class ConfigurationBinderTests
     }
 
     [Fact]
-    public void TestInitIEnumerableShouldCorrectHaveCount()
+    public void TestWhenInitIEnumerableShouldCorrectHaveCount()
     {
         // ARRANGE
         // ACT
