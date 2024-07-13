@@ -1,6 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 // This is a modified version of the .net 8 source code for ConfigurationBinder.cs
 // The following changes were made:
 // - Added a IServiceProvide parameter to the Get method and all other methods on the original class and added the possibility to instance using the IServiceProvider
@@ -22,6 +19,10 @@ internal interface IConfigurationBinding
     T? ToObject<T>(IConfiguration configuration);
 }
 
+/// <summary>
+/// Wrapper around the ConfigurationBinder to make it available from the service provider
+/// and to inject the IServiceProvider to allow instancing objects that are registered services
+/// </summary>
 internal class ConfigurationBinding(IServiceProvider provider) : IConfigurationBinding
 {
     private readonly IServiceProvider _provider = provider;
@@ -31,6 +32,9 @@ internal class ConfigurationBinding(IServiceProvider provider) : IConfigurationB
         return configuration.Get<T>(_provider);
     }
 }
+
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 /// <summary>
 /// Static helper class that allows binding strongly typed objects to configuration values.
