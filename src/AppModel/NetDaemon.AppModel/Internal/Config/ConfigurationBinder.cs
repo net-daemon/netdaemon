@@ -22,6 +22,7 @@ namespace NetDaemon.AppModel.Internal.Config;
 /// <summary>
 /// Static helper class that allows binding strongly typed objects to configuration values.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class ConfigurationBinder
 {
     private const BindingFlags DeclaredOnlyLookup = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;

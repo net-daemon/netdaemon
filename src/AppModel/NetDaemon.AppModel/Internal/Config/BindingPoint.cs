@@ -3,9 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDaemon.AppModel.Internal.Config;
 
+[ExcludeFromCodeCoverage]
 internal sealed class BindingPoint
 {
     private readonly Func<object?>? _initialValueProvider;

@@ -3,6 +3,7 @@ using System.Reflection;
 
 namespace NetDaemon.AppModel.Internal.Config;
 
+[ExcludeFromCodeCoverage]
 internal static class ParameterDefaultValue
 {
     public static bool TryGetDefaultValue(ParameterInfo parameter, out object? defaultValue)
