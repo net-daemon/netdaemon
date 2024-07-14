@@ -1,5 +1,5 @@
 // This is a modified version of the .net 8 source code for ConfigurationBinder.cs
-// https://github.com/dotnet/runtime/blob/v8.0.7/src/libraries/Microsoft.Extensions.Configuration.Binder/src/ConfigurationBinder.class
+// https://github.com/dotnet/runtime/blob/2aade6beb02ea367fd97c4070a4198802fe61c03/src/libraries/Microsoft.Extensions.Configuration.Binder/src/ConfigurationBinder.cs
 //
 // The following changes were made:
 // - Added a IServiceProvide parameter to the Get method and all other methods on the original class and added the possibility to instance using the IServiceProvider
