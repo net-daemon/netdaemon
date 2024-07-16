@@ -1,16 +1,18 @@
+// Contains all message templates that are sent from the fake server to the ND
 
 namespace NetDaemon.Tests.Performance;
 
 
 internal static class Messages
 {
-    public static string AuthRequired =>
+    public static string AuthRequiredMsg =>
         $$"""
         {
           "type": "auth_required"
         }
         """;
-    public static string AuthOk =>
+
+    public static string AuthOkMsg =>
         $$"""
         {
           "type": "auth_ok",
@@ -650,5 +652,58 @@ internal static class Messages
             "result": null
         }
         """;
-}
 
+    public static string EventResultMsg(int id, string stateFrom, string stateTo) =>
+        $$"""
+        {
+          "id": {{id}},
+          "type": "event",
+          "event": {
+            "event_type": "state_changed",
+            "data": {
+              "entity_id": "binary_sensor.vardagsrum_pir",
+              "old_state": {
+                "entity_id": "binary_sensor.vardagsrum_pir",
+                "state": "{{stateFrom}}",
+                "attributes": {
+                  "battery_level": 100,
+                  "on": true,
+                  "friendly_name": "R\u00f6relsedetektor TV-rum",
+                  "device_class": "motion",
+                  "icon": "mdi:run-fast"
+                },
+                "last_changed": "2019-02-17T11:41:08.015070+00:00",
+                "last_updated": "2019-02-17T11:42:08.015070+00:00",
+                "context": {
+                  "id": "09c2e2ed8eef43e7885f478084e61d80",
+                  "user_id": null
+                }
+              },
+              "new_state": {
+                "entity_id": "binary_sensor.vardagsrum_pir",
+                "state": "{{stateTo}}",
+                "attributes": {
+                  "battery_level": 100,
+                  "on": true,
+                  "friendly_name": "R\u00f6relsedetektor vardagsrum",
+                  "device_class": "motion",
+                  "icon": "mdi:run-fast"
+                },
+                "last_changed": "2019-02-17T11:43:47.090473+00:00",
+                "last_updated": "2019-02-17T11:43:47.090473+00:00",
+                "context": {
+                  "id": "849ebede7b294a019c724a07dac43f9c",
+                  "user_id": null
+                }
+              }
+            },
+            "origin": "LOCAL",
+            "time_fired": "2019-02-17T11:43:47.090511+00:00",
+            "context": {
+              "id": "849ebede7b294a019c724a07dac43f9c",
+              "user_id": null
+            }
+          }
+        }
+        """;
+}

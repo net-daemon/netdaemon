@@ -1,19 +1,30 @@
+using Serilog;
+
 namespace NetDaemon.Tests.Performance;
 
 internal static class WebHostExtensions
 {
-    private static readonly WebSocketOptions _webSocketOptions = new()
+    public static WebApplicationBuilder UsePerfServerSettings(this WebApplicationBuilder builder)
     {
-        KeepAliveInterval = TimeSpan.FromSeconds(120)
-    };
+        builder.Host
+            .UseSerilog((context, provider, logConfig) =>
+            {
+                logConfig.ReadFrom.Configuration(context.Configuration);
+            });
 
-    public static void UsePerfServerWebsockets(this WebApplication app)
+        builder.Services.AddScoped<PerfServerStartup>();
+
+        return builder;
+    }
+
+    public static void AddPerfServer(this WebApplication app)
     {
-        app.Urls.Add("http://127.0.0.1:8002");
-        app.UseWebSockets(_webSocketOptions);
-        app.MapGet("/api/states/{entityId}", async (string entityId) =>
+        app.UseWebSockets();
+
+        // NetDaemon is checking the state of input_boolean so let's fake a response
+        app.MapGet("/api/states/{entityId}", (string entityId) =>
         {
-            if (entityId.StartsWith("input_boolean."))
+            if (entityId.StartsWith("input_boolean.", StringComparison.Ordinal))
             {
                 var id = entityId[14..];
                 var inputBoolean = PerfServerStartup._inputBooleans.FirstOrDefault(n => n.Name == id);
@@ -25,16 +36,10 @@ internal static class WebHostExtensions
                         State = "on",
                     });
                 }
-                else
-                {
-                    return Results.NotFound();
-                }
             }
-            else
-            {
-                return Results.NotFound();
-            }
+            return Results.NotFound();
         });
+
         app.Use(async (context, next) =>
         {
             if (context.Request.Path == "/api/websocket")

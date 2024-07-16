@@ -1,149 +1,50 @@
-
 using System.Collections.Concurrent;
-using System.Globalization;
-using System.Linq;
 
 namespace NetDaemon.Tests.Performance;
-
-// /// <summary>
-// ///
-// /// </summary>
-// public sealed class PerfServer : IAsyncDisposable
-// {
-//     public const int RecieiveBufferSize = 1024 * 4;
-//     public IHost HomeAssistantHost { get; }
-//
-//     public PerfServer()
-//     {
-//         HomeAssistantHost = CreateHostBuilder().Build() ?? throw new ApplicationException("Failed to create host");
-//         HomeAssistantHost.Start();
-//         var server = HomeAssistantHost.Services.GetRequiredService<IServer>();
-//         var addressFeature = server.Features.Get<IServerAddressesFeature>() ?? throw new NullReferenceException();
-//         foreach (var address in addressFeature.Addresses)
-//         {
-//             ServerPort = int.Parse(address.Split(':').Last(), CultureInfo.InvariantCulture);
-//             break;
-//         }
-//     }
-//
-//     public int ServerPort { get; }
-//
-//     public async ValueTask DisposeAsync()
-//     {
-//         await Stop().ConfigureAwait(false);
-//     }
-//
-//     /// <summary>
-//     ///     Starts a websocket server in a generic host
-//     /// </summary>
-//     /// <returns>Returns a IHostBuilder instance</returns>
-//     private static IHostBuilder CreateHostBuilder()
-//     {
-//         return Host.CreateDefaultBuilder()
-//             .ConfigureServices(s =>
-//             {
-//                 s.AddHttpClient();
-//                 s.Configure<HostOptions>(
-//                     opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(30)
-//                 );
-//             })
-//             .ConfigureWebHostDefaults(webBuilder =>
-//             {
-//                 webBuilder.UseUrls("http://127.0.0.1:0"); //"http://172.17.0.2:5001"
-//                 webBuilder.UseStartup<PerfServerStartup>();
-//             });
-//     }
-//
-//
-//     /// <summary>
-//     ///     Stops the fake Home Assistant server
-//     /// </summary>
-//     private async Task Stop()
-//     {
-//         await HomeAssistantHost.StopAsync().ConfigureAwait(false);
-//         await HomeAssistantHost.WaitForShutdownAsync().ConfigureAwait(false);
-//     }
-//
-// }
 
 /// <summary>
 ///     The class implementing the mock hass server
 /// </summary>
-public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IDisposable
+public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IAsyncDisposable
 {
-
     private readonly CancellationTokenSource _cancelSource = new();
 
-    // Get the path to mock testdata
-
-    private static int DefaultTimeOut => 5000;
+    private const int DefaultTimeOut = 5000;
     private const int RecieiveBufferSize = 1024 * 4;
 
-    // For testing the API we just return a entity
-    // private static async Task ProcessRequest(HttpContext context)
-    // {
-    //     var entityName = "test.entity";
-    //     if (context.Request.Method == "POST")
-    //         entityName = "test.post";
-    //
-    //     await context.Response.WriteAsJsonAsync(
-    //         new HassEntity
-    //         {
-    //             EntityId = entityName,
-    //             DeviceId = "ksakksk22kssk2",
-    //             AreaId = "ssksks2ksk3k333kk",
-    //             Name = "name"
-    //         }
-    //     ).ConfigureAwait(false);
-    // }
-
-    /// <summary>
-    ///     Replaces the id of the result being sent by the id of the command received
-    /// </summary>
-    /// <param name="responseMessageFileName">Filename of the result</param>
-    /// <param name="id">Id of the command</param>
-    /// <param name="websocket">The websocket to send to</param>
-    // private async Task ReplaceIdInResponseAndSendMsg(string responseMessageFileName, int id, WebSocket websocket)
-    // {
-    //     var msg =
-    //         await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Integration", "Testdata",
-    //             responseMessageFileName)).ConfigureAwait(false);
-    //     // All testdata has id=3 so easy to replace it
-    //     msg = msg.Replace("\"id\": 3", $"\"id\": {id}", StringComparison.Ordinal);
-    //     var bytes = Encoding.UTF8.GetBytes(msg);
-    //
-    //     await websocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length),
-    //         WebSocketMessageType.Text, true, _cancelSource.Token).ConfigureAwait(false);
-    // }
-
-
     private readonly ConcurrentBag<int> _eventSubscriptions = [];
+    private Task? _perfTestTask;
 
     public static readonly ConcurrentBag<InputBoolean> _inputBooleans = [];
 
+    /// <summary>
+    ///    Sends a websocket message to the client
+    /// </summary>
     private  async Task SendWebsocketMessage(WebSocket ws, string message)
     {
-        var bytes = Encoding.UTF8.GetBytes(message);
-        await ws.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length),
+        var byteMessage = Encoding.UTF8.GetBytes(message);
+        await ws.SendAsync(new ArraySegment<byte>(byteMessage, 0, byteMessage.Length),
             WebSocketMessageType.Text, true, _cancelSource.Token).ConfigureAwait(false);
     }
 
     /// <summary>
     ///     Process incoming websocket requests to simulate Home Assistant websocket API
     /// </summary>
+    /// <remarks>
+    ///     This implements just enough of the HA websocket API to make NetDaemon happy
+    /// </remarks>
     public async Task ProcessWebsocket(WebSocket webSocket)
     {
         logger.LogDebug("Processing websocket");
-        // Buffer is set.
+
         var buffer = new byte[RecieiveBufferSize];
 
         try
         {
             // First send auth required to the client
-            var authRequiredMessage = Messages.AuthRequired;
+            var authRequiredMessage = Messages.AuthRequiredMsg;
             await SendWebsocketMessage(webSocket, authRequiredMessage).ConfigureAwait(false);
 
-            // Console.WriteLine($"SERVER: WebSocketState = {webSocket.State}, MessageType = {result.MessageType}");
             while (true)
             {
                 // Wait for incoming messages
@@ -151,27 +52,29 @@ public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IDisp
                     await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cancelSource.Token)
                         .ConfigureAwait(false);
 
-                logger.LogInformation("Received message: {Message}", Encoding.UTF8.GetString(buffer, 0, result.Count));
+                logger.LogDebug("Received message: {Message}", Encoding.UTF8.GetString(buffer, 0, result.Count));
 
                 _cancelSource.Token.ThrowIfCancellationRequested();
 
                 if (result.CloseStatus.HasValue && webSocket.State == WebSocketState.CloseReceived)
                 {
-                    logger.LogInformation("Close message received, closing websocket");
+                    logger.LogDebug("Close message received, closing websocket");
                     break;
                 }
 
                 var hassMessage =
                     JsonSerializer.Deserialize<HassMessage>(new ReadOnlySpan<byte>(buffer, 0, result.Count))
-                    ?? throw new ApplicationException("Unexpected not able to deserialize");
+                    ?? throw new ApplicationException("Unexpected not able to deserialize to HassMessage");
+
                 switch (hassMessage.Type)
                 {
                     case "auth":
-                        // Just auth anything
-                        var authOkMessage = Messages.AuthOk;
+                        // Just auth ok anything
+                        var authOkMessage = Messages.AuthOkMsg;
                         await SendWebsocketMessage(webSocket, authOkMessage).ConfigureAwait(false);
                         break;
                     case "subscribe_events":
+                        _eventSubscriptions.Add(hassMessage.Id);
                         var resultMsg = Messages.ResultMsg(hassMessage.Id);
                         await SendWebsocketMessage(webSocket, resultMsg).ConfigureAwait(false);
                         break;
@@ -180,7 +83,17 @@ public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IDisp
                         await SendWebsocketMessage(webSocket, getStatesResultMsg).ConfigureAwait(false);
                         break;
                     case "call_service":
-                        logger.LogInformation("Received call_service message {Service}", hassMessage);
+                        var callServiceMsg = Messages.ResultMsg(hassMessage.Id);
+                        var callServiceCommand =
+                            JsonSerializer.Deserialize<CallServiceCommand>(
+                                new ReadOnlySpan<byte>(buffer, 0, result.Count))
+                            ?? throw new ApplicationException("Unexpected not able to deserialize call service");
+
+                        if (callServiceCommand.Service == "start_performance_test")
+                        {
+                            _perfTestTask = StartPerformanceTest(webSocket);
+                        }
+                        await SendWebsocketMessage(webSocket, callServiceMsg).ConfigureAwait(false);
                         break;
                     case "get_config":
                         var getConfigResultMsg = Messages.GetConfigResultMsg(hassMessage.Id);
@@ -219,25 +132,36 @@ public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IDisp
                         break;
                     case "input_boolean/list":
                         var inputBooleans = _inputBooleans.ToArray();
-                        var response = JsonSerializer.Serialize(inputBooleans);
+                        var jsonInputBooleans = JsonSerializer.Serialize(inputBooleans);
+                        var jsonDoc = JsonDocument.Parse(jsonInputBooleans);
+                        var response = new HassMessage {
+                            Id = hassMessage.Id,
+                            Type = "result",
+                            Success = true,
+                            ResultElement = jsonDoc.RootElement };
+                        var responseMsg = JsonSerializer.Serialize(response);
                         logger.LogInformation("Sending input_boolean/list response {Response}", response);
-                        await SendWebsocketMessage(webSocket, response).ConfigureAwait(false);
+                        await SendWebsocketMessage(webSocket, responseMsg).ConfigureAwait(false);
                         break;
+                    case "start_performance_test":
+                        await SendWebsocketMessage(webSocket, Messages.ResultMsg(hassMessage.Id)).ConfigureAwait(false);
+                        _perfTestTask = StartPerformanceTest(webSocket);
+                        break;
+
                     default:
-                        logger.LogWarning("Unknown message type {Type}", hassMessage.Type);
                         throw new ApplicationException($"Unknown message type {hassMessage.Type}");
                 }
             }
         }
         catch (OperationCanceledException)
         {
-            logger.LogInformation("Cancelled operation");
+            logger.LogDebug("Cancelled operation");
             await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal", CancellationToken.None)
                 .ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            logger.LogCritical(e, "Failed to process websocket");
+            logger.LogError(e, "Failed to process websocket");
         }
         finally
         {
@@ -251,6 +175,38 @@ public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IDisp
             }
         }
         logger.LogInformation("Websocket processing done");
+    }
+
+    /// <summary>
+    ///    Starts the performance test, sends 1 000 000 state changes as fast as possible
+    ///    and then stops the performance test.
+    ///    Todo: Make the number of sent messages configurable
+    /// </summary>
+    private async Task StartPerformanceTest(WebSocket webSocket)
+    {
+        // Make a small delay to make sure all websocket messages are processed
+        // Not worth it to make something more fancy since this is not run in the CI
+        await Task.Delay(1000).ConfigureAwait(false);
+
+        var subscription = _eventSubscriptions.FirstOrDefault();
+        if (subscription == 0)
+        {
+            logger.LogWarning("No subscriptions found, cannot start performance test");
+            return;
+        }
+
+        logger.LogInformation("Starting performance test");
+
+        var eventMessage = Messages.EventResultMsg(subscription, "on", "off");
+        for (var i = 0; i < 1000000; i++)
+        {
+            await SendWebsocketMessage(webSocket, eventMessage).ConfigureAwait(false);
+        }
+
+        // Sends the last state change with state "stop" to make the client stop the performance test
+        eventMessage = Messages.EventResultMsg(subscription, "on", "stop");
+        await SendWebsocketMessage(webSocket, eventMessage).ConfigureAwait(false);
+        logger.LogInformation("Performance test done");
     }
 
     /// <summary>
@@ -307,20 +263,13 @@ public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IDisp
         }
     }
 
-    // private sealed class AuthMessage
-    // {
-    //     [JsonPropertyName("type")] public string Type { get; set; } = string.Empty;
-    //     [JsonPropertyName("access_token")] public string AccessToken { get; set; } = string.Empty;
-    // }
-    //
-    // private sealed class SendCommandMessage
-    // {
-    //     [JsonPropertyName("type")] public string Type { get; set; } = string.Empty;
-    //     [JsonPropertyName("id")] public int Id { get; set; } = 0;
-    // }
-
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
+        await _cancelSource.CancelAsync();
+        if (_perfTestTask != null && !_perfTestTask.IsCompleted)
+        {
+            await _perfTestTask;
+        }
         _cancelSource.Dispose();
     }
 }

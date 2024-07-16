@@ -2,9 +2,6 @@
 using NetDaemon.Runtime;
 using NetDaemon.AppModel;
 using System.Reflection;
-using NetDaemon.Extensions.Logging;
-using NetDaemon.Extensions.Tts;
-using NetDaemon.Extensions.MqttEntityManager;
 using Serilog;
 #pragma warning disable CA1812
 
@@ -21,7 +18,7 @@ try
                   services
                       .AddAppsFromAssembly(Assembly.GetEntryAssembly()!)
                       // Remove this is you are not running the integration!
-                      .AddNetDaemonStateManager()
+                      //.AddNetDaemonStateManager()
               )
               .Build()
               .RunAsync()

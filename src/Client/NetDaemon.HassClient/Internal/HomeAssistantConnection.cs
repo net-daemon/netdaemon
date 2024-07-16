@@ -76,10 +76,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             combinedTokenSource.Token).ConfigureAwait(false);
 
         // The id if the message we used to subscribe should be used as the filter for the event messages
-        var observableResult = _hassMessageSubject.Where(n => n.Type == "event" && n.Id == result?.Id)
+        return _hassMessageSubject.Where(n => n.Type == "event" && n.Id == result?.Id)
             .Select(n => n.Event!);
-
-        return observableResult;
     }
 
     public async Task WaitForConnectionToCloseAsync(CancellationToken cancelToken)
@@ -213,14 +211,24 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         {
             while (!_internalCancelSource.IsCancellationRequested)
             {
-                var msg = await _transportPipeline.GetNextMessagesAsync<HassMessage>(_internalCancelSource.Token)
-                    .ConfigureAwait(false);
                 try
                 {
+                    var msg = await _transportPipeline.GetNextMessagesAsync<HassMessage>(_internalCancelSource.Token)
+                        .ConfigureAwait(false);
                     foreach (var obj in msg)
                     {
                         _hassMessageSubject.OnNext(obj);
                     }
+                }
+                catch (JsonException e)
+                {
+                    if (!_internalCancelSource.IsCancellationRequested)
+                        _logger.LogError(e, "Failed to deserialize message from Home Assistant");
+                }
+                catch (OperationCanceledException)
+                {
+                    // Normal case just exit
+                    break;
                 }
                 catch (Exception e)
                 {

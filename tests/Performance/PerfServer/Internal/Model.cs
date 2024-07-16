@@ -1,6 +1,3 @@
-
-using System.Collections;
-
 namespace NetDaemon.Tests.Performance;
 
 public record InputBoolean
