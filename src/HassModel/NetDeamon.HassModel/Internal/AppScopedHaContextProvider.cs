@@ -49,7 +49,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public EntityState? GetState(string entityId)
     {
-        return _entityStateCache.GetState(entityId).Map();
+        return _entityStateCache.GetState(entityId);
     }
 
     [Obsolete("Use Registry to navigate Entities, Devices and Areas")]
@@ -86,10 +86,9 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public IObservable<StateChange> StateAllChanges()
     {
-        return _queuedObservable.Where(n =>
-            n.EventType == "state_changed")
-            .Select(n => n.ToStateChangedEvent()!)
-            .Select(e => e.Map(this));
+        return _queuedObservable
+            .Where(n => n.EventType == "state_changed")
+            .Select(n => new StateChange(n.DataElement.GetValueOrDefault(), this));
     }
 
     public IObservable<Event> Events => _queuedObservable

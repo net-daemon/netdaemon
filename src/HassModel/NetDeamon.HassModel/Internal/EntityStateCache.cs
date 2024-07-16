@@ -11,7 +11,7 @@ internal class EntityStateCache : IDisposable
     private readonly IServiceProvider _provider;
     private readonly Subject<HassEvent> _eventSubject = new();
     private readonly Subject<HassStateChangedEventData> _innerSubject = new();
-    private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
+    private readonly ConcurrentDictionary<string, Lazy<EntityState?>> _latestStates = new();
 
     private bool _initialized;
 
@@ -43,7 +43,7 @@ internal class EntityStateCache : IDisposable
 
         if (hassStates is not null)
             foreach (var hassClientState in hassStates)
-                _latestStates[hassClientState.EntityId] = hassClientState;
+                _latestStates[hassClientState.EntityId] = new Lazy<EntityState?>(()=>hassClientState.Map());
         _initialized = true;
     }
 
@@ -51,20 +51,18 @@ internal class EntityStateCache : IDisposable
     {
         if (hassEvent.EventType == "state_changed")
         {
-            var hassStateChangedEventData = hassEvent.ToStateChangedEvent()
-                                            ?? throw new InvalidOperationException(
-                                                "Error when parsing state changed event");
-
             // Make sure to first add the new state to the cache before calling other subscribers.
-            _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
+            var entityId = hassEvent.DataElement?.GetProperty("entity_id").GetString()!;
+
+            _latestStates[entityId] = new Lazy<EntityState?>(() => hassEvent.DataElement?.GetProperty("new_state").Deserialize<HassState>().Map());
         };
         _eventSubject.OnNext(hassEvent);
     }
 
-    public HassState? GetState(string entityId)
+    public EntityState? GetState(string entityId)
     {
         if (!_initialized) throw new InvalidOperationException("StateCache has not been initialized yet");
 
-        return _latestStates.TryGetValue(entityId, out var result) ? result : null;
+        return _latestStates.GetValueOrDefault(entityId)?.Value;
     }
 }

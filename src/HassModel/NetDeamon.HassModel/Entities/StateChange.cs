@@ -5,6 +5,23 @@
 /// </summary>
 public record StateChange
 {
+    private readonly JsonElement _jsonElement;
+    private readonly IHaContext _haContext;
+    private Entity? _entity;
+    private EntityState? _old;
+    private EntityState? _new;
+
+    /// <summary>
+    /// Creates a StateChange from a jsonElement and lazy load the states
+    /// </summary>
+    /// <param name="jsonElement"></param>
+    /// <param name="haContext"></param>
+    internal StateChange(JsonElement jsonElement, IHaContext haContext)
+    {
+        _jsonElement = jsonElement;
+        _haContext = haContext;
+    }
+
     /// <summary>
     /// This should not be used under normal circumstances but can be used for unit testing of apps
     /// </summary>
@@ -13,23 +30,24 @@ public record StateChange
     /// <param name="new"></param>
     public StateChange(Entity entity, EntityState? old, EntityState? @new)
     {
-        Entity = entity;
-        New    = @new;
-        Old    = old;
+        _entity = entity;
+        _new    = @new;
+        _old    = old;
+        _haContext = null!; // haContext is not used when _entity is already initialized
     }
 
     /// <summary>The Entity that changed</summary>
-    public virtual Entity Entity { get; } = default!; // Somehow this is needed to avoid a warning about this field being initialized
+    public virtual Entity Entity => _entity ??= new Entity(_haContext, _jsonElement.GetProperty("entity_id").GetString() ?? throw  new InvalidOperationException("No Entity_id in state_change event"));
 
     /// <summary>The old state of the entity</summary>
-    public virtual EntityState? Old { get; }
+    public virtual EntityState? Old => _old ??= _jsonElement.GetProperty("old_state").Deserialize<EntityState>();
 
     /// <summary>The new state of the entity</summary>
-    public virtual EntityState? New { get; }
+    public virtual EntityState? New => _new ??= _jsonElement.GetProperty("new_state").Deserialize<EntityState>();
 }
 
 /// <summary>
-/// Represents a state change event for a strong typed entity and state 
+/// Represents a state change event for a strong typed entity and state
 /// </summary>
 /// <typeparam name="TEntity">The Type</typeparam>
 /// <typeparam name="TEntityState"></typeparam>
