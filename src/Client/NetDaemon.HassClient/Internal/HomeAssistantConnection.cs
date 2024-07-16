@@ -222,7 +222,8 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                 }
                 catch (JsonException e)
                 {
-                    if (!_internalCancelSource.IsCancellationRequested)
+                    // Only log errors if we are not closing NetDaemon of any reason
+                    if (!_internalCancelSource.IsCancellationRequested && !_isDisposed && _transportPipeline.WebSocketState != WebSocketState.Closed)
                         _logger.LogError(e, "Failed to deserialize message from Home Assistant");
                 }
                 catch (OperationCanceledException)
