@@ -40,10 +40,10 @@ public record StateChange
     public virtual Entity Entity => _entity ??= new Entity(_haContext, _jsonElement.GetProperty("entity_id").GetString() ?? throw  new InvalidOperationException("No Entity_id in state_change event"));
 
     /// <summary>The old state of the entity</summary>
-    public virtual EntityState? Old => _old ??= _jsonElement.GetProperty("old_state").Deserialize<HassState>().Map();
+    public virtual EntityState? Old => _old ??= _jsonElement.GetProperty("old_state").Deserialize<EntityState>();
 
     /// <summary>The new state of the entity</summary>
-    public virtual EntityState? New => _new ??= _jsonElement.GetProperty("new_state").Deserialize<HassState>().Map();
+    public virtual EntityState? New => _new ??= _jsonElement.GetProperty("new_state").Deserialize<EntityState>();
 }
 
 /// <summary>
