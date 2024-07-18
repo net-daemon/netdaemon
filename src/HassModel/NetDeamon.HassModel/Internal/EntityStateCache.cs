@@ -3,68 +3,62 @@ using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
 
-[SuppressMessage("", "CA1812", Justification = "Is Loaded via DependencyInjection")]
-internal class EntityStateCache : IDisposable
+internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
 {
     private IDisposable? _eventSubscription;
-    private readonly IHomeAssistantRunner _hassRunner;
-    private readonly IServiceProvider _provider;
     private readonly Subject<HassEvent> _eventSubject = new();
-    private readonly Subject<HassStateChangedEventData> _innerSubject = new();
-    private readonly ConcurrentDictionary<string, HassState?> _latestStates = new();
+    private readonly ConcurrentDictionary<string, Lazy<EntityState?>> _latestStates = new();
 
     private bool _initialized;
-
-    public EntityStateCache(IHomeAssistantRunner hassRunner, IServiceProvider provider)
-    {
-        _hassRunner = hassRunner;
-        _provider = provider;
-    }
 
     public IEnumerable<string> AllEntityIds => _latestStates.Select(s => s.Key);
 
     public IObservable<HassEvent> AllEvents => _eventSubject;
 
-    public void Dispose()
-    {
-        _innerSubject.Dispose();
-        _eventSubscription?.Dispose();
-        _eventSubject.Dispose();
-    }
-
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        _ = _hassRunner.CurrentConnection ?? throw new InvalidOperationException();
+        _ = hassRunner.CurrentConnection ?? throw new InvalidOperationException();
 
-        var events = await _hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
+        var events = await hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
         _eventSubscription = events.Subscribe(HandleEvent);
 
-        var hassStates = await _hassRunner.CurrentConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);
+        var hassStates = await hassRunner.CurrentConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);
 
-        if (hassStates is not null)
-            foreach (var hassClientState in hassStates)
-                _latestStates[hassClientState.EntityId] = hassClientState;
+        foreach (var hassClientState in hassStates ?? [])
+        {
+            _latestStates[hassClientState.EntityId] = new Lazy<EntityState?>(() => hassClientState.Map());
+        }
+
         _initialized = true;
     }
 
     private void HandleEvent(HassEvent hassEvent)
     {
+        // This method is in the 'Hot Path' as it gets executed for every event HA sends even if we are not really interested in it
         if (hassEvent.EventType == "state_changed")
         {
-            var hassStateChangedEventData = hassEvent.ToStateChangedEvent()
-                                            ?? throw new InvalidOperationException(
-                                                "Error when parsing state changed event");
+            var entityId = hassEvent.DataElement?.GetProperty("entity_id").GetString()!;
+            var newStateElement = hassEvent.DataElement?.GetProperty("new_state");
 
-            // Make sure to first add the new state to the cache before calling other subscribers.
-            _latestStates[hassStateChangedEventData.EntityId] = hassStateChangedEventData.NewState;
-        };
+            // We want to avoid deserializing to a EntityState if not needed as that is an expensive part,
+            // so we cache a Lazy instead that will deserialize only if needed
+            _latestStates[entityId] = new Lazy<EntityState?>(() => newStateElement?.Deserialize<EntityState>());
+        }
+
+        // Make sure we call other subscribers after we added the new state to the cache, so observers can also see the new value in the cache
         _eventSubject.OnNext(hassEvent);
     }
 
-    public HassState? GetState(string entityId)
+    public EntityState? GetState(string entityId)
     {
         if (!_initialized) throw new InvalidOperationException("StateCache has not been initialized yet");
 
-        return _latestStates.TryGetValue(entityId, out var result) ? result : null;
+        return _latestStates.GetValueOrDefault(entityId)?.Value;
+    }
+
+    public void Dispose()
+    {
+        _eventSubscription?.Dispose();
+        _eventSubject.Dispose();
     }
 }

@@ -20,33 +20,34 @@ internal class AppStateManager(IAppStateRepository appStateRepository,
         var hassEvents = await haConnection.SubscribeToHomeAssistantEventsAsync(null, _cancelTokenSource.Token)
             .ConfigureAwait(false);
 
+        var appByEntityId = appContext.Applications
+            .Where(a => a.Id is not null)
+            .ToDictionary(app => EntityMapperHelper.ToEntityIdFromApplicationId(app.Id!, hostEnvironment.IsDevelopment()));
+
         hassEvents
             .Where(n => n.EventType == "state_changed")
             .Select(async s =>
             {
-                var changedEvent = s.ToStateChangedEvent() ?? throw new InvalidOperationException();
+                // first check if we actually care about this state change event before deserializing the whole event
+                var eventEntityId = s.DataElement?.GetProperty("entity_id").GetString();
 
-                if (changedEvent.NewState is null || changedEvent.OldState is null)
-                    // Ignore if entity just created or deleted
-                    return;
-                if (changedEvent.NewState.State == changedEvent.OldState.State)
-                    // We only care about changed state
-                    return;
-                foreach (var app in appContext.Applications)
+                if (eventEntityId is not null && appByEntityId.TryGetValue(eventEntityId, out var app))
                 {
-                    var entityId =
-                        EntityMapperHelper.ToEntityIdFromApplicationId(app.Id ??
-                            throw new InvalidOperationException(), hostEnvironment.IsDevelopment());
-                    if (entityId != changedEvent.NewState.EntityId) continue;
+                    var changedEvent = s.ToStateChangedEvent() ?? throw new InvalidOperationException();
+
+                    if (changedEvent.NewState is null || changedEvent.OldState is null)
+                        // Ignore if entity just created or deleted
+                        return;
+                    if (changedEvent.NewState.State == changedEvent.OldState.State)
+                        // We only care about changed state
+                        return;
 
                     var appState = changedEvent.NewState?.State == "on"
                         ? ApplicationState.Enabled
                         : ApplicationState.Disabled;
 
                     await app.SetStateAsync(
-                        appState
-                    );
-                    break;
+                        appState);
                 }
             }).Subscribe();
     }
