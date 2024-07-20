@@ -26,7 +26,7 @@ public class PerformanceTestApp
                 if (x.New?.State == "stop")
                 {
                     timer.Stop();
-                    logger.LogInformation("Performance test completed in {Time}ms, with {Counter} call with performance {MsgPerSec} msg/sec", timer.ElapsedMilliseconds, counter, counter / (timer.ElapsedMilliseconds / 1000));
+                    logger.LogInformation("Performance test completed in {Time}ms, with {Counter} call with performance {MsgPerSec} msg/sec", timer.ElapsedMilliseconds, counter, Math.Round( counter / (timer.ElapsedMilliseconds / 1000.0)));
                     timer.Reset();
                 }
                 counter++;
