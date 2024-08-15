@@ -6,13 +6,13 @@ using NetDaemon.HassModel;
 namespace DebugHost.apps.Extensions;
 
 [NetDaemonApp]
-public class MttEntitySubscriptionApp : IAsyncInitializable
+public class MqttEntitySubscriptionApp : IAsyncInitializable
 {
     private readonly IHaContext _ha;
-    private readonly ILogger<MttEntitySubscriptionApp> _logger;
+    private readonly ILogger<MqttEntitySubscriptionApp> _logger;
     private readonly IMqttEntityManager _entityManager;
 
-    public MttEntitySubscriptionApp(IHaContext ha, ILogger<MttEntitySubscriptionApp> logger,
+    public MqttEntitySubscriptionApp(IHaContext ha, ILogger<MqttEntitySubscriptionApp> logger,
         IMqttEntityManager entityManager)
     {
         _ha = ha;
