@@ -46,7 +46,7 @@ public class ServiceMetaDataParserTest
     [Fact]
     public void TestServicesWithAdvancedFieldsCanBeParsed()
     {
-        var sample = File.ReadAllText(@"CodeGenerator/ServiceMetaDataSamples/Lights.json");
+        var sample = File.ReadAllText(@"CodeGenerator/ServiceMetaDataSamples/light.json");
 
         var res = Parse(sample);
         res.Should().HaveCount(1);
