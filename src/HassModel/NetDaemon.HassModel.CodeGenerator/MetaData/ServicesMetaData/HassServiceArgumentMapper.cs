@@ -17,16 +17,18 @@ internal static class HassServiceArgumentMapper
         var clrType =  selectorObject switch
         {
             null => typeof(object),
-            NumberSelector s when (s.Step ?? 1) % 1 != 0 => typeof(double),
-            NumberSelector => typeof(long),
+            NumberSelector { Step: not null } s when s.Step % 1 == 0 => typeof(long),
+            NumberSelector => typeof(double),
             EntitySelector => typeof(string),
             DeviceSelector => typeof(string),
             AreaSelector => typeof(string),
             _ => selectorObject.Type switch
             {
+                "color_rgb" => typeof(IReadOnlyCollection<int>),
                 "boolean" => typeof(bool),
-                "object" => typeof(object),
-                "time" => typeof(DateTime), // Maybe TimeOnly??,
+                "date" => typeof(DateOnly),
+                "time" => typeof(TimeOnly),
+                "datetime" => typeof(DateTime),
                 "text" => typeof(string),
                 _ => typeof(object)
             },
