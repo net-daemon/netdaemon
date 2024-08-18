@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CodeGenerator\ServiceMetaDataSamples\Lights.json">
+    <None Update="CodeGenerator\ServiceMetaDataSamples\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

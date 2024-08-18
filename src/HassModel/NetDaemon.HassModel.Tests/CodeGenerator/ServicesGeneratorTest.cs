@@ -32,7 +32,9 @@ public class ServicesGeneratorTest
                         Service = "turn_on",
                         Fields = new HassServiceField[] {
                             new() { Field = "transition", Selector = new NumberSelector(), },
-                            new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2d }, }
+                            new() { Field = "brightness", Selector = new NumberSelector { Step = 0.2d }, },
+                            new() { Field = "int_field", Selector = new NumberSelector { Step = 10 }, },
+                            new() { Field = "rgb_color", Selector = new Selector() { Type = "color_rgb" }, },
                         },
                         Target = new TargetSelector
                         {
@@ -46,38 +48,27 @@ public class ServicesGeneratorTest
         // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
 
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
+        var appCode = WrapMethodBody(
+            """
+                services.Light.TurnOn(new ServiceTarget() );
+                services.Light.TurnOn(new ServiceTarget(), transition: 12.5d, brightness: 324.5d, rgbColor: [128, 12, 23]);
+                services.Light.TurnOn(new ServiceTarget(), new () { Transition = 12.5d, Brightness = 12.3d, IntField = 2, RgbColor = [128, 12, 23] });
+                services.Light.TurnOn(new ServiceTarget(), new () { Brightness = 12.3f });
 
-                    public class Root
-                    {
-                        public void Run(IHaContext ha)
-                        {
-                            var s = new RootNameSpace.Services(ha);
+                services.Light.TurnOff(new ServiceTarget());
 
-                            s.Light.TurnOn(new ServiceTarget() );
-                            s.Light.TurnOn(new ServiceTarget(), transition: 12, brightness: 324.5f);
-                            s.Light.TurnOn(new ServiceTarget(), new (){ Transition = 12L, Brightness = 12.3f });
-                            s.Light.TurnOn(new ServiceTarget(), new (){ Brightness = 12.3f });
+                LightEntity light = entities.Light.Light1;
+                light.TurnOn();
+                light.TurnOn(transition: 12, brightness: 324.5f);
+                light.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
+                light.TurnOff();
 
-                            s.Light.TurnOff(new ServiceTarget());
-
-                            LightEntity light = new RootNameSpace.LightEntity(ha, "light.testLight");
-                            light.TurnOn();
-                            light.TurnOn(transition: 12, brightness: 324.5f);
-                            light.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
-                            light.TurnOff();
-
-                            ILightEntityCore lightCore = light;
-                            lightCore.TurnOn();
-                            lightCore.TurnOn(transition: 12, brightness: 324.5f);
-                            lightCore.TurnOn(new (){ Transition = 12L, Brightness = 12.3f });
-                            lightCore.TurnOff();
-                        }
-                    }
-                    """;
+                ILightEntityCore lightCore = light;
+                lightCore.TurnOn();
+                lightCore.TurnOn(transition: 12, brightness: 324.5f, rgbColor: [128, 12, 23]);
+                lightCore.TurnOn(new (){ Transition = 12L, Brightness = 12.3f, RgbColor = [128, 12, 23]});
+                lightCore.TurnOff();
+            """);
 
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
@@ -177,34 +168,23 @@ public class ServicesGeneratorTest
         // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
 
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
+        var appCode = WrapMethodBody(
+            """
+                services.Script.TurnOff(new ServiceTarget());
+                services.Script.TurnOff(new ServiceTarget(), new { });
 
-                    public class Root
-                    {
-                        public void Run(IHaContext ha)
-                        {
-                            var s = new RootNameSpace.Services(ha);
+                services.Script.Reload();
+                services.Script.Reload(new { });
 
-                            s.Script.TurnOff(new ServiceTarget());
-                            s.Script.TurnOff(new ServiceTarget(), new { });
+                ScriptEntity script = entities.Script.Script1;
 
-                            s.Script.Reload();
-                            s.Script.Reload(new { });
+                script.TurnOff(new { });
+                script.TurnOff();
 
-                            ScriptEntity script = new RootNameSpace.ScriptEntity(ha, "script.testScript");
-
-                            script.TurnOff(new { });
-                            script.TurnOff();
-
-                            IScriptEntityCore scriptCore = script;
-                            scriptCore.TurnOff();
-                            scriptCore.TurnOff(new { });
-                        }
-                    }
-                    """;
+                IScriptEntityCore scriptCore = script;
+                scriptCore.TurnOff();
+                scriptCore.TurnOff(new { });
+            """);
 
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
@@ -244,25 +224,16 @@ public class ServicesGeneratorTest
 
         code.ToString().Should().NotContain("rover", because:"There is no entity for domain rover");
 
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
+        var appCode = WrapMethodBody(
+            """
+                // Test the Orbit extension Method exists
+                SmartThingsEntityExtensionMethods.Orbit(entities.Orbiter.Cassini);
+                entities.Orbiter.Cassini.Orbit();
 
-                    public class Root
-                    {
-                        public void Run(Entities entities, Services services)
-                        {
-                            // Test the Orbit extension Method exists
-                            SmartThingsEntityExtensionMethods.Orbit(entities.Orbiter.Cassini);
-                            entities.Orbiter.Cassini.Orbit();
-
-                            // Test the Methods on the service classes do exist
-                            services.SmartThings.Dig(new ServiceTarget());
-                            services.SmartThings.Orbit(new ServiceTarget());
-                        }
-                    }
-                    """;
+                // Test the Methods on the service classes do exist
+                services.SmartThings.Dig(new ServiceTarget());
+                services.SmartThings.Orbit(new ServiceTarget());
+            """);
 
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
@@ -294,26 +265,17 @@ public class ServicesGeneratorTest
         code.ToString().Should().NotContain("DumbthingsEntityExtensionMethods",
             because:"There is no entity for any of the services in dumbthings");
 
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
-
-                    public class Root
-                    {
-                        public void Run(Entities entities, Services services)
-                        {
-                            // But the Method on the Dumbthings service class should still exist
-                            services.Dumbthings.PushButton(new ServiceTarget());
-                        }
-                    }
-                    """;
+        var appCode = WrapMethodBody(
+            """
+                    // But the Method on the Dumbthings service class should still exist
+                    services.Dumbthings.PushButton(new ServiceTarget());
+            """);
 
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
 
     [Fact]
-    public void TestServiceWithReturnvalueWithoutAnyMethods()
+    public void TestServiceWithReturnValueWithoutAnyMethods()
     {
         var readOnlyCollection = new HassState[] {
             new() { EntityId = "weather.hometown" },
@@ -387,20 +349,11 @@ public class ServicesGeneratorTest
         // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
 
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
-
-                    public class Root
-                    {
-                        public void Run(Entities entities, Services services)
-                        {
-                            entities.Light.Light1.SetValue(@class:2);
-                            services.Light.SetValue(new ServiceTarget(), @class:2);
-                        }
-                    }
-                    """;
+        var appCode = WrapMethodBody(
+            """
+                entities.Light.Light1.SetValue(@class:2);
+                services.Light.SetValue(new ServiceTarget(), @class:2);
+            """);
 
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
@@ -408,9 +361,7 @@ public class ServicesGeneratorTest
     [Fact]
     public void MultpileEntitySelector_ShouldGenerateArray()
     {
-        var states = new HassState[] {
-            new() { EntityId = "media_player.group1" },
-        };
+        var states = new HassState[] { new() { EntityId = "media_player.group1" } };
 
         var serviceMetaData = """
                     {
@@ -442,28 +393,72 @@ public class ServicesGeneratorTest
                     }
                     """;
 
-        var appCode = """
-                    using NetDaemon.HassModel;
-                    using NetDaemon.HassModel.Entities;
-                    using RootNameSpace;
-
-                    public class Root
-                    {
-                        public void Run(Entities entities, Services services)
-                        {
-                            entities.MediaPlayer.Group1.Join(groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
-                            services.MediaPlayer.Join(new ServiceTarget(), groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
-                        }
-                    }
-                    """;
+        var appCode = WrapMethodBody(
+            """
+                entities.MediaPlayer.Group1.Join(groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
+                services.MediaPlayer.Join(new ServiceTarget(), groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
+            """);
 
         var hassServiceDomains = Parse(serviceMetaData);
 
 // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
-
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
+
+
+    [Fact]
+    public void ValidateLightsArguments()
+    {
+        var states = new HassState[] { new() { EntityId = "light.the_light" } };
+        var hassServiceDomains = Parse(File.ReadAllText("CodeGenerator/ServiceMetaDataSamples/light.json"));
+
+        var appCode = WrapMethodBody(
+            """
+                // make sure transtion is a double and rgbColor is IReadOnlyCollection<int>
+                entities.Light.TheLight.TurnOn(transition: 0.5, rgbColor:[200, 12, 10]);
+            """);
+
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
+
+    [Fact]
+    public void CalendarArguments()
+    {
+        var states = new HassState[] { new() { EntityId = "calendar.holiday" } };
+        var hassServiceDomains = Parse(File.ReadAllText("CodeGenerator/ServiceMetaDataSamples/calendar.json"));
+
+        var appCode = WrapMethodBody(
+            """
+                entities.Calendar.Holiday.CreateEvent(summary: "Away", startDateTime: new DateTime(2024, 12, 3, 4, 2, 1), endDate: new DateOnly(2014, 12, 9));
+            """);
+
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
+    private static string WrapMethodBody(string methodBody)
+    {
+        var appCode = $$"""
+                        using System.Threading.Tasks;
+                        using NetDaemon.HassModel;
+                        using NetDaemon.HassModel.Entities;
+                        using RootNameSpace;
+                        using System;
+
+                        public class Root
+                        {
+                            public void Run(Entities entities, Services services)
+                            {
+                                {{methodBody}}
+                            }
+                        }
+                        """;
+        return appCode;
+    }
+
 
     private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)
     {
