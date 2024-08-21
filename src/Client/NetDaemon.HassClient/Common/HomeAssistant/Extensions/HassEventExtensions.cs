@@ -5,6 +5,7 @@ namespace NetDaemon.Client.HomeAssistant.Extensions;
 /// </summary>
 public static class HassEventExtensions
 {
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = DefaultSerializerOptions.DeserializationOptions;
     /// <summary>
     ///     Convert a HassEvent to a StateChangedEvent
     /// </summary>
@@ -14,7 +15,7 @@ public static class HassEventExtensions
     {
         var jsonElement = hassEvent.DataElement ??
                           throw new NullReferenceException("DataElement cannot be empty");
-        return jsonElement.Deserialize<HassStateChangedEventData>();
+        return jsonElement.Deserialize<HassStateChangedEventData>(_jsonSerializerOptions);
     }
 
     /// <summary>
@@ -26,6 +27,6 @@ public static class HassEventExtensions
     {
         var jsonElement = hassEvent.DataElement ??
                           throw new NullReferenceException("DataElement cannot be empty");
-        return jsonElement.Deserialize<HassServiceEventData>();
+        return jsonElement.Deserialize<HassServiceEventData>(_jsonSerializerOptions);
     }
 }
