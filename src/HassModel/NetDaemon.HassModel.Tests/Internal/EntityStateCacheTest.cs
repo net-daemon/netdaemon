@@ -3,7 +3,6 @@ using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Tests.TestHelpers;
-using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client.Internal.Extensions;
 using NetDaemon.HassModel.Internal;
 
@@ -49,7 +48,12 @@ public class EntityStateCacheTest
             OldState = new HassState(),
             NewState = new HassState
             {
-                State = "newState"
+                State = "newState",
+                Context = new()
+                {
+                    Id = "contextId",
+                    ParentId = "parentId"
+                }
             }
         };
 
@@ -71,6 +75,8 @@ public class EntityStateCacheTest
         // Assert
         eventObserverMock.Verify(m => m.OnNext(It.IsAny<HassEvent>()));
         cache.GetState(entityId)!.State.Should().Be("newState");
+        cache.GetState(entityId)!.Context!.Id.Should().NotBeNullOrEmpty();
+        cache.GetState(entityId)!.Context!.ParentId.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -119,6 +125,10 @@ public class EntityStateCacheTest
                 NewState = new HassState
                 {
                     State = "newState",
+                    Context = new()
+                    {
+                        Id = "contextId"
+                    },
                     AttributesJson = new {brightness = 200}.ToJsonElement()
                 }
             }.AsJsonElement()
@@ -134,6 +144,10 @@ public class EntityStateCacheTest
                 NewState = new HassState
                 {
                     State = "newState",
+                    Context = new()
+                    {
+                        Id = "contextId"
+                    },
                     AttributesJson = new {brightness = 300}.ToJsonElement()
                 }
             }.AsJsonElement()
@@ -142,6 +156,8 @@ public class EntityStateCacheTest
         // Assert
         cache.AllEntityIds.Should().BeEquivalentTo("sensor.sensor1", "sensor.sensor2");
         cache.GetState("sensor.sensor1")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(200);
+        cache.GetState("sensor.sensor1")!.Context!.Id.Should().NotBeNullOrEmpty();
         cache.GetState("sensor.sensor2")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(300);
+        cache.GetState("sensor.sensor2")!.Context!.Id.Should().NotBeNullOrEmpty();
     }
 }
