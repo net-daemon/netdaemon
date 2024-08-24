@@ -1,23 +1,26 @@
-using System.Diagnostics;
-
 namespace NetDaemon.Client.Internal.Json;
 
 /// <summary>
-/// Converts a Json element that can be a string or returns null if it is not a string
+/// Converts a Json element that can be a string or a number to as string, and returns null if not
 /// </summary>
 class EnsureStringConverter : JsonConverter<string?>
 {
     public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.String)
+        switch (reader.TokenType)
         {
-            return reader.GetString() ?? throw new UnreachableException("Token is expected to be a string");
-        }
+            case JsonTokenType.String:
+                return reader.GetString();
 
-        // Skip the children of current token
-        reader.Skip();
-        return null;
+            case JsonTokenType.Number:
+                var stringValue = reader.GetInt32();
+                return stringValue.ToString(CultureInfo.InvariantCulture);
+
+            default:
+                reader.Skip();
+                return null;
+        }
     }
 
-    public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options) => throw new NotSupportedException();
+    public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options) => writer.WriteStringValue(value);
 }
