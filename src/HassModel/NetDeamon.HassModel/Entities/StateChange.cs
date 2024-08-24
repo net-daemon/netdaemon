@@ -5,11 +5,9 @@
 /// </summary>
 public record StateChange
 {
-    private readonly JsonElement _jsonElement;
-    private readonly IHaContext _haContext;
-    private Entity? _entity;
-    private EntityState? _old;
-    private EntityState? _new;
+    private readonly Lazy<Entity> _entity;
+    private readonly Lazy<EntityState?> _old;
+    private readonly Lazy<EntityState?> _new;
 
     /// <summary>
     /// Creates a StateChange from a jsonElement and lazy load the states
@@ -18,8 +16,10 @@ public record StateChange
     /// <param name="haContext"></param>
     internal StateChange(JsonElement jsonElement, IHaContext haContext)
     {
-        _jsonElement = jsonElement;
-        _haContext = haContext;
+        _entity = new Lazy<Entity>(() =>
+            new Entity(haContext, jsonElement.GetProperty("entity_id").GetString() ?? throw new InvalidOperationException("No Entity_id in state_change event")));
+        _new = new Lazy<EntityState?>(() => jsonElement.GetProperty("new_state").Deserialize<EntityState>());
+        _old = new Lazy<EntityState?>(() => jsonElement.GetProperty("old_state").Deserialize<EntityState>());
     }
 
     /// <summary>
@@ -30,20 +30,19 @@ public record StateChange
     /// <param name="new"></param>
     public StateChange(Entity entity, EntityState? old, EntityState? @new)
     {
-        _entity = entity;
-        _new    = @new;
-        _old    = old;
-        _haContext = null!; // haContext is not used when _entity is already initialized
+        _entity = new Lazy<Entity>(() => entity);
+        _new = new Lazy<EntityState?>(() => @new);
+        _old = new Lazy<EntityState?>(() => old);
     }
 
     /// <summary>The Entity that changed</summary>
-    public virtual Entity Entity => _entity ??= new Entity(_haContext, _jsonElement.GetProperty("entity_id").GetString() ?? throw  new InvalidOperationException("No Entity_id in state_change event"));
+    public virtual Entity Entity => _entity.Value;
 
     /// <summary>The old state of the entity</summary>
-    public virtual EntityState? Old => _old ??= _jsonElement.GetProperty("old_state").Deserialize<EntityState>();
+    public virtual EntityState? Old => _old.Value;
 
     /// <summary>The new state of the entity</summary>
-    public virtual EntityState? New => _new ??= _jsonElement.GetProperty("new_state").Deserialize<EntityState>();
+    public virtual EntityState? New => _new.Value;
 }
 
 /// <summary>
