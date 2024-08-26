@@ -102,4 +102,18 @@ public class EntityTest
         // Assert
         Assert.Equal("Area Name", target.Area);
     }
+
+    [Fact]
+    public void StateChange_WithTestConstructor_PropertiesShouldNotThrow()
+    {
+        // Arrange
+        var haContextMock = new Mock<IHaContext>();
+        var target = new TestEntity(haContextMock.Object, "domain.testEntity");
+        var stateChange = new StateChange(target, null, null);
+
+        // Act & Assert
+        Assert.NotNull(stateChange.Entity);
+        Assert.Null(stateChange.Old);
+        Assert.Null(stateChange.New);
+    }
 }
