@@ -42,17 +42,17 @@ public class EntityStateCacheTest
         cache.GetState(entityId)!.State.Should().Be("InitialState", "The initial value should be available");
 
         // Act 2: now fire a state change event
-        var changedEventData = new HassStateChangedEventData
+        var changedEventData = new
         {
-            EntityId = entityId,
-            OldState = new HassState(),
-            NewState = new HassState
+            entity_id = entityId,
+            old_state = new { },
+            new_state = new
             {
-                State = "newState",
-                Context = new()
+                state = "newState",
+                context = new
                 {
-                    Id = "contextId",
-                    ParentId = "parentId"
+                    id = "contextId",
+                    parent_id = "parentId"
                 }
             }
         };
@@ -75,8 +75,8 @@ public class EntityStateCacheTest
         // Assert
         eventObserverMock.Verify(m => m.OnNext(It.IsAny<HassEvent>()));
         cache.GetState(entityId)!.State.Should().Be("newState");
-        cache.GetState(entityId)!.Context!.Id.Should().NotBeNullOrEmpty();
-        cache.GetState(entityId)!.Context!.ParentId.Should().NotBeNullOrEmpty();
+        cache.GetState(entityId)!.Context!.Id.Should().Be("contextId");
+        cache.GetState(entityId)!.Context!.ParentId.Should().Be("parentId");
     }
 
     [Fact]
@@ -118,18 +118,18 @@ public class EntityStateCacheTest
         testSubject.OnNext(new HassEvent
         {
             EventType = "state_changed",
-            DataElement = new HassStateChangedEventData
+            DataElement = new
             {
-                EntityId = "sensor.sensor1",
-                OldState = new HassState(),
-                NewState = new HassState
+                entity_id = "sensor.sensor1",
+                old_state = new { },
+                new_state = new
                 {
-                    State = "newState",
-                    Context = new()
+                    state = "newState",
+                    context = new
                     {
-                        Id = "contextId"
+                        id = "contextId"
                     },
-                    AttributesJson = new {brightness = 200}.ToJsonElement()
+                    attributes = new {brightness = 200}
                 }
             }.AsJsonElement()
         });
@@ -137,18 +137,18 @@ public class EntityStateCacheTest
         testSubject.OnNext(new HassEvent
         {
             EventType = "state_changed",
-            DataElement = new HassStateChangedEventData
+            DataElement = new
             {
-                EntityId = "sensor.sensor2",
-                OldState = new HassState(),
-                NewState = new HassState
+                entity_id = "sensor.sensor2",
+                old_state = new { },
+                new_state = new
                 {
-                    State = "newState",
-                    Context = new()
+                    state = "newState",
+                    context = new
                     {
-                        Id = "contextId"
+                        id = "contextId"
                     },
-                    AttributesJson = new {brightness = 300}.ToJsonElement()
+                    attributes = new {brightness = 300}
                 }
             }.AsJsonElement()
         });
@@ -158,6 +158,6 @@ public class EntityStateCacheTest
         cache.GetState("sensor.sensor1")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(200);
         cache.GetState("sensor.sensor1")!.Context!.Id.Should().NotBeNullOrEmpty();
         cache.GetState("sensor.sensor2")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(300);
-        cache.GetState("sensor.sensor2")!.Context!.Id.Should().NotBeNullOrEmpty();
+        cache.GetState("sensor.sensor2")!.Context!.Id.Should().Be("contextId");
     }
 }
