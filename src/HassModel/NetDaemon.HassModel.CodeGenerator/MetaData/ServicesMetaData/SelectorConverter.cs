@@ -20,10 +20,7 @@ class SelectorConverter : JsonConverter<Selector>
         Type[] executingAssemblyTypes = Assembly.GetExecutingAssembly().GetTypes();
         var selectorType = executingAssemblyTypes.FirstOrDefault(x => string.Equals($"{selectorName}Selector", x.Name, StringComparison.OrdinalIgnoreCase));
 
-        if (selectorType is null)
-        {
-            return new Selector { Type = selectorName};
-        }
+        selectorType ??= typeof(Selector);
 
         var deserialize = (Selector?)element.Deserialize(selectorType, ServiceMetaDataParser.SerializerOptions);
         deserialize ??= (Selector)Activator.CreateInstance(selectorType)!;
