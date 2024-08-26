@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
@@ -363,35 +364,35 @@ public class ServicesGeneratorTest
     {
         var states = new HassState[] { new() { EntityId = "media_player.group1" } };
 
-        var serviceMetaData = """
-                    {
-                      "media_player": {
-                        "join": {
-                          "name": "Join",
-                          "description": "Group players together. Only works on platforms with support for player groups.",
-                          "fields": {
-                            "group_members": {
-                              "name": "Group members",
-                              "description": "The players which will be synced with the target player.",
-                              "required": true,
-                              "example": "- media_player.multiroom_player2\n- media_player.multiroom_player3\n",
-                              "selector": {
-                                "entity": {
-                                  "multiple": true,
-                                  "domain": "media_player"
-                                }
-                              }
-                            }
-                          },
-                          "target": {
-                            "entity": {
-                              "domain": "media_player"
-                            }
-                          }
-                        }
-                     }
-                    }
-                    """;
+        var hassServiceDomains = Parse("""
+                                       {
+                                         "media_player": {
+                                           "join": {
+                                             "name": "Join",
+                                             "description": "Group players together. Only works on platforms with support for player groups.",
+                                             "fields": {
+                                               "group_members": {
+                                                 "name": "Group members",
+                                                 "description": "The players which will be synced with the target player.",
+                                                 "required": true,
+                                                 "example": "- media_player.multiroom_player2\n- media_player.multiroom_player3\n",
+                                                 "selector": {
+                                                   "entity": {
+                                                     "multiple": true,
+                                                     "domain": "media_player"
+                                                   }
+                                                 }
+                                               }
+                                             },
+                                             "target": {
+                                               "entity": {
+                                                 "domain": "media_player"
+                                               }
+                                             }
+                                           }
+                                        }
+                                       }
+                                       """);
 
         var appCode = WrapMethodBody(
             """
@@ -399,12 +400,62 @@ public class ServicesGeneratorTest
                 services.MediaPlayer.Join(new ServiceTarget(), groupMembers: new string [] {"media_player.multiroom_player1", "media_player.multiroom_player2"});
             """);
 
-        var hassServiceDomains = Parse(serviceMetaData);
 
 // Act:
         var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
+
+
+        [Fact]
+    public void MultipleTextSelector_ShouldGenerateArray()
+    {
+        var states = new HassState[] { new() { EntityId = "input_select.home_mode" } };
+
+        var hassServiceDomains = Parse("""
+                                       {
+                                         "input_select": {
+                                           "set_options": {
+                                               "name": "Set options",
+                                               "description": "Sets the options.",
+                                               "fields": {
+                                                   "options": {
+                                                       "required": true,
+                                                       "example": "[\u0022Item A\u0022, \u0022Item B\u0022, \u0022Item C\u0022]",
+                                                       "selector": {
+                                                           "text": {
+                                                               "multiple": true
+                                                           }
+                                                       },
+                                                       "name": "Options",
+                                                       "description": "List of options."
+                                                   }
+                                                 },
+                                                 "target": {
+                                                   "entity": {
+                                                     "domain": "input_select"
+                                                   }
+                                                 }
+                                               }
+                                            }
+                                          }
+                                       """);
+
+        var appCode = WrapMethodBody(
+            """
+            entities.InputSelect.HomeMode.SetOptions(options: new string [] {"home", "away"});
+            entities.InputSelect.HomeMode.SetOptions(options: ["home", "away"]);
+
+            services.InputSelect.SetOptions(new ServiceTarget(), options: new string [] {"home", "away"});
+            services.InputSelect.SetOptions(new ServiceTarget(), options: ["home", "away"]);
+            """);
+
+// Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
+
 
 
     [Fact]
@@ -460,7 +511,7 @@ public class ServicesGeneratorTest
     }
 
 
-    private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)
+    private static IReadOnlyCollection<HassServiceDomain> Parse([StringSyntax("json")] string sample)
     {
         var element = JsonDocument.Parse(sample).RootElement;
         var result = ServiceMetaDataParser.Parse(element, out var errors);

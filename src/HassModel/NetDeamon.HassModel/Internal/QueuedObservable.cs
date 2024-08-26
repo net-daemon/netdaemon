@@ -19,7 +19,7 @@ namespace NetDaemon.HassModel.Internal;
 /// </remarks>
 internal sealed class QueuedObservable<T> : IObservable<T>, IAsyncDisposable
 {
-    private const int Capacity = 100;
+    private const int Capacity = 1024;
     private readonly ILogger _logger;
     private volatile bool _isDisposed;
 
