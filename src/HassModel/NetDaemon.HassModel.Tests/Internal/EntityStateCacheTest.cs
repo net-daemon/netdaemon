@@ -127,7 +127,7 @@ public class EntityStateCacheTest
                     state = "newState",
                     context = new
                     {
-                        id = "contextId"
+                        id = "contextId1"
                     },
                     attributes = new {brightness = 200}
                 }
@@ -146,7 +146,7 @@ public class EntityStateCacheTest
                     state = "newState",
                     context = new
                     {
-                        id = "contextId"
+                        id = "contextId2"
                     },
                     attributes = new {brightness = 300}
                 }
@@ -156,8 +156,8 @@ public class EntityStateCacheTest
         // Assert
         cache.AllEntityIds.Should().BeEquivalentTo("sensor.sensor1", "sensor.sensor2");
         cache.GetState("sensor.sensor1")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(200);
-        cache.GetState("sensor.sensor1")!.Context!.Id.Should().NotBeNullOrEmpty();
+        cache.GetState("sensor.sensor1")!.Context!.Id.Should().Be("contextId1");
         cache.GetState("sensor.sensor2")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(300);
-        cache.GetState("sensor.sensor2")!.Context!.Id.Should().Be("contextId");
+        cache.GetState("sensor.sensor2")!.Context!.Id.Should().Be("contextId2");
     }
 }
