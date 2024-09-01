@@ -3,7 +3,6 @@ using NetDaemon.Client;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.HassModel.Tests.TestHelpers;
-using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.Client.Internal.Extensions;
 using NetDaemon.HassModel.Internal;
 
@@ -43,13 +42,18 @@ public class EntityStateCacheTest
         cache.GetState(entityId)!.State.Should().Be("InitialState", "The initial value should be available");
 
         // Act 2: now fire a state change event
-        var changedEventData = new HassStateChangedEventData
+        var changedEventData = new
         {
-            EntityId = entityId,
-            OldState = new HassState(),
-            NewState = new HassState
+            entity_id = entityId,
+            old_state = new { },
+            new_state = new
             {
-                State = "newState"
+                state = "newState",
+                context = new
+                {
+                    id = "contextId",
+                    parent_id = "parentId"
+                }
             }
         };
 
@@ -71,6 +75,8 @@ public class EntityStateCacheTest
         // Assert
         eventObserverMock.Verify(m => m.OnNext(It.IsAny<HassEvent>()));
         cache.GetState(entityId)!.State.Should().Be("newState");
+        cache.GetState(entityId)!.Context!.Id.Should().Be("contextId");
+        cache.GetState(entityId)!.Context!.ParentId.Should().Be("parentId");
     }
 
     [Fact]
@@ -112,14 +118,18 @@ public class EntityStateCacheTest
         testSubject.OnNext(new HassEvent
         {
             EventType = "state_changed",
-            DataElement = new HassStateChangedEventData
+            DataElement = new
             {
-                EntityId = "sensor.sensor1",
-                OldState = new HassState(),
-                NewState = new HassState
+                entity_id = "sensor.sensor1",
+                old_state = new { },
+                new_state = new
                 {
-                    State = "newState",
-                    AttributesJson = new {brightness = 200}.ToJsonElement()
+                    state = "newState",
+                    context = new
+                    {
+                        id = "contextId1"
+                    },
+                    attributes = new {brightness = 200}
                 }
             }.AsJsonElement()
         });
@@ -127,14 +137,18 @@ public class EntityStateCacheTest
         testSubject.OnNext(new HassEvent
         {
             EventType = "state_changed",
-            DataElement = new HassStateChangedEventData
+            DataElement = new
             {
-                EntityId = "sensor.sensor2",
-                OldState = new HassState(),
-                NewState = new HassState
+                entity_id = "sensor.sensor2",
+                old_state = new { },
+                new_state = new
                 {
-                    State = "newState",
-                    AttributesJson = new {brightness = 300}.ToJsonElement()
+                    state = "newState",
+                    context = new
+                    {
+                        id = "contextId2"
+                    },
+                    attributes = new {brightness = 300}
                 }
             }.AsJsonElement()
         });
@@ -142,6 +156,8 @@ public class EntityStateCacheTest
         // Assert
         cache.AllEntityIds.Should().BeEquivalentTo("sensor.sensor1", "sensor.sensor2");
         cache.GetState("sensor.sensor1")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(200);
+        cache.GetState("sensor.sensor1")!.Context!.Id.Should().Be("contextId1");
         cache.GetState("sensor.sensor2")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(300);
+        cache.GetState("sensor.sensor2")!.Context!.Id.Should().Be("contextId2");
     }
 }
