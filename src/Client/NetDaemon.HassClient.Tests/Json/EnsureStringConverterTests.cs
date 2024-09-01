@@ -103,4 +103,27 @@ public class EnsureStringConverterTests
 
         hassDevice!.SoftwareVersion.Should().Be("12.3");
     }
+
+    [Fact]
+    public void TestConverLongString()
+    {
+        var hassDevice = JsonSerializer.Deserialize<HassDevice>("""
+                {
+                    "config_entries": [],
+                    "connections": [],
+                    "manufacturer": "Google Inc.",
+                    "model": 123123,
+                    "name": 123,
+                    "serial_number": "1.0",
+                    "sw_version": 1234567890123,
+                    "hw_version": null,
+                    "id": "42cdda32a2a3428e86c2e27699d79ead",
+                    "via_device_id": null,
+                    "area_id": null,
+                    "name_by_user": null
+                }
+        """);
+
+        hassDevice!.SoftwareVersion.Should().Be("1234567890123");
+    }
 }
