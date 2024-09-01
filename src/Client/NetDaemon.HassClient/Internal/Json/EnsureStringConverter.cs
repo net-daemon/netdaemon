@@ -13,8 +13,14 @@ class EnsureStringConverter : JsonConverter<string?>
                 return reader.GetString();
 
             case JsonTokenType.Number:
-                var stringValue = reader.GetInt32();
-                return stringValue.ToString(CultureInfo.InvariantCulture);
+                if (reader.TryGetInt32(out var intValue))
+                    return intValue.ToString(CultureInfo.InvariantCulture);
+                if (reader.TryGetInt64(out var longValue))
+                    return longValue.ToString(CultureInfo.InvariantCulture);
+                if (reader.TryGetDouble(out var doubleValue))
+                    return doubleValue.ToString(CultureInfo.InvariantCulture);
+
+                return null;
 
             default:
                 reader.Skip();
