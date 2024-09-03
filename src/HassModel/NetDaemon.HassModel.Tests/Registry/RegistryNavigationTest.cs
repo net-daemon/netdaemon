@@ -29,14 +29,21 @@ public class RegistryNavigationTest
         return new HaRegistry(haContextMock.Object, cache);
     }
 
-    [Fact]
-    public async Task TestNavigateModel()
+    private void InitializeDataModel()
     {
         SetupCommandResult("config/entity_registry/list",
             [
                 new HassEntity { EntityId = "light.mb_nightlight", AreaId = "master_bedroom"},
                 new HassEntity { EntityId = "light.babyroom_nightlight", AreaId = "baby_room", Labels = ["stay_on"] },
                 new HassEntity { EntityId = "sensor.babyroom_humidity", DeviceId = "24:AB:1B:9A"},
+                new HassEntity { EntityId = "light.desk_lamp", AreaId = "study", Options = new HassEntityOptions()
+                    {
+                        Conversation = new HassEntityConversationOptions()
+                        {
+                            ShouldExpose = true
+                        }
+                    }
+                },
             ]);
 
         SetupCommandResult("config/device_registry/list",
@@ -65,7 +72,13 @@ public class RegistryNavigationTest
                 new HassLabel { Id = "bedroom", Name = "Bedroom", Description = "Areas that serve as bedrooms" },
                 new HassLabel { Id = "stay_on", Name = "Stay On", Description = "Lights that should stay on at night" },
             ]);
+    }
 
+    [Fact]
+    public async Task TestNavigateModel()
+    {
+        // Setup:
+        InitializeDataModel();
 
         // Act:
         var registry = await InitializeCacheAndBuildRegistry();
@@ -77,6 +90,7 @@ public class RegistryNavigationTest
             new { Id = "light.mb_nightlight" },
             new { Id = "light.babyroom_nightlight" },
             new { Id = "sensor.babyroom_humidity" },
+            new { Id = "light.desk_lamp"}
         ]);
 
         registry.Devices.Should().BeEquivalentTo(
@@ -137,7 +151,24 @@ public class RegistryNavigationTest
 
     }
 
-    private  void SetupCommandResult<TResult>(string command, IReadOnlyCollection<TResult> result)
+    [Fact]
+    public async Task TestConversationOptions()
+    {
+        // Setup:
+        InitializeDataModel();
+
+        // Act:
+        var registry = await InitializeCacheAndBuildRegistry();
+
+        registry.GetEntityRegistration("light.desk_lamp")!
+            .Options!
+            .ConversationOptions!
+            .ShouldExpose
+            .Should()
+            .BeTrue();
+    }
+
+        private void SetupCommandResult<TResult>(string command, IReadOnlyCollection<TResult> result)
     {
         _connectionMock.Setup(m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<TResult>>(
             new SimpleCommand(command), It.IsAny<CancellationToken>())).ReturnsAsync(result);
