@@ -120,6 +120,7 @@ internal static class HassObjectMapper
             Device = device,
             Labels = hassEntity.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
             Platform = hassEntity.Platform,
+            Options = new EntityOptions(hassEntity.Options)
         };
     }
 
