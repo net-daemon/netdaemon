@@ -11,11 +11,6 @@ public record EntityOptions
     public ConversationOptions? ConversationOptions { get; init; }
 
     /// <summary>
-    /// Default Constructor
-    /// </summary>
-    public EntityOptions() { }
-
-    /// <summary>
     /// Conversion from Websocket/API Model
     /// </summary>
     /// <param name="entityOpts"></param>
