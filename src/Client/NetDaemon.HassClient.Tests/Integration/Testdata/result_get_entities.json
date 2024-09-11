@@ -1,26 +1,37 @@
 {
-  "id": 3,
-  "type": "result",
-  "success": true,
-  "result": [
-    {
-      "config_entry_id": null,
-      "device_id": "42cdda32a2a3428e86c2e27699d79ead",
-      "disabled_by": null,
-      "entity_id": "media_player.tv_uppe2",
-      "area_id": "42cdda1212a3428e86c2e27699d79ead",
-      "name": null,
-      "icon": null,
-      "platform": "cast"
-    },
-    {
-      "config_entry_id": "4b85129c61c74b27bd90e593f6b7482e",
-      "device_id": "6e17380a6d2744d18045fe4f627db706",
-      "disabled_by": null,
-      "entity_id": "sensor.plex_plex",
-      "name": null,
-      "icon": null,
-      "platform": "plex"
-    }
-  ]
+    "id": 3,
+    "type": "result",
+    "success": true,
+    "result": [
+        {
+            "config_entry_id": null,
+            "device_id": "42cdda32a2a3428e86c2e27699d79ead",
+            "disabled_by": null,
+            "entity_id": "media_player.tv_uppe2",
+            "area_id": "42cdda1212a3428e86c2e27699d79ead",
+            "name": null,
+            "icon": null,
+            "platform": "cast",
+            "options": {
+                "conversation": {
+                    "should_expose": true
+                }
+            }
+
+        },
+        {
+            "config_entry_id": "4b85129c61c74b27bd90e593f6b7482e",
+            "device_id": "6e17380a6d2744d18045fe4f627db706",
+            "disabled_by": null,
+            "entity_id": "sensor.plex_plex",
+            "name": null,
+            "icon": null,
+            "platform": "plex",
+            "options": {
+                "conversation": {
+                    "should_expose": false
+                }
+            }
+        }
+    ]
 }

@@ -34,4 +34,9 @@ public record EntityRegistration
     /// An identifier for the integration that created this Entity
     /// </summary>
     public string? Platform { get; init; }
+
+    /// <summary>
+    /// The options set for this Entity
+    /// </summary>
+	public EntityOptions? Options {get; init;}
 }
