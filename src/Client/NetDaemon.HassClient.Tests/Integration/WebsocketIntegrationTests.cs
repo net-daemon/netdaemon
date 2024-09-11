@@ -126,6 +126,19 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         entities.Should().HaveCount(2);
     }
 
+
+    [Fact]
+    public async Task TestGetEntitiesShouldHaveConversationOptions()
+    {
+        await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
+        var entities = await ctx.HomeAssistantConnection
+            .GetEntitiesAsync(TokenSource.Token)
+            .ConfigureAwait(false);
+
+        bool? should_expose = entities?.ElementAt(0).Options?.Conversation?.ShouldExpose;
+        should_expose.Should().BeTrue();
+    }
+
     [Fact]
     public async Task TestGetConfigShouldReturnCorrectInformation()
     {
