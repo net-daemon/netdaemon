@@ -35,37 +35,38 @@ internal static class HelpersGenerator
     //
     //  public static IServiceCollection AddGeneratedCode(this IServiceCollection serviceCollection)
     //  {
+    //      serviceCollection.AddTransient<IEntityFactory, GeneratedEntityFactory>();
     //      serviceCollection.AddTransient<Entities>();
     //      serviceCollection.AddTransient<AutomationEntities>();
     //      serviceCollection.AddTransient<BinarySensorEntities>();
+    //      ...
     //      serviceCollection.AddTransient<Services>();
     //      serviceCollection.AddTransient<AlarmControlPanelServices>();
+    //      ...
     //      return serviceCollection;
     // }
     private static MethodDeclarationSyntax BuildAddHomeAssistantGenerated(IEnumerable<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains)
     {
+        var addGeneratedEntityFactory = ParseStatement("serviceCollection.AddTransient<IEntityFactory, GeneratedEntityFactory>();");
 
         var injectableTypes = GetInjectableTypes(domains, orderedServiceDomains);
+        var addClasses = injectableTypes.Select(name => ParseStatement($"serviceCollection.AddTransient<{name}>();"));
 
-        var statements = injectableTypes.Select(name =>
-            ExpressionStatement(InvocationExpression(
-                MemberAccessExpression(SimpleMemberAccessExpression, IdentifierName("serviceCollection"),
-                    GenericName(Identifier("AddTransient"))
-                        .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList<TypeSyntax>(IdentifierName(name))))))));
+        IEnumerable<StatementSyntax> statements = [addGeneratedEntityFactory, ..addClasses, ReturnStatement(IdentifierName("serviceCollection"))];
 
         return MethodDeclaration(IdentifierName("IServiceCollection"), Identifier("AddHomeAssistantGenerated"))
             .WithModifiers(TokenList(Token(PublicKeyword), Token(StaticKeyword)))
             .WithParameterList(ParameterList(SingletonSeparatedList(Parameter(Identifier("serviceCollection"))
                 .WithModifiers(TokenList(Token(ThisKeyword))).WithType(IdentifierName("IServiceCollection")))))
-            .WithBody(Block(
-                statements
-                    .Append<StatementSyntax>(ReturnStatement(IdentifierName("serviceCollection")))))
+            .WithBody(Block(statements))
             .WithSummaryComment("Registers all injectable generated types in the serviceCollection");
     }
 
     private static IEnumerable<string> GetInjectableTypes(IEnumerable<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains) =>
-        domains.Select(d => d.EntitiesForDomainClassName)
-            .Prepend(EntitiesClassName)
-            .Append(ServicesClassName)
-            .Union(orderedServiceDomains.Select(d => GetServicesTypeName(d.Domain)));
+        [
+            EntitiesClassName,
+            .. domains.Select(d => d.EntitiesForDomainClassName),
+            ServicesClassName,
+            ..orderedServiceDomains.Select(d => GetServicesTypeName(d.Domain))
+        ];
 }

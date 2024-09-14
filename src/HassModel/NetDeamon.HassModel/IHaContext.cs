@@ -54,6 +54,13 @@ public interface IHaContext
     Area? GetAreaFromEntityId(string entityId);
 
     /// <summary>
+    /// Creates an Entity based on the provided entityId
+    /// </summary>
+    /// <param name="entityId">The Id of the entity to create</param>
+    /// <returns>An instance of <see cref="Entity"/> or derived type for this EntitiyId</returns>
+    Entity Entity(string entityId) => new (this, entityId);
+
+    /// <summary>
     /// Gets the EntityRegistration for a given EntityId
     /// </summary>
     /// <param name="entityId"></param>
@@ -66,4 +73,5 @@ public interface IHaContext
     /// <param name="eventType">The event_type for the event</param>
     /// <param name="data">The data for the event, will be json serialized as the data element</param>
     void SendEvent(string eventType, object? data = null);
+
 }
