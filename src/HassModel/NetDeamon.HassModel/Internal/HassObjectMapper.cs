@@ -120,8 +120,17 @@ internal static class HassObjectMapper
             Device = device,
             Labels = hassEntity.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
             Platform = hassEntity.Platform,
-            Options = new EntityOptions(hassEntity.Options)
+            Options = hassEntity.Options?.Map()
         };
     }
 
+    private static EntityOptions Map(this HassEntityOptions entityOptions)
+    {
+        return new EntityOptions { ConversationOptions = entityOptions.Conversation?.Map() };
+    }
+
+    private static ConversationOptions Map(this HassEntityConversationOptions options)
+    {
+        return new ConversationOptions { ShouldExpose = options.ShouldExpose };
+    }
 }
