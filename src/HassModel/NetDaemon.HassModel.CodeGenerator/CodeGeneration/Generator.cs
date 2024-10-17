@@ -16,11 +16,12 @@ internal static class Generator
         var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
 
         var helpers = HelpersGenerator.Generate(entityDomains, orderedServiceDomains);
+        var entityFactory = EntityFactoryGenerator.Generate(entityDomains);
         var entityClasses = EntitiesGenerator.Generate(entityDomains);
         var serviceClasses = ServicesGenerator.Generate(orderedServiceDomains);
         var extensionMethodClasses = ExtensionMethodsGenerator.Generate(orderedServiceDomains, entityDomains);
 
-        return new[] { helpers, entityClasses, serviceClasses, extensionMethodClasses }.SelectMany(x => x).ToArray();
+        return [..helpers, entityFactory, ..entityClasses, ..serviceClasses, ..extensionMethodClasses];
     }
 
     public static CompilationUnitSyntax BuildCompilationUnit(string namespaceName, params MemberDeclarationSyntax[] generatedTypes)
@@ -43,7 +44,7 @@ internal static class Generator
         // Generated using NetDaemon CodeGenerator nd-codegen v{VersionHelper.GeneratorVersion}
         //   At: {DateTime.Now:O}
         //
-        // *** Make sure the version of the codegen tool and your nugets Joysoftware.NetDaemon.* have the same version.***
+        // *** Make sure the version of the codegen tool and your nugets NetDaemon.* have the same version.***
         // You can use following command to keep it up to date with the latest version:
         //   dotnet tool update NetDaemon.HassModel.CodeGen
         //

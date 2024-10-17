@@ -18,6 +18,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     private readonly QueuedObservable<HassEvent> _queuedObservable;
     private readonly IBackgroundTaskTracker _backgroundTaskTracker;
     private readonly ILogger<AppScopedHaContextProvider> _logger;
+    private readonly IEntityFactory _entityFactory;
 
     private readonly CancellationTokenSource _tokenSource = new();
 
@@ -27,7 +28,8 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         IHomeAssistantApiManager apiManager,
         IBackgroundTaskTracker backgroundTaskTracker,
         IServiceProvider serviceProvider,
-        ILogger<AppScopedHaContextProvider> logger)
+        ILogger<AppScopedHaContextProvider> logger,
+        IEntityFactory entityFactory)
     {
         _entityStateCache = entityStateCache;
         _hassRunner = hassRunner;
@@ -38,6 +40,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         _queuedObservable = new QueuedObservable<HassEvent>(_entityStateCache.AllEvents, logger);
         _backgroundTaskTracker = backgroundTaskTracker;
         _logger = logger;
+        _entityFactory = entityFactory;
 
         // The HaRegistry needs a reference to this AppScopedHaContextProvider And we need the reference
         // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
@@ -62,8 +65,11 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public IReadOnlyList<Entity> GetAllEntities()
     {
-        return _entityStateCache.AllEntityIds.Select(id => new Entity(this, id)).ToList();
+        return _entityStateCache.AllEntityIds.Select(id => _entityFactory.CreateEntity(this, id)).ToList();
     }
+
+    public Entity Entity(string entityId) => _entityFactory.CreateEntity(this, entityId);
+
 
     public void CallService(string domain, string service, ServiceTarget? target = null, object? data = null)
     {

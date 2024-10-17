@@ -490,7 +490,7 @@ public class ServicesGeneratorTest
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
 
-    private static string WrapMethodBody(string methodBody)
+    private static string WrapMethodBody([StringSyntax("C#")]string methodBody)
     {
         var appCode = $$"""
                         using System.Threading.Tasks;
