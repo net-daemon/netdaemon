@@ -18,11 +18,6 @@ public static class HaContextExtensions
     }
 
     /// <summary>
-    /// Creates a new Entity instance
-    /// </summary>
-    public static Entity Entity(this IHaContext haContext, string entityId) => new (haContext, entityId);
-
-    /// <summary>
     /// Filters events on their EventType and retrieves their data in a types object
     /// </summary>
     /// <param name="events">The Event stream</param>

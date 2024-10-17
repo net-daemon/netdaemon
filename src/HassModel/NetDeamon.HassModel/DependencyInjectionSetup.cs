@@ -37,5 +37,6 @@ public static class DependencyInjectionSetup
         services.AddTransient<IHaContext>(s => s.GetRequiredService<AppScopedHaContextProvider>());
         services.AddScoped<TriggerManager>();
         services.AddTransient<ITriggerManager>(s => s.GetRequiredService<TriggerManager>());
+        services.AddTransient<IEntityFactory, DefaultEntityFactory>();
     }
 }

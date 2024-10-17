@@ -2,14 +2,6 @@
 
 internal static class HassObjectMapper
 {
-    public static StateChange Map(this HassStateChangedEventData source, IHaContext haContext)
-    {
-        return new StateChange(
-            new Entity(haContext, source.EntityId),
-            Map(source.OldState),
-            Map(source.NewState));
-    }
-
     public static EntityState? Map(this HassState? hassState)
     {
         if (hassState == null) return null;

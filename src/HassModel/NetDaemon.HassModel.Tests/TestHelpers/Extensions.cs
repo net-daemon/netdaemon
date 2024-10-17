@@ -38,8 +38,8 @@ internal static class Extensions
         mock.Setup(expression).Callback(() => tcs.SetResult(true));
         await Task.WhenAny(tcs.Task, Task.Delay(5000));
         mock.Verify(expression);
-    }    
-    
+    }
+
     public static async Task WaitForInvocation<T>(this Mock<T> mock, Expression<Action<T>> expression)
         where T : class
     {

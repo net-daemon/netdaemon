@@ -25,7 +25,7 @@ public class RegistryNavigationTest
         var cache = new RegistryCache(runnerMock.Object, new NullLogger<RegistryCache>());
         await cache.InitializeAsync(CancellationToken.None);
 
-        var haContextMock = new Mock<IHaContext>();
+        var haContextMock = new Mock<IHaContext> { CallBase = true };
         return new HaRegistry(haContextMock.Object, cache);
     }
 

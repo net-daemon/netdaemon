@@ -12,12 +12,10 @@ public record StateChange
     /// <summary>
     /// Creates a StateChange from a jsonElement and lazy load the states
     /// </summary>
-    /// <param name="jsonElement"></param>
-    /// <param name="haContext"></param>
     internal StateChange(JsonElement jsonElement, IHaContext haContext)
     {
         _entity = new Lazy<Entity>(() =>
-            new Entity(haContext, jsonElement.GetProperty("entity_id").GetString() ?? throw new InvalidOperationException("No Entity_id in state_change event")));
+            haContext.Entity(jsonElement.GetProperty("entity_id").GetString() ?? throw new InvalidOperationException("No Entity_id in state_change event")));
         _new = new Lazy<EntityState?>(() => jsonElement.GetProperty("new_state").Deserialize<EntityState>());
         _old = new Lazy<EntityState?>(() => jsonElement.GetProperty("old_state").Deserialize<EntityState>());
     }
