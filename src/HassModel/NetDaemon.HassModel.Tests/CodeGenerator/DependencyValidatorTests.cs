@@ -14,7 +14,7 @@ public class DependencyValidatorTests
         // ARRANGE
 
         // ACT
-        var result = DependencyValidator.TrimPreReleaseVersion(version);
+        var result = VersionValidator.TrimPreReleaseVersion(version);
 
         // ASSERT
         result.Should().Be(expected);
