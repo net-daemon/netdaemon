@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using System.Text.Json;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.Model;
@@ -175,6 +176,38 @@ public class CodeGeneratorTest
                         """;
         CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
     }
+
+    [Fact]
+    public void TestAttributeWithoutValidCSharpChars()
+    {
+        // Numeric entities should be generated for input_numbers and sensors with a unit_of_measurement attribute
+        var entityStates = new HassState[] {
+            new()
+            {
+                EntityId = "InputNumber.TargetTemperature",
+                AttributesJson = JsonSerializer.Deserialize<JsonElement>("""{"----" :  "bogus", "&^%" :  "more bugus"} """),
+            }
+        };
+        var generatedCode = CodeGenTestHelper.GenerateCompilationUnit(_settings, entityStates, Array.Empty<HassServiceDomain>());
+        var appCode = """
+                        using NetDaemon.HassModel.Entities;
+                        using NetDaemon.HassModel;
+                        using RootNameSpace;
+                        using System.Collections.Generic;
+
+                        public class Root
+                        {
+                            public void Run(Entities entities)
+                            {
+                                InputNumberEntity targetTempEntity = entities.InputNumber.TargetTemperature;
+                                string? bogus1 = targetTempEntity.Attributes?.__0;
+                                string? bogus2 =  targetTempEntity.Attributes?.__1;
+                             }
+                        }
+                        """;
+        CodeGenTestHelper.AssertCodeCompiles(generatedCode.ToString(), appCode);
+    }
+
 
     [Fact]
     public void TestNumberExtensionMethodGeneration()

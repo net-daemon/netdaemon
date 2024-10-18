@@ -22,12 +22,12 @@ internal static class StringExtensions
 
         name = Regex.Replace(name, "[^a-zA-Z0-9_]+", "", RegexOptions.Compiled);
 
-        if (char.IsAsciiDigit(name[0]))
+        if (name.Length == 0 || char.IsAsciiDigit(name[0]))
             name = "_" + name;
 
         return name;
     }
-        
+
     public static string ToPascalCase(this string str)
     {
         var build = new StringBuilder(str.Length);
