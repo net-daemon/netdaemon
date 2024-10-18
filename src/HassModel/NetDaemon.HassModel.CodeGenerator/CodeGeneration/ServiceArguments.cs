@@ -62,7 +62,10 @@ internal class ServiceArguments
 
         return $"new {TypeName} {{  { string.Join(", ", propertyInitializers) }  }}";
     }
-    
+
+    /// <summary>
+    /// If the identifier matches a C# keyword we need to prefix it with a @
+    /// </summary>
     private static string EscapeIfRequired(string name)
     {
         var match = SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ||
