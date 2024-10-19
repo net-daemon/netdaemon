@@ -62,7 +62,7 @@ public static class VersionValidator
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($$"""
-                                You are not using the latest version of nd-codegen ({{maxVersion.ToString(3)}}).
+                                You are not using the latest version of nd-codegen ({{maxVersion?.ToString(3) ?? "NA"}}).
                                 It is advised to keep the ND-codegen tool and the NetDaemon nuget packages up to date.
                                 """);
             Console.ResetColor();
