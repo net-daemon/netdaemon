@@ -20,9 +20,9 @@ public static class VersionHelper
     /// </summary>
     public static void PrintVersion()
     {
-        Console.Write("Codegen version: ");
+        Console.Write("nd-codegen version: ");
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(GeneratorVersion);
+        Console.WriteLine(GeneratorVersion.ToString(3));
         Console.ResetColor();
     }
 }
