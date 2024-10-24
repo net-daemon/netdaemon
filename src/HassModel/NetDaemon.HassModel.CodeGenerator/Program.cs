@@ -18,7 +18,8 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
 generationSettings.GenerateOneFilePerEntity = args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-fpe");
 
 VersionHelper.PrintVersion();
-DependencyValidator.ValidatePackageRefrences();
+await VersionValidator.ValidateLatestVersion();
+VersionValidator.ValidatePackageReferences();
 
 var controller = new Controller(generationSettings, haSettings);
 await controller.RunAsync().ConfigureAwait(false);
