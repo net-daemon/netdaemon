@@ -1,15 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Xml;
+using NuGet.Common;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
-public static class DependencyValidator
+public static class VersionValidator
 {
     /// <summary>
     /// Check if the PackageReferences for the NetDameon Nugets match the version of the nd-codegen tool
     /// </summary>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
-    public static void ValidatePackageRefrences()
+    public static void ValidatePackageReferences()
     {
         try
         {
@@ -33,6 +36,49 @@ public static class DependencyValidator
             // ignored, we do not want to fail in case something goes wrong in eg. parsing the project files
             Console.WriteLine("Unable to validate PackageReferences");
             Console.WriteLine(ex);
+        }
+    }
+
+    public static async Task ValidateLatestVersion()
+    {
+        try
+        {
+            var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var packageSearchResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var metaData = await packageSearchResource.GetMetadataAsync(
+                packageId: "NetDaemon.HassModel.CodeGen",
+                includePrerelease: false,
+                includeUnlisted: false,
+                sourceCacheContext: new SourceCacheContext { NoCache = true },
+                log: NullLogger.Instance, token: CancellationToken.None);
+
+            var maxVersion = metaData.OfType<PackageSearchMetadata>().Max(m => m.Version.Version);
+
+            if (VersionHelper.GeneratorVersion == maxVersion)
+            {
+                Console.WriteLine("Cool, you are using the latest version of nd-codegen!");
+                return;
+            }
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($$"""
+                                You are not using the latest version of nd-codegen ({{maxVersion?.ToString(3) ?? "NA"}}).
+                                It is advised to keep the ND-codegen tool and the NetDaemon nuget packages up to date.
+                                """);
+            Console.ResetColor();
+
+            Console.WriteLine("""
+                              When using the local tool update it using:
+                              dotnet tool update netdaemon.hassmodel.codegen
+
+                              When using the global tool update it using:
+                              dotnet tool update -g netdaemon.hassmodel.codegen
+
+                              """);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unable to verify if you have the latest version of nd-codegen. '{ex.Message}'");
         }
     }
 
