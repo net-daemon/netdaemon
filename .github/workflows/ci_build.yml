@@ -18,11 +18,10 @@ jobs:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
 
-      - name: 🥅 Install .Net 8
+      - name: 🥅 Install .Net 9
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
-          dotnet-quality: 'preview'
+          dotnet-version: '9.0.x'
       - name: 🔍 Enable problem matchers
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 

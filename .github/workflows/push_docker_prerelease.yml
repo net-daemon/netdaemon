@@ -94,5 +94,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile.AddOn . \
             --compress \
-            --tag "netdaemon/netdaemon_addon4:${{ github.event.inputs.pre }}" \
-            --tag "ghcr.io/net-daemon/netdaemon_addon4:${{ github.event.inputs.pre }}"
+            --tag "netdaemon/netdaemon_addon5:${{ github.event.inputs.pre }}" \
+            --tag "ghcr.io/net-daemon/netdaemon_addon5:${{ github.event.inputs.pre }}"
