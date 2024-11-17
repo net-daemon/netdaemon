@@ -10,7 +10,7 @@ Please see [https://netdaemon.xyz](https://netdaemon.xyz/docs/v3/started/get_sta
 > **The NetDaemon v4 is pretty stable and we aim to have as little breaking changes as possible**
 
 ## About V4
-NetDaemon runtime version 4 is built for .NET 8 and C# 12. Version 4 is from release 2023xx and forward.
+NetDaemon runtime version 5 is built for .NET 9 and C# 13. Version 5 is from release 2024.xx.0 and forward.
 
 ### Versioning
 The NetDaemon nuget packaged uses CalVer versioning system. The versioning is in the format `YYYY.WW.PATCH` where `YYYY.WW`
