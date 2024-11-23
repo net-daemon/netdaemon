@@ -24,8 +24,7 @@ internal static class JsonNodeExtensions
             var k = kvp.Key;
             var v = kvp.Value;
 
-            if (target.ContainsKey(k))
-                target.Remove(k);
+            target.Remove(k);
 
             target.Add(new(k, v?.Deserialize<JsonNode>()));
         }

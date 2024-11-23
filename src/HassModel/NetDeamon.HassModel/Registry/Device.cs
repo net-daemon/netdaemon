@@ -35,7 +35,7 @@ public record Device
     /// <summary>
     /// The Labels of this Device
     /// </summary>
-    public IReadOnlyCollection<Label> Labels { get; init; } = Array.Empty<Label>();
+    public IReadOnlyCollection<Label> Labels { get; init; } = [];
 
     /// <summary>
     /// The manufacturer of this Device, if available

@@ -26,7 +26,7 @@ internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
 
         foreach (var hassClientState in hassStates ?? [])
         {
-            _latestStates[hassClientState.EntityId] = new Lazy<EntityState?>(() => hassClientState.Map());
+            _latestStates[hassClientState.EntityId] = new Lazy<EntityState?>(hassClientState.Map);
         }
 
         _initialized = true;
@@ -51,9 +51,9 @@ internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
 
     public EntityState? GetState(string entityId)
     {
-        if (!_initialized) throw new InvalidOperationException("StateCache has not been initialized yet");
-
-        return _latestStates.GetValueOrDefault(entityId)?.Value;
+        return !_initialized
+            ? throw new InvalidOperationException("StateCache has not been initialized yet")
+            : (_latestStates.GetValueOrDefault(entityId)?.Value);
     }
 
     public void Dispose()

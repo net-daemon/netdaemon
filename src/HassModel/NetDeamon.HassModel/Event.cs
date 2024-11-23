@@ -42,9 +42,9 @@ public record Event<TData> : Event
     {
         _lazyData = new Lazy<TData?>(() => DataElement?.Deserialize<TData>());
     }
-        
-    private Lazy<TData?> _lazyData;
-        
+
+    private readonly Lazy<TData?> _lazyData;
+
     /// <summary>
     /// The Data of this Event deserialized as TData
     /// </summary>

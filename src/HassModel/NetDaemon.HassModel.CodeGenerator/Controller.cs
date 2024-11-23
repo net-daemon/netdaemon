@@ -100,7 +100,7 @@ internal class Controller(CodeGenerationSettings generationSettings, HomeAssista
         if (!generationSettings.GenerateOneFilePerEntity)
         {
             Console.WriteLine("Generating single file for all entities.");
-            var unit = Generator.BuildCompilationUnit(generationSettings.Namespace, generatedTypes.ToArray());
+            var unit = Generator.BuildCompilationUnit(generationSettings.Namespace, [.. generatedTypes]);
 
             Directory.CreateDirectory(Directory.GetParent(generationSettings.OutputFile)!.FullName);
 

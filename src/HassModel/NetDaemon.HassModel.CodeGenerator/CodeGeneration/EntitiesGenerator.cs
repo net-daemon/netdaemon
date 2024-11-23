@@ -16,7 +16,7 @@ internal static class EntitiesGenerator
 
         foreach (var domainMetadata in metaData.GroupBy(m => m.EntitiesForDomainClassName))
         {
-            yield return GenerateEntitiesForDomainClass(domainMetadata.Key, domainMetadata.ToList());
+            yield return GenerateEntitiesForDomainClass(domainMetadata.Key, [.. domainMetadata]);
         }
         foreach (var domainMetadata in metaData)
         {
@@ -49,7 +49,7 @@ internal static class EntitiesGenerator
         }).ToArray();
 
         return ClassWithInjectedHaContext(EntitiesClassName)
-            .WithBase((string)"IEntities")
+            .WithBase("IEntities")
             .AddMembers(properties);
     }
 

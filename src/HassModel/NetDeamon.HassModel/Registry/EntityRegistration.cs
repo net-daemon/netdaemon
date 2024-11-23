@@ -28,7 +28,7 @@ public record EntityRegistration
     /// <summary>
     /// The Labels of this Entity
     /// </summary>
-    public IReadOnlyCollection<Label> Labels { get; init; } = Array.Empty<Label>();
+    public IReadOnlyCollection<Label> Labels { get; init; } = [];
 
     /// <summary>
     /// An identifier for the integration that created this Entity

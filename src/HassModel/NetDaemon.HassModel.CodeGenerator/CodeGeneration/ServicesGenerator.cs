@@ -13,7 +13,7 @@ internal static class ServicesGenerator
 
         yield return GenerateRootServicesType(domains);
 
-        foreach (var domainServicesGroup in serviceDomains.Where(sd => sd.Services.Any() == true).GroupBy(x => x.Domain, x => x.Services))
+        foreach (var domainServicesGroup in serviceDomains.Where(sd => sd.Services.Any()).GroupBy(x => x.Domain, x => x.Services))
         {
             var domain = domainServicesGroup.Key!;
             var domainServices = domainServicesGroup
@@ -37,7 +37,7 @@ internal static class ServicesGenerator
     {
         var properties = domains.Select(domain => PropertyWithExpressionBodyNew(GetServicesTypeName(domain), domain.ToPascalCase(), "_haContext")).ToArray();
 
-        return ClassWithInjectedHaContext(ServicesClassName).WithBase((string)"IServices").AddMembers(properties);
+        return ClassWithInjectedHaContext(ServicesClassName).WithBase("IServices").AddMembers(properties);
     }
 
     private static TypeDeclarationSyntax GenerateRootServicesInterface(IEnumerable<string> domains)

@@ -5,7 +5,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 internal static class EntityMetaDataGenerator
 {
     /// <summary>
-    /// Creates metadata describing entities and their attributes based on all the states from HA 
+    /// Creates metadata describing entities and their attributes based on all the states from HA
     /// </summary>
     public static EntitiesMetaData GetEntityDomainMetaData(IReadOnlyCollection<HassState> entityStates)
     {
@@ -20,21 +20,21 @@ internal static class EntityMetaDataGenerator
 
     private static EntityDomainMetadata mapEntityDomainMetadata(IGrouping<(string domain, bool isNumeric), HassState> domainGroup) =>
         new (
-            Domain: domainGroup.Key.domain, 
-            IsNumeric: domainGroup.Key.isNumeric, 
+            Domain: domainGroup.Key.domain,
+            IsNumeric: domainGroup.Key.isNumeric,
             Entities: MapToEntityMetaData(domainGroup),
             Attributes: AttributeMetaDataGenerator.GetMetaDataFromEntityStates(domainGroup).ToList());
 
     private static List<EntityMetaData> MapToEntityMetaData(IEnumerable<HassState> g)
     {
         var entityMetaDatas = g.Select(state => new EntityMetaData(
-            id: state.EntityId, 
+            id: state.EntityId,
             friendlyName: GetFriendlyName(state),
             cSharpName: GetPreferredCSharpName(state.EntityId)));
 
         entityMetaDatas = DeDuplicateCSharpNames(entityMetaDatas);
-        
-        return entityMetaDatas.OrderBy(e => e.id).ToList();
+
+        return [.. entityMetaDatas.OrderBy(e => e.id)];
     }
 
     private static IEnumerable<EntityMetaData> DeDuplicateCSharpNames(IEnumerable<EntityMetaData> entityMetaDatas)
@@ -43,8 +43,8 @@ internal static class EntityMetaDataGenerator
         // If we have duplicates we will use the original ID instead and only make sure it is a Valid C# identifier
         return entityMetaDatas
             .ToLookup(e => e.cSharpName)
-            .SelectMany(e => e.Count() == 1 
-                ? e 
+            .SelectMany(e => e.Count() == 1
+                ? e
                 : e.Select(i => i with { cSharpName = GetUniqueCSharpName(i.id) }));
     }
 
@@ -56,7 +56,7 @@ internal static class EntityMetaDataGenerator
     /// <summary>
     /// HA entity ID's can only contain [a-z0-9_]. Which are all also valid in Csharp identifiers.
     /// HA does allow the id to begin with a digit which is not valid for C#. In those cases it will be prefixed with
-    /// an _ 
+    /// an _
     /// </summary>
     private static string GetUniqueCSharpName(string id) => EntityIdHelper.GetEntity(id).ToValidCSharpIdentifier();
 
