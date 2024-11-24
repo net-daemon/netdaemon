@@ -53,8 +53,8 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag "netdaemon/netdaemon4:${{ github.event.inputs.pre }}" \
-            --tag "ghcr.io/net-daemon/netdaemon4:${{ github.event.inputs.pre }}"
+            --tag "netdaemon/netdaemon5:${{ github.event.inputs.pre }}" \
+            --tag "ghcr.io/net-daemon/netdaemon5:${{ github.event.inputs.pre }}"
   deploy_docker_addon:
     name: 📦 Deploy to Docker add-on with tag
     runs-on: ubuntu-latest
