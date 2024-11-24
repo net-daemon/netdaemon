@@ -108,7 +108,7 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon4:latest \
-            --tag netdaemon/netdaemon4:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon4:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon4:latest
+            --tag netdaemon/netdaemon5:latest \
+            --tag netdaemon/netdaemon5:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon5:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon5:latest
