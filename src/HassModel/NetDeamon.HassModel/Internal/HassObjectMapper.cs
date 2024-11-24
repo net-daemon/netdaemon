@@ -4,38 +4,39 @@ internal static class HassObjectMapper
 {
     public static EntityState? Map(this HassState? hassState)
     {
-        if (hassState == null) return null;
-
-        return new EntityState
-        {
-            EntityId = hassState.EntityId,
-            State = hassState.State,
-            AttributesJson = hassState.AttributesJson,
-            LastChanged = hassState.LastChanged,
-            LastUpdated = hassState.LastUpdated,
-            Context = hassState.Context == null
-                ? null
-                : new Context
+        return hassState == null
+            ? null
+            : new EntityState
                 {
-                    Id = hassState.Context.Id,
-                    UserId = hassState.Context.UserId,
-                    ParentId = hassState.Context.UserId
-                }
-        };
+                    EntityId = hassState.EntityId,
+                    State = hassState.State,
+                    AttributesJson = hassState.AttributesJson,
+                    LastChanged = hassState.LastChanged,
+                    LastUpdated = hassState.LastUpdated,
+                    Context = hassState.Context == null
+                        ? null
+                        : new Context
+                        {
+                            Id = hassState.Context.Id,
+                            UserId = hassState.Context.UserId,
+                            ParentId = hassState.Context.UserId
+                        }
+                };
+
     }
 
     public static HassTarget? Map(this ServiceTarget? target)
     {
-        if (target is null) return null;
-
-        return new HassTarget
-        {
-            AreaIds = target.AreaIds,
-            DeviceIds = target.DeviceIds,
-            EntityIds = target.EntityIds,
-            FloorIds = target.FloorIds,
-            LabelIds = target.LabelIds
-        };
+        return target is null
+            ? null
+            : new HassTarget
+                {
+                    AreaIds = target.AreaIds,
+                    DeviceIds = target.DeviceIds,
+                    EntityIds = target.EntityIds,
+                    FloorIds = target.FloorIds,
+                    LabelIds = target.LabelIds
+                };
     }
 
     public static Event Map(this HassEvent hassEvent)

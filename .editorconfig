@@ -60,3 +60,28 @@ dotnet_diagnostic.CA1069.severity = none
 dotnet_diagnostic.CA2008.severity = none
 #Use concrete types
 dotnet_diagnostic.CA1859.severity = none
+
+# After this line there are suppressions from .NET 9 upgraqdes, check these later
+
+#Use var keyword
+dotnet_diagnostic.IDE0008.severity = none
+#Use namespace declaration
+dotnet_diagnostic.IDE0160.severity = none
+#Discard Expression value never used
+dotnet_diagnostic.IDE0058.severity = none
+#A type inside an executable assembly is declared as public.
+dotnet_diagnostic.CA1015.severity = none
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CS0618.severity = none
+dotnet_diagnostic.IDE0011.severity = none
+dotnet_diagnostic.IDE1006.severity = none
+dotnet_diagnostic.IDE0040.severity = none
+dotnet_diagnostic.IDE0079.severity = none
+dotnet_diagnostic.IDE0022.severity = none
+dotnet_diagnostic.IDE0300.severity = none
+dotnet_diagnostic.IDE0055.severity = none
+dotnet_diagnostic.IDE0130.severity = none
+dotnet_diagnostic.IDE0046.severity = none
+dotnet_diagnostic.IDE0072.severity = none
+dotnet_diagnostic.IDE0005.severity = none
+

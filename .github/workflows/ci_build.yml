@@ -18,16 +18,16 @@ jobs:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
 
-      - name: 🥅 Install .Net 8
+      - name: 🥅 Install .Net 9
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
-          dotnet-quality: 'preview'
+          dotnet-version: '9.0.x'
       - name: 🔍 Enable problem matchers
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 
       - name: 🛠️ Build code
-        run: dotnet build --configuration Release -p:TreatWarningsAsErrors=true
+        run: dotnet build --configuration Release
+        # run: dotnet build --configuration Release -p:TreatWarningsAsErrors=true temprarily disabled due to Nuget bug
 
       - name: 👀 Unit Test
         run: |

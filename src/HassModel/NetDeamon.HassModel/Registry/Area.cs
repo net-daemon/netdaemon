@@ -38,5 +38,5 @@ public record Area
     /// <summary>
     /// The Labels of this Area
     /// </summary>
-    public IReadOnlyCollection<Label> Labels { get; init; } = Array.Empty<Label>();
+    public IReadOnlyCollection<Label> Labels { get; init; } = [];
 }

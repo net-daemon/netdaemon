@@ -29,7 +29,7 @@ internal static class CodeGenTestHelper
         return Generator.BuildCompilationUnit(codeGenerationSettings.Namespace, generatedTypes);
     }
 
-    public static void AssertCodeCompiles(string generated,  string appCode)
+    public static void AssertCodeCompiles(string generated, string appCode)
     {
         var compilation = CreateCSharpCompilation(generated, appCode);
         var emitResult = compilation.Emit(Stream.Null); // we are not actually interested in the result, just check for errors or warnings
@@ -73,7 +73,7 @@ internal static class CodeGenTestHelper
 
     private static CSharpCompilation CreateCSharpCompilation(string generated, string appCode)
     {
-        var syntaxTrees = new []
+        var syntaxTrees = new[]
         {
             SyntaxFactory.ParseSyntaxTree(generated, path: "generated.cs", encoding:Encoding.UTF8),
             SyntaxFactory.ParseSyntaxTree(appCode, path: "appcode.cs", encoding:Encoding.UTF8)

@@ -12,9 +12,14 @@ namespace NetDaemon.Extensions.Scheduler;
 /// <summary>
 ///     Provides scheduling capability to be injected into apps
 /// </summary>
-internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
+/// <remarks>
+///     Constructor
+/// </remarks>
+/// <param name="logger">Injected logger</param>
+/// <param name="reactiveScheduler">Used for unit testing the scheduler</param>
+internal sealed class NetDaemonScheduler(ILogger<NetDaemonScheduler>? logger = null, IScheduler? reactiveScheduler = null) : INetDaemonScheduler, IDisposable
 {
-    private readonly CancellationTokenSource _cancelTimers;
+    private readonly CancellationTokenSource _cancelTimers = new();
     private volatile bool _disposed;
 
     private static ILoggerFactory DefaultLoggerFactory => LoggerFactory.Create(builder =>
@@ -24,20 +29,8 @@ internal sealed class NetDaemonScheduler : INetDaemonScheduler, IDisposable
             .AddConsole();
     });
 
-    private readonly ILogger _logger;
-    private readonly IScheduler _reactiveScheduler;
-
-    /// <summary>
-    ///     Constructor
-    /// </summary>
-    /// <param name="logger">Injected logger</param>
-    /// <param name="reactiveScheduler">Used for unit testing the scheduler</param>
-    public NetDaemonScheduler(ILogger<NetDaemonScheduler>? logger = null, IScheduler? reactiveScheduler = null)
-    {
-        _cancelTimers = new();
-        _logger = logger ?? DefaultLoggerFactory.CreateLogger<NetDaemonScheduler>();
-        _reactiveScheduler = reactiveScheduler ?? TaskPoolScheduler.Default;
-    }
+    private readonly ILogger _logger = logger ?? DefaultLoggerFactory.CreateLogger<NetDaemonScheduler>();
+    private readonly IScheduler _reactiveScheduler = reactiveScheduler ?? TaskPoolScheduler.Default;
 
     /// <inheritdoc/>
     public IDisposable RunEvery(TimeSpan timespan, Action action)

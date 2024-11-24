@@ -36,7 +36,7 @@ internal sealed class QueuedObservable<T> : IObservable<T>, IAsyncDisposable
         _subscription = CreateSubscription(innerObservable, logger);
 
         // Start processing the channel on a thread pool thread
-        _processChannelTask = Task.Run(async () => await ProcessChannelAsync().ConfigureAwait(false));
+        _processChannelTask = Task.Run(ProcessChannelAsync);
     }
 
     private IDisposable CreateSubscription(IObservable<T> innerObservable, ILogger logger)

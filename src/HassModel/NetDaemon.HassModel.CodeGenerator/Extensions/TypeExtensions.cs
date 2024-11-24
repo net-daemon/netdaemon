@@ -43,16 +43,11 @@ internal static class TypeExtensions
             for (var i = 0; i < typeParameters.Length; i++)
             {
                 string typeParamName = typeParameters[i].GetFriendlyName();
-                friendlyName += (i == 0 ? typeParamName : ", " + typeParamName);
+                friendlyName += i == 0 ? typeParamName : ", " + typeParamName;
             }
             friendlyName += ">";
         }
 
-        if (type.IsArray)
-        {
-            return type.GetElementType()?.GetFriendlyName() + "[]";
-        }
-
-        return friendlyName;
+        return type.IsArray ? type.GetElementType()?.GetFriendlyName() + "[]" : friendlyName;
     }
 }

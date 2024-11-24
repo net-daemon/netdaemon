@@ -2,17 +2,12 @@
 
 namespace NetDaemon.HassModel.Internal;
 
-internal class BackgroundTaskTracker : IBackgroundTaskTracker
+internal class BackgroundTaskTracker(ILogger<BackgroundTaskTracker> logger) : IBackgroundTaskTracker
 {
-    private readonly ILogger<BackgroundTaskTracker> _logger;
+    private readonly ILogger<BackgroundTaskTracker> _logger = logger;
     private volatile bool _isDisposed;
 
     internal readonly ConcurrentDictionary<Task, object?> BackgroundTasks = new();
-
-    public BackgroundTaskTracker(ILogger<BackgroundTaskTracker> logger)
-    {
-        _logger = logger;
-    }
 
     public void TrackBackgroundTask(Task? task, string? description = null)
     {

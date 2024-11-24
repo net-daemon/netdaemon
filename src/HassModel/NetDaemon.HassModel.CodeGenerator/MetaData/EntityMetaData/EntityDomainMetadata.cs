@@ -4,7 +4,7 @@ namespace NetDaemon.HassModel.CodeGenerator;
 
 record EntitiesMetaData
 {
-    public IReadOnlyCollection<EntityDomainMetadata> Domains { get; init; } = Array.Empty<EntityDomainMetadata>();
+    public IReadOnlyCollection<EntityDomainMetadata> Domains { get; init; } = [];
 }
 
 record EntityDomainMetadata(

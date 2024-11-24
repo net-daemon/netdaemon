@@ -17,7 +17,6 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     private readonly IHomeAssistantRunner _hassRunner;
     private readonly QueuedObservable<HassEvent> _queuedObservable;
     private readonly IBackgroundTaskTracker _backgroundTaskTracker;
-    private readonly ILogger<AppScopedHaContextProvider> _logger;
     private readonly IEntityFactory _entityFactory;
 
     private readonly CancellationTokenSource _tokenSource = new();
@@ -39,7 +38,6 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
         _queuedObservable = new QueuedObservable<HassEvent>(_entityStateCache.AllEvents, logger);
         _backgroundTaskTracker = backgroundTaskTracker;
-        _logger = logger;
         _entityFactory = entityFactory;
 
         // The HaRegistry needs a reference to this AppScopedHaContextProvider And we need the reference
