@@ -8,12 +8,12 @@ if [ ! -d "/data" ]; then
 fi
 
 if [[ -z "${NetDaemon__ApplicationAssembly}" ]]; then
-    echo -e "\\033[32mStarting NetDaemon V3 runtime ...\\033[0m" >&2
+    echo -e "\\033[32mStarting NetDaemon V5 runtime ...\\033[0m" >&2
     cd "${daemondir}" || exit 1
     exec dotnet NetDaemon.Host.Default.dll
 else
     if [[ "${NetDaemon__ApplicationAssembly}" == *".csproj" ]]; then
-        echo -e "\\033[31mcsproj deployments are not supported in v3, use compiled option instead!\\033[0m" >&2
+        echo -e "\\033[31mcsproj deployments are not supported in v5, use compiled option instead!\\033[0m" >&2
         exit 1
     fi
 
@@ -34,7 +34,7 @@ else
         exit 1
     fi
 
-    echo -e "\\033[32mStarting NetDaemon V3 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
+    echo -e "\\033[32mStarting NetDaemon V5 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
     cd "$(dirname "${NetDaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
     if [[ "${PWD}" != "$(dirname "${NetDaemon__ApplicationAssembly}")" ]]; then
