@@ -23,10 +23,10 @@ jobs:
           echo Current version:    $latest
           echo "::set-output name=version::$latest"
 
-      - name: 🥅 Install .Net 8
+      - name: 🥅 Install .Net 9
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "8.0.x" # SDK Version
+          dotnet-version: "9.0.x" # SDK Version
 
       - name: 🔖 Set version number
         run: |

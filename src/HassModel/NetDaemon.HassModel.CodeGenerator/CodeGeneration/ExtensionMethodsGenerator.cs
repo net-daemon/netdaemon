@@ -41,9 +41,9 @@ internal static class ExtensionMethodsGenerator
             .SelectMany(service => GenerateExtensionMethodsForService(serviceDomain.Domain, service, entityClassNameByDomain))
             .ToArray();
 
-        if (serviceMethodDeclarations.Length == 0) return null;
-
-        return ClassDeclaration(GetEntityDomainExtensionMethodClassName(serviceDomain.Domain))
+        return serviceMethodDeclarations.Length == 0
+            ? null
+            : ClassDeclaration(GetEntityDomainExtensionMethodClassName(serviceDomain.Domain))
                 .AddMembers(serviceMethodDeclarations)
                 .ToPublic()
                 .ToStatic();

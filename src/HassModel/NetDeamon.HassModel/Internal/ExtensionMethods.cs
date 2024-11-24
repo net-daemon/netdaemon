@@ -10,9 +10,9 @@ internal static class NetDaemonExtensions
     public static (string? Left, string Right) SplitAtDot(this string id)
     {
         var firstDot = id.IndexOf('.', System.StringComparison.InvariantCulture);
-        if (firstDot == -1) return (null, id);
+        return firstDot == -1 ? ((string? Left, string Right))(null, id)
+            : ((string? Left, string Right))(id[.. firstDot ], id[ (firstDot + 1) .. ]);
 
-        return (id[.. firstDot ], id[ (firstDot + 1) .. ]);
     }
 
     /// <summary>

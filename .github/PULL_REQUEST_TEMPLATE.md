@@ -60,7 +60,7 @@
 
 If user exposed functionality or configuration are added/changed:
 
-- [ ] Documentation added/updated for http://netdaemon.xtz
+- [ ] Documentation added/updated for https://netdaemon.xyz
 
 
 <!--

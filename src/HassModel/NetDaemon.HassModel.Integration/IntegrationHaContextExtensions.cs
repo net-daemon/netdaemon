@@ -20,7 +20,7 @@ public static class IntegrationHaContextExtensions
         if (string.IsNullOrWhiteSpace(serviceName))
             throw new ArgumentException("serviceName must have a value", serviceName);
 
-        haContext.CallService("netdaemon", "register_service", data: new {service = serviceName});
+        haContext.CallService("netdaemon", "register_service", data: new { service = serviceName });
 
         haContext.Events.Filter<HassServiceEventData<T>>("call_service")
             .Where(e => e.Data?.domain == "netdaemon"

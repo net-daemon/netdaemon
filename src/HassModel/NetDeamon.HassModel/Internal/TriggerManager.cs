@@ -15,7 +15,7 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
     private readonly QueuedObservable<HassMessage> _queuedObservable;
     private readonly IBackgroundTaskTracker _tracker;
 
-    private readonly ConcurrentBag<(int id, IDisposable disposable)> _subscriptions = new();
+    private readonly ConcurrentBag<(int id, IDisposable disposable)> _subscriptions = [];
     private bool _disposed;
 
     public TriggerManager(IHomeAssistantRunner runner, IBackgroundTaskTracker tracker, ILogger<TriggerManager> logger)
@@ -63,9 +63,9 @@ internal class TriggerManager : IAsyncDisposable, ITriggerManager
         var tasks = _subscriptions.Select(s => _runner.CurrentConnection?.UnsubscribeEventsAsync(s.id, CancellationToken.None) ?? Task.CompletedTask).ToArray();
 
         // Also unsubscribe any Observers to avoid memory leaks
-        foreach (var subscription in _subscriptions)
+        foreach (var (id, disposable) in _subscriptions)
         {
-            subscription.disposable.Dispose();
+            disposable.Dispose();
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);

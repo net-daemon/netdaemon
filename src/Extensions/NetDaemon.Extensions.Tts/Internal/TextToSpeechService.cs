@@ -15,7 +15,7 @@ internal class TextToSpeechService : ITextToSpeechService, IAsyncDisposable
     {
         _provider = provider;
         _logger = logger;
-        _processTtsTask = Task.Run(async () => await ProcessTtsMessages().ConfigureAwait(false));
+        _processTtsTask = Task.Run(ProcessTtsMessages);
     }
 
     public void Speak(string entityId, string message, string service, string? language, object? options)

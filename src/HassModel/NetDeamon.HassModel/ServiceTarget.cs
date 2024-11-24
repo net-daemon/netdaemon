@@ -27,7 +27,7 @@ public class ServiceTarget
     /// <param name="entityIds">The Ids of entities</param>
     /// <returns>A new ServiceTarget</returns>
     public static ServiceTarget FromEntities(params string[] entityIds) =>
-        new() { EntityIds = entityIds.ToArray() };
+        new() { EntityIds = [.. entityIds] };
 
     /// <summary>
     /// Creates a new empty ServiceTarget

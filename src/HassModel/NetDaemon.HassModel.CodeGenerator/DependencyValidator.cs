@@ -93,7 +93,7 @@ public static class VersionValidator
         return parts[0];
     }
 
-    private static IEnumerable<(string name, string version)>GetPackageReferences(string projectFilePath)
+    private static IEnumerable<(string name, string version)> GetPackageReferences(string projectFilePath)
     {
         var csproj = new XmlDocument();
         csproj.Load(projectFilePath);

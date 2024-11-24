@@ -31,7 +31,7 @@ public sealed class DisposableScheduler(IScheduler scheduler) : IScheduler, IDis
             return disposable;
         });
 
-        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(() => subscription.Dispose());
+        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(subscription.Dispose);
 
         return subscription;
     }
@@ -52,7 +52,7 @@ public sealed class DisposableScheduler(IScheduler scheduler) : IScheduler, IDis
             return disposable;
         });
 
-        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(() => subscription.Dispose());
+        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(subscription.Dispose);
 
         return subscription;
     }
@@ -73,7 +73,7 @@ public sealed class DisposableScheduler(IScheduler scheduler) : IScheduler, IDis
             return disposable;
         });
 
-        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(() => subscription.Dispose());
+        cancellationTokenRegistration = _cancellationTokenSource.Token.Register(subscription.Dispose);
 
         return subscription;
     }

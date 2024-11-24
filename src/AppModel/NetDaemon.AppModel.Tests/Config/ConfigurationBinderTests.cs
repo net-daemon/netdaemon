@@ -152,7 +152,7 @@ public class ConfigurationBinderTests
         var config = GetObjectFromSection<IEnumerable<TestShortEnum>>("AnotherTestShortEnum");
         // CHECK
         config!.Should().HaveCount(2);
-        Enum.GetUnderlyingType(config!.First().GetType()).Should().Be(typeof(ushort));
+        Enum.GetUnderlyingType(config!.First().GetType()).Should().Be<ushort>();
     }
 
     private static T? GetObjectFromSection<T>(string sectionName)
@@ -218,17 +218,17 @@ public record CollectionBindingTestClass
 
 public record CollectionBindingIEnumerableWithInitTestClass
 {
-    public IEnumerable<string>? SomeEnumerable { get; init; } = new List<string>();
+    public IEnumerable<string>? SomeEnumerable { get; init; } = [];
 }
 
 public record CollectionBindingIReadOnlyListWithInitTestClass
 {
-    public IReadOnlyList<string>? SomeReadOnlyList { get; init; } = new List<string>();
+    public IReadOnlyList<string>? SomeReadOnlyList { get; init; } = [];
 }
 
 public record CollectionBindingIReadOnlyCollectionWithInitTestClass
 {
-    public IReadOnlyCollection<string>? SomeReadOnlyCollection { get; init; } = new List<string>();
+    public IReadOnlyCollection<string>? SomeReadOnlyCollection { get; init; } = [];
 }
 
 public record CollectionBindingIReadOnlyDictionaryWithInitTestClass
