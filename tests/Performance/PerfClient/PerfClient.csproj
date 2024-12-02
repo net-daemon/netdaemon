@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj"/>
+    <ProjectReference Include="../../../src/AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj"/>
+    <ProjectReference Include="../../../src/Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj"/>
+    <ProjectReference Include="../../../src/Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj"/>
+    <ProjectReference Include="../../../src/Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj"/>
+    <ProjectReference Include="../../../src/Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj"/>
+    <ProjectReference Include="../../../src/HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj"/>
+    <ProjectReference Include="../../../src/HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="apps/**/*.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="apps\TtsTest.cs"/>
+  </ItemGroup>
+</Project>
