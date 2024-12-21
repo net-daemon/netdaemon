@@ -8,11 +8,9 @@ internal class AppStateManager(IAppStateRepository appStateRepository,
     IHostEnvironment hostEnvironment) : IAppStateManager, IHandleHomeAssistantAppStateUpdates, IDisposable
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
-    private readonly ConcurrentDictionary<string, ApplicationState> _stateCache = new();
 
     public async Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
-        _stateCache.Clear();
         if (appContext.Applications.Count > 0 && !hostEnvironment.IsDevelopment())
             await appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
                 _cancelTokenSource.Token);
@@ -54,8 +52,6 @@ internal class AppStateManager(IAppStateRepository appStateRepository,
 
     public async Task<ApplicationState> GetStateAsync(string applicationId)
     {
-        if (_stateCache.TryGetValue(applicationId, out var applicationState)) return applicationState;
-
         return await appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
             .ConfigureAwait(false)
             ? ApplicationState.Enabled
@@ -64,8 +60,6 @@ internal class AppStateManager(IAppStateRepository appStateRepository,
 
     public async Task SaveStateAsync(string applicationId, ApplicationState state)
     {
-        _stateCache[applicationId] = state;
-
         var isEnabled = await appStateRepository.GetOrCreateAsync(applicationId, _cancelTokenSource.Token)
             .ConfigureAwait(false);
 
