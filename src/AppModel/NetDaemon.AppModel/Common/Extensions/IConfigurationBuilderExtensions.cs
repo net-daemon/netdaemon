@@ -16,9 +16,12 @@ public static class ConfigurationBuilderExtensions
     /// <param name="appConfigPath">Path to the folder containing configurations</param>
     public static IConfigurationBuilder AddJsonAppConfig(this IConfigurationBuilder builder, string appConfigPath)
     {
-        Directory.EnumerateFiles(appConfigPath, "*.json", SearchOption.AllDirectories)
-            .ToList()
-            .ForEach(x => builder.AddJsonFile(x, false, false));
+        if (Directory.Exists(appConfigPath))
+        {
+            Directory.EnumerateFiles(appConfigPath, "*.json", SearchOption.AllDirectories)
+                .ToList()
+                .ForEach(x => builder.AddJsonFile(x, false, false));
+        }
         return builder;
     }
 
@@ -29,9 +32,12 @@ public static class ConfigurationBuilderExtensions
     /// <param name="appConfigPath">Path to the folder containing configurations</param>
     public static IConfigurationBuilder AddYamlAppConfig(this IConfigurationBuilder builder, string appConfigPath)
     {
-        Directory.EnumerateFiles(appConfigPath, "*.y*", SearchOption.AllDirectories)
-            .ToList()
-            .ForEach(x => builder.AddYamlFile(x, false, false));
+        if (Directory.Exists(appConfigPath))
+        {
+            Directory.EnumerateFiles(appConfigPath, "*.y*", SearchOption.AllDirectories)
+                .ToList()
+                .ForEach(x => builder.AddYamlFile(x, false, false));
+        }
         return builder;
     }
 
