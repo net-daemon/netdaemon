@@ -1,23 +1,19 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetDaemon.AppModel.Internal.Compiler;
 
-internal class SyntaxTreeResolver : ISyntaxTreeResolver
+internal class SyntaxTreeResolver(IOptions<AppConfigurationLocationSetting> settings, ILogger<SyntaxTreeResolver> logger) : ISyntaxTreeResolver
 {
-    private readonly AppConfigurationLocationSetting _settings;
-
-    public SyntaxTreeResolver(
-        IOptions<AppConfigurationLocationSetting> settings
-    )
-    {
-        _settings = settings.Value;
-    }
+    private readonly AppConfigurationLocationSetting _settings = settings.Value;
 
     public IReadOnlyCollection<SyntaxTree> GetSyntaxTrees()
     {
+        logger.LogDebug("Loading applications from folder {Path}", _settings.ApplicationConfigurationFolder);
+
         var fullPath = Path.GetFullPath(_settings.ApplicationConfigurationFolder);
         // Get the paths for all .cs files recursively in app folder
         var csFiles = Directory.EnumerateFiles(
