@@ -115,13 +115,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         var appModel = serviceProvider.GetService<IAppModel>();
         if (appModel == null) return;
 
-        // this logging is a bit weird in this class
-        if (!string.IsNullOrEmpty(locationSettings.Value.ApplicationConfigurationFolder))
-            logger.LogDebug("Loading applications from folder {Path}",
-                Path.GetFullPath(locationSettings.Value.ApplicationConfigurationFolder));
-        else
-            logger.LogDebug("Loading applications with no configuration folder");
-
         _applicationModelContext = await appModel.LoadNewApplicationContext(CancellationToken.None).ConfigureAwait(false);
 
         // Handle state change for apps if registered
