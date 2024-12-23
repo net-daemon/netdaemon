@@ -1,5 +1,4 @@
 using System.Reactive.Linq;
-using System.Reflection;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
 
@@ -7,7 +6,6 @@ namespace NetDaemon.Runtime.Internal;
 
 internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         IOptions<HomeAssistantSettings> settings,
-        IOptions<AppConfigurationLocationSetting> locationSettings,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
