@@ -1,14 +1,22 @@
 version: 2
 updates:
-- package-ecosystem: nuget
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  - "pr: dependency-update"
-  ignore:
-  - dependency-name: YamlDotNet
-    versions:
-    - 11.1.0
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+    - dependencies
+    - "pr: dependency-update"
+    ignore:
+    - dependency-name: YamlDotNet
+      versions:
+      - 11.1.0
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: daily
+    labels:
+    - dependencies
+    - "pr: dependency-update"
