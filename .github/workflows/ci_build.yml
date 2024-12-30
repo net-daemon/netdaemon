@@ -19,9 +19,10 @@ jobs:
         uses: actions/checkout@main
 
       - name: 🥅 Install .Net 9
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+
       - name: 🔍 Enable problem matchers
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 
@@ -59,7 +60,7 @@ jobs:
           path-to-lcov: ${{github.workspace}}/codecover.info
 
       - name: 📨 Publish coverage to codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           flags: unittests # optional
           name: codecov-umbrella # optional
