@@ -18,11 +18,14 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
+
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: 🔧 Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
+        
       - name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
