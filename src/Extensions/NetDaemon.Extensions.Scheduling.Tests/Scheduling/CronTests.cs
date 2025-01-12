@@ -93,7 +93,7 @@ public class CronTests
     [Fact]
     public void TestCronLocalTime()
     {
-        using (new FakeLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById("US/Eastern")))
+        using (new FakeLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById("America/New_York")))
         {
             var count = 0;
             var sched = new TestScheduler();
