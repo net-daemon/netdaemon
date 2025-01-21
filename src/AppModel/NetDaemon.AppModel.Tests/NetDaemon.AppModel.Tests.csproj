@@ -6,7 +6,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.0.0" />
+    <PackageReference Include="FluentAssertions" Version="8.0.1" />
     <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
