@@ -62,12 +62,7 @@ public static class EntityExtensions
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        return Observable.Defer(() =>
-            Observable.Return(new StateChange(
-                    entity,
-                    null, // Initially, there is only a new state, so old is null.
-                    entity.EntityState))
-                .Concat(entity.StateAllChanges()));
+        return entity.StateAllChanges().WithCurrent(entity);
     }
 
     /// <summary>
@@ -91,12 +86,7 @@ public static class EntityExtensions
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        return Observable.Defer(() =>
-            Observable.Return(new StateChange<TEntity, TEntityState>(
-                    (TEntity)entity,
-                    null, // Initially, there is only a new state, so old is null.
-                    entity.EntityState))
-                .Concat(entity.StateAllChanges()));
+        return entity.StateAllChanges().WithCurrent(entity);
     }
 
     /// <summary>
@@ -107,12 +97,7 @@ public static class EntityExtensions
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        return Observable.Defer(() =>
-            Observable.Return(new StateChange(
-                    entity,
-                    null, // Initially, there is only a new state, so old is null.
-                    entity.EntityState))
-                .Concat(entity.StateChanges()));
+        return entity.StateAllChangesWithCurrent().StateChangesOnly();
     }
 
     /// <summary>
@@ -135,13 +120,23 @@ public static class EntityExtensions
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        return Observable.Defer(() =>
-            Observable.Return(new StateChange<TEntity, TEntityState>(
-                    (TEntity)entity,
-                    null, // Initially, there is only a new state, so old is null.
-                    entity.EntityState))
-                .Concat(entity.StateChanges()));
+        return entity.StateAllChangesWithCurrent().StateChangesOnly();
     }
+
+    internal static IObservable<StateChange>
+        WithCurrent(
+            this IObservable<StateChange> source, Entity entity)
+        => Observable.Defer(() => source
+            .Prepend(new StateChange(entity, null, entity.EntityState)));
+
+    internal static IObservable<StateChange<TEntity, TEntityState>>
+        WithCurrent<TEntity, TEntityState, TAttributes>(
+            this IObservable<StateChange<TEntity, TEntityState>> source, Entity<TEntity, TEntityState, TAttributes> entity)
+        where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        where TEntityState : EntityState<TAttributes>
+        where TAttributes : class
+        => Observable.Defer(() => source
+            .Prepend(new StateChange<TEntity, TEntityState>((TEntity)entity, null, entity.EntityState)));
 
     internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
         => changes.Where(c => c.New?.State != c.Old?.State);
