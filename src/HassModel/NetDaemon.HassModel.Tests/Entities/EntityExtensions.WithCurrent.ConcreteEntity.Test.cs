@@ -1,36 +1,38 @@
 ﻿
 using NetDaemon.HassModel.Entities;
 using System.Reactive.Subjects;
+using NetDaemon.HassModel.Tests.TestHelpers.HassClient;
 
 namespace NetDaemon.HassModel.Tests.Entities;
 
-public sealed class EntityExtensionsStateChangesWithCurrentEntityTest : IDisposable
+public sealed class EntityExtensionsWithCurrentConcreteEntityTest : IDisposable
 {
     private const string InitialState = "Initial";
     private const string TestEntityId = "domain.testEntity";
 
-    private readonly Entity _testEntity;
+    private readonly TestEntity _testEntity;
     private readonly Mock<IHaContext> _haContextMock;
-    private readonly Subject<StateChange> _subject;
+    private readonly Subject<StateChange<TestEntity, EntityState<TestEntityAttributes>>> _subject;
 
-    public EntityExtensionsStateChangesWithCurrentEntityTest()
+    public EntityExtensionsWithCurrentConcreteEntityTest()
     {
         _haContextMock = new Mock<IHaContext>();
 
         var initialEntityState = new EntityState { State = InitialState };
-        _subject = new Subject<StateChange>();
+        _subject = new Subject<StateChange<TestEntity, EntityState<TestEntityAttributes>>>();
 
-        _haContextMock.Setup(t => t.StateAllChanges()).Returns(_subject);
         _haContextMock.Setup(t => t.GetState(TestEntityId)).Returns(initialEntityState);
 
-        _testEntity = new Entity(_haContextMock.Object, TestEntityId);
+        _testEntity = new TestEntity(_haContextMock.Object, TestEntityId);
     }
+
+    private IObservable<StateChange<TestEntity, EntityState<TestEntityAttributes>>> StateChanges => _subject;
 
     private void ChangeEntityState(string newState)
     {
         var old = _testEntity.EntityState;
         _haContextMock.Setup(t => t.GetState(TestEntityId)).Returns(new EntityState { State = newState });
-        _subject.OnNext(new StateChange(_testEntity, old, _testEntity.EntityState));
+        _subject.OnNext(new StateChange<TestEntity, EntityState<TestEntityAttributes>>(_testEntity, old, _testEntity.EntityState));
     }
 
     [Fact]
@@ -40,7 +42,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentEntityTest : IDisposa
         var results = new List<StateChange>();
 
         // Act
-        _testEntity.StateChangesWithCurrent().Subscribe(results.Add);
+        StateChanges.WithCurrent(_testEntity).Subscribe(results.Add);
 
         // Assert
         AssertStates([InitialState], results);
@@ -55,7 +57,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentEntityTest : IDisposa
         ChangeEntityState(newState);
 
         // Act
-        _testEntity.StateChangesWithCurrent().Subscribe(results.Add);
+        StateChanges.WithCurrent(_testEntity).Subscribe(results.Add);
 
         // Assert
         AssertStates([newState], results);
@@ -67,7 +69,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentEntityTest : IDisposa
         // Arrange
         const string newState = "newState";
         var results = new List<StateChange>();
-        _testEntity.StateChangesWithCurrent().Subscribe(results.Add);
+        StateChanges.WithCurrent(_testEntity).Subscribe(results.Add);
 
         // Act
         ChangeEntityState(newState);
@@ -82,7 +84,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentEntityTest : IDisposa
         // Arrange
         const string newState = "newState";
         var results = new List<StateChange>();
-        var stateChangesWithCurrentObservable = _testEntity.StateChangesWithCurrent();
+        var stateChangesWithCurrentObservable = StateChanges.WithCurrent(_testEntity);
 
         // Act
         ChangeEntityState(newState);
@@ -99,7 +101,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentEntityTest : IDisposa
         const string newState = "newState";
         var subscription1Results = new List<StateChange>();
         var subscription2Results = new List<StateChange>();
-        var stateChangesWithCurrentObservable = _testEntity.StateChangesWithCurrent();
+        var stateChangesWithCurrentObservable = StateChanges.WithCurrent(_testEntity);
 
         // Act
         stateChangesWithCurrentObservable.Subscribe(subscription1Results.Add);

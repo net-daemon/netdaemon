@@ -1,31 +1,31 @@
 ﻿
 using NetDaemon.HassModel.Entities;
-using NetDaemon.HassModel.Tests.TestHelpers.HassClient;
 using System.Reactive.Subjects;
 
 namespace NetDaemon.HassModel.Tests.Entities;
 
-public sealed class EntityExtensionsStateChangesWithCurrentConcreteEntityTest : IDisposable
+public sealed class EntityExtensionsWithCurrentEntityTest : IDisposable
 {
     private const string InitialState = "Initial";
     private const string TestEntityId = "domain.testEntity";
 
-    private readonly TestEntity _testEntity;
+    private readonly Entity _testEntity;
     private readonly Mock<IHaContext> _haContextMock;
     private readonly Subject<StateChange> _subject;
 
-    public EntityExtensionsStateChangesWithCurrentConcreteEntityTest()
+    public EntityExtensionsWithCurrentEntityTest()
     {
         _haContextMock = new Mock<IHaContext>();
 
         var initialEntityState = new EntityState { State = InitialState };
         _subject = new Subject<StateChange>();
 
-        _haContextMock.Setup(t => t.StateAllChanges()).Returns(_subject);
         _haContextMock.Setup(t => t.GetState(TestEntityId)).Returns(initialEntityState);
 
-        _testEntity = new TestEntity(_haContextMock.Object, TestEntityId);
+        _testEntity = new Entity(_haContextMock.Object, TestEntityId);
     }
+
+    private IObservable<StateChange> StateChanges => _subject;
 
     private void ChangeEntityState(string newState)
     {
@@ -41,7 +41,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentConcreteEntityTest : 
         var results = new List<StateChange>();
 
         // Act
-        _testEntity.StateChangesWithCurrent().Subscribe(results.Add);
+        StateChanges.WithCurrent(_testEntity).Subscribe(results.Add);
 
         // Assert
         AssertStates([InitialState], results);
@@ -56,7 +56,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentConcreteEntityTest : 
         ChangeEntityState(newState);
 
         // Act
-        _testEntity.StateChangesWithCurrent().Subscribe(results.Add);
+        StateChanges.WithCurrent(_testEntity).Subscribe(results.Add);
 
         // Assert
         AssertStates([newState], results);
@@ -68,7 +68,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentConcreteEntityTest : 
         // Arrange
         const string newState = "newState";
         var results = new List<StateChange>();
-        _testEntity.StateChangesWithCurrent().Subscribe(results.Add);
+        StateChanges.WithCurrent(_testEntity).Subscribe(results.Add);
 
         // Act
         ChangeEntityState(newState);
@@ -83,7 +83,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentConcreteEntityTest : 
         // Arrange
         const string newState = "newState";
         var results = new List<StateChange>();
-        var stateChangesWithCurrentObservable = _testEntity.StateChangesWithCurrent();
+        var stateChangesWithCurrentObservable = StateChanges.WithCurrent(_testEntity);
 
         // Act
         ChangeEntityState(newState);
@@ -100,7 +100,7 @@ public sealed class EntityExtensionsStateChangesWithCurrentConcreteEntityTest : 
         const string newState = "newState";
         var subscription1Results = new List<StateChange>();
         var subscription2Results = new List<StateChange>();
-        var stateChangesWithCurrentObservable = _testEntity.StateChangesWithCurrent();
+        var stateChangesWithCurrentObservable = StateChanges.WithCurrent(_testEntity);
 
         // Act
         stateChangesWithCurrentObservable.Subscribe(subscription1Results.Add);
