@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="System.IO.Pipelines" Version="9.0.1" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.12.10">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.12.11">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
