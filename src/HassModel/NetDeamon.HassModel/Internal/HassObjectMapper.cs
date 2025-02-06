@@ -66,6 +66,7 @@ internal static class HassObjectMapper
         return new Device(registry)
         {
             Name = hassDevice.Name,
+            NameByUser = hassDevice.NameByUser,
             Id = hassDevice.Id ?? "Unavailable",
             Area = hassDevice.AreaId is null ? null : registry.GetArea(hassDevice.AreaId),
             Labels = hassDevice.Labels.Select(registry.GetLabel).OfType<Label>().ToList(),
