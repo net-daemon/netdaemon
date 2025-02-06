@@ -43,7 +43,7 @@ public record Entity : IEntityCore
     /// <summary>
     /// The current Attributes of this Entity
     /// </summary>
-    public virtual object? Attributes => EntityState?.Attributes;
+    public Dictionary<string, object>? Attributes => EntityState?.Attributes;
 
     /// <summary>
     /// The full state of this Entity
@@ -110,7 +110,7 @@ public abstract record Entity<TEntity, TEntityState, TAttributes> : Entity
     { }
 
     /// <inheritdoc />
-    public override TAttributes? Attributes => EntityState?.Attributes;
+    public new virtual TAttributes? Attributes => EntityState?.Attributes;
 
     /// <inheritdoc />
     public override TEntityState? EntityState => MapState(base.EntityState);

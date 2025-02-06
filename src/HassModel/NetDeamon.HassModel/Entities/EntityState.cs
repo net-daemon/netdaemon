@@ -17,7 +17,7 @@ public record EntityState
     /// <summary>
     /// The attributes
     /// </summary>
-    public virtual object? Attributes => AttributesJson?.Deserialize<Dictionary<string, object>>() ?? [];
+    public Dictionary<string, object>? Attributes => AttributesJson?.Deserialize<Dictionary<string, object>>() ?? [];
 
     /// <summary>Last changed, when state changed from and to different values</summary>
     [JsonPropertyName("last_changed")] public DateTime? LastChanged { get; init; }
@@ -52,5 +52,5 @@ public record EntityState<TAttributes> : EntityState
     }
 
     /// <inheritdoc/>
-    public override TAttributes? Attributes => _attributesLazy.Value;
+    public new virtual TAttributes? Attributes => _attributesLazy.Value;
 }
