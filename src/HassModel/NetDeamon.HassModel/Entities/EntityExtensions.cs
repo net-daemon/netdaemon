@@ -54,6 +54,90 @@ public static class EntityExtensions
         where TAttributes : class
         => new (entity);
 
+    /// <summary>
+    /// Observable that emits all state changes, including attribute changes. It will also emit the current state upon subscribing.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive initial state and state changes.
+    /// </summary>
+    public static IObservable<StateChange> StateAllChangesWithCurrent(this Entity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return entity.StateAllChanges().WithCurrent(entity);
+    }
+
+    /// <summary>
+    /// Observable that emits all state changes, including attribute changes. It will also emit the current state upon subscribing.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive initial state and state changes.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// bedroomLight.StateAllChangesWithCurrent()
+    ///     .Where(s =&gt; s.Old?.Attributes?.Brightness &lt; 128
+    ///              &amp;&amp; s.New?.Attributes?.Brightness &gt;= 128)
+    ///     .Subscribe(e =&gt; HandleBrightnessOverHalf());
+    /// </code>
+    /// </example>
+    public static IObservable<StateChange<TEntity, TEntityState>>
+        StateAllChangesWithCurrent<TEntity, TEntityState, TAttributes>(
+            this Entity<TEntity, TEntityState, TAttributes> entity)
+        where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        where TEntityState : EntityState<TAttributes>
+        where TAttributes : class
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return entity.StateAllChanges().WithCurrent(entity);
+    }
+
+    /// <summary>
+    /// Observable that emits state changes where New.State != Old.State. It will also emit the current state upon subscribing.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive initial state and state changes.
+    /// </summary>
+    public static IObservable<StateChange> StateChangesWithCurrent(this Entity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return entity.StateAllChangesWithCurrent().StateChangesOnly();
+    }
+
+    /// <summary>
+    /// Observable that emits state changes where New.State != Old.State. It will also emit the current state upon subscribing.<br/>
+    /// Use <see cref="System.ObservableExtensions.Subscribe{T}(System.IObservable{T})"/> to subscribe to the returned observable and receive initial state and state changes.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// disabledLight.StateChangesWithCurrent()
+    ///    .Where(s =&gt; s.New?.State == "on")
+    ///    .Subscribe(e =&gt; e.Entity.TurnOff());
+    /// </code>
+    /// </example>
+    public static IObservable<StateChange<TEntity, TEntityState>>
+        StateChangesWithCurrent<TEntity, TEntityState, TAttributes>(
+            this Entity<TEntity, TEntityState, TAttributes> entity)
+        where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        where TEntityState : EntityState<TAttributes>
+        where TAttributes : class
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return entity.StateAllChangesWithCurrent().StateChangesOnly();
+    }
+
+    internal static IObservable<StateChange>
+        WithCurrent(
+            this IObservable<StateChange> source, Entity entity)
+        => Observable.Defer(() => source
+            .Prepend(new StateChange(entity, null, entity.EntityState)));
+
+    internal static IObservable<StateChange<TEntity, TEntityState>>
+        WithCurrent<TEntity, TEntityState, TAttributes>(
+            this IObservable<StateChange<TEntity, TEntityState>> source, Entity<TEntity, TEntityState, TAttributes> entity)
+        where TEntity : Entity<TEntity, TEntityState, TAttributes>
+        where TEntityState : EntityState<TAttributes>
+        where TAttributes : class
+        => Observable.Defer(() => source
+            .Prepend(new StateChange<TEntity, TEntityState>((TEntity)entity, null, entity.EntityState)));
+
     internal static IObservable<T> StateChangesOnly<T>(this IObservable<T> changes) where T : StateChange
         => changes.Where(c => c.New?.State != c.Old?.State);
 
