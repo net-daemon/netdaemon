@@ -18,6 +18,11 @@ public record Device
     public string? Name { get; init; }
 
     /// <summary>
+    /// The user-provided friendly name of the device
+    /// </summary>
+    public string? NameByUser { get; init; }
+
+    /// <summary>
     /// The Id of this Device
     /// </summary>
     public required string Id { get; init; }
