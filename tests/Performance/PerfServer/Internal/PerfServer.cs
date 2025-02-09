@@ -197,8 +197,9 @@ public sealed class PerfServerStartup(ILogger<PerfServerStartup> logger) : IAsyn
 
         logger.LogInformation("Starting performance test");
 
-        var eventMessage = Messages.EventResultMsg(subscription, "on", "off");
+        var eventMessage = Messages.EventResultMsgMultiple(subscription, "on", "off");
         for (var i = 0; i < 1000000; i++)
+        /*for (var i = 0; i < 5; i++)*/
         {
             await SendWebsocketMessage(webSocket, eventMessage).ConfigureAwait(false);
         }

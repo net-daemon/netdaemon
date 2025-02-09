@@ -16,12 +16,13 @@ public class PerformanceTestApp
     {
         var counter = 0;
         var timer = new Stopwatch();
-        ha.StateChanges()
+        ha.StateAllChanges()
             .Subscribe(x =>
             {
                 if (counter == 0)
                 {
                     timer.Start();
+                    logger.LogInformation("Performance test started");
                 }
                 if (x.New?.State == "stop")
                 {
