@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.HassModel", "src\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj", "{3C2E37A3-4669-4CF5-9D6C-D68FD2034642}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDaemon.HassModel", "src\HassModel\NetDaemon.HassModel\NetDaemon.HassModel.csproj", "{3C2E37A3-4669-4CF5-9D6C-D68FD2034642}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HassModel", "HassModel", "{1D0125A6-DDC5-43C1-AAD7-7BFE14AD863F}"
 EndProject

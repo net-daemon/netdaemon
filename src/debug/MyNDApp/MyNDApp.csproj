@@ -43,7 +43,7 @@
     <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
     <ProjectReference Include="..\..\Client\NetDaemon.HassClient\NetDaemon.Client.csproj" />
     <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.CodeGenerator\NetDaemon.HassModel.CodeGenerator.csproj" />
-    <ProjectReference Include="..\..\HassModel\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+    <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel\NetDaemon.HassModel.csproj" />
     <ProjectReference Include="..\..\Host\NetDaemon.Host.Default\NetDaemon.Host.Default.csproj" />
     <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
     <ProjectReference Include="..\MyLibrary\MyLibrary.csproj" />

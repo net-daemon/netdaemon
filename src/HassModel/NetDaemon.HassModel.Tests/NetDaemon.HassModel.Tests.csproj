@@ -30,7 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NetDaemon.HassModel.CodeGenerator\NetDaemon.HassModel.CodeGenerator.csproj" />
     <ProjectReference Include="..\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj" />
-    <ProjectReference Include="..\NetDeamon.HassModel\NetDaemon.HassModel.csproj" />
+    <ProjectReference Include="..\NetDaemon.HassModel\NetDaemon.HassModel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
