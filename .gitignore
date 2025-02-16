@@ -59,8 +59,6 @@ codecover_merged.info
 .idea/
 appsettings.[Dd]evelopment.json
 
-**/core
-
 # remove HA integration test files from git
 tests/Integration/HA/config/*
 !tests/Integration/HA/config/*.yaml
