@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetDaemon.AppModel" Version="25.6.0" />
+    <PackageReference Include="NetDaemon.Runtime" Version="25.6.0" />
+    <PackageReference Include="NetDaemon.HassModel" Version="25.6.0" />
+    <PackageReference Include="NetDaemon.Client" Version="25.6.0" />
+    <PackageReference Include="NetDaemon.Extensions.Scheduling" Version="25.6.0" />
+    <PackageReference Include="NetDaemon.Extensions.Logging" Version="25.6.0" />
+    <PackageReference Include="NetDaemon.Extensions.Tts" Version="25.6.0" />
+  </ItemGroup>
+
+</Project>

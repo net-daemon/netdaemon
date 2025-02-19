@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.Build.Locator;
 using Microsoft.Extensions.Configuration;
 using NetDaemon.Client.Settings;
 
@@ -17,6 +18,7 @@ if (args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-help"))
 //This is used as a command line switch rather than a configuration key. There is no key value following it to interpret.
 generationSettings.GenerateOneFilePerEntity = args.Any(arg => arg.ToLower(CultureInfo.InvariantCulture) == "-fpe");
 
+MSBuildLocator.RegisterDefaults();
 VersionHelper.PrintVersion();
 await VersionValidator.ValidateLatestVersion();
 VersionValidator.ValidatePackageReferences();
