@@ -1,4 +1,4 @@
-﻿using MQTTnet.Extensions.ManagedClient;
+﻿using HiveMQtt.Client;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -10,5 +10,5 @@ internal interface IAssuredMqttConnection
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
-    Task<IManagedMqttClient> GetClientAsync();
+    Task<HiveMQClient> GetClientAsync();
 }

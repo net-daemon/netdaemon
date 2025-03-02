@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using HiveMQtt.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Client;
@@ -9,6 +10,7 @@ using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
+[Obsolete("Remove when Hive testing completed")]
 /// <summary>
 /// Wrapper to assure an MQTT connection
 /// </summary>
@@ -39,12 +41,17 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         _connectionTask = Task.Run(() => ConnectAsync(mqttConfig.Value, mqttFactory));
     }
 
+    public async Task<HiveMQClient> GetClientAsync()
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Ensures that the MQTT client is available
     /// </summary>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
-    public async Task<IManagedMqttClient> GetClientAsync()
+    public async Task<IManagedMqttClient> GetOriginalClientAsync()
     {
         await _connectionTask;
 

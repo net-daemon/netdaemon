@@ -16,7 +16,7 @@ internal class AssuredHiveMqttConnection(
     private bool _disposed;
     private HiveMQClient? _client;
 
-    public async Task<IManagedMqttClient> GetClientAsync()
+    public async Task<HiveMQClient> GetClientAsync()
     {
         await _subscriptionSetupLock.WaitAsync();
         try
@@ -26,7 +26,7 @@ internal class AssuredHiveMqttConnection(
                 await BuildSubscribeAndConnectAsync(mqttConfig.Value);
             }
 
-            return null; // TODO: change interface
+            return _client!;
         }
         catch (Exception ex)
         {
