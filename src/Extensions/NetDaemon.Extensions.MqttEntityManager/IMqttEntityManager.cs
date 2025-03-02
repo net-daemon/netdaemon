@@ -1,6 +1,4 @@
-﻿using MQTTnet.Protocol;
-
-namespace NetDaemon.Extensions.MqttEntityManager;
+﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
 ///     Interface for managing entities via MQTT
