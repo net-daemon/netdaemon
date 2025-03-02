@@ -4,7 +4,6 @@ using HiveMQtt.Client.Options;
 using HiveMQtt.MQTT5.ReasonCodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet.Extensions.ManagedClient;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
