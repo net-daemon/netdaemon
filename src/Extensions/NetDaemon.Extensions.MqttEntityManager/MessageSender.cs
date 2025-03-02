@@ -1,9 +1,8 @@
 ﻿#region
 
+using HiveMQtt.Client;
+using HiveMQtt.MQTT5.Types;
 using Microsoft.Extensions.Logging;
-using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
-using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 
 #endregion
@@ -43,24 +42,28 @@ internal class MessageSender : IMessageSender
         await PublishMessage(mqttClient, topic, payload, retain, qos);
     }
 
-    private async Task PublishMessage(IManagedMqttClient mqttClient, string topic, string payload, bool retain,
+    private async Task PublishMessage(
+        HiveMQClient mqttClient,
+        string topic,
+        string payload,
+        bool retain,
         MqttQualityOfServiceLevel qos)
     {
-        var message = new MqttApplicationMessageBuilder().WithTopic(topic)
+        var message = new PublishMessageBuilder().WithTopic(topic)
             .WithPayload(payload)
-            .WithRetainFlag(retain)
-            .WithQualityOfServiceLevel(qos)
+            .WithRetain(retain)
+            .WithQualityOfService((QualityOfService) qos)
             .Build();
 
-        _logger.LogTrace("MQTT sending to {Topic}: {Message}", message.Topic, message.ConvertPayloadToString());
+        _logger.LogTrace("MQTT sending to {Topic}: {Message}", message.Topic, message.PayloadAsString);
 
         try
         {
-            await mqttClient.EnqueueAsync(message).ConfigureAwait(false);
+            await mqttClient.PublishAsync(message).ConfigureAwait(false);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to publish MQTT message to to {Topic}: {Message}", message.Topic, message.ConvertPayloadToString());
+            _logger.LogError(e, "Failed to publish MQTT message to to {Topic}: {Message}", message.Topic, message.PayloadAsString);
             throw new MqttPublishException(e.Message, e);
         }
     }

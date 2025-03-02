@@ -1,6 +1,4 @@
-﻿using MQTTnet.Protocol;
-
-namespace NetDaemon.Extensions.MqttEntityManager;
+﻿namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
 ///     Interface to send messages to MQTT
