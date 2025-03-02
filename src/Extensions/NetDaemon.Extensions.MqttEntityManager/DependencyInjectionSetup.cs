@@ -22,9 +22,6 @@ public static class DependencyInjectionSetup
     {
         return hostBuilder.ConfigureServices((context, services) =>
         {
-            services.AddSingleton<IMqttFactory, MqttFactoryFactory>();
-            services.AddSingleton<IMqttClientOptionsFactory, MqttClientOptionsFactory>();
-            services.AddSingleton<IMqttFactoryWrapper, MqttFactoryWrapper>();
             services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
             services.AddSingleton<IAssuredMqttConnection, AssuredHiveMqttConnection>();
             services.AddSingleton<IMessageSender, MessageSender>();
