@@ -1,7 +1,6 @@
 ﻿#region
 
 using Microsoft.Extensions.Options;
-using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 using NetDaemon.Extensions.MqttEntityManager.Models;
 using System.Runtime.CompilerServices;
@@ -23,7 +22,7 @@ internal class MqttEntityManager : IMqttEntityManager
     private readonly IMessageSender _messageSender;
     private readonly IMessageSubscriber _messageSubscriber;
 
-    public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
+    public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnceDelivery;
 
     /// <summary>
     ///     Manage entities via MQTT
