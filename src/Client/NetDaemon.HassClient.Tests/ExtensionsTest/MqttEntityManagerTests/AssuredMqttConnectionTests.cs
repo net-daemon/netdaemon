@@ -1,6 +1,8 @@
-using MQTTnet.Extensions.ManagedClient;
+using System.Reflection;
+using HiveMQtt.Client;
+using HiveMQtt.Client.Results;
+using HiveMQtt.MQTT5.ReasonCodes;
 using NetDaemon.Extensions.MqttEntityManager;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
@@ -9,40 +11,38 @@ public class AssuredMqttConnectionTests
     [Fact]
     public async Task CanGetClient()
     {
-        var logger = new Mock<ILogger<AssuredMqttConnection>>();
+        // Mock logger
+        var logger = new Mock<ILogger<AssuredHiveMqttConnection>>();
 
-        var mqttClient = new Mock<IManagedMqttClient>();
-        var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
-        var mqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
-        var mqttConfigurationOptions = new Mock<IOptions<MqttConfiguration>>();
+        // Mock the wrapper client (IHiveMqClientWrapper)
+        var mqttClient = new Mock<IHiveMqClientWrapper>();
 
-        ConfigureMockOptions(mqttConfigurationOptions);
+        // Mock the factory to return the wrapper client
+        var mqttFactory = new Mock<IMqttClientFactory>();
+        mqttFactory.Setup(f => f.GetClient())
+            .Returns(mqttClient.Object)
+            .Verifiable();
 
-        mqttClientOptionsFactory.Setup(f => f.CreateClientOptions(It.Is<MqttConfiguration>(o => o.Host == "localhost" && o.UserName == "id")))
-            .Returns(new ManagedMqttClientOptions())
-            .Verifiable(Times.Once);
+        // Mock the ConnectAsync behavior to return a mocked result
+        var mockConnectResult = new Mock<IConnectResult>();
+        mockConnectResult.Setup(r => r.ReasonCode).Returns(ConnAckReasonCode.Success);
+        mockConnectResult.Setup(r => r.SessionPresent).Returns(false);
 
-        var conn = new AssuredMqttConnection(logger.Object, mqttClientOptionsFactory.Object, mqttFactory, mqttConfigurationOptions.Object);
+        mqttClient.Setup(client => client.ConnectAsync())
+            .ReturnsAsync(mockConnectResult.Object)
+            .Verifiable();
+
+        // Create the AssuredHiveMqttConnection
+        var conn = new AssuredHiveMqttConnection(logger.Object, mqttFactory.Object);
+
+        // Act by calling GetClientAsync
         var returnedClient = await conn.GetClientAsync();
 
+        // Verify the returned client is correct
         returnedClient.Should().Be(mqttClient.Object);
 
-        mqttClientOptionsFactory.VerifyAll();
-        mqttConfigurationOptions.VerifyAll();
-    }
-
-    private static void ConfigureMockOptions(Mock<IOptions<MqttConfiguration>> mockOptions, Action<MqttConfiguration>? configuration = null)
-    {
-        var mqttConfiguration = new MqttConfiguration
-        {
-            Host = "localhost",
-            UserName = "id"
-        };
-
-        configuration?.Invoke(mqttConfiguration);
-
-        mockOptions.SetupGet(o => o.Value)
-            .Returns(() => mqttConfiguration)
-            .Verifiable(Times.Once);
+        // Verify all expected calls were made
+        mqttFactory.Verify(f => f.GetClient(), Times.Once);
+        mqttClient.Verify(client => client.ConnectAsync(), Times.Once);
     }
 }

@@ -1,7 +1,6 @@
-﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+﻿using HiveMQtt.Client;
+using HiveMQtt.MQTT5.Types;
 using NetDaemon.Extensions.MqttEntityManager;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
@@ -11,13 +10,10 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestH
 /// </summary>
 internal sealed class MockMqttMessageSenderSetup
 {
-    public AssuredMqttConnection Connection { get; private set; } = null!;
-    public Mock<IManagedMqttClient> MqttClient { get; private set; } = null!;
-    public Mock<IMqttClientOptionsFactory> MqttClientOptionsFactory { get; private set; } = null!;
-
-    public MqttFactoryWrapper MqttFactory { get; private set; } = null!;
+    public IAssuredMqttConnection Connection { get; private set; } = null!;
+    public Mock<IHiveMQClient> MqttClient { get; private set; } = null!;
     public MessageSender MessageSender { get; private set; } = null!;
-    public MqttApplicationMessage LastPublishedMessage { get; set; } = null!;
+    public MQTT5PublishMessage LastPublishedMessage { get; set; } = null!;
 
     public MockMqttMessageSenderSetup()
     {
@@ -30,8 +26,8 @@ internal sealed class MockMqttMessageSenderSetup
     public void SetupMessageReceiver()
     {
         // Ensure that when the MQTT Client is called its published message is saved
-        MqttClient.Setup(m => m.EnqueueAsync(It.IsAny<MqttApplicationMessage>()))
-            .Callback<MqttApplicationMessage>(message =>
+        MqttClient.Setup(m => m.PublishAsync(It.IsAny<MQTT5PublishMessage>(), It.IsAny<CancellationToken>()))
+            .Callback<MQTT5PublishMessage>(message =>
             {
                 LastPublishedMessage = message;
             });
@@ -41,38 +37,26 @@ internal sealed class MockMqttMessageSenderSetup
     /// Get a mocked MQTT client, factor and connection
     /// </summary>
     /// <returns></returns>
-    private void SetupMockMqtt()
+    private async Task SetupMockMqtt()
     {
-        var mqttConfiguration = new MqttConfiguration
-        {
-            Host = "localhost",
-            UserName = "id"
-        };
-
-        var options = new Mock<IOptions<MqttConfiguration>>();
-
-        options.Setup(o => o.Value)
-            .Returns(() => mqttConfiguration);
-
-        MqttClient = new Mock<IManagedMqttClient>();
-        MqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
-        MqttFactory = new MqttFactoryWrapper(MqttClient.Object);
-
-        MqttClientOptionsFactory
-            .Setup(o => o.CreateClientOptions(mqttConfiguration))
-            .Returns(new ManagedMqttClientOptions());
-
-        Connection = new AssuredMqttConnection(
-            new Mock<ILogger<AssuredMqttConnection>>().Object,
-            MqttClientOptionsFactory.Object,
-            MqttFactory,
-            options.Object);
+        // var logger = new Mock<ILogger<AssuredHiveMqttConnection>>();
+        // var mqttClient = new Mock<IHiveMQClient>();
+        // var mqttFactory = new Mock<IMqttClientFactory>();
+        //
+        // mqttFactory.Setup(f => f.GetClient())
+        //     .Returns(mqttClient.Object)
+        //     .Verifiable(Times.Once);
+        //
+        // Connection = new AssuredHiveMqttConnection(logger.Object, mqttFactory.Object);
+        // MqttClient = mqttClient;
+        //
+        // // Remember to ensure that the connection has hooked up our mock client
+        // Assert.Equal(mqttClient.Object, await Connection.GetClientAsync());
     }
 
     private void SetupMessageSender()
     {
         var logger = new Mock<ILogger<MessageSender>>().Object;
         MessageSender = new MessageSender(logger, Connection);
-
     }
 }
