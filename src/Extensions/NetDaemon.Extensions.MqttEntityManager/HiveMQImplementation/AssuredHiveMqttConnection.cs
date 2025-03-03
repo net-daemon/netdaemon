@@ -6,6 +6,38 @@ using Microsoft.Extensions.Logging;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
+/*
+ *      HIERARCHY OF CLASSES REFERENCED BY THIS CLASS
+ *
+ * An AssuredHiveMqttConnection ultimately wraps the underlying HiveMQ connection and makes it
+ * available to callers. The connection supports auto-reconnect (see HiveMQ documentation) and
+ * so should be robust as long as the Home Assistant MQTT broker is running.
+ *
+ * HiveMQ is a decent library but they (like us) keep a lot of implementation internal which
+ * makes it difficult to mock and by extension impossible for us to unit test our own message
+ * sending and receiving utilities as we couldn't, for example, examine the structure of what
+ * our classes were sending or receiving.
+ *
+ * So, this class depends on:
+ *      IHiveMqClientWrapper, which wraps the native IHiveMQClient client but also exposes what
+ *          would be internal in the native project, allowing us to mock it.
+ *
+ *      HiveMqClientWrapper, a concrete implementation that accepts an IHiveMQClient and wraps
+ *          it, passing the supported properties and methods on the wrapped client.
+ *
+ *      IConnectResult, a new interface that does not exist in the native project, that wraps the
+ *          ConnectResult object returned from ConnectAsync()
+ *
+ *      ConnectResultWrapper, a concrete implementation of IConnectResult that wraps a returned
+ *          ConnectResult from the IHiveMqClientWrapper.ConnectAsync() method.
+ *          An alternative mock<IConnectResult> can instead be used in unit tests.
+ *
+ *      HiveMqttClientFactory, a concrete client factory that implements IMqttClientFactory, which
+ *          returns a concrete HiveMqClientWrapper that is used in dev/production.
+ *          An alternative mock<IMqttClientFactory> can instead be used in unit tests.
+ *
+ */
+
 /// <summary>
 /// Represents a robust MQTT connection that ensures a client is connected to a HiveMQ broker.
 /// This class manages the lifecycle of the MQTT client, including creating the client,
@@ -20,7 +52,7 @@ internal sealed class AssuredHiveMqttConnection(
 {
     private readonly SemaphoreSlim _subscriptionSetupLock = new (1);
     private bool _disposed;
-    private IHiveMQClient? _client;
+    private IHiveMqClientWrapper? _client;
 
     /// <summary>
     /// Retrieves an instance of <see cref="IHiveMQClient"/> connected to the MQTT broker.
@@ -32,7 +64,7 @@ internal sealed class AssuredHiveMqttConnection(
     /// A connected <see cref="IHiveMQClient"/>.
     /// </returns>
     /// <exception cref="Exception">Thrown when the connection to the MQTT broker fails.</exception>
-    public async Task<IHiveMQClient> GetClientAsync()
+    public async Task<IHiveMqClientWrapper> GetClientAsync()
     {
         await _subscriptionSetupLock.WaitAsync();
         try

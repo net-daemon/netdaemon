@@ -25,7 +25,7 @@ internal class HiveMqttClientFactory(
     /// An instance of <see cref="IHiveMQClient"/> configured with the host, port,
     /// and optional username and password specified in the MQTT configuration.
     /// </returns>
-    public IHiveMQClient GetClient()
+    public IHiveMqClientWrapper GetClient()
     {
         var config = mqttConfig.Value;
 
@@ -41,6 +41,6 @@ internal class HiveMqttClientFactory(
         if (!string.IsNullOrEmpty(config.Password))
             options = options.WithPassword(config.Password);
 
-        return new HiveMQClient(options.Build());
+        return new HiveMqClientWrapper(new HiveMQClient(options.Build()));
     }
 }

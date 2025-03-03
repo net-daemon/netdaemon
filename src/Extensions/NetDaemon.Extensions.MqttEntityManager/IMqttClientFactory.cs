@@ -13,5 +13,5 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </remarks>
 internal interface IMqttClientFactory
 {
-    IHiveMQClient GetClient();
+    IHiveMqClientWrapper GetClient();
 }

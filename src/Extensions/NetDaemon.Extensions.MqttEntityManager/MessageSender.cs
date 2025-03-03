@@ -43,7 +43,7 @@ internal class MessageSender : IMessageSender
     }
 
     private async Task PublishMessage(
-        IHiveMQClient mqttClient,
+        IHiveMqClientWrapper mqttClient,
         string topic,
         string payload,
         bool retain,
