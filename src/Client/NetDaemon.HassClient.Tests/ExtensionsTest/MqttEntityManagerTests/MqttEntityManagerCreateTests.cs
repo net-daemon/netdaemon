@@ -4,6 +4,10 @@ using Newtonsoft.Json.Linq;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
+/// <summary>
+/// Note that there are so many tests relating to <see cref="MqttEntityManager"/> that they are broken into
+/// multiple test classes, all MqttEntityManager[OPERATION]Tests
+/// </summary>
 public class MqttEntityManagerCreateTests
 {
     [Fact]

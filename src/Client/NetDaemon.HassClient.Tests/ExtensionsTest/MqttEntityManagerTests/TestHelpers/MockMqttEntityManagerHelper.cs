@@ -2,6 +2,10 @@
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
+/// <summary>
+/// Provides a helper class for testing the MQTT Entity Manager by mocking its dependencies.
+/// Enables capturing and asserting the values of topic, payload, retain, and QoS during message sending operations.
+/// </summary>
 internal class MockMqttEntityManagerHelper
 {
     public IMessageSender MessageSender { get; }
