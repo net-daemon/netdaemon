@@ -1,6 +1,3 @@
-using System.Reflection;
-using HiveMQtt.Client;
-using HiveMQtt.Client.Results;
 using HiveMQtt.MQTT5.ReasonCodes;
 using NetDaemon.Extensions.MqttEntityManager;
 
@@ -30,7 +27,7 @@ public class AssuredMqttConnectionTests
     }
 
     /// <summary>
-    /// Note that this may seem counter-intuitive but remember that that the HiveMQ client will auto-reconnect.
+    /// Note that this may seem counter-intuitive but remember that the HiveMQ client will auto-reconnect.
     /// So the behaviour should be that, even if initial connect fails, we still return a client and assume
     /// that at some point in the future it will successfully connect.
     /// </summary>
