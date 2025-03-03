@@ -58,6 +58,8 @@ internal class AssuredHiveMqttConnection(
     {
         logger.LogDebug("MQTTClient disconnecting...");
 
+        _client!.OnMessageReceived -= OnMessageReceived;
+
         var disconnectOptions = new DisconnectOptions { ReasonCode = DisconnectReasonCode.DisconnectWithWillMessage };
         await _client!.DisconnectAsync(disconnectOptions).ConfigureAwait(false);
 
