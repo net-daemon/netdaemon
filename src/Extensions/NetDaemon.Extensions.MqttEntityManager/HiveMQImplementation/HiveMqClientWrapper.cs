@@ -29,15 +29,7 @@ internal class HiveMqClientWrapper : IHiveMqClientWrapper
     public HiveMqClientWrapper(IHiveMQClient innerClient)
     {
         _innerClient = innerClient;
-
-        // https://github.com/hivemq/hivemq-mqtt-client-dotnet/issues/230
-        // Workaround, which can't be unit-tested - only apply event handler if the object
-        // is definitely a HiveMqttClient
-        if (_innerClient is HiveMQClient hiveClient)
-            hiveClient.OnMessageReceived += (sender, args) =>
-            {
-                OnMessageReceived?.Invoke(sender, args);
-            };
+        _innerClient.OnMessageReceived += (sender, args) => OnMessageReceived?.Invoke(sender, args);
     }
 
     public async Task<IConnectResult> ConnectAsync()

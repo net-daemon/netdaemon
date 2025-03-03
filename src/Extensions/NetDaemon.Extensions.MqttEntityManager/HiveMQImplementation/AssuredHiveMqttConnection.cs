@@ -94,7 +94,6 @@ internal sealed class AssuredHiveMqttConnection(
     /// <para>Handles connection lifecycle, including applying relevant event handlers
     /// for message reception when the client is a <see cref="HiveMQClient"/>.</para>
     /// </summary>
-    /// <exception cref="Exception">Thrown if the client cannot connect to the MQTT broker or if subscription fails.</exception>
     private async Task BuildSubscribeAndConnectAsync()
     {
         if (_client != null)
@@ -103,11 +102,7 @@ internal sealed class AssuredHiveMqttConnection(
         logger.LogDebug("MQTTClient connecting...");
         _client = clientFactory.GetClient();
 
-        // https://github.com/hivemq/hivemq-mqtt-client-dotnet/issues/230
-        // Workaround, which can't be unit-tested - only apply event handler if the object
-        // is definitely a HiveMqttClient
-        if (_client is HiveMQClient hiveClient)
-            hiveClient.OnMessageReceived += OnMessageReceived;
+        _client.OnMessageReceived += OnMessageReceived;
 
         var result = await _client.ConnectAsync().ConfigureAwait(false);
         if (result.ReasonCode == ConnAckReasonCode.Success)

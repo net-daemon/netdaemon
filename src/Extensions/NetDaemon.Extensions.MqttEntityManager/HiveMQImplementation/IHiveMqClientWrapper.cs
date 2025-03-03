@@ -17,18 +17,14 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 internal interface IHiveMqClientWrapper : IDisposable
 {
     // Properties
-    new bool IsConnected();
+    bool IsConnected();
 
     // Methods
-    new Task<IConnectResult> ConnectAsync();
-    new Task<bool> DisconnectAsync(DisconnectOptions options);
-    new Task<PublishResult> PublishAsync(MQTT5PublishMessage message, CancellationToken cancellationToken = default);
+    Task<IConnectResult> ConnectAsync();
+    Task<bool> DisconnectAsync(DisconnectOptions options);
+    Task<PublishResult> PublishAsync(MQTT5PublishMessage message, CancellationToken cancellationToken = default);
 
     // Events
 
-    // Note at HiveMQtt v0.24.3 events are not present in their interface.
-    // However, this is to be included in the next release.
-    // At that point, we will need to add "new" to each of these.
-
-    public event EventHandler<OnMessageReceivedEventArgs>? OnMessageReceived;
+    event EventHandler<OnMessageReceivedEventArgs>? OnMessageReceived;
 }
