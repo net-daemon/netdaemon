@@ -22,10 +22,11 @@ public static class DependencyInjectionSetup
     {
         return hostBuilder.ConfigureServices((context, services) =>
         {
-            services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
             services.AddSingleton<IAssuredMqttConnection, AssuredHiveMqttConnection>();
             services.AddSingleton<IMessageSender, MessageSender>();
             services.AddSingleton<IMessageSubscriber, MessageSubscriber>();
+            services.AddSingleton<IMqttClientFactory, HiveMqttClientFactory>();
+            services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
             services.Configure<MqttConfiguration>(context.Configuration.GetSection("Mqtt"));
         });
     }

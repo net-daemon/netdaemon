@@ -3,26 +3,43 @@ using HiveMQtt.Client.Events;
 using HiveMQtt.Client.Options;
 using HiveMQtt.MQTT5.ReasonCodes;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
-internal class AssuredHiveMqttConnection(
+/// <summary>
+/// Represents a robust MQTT connection that ensures a client is connected to a HiveMQ broker.
+/// This class manages the lifecycle of the MQTT client, including creating the client,
+/// connecting it to the broker, and handling disconnection scenarios.
+/// </summary>
+/// <remarks>
+/// This implementation internally uses a semaphore to ensure thread-safe connection management.
+/// </remarks>
+internal sealed class AssuredHiveMqttConnection(
     ILogger<AssuredHiveMqttConnection> logger,
-    IOptions<MqttConfiguration> mqttConfig) : IAssuredMqttConnection, IDisposable, IAsyncDisposable
+    IMqttClientFactory clientFactory) : IAssuredMqttConnection, IDisposable, IAsyncDisposable
 {
     private readonly SemaphoreSlim _subscriptionSetupLock = new (1);
     private bool _disposed;
-    private HiveMQClient? _client;
+    private IHiveMQClient? _client;
 
-    public async Task<HiveMQClient> GetClientAsync()
+    /// <summary>
+    /// Retrieves an instance of <see cref="IHiveMQClient"/> connected to the MQTT broker.
+    /// If a connection is not already established, this method ensures it creates one, sets up a message receiver,
+    /// and connects the client.
+    /// <para>Note that this method is thread-safe / re-entrant.</para>
+    /// </summary>
+    /// <returns>
+    /// A connected <see cref="IHiveMQClient"/>.
+    /// </returns>
+    /// <exception cref="Exception">Thrown when the connection to the MQTT broker fails.</exception>
+    public async Task<IHiveMQClient> GetClientAsync()
     {
         await _subscriptionSetupLock.WaitAsync();
         try
         {
             if (_client == null || !_client.IsConnected())
             {
-                await BuildSubscribeAndConnectAsync(mqttConfig.Value);
+                await BuildSubscribeAndConnectAsync();
             }
 
             return _client!;
@@ -38,14 +55,27 @@ internal class AssuredHiveMqttConnection(
         }
     }
 
-    private async Task BuildSubscribeAndConnectAsync(MqttConfiguration options)
+    /// <summary>
+    /// Establishes a new connection to the MQTT broker, subscribes to specified topics,
+    /// and ensures the readiness of the MQTT client for communication.
+    /// This method disposes of any existing client and safely initialises a new one.
+    /// <para>Handles connection lifecycle, including applying relevant event handlers
+    /// for message reception when the client is a <see cref="HiveMQClient"/>.</para>
+    /// </summary>
+    /// <exception cref="Exception">Thrown if the client cannot connect to the MQTT broker or if subscription fails.</exception>
+    private async Task BuildSubscribeAndConnectAsync()
     {
         if (_client != null)
             await DisconnectAndDisposeClientAsync(); // _client is now disposed
 
         logger.LogDebug("MQTTClient connecting...");
-        _client = BuildClient(options.Host, options.Port, options.UserName, options.Password);
-        _client.OnMessageReceived += OnMessageReceived;
+        _client = clientFactory.GetClient();
+
+        // https://github.com/hivemq/hivemq-mqtt-client-dotnet/issues/230
+        // Workaround, which can't be unit-tested - only apply event handler if the object
+        // is definitely a HiveMqttClient
+        if (_client is HiveMQClient hiveClient)
+            hiveClient.OnMessageReceived += OnMessageReceived;
 
         var result = await _client.ConnectAsync().ConfigureAwait(false);
         if (result.ReasonCode == ConnAckReasonCode.Success)
@@ -54,34 +84,25 @@ internal class AssuredHiveMqttConnection(
             logger.LogError("MQTTClient connection failed: {Reason}", result.ReasonString);
     }
 
+    /// <summary>
+    /// Disconnects and disposes the active MQTT client instance, ensuring resource clean-up and disconnection from the broker.
+    /// Removes any attached event handlers and releases the client object for garbage collection.
+    /// </summary>
     private async Task DisconnectAndDisposeClientAsync()
     {
         logger.LogDebug("MQTTClient disconnecting...");
 
-        _client!.OnMessageReceived -= OnMessageReceived;
+        // https://github.com/hivemq/hivemq-mqtt-client-dotnet/issues/230
+        // Workaround, which can't be unit-tested - only apply event handler if the object
+        // is definitely a HiveMqttClient
+        if (_client is HiveMQClient hiveClient)
+            hiveClient.OnMessageReceived -= OnMessageReceived;
 
         var disconnectOptions = new DisconnectOptions { ReasonCode = DisconnectReasonCode.DisconnectWithWillMessage };
         await _client!.DisconnectAsync(disconnectOptions).ConfigureAwait(false);
 
         _client.Dispose();
         _client = null;
-    }
-
-    private HiveMQClient BuildClient(string host, int port, string? username, string? password)
-    {
-        logger.LogDebug("MQTTClient connecting to {Host}:{Port}", host, port);
-
-        var options = new HiveMQClientOptionsBuilder()
-            .WithBroker(host)
-            .WithPort(port)
-            .WithAutomaticReconnect(true);
-
-        if (!string.IsNullOrEmpty(username))
-            options = options.WithUserName(username);
-        if (!string.IsNullOrEmpty(password))
-            options = options.WithPassword(password);
-
-        return new HiveMQClient(options.Build());
     }
 
     private void OnMessageReceived(object? sender, OnMessageReceivedEventArgs e)
@@ -99,7 +120,7 @@ internal class AssuredHiveMqttConnection(
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (_disposed)
             return;
