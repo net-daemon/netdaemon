@@ -9,7 +9,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.2.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.2" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.3" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
