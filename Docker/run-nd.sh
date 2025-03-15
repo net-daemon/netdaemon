@@ -8,7 +8,7 @@ if [ ! -d "/data" ]; then
 fi
 
 if [[ -z "${NetDaemon__ApplicationAssembly}" ]]; then
-    echo -e "\\033[32mStarting NetDaemon V5 runtime ...\\033[0m" >&2
+    echo -e "\\033[32mEnvironment variable 'NetDaemon__ApplicationAssembly' has not been set. Starting pre-built NetDaemon runtime instead...\\033[0m" >&2
     cd "${daemondir}" || exit 1
     exec dotnet NetDaemon.Host.Default.dll
 else
@@ -18,7 +18,7 @@ else
     fi
 
     if [[ "${NetDaemon__ApplicationAssembly}" != *".dll" ]]; then
-        echo -e "\\033[31mAssembly needs to point to a .dll file!\\033[0m" >&2
+        echo -e "\\033[31mEnvironment variable 'NetDaemon__ApplicationAssembly' needs to reference a .dll file!\\033[0m" >&2
         exit 1
     fi
 
@@ -30,7 +30,7 @@ else
 
     # The provided application source is ether a project or pre-compiled .Net application
     if [[ ! -f "${NetDaemon__ApplicationAssembly}" ]]; then
-        echo -e "\\033[31mThe assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the settings.\\033[0m" >&2
+        echo -e "\\033[31mThe assembly ${NetDaemon__ApplicationAssembly} cannot be found. Please check the 'NetDaemon__ApplicationAssembly' environment variable, it should reference your published NetDaemon application assembly.\\033[0m" >&2
         exit 1
     fi
 
