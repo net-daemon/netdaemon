@@ -8,7 +8,7 @@ namespace NetDaemon.HassModel.Tests.Integration;
 public class IntegrationHaContextExtensionsTests
 {
     [Fact]
-    public void RegsterServcieCallBackTest()
+    public void RegisterServiceCallBackTest()
     {
         var haContextMock = new HaContextMock();
         var callBackMock = new Mock<Action<CallBackData>>();
