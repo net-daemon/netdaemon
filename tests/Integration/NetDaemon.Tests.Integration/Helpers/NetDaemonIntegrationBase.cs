@@ -27,7 +27,7 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
 
     private IHost StartNetDaemon()
     {
-        var netDeamon = Host.CreateDefaultBuilder()
+        var netDaemon = Host.CreateDefaultBuilder()
             .UseNetDaemonAppSettings()
             .UseNetDaemonRuntime()
             .ConfigureAppConfiguration((_, config) =>
@@ -44,8 +44,8 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
                     .AddNetDaemonStateManager()
             ).Build();
 
-        netDeamon.Start();
-        return netDeamon;
+        netDaemon.Start();
+        return netDaemon;
     }
 
     /// <summary>
