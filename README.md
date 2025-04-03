@@ -1,54 +1,85 @@
 # NetDaemon - Write your automations in C# for Home Assistant
 
-![CI build](https://github.com/net-daemon/netdaemon/workflows/CI%20build/badge.svg?branch=main) [![Coverage Status](https://coveralls.io/repos/github/net-daemon/netdaemon/badge.svg?branch=dev)](https://coveralls.io/github/net-daemon/netdaemon?branch=dev) [![Sonar Quality Gate](https://img.shields.io/sonar/quality_gate/net-daemon_netdaemon?server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/summary/overall?id=net-daemon_netdaemon)
+[![CI build](https://github.com/net-daemon/netdaemon/actions/workflows/ci_build.yml/badge.svg)](https://github.com/net-daemon/netdaemon/actions/workflows/ci_build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/net-daemon/netdaemon/badge.svg?branch=dev)](https://coveralls.io/github/net-daemon/netdaemon?branch=dev)
 
-Welcome to the NetDaemon project. This is the application daemon that allows you to write your home automations in C# for Home Assistant.
-This repo contains the latest generation of NetDaemon, V5.
+Welcome to the NetDaemon project!
 
-Please see [https://netdaemon.xyz](https://netdaemon.xyz/docs/v3/started/get_started) for detailed instructions how to get started using NetDaemon.
-
-> **The NetDaemon v5 is pretty stable and we aim to have as little breaking changes as possible**
-
-## About V5
-NetDaemon runtime version 5 is built for .NET 9 and C# 13. Version 5 is from release 2024.xx.0 and forward.
-
-### Versioning
-The NetDaemon nuget packaged uses CalVer versioning system. The versioning is in the format `YYYY.WW.PATCH` where `YYYY.WW`
-is the year and weeknumber (01-52). `PATCH` is the patch version of the release.
-
-## Issues
-
-If you have issues or suggestions of improvements, please [add an issue](https://github.com/net-daemon/netdaemon/issues)
-
-## Discuss the NetDaemon
-
-Please [join the Discord server](https://discord.gg/K3xwfcX) to get support or if you want to contribute and help others.
-
-## Get started with NetDaemon
-
-https://netdaemon.xyz/docs/user/started/get_started/
+NetDaemon is an application daemon that enables you to write powerful home automation scripts in C# for Home Assistant. This repository contains **NetDaemon V5**, the latest version of the framework.
 
 ## About NetDaemon
 
-NetDaemon was founded by @helto4real in 2020 as a personal project exploring the use of C# in Home Assistant.
-Early contributions from @Ludeeus were crucial in enabling its NetDaemon integration.
-The project gained significant momentum when @FrankBakkerNl joined and introduced the HassModel, a user-friendly API built leveraging code generation capabilities.
-Currently, @helto4real and @FrankBakkerNl serve as the primary maintainers, though numerous individuals have contributed to the project's development over the years.
+NetDaemon was founded by [@helto4real](https://github.com/helto4real) in 2020 as a personal project to explore the use of C# in Home Assistant. Early contributions from [@Ludeeus](https://github.com/ludeeus) helped integrate NetDaemon with Home Assistant. The project gained significant momentum when [@FrankBakkerNl](https://github.com/FrankBakkerNl) joined and introduced the HassModel API, which leverages code generation to create a user-friendly experience.
 
-Contributions are welcome, and we encourage you to join the Discord server to learn more about how you can help.
+Currently, [@helto4real](https://github.com/helto4real) and [@FrankBakkerNl](https://github.com/FrankBakkerNl) serve as the primary maintainers, though many others have contributed over the years.
+
+## About V5
+
+NetDaemon V5 is built for .NET 9 and C# 13, starting from release 2024.xx.0 and onward.
+
+> **The NetDaemon v5 is stable, and we aim to minimize breaking changes moving forward.**
+
+## Getting Started
+
+To learn how to install and use NetDaemon, visit our official documentation:
+
+[🔗 Getting Started Guide](https://netdaemon.xyz/docs/user/started/get_started/)
+
+## Usage
+
+NetDaemon allows you to write your automations easily and cleanly using C#.
+
+```cs
+[NetDaemonApp]
+class MyApp
+{
+    public MyApp(Entities entities)
+    {
+        LightEntity hallwayLight = entities.Light.HallwayLight;
+        BinarySensorEntity motionSensor = entities.BinarySensor.HallwayMotionSensor;
+        
+        // Check state of entities directly
+        if (motionSensor.IsOn() && hallwayLight.IsOn()){
+            hallwayLight.TurnOn();
+        }
+
+        // Subscribe to changes in the state of the motion sensor
+        motionSensor.StateChanges()
+            .Where(e => e.New?.IsOn() ?? false)
+            .Subscribe(_ => hallwayLight.TurnOn());
+    }
+}
+```
+
+## Support & Community
+If you have issues or suggestions, please feel free to:
+
+- [Open an issue](https://github.com/net-daemon/netdaemon/issues)
+- Join our [Discord server](https://discord.gg/K3xwfcX) for support, discussions, and contributions.
+
+## Contributions
+
+Contributions are welcome! If you'd like to help improve NetDaemon, we encourage you to join our [Discord server](https://discord.gg/K3xwfcX) to learn more about how you can contribute to the project.
+
+## Versioning
+
+NetDaemon uses the CalVer versioning system for its NuGet packages. The version format is `YYYY.WW.PATCH`, where:
+
+- `YYYY.WW` represents the year and week number (01-52).
+- `PATCH` indicates the patch version of the release.
 
 ## Developer notes
 
-- Check out [NetDaemon developer site](https://netdaemon.xyz/docs/developer)
+- Visit the [NetDaemon Developer Site](https://netdaemon.xyz/docs/developer) for development resources.
 
-Check out `dotnet-outdated-tool` for automatic upgrades of all projects nuget packages.
+To automatically upgrade all NuGet packages, use the `dotnet-outdated-tool`:
 
-Install the tool by running:
+1. Install the tool with the following command:
 ```bash
 dotnet tool install --global dotnet-outdated-tool
 ```
 
-Then run the following command to upgrade all packages to the latest version:
+2. Run this command to upgrade all packages:
 
 ```bash
 dotnet outdated --pre-release Never --upgrade
