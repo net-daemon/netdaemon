@@ -59,6 +59,9 @@ codecover_merged.info
 .idea/
 appsettings.[Dd]evelopment.json
 
+# Don't track msbuildlogs that may be created locally for investigations
+*.binlog
+
 # remove HA integration test files from git
 tests/Integration/HA/config/*
 !tests/Integration/HA/config/*.yaml

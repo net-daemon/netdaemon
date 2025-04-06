@@ -37,6 +37,10 @@
     <None Update="CodeGenerator\ServiceMetaDataSamples\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Remove="CodeGenerator\TestFiles\**" />
+    <None Include="CodeGenerator\TestFiles\**\*.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

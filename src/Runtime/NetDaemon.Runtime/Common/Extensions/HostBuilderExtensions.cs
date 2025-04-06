@@ -11,7 +11,7 @@ namespace NetDaemon.Runtime;
 public static class HostBuilderExtensions
 {
     /// <summary>
-    /// Call this method to load NetDeamon Yaml settings, and to register 'ConfigureNetDaemonServices' in the service collection
+    /// Call this method to load NetDaemon Yaml settings, and to register 'ConfigureNetDaemonServices' in the service collection
     /// </summary>
     /// <param name="hostBuilder"></param>
     /// <remarks>

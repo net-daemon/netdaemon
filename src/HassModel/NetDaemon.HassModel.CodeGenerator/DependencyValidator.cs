@@ -3,6 +3,8 @@ using System.Xml;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Locator;
 
 namespace NetDaemon.HassModel.CodeGenerator;
 
@@ -60,6 +62,15 @@ public static class VersionValidator
                 return;
             }
 
+#if DEBUG
+            // Special case local development
+            if (VersionHelper.GeneratorVersion is { Major: 1, Minor: 0, Build: 0 })
+            {
+                Console.WriteLine("You are using a local development version of nd-codegen.");
+                return;
+            }
+#endif
+
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($$"""
                                 You are not using the latest version of nd-codegen ({{maxVersion?.ToString(3) ?? "NA"}}).
@@ -93,22 +104,15 @@ public static class VersionValidator
         return parts[0];
     }
 
-    private static IEnumerable<(string name, string version)> GetPackageReferences(string projectFilePath)
+    internal static IEnumerable<(string name, string version)> GetPackageReferences(string projectFilePath)
     {
-        var csproj = new XmlDocument();
-        csproj.Load(projectFilePath);
-        var nodes = csproj.SelectNodes("//PackageReference[@Include and @Version]");
-        if (nodes is null) yield break;
+        var project = new Microsoft.Build.Evaluation.Project(projectFilePath);
 
-        foreach (XmlNode packageReference in nodes)
+        foreach (var item in project.GetItems("PackageReference"))
         {
-            var packageName = packageReference.Attributes?["Include"]?.Value;
-            var version = packageReference.Attributes?["Version"]?.Value;
-            if (packageName is not null && version is not null)
-            {
-                version = TrimPreReleaseVersion(version);
-                yield return (packageName, version);
-            }
+            var packageName = item.EvaluatedInclude;
+            var version = TrimPreReleaseVersion(item.GetMetadataValue("Version"));
+            yield return (packageName, version);
         }
     }
 }
