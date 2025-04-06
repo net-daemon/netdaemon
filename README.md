@@ -15,9 +15,9 @@ Currently, [@helto4real](https://github.com/helto4real) and [@FrankBakkerNl](htt
 
 ## About V5
 
-NetDaemon V5 is built for .NET 9 and C# 13, starting from release 2024.xx.0 and onward.
+NetDaemon V5 is built on .NET 9 and C# 13, offering a modern and robust foundation.
 
-> **The NetDaemon v5 is stable, and we aim to minimize breaking changes moving forward.**
+This release is stable, and we're committed to maintaining that stability by minimizing breaking changes in the future.
 
 ## Getting Started
 
