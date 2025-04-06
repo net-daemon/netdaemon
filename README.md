@@ -39,7 +39,7 @@ class MyApp
         BinarySensorEntity motionSensor = entities.BinarySensor.HallwayMotionSensor;
         
         // Check state of entities directly
-        if (motionSensor.IsOn() && hallwayLight.IsOn()){
+        if (motionSensor.IsOn() && hallwayLight.IsOff()){
             hallwayLight.TurnOn();
         }
 
