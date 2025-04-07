@@ -13,12 +13,6 @@ NetDaemon was founded by [@helto4real](https://github.com/helto4real) in 2020 as
 
 Currently, [@helto4real](https://github.com/helto4real) and [@FrankBakkerNl](https://github.com/FrankBakkerNl) serve as the primary maintainers, though many others have contributed over the years.
 
-## About V5
-
-NetDaemon V5 is built for .NET 9 and C# 13, starting from release 2024.xx.0 and onward.
-
-> **The NetDaemon v5 is stable, and we aim to minimize breaking changes moving forward.**
-
 ## Getting Started
 
 To learn how to install and use NetDaemon, visit our official documentation:
@@ -39,7 +33,7 @@ class MyApp
         BinarySensorEntity motionSensor = entities.BinarySensor.HallwayMotionSensor;
         
         // Check state of entities directly
-        if (motionSensor.IsOn() && hallwayLight.IsOn()){
+        if (motionSensor.IsOn() && hallwayLight.IsOff()){
             hallwayLight.TurnOn();
         }
 
@@ -57,9 +51,13 @@ If you have issues or suggestions, please feel free to:
 - [Open an issue](https://github.com/net-daemon/netdaemon/issues)
 - Join our [Discord server](https://discord.gg/K3xwfcX) for support, discussions, and contributions.
 
-## Contributions
-
 Contributions are welcome! If you'd like to help improve NetDaemon, we encourage you to join our [Discord server](https://discord.gg/K3xwfcX) to learn more about how you can contribute to the project.
+
+## Release Notes
+
+Check out the [Release Notes](https://github.com/net-daemon/netdaemon/releases) for detailed information on the latest changes, bug fixes, and new features.
+
+NetDaemon is stable, and we're committed to maintaining that stability by minimizing breaking changes in future releases.
 
 ## Versioning
 
