@@ -2,13 +2,28 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>NetDaemon.AppModel</PackageId>
-    <description>Application model for NetDaemon</description>
+    <Description>Application model for NetDaemon</Description>
     <PackageDescription>
       Provides NetDaemons application model
       Please see https://github.com/net-daemon/netdaemon.
     </PackageDescription>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
+  
+  <ItemGroup>
+	<None Include="..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+	<None Include="..\..\..\README.md">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+	<None Include="..\..\..\img\icon.png">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+  </ItemGroup>
 
   <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
 
