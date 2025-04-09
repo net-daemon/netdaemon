@@ -39,7 +39,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Build" Version="17.13.9" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.9.1" />
   </ItemGroup>
 
   <ItemGroup>
