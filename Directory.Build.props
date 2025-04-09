@@ -23,10 +23,10 @@
     <Company>NetDaemon</Company>
     <PackageProjectUrl>https://netdaemon.xyz/</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/net-daemon/netdaemon/releases</PackageReleaseNotes>
-	<RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
-	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<PackageIcon>icon.png</PackageIcon>
-	<PackageTags>smart-home;home-assistant;homeassistant;automation;IoT;ha;hass;entity;reactive;domotica</PackageTags>
+    <RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>smart-home;home-assistant;homeassistant;automation;IoT;ha;hass;entity;reactive;domotica</PackageTags>
   </PropertyGroup>
 </Project>
