@@ -12,12 +12,6 @@
       The code generation dotnet tool for NetDaemon.
       Please see https://github.com/net-daemon/netdaemon.
     </PackageDescription>
-	<RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
-	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<PackageIcon>icon.png</PackageIcon>
-	<PackageReleaseNotes>https://github.com/net-daemon/netdaemon/releases</PackageReleaseNotes>
-	<PackageTags>smart-home;home-assistant;homeassistant;automation;IoT;ha;hass;entity;reactive;domotica</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>

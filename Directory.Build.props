@@ -17,12 +17,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!--Properties for nuget which are usually the same-->
+  <!--Properties for nuget which are usually the same. Note that license, readme and icon files are to be included in the proj files themselves, as their relative path may vary.-->
   <PropertyGroup>
     <Authors>helto4real</Authors>
     <Company>NetDaemon</Company>
-    <projectUrl>https://github.com/net-daemon/netdaemon</projectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <tags>Home Assistant, NetDaemon</tags>
+    <PackageProjectUrl>https://netdaemon.xyz/</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/net-daemon/netdaemon/releases</PackageReleaseNotes>
+	<RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageIcon>icon.png</PackageIcon>
+	<PackageTags>smart-home;home-assistant;homeassistant;automation;IoT;ha;hass;entity;reactive;domotica</PackageTags>
   </PropertyGroup>
 </Project>

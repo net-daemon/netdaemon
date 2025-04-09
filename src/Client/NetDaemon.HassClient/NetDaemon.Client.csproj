@@ -10,12 +10,6 @@
     </PackageDescription>
     <PackageReleaseNotes>This package is used internally by NetDaemon and not intended to be used directly. That means things could change if needed without prior notice</PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
-	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<PackageIcon>icon.png</PackageIcon>
-	<PackageReleaseNotes>https://github.com/net-daemon/netdaemon/releases</PackageReleaseNotes>
-	<PackageTags>smart-home;home-assistant;homeassistant;automation;IoT;ha;hass;entity;reactive;domotica</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>
