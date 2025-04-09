@@ -9,7 +9,27 @@
     </PackageDescription>
     <RootNamespace>NetDaemon.AppModel</RootNamespace>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<RepositoryUrl>https://github.com/net-daemon/netdaemon</RepositoryUrl>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageIcon>icon.png</PackageIcon>
+	<PackageReleaseNotes>https://github.com/net-daemon/netdaemon/releases</PackageReleaseNotes>
   </PropertyGroup>
+  
+  <ItemGroup>
+	<None Include="..\..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+	<None Include="..\..\..\..\README.md">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+	<None Include="..\..\..\..\img\icon.png">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+  </ItemGroup>
 
   <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
 
