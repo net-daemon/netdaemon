@@ -456,6 +456,52 @@ public class ServicesGeneratorTest
     }
 
 
+    [Fact]
+    public void FieldNamedTarget_DoesNotClash()
+    {
+        var states = new HassState[] { new() { EntityId = "input_select.home_mode" } };
+
+        var hassServiceDomains = Parse("""
+                                       {
+                                         "input_select": {
+                                           "set_options": {
+                                               "name": "Set options",
+                                               "description": "Sets the options.",
+                                               "fields": {
+                                                   "target": {
+                                                       "required": false,
+                                                       "example": "Some Input Data",
+                                                       "selector": {
+                                                           "text": {
+                                                           }
+                                                       },
+                                                       "name": "Target",
+                                                       "description": "Field that is named target to verify it does not clash"
+                                                   }
+                                                 },
+                                                 "target": {
+                                                   "entity": {
+                                                     "domain": "input_select"
+                                                   }
+                                                 }
+                                               }
+                                            }
+                                          }
+                                       """);
+
+        var appCode = WrapMethodBody(
+            """
+            entities.InputSelect.HomeMode.SetOptions(target: "Some target");
+            // the 'this' parameter should be called '_target' now to avoid a clash with the parameter for the field called target
+            InputSelectEntityExtensionMethods.SetOptions(_target: entities.InputSelect.HomeMode, target: "Some target");
+
+            services.InputSelect.SetOptions(new ServiceTarget(), target: "Some target");
+            """);
+
+// Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, states, hassServiceDomains);
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
 
 
     [Fact]

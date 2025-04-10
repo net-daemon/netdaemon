@@ -26,14 +26,9 @@ internal class ServiceArguments
     private readonly string _serviceName;
     private readonly string _domain;
 
-    public static ServiceArguments? Create(string domain, HassService service)
+    public static ServiceArguments Create(string domain, HassService service)
     {
-        if (service.Fields is null || service.Fields.Count == 0)
-        {
-            return null;
-        }
-
-        return new ServiceArguments(domain, service.Service, service.Fields);
+        return new ServiceArguments(domain, service.Service, service.Fields ?? []);
     }
 
     private ServiceArguments(string domain, string serviceName, IReadOnlyCollection<HassServiceField> serviceFields)
@@ -61,6 +56,23 @@ internal class ServiceArguments
         var propertyInitializers = Arguments.Select(x => $"{x.PropertyName} = {EscapeIfRequired(x.ParameterName)}");
 
         return $"new {TypeName} {{  { string.Join(", ", propertyInitializers) }  }}";
+    }
+
+    public string ServiceTargetParameterName
+    {
+        get
+        {
+            const string baseName = "target";
+
+            if (Arguments.Any(a => a.ParameterName == baseName))
+            {
+                // Append an _ to the base name to avoid name collision
+                // in normal fields the _ is removed so it cannot clash
+                return '_' + baseName;
+            }
+
+            return baseName;
+        }
     }
 
     /// <summary>
