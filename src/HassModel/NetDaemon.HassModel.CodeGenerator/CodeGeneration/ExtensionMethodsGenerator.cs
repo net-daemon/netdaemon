@@ -67,7 +67,7 @@ internal static class ExtensionMethodsGenerator
         var serviceArguments = ServiceArguments.Create(domain, service);
         var enumerableTargetTypeName = $"IEnumerable<{entityTypeName}>";
 
-        if (serviceArguments is null)
+        if (!serviceArguments.Arguments.Any())
         {
             if (service.Response is not null)
             {
@@ -145,28 +145,30 @@ internal static class ExtensionMethodsGenerator
     static MemberDeclarationSyntax ExtensionMethodWithSeparateArguments(HassService service, string serviceName, string entityTypeName,
             ServiceArguments serviceArguments, bool isAsync)
     {
+        var target = serviceArguments.ServiceTargetParameterName;
+
         if (isAsync)
         {
             return ParseMemberDeclaration($$"""
-                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
+                    public static Task<JsonElement?> {{GetServiceMethodName(serviceName)}}Async(this {{entityTypeName}} {{target}}, {{serviceArguments.GetParametersList()}})
                     {
-                        return target.CallServiceWithResponseAsync("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                        return {{target}}.CallServiceWithResponseAsync("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
                     }
                     """)!
                 .WithSummaryComment(service.Description)
-                .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
+                .AppendParameterComment(target, $"The {entityTypeName} to call this service for")
                 .AppendParameterComments(serviceArguments);
         }
         else
         {
             return ParseMemberDeclaration($$"""
-                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} target, {{serviceArguments.GetParametersList()}})
+                    public static void {{GetServiceMethodName(serviceName)}}(this {{entityTypeName}} {{target}}, {{serviceArguments.GetParametersList()}})
                     {
-                        target.CallService("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
+                        {{target}}.CallService("{{serviceName}}", {{serviceArguments.GetNewServiceArgumentsTypeExpression()}});
                     }
                     """)!
                 .WithSummaryComment(service.Description)
-                .AppendParameterComment("target", $"The {entityTypeName} to call this service for")
+                .AppendParameterComment(target, $"The {entityTypeName} to call this service for")
                 .AppendParameterComments(serviceArguments);
         }
     }

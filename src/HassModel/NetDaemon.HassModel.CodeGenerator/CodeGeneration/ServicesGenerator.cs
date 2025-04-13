@@ -66,7 +66,7 @@ internal static class ServicesGenerator
     {
         var serviceArguments = ServiceArguments.Create(domain, service);
 
-        if (serviceArguments is null)
+        if (!serviceArguments.Arguments.Any())
         {
             yield break;
         }
@@ -91,11 +91,11 @@ internal static class ServicesGenerator
 
         var serviceMethodName = GetServiceMethodName(serviceName);
 
-        var targetParam = service.Target is not null ? $"{SimplifyTypeName(typeof(ServiceTarget))} target" : null;
-        var targetArg = service.Target is not null ? "target" : "null";
-        var targetComment = service.Target is not null ? ParameterComment("target", "The target for this service call") : (SyntaxTrivia?)null;
+        var targetParam = service.Target is not null ? $"{SimplifyTypeName(typeof(ServiceTarget))} {serviceArguments.ServiceTargetParameterName}" : null;
+        var targetArg = service.Target is not null ? serviceArguments.ServiceTargetParameterName : "null";
+        var targetComment = service.Target is not null ? ParameterComment(serviceArguments.ServiceTargetParameterName, "The target for this service call") : (SyntaxTrivia?)null;
 
-        if (serviceArguments is null)
+        if (!serviceArguments.Arguments.Any())
         {
             // method without arguments
             foreach (var method in GenerateServiceMethodWithoutArguments(serviceMethodName, targetParam, targetComment, targetArg, domain, serviceName, haContextVariableName, service))
