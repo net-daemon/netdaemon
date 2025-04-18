@@ -26,8 +26,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
     internal IReadOnlyCollection<IApplication> ApplicationInstances =>
         _applicationModelContext?.Applications ?? [];
 
-    private readonly TaskCompletionSource _startedAndConnected = new();
-
     private Task _runnerTask = Task.CompletedTask;
 
     public async Task StartAsync(CancellationToken stoppingToken)
@@ -46,6 +44,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         {
             _runnerCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
 
+            // Assign the runner so we can dispose it later. Note that this task contains the connection loop and will not end. We don't want to await it.
             _runnerTask = homeAssistantRunner.RunAsync(
                 _haSettings.Host,
                 _haSettings.Port,
@@ -54,14 +53,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 _haSettings.WebsocketPath,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
                 _runnerCancellationSource.Token);
-
-            // make sure we cancel the task if the stoppingToken is cancelled
-            stoppingToken.Register(() =>
-            {
-                _startedAndConnected.TrySetCanceled();
-            });
-            // Make sure we only return after the connection is made and initialization is ready
-            await _startedAndConnected.Task;
         }
         catch (OperationCanceledException)
         {
@@ -89,22 +80,10 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
             await LoadNewAppContextAsync(haConnection, cancelToken);
-
-            _startedAndConnected.TrySetResult();
         }
         catch (Exception ex)
         {
-            if (!_startedAndConnected.Task.IsCompleted)
-            {
-                // This means this was the first time we connected and StartAsync is still awaiting _startedAndConnected
-                // By setting the exception on the task it will propagate up.
-                _startedAndConnected.SetException(ex);
-            }
-            else
-            {
-                // There is none waiting for this event handler to finish so we need to Log the exception here
-                logger.LogCritical(ex, "Error re-initializing after reconnect to Home Assistant");
-            }
+            logger.LogCritical(ex, "Error re-initializing after reconnect to Home Assistant");
         }
     }
 
@@ -151,12 +130,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             logger.LogError(e, "Error disposing applications");
         }
         IsConnected = false;
-
-        if (reason == DisconnectReason.Unauthorized)
-        {
-            // We will exit the runtime if the token is unauthorized to avoid hammering the server
-            _startedAndConnected.SetResult();
-        }
     }
 
     private async Task DisposeApplicationsAsync()
