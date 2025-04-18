@@ -20,7 +20,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
 
 
     [Fact]
-    public async Task TestStartAsyncAsync()
+    public async Task TestStartSubscribesToHomeAssistantRunnerEvents()
     {
         await using var runtime = SetupNetDaemonRuntime();
         runtime.Start(CancellationToken.None);
