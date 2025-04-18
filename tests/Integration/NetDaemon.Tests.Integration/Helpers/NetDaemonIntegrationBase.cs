@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
 using NetDaemon.Client;
 using NetDaemon.Client.Extensions;
+using NetDaemon.HassModel;
+using NetDaemon.HassModel.Internal;
 using NetDaemon.Runtime;
 using Xunit;
 
@@ -49,7 +51,9 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
             ).Build();
 
         netDaemon.Start();
+
         WaitForConnectionToEstablish(netDaemon).GetAwaiter().GetResult();
+        WaitForCacheToBeInitialized(netDaemon).GetAwaiter().GetResult();
 
         return netDaemon;
     }
@@ -62,6 +66,13 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
             .FirstAsync()
             .Timeout(TimeSpan.FromSeconds(10)) // Throw TimeoutException if it takes too long
             .ToTask();
+    }
+
+    private static async Task WaitForCacheToBeInitialized(IHost host)
+    {
+        var cacheManager = host.Services.GetRequiredService<ICacheManager>();
+
+        await cacheManager.EnsureInitializedAsync().ConfigureAwait(false);
     }
 
     /// <summary>
