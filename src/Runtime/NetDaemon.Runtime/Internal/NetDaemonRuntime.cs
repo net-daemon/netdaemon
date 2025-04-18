@@ -28,7 +28,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
     private Task _runnerTask = Task.CompletedTask;
 
-    public async Task StartAsync(CancellationToken stoppingToken)
+    public void Start(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting NetDaemon runtime version {Version}.", Version);
 

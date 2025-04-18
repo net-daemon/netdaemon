@@ -23,7 +23,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestStartAsyncAsync()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        var startingTask = runtime.StartAsync(CancellationToken.None);
+        var startingTask = runtime.Start(CancellationToken.None);
 
         _connectSubject.HasObservers.Should().BeTrue();
         _disconnectSubject.HasObservers.Should().BeTrue();
@@ -35,7 +35,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestOnConnect()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        var startingTask = runtime.StartAsync(CancellationToken.None);
+        var startingTask = runtime.Start(CancellationToken.None);
 
         startingTask.IsCompleted.Should().BeFalse();
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -50,7 +50,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestOnDisconnect()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        var startingTask = runtime.StartAsync(CancellationToken.None);
+        var startingTask = runtime.Start(CancellationToken.None);
 
         // First make sure we add an connection
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -70,7 +70,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestReconnect()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        var startingTask = runtime.StartAsync(CancellationToken.None);
+        var startingTask = runtime.Start(CancellationToken.None);
 
         // First make sure we add an connection
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -101,7 +101,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
 
         await using var runtime = SetupNetDaemonRuntime();
 
-        var startAsync = runtime.StartAsync(CancellationToken.None);
+        var startAsync = runtime.Start(CancellationToken.None);
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
         Func<Task> startingTask = ()=> startAsync;
         await startingTask.Should().ThrowAsync<InvalidOperationException>();
@@ -113,7 +113,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     {
         await using var runtime = SetupNetDaemonRuntime();
 
-        _ = runtime.StartAsync(CancellationToken.None);
+        _ = runtime.Start(CancellationToken.None);
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
         _disconnectSubject.OnNext(DisconnectReason.Client);
 
