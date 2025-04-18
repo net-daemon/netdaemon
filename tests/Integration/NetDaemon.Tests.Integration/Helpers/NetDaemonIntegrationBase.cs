@@ -1,9 +1,13 @@
 ﻿using System.Globalization;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Client;
+using NetDaemon.Client.Extensions;
 using NetDaemon.Runtime;
 using Xunit;
 
@@ -45,7 +49,19 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
             ).Build();
 
         netDaemon.Start();
+        WaitForConnectionToEstablish(netDaemon).GetAwaiter().GetResult();
+
         return netDaemon;
+    }
+
+    private static async Task WaitForConnectionToEstablish(IHost host)
+    {
+        var homeAssistantRunner = host.Services.GetRequiredService<IHomeAssistantRunner>();
+
+        await homeAssistantRunner.OnConnectWithCurrent()
+            .FirstAsync()
+            .Timeout(TimeSpan.FromSeconds(10)) // Throw TimeoutException if it takes too long
+            .ToTask();
     }
 
     /// <summary>

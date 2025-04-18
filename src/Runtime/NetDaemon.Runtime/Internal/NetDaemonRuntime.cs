@@ -71,7 +71,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             if (_applicationModelContext is not null)
             {
                 // Something wrong with unloading and disposing apps on restart of HA, we need to prevent apps loading multiple times
-                logger.LogWarning("Applications were not successfully disposed during restart, skippin loading apps again");
+                logger.LogWarning("Applications were not successfully disposed during restart, skipping loading apps again");
                 return;
             }
 
