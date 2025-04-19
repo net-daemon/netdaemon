@@ -52,27 +52,15 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
 
         netDaemon.Start();
 
-        WaitForConnectionToEstablish(netDaemon).GetAwaiter().GetResult();
-        WaitForCacheToBeInitialized(netDaemon).GetAwaiter().GetResult();
+        WaitForRuntimeToBeInitialized(netDaemon).GetAwaiter().GetResult();
 
         return netDaemon;
     }
 
-    private static async Task WaitForConnectionToEstablish(IHost host)
+    private static async Task WaitForRuntimeToBeInitialized(IHost host)
     {
-        var homeAssistantRunner = host.Services.GetRequiredService<IHomeAssistantRunner>();
-
-        await homeAssistantRunner.OnConnectWithCurrent()
-            .FirstAsync()
-            .Timeout(TimeSpan.FromSeconds(10)) // Throw TimeoutException if it takes too long
-            .ToTask();
-    }
-
-    private static async Task WaitForCacheToBeInitialized(IHost host)
-    {
-        var cacheManager = host.Services.GetRequiredService<ICacheManager>();
-
-        await cacheManager.EnsureInitializedAsync().ConfigureAwait(false);
+        var netDaemonRuntimeInitializedCheck = host.Services.GetRequiredService<INetDaemonRuntimeInitializedCheck>();
+        await netDaemonRuntimeInitializedCheck.EnsureInitializedAsync();
     }
 
     /// <summary>

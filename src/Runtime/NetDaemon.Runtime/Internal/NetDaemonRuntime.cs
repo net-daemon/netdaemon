@@ -9,11 +9,12 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
-    : IRuntime
+    : IRuntime, INetDaemonRuntimeInitializedCheck
 {
     private const string Version = "local build";
     private const int TimeoutInSeconds = 5;
 
+    private readonly TaskCompletionSource<object?> _initializationTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly HomeAssistantSettings _haSettings = settings.Value;
 
     private IAppModelContext? _applicationModelContext;
@@ -80,6 +81,9 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
             await LoadNewAppContextAsync(haConnection, cancelToken);
+
+            // Signal anyone waiting that the runtime is now initialized
+            _initializationTcs.TrySetResult(null);
         }
         catch (Exception ex)
         {
@@ -131,6 +135,8 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         }
         IsConnected = false;
     }
+
+    public Task EnsureInitializedAsync() => _initializationTcs.Task;
 
     private async Task DisposeApplicationsAsync()
     {

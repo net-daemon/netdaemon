@@ -11,9 +11,4 @@ public interface ICacheManager
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task InitializeAsync(CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Method that can be awaited to ensure that the caches are initialized before any other code is executed.
-    /// </summary>
-    Task EnsureInitializedAsync();
 }
