@@ -12,7 +12,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
 
     private readonly Subject<DisconnectReason> _onDisconnectSubject = new();
 
-    private readonly TimeSpan MaxTimeoutInSeconds = TimeSpan.FromSeconds(80);
+    private readonly TimeSpan _maxTimeoutInSeconds = TimeSpan.FromSeconds(80);
 
     private Task? _runTask;
 
@@ -62,7 +62,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
     private async Task InternalRunAsync(string host, int port, bool ssl, string token, string websocketPath, TimeSpan timeout,
         CancellationToken cancelToken)
     {
-        var progressiveTimeout = new ProgressiveTimeout(timeout, MaxTimeoutInSeconds, 2.0);
+        var progressiveTimeout = new ProgressiveTimeout(timeout, _maxTimeoutInSeconds, 2.0);
         var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_internalTokenSource.Token, cancelToken);
         while (!combinedToken.IsCancellationRequested)
         {

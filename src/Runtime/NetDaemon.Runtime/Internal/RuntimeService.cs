@@ -6,7 +6,7 @@ internal class RuntimeService(IRuntime runtime, ILogger<RuntimeService> logger) 
     {
         try
         {
-            await runtime.StartAsync(cancellationToken);
+            runtime.Start(cancellationToken);
             await base.StartAsync(cancellationToken);
         }
         catch (OperationCanceledException) { }

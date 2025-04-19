@@ -1,9 +1,15 @@
 ﻿using System.Globalization;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Client;
+using NetDaemon.Client.Extensions;
+using NetDaemon.HassModel;
+using NetDaemon.HassModel.Internal;
 using NetDaemon.Runtime;
 using Xunit;
 
@@ -45,7 +51,16 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
             ).Build();
 
         netDaemon.Start();
+
+        WaitForRuntimeToBeInitialized(netDaemon).GetAwaiter().GetResult();
+
         return netDaemon;
+    }
+
+    private static async Task WaitForRuntimeToBeInitialized(IHost host)
+    {
+        var netDaemonRuntimeInitializedCheck = host.Services.GetRequiredService<INetDaemonRuntimeInitializedCheck>();
+        await netDaemonRuntimeInitializedCheck.EnsureInitializedAsync();
     }
 
     /// <summary>

@@ -3,23 +3,22 @@ namespace NetDaemon.Client;
 public interface IHomeAssistantRunner : IAsyncDisposable
 {
     /// <summary>
-    ///     Event when new connection is established
+    /// Observable that emits when a (new) connection is established.
     /// </summary>
     IObservable<IHomeAssistantConnection> OnConnect { get; }
 
     /// <summary>
-    ///     Event when connection is lost
+    /// Observable that emits when the current connection is lost.
     /// </summary>
     IObservable<DisconnectReason> OnDisconnect { get; }
 
     /// <summary>
-    ///     The current connection to Home Assistant
+    /// The current connection to Home Assistant. Null if disconnected.
     /// </summary>
-    /// <value></value>
     IHomeAssistantConnection? CurrentConnection { get; }
 
     /// <summary>
-    ///     Maintains a connection to the Home Assistant server
+    /// Maintains a connection to the Home Assistant server
     /// </summary>
     /// <param name="host">Host of Home Assistant instance</param>
     /// <param name="port">Port of Home Assistant instance</param>
@@ -30,7 +29,7 @@ public interface IHomeAssistantRunner : IAsyncDisposable
     Task RunAsync(string host, int port, bool ssl, string token, TimeSpan timeout, CancellationToken cancelToken);
     
     /// <summary>
-    ///     Maintains a connection to the Home Assistant server
+    /// Maintains a connection to the Home Assistant server
     /// </summary>
     /// <param name="host">Host of Home Assistant instance</param>
     /// <param name="port">Port of Home Assistant instance</param>
