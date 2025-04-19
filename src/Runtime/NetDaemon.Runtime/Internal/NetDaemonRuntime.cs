@@ -14,7 +14,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
     private const string Version = "local build";
     private const int TimeoutInSeconds = 5;
 
-    private readonly TaskCompletionSource<object?> _initializationTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _initializationTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly HomeAssistantSettings _haSettings = settings.Value;
 
     private IAppModelContext? _applicationModelContext;
@@ -83,7 +83,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
             await LoadNewAppContextAsync(haConnection, cancelToken);
 
             // Signal anyone waiting that the runtime is now initialized
-            _initializationTcs.TrySetResult(null);
+            _initializationTcs.TrySetResult();
         }
         catch (Exception ex)
         {
