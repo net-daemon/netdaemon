@@ -26,7 +26,7 @@ public class TestRuntime
         var runnerTask = host.RunAsync(timedCancellationSource.Token);
 
         haRunner.MockConnect();
-        var service = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        var service = (NetDaemonRuntime) host.Services.GetService<INetDaemonRuntime>()!;
         var instances = service.ApplicationInstances;
 
         instances.Where(n => n.Id == "LocalApps.LocalApp").Should().NotBeEmpty();
@@ -50,7 +50,7 @@ public class TestRuntime
 
         var runnerTask = host.StartAsync(timedCancellationSource.Token);
         haRunner.MockConnect();
-        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        _ = (NetDaemonRuntime) host.Services.GetService<INetDaemonRuntime>()!;
         await runnerTask.ConfigureAwait(false);
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
@@ -89,7 +89,7 @@ public class TestRuntime
 
         var runnerTask = host.StartAsync(timedCancellationSource.Token);
         haRunner.MockConnect();
-        _ = (NetDaemonRuntime) host.Services.GetService<IRuntime>()!;
+        _ = (NetDaemonRuntime) host.Services.GetService<INetDaemonRuntime>()!;
 
         haRunner.ClientMock.ConnectionMock.AddStateChangeEvent(
             new HassState

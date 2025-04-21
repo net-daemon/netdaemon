@@ -9,14 +9,17 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         IServiceProvider serviceProvider,
         ILogger<NetDaemonRuntime> logger,
         ICacheManager cacheManager)
-    : IRuntime, INetDaemonRuntimeInitializedCheck
+    : INetDaemonRuntime
 {
     private const string Version = "local build";
     private const int TimeoutInSeconds = 5;
 
+    private readonly Lock _initializationLock = new();
     private readonly TaskCompletionSource _initializationTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
     private readonly HomeAssistantSettings _haSettings = settings.Value;
 
+    private Lazy<Task>? _initializationTask;
     private IAppModelContext? _applicationModelContext;
     private CancellationToken? _stoppingToken;
     private CancellationTokenSource? _runnerCancellationSource;
@@ -29,7 +32,22 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
     private Task _runnerTask = Task.CompletedTask;
 
-    public void Start(CancellationToken stoppingToken)
+    public Task EnsureInitializedAsync(CancellationToken stoppingToken = default)
+    {
+        if (_initializationTask is null)
+        {
+            lock (_initializationLock)
+            {
+                if (_initializationTask is null)
+                {
+                    _initializationTask = new Lazy<Task>(() => StartAndInitializeAsync(stoppingToken));
+                }
+            }
+        }
+        return _initializationTask.Value;
+    }
+
+    private Task StartAndInitializeAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting NetDaemon runtime version {Version}.", Version);
 
@@ -54,11 +72,17 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
                 _haSettings.WebsocketPath,
                 TimeSpan.FromSeconds(TimeoutInSeconds),
                 _runnerCancellationSource.Token);
+
+            // make sure we cancel the task if the stoppingToken is cancelled
+            stoppingToken.Register(() => _initializationTcs.TrySetCanceled());
+
+            return _initializationTcs.Task;
         }
         catch (OperationCanceledException)
         {
             // Ignore and just stop
         }
+        return Task.CompletedTask;
     }
 
     private async Task OnHomeAssistantClientConnected(
@@ -87,7 +111,13 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Error re-initializing after reconnect to Home Assistant");
+            if (!_initializationTcs.Task.IsCompleted)
+            {
+                // This means this was the first time we connected and StartAsync is still awaiting _startedAndConnected
+                // By setting the exception on the task it will propagate up.
+                _initializationTcs.SetException(ex);
+            }
+            logger.LogCritical(ex, "Error (re-)initializing after connect to Home Assistant");
         }
     }
 
@@ -135,8 +165,6 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         }
         IsConnected = false;
     }
-
-    public Task EnsureInitializedAsync() => _initializationTcs.Task;
 
     private async Task DisposeApplicationsAsync()
     {

@@ -20,10 +20,10 @@ public sealed class NetDaemonRuntimeTests : IDisposable
 
 
     [Fact]
-    public async Task TestStartSubscribesToHomeAssistantRunnerEvents()
+    public async Task TestEnsureInitializedAsyncSubscribesToHomeAssistantRunnerEvents()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        runtime.Start(CancellationToken.None);
+        _ = runtime.EnsureInitializedAsync();
 
         _connectSubject.HasObservers.Should().BeTrue();
         _disconnectSubject.HasObservers.Should().BeTrue();
@@ -33,7 +33,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestOnConnect()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        runtime.Start(CancellationToken.None);
+        _ = runtime.EnsureInitializedAsync();
 
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
 
@@ -46,7 +46,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestOnDisconnect()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        runtime.Start(CancellationToken.None);
+        _ = runtime.EnsureInitializedAsync();
 
         // First make sure we add an connection
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -65,7 +65,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     public async Task TestReconnect()
     {
         await using var runtime = SetupNetDaemonRuntime();
-        runtime.Start(CancellationToken.None);
+        _ = runtime.EnsureInitializedAsync();
 
         // First make sure we add an connection
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
@@ -95,7 +95,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
 
         await using var runtime = SetupNetDaemonRuntime();
 
-        runtime.Start(CancellationToken.None);
+        _ = runtime.EnsureInitializedAsync();
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
 
         _loggerMock.Verify(
@@ -112,7 +112,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     {
         await using var runtime = SetupNetDaemonRuntime();
 
-        runtime.Start(CancellationToken.None);
+        _ = runtime.EnsureInitializedAsync();
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
         _disconnectSubject.OnNext(DisconnectReason.Client);
 

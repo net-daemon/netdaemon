@@ -59,8 +59,8 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
 
     private static async Task WaitForRuntimeToBeInitialized(IHost host)
     {
-        var netDaemonRuntimeInitializedCheck = host.Services.GetRequiredService<INetDaemonRuntimeInitializedCheck>();
-        await netDaemonRuntimeInitializedCheck.EnsureInitializedAsync();
+        var netDaemonRuntime = host.Services.GetRequiredService<INetDaemonRuntime>();
+        await netDaemonRuntime.EnsureInitializedAsync();
     }
 
     /// <summary>
