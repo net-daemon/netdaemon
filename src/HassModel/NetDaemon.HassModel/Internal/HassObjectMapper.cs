@@ -75,7 +75,8 @@ internal static class HassObjectMapper
             ConfigurationUrl = hassDevice.ConfigurationUrl,
             SerialNumber = hassDevice.SerialNumber,
             HardwareVersion = hassDevice.HardwareVersion,
-            SoftwareVersion = hassDevice.SoftwareVersion
+            SoftwareVersion = hassDevice.SoftwareVersion,
+            Identifiers = hassDevice.Identifiers.ToDictionary(list => list[0], list => list[1])
         };
     }
 

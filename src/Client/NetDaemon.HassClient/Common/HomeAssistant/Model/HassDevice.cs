@@ -27,4 +27,6 @@ public record HassDevice
     [JsonPropertyName("sw_version")] public string? SoftwareVersion { get; init; }
     [JsonConverter(typeof(EnsureStringConverter))]
     [JsonPropertyName("serial_number")] public string? SerialNumber { get; init; }
+
+    [JsonPropertyName("identifiers")] public IReadOnlyList<IReadOnlyList<string>> Identifiers { get; init; } = [];
 }
