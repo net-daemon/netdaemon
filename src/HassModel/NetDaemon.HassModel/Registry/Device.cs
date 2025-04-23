@@ -77,5 +77,5 @@ public record Device
     /// <summary>
     /// The set of unique identifiers of this Device, if available
     /// </summary>
-    public IReadOnlyDictionary<string, string>? Identifiers { get; init; } = new Dictionary<string, string>();
+    public IReadOnlyList<(string, string)>? Identifiers { get; init; } = [];
 }

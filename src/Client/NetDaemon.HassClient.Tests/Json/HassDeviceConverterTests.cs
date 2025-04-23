@@ -52,4 +52,31 @@ public class JsonConverterTests
         var hassDevice = JsonSerializer.Deserialize<HassDevice>(jsonDevice, _defaultSerializerOptions);
         hassDevice!.Model.Should().Be("Chromecast");
     }
+
+    [Fact]
+    public void TestConversionWithIdentifiers()
+    {
+        const string jsonDevice = @"
+        {
+            ""config_entries"": [],
+            ""connections"": [],
+            ""manufacturer"": ""Google Inc."",
+            ""model"": ""Chromecast"",
+            ""name"": ""My TV"",
+            ""sw_version"": null,
+            ""id"": ""42cdda32a2a3428e86c2e27699d79ead"",
+            ""via_device_id"": null,
+            ""area_id"": null,
+            ""name_by_user"": null,
+            ""identifiers"": [
+                [
+                    ""Google"",
+                    ""42cdda32a2a3428e86c2e27699d79ead""
+                ],
+            ]
+        }
+        ";
+        var hassDevice = JsonSerializer.Deserialize<HassDevice>(jsonDevice, _defaultSerializerOptions);
+        hassDevice!.Identifiers.Should().Equal(new[] { new[] { "Google", "42cdda32a2a3428e86c2e27699d79ead" }.AsReadOnly() }.AsReadOnly());
+    }
 }

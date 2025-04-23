@@ -7,22 +7,21 @@ internal static class HassObjectMapper
         return hassState == null
             ? null
             : new EntityState
-                {
-                    EntityId = hassState.EntityId,
-                    State = hassState.State,
-                    AttributesJson = hassState.AttributesJson,
-                    LastChanged = hassState.LastChanged,
-                    LastUpdated = hassState.LastUpdated,
-                    Context = hassState.Context == null
-                        ? null
-                        : new Context
-                        {
-                            Id = hassState.Context.Id,
-                            UserId = hassState.Context.UserId,
-                            ParentId = hassState.Context.UserId
-                        }
-                };
-
+            {
+                EntityId = hassState.EntityId,
+                State = hassState.State,
+                AttributesJson = hassState.AttributesJson,
+                LastChanged = hassState.LastChanged,
+                LastUpdated = hassState.LastUpdated,
+                Context = hassState.Context == null
+                    ? null
+                    : new Context
+                    {
+                        Id = hassState.Context.Id,
+                        UserId = hassState.Context.UserId,
+                        ParentId = hassState.Context.UserId
+                    }
+            };
     }
 
     public static HassTarget? Map(this ServiceTarget? target)
@@ -30,13 +29,13 @@ internal static class HassObjectMapper
         return target is null
             ? null
             : new HassTarget
-                {
-                    AreaIds = target.AreaIds,
-                    DeviceIds = target.DeviceIds,
-                    EntityIds = target.EntityIds,
-                    FloorIds = target.FloorIds,
-                    LabelIds = target.LabelIds
-                };
+            {
+                AreaIds = target.AreaIds,
+                DeviceIds = target.DeviceIds,
+                EntityIds = target.EntityIds,
+                FloorIds = target.FloorIds,
+                LabelIds = target.LabelIds
+            };
     }
 
     public static Event Map(this HassEvent hassEvent)
@@ -76,7 +75,7 @@ internal static class HassObjectMapper
             SerialNumber = hassDevice.SerialNumber,
             HardwareVersion = hassDevice.HardwareVersion,
             SoftwareVersion = hassDevice.SoftwareVersion,
-            Identifiers = hassDevice.Identifiers.ToDictionary(list => list[0], list => list[1])
+            Identifiers = hassDevice.Identifiers.Where(x => x.Count == 2).Select(id => (id[0], id[1])).ToList()
         };
     }
 
@@ -102,6 +101,7 @@ internal static class HassObjectMapper
             Icon = hassFloor.Icon,
         };
     }
+
     public static EntityRegistration Map(this HassEntity hassEntity, IHaRegistryNavigator registry)
     {
         var device = hassEntity.DeviceId is null ? null : registry.GetDevice(hassEntity.DeviceId);
