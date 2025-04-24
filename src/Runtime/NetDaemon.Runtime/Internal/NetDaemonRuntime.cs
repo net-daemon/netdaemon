@@ -47,6 +47,8 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         return _initializationTask.Value;
     }
 
+    public AutoReconnectOptions AutoReconnectOptions { get; set; } = AutoReconnectOptions.StopReconnectOnUnAuthorized;
+
     private Task StartAndInitializeAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting NetDaemon runtime version {Version}.", Version);
@@ -163,6 +165,13 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
         {
             logger.LogError(e, "Error disposing applications");
         }
+
+        if (AutoReconnectOptions == AutoReconnectOptions.StopReconnectOnUnAuthorized && reason == DisconnectReason.Unauthorized)
+        {
+            logger.LogInformation("Home Assistant runtime will dispose itself to stop automatic retrying to prevent user from being locked out.");
+            await DisposeAsync();
+        }
+
         IsConnected = false;
     }
 

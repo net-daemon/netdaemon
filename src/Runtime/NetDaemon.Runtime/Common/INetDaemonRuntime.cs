@@ -12,4 +12,9 @@ public interface INetDaemonRuntime : IAsyncDisposable
     /// Calling this method multiple times will only start the runtime once, but can be useful for other processes if they want to await the NetDaemon runtime to be initialized.
     /// </summary>
     Task EnsureInitializedAsync(CancellationToken stoppingToken = default);
+
+    /// <summary>
+    /// Determines auto reconnect behavior of the runtime.
+    /// </summary>
+    AutoReconnectOptions AutoReconnectOptions { get; set; }
 }
