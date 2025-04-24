@@ -1,5 +1,8 @@
 ﻿namespace NetDaemon.Runtime;
 
+/// <summary>
+/// Enum to determine the auto reconnect behavior of the runtime.
+/// </summary>
 public enum AutoReconnectOptions
 {
     /// <summary>
