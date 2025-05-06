@@ -72,7 +72,9 @@ public static class HostBuilderExtensions
                 services.AddHostedService<RuntimeService>();
                 services.AddHomeAssistantClient();
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                services.AddSingleton<IRuntime, NetDaemonRuntime>();
+                services.AddSingleton<NetDaemonRuntime>();
+                services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+                services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
             });
     }
 }
