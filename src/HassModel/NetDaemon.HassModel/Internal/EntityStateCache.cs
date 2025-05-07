@@ -52,8 +52,8 @@ internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
     public EntityState? GetState(string entityId)
     {
         return !_initialized
-            ? throw new InvalidOperationException("StateCache has not been initialized yet")
-            : (_latestStates.GetValueOrDefault(entityId)?.Value);
+            ? throw new InvalidOperationException("StateCache is not initialized. This typically occurs because NetDaemon has not yet populated the cache during its initial connection to Home Assistant. To ensure initialization is complete, await `WaitForInitializationAsync` on `INetDaemonRuntime` before accessing the cache.")
+            : _latestStates.GetValueOrDefault(entityId)?.Value;
     }
 
     public void Dispose()
