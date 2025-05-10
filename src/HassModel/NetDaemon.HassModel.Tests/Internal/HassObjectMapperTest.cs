@@ -15,9 +15,6 @@ public class HassObjectMapperTest
     {
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-
-        // HACK: this was just a way to verify it works when adding the converter here
-        Converters = { new EnsureStringConverter() }
     };
 
     [Fact]
