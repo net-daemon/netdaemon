@@ -28,5 +28,6 @@ public record HassDevice
     [JsonConverter(typeof(EnsureStringConverter))]
     [JsonPropertyName("serial_number")] public string? SerialNumber { get; init; }
 
+    [JsonConverter(typeof(EnsureArrayOfArrayOfStringConverter))]
     [JsonPropertyName("identifiers")] public IReadOnlyList<IReadOnlyList<string>> Identifiers { get; init; } = [];
 }
