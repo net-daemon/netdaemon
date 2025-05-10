@@ -20,6 +20,7 @@ class EnsureStringConverter : JsonConverter<string?>
                 if (reader.TryGetDouble(out var doubleValue))
                     return doubleValue.ToString(CultureInfo.InvariantCulture);
 
+                reader.Skip();
                 return null;
 
             default:

@@ -43,7 +43,9 @@ public class HassObjectMapperTest
                 [
                     "SKIP"
                 ],
-                [1,2]
+                [1,2],
+                [1.1, 2],
+                ["1", 2.2]
             ]
         }
         """;
@@ -54,12 +56,18 @@ public class HassObjectMapperTest
 
         var ndDevice = hassDevice.Map(Mock.Of<IHaRegistryNavigator>());
 
-        Assert.Equal(2, ndDevice.Identifiers!.Count);
+        Assert.Equal(4, ndDevice.Identifiers!.Count);
         Assert.Equal(ndDevice.Identifiers![0].Item1, "Google");
         Assert.Equal(ndDevice.Identifiers![0].Item2, "42cdda32a2a3428e86c2e27699d79ead");
 
         Assert.Equal(ndDevice.Identifiers![1].Item1, "1");
         Assert.Equal(ndDevice.Identifiers![1].Item2, "2");
+
+        Assert.Equal(ndDevice.Identifiers![2].Item1, "1.1");
+        Assert.Equal(ndDevice.Identifiers![2].Item2, "2");
+
+        Assert.Equal(ndDevice.Identifiers![3].Item1, "1");
+        Assert.Equal(ndDevice.Identifiers![3].Item2, "2.2");
     }
 
 }
