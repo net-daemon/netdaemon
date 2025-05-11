@@ -26,6 +26,13 @@ internal class NetDaemonRuntimeLight(IHomeAssistantRunner homeAssistantRunner,
 
     private Task _runnerTask = Task.CompletedTask;
 
+    public async Task StartAsync(CancellationToken stoppingToken)
+    {
+        Start(stoppingToken);
+        await WaitForInitializationAsync().ConfigureAwait(false);
+    }
+
+
     public void Start(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting NetDaemon runtime version {Version}.", Version);
@@ -73,7 +80,7 @@ internal class NetDaemonRuntimeLight(IHomeAssistantRunner homeAssistantRunner,
 
             IsConnected = true;
 
-            await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
+            //await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
 
             // Signal anyone waiting that the runtime is now initialized
             _initializationTcs.TrySetResult();
