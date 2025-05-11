@@ -17,7 +17,7 @@ internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        _ = hassRunner.CurrentConnection ?? throw new InvalidOperationException();
+        _ = hassRunner.CurrentConnection ?? throw new InvalidOperationException("Home Assistant connection is not available when trying to initialize the StateCache.");
 
         var events = await hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
         _eventSubscription = events.Subscribe(HandleEvent);
