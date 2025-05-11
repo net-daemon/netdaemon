@@ -19,7 +19,7 @@ public static class HostBuilderExtensions
     ///  - Register appsettings.json to the host configuration
     ///  - Register all the yaml settings from the path set in the current configuration to the configuration provider
     ///  - Call 'ConfigureNetDaemonServices' in the service collection
-    ///  
+    ///
     /// You can call these methods separately if you want to do something else in between, or if you're calling any of these methods already.
     /// Change `UseNetDaemonAppSettings` to `.RegisterAppSettingsJsonToHost().RegisterYamlSettings()` and call `ConfigureNetDaemonServices(context.Configuration)` in ConfigureServices.
     /// </remarks>
@@ -64,17 +64,23 @@ public static class HostBuilderExtensions
     /// </summary>
     public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
     {
+
         return hostBuilder
-            .UseAppScopedHaContext()
             .ConfigureServices((context, services) =>
             {
-                services.AddLogging();
-                services.AddHostedService<RuntimeService>();
-                services.AddHomeAssistantClient();
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                services.AddSingleton<NetDaemonRuntime>();
-                services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
-                services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+                AddNetDaemonRuntime(services);
             });
+    }
+
+    public static void AddNetDaemonRuntime(this IServiceCollection services)
+    {
+        services.AddScopedHaContext();
+        services.AddLogging();
+        services.AddHostedService<RuntimeService>();
+        services.AddHomeAssistantClient();
+        services.AddSingleton<NetDaemonRuntime>();
+        services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+        services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
     }
 }
