@@ -21,7 +21,7 @@ jobs:
         run: |
           latest=$(git describe --tags $(git rev-list --tags --max-count=1))
           echo Current version:    $latest
-          echo "::set-output name=version::$latest"
+          echo "version=$latest" >> $GITHUB_OUTPUT
 
       - name: 🥅 Install .Net 9
         uses: actions/setup-dotnet@v4
