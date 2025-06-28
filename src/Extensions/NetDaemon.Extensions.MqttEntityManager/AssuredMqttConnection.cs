@@ -9,7 +9,7 @@ using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
-'''/// <summary>
+/// <summary>
 /// Wrapper to assure an MQTT connection
 /// </summary>
 internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
@@ -66,7 +66,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
         _mqttClient.ConnectedAsync += MqttClientOnConnectedAsync;
         _mqttClient.DisconnectedAsync += MqttClientOnDisconnectedAsync;
-        
+
         while (!cancellationToken.IsCancellationRequested)
         {
             try
@@ -86,7 +86,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));
         if (_disposed) return Task.CompletedTask;
-        
+
         _ = Task.Run(async () =>
         {
             await Task.Delay(5000).ConfigureAwait(false);
@@ -135,4 +135,4 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             _mqttClient.Dispose();
         }
     }
-}''
+}
