@@ -1,5 +1,4 @@
 ﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -13,8 +12,8 @@ internal class MqttFactoryFactory : IMqttFactory
     /// Create a Managed Mqtt Client
     /// </summary>
     /// <returns></returns>
-    public IManagedMqttClient CreateManagedMqttClient()
+    public IMqttClient CreateMqttClient()
     {
-        return new MqttFactory().CreateManagedMqttClient();
+        return new MqttClientFactory().CreateMqttClient();
     }
 }
