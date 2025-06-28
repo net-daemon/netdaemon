@@ -1,4 +1,5 @@
-﻿using MQTTnet.Protocol;
+﻿using System.Buffers;
+using MQTTnet.Protocol;
 using NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
@@ -13,7 +14,7 @@ public class MessageSenderTests
         await mqttSetup.MessageSender.SendMessageAsync("topic", "payload", true, MqttQualityOfServiceLevel.AtMostOnce);
         var publishedMessage = mqttSetup.LastPublishedMessage;
 
-        var payloadAsText = System.Text.Encoding.Default.GetString(publishedMessage.PayloadSegment.Array ?? []);
+        var payloadAsText = System.Text.Encoding.Default.GetString(ConvertPayloadToArray(publishedMessage.Payload));
 
         publishedMessage.Topic.Should().Be("topic");
         payloadAsText.Should().Be("payload");
@@ -72,5 +73,17 @@ public class MessageSenderTests
         var publishedMessage = mqttSetup.LastPublishedMessage;
 
         publishedMessage.Retain.Should().BeFalse();
+    }
+
+    private static byte[] ConvertPayloadToArray(ReadOnlySequence<byte> payload)
+    {
+        if (payload.IsSingleSegment)
+        {
+            return payload.FirstSpan.ToArray();
+        }
+
+        var result = new byte[payload.Length];
+        payload.CopyTo(result);
+        return result;
     }
 }

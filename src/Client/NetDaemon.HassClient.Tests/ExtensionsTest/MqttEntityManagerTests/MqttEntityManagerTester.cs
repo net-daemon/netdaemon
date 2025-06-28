@@ -1,4 +1,5 @@
-﻿using NetDaemon.Extensions.MqttEntityManager;
+﻿using System.Buffers;
+using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
@@ -22,7 +23,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor");
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
@@ -40,7 +41,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions());
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
@@ -58,7 +59,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(UniqueId: "my_id"));
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?["unique_id"].ToString().Should().Be("my_id");
     }
@@ -70,7 +71,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.the_id");
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?["object_id"].ToString().Should().Be("the_id");
     }
@@ -82,7 +83,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(DeviceClass: "classy"));
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?["device_class"].ToString().Should().Be("classy");
     }
@@ -94,7 +95,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(Name: "george"));
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?["name"].ToString().Should().Be("george");
     }
@@ -130,7 +131,7 @@ public class MqttEntityManagerTester
         var otherOptions = new { sub_class = "lights", up_state = "live" };
 
         await entityManager.CreateAsync("domain.sensor", additionalConfig: otherOptions);
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?["sub_class"].ToString().Should().Be("lights");
         payload?["up_state"].ToString().Should().Be("live");
@@ -145,7 +146,7 @@ public class MqttEntityManagerTester
         var otherOptions = new { command_topic = "my/topic" };
 
         await entityManager.CreateAsync("domain.sensor", additionalConfig: otherOptions);
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?["command_topic"].ToString().Should().Be("my/topic");
     }
@@ -157,7 +158,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor");
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?.ContainsKey("availability_topic").Should().BeFalse();
     }
@@ -169,7 +170,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(PayloadAvailable: "up"));
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?.ContainsKey("availability_topic").Should().BeTrue();
         payload?["availability_topic"].ToString().Should().Be("homeassistant/domain/sensor/availability");
@@ -183,7 +184,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.CreateAsync("domain.sensor", new EntityCreationOptions(PayloadNotAvailable: "down"));
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         payload?.ContainsKey("availability_topic").Should().BeTrue();
         payload?["availability_topic"].ToString().Should().Be("homeassistant/domain/sensor/availability");
@@ -198,7 +199,7 @@ public class MqttEntityManagerTester
 
         await entityManager.RemoveAsync("domain.sensor");
 
-        mqttSetup.LastPublishedMessage.PayloadSegment.Should().BeEmpty();
+        mqttSetup.LastPublishedMessage.Payload.Length.Should().Be(0);
     }
 
     [Fact]
@@ -208,7 +209,7 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.SetStateAsync("domain.sensor", "NewState");
-        var payload = Encoding.Default.GetString(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = Encoding.Default.GetString(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/state");
         payload.Should().Be("NewState");
@@ -223,7 +224,7 @@ public class MqttEntityManagerTester
         await entityManager.SetStateAsync("domain.sensor", "");
 
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/state");
-        mqttSetup.LastPublishedMessage.PayloadSegment.Should().BeEmpty();
+        mqttSetup.LastPublishedMessage.Payload.Length.Should().Be(0);
     }
 
     [Fact]
@@ -234,7 +235,7 @@ public class MqttEntityManagerTester
 
         var attributes = new { colour = "purple", ziggy = "stardust" };
         await entityManager.SetAttributesAsync("domain.sensor", attributes);
-        var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = PayloadToDictionary(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/attributes");
         payload?["colour"].ToString().Should().Be("purple");
@@ -248,12 +249,24 @@ public class MqttEntityManagerTester
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
 
         await entityManager.SetAvailabilityAsync("domain.sensor", "up");
-        var payload = Encoding.Default.GetString(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
+        var payload = Encoding.Default.GetString(ConvertPayloadToArray(mqttSetup.LastPublishedMessage.Payload));
 
         mqttSetup.LastPublishedMessage.Topic.Should().Be("homeassistant/domain/sensor/availability");
         payload.Should().Be("up");
     }
 
+
+    private static byte[] ConvertPayloadToArray(ReadOnlySequence<byte> payload)
+    {
+        if (payload.IsSingleSegment)
+        {
+            return payload.FirstSpan.ToArray();
+        }
+
+        var result = new byte[payload.Length];
+        payload.CopyTo(result);
+        return result;
+    }
 
     private static Dictionary<string, object>? PayloadToDictionary(byte[] payload)
     {

@@ -12,7 +12,7 @@
     <tags>Home Assistant, NetDaemon, MQTT</tags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
 	<None Include="..\..\..\LICENSE">
       <Pack>True</Pack>
@@ -37,7 +37,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
-    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.3.7.1207" />
+    <PackageReference Include="MQTTnet" Version="5.0.1.1416" />
     <PackageReference Include="System.Reactive" Version="6.0.2" />
   </ItemGroup>
 

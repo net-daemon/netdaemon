@@ -1,4 +1,4 @@
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
 using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -11,7 +11,7 @@ public class AssuredMqttConnectionTests
     {
         var logger = new Mock<ILogger<AssuredMqttConnection>>();
 
-        var mqttClient = new Mock<IManagedMqttClient>();
+        var mqttClient = new Mock<IMqttClient>();
         var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
         var mqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
         var mqttConfigurationOptions = new Mock<IOptions<MqttConfiguration>>();
@@ -19,7 +19,7 @@ public class AssuredMqttConnectionTests
         ConfigureMockOptions(mqttConfigurationOptions);
 
         mqttClientOptionsFactory.Setup(f => f.CreateClientOptions(It.Is<MqttConfiguration>(o => o.Host == "localhost" && o.UserName == "id")))
-            .Returns(new ManagedMqttClientOptions())
+            .Returns(new MqttClientOptions())
             .Verifiable(Times.Once);
 
         var conn = new AssuredMqttConnection(logger.Object, mqttClientOptionsFactory.Object, mqttFactory, mqttConfigurationOptions.Object);

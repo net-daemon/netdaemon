@@ -1,4 +1,4 @@
-﻿using MQTTnet.Extensions.ManagedClient;
+﻿using MQTTnet;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -12,5 +12,5 @@ internal interface IMqttFactory
     /// Create a Managed Mqtt Client
     /// </summary>
     /// <returns></returns>
-    IManagedMqttClient CreateManagedMqttClient();
+    IMqttClient CreateMqttClient();
 }

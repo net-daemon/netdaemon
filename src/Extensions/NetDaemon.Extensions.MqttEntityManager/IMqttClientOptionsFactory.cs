@@ -1,4 +1,4 @@
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -12,5 +12,5 @@ public interface IMqttClientOptionsFactory
     /// /// </summary>
     /// <param name="mqttConfig">The MQTT configuration.</param>
     /// <returns>The managed MQTT client options.</returns>
-    ManagedMqttClientOptions CreateClientOptions(MqttConfiguration mqttConfig);
+    MqttClientOptions CreateClientOptions(MqttConfiguration mqttConfig);
 }
