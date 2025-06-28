@@ -1,4 +1,4 @@
-﻿using MQTTnet.Extensions.ManagedClient;
+﻿using MQTTnet;
 
 namespace NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -8,7 +8,7 @@ namespace NetDaemon.Extensions.MqttEntityManager.Helpers;
 internal class MqttFactoryWrapper : IMqttFactoryWrapper
 {
     private readonly IMqttFactory? _mqttFactory;
-    private readonly IManagedMqttClient? _client;
+    private readonly IMqttClient? _client;
 
     /// <summary>
     /// Standard functionality - set the IMqttFactory that will return a client
@@ -18,12 +18,12 @@ internal class MqttFactoryWrapper : IMqttFactoryWrapper
     {
         _mqttFactory = mqttFactory;
     }
-    
+
     /// <summary>
     /// Testing functionality - specify a client that will be returned
     /// </summary>
     /// <param name="client"></param>
-    public MqttFactoryWrapper(IManagedMqttClient client)
+    public MqttFactoryWrapper(IMqttClient client)
     {
         _client = client;
     }
@@ -32,9 +32,9 @@ internal class MqttFactoryWrapper : IMqttFactoryWrapper
     /// Return a managed MQTT client, either from the original factory or a pre-supplied one
     /// </summary>
     /// <returns></returns>
-    public IManagedMqttClient CreateManagedMqttClient()
+    public IMqttClient CreateMqttClient()
     {
-        return _client ?? _mqttFactory?.CreateManagedMqttClient() 
+        return _client ?? _mqttFactory?.CreateMqttClient()
             ?? throw new InvalidOperationException("No client or MqttFactory specified");
     }
 }
