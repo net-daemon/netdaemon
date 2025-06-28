@@ -101,7 +101,6 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     {
         try
         {
-            ;
             var payload = msg.ApplicationMessage.ConvertPayloadToString();
             var topic = msg.ApplicationMessage.Topic;
             _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
