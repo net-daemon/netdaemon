@@ -149,7 +149,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
 
         executeCommand!.Sequence[0].GetType().GetProperty("service")!.GetValue(executeCommand.Sequence[0])!.Should().Be("domain.service");
         executeCommand.Sequence[0].GetType().GetProperty("data")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceData);
-        executeCommand.Sequence[0].GetType().GetProperty("target")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceTarget);
+        executeCommand.Sequence[0].GetType().GetProperty("target")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceTarget, options => options.ComparingByMembers<ServiceTarget>());
     }
 
     [Fact]
