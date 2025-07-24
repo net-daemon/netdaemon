@@ -64,23 +64,17 @@ public static class HostBuilderExtensions
     /// </summary>
     public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
     {
-
         return hostBuilder
+            .UseAppScopedHaContext()
             .ConfigureServices((context, services) =>
             {
+                services.AddLogging();
+                services.AddHostedService<RuntimeService>();
+                services.AddHomeAssistantClient();
                 services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                AddNetDaemonRuntime(services);
+                services.AddSingleton<NetDaemonRuntime>();
+                services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+                services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
             });
-    }
-
-    public static void AddNetDaemonRuntime(this IServiceCollection services)
-    {
-        services.AddScopedHaContext();
-        services.AddLogging();
-        services.AddHostedService<RuntimeService>();
-        services.AddHomeAssistantClient();
-        services.AddSingleton<NetDaemonRuntime>();
-        services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
-        services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
     }
 }
