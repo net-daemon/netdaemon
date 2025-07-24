@@ -84,7 +84,7 @@ internal class NetDaemonRuntime(IHomeAssistantRunner homeAssistantRunner,
 
             IsConnected = true;
 
-            await cacheManager.InitializeAsync(cancelToken).ConfigureAwait(false);
+            await cacheManager.InitializeAsync(haConnection, cancelToken).ConfigureAwait(false);
 
             await LoadNewAppContextAsync(haConnection, cancelToken);
 
