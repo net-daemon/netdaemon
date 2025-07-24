@@ -3,7 +3,7 @@ using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
 
-internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
+internal class EntityStateCache() : IDisposable
 {
     private IDisposable? _eventSubscription;
     private readonly Subject<HassEvent> _eventSubject = new();
@@ -15,14 +15,13 @@ internal class EntityStateCache(IHomeAssistantRunner hassRunner) : IDisposable
 
     public IObservable<HassEvent> AllEvents => _eventSubject;
 
-    public async Task InitializeAsync(CancellationToken cancellationToken)
+    public async Task InitializeAsync(IHomeAssistantConnection homeAssistantConnection, CancellationToken cancellationToken)
     {
-        _ = hassRunner.CurrentConnection ?? throw new InvalidOperationException("Home Assistant connection is not available when trying to initialize the StateCache.");
 
-        var events = await hassRunner.CurrentConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
+        var events = await homeAssistantConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
         _eventSubscription = events.Subscribe(HandleEvent);
 
-        var hassStates = await hassRunner.CurrentConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);
+        var hassStates = await homeAssistantConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var hassClientState in hassStates ?? [])
         {
