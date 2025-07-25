@@ -51,4 +51,21 @@ public static class HomeAssistantClientConnector
 
         return await client.ConnectAsync(host, port, ssl, token, websocketPath, cancelToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    ///     Connect to Home Assistant
+    /// </summary>
+    public static async Task<IHomeAssistantConnection> ConnectClientAsync(string websocketUrl, string token, CancellationToken cancelToken)
+    {
+        return await ConnectClientAsync(new Uri(websocketUrl), token, cancelToken);
+    }
+
+
+    /// <summary>
+    ///     Connect to Home Assistant
+    /// </summary>
+    public static async Task<IHomeAssistantConnection> ConnectClientAsync(Uri websocketUrl, string token, CancellationToken cancelToken)
+    {
+        return await ConnectClientAsync(websocketUrl.Host, websocketUrl.Port, websocketUrl.Scheme is "https" or "wss", token, websocketUrl.PathAndQuery, cancelToken);
+    }
 }
