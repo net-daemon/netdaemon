@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel.CodeGenerator;
 using NetDaemon.HassModel.CodeGenerator.CodeGeneration;
@@ -63,9 +64,9 @@ public class HelpersGeneratorTest
         generatedCode.Should().Contain("serviceCollection.AddTransient<SwitchEntities>();");
         
         // Verify no duplicates
-        var sensorMatches = System.Text.RegularExpressions.Regex.Matches(generatedCode, @"serviceCollection\.AddTransient<SensorEntities>\(\);");
-        var lightMatches = System.Text.RegularExpressions.Regex.Matches(generatedCode, @"serviceCollection\.AddTransient<LightEntities>\(\);");
-        var switchMatches = System.Text.RegularExpressions.Regex.Matches(generatedCode, @"serviceCollection\.AddTransient<SwitchEntities>\(\);");
+        var sensorMatches = Regex.Matches(generatedCode, @"serviceCollection\.AddTransient<SensorEntities>\(\);");
+        var lightMatches = Regex.Matches(generatedCode, @"serviceCollection\.AddTransient<LightEntities>\(\);");
+        var switchMatches = Regex.Matches(generatedCode, @"serviceCollection\.AddTransient<SwitchEntities>\(\);");
         
         sensorMatches.Should().HaveCount(1);
         lightMatches.Should().HaveCount(1); 
