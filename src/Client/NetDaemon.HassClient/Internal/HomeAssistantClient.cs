@@ -77,7 +77,14 @@ internal class HomeAssistantClient(ILogger<IHomeAssistantClient> logger,
 
     private static Uri GetHomeAssistantWebSocketUri(string host, int port, bool ssl, string websocketPath)
     {
-        return new Uri($"{(ssl ? "wss" : "ws")}://{host}:{port}/{websocketPath}");
+        return new UriBuilder
+        {
+            Host = host,
+            Port = port,
+            Scheme = ssl ? "wss" : "ws",
+            Path = websocketPath,
+            Query = string.Empty,
+        }.Uri;
     }
 
     private static async Task<bool> CheckIfRunning(IHomeAssistantConnection connection, CancellationToken cancelToken)

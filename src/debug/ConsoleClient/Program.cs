@@ -1,7 +1,6 @@
-﻿var haContext = await HaContextFactory.CreateHaContextAsync();
+﻿//#:package NetDaemon.HassModel@25.18.1
 
-Console.WriteLine(haContext.Entity("sun.sun").State);
+var ha = await NetDaemon.HassModel.HaContextFactory.CreateAsync("ws://localhost:8123/api/websocket", "your_token_here");
 
-haContext.Entity("input_button.test_button").StateAllChanges().Subscribe(s => Console.WriteLine($"Pressed {s.New?.State}"));
-
-await new StreamReader(Console.OpenStandardInput()).ReadLineAsync();
+ha.Entity("input_boolean.dummy_switch").CallService("toggle");
+Console.WriteLine("done");
