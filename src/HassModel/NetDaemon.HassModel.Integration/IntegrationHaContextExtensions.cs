@@ -87,10 +87,16 @@ public static class IntegrationHaContextExtensions
         // Check for common patterns in error messages when service domain doesn't exist
         var message = exception.Message?.ToLowerInvariant() ?? string.Empty;
         
-        return message.Contains("service netdaemon", StringComparison.OrdinalIgnoreCase) && 
-               (message.Contains("not found", StringComparison.OrdinalIgnoreCase) || 
-                message.Contains("does not exist", StringComparison.OrdinalIgnoreCase) || 
-                message.Contains("unknown", StringComparison.OrdinalIgnoreCase) ||
-                message.Contains("not available", StringComparison.OrdinalIgnoreCase));
+        // Check for netdaemon-specific service or domain errors
+        var hasNetDaemonReference = message.Contains("netdaemon", StringComparison.OrdinalIgnoreCase);
+        var hasServiceOrDomainReference = message.Contains("service", StringComparison.OrdinalIgnoreCase) ||
+                                         message.Contains("domain", StringComparison.OrdinalIgnoreCase);
+        var hasErrorIndicator = message.Contains("not found", StringComparison.OrdinalIgnoreCase) || 
+                               message.Contains("does not exist", StringComparison.OrdinalIgnoreCase) || 
+                               message.Contains("unknown", StringComparison.OrdinalIgnoreCase) ||
+                               message.Contains("not available", StringComparison.OrdinalIgnoreCase) ||
+                               message.Contains("invalid", StringComparison.OrdinalIgnoreCase);
+        
+        return hasNetDaemonReference && hasServiceOrDomainReference && hasErrorIndicator;
     }
 }

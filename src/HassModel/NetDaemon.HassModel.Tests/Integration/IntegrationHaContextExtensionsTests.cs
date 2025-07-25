@@ -61,7 +61,10 @@ public class IntegrationHaContextExtensionsTests
             "Service netdaemon not found",
             "Service netdaemon does not exist", 
             "Service netdaemon unknown",
-            "Service netdaemon not available"
+            "Service netdaemon not available",
+            "Invalid service netdaemon.register_service",
+            "Domain netdaemon not found",
+            "NetDaemon service does not exist"
         };
 
         foreach (var errorMessage in errorMessages)
