@@ -33,6 +33,65 @@ public class IntegrationHaContextExtensionsTests
     }
 
     [Fact]
+    public void RegisterServiceCallBackShouldThrowInformativeExceptionWhenNetDaemonIntegrationNotInstalled()
+    {
+        var haContextMock = new HaContextMock();
+        var callBackMock = new Mock<Action<CallBackData>>();
+
+        // Setup mock to throw an exception that simulates NetDaemon integration not being installed
+        haContextMock.Setup(m => m.CallService("netdaemon", "register_service", null, It.IsAny<object?>()))
+            .Throws(new Exception("Service netdaemon not found"));
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            haContextMock.Object.RegisterServiceCallBack("ServiceName", callBackMock.Object));
+
+        Assert.Contains("NetDaemon integration is not installed", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Please install the NetDaemon integration from HACS", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("https://github.com/net-daemon/netdaemon", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void RegisterServiceShouldThrowInformativeExceptionWithVariousErrorMessages()
+    {
+        var haContextMock = new HaContextMock();
+
+        // Test different error message variations that indicate the integration is not installed
+        var errorMessages = new[]
+        {
+            "Service netdaemon not found",
+            "Service netdaemon does not exist", 
+            "Service netdaemon unknown",
+            "Service netdaemon not available"
+        };
+
+        foreach (var errorMessage in errorMessages)
+        {
+            haContextMock.Reset();
+            haContextMock.Setup(m => m.CallService("netdaemon", "register_service", null, It.IsAny<object?>()))
+                .Throws(new Exception(errorMessage));
+
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                haContextMock.Object.RegisterService<CallBackData>("TestService"));
+
+            Assert.Contains("NetDaemon integration is not installed", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
+    public void RegisterServiceShouldNotCatchUnrelatedExceptions()
+    {
+        var haContextMock = new HaContextMock();
+
+        // Setup mock to throw an unrelated exception
+        haContextMock.Setup(m => m.CallService("netdaemon", "register_service", null, It.IsAny<object?>()))
+            .Throws(new ArgumentException("Some other error"));
+
+        // Should not catch unrelated exceptions
+        Assert.Throws<ArgumentException>(() =>
+            haContextMock.Object.RegisterService<CallBackData>("TestService"));
+    }
+
+    [Fact]
     public void SetApplicationStateNotExistShouldCallCreateTest()
     {
         var haContextMock = new HaContextMock();

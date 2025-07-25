@@ -25,6 +25,7 @@ public static class IntegrationHaContextExtensions
     /// <typeparam name="T">Type to deserialize the payload of the service into</typeparam>
     /// <returns>IObservable to use methods on</returns>
     /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown when the NetDaemon integration is not installed in Home Assistant</exception>
     public static IObservable<T> RegisterService<T>(this IHaContext haContext, string serviceName)
     {
         ArgumentNullException.ThrowIfNull(haContext);
@@ -32,7 +33,17 @@ public static class IntegrationHaContextExtensions
         if (string.IsNullOrWhiteSpace(serviceName))
             throw new ArgumentException("serviceName must have a value", serviceName);
 
-        haContext.CallService("netdaemon", "register_service", data: new { service = serviceName });
+        try
+        {
+            haContext.CallService("netdaemon", "register_service", data: new { service = serviceName });
+        }
+        catch (Exception ex) when (IsNetDaemonIntegrationNotInstalledException(ex))
+        {
+            throw new InvalidOperationException(
+                "The NetDaemon integration is not installed in Home Assistant. " +
+                "Please install the NetDaemon integration from HACS or manually to use RegisterServiceCallBack(). " +
+                "Visit https://github.com/net-daemon/netdaemon for installation instructions.", ex);
+        }
 
         return haContext.Events.Filter<HassServiceEventData<T>>("call_service")
             .Where(e => e.Data?.domain == "netdaemon"
@@ -65,4 +76,21 @@ public static class IntegrationHaContextExtensions
     }
 
     private record HassServiceEventData<T>(string domain, string service, T service_data);
+
+    /// <summary>
+    /// Determines if the exception indicates that the NetDaemon integration is not installed
+    /// </summary>
+    /// <param name="exception">The exception to check</param>
+    /// <returns>True if the exception indicates the NetDaemon integration is not installed</returns>
+    private static bool IsNetDaemonIntegrationNotInstalledException(Exception exception)
+    {
+        // Check for common patterns in error messages when service domain doesn't exist
+        var message = exception.Message?.ToLowerInvariant() ?? string.Empty;
+        
+        return message.Contains("service netdaemon", StringComparison.OrdinalIgnoreCase) && 
+               (message.Contains("not found", StringComparison.OrdinalIgnoreCase) || 
+                message.Contains("does not exist", StringComparison.OrdinalIgnoreCase) || 
+                message.Contains("unknown", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("not available", StringComparison.OrdinalIgnoreCase));
+    }
 }
