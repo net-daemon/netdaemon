@@ -32,7 +32,7 @@ public class HelpersGeneratorTest
         var generatedCode = generatedMembers.First().ToString();
         
         // Assert: The generated code should not contain duplicate SensorEntities registrations
-        var sensorEntitiesMatches = System.Text.RegularExpressions.Regex.Matches(
+        var sensorEntitiesMatches = Regex.Matches(
             generatedCode, 
             @"serviceCollection\.AddTransient<SensorEntities>\(\);");
             
