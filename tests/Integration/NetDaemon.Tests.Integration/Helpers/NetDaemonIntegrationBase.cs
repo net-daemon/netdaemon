@@ -35,7 +35,8 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     { "HomeAssistant:Port", _homeAssistantLifetime.Port.ToString(CultureInfo.InvariantCulture) },
-                    { "HomeAssistant:Token", _homeAssistantLifetime.AccessToken }
+                    { "HomeAssistant:Token", _homeAssistantLifetime.AccessToken },
+                    { "HomeAssistant:Host", "localhost" }
                 });
             })
             .ConfigureServices((_, services) =>
