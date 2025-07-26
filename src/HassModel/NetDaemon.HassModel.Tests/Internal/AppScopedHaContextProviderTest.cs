@@ -379,7 +379,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
 
         var provider = serviceCollection.BuildServiceProvider();
 
-        await provider.GetRequiredService<ICacheManager>().InitializeAsync(CancellationToken.None);
+        await provider.GetRequiredService<ICacheManager>().InitializeAsync(_hassConnectionMock.Object, CancellationToken.None);
 
         return provider;
     }
