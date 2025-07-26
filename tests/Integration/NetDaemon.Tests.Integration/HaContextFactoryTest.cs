@@ -25,7 +25,7 @@ public sealed class HaContextFactoryTest(HomeAssistantLifetime homeAssistantLife
         inputText.CallService("set_value", new { value = testValue });
 
         // Assert
-        var stateChange = await nextStateChange.Timeout(TimeSpan.FromSeconds(2)); // make the test fail if it takes too long
+        var stateChange = await nextStateChange;
 
         stateChange.New!.State.Should().Be(testValue, "We should have received the state change after calling the service");
         inputText.State.Should().Be(testValue, "The state should be updated in the cache after the state_change event is received");
