@@ -60,7 +60,6 @@ public static class HomeAssistantClientConnector
         return await ConnectClientAsync(new Uri(websocketUrl), token, cancelToken);
     }
 
-
     /// <summary>
     ///     Connect to Home Assistant
     /// </summary>

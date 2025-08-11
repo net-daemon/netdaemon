@@ -3,7 +3,7 @@ using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
 
-internal class EntityStateCache() : IDisposable
+internal class EntityStateCache : IDisposable
 {
     private IDisposable? _eventSubscription;
     private readonly Subject<HassEvent> _eventSubject = new();
@@ -18,7 +18,7 @@ internal class EntityStateCache() : IDisposable
     public async Task InitializeAsync(IHomeAssistantConnection homeAssistantConnection, CancellationToken cancellationToken)
     {
 
-        var events = await homeAssistantConnection!.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
+        var events = await homeAssistantConnection.SubscribeToHomeAssistantEventsAsync(null,  cancellationToken).ConfigureAwait(false);
         _eventSubscription = events.Subscribe(HandleEvent);
 
         var hassStates = await homeAssistantConnection.GetStatesAsync(cancellationToken).ConfigureAwait(false);

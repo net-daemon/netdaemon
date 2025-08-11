@@ -12,8 +12,8 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     private volatile bool _isDisposed;
     private volatile bool _isDisposing;
     private readonly EntityStateCache _entityStateCache;
-    private readonly IHomeAssistantConnection _homeAssistantConnection;
 
+    private readonly IHomeAssistantConnectionProvider _connectionProvider;
     private readonly QueuedObservable<HassEvent> _queuedObservable;
     private readonly IBackgroundTaskTracker _backgroundTaskTracker;
     private readonly IEntityFactory _entityFactory;
@@ -22,14 +22,14 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     public AppScopedHaContextProvider(
         EntityStateCache entityStateCache,
-        IHomeAssistantConnection homeAssistantConnection,
+        IHomeAssistantConnectionProvider connectionProvider,
         IBackgroundTaskTracker backgroundTaskTracker,
         IServiceProvider serviceProvider,
         ILogger<AppScopedHaContextProvider> logger,
         IEntityFactory entityFactory)
     {
         _entityStateCache = entityStateCache;
-        _homeAssistantConnection = homeAssistantConnection;
+        _connectionProvider = connectionProvider;
 
         // Create QueuedObservable for this app
         // This makes sure we will unsubscribe when this ContextProvider is Disposed
@@ -41,6 +41,9 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
         // to the AppScopedHaContextProvider here. Therefore we create it manually providing this
         Registry = ActivatorUtilities.CreateInstance<HaRegistry>(serviceProvider, this);
     }
+
+    IHomeAssistantConnection CurrentConnection => _connectionProvider.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
+
 
     // By making the HaRegistry instance internal it can also be registered as scoped in the DI container and injected into applications
     internal HaRegistry Registry { get; }
@@ -70,15 +73,14 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-        _backgroundTaskTracker.TrackBackgroundTask(_homeAssistantConnection.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
+        _backgroundTaskTracker.TrackBackgroundTask(CurrentConnection.CallServiceAsync(domain, service, data, target.Map(), _tokenSource.Token), "Error in sending event");
     }
 
     public async Task<JsonElement?> CallServiceWithResponseAsync(string domain, string service, ServiceTarget? target = null, object? data = null)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
-        _ = _homeAssistantConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
 
-        var result = await _homeAssistantConnection
+        var result = await CurrentConnection
             .CallServiceWithResponseAsync(domain, service, data, target?.Map(), _tokenSource.Token)
             .ConfigureAwait(false);
        return result?.Response;
@@ -97,7 +99,7 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
     public void SendEvent(string eventType, object? data = null)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
-        _backgroundTaskTracker.TrackBackgroundTask(_homeAssistantConnection?.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
+        _backgroundTaskTracker.TrackBackgroundTask(CurrentConnection.SendEventAsync(eventType, _tokenSource.Token, data), "Error in sending event");
     }
 
     public async ValueTask DisposeAsync()
