@@ -19,6 +19,8 @@ public static class HaContextFactory
         var collection = new ServiceCollection();
         collection.AddLogging(builder => builder.AddConsole());
         collection.AddSingleton(connection);
+        collection.AddSingleton<IHomeAssistantConnectionProvider>(new ConnectionProvider(connection));
+
         collection.AddScopedHaContext();
         var serviceProvider = collection.BuildServiceProvider().CreateScope().ServiceProvider;
 
@@ -26,5 +28,13 @@ public static class HaContextFactory
         await cacheManager.InitializeAsync(connection, CancellationToken.None);
 
         return serviceProvider.GetRequiredService<IHaContext>();
+    }
+
+    /// <summary>
+    /// ConnectionProvider to provide the current connection without reconnect logic
+    /// </summary>
+    class ConnectionProvider(IHomeAssistantConnection connection) : IHomeAssistantConnectionProvider
+    {
+        public IHomeAssistantConnection CurrentConnection => connection;
     }
 }

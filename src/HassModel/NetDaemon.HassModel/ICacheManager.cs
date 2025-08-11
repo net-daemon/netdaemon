@@ -6,8 +6,7 @@
 public interface ICacheManager
 {
     /// <summary>
-    /// (re) Initializes the Hass Model internal caches from Home Assistant. Should be called
+    /// (re) Initializes the HassModel internal caches from Home Assistant. Should be called after (re)connecting
     /// </summary>
-    /// <returns></returns>
     Task InitializeAsync(IHomeAssistantConnection homeAssistantConnection, CancellationToken cancellationToken);
 }
