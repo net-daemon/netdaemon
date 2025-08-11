@@ -19,7 +19,7 @@ public static class HostBuilderExtensions
     ///  - Register appsettings.json to the host configuration
     ///  - Register all the yaml settings from the path set in the current configuration to the configuration provider
     ///  - Call 'ConfigureNetDaemonServices' in the service collection
-    ///  
+    ///
     /// You can call these methods separately if you want to do something else in between, or if you're calling any of these methods already.
     /// Change `UseNetDaemonAppSettings` to `.RegisterAppSettingsJsonToHost().RegisterYamlSettings()` and call `ConfigureNetDaemonServices(context.Configuration)` in ConfigureServices.
     /// </remarks>

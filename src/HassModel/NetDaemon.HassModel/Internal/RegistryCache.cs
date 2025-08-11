@@ -3,7 +3,7 @@ using NetDaemon.Client.HomeAssistant.Extensions;
 
 namespace NetDaemon.HassModel.Internal;
 
-internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCache> logger) : IDisposable
+internal class RegistryCache(ILogger<RegistryCache> logger) : IDisposable
 {
     private CancellationToken _cancellationToken;
     private readonly List<IDisposable> _toDispose = [];
@@ -23,11 +23,13 @@ internal class RegistryCache(IHomeAssistantRunner hassRunner, ILogger<RegistryCa
     private ILookup<string, HassEntity> _entitiesByLabel = Array.Empty<HassEntity>().ToLookup(e =>default(string)!);
 
     // We use this connection here during startup, and after we have received .._registry_updates events. In both cases we expect the connection to be available
-    private IHomeAssistantConnection CurrentConnection => hassRunner.CurrentConnection ?? throw new InvalidOperationException("Home assistantConnection is not available ");
+    private IHomeAssistantConnection CurrentConnection => _currentConnection ?? throw new InvalidOperationException("Home assistantConnection is not available ");
+    private IHomeAssistantConnection? _currentConnection;
 
-    public async Task InitializeAsync(CancellationToken cancellationToken)
+    public async Task InitializeAsync(IHomeAssistantConnection homeAssistantConnection, CancellationToken cancellationToken)
     {
         _cancellationToken = cancellationToken;
+        _currentConnection = homeAssistantConnection;
 
         await SubscribeRegistryUpdates().ConfigureAwait(false);
 
