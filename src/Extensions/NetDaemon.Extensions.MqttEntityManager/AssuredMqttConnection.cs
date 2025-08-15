@@ -12,7 +12,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// <summary>
 /// Wrapper to assure an MQTT connection
 /// </summary>
-internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
+public class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
     private readonly ILogger<AssuredMqttConnection> _logger;
     private readonly IMqttClientOptionsFactory _mqttClientOptionsFactory;
