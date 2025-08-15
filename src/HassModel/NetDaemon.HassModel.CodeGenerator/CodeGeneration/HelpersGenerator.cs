@@ -65,8 +65,8 @@ internal static class HelpersGenerator
     private static IEnumerable<string> GetInjectableTypes(IEnumerable<EntityDomainMetadata> domains, IEnumerable<HassServiceDomain> orderedServiceDomains) =>
         [
             EntitiesClassName,
-            .. domains.Select(d => d.EntitiesForDomainClassName),
+            .. domains.Select(d => d.EntitiesForDomainClassName).Distinct(),
             ServicesClassName,
-            ..orderedServiceDomains.Select(d => GetServicesTypeName(d.Domain))
+            ..orderedServiceDomains.Select(d => GetServicesTypeName(d.Domain)).Distinct()
         ];
 }
