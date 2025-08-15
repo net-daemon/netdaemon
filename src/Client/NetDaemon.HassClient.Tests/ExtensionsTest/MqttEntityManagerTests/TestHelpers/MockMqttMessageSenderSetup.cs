@@ -1,5 +1,4 @@
 ﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
 using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -12,7 +11,7 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestH
 internal sealed class MockMqttMessageSenderSetup
 {
     public AssuredMqttConnection Connection { get; private set; } = null!;
-    public Mock<IManagedMqttClient> MqttClient { get; private set; } = null!;
+    public Mock<IMqttClient> MqttClient { get; private set; } = null!;
     public Mock<IMqttClientOptionsFactory> MqttClientOptionsFactory { get; private set; } = null!;
 
     public MqttFactoryWrapper MqttFactory { get; private set; } = null!;
@@ -30,8 +29,8 @@ internal sealed class MockMqttMessageSenderSetup
     public void SetupMessageReceiver()
     {
         // Ensure that when the MQTT Client is called its published message is saved
-        MqttClient.Setup(m => m.EnqueueAsync(It.IsAny<MqttApplicationMessage>()))
-            .Callback<MqttApplicationMessage>(message =>
+        MqttClient.Setup(m => m.PublishAsync(It.IsAny<MqttApplicationMessage>(), It.IsAny<CancellationToken>()))
+            .Callback<MqttApplicationMessage, CancellationToken>((message, _) =>
             {
                 LastPublishedMessage = message;
             });
@@ -54,13 +53,13 @@ internal sealed class MockMqttMessageSenderSetup
         options.Setup(o => o.Value)
             .Returns(() => mqttConfiguration);
 
-        MqttClient = new Mock<IManagedMqttClient>();
+        MqttClient = new Mock<IMqttClient>();
         MqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
         MqttFactory = new MqttFactoryWrapper(MqttClient.Object);
 
         MqttClientOptionsFactory
             .Setup(o => o.CreateClientOptions(mqttConfiguration))
-            .Returns(new ManagedMqttClientOptions());
+            .Returns(new MqttClientOptions());
 
         Connection = new AssuredMqttConnection(
             new Mock<ILogger<AssuredMqttConnection>>().Object,
