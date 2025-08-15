@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.Runtime;
 using Xunit;
 
@@ -30,6 +31,7 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
         var netDaemon = Host.CreateDefaultBuilder()
             .UseNetDaemonAppSettings()
             .UseNetDaemonRuntime()
+            // .UseNetDaemonMqttEntityManagement()
             .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
