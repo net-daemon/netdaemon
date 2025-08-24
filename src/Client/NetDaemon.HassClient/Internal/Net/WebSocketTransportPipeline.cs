@@ -139,7 +139,7 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
         {
             while (!cancelToken.IsCancellationRequested && !_ws.CloseStatus.HasValue)
             {
-                var memory = _pipe.Writer.GetMemory();
+                var memory = _pipe.Writer.GetMemory(8192);
                 var result = await _ws.ReceiveAsync(memory, cancelToken).ConfigureAwait(false);
                 if (
                     _ws.State == WebSocketState.Open &&
