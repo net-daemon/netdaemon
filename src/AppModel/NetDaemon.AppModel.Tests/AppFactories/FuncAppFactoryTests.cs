@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel.Internal;
 
 namespace NetDaemon.AppModel.Tests.AppFactories;
@@ -64,7 +65,7 @@ public class FuncAppTests
         Dependency1? firstAppDep = null;
         Dependency1? secondAppDep = null;
 
-        // ACT, the delegate gets the dependencies injected
+        // ACT, the delegates get the dependencies injected
         serviceCollection.AddNetDaemonApp((Dependency1 d1) =>
         {
             firstAppDep = d1;
@@ -87,7 +88,6 @@ public class FuncAppTests
         secondAppDep!.Value.Should().Be("Value1 From App2");
     }
 
-
     [Fact]
     public async Task AddNetDaemonApp_Func_ResultGetsDisposed()
     {
@@ -107,6 +107,32 @@ public class FuncAppTests
         isDisposed.Should().BeFalse();
         await appModelcontext.DisposeAsync();
         isDisposed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AddNetDaemonApp_Func_OneFocusAppOtherNotRun()
+    {
+        // ARRANGE
+        var hostEnviromentMock = new Mock<IHostEnvironment>();
+        hostEnviromentMock.Setup(m => m.EnvironmentName).Returns(Environments.Development);
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(hostEnviromentMock.Object);
+        serviceCollection.AddLogging();
+        bool app1Started = false;
+        bool app2Started = false;
+
+        // ACT
+        serviceCollection.AddNetDaemonApp(() => { app1Started = true; }, "App1", focus: true);
+        serviceCollection.AddNetDaemonApp(() => { app2Started = true; }, "App2");
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var appModelcontext = serviceProvider.GetRequiredService<AppModelContext>();
+        await appModelcontext.InitializeAsync(CancellationToken.None);
+
+        // ASSERT
+        app1Started.Should().BeTrue();
+        app2Started.Should().BeFalse();
     }
 
     private class Dependency1

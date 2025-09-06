@@ -1,34 +1,69 @@
-using System.Reflection;
 using LocalApps;
-using NetDaemon.AppModel.Internal.AppFactoryProviders;
+using NetDaemon.AppModel.Internal;
 
 namespace NetDaemon.AppModel.Tests.AppFactories;
 
 public class ClassAppFactoryTests
 {
     [Fact]
-    public void TestLocalAppFactoryCreatesApp()
+    public async Task AddAppsFromAssembly()
     {
         // ARRANGE
-        var serviceProvider = CreateServiceProvider(typeof(MyAppLocalAppWithId).Assembly);
-
-        // ACT
-        var appFactoryProviders = serviceProvider.GetRequiredService<IEnumerable<IAppFactoryProvider>>();
-        var appFactories = appFactoryProviders.SelectMany(provider => provider.GetAppFactories()).ToList();
-        var appFactory = appFactories.Single(factory => factory.Id == MyAppLocalAppWithId.Id);
-        var appInstance = appFactory.Create(serviceProvider);
-
-        // ASSERT
-        appInstance.Should().NotBeNull();
-        appInstance.Should().BeOfType<MyAppLocalAppWithId>();
-    }
-
-    private static IServiceProvider CreateServiceProvider(Assembly assembly)
-    {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        serviceCollection.AddAppsFromAssembly(assembly);
 
-        return serviceCollection.BuildServiceProvider();
+        // ACT
+        serviceCollection.AddAppsFromAssembly(typeof(MyAppLocalAppWithId).Assembly);
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var appModelcontext = serviceProvider.GetRequiredService<IAppModelContext>();
+        await appModelcontext.InitializeAsync(CancellationToken.None);
+
+        // ASSERT
+        appModelcontext.Applications.Single().Id.Should().Be(MyAppLocalAppWithId.Id);
+        var app = (Application)appModelcontext.Applications.Single();
+        app.ApplicationContext!.Instance.Should().BeOfType<MyAppLocalAppWithId>();
+    }
+
+    [Fact]
+    public async Task AddNetDaemonApp_GenericTypeArg()
+    {
+        // ARRANGE
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+
+        // ACT
+        serviceCollection.AddNetDaemonApp<MyAppLocalAppWithId>();
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var appModelcontext = serviceProvider.GetRequiredService<IAppModelContext>();
+        await appModelcontext.InitializeAsync(CancellationToken.None);
+
+        // ASSERT
+        appModelcontext.Applications.Single().Id.Should().Be(typeof(MyAppLocalAppWithId).FullName);
+        var app = (Application)appModelcontext.Applications.Single();
+        app.ApplicationContext!.Instance.Should().BeOfType<MyAppLocalAppWithId>();
+    }
+
+    [Fact]
+    public async Task AddNetDaemonApp_TypeParam()
+    {
+        // ARRANGE
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+
+        // ACT
+#pragma warning disable CA2263 warning about preferring type argument instead of typeof
+        serviceCollection.AddNetDaemonApp(typeof(MyAppLocalAppWithId));
+#pragma warning restore CA2263
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var appModelcontext = serviceProvider.GetRequiredService<IAppModelContext>();
+        await appModelcontext.InitializeAsync(CancellationToken.None);
+
+        // ASSERT
+        appModelcontext.Applications.Single().Id.Should().Be(typeof(MyAppLocalAppWithId).FullName);
+        var app = (Application)appModelcontext.Applications.Single();
+        app.ApplicationContext!.Instance.Should().BeOfType<MyAppLocalAppWithId>();
     }
 }
