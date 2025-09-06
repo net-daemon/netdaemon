@@ -20,8 +20,7 @@ public class ClassAppFactoryTests
         await appModelcontext.InitializeAsync(CancellationToken.None);
 
         // ASSERT
-        appModelcontext.Applications.Single().Id.Should().Be(MyAppLocalAppWithId.Id);
-        var app = (Application)appModelcontext.Applications.Single();
+        var app = (Application) appModelcontext.Applications.Single(a => a.Id == MyAppLocalAppWithId.Id);
         app.ApplicationContext!.Instance.Should().BeOfType<MyAppLocalAppWithId>();
     }
 
@@ -40,7 +39,7 @@ public class ClassAppFactoryTests
         await appModelcontext.InitializeAsync(CancellationToken.None);
 
         // ASSERT
-        appModelcontext.Applications.Single().Id.Should().Be(typeof(MyAppLocalAppWithId).FullName);
+        appModelcontext.Applications.Single().Id.Should().Be(MyAppLocalAppWithId.Id);
         var app = (Application)appModelcontext.Applications.Single();
         app.ApplicationContext!.Instance.Should().BeOfType<MyAppLocalAppWithId>();
     }
@@ -62,7 +61,7 @@ public class ClassAppFactoryTests
         await appModelcontext.InitializeAsync(CancellationToken.None);
 
         // ASSERT
-        appModelcontext.Applications.Single().Id.Should().Be(typeof(MyAppLocalAppWithId).FullName);
+        appModelcontext.Applications.Single().Id.Should().Be(MyAppLocalAppWithId.Id);
         var app = (Application)appModelcontext.Applications.Single();
         app.ApplicationContext!.Instance.Should().BeOfType<MyAppLocalAppWithId>();
     }
