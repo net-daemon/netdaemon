@@ -15,7 +15,7 @@ public class FuncAppTests
 
         // ACT
         bool appStarted = false;
-        serviceCollection.AddNetDaemonApp(() => { appStarted = true; }, "SomeID");
+        serviceCollection.AddNetDaemonApp("SomeID", () => { appStarted = true; });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var appModelcontext = serviceProvider.GetRequiredService<IAppModelContext>();
@@ -38,11 +38,11 @@ public class FuncAppTests
         serviceCollection.AddSingleton(dependency2);
 
         // ACT, the delegate gets the dependencies injected
-        serviceCollection.AddNetDaemonApp((Dependency1 d1, Dependency2 d2) =>
+        serviceCollection.AddNetDaemonApp("SomeID", (Dependency1 d1, Dependency2 d2) =>
         {
             d1.Value = "Value1 From App";
             d2.Value = "Value2 From App";
-        }, "SomeID");
+        });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var appModelcontext = serviceProvider.GetRequiredService<IAppModelContext>();
@@ -66,17 +66,17 @@ public class FuncAppTests
         Dependency1? secondAppDep = null;
 
         // ACT, the delegates get the dependencies injected
-        serviceCollection.AddNetDaemonApp((Dependency1 d1) =>
+        serviceCollection.AddNetDaemonApp("FirstApp", (Dependency1 d1) =>
         {
             firstAppDep = d1;
             d1.Value = "Value1 From App1";
-        }, "FirstApp");
+        });
 
-        serviceCollection.AddNetDaemonApp((Dependency1 d1) =>
+        serviceCollection.AddNetDaemonApp("SecondApp", (Dependency1 d1) =>
         {
             secondAppDep = d1;
             d1.Value = "Value1 From App2";
-        }, "SecondApp");
+        });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var appModelcontext = serviceProvider.GetRequiredService<IAppModelContext>();
@@ -97,7 +97,7 @@ public class FuncAppTests
         bool isDisposed = false;
 
         // ACT
-        serviceCollection.AddNetDaemonApp(() => Disposable.Create(() => isDisposed = true), "AppId");
+        serviceCollection.AddNetDaemonApp("AppId", () => Disposable.Create(() => isDisposed = true));
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var appModelcontext = serviceProvider.GetRequiredService<AppModelContext>();
@@ -123,8 +123,8 @@ public class FuncAppTests
         bool app2Started = false;
 
         // ACT
-        serviceCollection.AddNetDaemonApp(() => { app1Started = true; }, "App1", focus: true);
-        serviceCollection.AddNetDaemonApp(() => { app2Started = true; }, "App2");
+        serviceCollection.AddNetDaemonApp("App1", () => { app1Started = true; }, focus: true);
+        serviceCollection.AddNetDaemonApp("App2", () => { app2Started = true; });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var appModelcontext = serviceProvider.GetRequiredService<AppModelContext>();

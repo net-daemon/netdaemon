@@ -14,16 +14,16 @@ public static class ServiceCollectionExtensions
     /// Adds a single app that runs the provided delegate when started
     /// </summary>
     /// <param name="services">Services</param>
-    /// <param name="handler">The delegate to call when the app is started
-    /// The delegate can have any number of arguments which will be resolved from the IServiceprovider
-    /// if the delegate return an IDisposabe of IAsyncDisposable object, that will be disposed when the app stops
-    /// </param>
     /// <param name="id">The id of the app.</param>
+    /// <param name="handler">The delegate to call when the app is started
+    ///     The delegate can have any number of arguments which will be resolved from the IServiceprovider
+    ///     if the delegate return an IDisposabe of IAsyncDisposable object, that will be disposed when the app stops
+    /// </param>
     /// <param name="focus">Whether this app has focus or not. This parameter defaults to false</param>
     public static IServiceCollection AddNetDaemonApp(
         this IServiceCollection services,
-        Delegate handler,
         string id,
+        Delegate handler,
         bool focus = false)
     {
         return services

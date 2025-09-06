@@ -160,7 +160,7 @@ public class LocalAppFactoryProviderTests
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        serviceCollection.AddNetDaemonApp(func, id, focus);
+        serviceCollection.AddNetDaemonApp(id, func, focus);
 
         return serviceCollection.BuildServiceProvider();
     }

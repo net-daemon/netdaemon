@@ -119,7 +119,7 @@ public class TestRuntime
             .ConfigureServices((_, services) =>
                 services
                     .AddSingleton(haRunner.Object)
-                    .AddNetDaemonApp(() => disposableApp.Object, "DisposableApp"))
+                    .AddNetDaemonApp("DisposableApp", () => disposableApp.Object))
             .Build();
         var runnerTask = host.StartAsync(timedCancellationSource.Token);
 
