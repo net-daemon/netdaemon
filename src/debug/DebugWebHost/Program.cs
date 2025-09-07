@@ -2,7 +2,6 @@ using NetDaemon.HassModel;
 using NetDaemon.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseNetDaemonRuntime();
 
 builder.Services.AddNetDaemonRuntime();
 var app = builder.Build();
