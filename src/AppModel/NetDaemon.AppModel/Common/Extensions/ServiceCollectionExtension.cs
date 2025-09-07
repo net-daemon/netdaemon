@@ -1,7 +1,6 @@
 using System.Reflection;
 using NetDaemon.AppModel.Internal.AppAssemblyProviders;
 using NetDaemon.AppModel.Internal.AppFactoryProviders;
-
 using NetDaemon.AppModel.Internal.Config;
 
 namespace NetDaemon.AppModel;

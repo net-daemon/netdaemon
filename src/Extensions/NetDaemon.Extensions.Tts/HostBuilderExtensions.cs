@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using NetDaemon.Extensions.Tts.Internal;
+﻿using Microsoft.Extensions.Hosting;
 
 namespace NetDaemon.Extensions.Tts;
 
@@ -17,8 +15,7 @@ public static class HostBuilderExtensions
     {
         hostBuilder.ConfigureServices(services =>
         {
-            services.AddSingleton<TextToSpeechService>();
-            services.AddSingleton<ITextToSpeechService>(s => s.GetRequiredService<TextToSpeechService>());
+            services.AddNetDaemonTextToSpeech();
         });
         return hostBuilder;
     }

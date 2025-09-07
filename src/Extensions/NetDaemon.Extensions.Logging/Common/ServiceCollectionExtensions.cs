@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NetDaemon.Extensions.Logging.Internal;
 using Serilog;
 
@@ -17,5 +18,18 @@ public static class ServiceCollectionExtensions
     {
         return builder.UseSerilog((context, loggerConfiguration) =>
             SerilogConfigurator.Configure(loggerConfiguration, context.HostingEnvironment));
+    }
+
+    /// <summary>
+    ///    Adds default logging capabilities for NetDaemon
+    /// </summary>
+    /// <param name="services"></param>
+    public static IServiceCollection AddNetDaemonDefaultLogging(this IServiceCollection services)
+    {
+        services.AddSerilog();
+
+        services.AddSerilog((context, loggerConfiguration) =>
+            SerilogConfigurator.Configure(loggerConfiguration, context.GetRequiredService<IHostEnvironment>()));
+        return services;
     }
 }
