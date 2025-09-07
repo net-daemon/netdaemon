@@ -135,12 +135,12 @@ public class FuncAppTests
         app2Started.Should().BeFalse();
     }
 
-    private class Dependency1
+    private sealed class Dependency1
     {
         public string? Value { get; set; }
     }
 
-    private class Dependency2
+    private sealed class Dependency2
     {
         public string? Value { get; set; }
     }

@@ -52,7 +52,7 @@ public class ClassAppFactoryTests
         serviceCollection.AddLogging();
 
         // ACT
-#pragma warning disable CA2263 warning about preferring type argument instead of typeof
+#pragma warning disable CA2263 // warning about preferring type argument instead of typeof
         serviceCollection.AddNetDaemonApp(typeof(MyAppLocalAppWithId));
 #pragma warning restore CA2263
 
