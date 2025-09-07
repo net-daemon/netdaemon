@@ -1,30 +1,30 @@
 ﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetDaemon.Runtime;
 using NetDaemon.AppModel;
+using NetDaemon.Runtime;
 using NetDaemon.HassModel;
 
-var builder = Host.CreateApplicationBuilder(args)
-    .UseNetDaemonRuntime();
+var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
+    .AddNetDaemonRuntime()
+
     // Classic way: Scan the assembly for [NetDaemonApp] classes
     .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
 
     // Add any class as an App (does not need [NetDaemonApp])
     .AddNetDaemonApp<MyApp>()
 
-    // Add a Func<IServiceProvider, TApp>, TApp will be used as Id unless specified otherwise
-    .AddNetDaemonApp(sp => OtherApp.Create(sp.GetRequiredService<IHaContext>(), "fistInstance"), id: "OtherAppInstance")
+    // Removed Add a Func<IServiceProvider, TApp>, TApp will be used as Id unless specified otherwise
+    // .AddNetDaemonApp(sp => OtherApp.Create(sp.GetRequiredService<IHaContext>(), "fistInstance"),
+    //     id: "OtherAppInstance")
 
     // new way, does not need a type at all
     .AddNetDaemonApp((IHaContext ha) =>
-        ha.Entity("input_button.test_button")
-            .StateAllChanges()
-            .Subscribe(_ => ha.Entity("input_boolean.dummy_switch").CallService("toggle"))
-        , id: "LightWeightApp"
-    );
+            ha.Entity("input_button.test_button")
+                .StateAllChanges()
+                .Subscribe(_ => ha.Entity("input_boolean.dummy_switch").CallService("toggle")),
+        id: "LightWeightApp");
 
 await builder.Build().RunAsync();
 

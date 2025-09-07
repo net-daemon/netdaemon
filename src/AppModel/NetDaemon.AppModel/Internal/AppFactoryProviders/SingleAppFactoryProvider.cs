@@ -11,21 +11,15 @@ internal sealed class SingleAppFactoryProvider : IAppFactoryProvider
         _factory = factory;
     }
 
-    public IReadOnlyCollection<IAppFactory> GetAppFactories()
+    public static IAppFactoryProvider Create(Delegate handler, string id, bool focus = false)
     {
-        return new[] { _factory };
-    }
-
-    public static IAppFactoryProvider Create(Delegate handler,
-        string? id = default, bool? focus = default)
-    {
-        var factory = FuncAppFactory.Create(handler, id, focus ?? false);
-        return new SingleAppFactoryProvider(factory);
+        return new SingleAppFactoryProvider(new FuncAppFactory(handler, id, focus));
     }
 
     public static IAppFactoryProvider Create(Type type, string? id = default, bool? focus = default)
     {
-        var factory = FuncAppFactory.Create(type, id, focus);
-        return new SingleAppFactoryProvider(factory);
+        return new SingleAppFactoryProvider(new ClassAppFactory(type, id, focus));
     }
+
+    public IReadOnlyCollection<IAppFactory> GetAppFactories() => [_factory];
 }
