@@ -4,9 +4,9 @@ namespace NetDaemon.AppModel.Internal.AppFactories;
 
 internal class FuncAppFactory : IAppFactory
 {
-    private readonly Func<IServiceProvider, object> _func;
+    private readonly Func<IServiceProvider, object?> _func;
 
-    private FuncAppFactory(Func<IServiceProvider, object> func, Type type, string? id, bool? focus)
+    private FuncAppFactory(Func<IServiceProvider, object?> func, Type type, string? id, bool? focus)
     {
         _func = func;
 
@@ -32,7 +32,7 @@ internal class FuncAppFactory : IAppFactory
         return type.GetCustomAttribute<FocusAttribute>() is not null;
     }
 
-    public object Create(IServiceProvider provider)
+    public object? Create(IServiceProvider provider)
     {
         return _func.Invoke(provider);
     }
@@ -41,14 +41,28 @@ internal class FuncAppFactory : IAppFactory
 
     public bool HasFocus { get; }
 
+    // TODO: Remove
     public static FuncAppFactory Create<TAppType>(Func<IServiceProvider, TAppType> func,
         string? id = default, bool? focus = default) where TAppType : class
     {
         return new FuncAppFactory(func, typeof(TAppType), id, focus);
     }
 
-    public static FuncAppFactory Create(Type type,
-        string? id = default, bool? focus = default)
+    public static FuncAppFactory Create(Delegate @delegate, string? id = null, bool hasFocus = false)
+    {
+        return new FuncAppFactory(sp => ResolveDelegateParamsFromServiceProvider(@delegate, sp),
+            @delegate.Method.ReturnType, // TODO: do not base id and focus on the return type for delegate apps
+            id, hasFocus);
+    }
+
+    private static object? ResolveDelegateParamsFromServiceProvider(Delegate @delegate, IServiceProvider provider)
+    {
+        // Pass any arguments to the delegate method by resolving them from the service provider
+        var args = @delegate.Method.GetParameters().Select(p => provider.GetService(p.ParameterType)).ToArray();
+        return @delegate.DynamicInvoke(args);
+    }
+
+    public static FuncAppFactory Create(Type type, string? id = default, bool? focus = default)
     {
         return new FuncAppFactory(CreateFactoryFunc(type), type, id, focus);
     }

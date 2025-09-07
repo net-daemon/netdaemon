@@ -32,6 +32,28 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
+    ///     Adds a single app that runs the provided delegate when started
+    /// </summary>
+    /// <param name="services">Services</param>
+    /// <param name="handler">The delegate to call when the app is started
+    /// The delegate can have any number of arguments which will be resolved from the IServiceprovider
+    /// if the delegate return an IDisposabe of IAsyncDisposable object, that will be disposed when the app stops
+    /// </param>
+    /// <param name="id">The id of the app. This parameter is optional,
+    ///                  if not specified the app will not have an id and no input_bool will be generated for it in HA.</param>
+    /// <param name="focus">Whether this app has focus or not. This parameter defaults to false</param>
+    public static IServiceCollection AddNetDaemonApp(
+        this IServiceCollection services,
+        Delegate handler,
+        string? id = default,
+        bool focus = false)
+    {
+        return services
+            .AddNetDaemonAppModel()
+            .AddSingleton(SingleAppFactoryProvider.Create(handler, id, focus));
+    }
+
+    /// <summary>
     ///     Adds applications from the specified assembly
     /// </summary>
     /// <param name="services">Services</param>

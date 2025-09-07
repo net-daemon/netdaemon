@@ -16,10 +16,10 @@ internal sealed class SingleAppFactoryProvider : IAppFactoryProvider
         return new[] { _factory };
     }
 
-    public static IAppFactoryProvider Create<TAppType>(Func<IServiceProvider, TAppType> func,
-        string? id = default, bool? focus = default) where TAppType : class
+    public static IAppFactoryProvider Create(Delegate handler,
+        string? id = default, bool? focus = default)
     {
-        var factory = FuncAppFactory.Create(func, id, focus);
+        var factory = FuncAppFactory.Create(handler, id, focus ?? false);
         return new SingleAppFactoryProvider(factory);
     }
 

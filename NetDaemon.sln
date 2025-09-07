@@ -67,6 +67,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.AppModel.SourceDeployedApps", "src\AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj", "{AE48B790-C3D7-440E-945E-EE5C82AE2A86}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugMinimalHost", "src\debug\DebugMinimalHost\DebugMinimalHost.csproj", "{24BF4C65-4F48-4349-9649-E152A4E1496E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +343,18 @@ Global
 		{AE48B790-C3D7-440E-945E-EE5C82AE2A86}.Release|x64.Build.0 = Release|Any CPU
 		{AE48B790-C3D7-440E-945E-EE5C82AE2A86}.Release|x86.ActiveCfg = Release|Any CPU
 		{AE48B790-C3D7-440E-945E-EE5C82AE2A86}.Release|x86.Build.0 = Release|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Debug|x64.Build.0 = Debug|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Debug|x86.Build.0 = Debug|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Release|x64.ActiveCfg = Release|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Release|x64.Build.0 = Release|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Release|x86.ActiveCfg = Release|Any CPU
+		{24BF4C65-4F48-4349-9649-E152A4E1496E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -367,6 +381,7 @@ Global
 		{AEBC7828-7C19-4A86-B6E2-58B5171347B1} = {E15D4280-7FFC-4F8B-9B8C-CF9AF2BF838C}
 		{CF7273C1-A4FE-4598-9C99-D746CE279A32} = {E15D4280-7FFC-4F8B-9B8C-CF9AF2BF838C}
 		{AE48B790-C3D7-440E-945E-EE5C82AE2A86} = {A62F78F8-2EF5-49C8-B437-E5FC6321E866}
+		{24BF4C65-4F48-4349-9649-E152A4E1496E} = {E15D4280-7FFC-4F8B-9B8C-CF9AF2BF838C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7C5FBB7F-654C-4CAC-964F-6D71AF3D62F8}
