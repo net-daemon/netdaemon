@@ -16,6 +16,12 @@ public class TestRuntime
         var timedCancellationSource = new CancellationTokenSource(5000);
         var haRunner = new HomeAssistantRunnerMock();
 
+        var con1 = haRunner.Object.CurrentConnection;
+        var run = haRunner.Object;
+        var conprovider = run as IHomeAssistantConnectionProvider;
+        var con2 = conprovider.CurrentConnection;
+
+
         var hostBuilder = GetDefaultHostBuilder();
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
@@ -44,6 +50,7 @@ public class TestRuntime
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
+                .AddSingleton<IHomeAssistantConnectionProvider>(haRunner.Object)
                 .AddNetDaemonApp<LocalApp>()
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
