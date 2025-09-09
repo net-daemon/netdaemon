@@ -12,7 +12,7 @@ internal class AppStateManager(IAppStateRepository appStateRepository,
     public async Task InitializeAsync(IHomeAssistantConnection haConnection, IAppModelContext appContext)
     {
         if (appContext.Applications.Count > 0 && !hostEnvironment.IsDevelopment())
-            await appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).ToList()!,
+            await appStateRepository.RemoveNotUsedStatesAsync(appContext.Applications.Select(a => a.Id).OfType<string>().ToList(),
                 _cancelTokenSource.Token);
 
         var hassEvents = await haConnection.SubscribeToHomeAssistantEventsAsync(null, _cancelTokenSource.Token)

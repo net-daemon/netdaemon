@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj"/>
+    <ProjectReference Include="..\..\AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj"/>
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Logging\NetDaemon.Extensions.Logging.csproj"/>
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj"/>
+    <ProjectReference Include="..\..\Extensions\NetDaemon.Extensions.Tts\NetDaemon.Extensions.Tts.csproj"/>
+    <ProjectReference Include="..\..\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj"/>
+    <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel\NetDaemon.HassModel.csproj"/>
+    <ProjectReference Include="..\..\HassModel\NetDaemon.HassModel.Integration\NetDaemon.HassModel.Integration.csproj"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="apps/**/*.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="apps\TtsTest.cs"/>
+  </ItemGroup>
+</Project>

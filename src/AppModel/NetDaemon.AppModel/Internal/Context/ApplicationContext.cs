@@ -24,7 +24,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
         Instance = appFactory.Create(scopedProvider);
     }
 
-    public object Instance { get; }
+    public object? Instance { get; }
 
     public async Task InitializeAsync()
     {

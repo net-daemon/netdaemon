@@ -2,7 +2,7 @@
 
 internal interface IAppFactory
 {
-    object Create(IServiceProvider provider);
+    object? Create(IServiceProvider provider);
 
     string Id { get; }
 
