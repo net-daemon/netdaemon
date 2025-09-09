@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using NetDaemon.AppModel;
-using NetDaemon.HassModel;
-using NetDaemon.Runtime.Internal;
 
 namespace NetDaemon.Runtime;
 
@@ -19,7 +17,7 @@ public static class HostBuilderExtensions
     ///  - Register appsettings.json to the host configuration
     ///  - Register all the yaml settings from the path set in the current configuration to the configuration provider
     ///  - Call 'ConfigureNetDaemonServices' in the service collection
-    ///  
+    ///
     /// You can call these methods separately if you want to do something else in between, or if you're calling any of these methods already.
     /// Change `UseNetDaemonAppSettings` to `.RegisterAppSettingsJsonToHost().RegisterYamlSettings()` and call `ConfigureNetDaemonServices(context.Configuration)` in ConfigureServices.
     /// </remarks>
@@ -28,10 +26,24 @@ public static class HostBuilderExtensions
         return hostBuilder
             .RegisterAppSettingsJsonToHost()
             .RegisterYamlSettings()
-            .ConfigureServices((context, services)
-                => services.ConfigureNetDaemonServices(context.Configuration)
+            .ConfigureServices((_, services)
+                => services.ConfigureNetDaemonServices()
             );
     }
+
+    /// <summary>
+    /// Adds the yaml appsettings to the configuration
+    /// </summary>
+    /// <param name="hostBuilder"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T UseNetDaemonAppSettings<T>(this T hostBuilder) where T : IHostApplicationBuilder
+    {
+        hostBuilder.Configuration.AddYamlAppConfigs(hostBuilder.Configuration);
+
+        return hostBuilder;
+    }
+
 
     /// <summary>
     /// Registers appsettings.json to the host configuration
@@ -40,6 +52,7 @@ public static class HostBuilderExtensions
     /// <remarks>This enables using data from the appsettings.json in the `ConfigureAppConfiguration` call</remarks>
     public static IHostBuilder RegisterAppSettingsJsonToHost(this IHostBuilder hostBuilder)
     {
+        // The default Host Builders already add appsettings.json, not sure why this is needed here
         return hostBuilder.ConfigureHostConfiguration(config =>
         {
             config.AddJsonFile("appsettings.json", optional: true);
@@ -65,16 +78,9 @@ public static class HostBuilderExtensions
     public static IHostBuilder UseNetDaemonRuntime(this IHostBuilder hostBuilder)
     {
         return hostBuilder
-            .UseAppScopedHaContext()
-            .ConfigureServices((context, services) =>
+            .ConfigureServices((_, services) =>
             {
-                services.AddLogging();
-                services.AddHostedService<RuntimeService>();
-                services.AddHomeAssistantClient();
-                services.Configure<HomeAssistantSettings>(context.Configuration.GetSection("HomeAssistant"));
-                services.AddSingleton<NetDaemonRuntime>();
-                services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
-                services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+                services.AddNetDaemonRuntime();
             });
     }
 }
