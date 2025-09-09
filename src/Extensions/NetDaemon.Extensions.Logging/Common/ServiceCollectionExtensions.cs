@@ -26,8 +26,6 @@ public static class ServiceCollectionExtensions
     /// <param name="services"></param>
     public static IServiceCollection AddNetDaemonDefaultLogging(this IServiceCollection services)
     {
-        services.AddSerilog();
-
         services.AddSerilog((context, loggerConfiguration) =>
             SerilogConfigurator.Configure(loggerConfiguration, context.GetRequiredService<IHostEnvironment>()));
         return services;
