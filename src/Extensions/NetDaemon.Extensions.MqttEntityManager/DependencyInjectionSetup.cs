@@ -20,16 +20,25 @@ public static class DependencyInjectionSetup
     /// <returns></returns>
     public static IHostBuilder UseNetDaemonMqttEntityManagement(this IHostBuilder hostBuilder)
     {
-        return hostBuilder.ConfigureServices((context, services) =>
+        return hostBuilder.ConfigureServices((_, services) =>
         {
-            services.AddSingleton<IMqttFactory, MqttFactoryFactory>();
-            services.AddSingleton<IMqttClientOptionsFactory, MqttClientOptionsFactory>();
-            services.AddSingleton<IMqttFactoryWrapper, MqttFactoryWrapper>();
-            services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
-            services.AddSingleton<IAssuredMqttConnection, AssuredMqttConnection>();
-            services.AddSingleton<IMessageSender, MessageSender>();
-            services.AddSingleton<IMessageSubscriber, MessageSubscriber>();
-            services.Configure<MqttConfiguration>(context.Configuration.GetSection("Mqtt"));
+            services.AddNetDaemonMqttEntityManagement();
         });
+    }
+
+    /// <summary>
+    /// Add support for managing entities via MQTT
+    /// </summary>
+    public static IServiceCollection AddNetDaemonMqttEntityManagement(this IServiceCollection services)
+    {
+        services.AddSingleton<IMqttFactory, MqttFactoryFactory>();
+        services.AddSingleton<IMqttClientOptionsFactory, MqttClientOptionsFactory>();
+        services.AddSingleton<IMqttFactoryWrapper, MqttFactoryWrapper>();
+        services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
+        services.AddSingleton<IAssuredMqttConnection, AssuredMqttConnection>();
+        services.AddSingleton<IMessageSender, MessageSender>();
+        services.AddSingleton<IMessageSubscriber, MessageSubscriber>();
+        services.AddOptions<MqttConfiguration>().BindConfiguration("Mqtt");
+        return services;
     }
 }

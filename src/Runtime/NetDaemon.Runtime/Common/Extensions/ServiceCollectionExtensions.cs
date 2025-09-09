@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using NetDaemon.AppModel;
+using NetDaemon.HassModel;
+using NetDaemon.Runtime.Internal;
 
 namespace NetDaemon.Runtime;
 
@@ -9,15 +11,30 @@ namespace NetDaemon.Runtime;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Loads NetDaemon and HomeAssistant configuration sections
+    /// Adds the NetDaemon Runtime Services to a IServiceCollection
+    /// </summary>
+    public static IServiceCollection AddNetDaemonRuntime(this IServiceCollection services)
+    {
+        services.AddScopedHaContext();
+        services.AddLogging();
+        services.AddHostedService<RuntimeService>();
+        services.AddHomeAssistantClient();
+        services.AddOptions<HomeAssistantSettings>().BindConfiguration("HomeAssistant");
+        services.AddSingleton<NetDaemonRuntime>();
+        services.AddSingleton<IRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+        services.AddSingleton<INetDaemonRuntime>(provider => provider.GetRequiredService<NetDaemonRuntime>());
+        return services;
+    }
+
+    /// <summary>
+    /// Loads NetDaemon configuration section
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="config">The current <see cref="IConfiguration" /> instance</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection ConfigureNetDaemonServices(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection ConfigureNetDaemonServices(this IServiceCollection services)
     {
-        return services.Configure<AppConfigurationLocationSetting>(config.GetSection("NetDaemon"))
-                       .Configure<HomeAssistantSettings>(config.GetSection("HomeAssistant"));
-        // todo: maybe remove 'HomeAssistant' section this here, is this method really needed? If we remove this we can inline the rest
+         services.AddOptions<AppConfigurationLocationSetting>().BindConfiguration("NetDaemon");
+         return services;
     }
 }
