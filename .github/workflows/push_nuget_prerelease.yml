@@ -44,7 +44,7 @@ jobs:
           echo "build=$(git rev-list $(git rev-list --tags --no-walk --max-count=1)..HEAD --count)" >> $GITHUB_OUTPUT
 
       - name: 🥅 Install .Net 9
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '9.0.x'
           # dotnet-quality: 'preview'
