@@ -7,6 +7,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
     private volatile bool _isDisposed;
+    private Task? _initializationTask;
 
     public ApplicationContext(IServiceProvider serviceProvider, IAppFactory appFactory)
     {
@@ -24,10 +25,12 @@ internal sealed class ApplicationContext : IAsyncDisposable
         Instance = appFactory.Create(scopedProvider);
     }
 
-    public object? Instance { get; }
+    public object? Instance { get; private set; }
 
     public async Task InitializeAsync()
     {
+        Instance = await AwaitableHelper.AwaitIfNeeded(Instance);
+
         if (Instance is IAsyncInitializable initAsyncApp)
             await initAsyncApp.InitializeAsync(_cancelTokenSource.Token).ConfigureAwait(false);
     }
