@@ -138,15 +138,10 @@ public class FuncAppTests
 
 
     [Fact]
-    public async Task AddNetDaemonApp_AsyncFunc()
+    public async Task AddNetDaemonApp_AsyncAction()
     {
         // ARRANGE
-        var hostEnviromentMock = new Mock<IHostEnvironment>();
-        hostEnviromentMock.Setup(m => m.EnvironmentName).Returns(Environments.Development);
-
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(hostEnviromentMock.Object);
-        serviceCollection.AddLogging();
         bool appStarted = false;
         bool appInitialized = false;
 
@@ -166,29 +161,27 @@ public class FuncAppTests
         appInitialized.Should().BeFalse();
 
         app1StartedTcs.SetResult();
+        await appContext.InitializeAsync();
         appInitialized.Should().BeTrue();
     }
 
     [Fact]
-    public async Task AddNetDaemonApp_AsyncFunc_Disposable()
+    public async Task AddNetDaemonApp_AsyncFuncOfDisposable_AwaitsTaskAndDisposesResult()
     {
         // ARRANGE
-        var hostEnviromentMock = new Mock<IHostEnvironment>();
-        hostEnviromentMock.Setup(m => m.EnvironmentName).Returns(Environments.Development);
-
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(hostEnviromentMock.Object);
-        serviceCollection.AddLogging();
-        bool appStarted = false;
         bool appDisposed = false;
 
         TaskCompletionSource<IDisposable> app1StartedTcs = new();
 
-        // ACT
-        var factory = new FuncAppFactory(async () => await app1StartedTcs.Task, "app1", false);
+        async Task<IDisposable> Handler() => await app1StartedTcs.Task;
+
+        var factory = new FuncAppFactory(Handler, "app1", false);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var appContext = new ApplicationContext(serviceProvider, factory);
+
+        // Make the FuncApp return an IDisposable that should be disposed when the Context is Disposed
         app1StartedTcs.SetResult(Disposable.Create(()=> appDisposed = true));
         await appContext.InitializeAsync();
 

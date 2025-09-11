@@ -7,7 +7,6 @@ internal sealed class ApplicationContext : IAsyncDisposable
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
     private volatile bool _isDisposed;
-    private Task? _initializationTask;
 
     public ApplicationContext(IServiceProvider serviceProvider, IAppFactory appFactory)
     {
@@ -29,6 +28,7 @@ internal sealed class ApplicationContext : IAsyncDisposable
 
     public async Task InitializeAsync()
     {
+        // If the factory returned a Task, ValueTask, or other awaitable object we need to await it for initialisation
         Instance = await AwaitableHelper.AwaitIfNeeded(Instance);
 
         if (Instance is IAsyncInitializable initAsyncApp)
