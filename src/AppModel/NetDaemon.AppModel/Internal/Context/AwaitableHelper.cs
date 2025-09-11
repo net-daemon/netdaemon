@@ -5,55 +5,64 @@ namespace NetDaemon.AppModel.Internal;
 static class AwaitableHelper
 {
     /// <summary>
-    /// Returns a Task that will await the inner object if it is awaitable, or return the inner object directly if not.
+    /// Checks if the passed possibleAwaitable is awaitable,
+    ///     if so it awaits it and returns its result asynchronously,
+    ///     if not it will return return a Task that will yield the possibleAwaitable itself
     /// </summary>
-    public static async Task<object?> AwaitIfNeeded(object? inner)
+    public static async Task<object?> AwaitIfNeeded(object? possibleAwaitable)
     {
-        var getAwaiterMethodInfo = inner?.GetType().GetMethod("GetAwaiter", BindingFlags.Instance | BindingFlags.Public);
+        if (possibleAwaitable is null || !IsAwaitable(possibleAwaitable))
+            return possibleAwaitable;
 
-        if (getAwaiterMethodInfo is null || !IsValidGetAwaiterMethod(getAwaiterMethodInfo))
-        {
-            // Not awaitable, return as is
-            return inner;
-        }
-
-        // Signature matches, now get the actual awaiter
-        var awaiter = getAwaiterMethodInfo.Invoke(inner, []);
-
-        return await new AwaitableWrapper(awaiter!);
+        return await new AwaitableWrapper(possibleAwaitable);
     }
 
-    private static bool IsValidGetAwaiterMethod(MethodInfo getAwaiterMethodInfo)
+    private static bool IsAwaitable(object target)
     {
-        if (getAwaiterMethodInfo.GetParameters().Length != 0)
+        // an object is awaitable if it has a public instance method GetAwaiter with no parameters
+        // and the return type of GetAwaiter has
+        // - a public instance property IsCompleted of type bool
+        // - a public instance method OnCompleted with one parameter of type Action
+        // - a public instance method GetResult with no parameters
+
+        var getAwaiterMethodInfo = target.GetType().GetMethod("GetAwaiter", BindingFlags.Instance | BindingFlags.Public);
+
+        if (getAwaiterMethodInfo is null || getAwaiterMethodInfo.GetParameters().Length != 0)
             return false;
 
         var awaiterType = getAwaiterMethodInfo.ReturnType;
 
-        var hasIsCompleted = awaiterType.GetProperty("IsCompleted", BindingFlags.Instance | BindingFlags.Public)?.PropertyType == typeof(bool);
-        if (!hasIsCompleted) return false;
+        var isCompletedInfo = awaiterType.GetProperty("IsCompleted", BindingFlags.Instance | BindingFlags.Public);
+        var validIsCompleted = isCompletedInfo?.PropertyType == typeof(bool);
 
         var onCompletedInfo = awaiterType.GetMethod("OnCompleted", BindingFlags.Instance | BindingFlags.Public);
         var validOnCompleted = onCompletedInfo?.GetParameters().Length == 1 && onCompletedInfo.GetParameters()[0].ParameterType == typeof(Action);
-        if (!validOnCompleted) return false;
 
         var getResultInfo = awaiterType.GetMethod("GetResult", BindingFlags.Instance | BindingFlags.Public);
+
         var validGetResult = getResultInfo?.GetParameters().Length == 0;
 
-        return validGetResult;
+        return validIsCompleted && validOnCompleted && validGetResult;
     }
 
     /// <summary>
     /// Wraps any awaiter in a type that is known to the compiler to be awaitable.
     /// </summary>
-    private class AwaitableWrapper (object inner) : INotifyCompletion
+    private class AwaitableWrapper(object inner)
     {
-        public AwaitableWrapper GetAwaiter() => this;
+        public AwaiterWrapper GetAwaiter() => new AwaiterWrapper(((dynamic)inner).GetAwaiter());
+    }
 
+    private class AwaiterWrapper(object inner) : INotifyCompletion
+    {
         public bool IsCompleted => ((dynamic)inner).IsCompleted;
 
         public void OnCompleted(Action continuation) => ((dynamic)inner).OnCompleted(continuation);
 
-        public object? GetResult() => ((dynamic)inner).GetResult();
+        public object? GetResult()
+        {
+            // Can't use dynamic here because GetResult might return void, in which case we want to return null here
+            return inner.GetType().GetMethod("GetResult", BindingFlags.Instance | BindingFlags.Public)?.Invoke(inner, []);
+        }
     }
 }
