@@ -62,7 +62,7 @@ static class AwaitableHelper
         public object? GetResult()
         {
             // Can't use dynamic here because GetResult might return void, in which case we want to return null here
-            return inner.GetType().GetMethod("GetResult", BindingFlags.Instance | BindingFlags.Public)?.Invoke(inner, []);
+            return inner.GetType().GetMethod("GetResult", BindingFlags.Instance | BindingFlags.Public)!.Invoke(inner, []);
         }
     }
 }
