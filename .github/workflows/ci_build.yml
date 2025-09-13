@@ -27,8 +27,8 @@ jobs:
         run: echo "::add-matcher::.github/matchers/dotnet.json"
 
       - name: 🛠️ Build code
-        run: dotnet build --configuration Release
-        # run: dotnet build --configuration Release -p:TreatWarningsAsErrors=true temprarily disabled due to Nuget bug
+        # run: dotnet build --configuration Release
+        run: dotnet build --configuration Release -p:TreatWarningsAsErrors=true temprarily disabled due to Nuget bug
 
       - name: 👀 Unit Test
         run: |
