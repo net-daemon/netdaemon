@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using NetDaemon.AppModel;
 using NetDaemon.HassModel;
 using NetDaemon.Runtime.Internal;

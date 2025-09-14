@@ -24,10 +24,13 @@ internal sealed class ApplicationContext : IAsyncDisposable
         Instance = appFactory.Create(scopedProvider);
     }
 
-    public object? Instance { get; }
+    public object? Instance { get; private set; }
 
     public async Task InitializeAsync()
     {
+        // If the factory returned a Task, ValueTask, or other awaitable object we need to await it for initialisation
+        Instance = await AwaitableHelper.AwaitIfNeeded(Instance);
+
         if (Instance is IAsyncInitializable initAsyncApp)
             await initAsyncApp.InitializeAsync(_cancelTokenSource.Token).ConfigureAwait(false);
     }
