@@ -3,11 +3,12 @@ using FluentAssertions;
 using NetDaemon.HassModel;
 using NetDaemon.Tests.Integration.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NetDaemon.Tests.Integration;
 
 [Collection("HomeAssistant collection")]
-public sealed class HaContextFactoryTest(HomeAssistantLifetime homeAssistantLifetime) : IAsyncDisposable
+public sealed class HaContextFactoryTest(HomeAssistantLifetime homeAssistantLifetime, ITestOutputHelper outputHelper) : IAsyncDisposable
 {
     // TODO: remove
     [Fact]
@@ -18,7 +19,10 @@ public sealed class HaContextFactoryTest(HomeAssistantLifetime homeAssistantLife
         var haContext = RunWithoutSynchronizationContext(() => HaContextFactory.CreateAsync($"ws://localhost:{homeAssistantLifetime.Port}/api/websocket",
             homeAssistantLifetime.AccessToken!).GetAwaiter().GetResult());
 
-        var inputText = haContext.Entity("input_text.test_result");
+             var inputText = haContext.Entity("input_text.test_result");
+             outputHelper.WriteLine("Initial State = '" + inputText.State + "'");
+
+
             var nextStateChange = inputText.StateChanges().FirstAsync();
 
             // Act
