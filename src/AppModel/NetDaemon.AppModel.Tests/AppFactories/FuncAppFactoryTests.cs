@@ -1,6 +1,7 @@
 using System.Reactive.Disposables;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel.Internal;
+using NetDaemon.AppModel.Internal.AppFactories;
 
 namespace NetDaemon.AppModel.Tests.AppFactories;
 
@@ -133,6 +134,62 @@ public class FuncAppTests
         // ASSERT
         app1Started.Should().BeTrue();
         app2Started.Should().BeFalse();
+    }
+
+
+    [Fact]
+    public async Task AddNetDaemonApp_AsyncAction()
+    {
+        // ARRANGE
+        var serviceCollection = new ServiceCollection();
+        bool appStarted = false;
+        bool appInitialized = false;
+
+        TaskCompletionSource app1StartedTcs = new();
+
+        // ACT
+        var factory = new FuncAppFactory(async () =>
+        {
+            appStarted = true;
+            await app1StartedTcs.Task;
+            appInitialized = true;
+        }, "app1", true);
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var appContext = new ApplicationContext(serviceProvider, factory);
+        appStarted.Should().BeTrue();
+        appInitialized.Should().BeFalse();
+
+        app1StartedTcs.SetResult();
+        await appContext.InitializeAsync();
+        appInitialized.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AddNetDaemonApp_AsyncFuncOfDisposable_AwaitsTaskAndDisposesResult()
+    {
+        // ARRANGE
+        var serviceCollection = new ServiceCollection();
+        bool appDisposed = false;
+
+        TaskCompletionSource<IDisposable> app1StartedTcs = new();
+
+        async Task<IDisposable> Handler() => await app1StartedTcs.Task;
+
+        var factory = new FuncAppFactory(Handler, "app1", false);
+
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var appContext = new ApplicationContext(serviceProvider, factory);
+
+        // Make the FuncApp return an IDisposable that should be disposed when the Context is Disposed
+        app1StartedTcs.SetResult(Disposable.Create(()=> appDisposed = true));
+        await appContext.InitializeAsync();
+
+        appContext.Instance.Should().BeAssignableTo<IDisposable>();
+
+        appDisposed.Should().BeFalse();
+        await appContext.DisposeAsync();
+        appDisposed.Should().BeTrue();
     }
 
     private sealed class Dependency1
