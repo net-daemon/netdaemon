@@ -96,14 +96,16 @@ public class AwaitableHelperTests
         result.Should().Be(42);
     }
 
-    class NotAwaitable
+    sealed class NotAwaitable
     {
         // No GetAwaiter method
     }
 
-    class InvalidAwaitable
+    sealed class InvalidAwaitable
     {
         // GetAwaiter exists but does not return a valid awaiter
+#pragma warning disable CA1822
         public NotAwaitable GetAwaiter() => new();
+#pragma warning restore CA1822
     }
 }
