@@ -30,7 +30,6 @@ public static class ServiceCollectionExtensions
     /// Loads NetDaemon configuration section
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <param name="config">The current <see cref="IConfiguration" /> instance</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection ConfigureNetDaemonServices(this IServiceCollection services)
     {
