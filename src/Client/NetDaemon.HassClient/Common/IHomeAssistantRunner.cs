@@ -13,11 +13,6 @@ public interface IHomeAssistantRunner : IHomeAssistantConnectionProvider, IAsync
     IObservable<DisconnectReason> OnDisconnect { get; }
 
     /// <summary>
-    /// The current connection to Home Assistant. Null if disconnected.
-    /// </summary>
-    IHomeAssistantConnection? CurrentConnection { get; }
-
-    /// <summary>
     /// Maintains a connection to the Home Assistant server
     /// </summary>
     /// <param name="host">Host of Home Assistant instance</param>

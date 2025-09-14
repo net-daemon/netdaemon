@@ -8,7 +8,7 @@ public static class HaContextFactory
     /// <summary>
     /// Creates a new instance of <see cref="IHaContext"/> using the provided WebSocket URL and token.
     /// </summary>
-    /// <remarks>Do not use this in NetDaemon apps. Apps should use UseNetDaemonRuntime and resolve IHaContext via dependency injection</remarks>
+    /// <remarks>Do not use this in NetDaemon apps. Apps should use AddNetDaemonRuntime and resolve IHaContext via dependency injection. HaContextFactory</remarks>
     /// <param name="homeAssistantWebsocketUrl">The Websocket Url to HomeAssistant, eg: ws://localhost:8123/api/websocket</param>
     /// <param name="token">The long-lived access token for Home Assistant</param>
     /// <returns>An instance of IHaContext</returns>

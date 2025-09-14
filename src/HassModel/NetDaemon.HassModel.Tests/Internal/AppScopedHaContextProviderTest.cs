@@ -363,10 +363,10 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
             );
         serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
 
-        var connectioProviderMock = new Mock<IHomeAssistantConnectionProvider>();
+        var connectionProviderMock = new Mock<IHomeAssistantConnectionProvider>();
 
-        connectioProviderMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
-        serviceCollection.AddSingleton(_ => connectioProviderMock.Object);
+        connectionProviderMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
+        serviceCollection.AddSingleton(_ => connectionProviderMock.Object);
 
         var apiManagerMock = new Mock<IHomeAssistantApiManager>();
 

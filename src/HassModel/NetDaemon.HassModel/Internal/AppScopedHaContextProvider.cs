@@ -44,7 +44,6 @@ internal class AppScopedHaContextProvider : IHaContext, IAsyncDisposable
 
     IHomeAssistantConnection CurrentConnection => _connectionProvider.CurrentConnection ?? throw new InvalidOperationException("No connection to Home Assistant");
 
-
     // By making the HaRegistry instance internal it can also be registered as scoped in the DI container and injected into applications
     internal HaRegistry Registry { get; }
 

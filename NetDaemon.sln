@@ -68,6 +68,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDaemon.AppModel.SourceDeployedApps", "src\AppModel\NetDaemon.AppModel.SourceDeployedApps\NetDaemon.AppModel.SourceDeployedApps.csproj", "{AE48B790-C3D7-440E-945E-EE5C82AE2A86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugMinimalHost", "src\debug\DebugMinimalHost\DebugMinimalHost.csproj", "{24BF4C65-4F48-4349-9649-E152A4E1496E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClient", "src\debug\ConsoleClient\ConsoleClient.csproj", "{E966FBC9-D7AF-44F1-BE0F-C344B01A5323}"
 EndProject
 Global
