@@ -70,3 +70,6 @@ tests/Integration/HA/config/*
 HomeAssistantGenerated.cs
 EntityMetaData.json
 ServicesMetaData.json
+
+# Worktree default folder
+.wt
