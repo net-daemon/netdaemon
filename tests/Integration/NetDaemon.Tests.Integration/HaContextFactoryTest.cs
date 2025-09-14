@@ -16,24 +16,27 @@ public sealed class HaContextFactoryTest(HomeAssistantLifetime homeAssistantLife
     {
         var testValue = Guid.CreateVersion7().ToString();
 
-        var haContext = RunWithoutSynchronizationContext(() => HaContextFactory.CreateAsync($"ws://localhost:{homeAssistantLifetime.Port}/api/websocket",
-            homeAssistantLifetime.AccessToken!).GetAwaiter().GetResult());
-
-             var inputText = haContext.Entity("input_text.test_result");
-             outputHelper.WriteLine("Initial State = '" + inputText.State + "'");
+        var haContext = HaContextFactory.CreateAsync($"ws://localhost:{homeAssistantLifetime.Port}/api/websocket",
+            homeAssistantLifetime.AccessToken!).GetAwaiter().GetResult();
 
 
-            var nextStateChange = inputText.StateChanges().FirstAsync();
+        var inputText = haContext.Entity("input_text.test_result");
+        outputHelper.WriteLine("Initial State = '" + inputText.State + "'");
 
-            // Act
-            inputText.CallService("set_value", new { value = testValue });
 
-            // Assert
-            var stateChange = await nextStateChange.Timeout(TimeSpan.FromSeconds(30));
+        var nextStateChange = inputText.StateChanges().FirstAsync();
 
-            stateChange.New!.State.Should().Be(testValue, "We should have received the state change after calling the service");
-            inputText.State.Should().Be(testValue, "The state should be updated in the cache after the state_change event is received");
+        // Act
+        inputText.CallService("set_value", new { value = testValue });
+        await Task.Yield();
+
+        // Assert
+        var stateChange = nextStateChange.Timeout(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+
+        stateChange.New!.State.Should().Be(testValue, "We should have received the state change after calling the service");
+        inputText.State.Should().Be(testValue, "The state should be updated in the cache after the state_change event is received");
     }
+
 
     private static T RunWithoutSynchronizationContext<T>(Func<T> func)
     {
