@@ -16,9 +16,8 @@ public sealed class HaContextFactoryTest(HomeAssistantLifetime homeAssistantLife
     {
         var testValue = Guid.CreateVersion7().ToString();
 
-        var haContext = HaContextFactory.CreateAsync($"ws://localhost:{homeAssistantLifetime.Port}/api/websocket",
-            homeAssistantLifetime.AccessToken!).GetAwaiter().GetResult();
-
+        var haContext = await HaContextFactory.CreateAsync($"ws://localhost:{homeAssistantLifetime.Port}/api/websocket",
+            homeAssistantLifetime.AccessToken!);
 
         var inputText = haContext.Entity("input_text.test_result");
         outputHelper.WriteLine("Initial State = '" + inputText.State + "'");
