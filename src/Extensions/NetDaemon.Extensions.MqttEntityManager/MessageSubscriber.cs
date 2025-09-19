@@ -5,8 +5,6 @@ using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
-using MQTTnet.Client;
-using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -49,12 +47,15 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             var mqttClient = await _assuredMqttConnection.GetClientAsync();
             await EnsureSubscriptionAsync(mqttClient);
 
-            var topicFilters = new Collection<MqttTopicFilter>
-            {
-                new MqttTopicFilterBuilder().WithTopic(topic).Build()
-            };
+            // var topicFilters = new Collection<MqttTopicFilter>
+            // {
+            //     new MqttTopicFilterBuilder().WithTopic(topic).Build()
+            // };
+            var options = new MqttClientSubscribeOptionsBuilder()
+                .WithTopicFilter(topic)
+                .Build();
 
-            await mqttClient.SubscribeAsync(topicFilters);
+            await mqttClient.SubscribeAsync(options);
             return _subscribers.GetOrAdd(topic, new Lazy<Subject<string>>()).Value;
         }
         catch (Exception e)
@@ -68,7 +69,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// If we are not already subscribed to receive messages, set up the handler
     /// </summary>
     /// <param name="mqttClient"></param>
-    private async Task EnsureSubscriptionAsync(IManagedMqttClient mqttClient)
+    private async Task EnsureSubscriptionAsync(IMqttClient mqttClient)
     {
         await _subscriptionSetupLock.WaitAsync();
         try
@@ -100,7 +101,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     {
         try
         {
-            var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.PayloadSegment.Array ?? []);
+            var payload = msg.ApplicationMessage.ConvertPayloadToString();
             var topic = msg.ApplicationMessage.Topic;
             _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
 

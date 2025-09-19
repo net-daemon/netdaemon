@@ -1,4 +1,4 @@
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -6,7 +6,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 public class MqttClientOptionsFactory : IMqttClientOptionsFactory
 {
     /// <inheritdoc />
-    public ManagedMqttClientOptions CreateClientOptions(MqttConfiguration mqttConfig)
+    public MqttClientOptions CreateClientOptions(MqttConfiguration mqttConfig)
     {
         ArgumentNullException.ThrowIfNull(mqttConfig);
 
@@ -15,29 +15,25 @@ public class MqttClientOptionsFactory : IMqttClientOptionsFactory
             throw new ArgumentException("Explicit MQTT host configuration was not provided and no suitable broker addon was discovered", nameof(mqttConfig));
         }
 
-        var clientOptions = new ManagedMqttClientOptionsBuilder()
-            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-            .WithClientOptions(clientOptionsBuilder =>
+        var clientOptions = new MqttClientOptionsBuilder()
+            .WithTcpServer(mqttConfig.Host, mqttConfig.Port);
+
+        if (!string.IsNullOrEmpty(mqttConfig.UserName) && !string.IsNullOrEmpty(mqttConfig.Password))
+        {
+            clientOptions = clientOptions.WithCredentials(mqttConfig.UserName, mqttConfig.Password);
+        }
+
+        if (mqttConfig.UseTls)
+        {
+            clientOptions = clientOptions.WithTlsOptions(tlsOptionsBuilder =>
             {
-                clientOptionsBuilder.WithTcpServer(mqttConfig.Host, mqttConfig.Port);
+                tlsOptionsBuilder
+                    .UseTls()
+                    .WithAllowUntrustedCertificates(mqttConfig.AllowUntrustedCertificates);
+            });
+        }
 
-                if (!string.IsNullOrEmpty(mqttConfig.UserName) && !string.IsNullOrEmpty(mqttConfig.Password))
-                {
-                    clientOptionsBuilder.WithCredentials(mqttConfig.UserName, mqttConfig.Password);
-                }
+        return clientOptions.Build();
 
-                if (mqttConfig.UseTls)
-                {
-                    clientOptionsBuilder.WithTlsOptions(tlsOptionsBuilder =>
-                    {
-                        tlsOptionsBuilder
-                            .UseTls()
-                            .WithAllowUntrustedCertificates(mqttConfig.AllowUntrustedCertificates);
-                    });
-                }
-            })
-            .Build();
-
-        return clientOptions;
     }
 }

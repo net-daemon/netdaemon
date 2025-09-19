@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet.Client;
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
@@ -12,12 +12,15 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// <summary>
 /// Wrapper to assure an MQTT connection
 /// </summary>
-internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
+public class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
     private readonly ILogger<AssuredMqttConnection> _logger;
     private readonly IMqttClientOptionsFactory _mqttClientOptionsFactory;
-    private readonly Task _connectionTask;
-    private IManagedMqttClient? _mqttClient;
+    private readonly IMqttFactoryWrapper _mqttFactory;
+    private readonly MqttConfiguration _mqttConfig;
+    private readonly TaskCompletionSource<IMqttClient> _connectionTcs = new();
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private IMqttClient? _mqttClient;
     private bool _disposed;
 
     /// <summary>
@@ -35,8 +38,11 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _logger = logger;
         _mqttClientOptionsFactory = mqttClientOptionsFactory;
+        _mqttFactory = mqttFactory;
+        _mqttConfig = mqttConfig.Value;
+
         _logger.LogTrace("MQTT initiating connection");
-        _connectionTask = Task.Run(() => ConnectAsync(mqttConfig.Value, mqttFactory));
+        _ = Task.Run(() => ConnectAsync(_cancellationTokenSource.Token));
     }
 
     /// <summary>
@@ -44,39 +50,55 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// </summary>
     /// <returns></returns>
     /// <exception cref="MqttConnectionException">Timed out while waiting for connection</exception>
-    public async Task<IManagedMqttClient> GetClientAsync()
+    public async Task<IMqttClient> GetClientAsync()
     {
-        await _connectionTask;
-
-        return _mqttClient ?? throw new MqttConnectionException("Unable to create MQTT connection");
+        return await _connectionTcs.Task.ConfigureAwait(false);
     }
 
-    private async Task ConnectAsync(MqttConfiguration mqttConfig, IMqttFactoryWrapper mqttFactory)
+    private async Task ConnectAsync(CancellationToken cancellationToken)
     {
         _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
-            mqttConfig.Host, mqttConfig.Port, mqttConfig.UserName);
+            _mqttConfig.Host, _mqttConfig.Port, _mqttConfig.UserName);
 
-        var clientOptions = _mqttClientOptionsFactory.CreateClientOptions(mqttConfig);
+        var clientOptions = _mqttClientOptionsFactory.CreateClientOptions(_mqttConfig);
 
-        _mqttClient = mqttFactory.CreateManagedMqttClient();
+        _mqttClient = _mqttFactory.CreateMqttClient();
 
         _mqttClient.ConnectedAsync += MqttClientOnConnectedAsync;
         _mqttClient.DisconnectedAsync += MqttClientOnDisconnectedAsync;
 
-        await _mqttClient.StartAsync(clientOptions);
-
-        _logger.LogTrace("MQTT client is ready");
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await _mqttClient.ConnectAsync(clientOptions, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "Failed to connect to MQTT broker, will retry in 5 seconds");
+                await Task.Delay(5000, cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
         _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));
+        if (_disposed) return Task.CompletedTask;
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(5000).ConfigureAwait(false);
+            await ConnectAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
+        });
         return Task.CompletedTask;
     }
 
     private Task MqttClientOnConnectedAsync(MqttClientConnectedEventArgs arg)
     {
         _logger.LogDebug("MQTT connected: {ResultCode}", arg.ConnectResult.ResultCode);
+        _connectionTcs.TrySetResult(_mqttClient!);
         return Task.CompletedTask;
     }
 
@@ -102,7 +124,15 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
         _disposed = true;
         _logger.LogTrace("MQTT disconnecting");
-        _connectionTask?.Dispose();
-        _mqttClient?.Dispose();
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        if (_mqttClient is not null)
+        {
+            _mqttClient.ConnectedAsync -= MqttClientOnConnectedAsync;
+            _mqttClient.DisconnectedAsync -= MqttClientOnDisconnectedAsync;
+            if (_mqttClient.IsConnected)
+                _mqttClient.DisconnectAsync().GetAwaiter().GetResult();
+            _mqttClient.Dispose();
+        }
     }
 }

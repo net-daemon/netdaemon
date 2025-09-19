@@ -9,7 +9,7 @@
     </PackageDescription>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
 	<None Include="..\..\..\LICENSE">
       <Pack>True</Pack>
