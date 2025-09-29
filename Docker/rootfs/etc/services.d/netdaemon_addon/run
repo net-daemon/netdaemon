@@ -24,9 +24,6 @@ elif bashio::services.available "mqtt"; then
     Mqtt__Port=$(bashio::services 'mqtt' 'port')
     Mqtt__UserName=$(bashio::services 'mqtt' 'username')
     Mqtt__Password=$(bashio::services 'mqtt' 'password')
-else
-    bashio::log.warning \
-        "No MQTT add-on installed and manual broker configuration was not specified. MQTT features will not work."
 fi
 
 # Optional settings - Toggle "Show unused optional configuration options" to reveal
