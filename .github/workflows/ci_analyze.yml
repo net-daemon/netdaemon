@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
 
       - name: 🔍 Analyze code
-        uses: highbyte/sonarscan-dotnet@v2.4.2
+        uses: highbyte/sonarscan-dotnet@v2.4.3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
