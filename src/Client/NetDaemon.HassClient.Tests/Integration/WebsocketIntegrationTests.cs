@@ -111,8 +111,11 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             Ssl = false,
             Token = "token does not matter"
         };
-        await Assert.ThrowsAsync<WebSocketException>(async () =>
+        // In .NET 10, this may throw TaskCanceledException instead of WebSocketException
+        var exception = await Assert.ThrowsAnyAsync<Exception>(async () =>
             await GetConnectedClientContext(settings).ConfigureAwait(false));
+        Assert.True(exception is WebSocketException or TaskCanceledException,
+            $"Expected WebSocketException or TaskCanceledException, but got {exception.GetType().Name}");
     }
 
     [Fact]
