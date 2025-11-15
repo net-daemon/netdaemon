@@ -1,6 +1,6 @@
 # No admin support yet, we need to build the websocket API
 # Pre-build .NET NetDaemon core project
-FROM  mcr.microsoft.com/dotnet/sdk:10.0-bookworm-slim-amd64 as netbuilder
+FROM  mcr.microsoft.com/dotnet/sdk:10.0 as netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -24,4 +24,4 @@ COPY --chmod=755 ./Docker/rootfs/etc/s6-overlay/s6-rc.d/usr/netdaemon_addon etc/
 COPY --from=netbuilder /daemon /daemon
 
 LABEL \
-    io.hass.version="VERSION"
+  io.hass.version="VERSION"
