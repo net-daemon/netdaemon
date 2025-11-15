@@ -1,5 +1,5 @@
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:10.0 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
