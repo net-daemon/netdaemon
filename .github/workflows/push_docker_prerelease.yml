@@ -1,4 +1,3 @@
-
 #### Publish tags to docker hub
 name: 📦 Deploy pre-release to Docker with tag
 on:
@@ -27,7 +26,7 @@ jobs:
           echo setting source version: ${{ github.event.inputs.pre }}
           sed -i '/    private const string Version = /c\    private const string Version = "${{ github.event.inputs.pre }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
           sed -i '/    io.hass.version=/c\    io.hass.version="${{ github.event.inputs.pre }}"' ${{github.workspace}}/Dockerfile.AddOn
-          
+
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -54,7 +53,7 @@ jobs:
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile . \
@@ -97,11 +96,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile.AddOn . \
