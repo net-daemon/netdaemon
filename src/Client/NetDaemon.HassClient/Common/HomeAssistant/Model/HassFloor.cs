@@ -2,7 +2,6 @@
 
 public record HassFloor
 {
-    [JsonConverter(typeof(EnsureStringConverter))]
     [JsonPropertyName("level")]
     public short? Level { get; init; }
 
