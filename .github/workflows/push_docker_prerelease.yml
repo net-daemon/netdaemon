@@ -58,8 +58,8 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag "netdaemon/netdaemon5:${{ github.event.inputs.pre }}" \
-            --tag "ghcr.io/net-daemon/netdaemon5:${{ github.event.inputs.pre }}"
+            --tag "netdaemon/netdaemon6:${{ github.event.inputs.pre }}" \
+            --tag "ghcr.io/net-daemon/netdaemon6:${{ github.event.inputs.pre }}"
 
   deploy_docker_addon:
     name: 📦 Deploy to Docker add-on with tag
@@ -105,5 +105,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile.AddOn . \
             --compress \
-            --tag "netdaemon/netdaemon_addon5:${{ github.event.inputs.pre }}" \
-            --tag "ghcr.io/net-daemon/netdaemon_addon5:${{ github.event.inputs.pre }}"
+            --tag "netdaemon/netdaemon_addon6:${{ github.event.inputs.pre }}" \
+            --tag "ghcr.io/net-daemon/netdaemon_addon6:${{ github.event.inputs.pre }}"
