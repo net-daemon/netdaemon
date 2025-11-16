@@ -59,10 +59,10 @@ jobs:
             --no-cache \
             --file ./Dockerfile.AddOn . \
             --compress \
-            --tag netdaemon/netdaemon_addon5:${{ steps.version.outputs.version }} \
-            --tag netdaemon/netdaemon_addon5:latest \
-            --tag ghcr.io/net-daemon/netdaemon_addon5:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon_addon5:latest
+            --tag netdaemon/netdaemon_addon6:${{ steps.version.outputs.version }} \
+            --tag netdaemon/netdaemon_addon6:latest \
+            --tag ghcr.io/net-daemon/netdaemon_addon6:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon_addon6:latest
 
   deploy_docker:
     name: 📦 Deploy to Docker Hub
@@ -118,7 +118,7 @@ jobs:
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag netdaemon/netdaemon5:latest \
-            --tag netdaemon/netdaemon5:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon5:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/net-daemon/netdaemon5:latest
+            --tag netdaemon/netdaemon6:latest \
+            --tag netdaemon/netdaemon6:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon6:${{ steps.version.outputs.version }} \
+            --tag ghcr.io/net-daemon/netdaemon6:latest

@@ -53,5 +53,5 @@ jobs:
             --no-cache \
             --file ./Dockerfile.AddOn . \
             --compress \
-            --tag "netdaemon/netdaemon_addon5:feature-${{ github.event.inputs.tag }}" \
-            --tag "ghcr.io/netdaemon_addon5:feature-${{ github.event.inputs.tag }}"
+            --tag "netdaemon/netdaemon_addon6:feature-${{ github.event.inputs.tag }}" \
+            --tag "ghcr.io/netdaemon_addon6:feature-${{ github.event.inputs.tag }}"
