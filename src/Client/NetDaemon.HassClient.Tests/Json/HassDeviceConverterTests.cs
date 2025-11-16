@@ -37,6 +37,19 @@ public class JsonConverterTests
     }
 
     [Fact]
+    public void TestConversionWithLabelsSingleValue()
+    {
+        const string jsonDevice = """
+                                  {
+                                    "labels": 123
+                                  }
+                                  """;
+        var hassDevice = JsonSerializer.Deserialize<HassDevice>(jsonDevice, _defaultSerializerOptions);
+
+        hassDevice!.Labels.Should().BeEquivalentTo(["123"]);
+    }
+
+    [Fact]
     public void TestConversionWithStringValue()
     {
         const string jsonDevice = """
