@@ -1,5 +1,5 @@
 # Pre-build .NET NetDaemon core project
-FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim-amd64 as netbuilder
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS netbuilder
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
@@ -13,7 +13,7 @@ COPY . /usr
 RUN dotnet publish /usr/src/Host/NetDaemon.Host.Default/NetDaemon.Host.Default.csproj -o "/daemon"
 
 # Final stage, create the runtime container
-FROM ghcr.io/net-daemon/netdaemon_base:9
+FROM ghcr.io/net-daemon/netdaemon_base:10
 
 # # Install S6 and the Admin site
 # COPY ./Docker/rootfs/etc/services.d/NetDaemonAdmin /etc/services.d/NetDaemonAdmin

@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
-        
+
       - name: 📆 Set version number
         run: |
           echo setting source version:    feature-${{ github.event.inputs.tag }}
@@ -49,7 +49,7 @@ jobs:
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile . \
@@ -93,11 +93,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile.AddOn . \

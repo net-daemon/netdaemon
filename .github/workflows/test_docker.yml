@@ -21,18 +21,19 @@ jobs:
 
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v3
-
+        with:
+          platforms: all
       - name: 🔧 Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
-        
+
       - name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=false" \
             --no-cache \
             --file ./${{ matrix.dockerfile }} . \

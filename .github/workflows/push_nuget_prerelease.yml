@@ -43,10 +43,10 @@ jobs:
           # Get the build number
           echo "build=$(git rev-list $(git rev-list --tags --no-walk --max-count=1)..HEAD --count)" >> $GITHUB_OUTPUT
 
-      - name: 🥅 Install .Net 9
+      - name: 🥅 Install .Net 10
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
           # dotnet-quality: 'preview'
 
       - name: 🔖 Set version number
