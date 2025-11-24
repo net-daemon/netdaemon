@@ -1,6 +1,6 @@
 obj
 bin
-appsettings.Development.json
+appsettings.development.json
 .vs
 *.gen
 .idea
