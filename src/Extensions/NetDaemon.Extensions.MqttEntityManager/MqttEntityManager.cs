@@ -138,7 +138,7 @@ internal class MqttEntityManager : IMqttEntityManager
             Name = options?.Name ?? identifier,
             DeviceClass = options?.DeviceClass,
             UniqueId = options?.UniqueId ?? configPath.Replace('/', '_'),
-            ObjectId = identifier,
+            DefaultEntityId = DefaultEntityId(domain, identifier),
             CommandTopic = CommandPath(domain, identifier),
             StateTopic = StatePath(domain, identifier),
             PayloadAvailable = options?.PayloadAvailable,
@@ -158,6 +158,7 @@ internal class MqttEntityManager : IMqttEntityManager
                                    !string.IsNullOrWhiteSpace(options.PayloadNotAvailable));
     }
 
+    private static string DefaultEntityId(string domain, string identifier) => $"{domain}.{identifier}";
     private string AttrsPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/attributes";
 
     private string ConfigPath(string domain, string identifier) => $"{RootPath(domain, identifier)}/config";

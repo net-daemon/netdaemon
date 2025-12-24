@@ -18,14 +18,14 @@ internal class EntityCreationPayload
     [JsonPropertyName("unique_id")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? UniqueId { get; set; }
-    
-    [JsonPropertyName("object_id")]
-    public string? ObjectId { get; set; }
+
+    [JsonPropertyName("default_entity_id")]
+    public string? DefaultEntityId { get; set; }
 
     [JsonPropertyName("command_topic")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CommandTopic { get; set; }
-    
+
     [JsonPropertyName("state_topic")]
     public string? StateTopic { get; set; }
 
@@ -35,7 +35,7 @@ internal class EntityCreationPayload
     [JsonPropertyName("availability_topic")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AvailabilityTopic { get; set; }
-    
+
     [JsonPropertyName("payload_available")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PayloadAvailable { get; set; }
