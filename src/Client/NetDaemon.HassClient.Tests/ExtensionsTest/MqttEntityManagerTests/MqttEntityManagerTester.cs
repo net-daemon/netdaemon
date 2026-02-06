@@ -27,7 +27,7 @@ public class MqttEntityManagerTester
         payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
         payload?["unique_id"].ToString().Should().Be("homeassistant_domain_sensor_config");
-        payload?["object_id"].ToString().Should().Be("sensor");
+        payload?["default_entity_id"].ToString().Should().Be("domain.sensor");
         payload?["command_topic"].ToString().Should().Be("homeassistant/domain/sensor/set");
         payload?["state_topic"].ToString().Should().Be("homeassistant/domain/sensor/state");
         payload?["json_attributes_topic"].ToString().Should().Be("homeassistant/domain/sensor/attributes");
@@ -45,7 +45,7 @@ public class MqttEntityManagerTester
         payload?.Count.Should().Be(6);
         payload?["name"].ToString().Should().Be("sensor");
         payload?["unique_id"].ToString().Should().Be("homeassistant_domain_sensor_config");
-        payload?["object_id"].ToString().Should().Be("sensor");
+        payload?["default_entity_id"].ToString().Should().Be("domain.sensor");
         payload?["command_topic"].ToString().Should().Be("homeassistant/domain/sensor/set");
         payload?["state_topic"].ToString().Should().Be("homeassistant/domain/sensor/state");
         payload?["json_attributes_topic"].ToString().Should().Be("homeassistant/domain/sensor/attributes");
@@ -64,7 +64,7 @@ public class MqttEntityManagerTester
     }
 
     [Fact]
-    public async Task CreateSetsObjectId()
+    public async Task CreateSetsDefaultEntityId()
     {
         var mqttSetup = new MockMqttMessageSenderSetup();
         var entityManager = new MqttEntityManager(mqttSetup.MessageSender, null!, GetOptions());
@@ -72,7 +72,7 @@ public class MqttEntityManagerTester
         await entityManager.CreateAsync("domain.the_id");
         var payload = PayloadToDictionary(mqttSetup.LastPublishedMessage.PayloadSegment.Array ?? []);
 
-        payload?["object_id"].ToString().Should().Be("the_id");
+        payload?["default_entity_id"].ToString().Should().Be("domain.the_id");
     }
 
     [Fact]
