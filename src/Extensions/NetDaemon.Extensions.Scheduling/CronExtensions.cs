@@ -37,10 +37,10 @@ public static class CronExtensions
         var next = cronExpression.GetNextOccurrence(now, TimeZoneInfo.Local);
         if (next.HasValue)
         {
-            disposableBox.Value = scheduler.Schedule(next.Value, EcecuteAndReschedule);
+            disposableBox.Value = scheduler.Schedule(next.Value, ExecuteAndReschedule);
         }
 
-        void EcecuteAndReschedule()
+        void ExecuteAndReschedule()
         {
             try
             {
