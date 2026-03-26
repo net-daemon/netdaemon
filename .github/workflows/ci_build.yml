@@ -60,7 +60,7 @@ jobs:
           path-to-lcov: ${{github.workspace}}/codecover.info
 
       - name: 📨 Publish coverage to codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           flags: unittests # optional
           name: codecov-umbrella # optional
