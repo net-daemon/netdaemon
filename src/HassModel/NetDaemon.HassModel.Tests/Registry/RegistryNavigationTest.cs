@@ -19,11 +19,8 @@ public class RegistryNavigationTest
 
     private async Task<HaRegistry> InitializeCacheAndBuildRegistry()
     {
-        var runnerMock = new Mock<IHomeAssistantRunner>();
-        runnerMock.SetupGet(m => m.CurrentConnection).Returns(_connectionMock.Object);
-
-        var cache = new RegistryCache(runnerMock.Object, new NullLogger<RegistryCache>());
-        await cache.InitializeAsync(CancellationToken.None);
+        var cache = new RegistryCache(new NullLogger<RegistryCache>());
+        await cache.InitializeAsync(_connectionMock.Object, CancellationToken.None);
 
         var haContextMock = new Mock<IHaContext> { CallBase = true };
         return new HaRegistry(haContextMock.Object, cache);
