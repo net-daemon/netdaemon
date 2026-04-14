@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageReference Include="NuGet.Frameworks" Version="7.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Protocol" Version="7.3.0" />
+    <PackageReference Include="NuGet.Protocol" Version="7.3.1" />
     <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
