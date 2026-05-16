@@ -18,9 +18,6 @@ public class EntityStateCacheTest
         // Arrange
         using var testSubject = new Subject<HassEvent>();
         var hassConnectionMock = new Mock<IHomeAssistantConnection>();
-        var haRunnerMock = new Mock<IHomeAssistantRunner>();
-
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(hassConnectionMock.Object);
 
         hassConnectionMock
             .Setup(m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassState>>
@@ -31,13 +28,13 @@ public class EntityStateCacheTest
             .Setup(n => n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testSubject);
 
-        using var cache = new EntityStateCache(haRunnerMock.Object);
+        using var cache = new EntityStateCache();
 
         var eventObserverMock = new Mock<IObserver<HassEvent>>();
         cache.AllEvents.Subscribe(eventObserverMock.Object);
 
         // ACT 1: after initialization of the cache it should show the values retrieved from Hass
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync(hassConnectionMock.Object, CancellationToken.None);
 
         cache.GetState(entityId)!.State.Should().Be("InitialState", "The initial value should be available");
 
@@ -85,9 +82,6 @@ public class EntityStateCacheTest
         // Arrange
         using var testSubject = new Subject<HassEvent>();
         var hassConnectionMock = new Mock<IHomeAssistantConnection>();
-        var haRunnerMock = new Mock<IHomeAssistantRunner>();
-
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(hassConnectionMock.Object);
 
         hassConnectionMock
             .Setup(m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassState>>
@@ -103,13 +97,13 @@ public class EntityStateCacheTest
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testSubject);
 
-        using var cache = new EntityStateCache(haRunnerMock.Object);
+        using var cache = new EntityStateCache();
 
         var stateChangeObserverMock = new Mock<IObserver<HassEvent>>();
         cache.AllEvents.Subscribe(stateChangeObserverMock.Object);
 
         // ACT 1: after initialization of the cache it should show the values retieved from Hass
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync(hassConnectionMock.Object, CancellationToken.None);
 
         // initial value for sensor.sensor1 shoul be visible right away
         cache.GetState("sensor.sensor1")!.AttributesJson.GetValueOrDefault().GetProperty("brightness").GetInt32().Should().Be(100);
