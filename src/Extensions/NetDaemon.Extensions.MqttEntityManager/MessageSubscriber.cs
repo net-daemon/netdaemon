@@ -1,14 +1,10 @@
 ﻿#region
 
 using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
-using MQTTnet.Client;
-using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 #endregion
 
@@ -46,15 +42,11 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     {
         try
         {
-            var mqttClient = await _assuredMqttConnection.GetClientAsync();
-            await EnsureSubscriptionAsync(mqttClient);
+            await EnsureSubscriptionAsync();
 
-            var topicFilters = new Collection<MqttTopicFilter>
-            {
-                new MqttTopicFilterBuilder().WithTopic(topic).Build()
-            };
+            var topicFilter = new MqttTopicFilterBuilder().WithTopic(topic).Build();
 
-            await mqttClient.SubscribeAsync(topicFilters);
+            await _assuredMqttConnection.SubscribeAsync(topicFilter);
             return _subscribers.GetOrAdd(topic, new Lazy<Subject<string>>()).Value;
         }
         catch (Exception e)
@@ -67,8 +59,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <summary>
     /// If we are not already subscribed to receive messages, set up the handler
     /// </summary>
-    /// <param name="mqttClient"></param>
-    private async Task EnsureSubscriptionAsync(IManagedMqttClient mqttClient)
+    private async Task EnsureSubscriptionAsync()
     {
         await _subscriptionSetupLock.WaitAsync();
         try
@@ -76,7 +67,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             if (!_subscriptionIsSetup)
             {
                 _logger.LogInformation("Configuring message subscription");
-                mqttClient.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
+                _assuredMqttConnection.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
                 _subscriptionIsSetup = true;
             }
         }
@@ -100,7 +91,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     {
         try
         {
-            var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.PayloadSegment.Array ?? []);
+            var payload = msg.ApplicationMessage.ConvertPayloadToString();
             var topic = msg.ApplicationMessage.Topic;
             _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
 

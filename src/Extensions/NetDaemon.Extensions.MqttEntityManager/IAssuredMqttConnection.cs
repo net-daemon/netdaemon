@@ -1,14 +1,25 @@
-﻿using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
+using MQTTnet.Packets;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
-/// Wrapper to assure an MQTT connection
+/// Wrapper to assure an MQTT connection.
 /// </summary>
 internal interface IAssuredMqttConnection
 {
     /// <summary>
-    /// Ensures that the MQTT client is available
+    /// Raised when an MQTT application message is received.
     /// </summary>
-    Task<IManagedMqttClient> GetClientAsync();
+    event Func<MqttApplicationMessageReceivedEventArgs, Task>? ApplicationMessageReceivedAsync;
+
+    /// <summary>
+    /// Queue a message to publish to MQTT.
+    /// </summary>
+    Task PublishAsync(MqttApplicationMessage message);
+
+    /// <summary>
+    /// Subscribe to a topic, retaining the subscription across reconnects.
+    /// </summary>
+    Task SubscribeAsync(MqttTopicFilter topicFilter);
 }
