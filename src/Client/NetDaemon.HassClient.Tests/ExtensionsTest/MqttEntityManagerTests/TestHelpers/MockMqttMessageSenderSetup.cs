@@ -1,78 +1,71 @@
-﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
+using MQTTnet.Packets;
 using NetDaemon.Extensions.MqttEntityManager;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
 /// <summary>
-/// These are helpers that set up mock mqtt factories and connection, and allow a message to be sent through
-/// the mock client and capture the message that would have been published
+/// Test helper that captures MQTT messages sent by the entity manager.
 /// </summary>
 internal sealed class MockMqttMessageSenderSetup
 {
-    public AssuredMqttConnection Connection { get; private set; } = null!;
-    public Mock<IManagedMqttClient> MqttClient { get; private set; } = null!;
-    public Mock<IMqttClientOptionsFactory> MqttClientOptionsFactory { get; private set; } = null!;
-
-    public MqttFactoryWrapper MqttFactory { get; private set; } = null!;
+    public FakeAssuredMqttConnection Connection { get; } = new();
     public MessageSender MessageSender { get; private set; } = null!;
-    public MqttApplicationMessage LastPublishedMessage { get; set; } = null!;
+    public MqttApplicationMessage LastPublishedMessage => Connection.LastPublishedMessage;
 
     public MockMqttMessageSenderSetup()
     {
-        SetupMockMqtt();
         SetupMessageSender();
-        SetupMessageReceiver();
-    }
-
-    // ReSharper disable once MemberCanBePrivate.Global
-    public void SetupMessageReceiver()
-    {
-        // Ensure that when the MQTT Client is called its published message is saved
-        MqttClient.Setup(m => m.EnqueueAsync(It.IsAny<MqttApplicationMessage>()))
-            .Callback<MqttApplicationMessage>(message =>
-            {
-                LastPublishedMessage = message;
-            });
-    }
-
-    /// <summary>
-    /// Get a mocked MQTT client, factor and connection
-    /// </summary>
-    /// <returns></returns>
-    private void SetupMockMqtt()
-    {
-        var mqttConfiguration = new MqttConfiguration
-        {
-            Host = "localhost",
-            UserName = "id"
-        };
-
-        var options = new Mock<IOptions<MqttConfiguration>>();
-
-        options.Setup(o => o.Value)
-            .Returns(() => mqttConfiguration);
-
-        MqttClient = new Mock<IManagedMqttClient>();
-        MqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
-        MqttFactory = new MqttFactoryWrapper(MqttClient.Object);
-
-        MqttClientOptionsFactory
-            .Setup(o => o.CreateClientOptions(mqttConfiguration))
-            .Returns(new ManagedMqttClientOptions());
-
-        Connection = new AssuredMqttConnection(
-            new Mock<ILogger<AssuredMqttConnection>>().Object,
-            MqttClientOptionsFactory.Object,
-            MqttFactory,
-            options.Object);
     }
 
     private void SetupMessageSender()
     {
         var logger = new Mock<ILogger<MessageSender>>().Object;
         MessageSender = new MessageSender(logger, Connection);
+    }
+}
 
+internal sealed class FakeAssuredMqttConnection : IAssuredMqttConnection
+{
+    private readonly List<MqttTopicFilter> _subscriptions = [];
+
+    public event Func<MqttApplicationMessageReceivedEventArgs, Task>? ApplicationMessageReceivedAsync;
+
+    public IReadOnlyList<MqttTopicFilter> Subscriptions => _subscriptions;
+
+    public MqttApplicationMessage LastPublishedMessage { get; private set; } = null!;
+
+    public Task PublishAsync(MqttApplicationMessage message)
+    {
+        LastPublishedMessage = message;
+        return Task.CompletedTask;
+    }
+
+    public Task SubscribeAsync(MqttTopicFilter topicFilter)
+    {
+        _subscriptions.Add(topicFilter);
+        return Task.CompletedTask;
+    }
+
+    public Task ReceiveAsync(string topic, string payload)
+    {
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic(topic)
+            .WithPayload(Encoding.UTF8.GetBytes(payload))
+            .Build();
+
+        var publishPacket = new MqttPublishPacket
+        {
+            Topic = topic,
+            PayloadSegment = new ArraySegment<byte>(Encoding.UTF8.GetBytes(payload))
+        };
+
+        var eventArgs = new MqttApplicationMessageReceivedEventArgs(
+            "test",
+            message,
+            publishPacket,
+            (_, _) => Task.CompletedTask);
+
+        return ApplicationMessageReceivedAsync?.Invoke(eventArgs) ?? Task.CompletedTask;
     }
 }

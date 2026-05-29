@@ -1,20 +1,18 @@
-﻿using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
 /// <summary>
-/// MqttNet removed the IMqttFactory interface at v4 which breaks our DI
-/// So this is a factory for the MqttFactory to satisfy our use case
+/// Factory wrapper for MQTTnet's client factory.
 /// </summary>
 internal class MqttFactoryFactory : IMqttFactory
 {
     /// <summary>
-    /// Create a Managed Mqtt Client
+    /// Create an MQTT client.
     /// </summary>
     /// <returns></returns>
-    public IManagedMqttClient CreateManagedMqttClient()
+    public IMqttClient CreateMqttClient()
     {
-        return new MqttFactory().CreateManagedMqttClient();
+        return new MqttClientFactory().CreateMqttClient();
     }
 }

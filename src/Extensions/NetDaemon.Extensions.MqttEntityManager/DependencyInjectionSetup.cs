@@ -2,8 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
-
 #endregion
 
 namespace NetDaemon.Extensions.MqttEntityManager;
@@ -33,7 +31,6 @@ public static class DependencyInjectionSetup
     {
         services.AddSingleton<IMqttFactory, MqttFactoryFactory>();
         services.AddSingleton<IMqttClientOptionsFactory, MqttClientOptionsFactory>();
-        services.AddSingleton<IMqttFactoryWrapper, MqttFactoryWrapper>();
         services.AddSingleton<IMqttEntityManager, MqttEntityManager>();
         services.AddSingleton<IAssuredMqttConnection, AssuredMqttConnection>();
         services.AddSingleton<IMessageSender, MessageSender>();

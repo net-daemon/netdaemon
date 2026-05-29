@@ -2,9 +2,9 @@
 
 using Microsoft.Extensions.Logging;
 using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
+using System.Text;
 
 #endregion
 
@@ -38,16 +38,13 @@ internal class MessageSender : IMessageSender
     /// <param name="qos"></param>
     public async Task SendMessageAsync(string topic, string payload, bool retain, MqttQualityOfServiceLevel qos)
     {
-        var mqttClient = await _assuredMqttConnection.GetClientAsync();
-
-        await PublishMessage(mqttClient, topic, payload, retain, qos);
+        await PublishMessage(topic, payload, retain, qos);
     }
 
-    private async Task PublishMessage(IManagedMqttClient mqttClient, string topic, string payload, bool retain,
-        MqttQualityOfServiceLevel qos)
+    private async Task PublishMessage(string topic, string payload, bool retain, MqttQualityOfServiceLevel qos)
     {
         var message = new MqttApplicationMessageBuilder().WithTopic(topic)
-            .WithPayload(payload)
+            .WithPayload(Encoding.UTF8.GetBytes(payload))
             .WithRetainFlag(retain)
             .WithQualityOfServiceLevel(qos)
             .Build();
@@ -56,7 +53,7 @@ internal class MessageSender : IMessageSender
 
         try
         {
-            await mqttClient.EnqueueAsync(message).ConfigureAwait(false);
+            await _assuredMqttConnection.PublishAsync(message).ConfigureAwait(false);
         }
         catch (Exception e)
         {
