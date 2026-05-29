@@ -9,7 +9,7 @@ public interface IMqttClientOptionsFactory
 {
     /// <summary>
     /// Creates the client options for MQTT connection from the supplied configuration.
-    /// /// </summary>
+    /// </summary>
     /// <param name="mqttConfig">The MQTT configuration.</param>
     /// <returns>The MQTT client options.</returns>
     MqttClientOptions CreateClientOptions(MqttConfiguration mqttConfig);

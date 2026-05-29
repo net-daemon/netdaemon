@@ -14,8 +14,8 @@ public static class DependencyInjectionSetup
     /// <summary>
     /// Add support for managing entities via MQTT
     /// </summary>
-    /// <param name="hostBuilder"></param>
-    /// <returns></returns>
+    /// <param name="hostBuilder">The host builder.</param>
+    /// <returns>The configured host builder.</returns>
     public static IHostBuilder UseNetDaemonMqttEntityManagement(this IHostBuilder hostBuilder)
     {
         return hostBuilder.ConfigureServices((_, services) =>
@@ -27,6 +27,8 @@ public static class DependencyInjectionSetup
     /// <summary>
     /// Add support for managing entities via MQTT
     /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The configured service collection.</returns>
     public static IServiceCollection AddNetDaemonMqttEntityManagement(this IServiceCollection services)
     {
         services.AddSingleton<IMqttFactory, MqttFactoryFactory>();

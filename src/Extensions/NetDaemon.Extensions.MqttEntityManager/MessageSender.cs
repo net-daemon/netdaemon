@@ -21,21 +21,15 @@ internal class MessageSender : IMessageSender
     /// <summary>
     ///     Manage connections and message publishing to MQTT
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="assuredMqttConnection"></param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="assuredMqttConnection">The assured MQTT connection.</param>
     public MessageSender(ILogger<MessageSender> logger, IAssuredMqttConnection assuredMqttConnection)
     {
         _logger = logger;
         _assuredMqttConnection = assuredMqttConnection;
     }
 
-    /// <summary>
-    ///     Publish a message to the given topic
-    /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="payload">Json structure of payload</param>
-    /// <param name="retain"></param>
-    /// <param name="qos"></param>
+    /// <inheritdoc />
     public async Task SendMessageAsync(string topic, string payload, bool retain, MqttQualityOfServiceLevel qos)
     {
         await PublishMessage(topic, payload, retain, qos);

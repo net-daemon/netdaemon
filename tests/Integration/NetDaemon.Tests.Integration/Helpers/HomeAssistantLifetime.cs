@@ -9,6 +9,9 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;
 
+/// <summary>
+/// Manages the shared Home Assistant and MQTT broker containers for integration tests.
+/// </summary>
 public class HomeAssistantLifetime : IAsyncLifetime
 {
     private const int MqttContainerPort = 1883;
@@ -25,6 +28,9 @@ public class HomeAssistantLifetime : IAsyncLifetime
     private readonly IContainer _mqttBroker;
     private readonly HomeAssistantContainer _homeassistant;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HomeAssistantLifetime"/> class.
+    /// </summary>
     public HomeAssistantLifetime()
     {
         _mqttBroker = new ContainerBuilder()
@@ -45,11 +51,27 @@ public class HomeAssistantLifetime : IAsyncLifetime
             .Build();
     }
 
+    /// <summary>
+    /// Gets or sets the Home Assistant API access token.
+    /// </summary>
     public string? AccessToken { get; set; }
+
+    /// <summary>
+    /// Gets the mapped Home Assistant HTTP port.
+    /// </summary>
     public ushort Port => _homeassistant.Port;
+
+    /// <summary>
+    /// Gets the host name used by the test host to connect to the MQTT broker.
+    /// </summary>
     public string MqttHost { get; } = "localhost";
+
+    /// <summary>
+    /// Gets the mapped MQTT broker port.
+    /// </summary>
     public ushort MqttPort => _mqttBroker.GetMappedPublicPort(MqttContainerPort);
 
+    /// <inheritdoc />
     public async Task InitializeAsync()
     {
         await _network.CreateAsync();
@@ -62,6 +84,7 @@ public class HomeAssistantLifetime : IAsyncLifetime
         await _homeassistant.AddIntegrations(AccessToken, new MqttBrokerSettings(MqttContainerAlias, MqttContainerPort));
     }
 
+    /// <inheritdoc />
     public async Task DisposeAsync()
     {
         var (_, homeAssistantStderr) = await _homeassistant.GetLogsAsync();

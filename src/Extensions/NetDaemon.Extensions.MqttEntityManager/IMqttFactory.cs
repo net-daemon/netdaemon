@@ -10,6 +10,6 @@ internal interface IMqttFactory
     /// <summary>
     /// Create an MQTT client.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The MQTT client.</returns>
     IMqttClient CreateMqttClient();
 }

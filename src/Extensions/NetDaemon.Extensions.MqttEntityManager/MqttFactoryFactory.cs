@@ -7,10 +7,7 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </summary>
 internal class MqttFactoryFactory : IMqttFactory
 {
-    /// <summary>
-    /// Create an MQTT client.
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc />
     public IMqttClient CreateMqttClient()
     {
         return new MqttClientFactory().CreateMqttClient();

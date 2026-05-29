@@ -12,10 +12,10 @@ internal class EntityCreationPayloadHelper
     /// <summary>
     /// Merge an optional dynamic set of parameters with the concrete payload
     /// </summary>
-    /// <param name="concreteOptions"></param>
-    /// <param name="additionalOptions"></param>
-    /// <returns></returns>
-    /// <exception cref="JsonException"></exception>
+    /// <param name="concreteOptions">The base MQTT discovery payload.</param>
+    /// <param name="additionalOptions">Optional additional MQTT discovery configuration.</param>
+    /// <returns>The merged MQTT discovery payload JSON.</returns>
+    /// <exception cref="JsonException">Thrown when the base payload cannot be converted to JSON.</exception>
     internal static string Merge(EntityCreationPayload concreteOptions, object? additionalOptions)
     {
         var concreteJson = JsonSerializer.SerializeToNode(concreteOptions)?.AsObject()

@@ -23,14 +23,15 @@ internal class MqttEntityManager : IMqttEntityManager
     private readonly IMessageSender _messageSender;
     private readonly IMessageSubscriber _messageSubscriber;
 
+    /// <inheritdoc />
     public MqttQualityOfServiceLevel QualityOfServiceLevel { get; set; } = MqttQualityOfServiceLevel.AtMostOnce;
 
     /// <summary>
     ///     Manage entities via MQTT
     /// </summary>
-    /// <param name="messageSender"></param>
-    /// <param name="messageSubscriber"></param>
-    /// <param name="config"></param>
+    /// <param name="messageSender">The MQTT message sender.</param>
+    /// <param name="messageSubscriber">The MQTT message subscriber.</param>
+    /// <param name="config">The MQTT configuration options.</param>
     public MqttEntityManager(IMessageSender messageSender, IMessageSubscriber messageSubscriber, IOptions<MqttConfiguration> config)
     {
         _messageSender = messageSender;
@@ -38,12 +39,7 @@ internal class MqttEntityManager : IMqttEntityManager
         _config = config.Value;
     }
 
-    /// <summary>
-    /// Create an entity in Home Assistant via MQTT
-    /// </summary>
-    /// <param name="entityId">Distinct identifier, in the format "domain.id", such as "sensor.kitchen_temp"</param>
-    /// <param name="options">Optional set of additional parameters</param>
-    /// <param name="additionalConfig"></param>
+    /// <inheritdoc />
     public async Task CreateAsync(string entityId, EntityCreationOptions? options = null,
         object? additionalConfig = null)
     {
@@ -57,10 +53,7 @@ internal class MqttEntityManager : IMqttEntityManager
             .ConfigureAwait(false);
     }
 
-    /// <summary>
-    ///     Remove an entity from Home Assistant
-    /// </summary>
-    /// <param name="entityId"></param>
+    /// <inheritdoc />
     public async Task RemoveAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
@@ -69,13 +62,7 @@ internal class MqttEntityManager : IMqttEntityManager
             .ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Set the state of an entity
-    /// </summary>
-    /// <param name="entityId"></param>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <inheritdoc />
     public async Task SetStateAsync(string entityId, string state)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
@@ -84,13 +71,7 @@ internal class MqttEntityManager : IMqttEntityManager
             .ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Set attributes on an entity
-    /// </summary>
-    /// <param name="entityId"></param>
-    /// <param name="attributes"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <inheritdoc />
     public async Task SetAttributesAsync(string entityId, object attributes)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
@@ -100,13 +81,7 @@ internal class MqttEntityManager : IMqttEntityManager
             .ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Set availability of the entity. If you specified "payload_available" and "payload_not_available" configuration
-    /// on creating the entity then the value should match one of these.
-    /// If not, then use "online" and "offline"
-    /// </summary>
-    /// <param name="entityId"></param>
-    /// <param name="availability"></param>
+    /// <inheritdoc />
     public async Task SetAvailabilityAsync(string entityId, string availability)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);
@@ -116,12 +91,7 @@ internal class MqttEntityManager : IMqttEntityManager
             .ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Prepare a subscription to command topics for the given entity
-    /// <para>Be sure to chain this request with .Subscribe(...)</para>
-    /// </summary>
-    /// <param name="entityId"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public async Task<IObservable<string>> PrepareCommandSubscriptionAsync(string entityId)
     {
         var (domain, identifier) = EntityIdParser.Extract(entityId);

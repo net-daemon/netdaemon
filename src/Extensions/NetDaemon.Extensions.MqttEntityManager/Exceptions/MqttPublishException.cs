@@ -8,15 +8,15 @@ public class MqttPublishException : Exception
     /// <summary>
     /// Failed to publish a message to MQTT
     /// </summary>
-    /// <param name="msg"></param>
+    /// <param name="msg">The exception message.</param>
     public MqttPublishException(string msg) : base(msg)
     {}
 
     /// <summary>
     /// Failed to publish a message to MQTT
     /// </summary>
-    /// <param name="msg"></param>
-    /// <param name="innerException"></param>
+    /// <param name="msg">The exception message.</param>
+    /// <param name="innerException">The inner exception.</param>
     public MqttPublishException(string msg, Exception innerException) : base(msg, innerException)
     {}
 
