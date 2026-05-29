@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetDaemon.AppModel;
+using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.Runtime;
 using Xunit;
 
@@ -36,13 +37,17 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
                 {
                     { "HomeAssistant:Port", _homeAssistantLifetime.Port.ToString(CultureInfo.InvariantCulture) },
                     { "HomeAssistant:Token", _homeAssistantLifetime.AccessToken },
-                    { "HomeAssistant:Host", "localhost" }
+                    { "HomeAssistant:Host", "localhost" },
+                    { "Mqtt:Host", _homeAssistantLifetime.MqttHost },
+                    { "Mqtt:Port", _homeAssistantLifetime.MqttPort.ToString(CultureInfo.InvariantCulture) },
+                    { "Mqtt:DiscoveryPrefix", "homeassistant" }
                 });
             })
             .ConfigureServices((_, services) =>
                 services
                     .AddAppsFromAssembly(Assembly.GetExecutingAssembly())
                     .AddNetDaemonStateManager()
+                    .AddNetDaemonMqttEntityManagement()
             ).Build();
 
         netDaemon.Start();
