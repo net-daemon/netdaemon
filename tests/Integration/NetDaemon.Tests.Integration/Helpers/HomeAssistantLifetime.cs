@@ -3,6 +3,7 @@ using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Extensions.Logging;
 using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
+using System.Net.Sockets;
 using System.Text;
 using Xunit;
 
@@ -53,6 +54,7 @@ public class HomeAssistantLifetime : IAsyncLifetime
     {
         await _network.CreateAsync();
         await _mqttBroker.StartAsync();
+        await WaitForMqttHostPortAsync();
         await _homeassistant.StartAsync();
 
         var authorizeResult = await _homeassistant.DoOnboarding();
@@ -72,5 +74,43 @@ public class HomeAssistantLifetime : IAsyncLifetime
         await _mqttBroker.DisposeAsync();
         await _network.DisposeAsync();
         _loggerFactory.Dispose();
+    }
+
+    private async Task WaitForMqttHostPortAsync()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var logger = _loggerFactory.CreateLogger<HomeAssistantLifetime>();
+
+        while (!timeout.IsCancellationRequested)
+        {
+            try
+            {
+                using var client = new TcpClient();
+                await client.ConnectAsync(MqttHost, MqttPort, timeout.Token);
+                return;
+            }
+            catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (SocketException)
+            {
+                await DelayNextMqttHostPortAttempt(timeout.Token);
+            }
+        }
+
+        logger.LogError("MQTT broker host endpoint {Host}:{Port} did not become ready within 30 seconds", MqttHost, MqttPort);
+        throw new TimeoutException($"MQTT broker host endpoint {MqttHost}:{MqttPort} did not become ready within 30 seconds.");
+    }
+
+    private static async Task DelayNextMqttHostPortAttempt(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
     }
 }
