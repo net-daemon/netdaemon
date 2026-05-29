@@ -12,8 +12,8 @@ internal static class JsonNodeExtensions
     /// For a given JsonObject, merge a second set of values, replacing any pre-existing properties in
     /// the target object
     /// </summary>
-    /// <param name="target"></param>
-    /// <param name="toMerge"></param>
+    /// <param name="target">The target JSON object.</param>
+    /// <param name="toMerge">The JSON object to merge into the target.</param>
     public static void AddRange(this JsonObject target, JsonObject? toMerge)
     {
         if (toMerge == null)

@@ -10,14 +10,24 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration.Helpers;
 
+/// <summary>
+/// Base class for integration tests that run against the shared Home Assistant container.
+/// </summary>
 [Collection("HomeAssistant collection")]
 public class NetDaemonIntegrationBase : IAsyncDisposable
 {
+    /// <summary>
+    /// Gets the scoped services for the running NetDaemon host.
+    /// </summary>
     public IServiceProvider Services => _scope.ServiceProvider;
     private readonly HomeAssistantLifetime _homeAssistantLifetime;
     private readonly IHost _netDaemon;
     private readonly AsyncServiceScope _scope;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NetDaemonIntegrationBase"/> class.
+    /// </summary>
+    /// <param name="homeAssistantLifetime">The shared Home Assistant test lifetime.</param>
     public NetDaemonIntegrationBase(HomeAssistantLifetime homeAssistantLifetime)
     {
         _homeAssistantLifetime = homeAssistantLifetime;
@@ -66,9 +76,9 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
     /// <summary>
     /// Runs the specified function without a synchronization context and restores the synchronization context afterwards.
     /// </summary>
-    /// <param name="func"></param>
+    /// <param name="func">The function to run.</param>
     /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <returns>The result of the function.</returns>
     private static T RunWithoutSynchronizationContext<T>(Func<T> func)
     {
         // Capture the current synchronization context so we can restore it later.
@@ -85,6 +95,7 @@ public class NetDaemonIntegrationBase : IAsyncDisposable
         }
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         await _scope.DisposeAsync();

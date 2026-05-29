@@ -9,9 +9,15 @@ using Xunit;
 
 namespace NetDaemon.Tests.Integration;
 
+/// <summary>
+/// Test app that exposes a switch through the MQTT entity manager.
+/// </summary>
 [NetDaemonApp]
 public sealed class MqttIntegrationSwitchApp : IAsyncInitializable, IDisposable
 {
+    /// <summary>
+    /// The Home Assistant entity id created by the MQTT integration test app.
+    /// </summary>
     public const string EntityId = "switch.netdaemon_mqtt_test_switch";
     private const string PayloadOn = "ON";
     private const string PayloadOff = "OFF";
@@ -19,11 +25,16 @@ public sealed class MqttIntegrationSwitchApp : IAsyncInitializable, IDisposable
     private readonly IMqttEntityManager _entityManager;
     private IDisposable? _commandSubscription;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MqttIntegrationSwitchApp"/> class.
+    /// </summary>
+    /// <param name="entityManager">The MQTT entity manager.</param>
     public MqttIntegrationSwitchApp(IMqttEntityManager entityManager)
     {
         _entityManager = entityManager;
     }
 
+    /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await _entityManager.CreateAsync(
@@ -40,6 +51,7 @@ public sealed class MqttIntegrationSwitchApp : IAsyncInitializable, IDisposable
         _commandSubscription = commands.Subscribe(command => _ = HandleCommandAsync(command));
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         _commandSubscription?.Dispose();
@@ -54,12 +66,22 @@ public sealed class MqttIntegrationSwitchApp : IAsyncInitializable, IDisposable
     }
 }
 
+/// <summary>
+/// Integration tests for MQTT-backed Home Assistant entities.
+/// </summary>
 public class MqttIntegrationTests : NetDaemonIntegrationBase
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MqttIntegrationTests"/> class.
+    /// </summary>
+    /// <param name="homeAssistantLifetime">The shared Home Assistant test lifetime.</param>
     public MqttIntegrationTests(HomeAssistantLifetime homeAssistantLifetime) : base(homeAssistantLifetime)
     {
     }
 
+    /// <summary>
+    /// Verifies that an MQTT switch can be turned on and off through Home Assistant.
+    /// </summary>
     [Fact]
     public async Task MqttSwitch_ShouldTurnOnAndOffThroughHomeAssistant()
     {

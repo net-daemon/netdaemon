@@ -26,18 +26,15 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <summary>
     ///     Managed subscriptions to topics within MQTT
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="assuredMqttConnection"></param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="assuredMqttConnection">The assured MQTT connection.</param>
     public MessageSubscriber(ILogger<MessageSubscriber> logger, IAssuredMqttConnection assuredMqttConnection)
     {
         _logger = logger;
         _assuredMqttConnection = assuredMqttConnection;
     }
 
-    /// <summary>
-    ///     Subscribe to the given topic
-    /// </summary>
-    /// <param name="topic"></param>
+    /// <inheritdoc />
     public async Task<IObservable<string>> SubscribeTopicAsync(string topic)
     {
         try
@@ -85,8 +82,8 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <summary>
     /// Message received from MQTT, so find the subscription (if any) and notify them
     /// </summary>
-    /// <param name="msg"></param>
-    /// <returns></returns>
+    /// <param name="msg">The received MQTT application message.</param>
+    /// <returns>A completed task.</returns>
     private Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs msg)
     {
         try
@@ -110,6 +107,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (_isDisposed) return;
