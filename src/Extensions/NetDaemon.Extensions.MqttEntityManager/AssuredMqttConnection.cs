@@ -31,6 +31,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     private readonly Task _connectionTask;
     private readonly Task _publishTask;
     private bool _disposed;
+    private volatile bool _hasConnected;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssuredMqttConnection"/> class.
@@ -106,13 +107,14 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
                 if (connectResult.ResultCode != MqttClientConnectResultCode.Success)
                 {
-                    _logger.LogDebug("MQTT connection rejected: {ResultCode} {ReasonString}",
+                    _logger.LogTrace("MQTT connection rejected: {ResultCode} {ReasonString}",
                         connectResult.ResultCode, connectResult.ReasonString);
                     await Task.Delay(ReconnectDelay, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
                 _logger.LogTrace("MQTT client is ready");
+                _hasConnected = true;
                 SignalConnection();
                 await ResubscribeAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -122,7 +124,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "MQTT connection attempt failed");
+                _logger.LogTrace(ex, "MQTT connection attempt failed");
                 await DelayReconnectAsync(cancellationToken).ConfigureAwait(false);
             }
         }
@@ -177,12 +179,26 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
     {
-        _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));
+        if (_disposed || _stopping.IsCancellationRequested)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_hasConnected)
+        {
+            _logger.LogDebug("MQTT disconnected: {Reason}", BuildErrorResponse(arg));
+        }
+        else
+        {
+            _logger.LogTrace("MQTT disconnected before the initial connection completed: {Reason}", BuildErrorResponse(arg));
+        }
+
         return Task.CompletedTask;
     }
 
     private Task MqttClientOnConnectedAsync(MqttClientConnectedEventArgs arg)
     {
+        _hasConnected = true;
         _logger.LogDebug("MQTT connected: {ResultCode}", arg.ConnectResult.ResultCode);
         SignalConnection();
         return Task.CompletedTask;

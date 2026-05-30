@@ -2,8 +2,9 @@
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Extensions.Logging;
+using MQTTnet;
+using MQTTnet.Formatter;
 using NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
-using System.Net.Sockets;
 using System.Text;
 using Xunit;
 
@@ -39,7 +40,10 @@ public class HomeAssistantLifetime : IAsyncLifetime
             .WithNetworkAliases(MqttContainerAlias)
             .WithPortBinding(MqttContainerPort, true)
             .WithResourceMapping(Encoding.UTF8.GetBytes(MosquittoConfiguration), "/mosquitto/config/mosquitto.conf")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(MqttContainerPort))
+            .WithWaitStrategy(
+                Wait.ForUnixContainer()
+                    .UntilInternalTcpPortIsAvailable(MqttContainerPort)
+                    .UntilExternalTcpPortIsAvailable(MqttContainerPort))
             .WithLogger(_loggerFactory.CreateLogger("MqttBrokerContainer"))
             .Build();
 
@@ -76,7 +80,7 @@ public class HomeAssistantLifetime : IAsyncLifetime
     {
         await _network.CreateAsync();
         await _mqttBroker.StartAsync();
-        await WaitForMqttHostPortAsync();
+        await WaitForMqttBrokerAsync();
         await _homeassistant.StartAsync();
 
         var authorizeResult = await _homeassistant.DoOnboarding();
@@ -99,34 +103,49 @@ public class HomeAssistantLifetime : IAsyncLifetime
         _loggerFactory.Dispose();
     }
 
-    private async Task WaitForMqttHostPortAsync()
+    private async Task WaitForMqttBrokerAsync()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var logger = _loggerFactory.CreateLogger<HomeAssistantLifetime>();
+        Exception? lastException = null;
 
         while (!timeout.IsCancellationRequested)
         {
             try
             {
-                using var client = new TcpClient();
-                await client.ConnectAsync(MqttHost, MqttPort, timeout.Token);
-                return;
+                using var client = new MqttClientFactory().CreateMqttClient();
+                var clientOptions = new MqttClientOptionsBuilder()
+                    .WithTcpServer(MqttHost, MqttPort)
+                    .WithProtocolVersion(MqttProtocolVersion.V311)
+                    .WithClientId($"netdaemon-test-readiness-{Guid.NewGuid():N}")
+                    .Build();
+
+                var connectResult = await client.ConnectAsync(clientOptions, timeout.Token);
+                if (connectResult.ResultCode == MqttClientConnectResultCode.Success)
+                {
+                    await client.DisconnectAsync();
+                    return;
+                }
+
+                lastException = new InvalidOperationException($"MQTT broker rejected readiness connection: {connectResult.ResultCode} {connectResult.ReasonString}");
             }
             catch (OperationCanceledException) when (timeout.IsCancellationRequested)
             {
                 break;
             }
-            catch (SocketException)
+            catch (Exception ex)
             {
-                await DelayNextMqttHostPortAttempt(timeout.Token);
+                lastException = ex;
             }
+
+            await DelayNextMqttBrokerAttempt(timeout.Token);
         }
 
-        logger.LogError("MQTT broker host endpoint {Host}:{Port} did not become ready within 30 seconds", MqttHost, MqttPort);
-        throw new TimeoutException($"MQTT broker host endpoint {MqttHost}:{MqttPort} did not become ready within 30 seconds.");
+        logger.LogError(lastException, "MQTT broker endpoint {Host}:{Port} did not become ready within 30 seconds", MqttHost, MqttPort);
+        throw new TimeoutException($"MQTT broker endpoint {MqttHost}:{MqttPort} did not become ready within 30 seconds.", lastException);
     }
 
-    private static async Task DelayNextMqttHostPortAttempt(CancellationToken cancellationToken)
+    private static async Task DelayNextMqttBrokerAttempt(CancellationToken cancellationToken)
     {
         try
         {
