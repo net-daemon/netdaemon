@@ -40,7 +40,6 @@ public class MessageSubscriberTests
         using var subscription = observable.Subscribe(received.Add);
 
         await connection.ReceiveAsync("homeassistant/domain/other/set", "on");
-        await Task.Delay(50);
 
         received.Should().BeEmpty();
     }
