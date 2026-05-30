@@ -6,6 +6,9 @@ namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
 public class AssuredMqttConnectionTests
 {
+    private static readonly TimeSpan DefaultWaitTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan RetryWaitTimeout = TimeSpan.FromSeconds(10);
+
     [Fact]
     public async Task QueuesPublishUntilConnected()
     {
@@ -64,6 +67,34 @@ public class AssuredMqttConnectionTests
         publishedMessage.Should().Be(message);
     }
 
+    [Fact]
+    public async Task RetriesAfterTransientConnectionFailure()
+    {
+        var setup = new AssuredMqttConnectionSetup();
+        setup.FailConnectAttempts(1);
+        using var conn = setup.CreateConnection();
+
+        var topicFilter = new MqttTopicFilterBuilder()
+            .WithTopic("homeassistant/domain/switch/set")
+            .Build();
+
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic("homeassistant/domain/switch/state")
+            .WithPayload("ON")
+            .Build();
+
+        await conn.SubscribeAsync(topicFilter);
+        await conn.PublishAsync(message);
+        setup.CompleteConnect();
+
+        var subscribedTopic = await setup.WaitForSubscribedTopicAsync(RetryWaitTimeout);
+        var publishedMessage = await setup.WaitForPublishedMessageAsync(RetryWaitTimeout);
+
+        setup.ConnectAttempts.Should().BeGreaterThan(1);
+        subscribedTopic.Should().Be("homeassistant/domain/switch/set");
+        publishedMessage.Should().Be(message);
+    }
+
     private sealed class AssuredMqttConnectionSetup
     {
         private readonly TaskCompletionSource _connectCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -74,6 +105,8 @@ public class AssuredMqttConnectionTests
         private readonly Mock<IMqttFactory> _mqttFactory = new();
         private readonly Mock<IMqttClientOptionsFactory> _mqttClientOptionsFactory = new();
         private readonly Mock<IOptions<MqttConfiguration>> _mqttConfigurationOptions = new();
+        private int _connectAttempts;
+        private int _connectFailuresBeforeSuccess;
 
         public AssuredMqttConnectionSetup()
         {
@@ -102,6 +135,13 @@ public class AssuredMqttConnectionTests
             _mqttClient.Setup(c => c.ConnectAsync(clientOptions, It.IsAny<CancellationToken>()))
                 .Returns(async () =>
                 {
+                    Interlocked.Increment(ref _connectAttempts);
+                    if (Interlocked.CompareExchange(ref _connectFailuresBeforeSuccess, 0, 0) > 0)
+                    {
+                        Interlocked.Decrement(ref _connectFailuresBeforeSuccess);
+                        throw new InvalidOperationException("MQTT broker is not ready yet.");
+                    }
+
                     await _connectCompletion.Task;
                     IsConnected = true;
                     _connected.TrySetResult();
@@ -133,6 +173,8 @@ public class AssuredMqttConnectionTests
 
         public bool IsConnected { get; private set; }
 
+        public int ConnectAttempts => _connectAttempts;
+
         public List<MqttApplicationMessage> PublishedMessages { get; } = [];
 
         public List<string> SubscribedTopics { get; } = [];
@@ -151,19 +193,24 @@ public class AssuredMqttConnectionTests
             _connectCompletion.TrySetResult();
         }
 
-        public async Task WaitForConnectedAsync()
+        public void FailConnectAttempts(int count)
         {
-            await _connected.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            _connectFailuresBeforeSuccess = count;
         }
 
-        public async Task<MqttApplicationMessage> WaitForPublishedMessageAsync()
+        public async Task WaitForConnectedAsync(TimeSpan? timeout = null)
         {
-            return await _publishedMessage.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await _connected.Task.WaitAsync(timeout ?? DefaultWaitTimeout);
         }
 
-        public async Task<string> WaitForSubscribedTopicAsync()
+        public async Task<MqttApplicationMessage> WaitForPublishedMessageAsync(TimeSpan? timeout = null)
         {
-            return await _subscribedTopic.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            return await _publishedMessage.Task.WaitAsync(timeout ?? DefaultWaitTimeout);
+        }
+
+        public async Task<string> WaitForSubscribedTopicAsync(TimeSpan? timeout = null)
+        {
+            return await _subscribedTopic.Task.WaitAsync(timeout ?? DefaultWaitTimeout);
         }
     }
 }
