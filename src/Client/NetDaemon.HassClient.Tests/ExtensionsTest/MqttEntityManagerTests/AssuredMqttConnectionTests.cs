@@ -22,8 +22,8 @@ public class AssuredMqttConnectionTests
 
         setup.CompleteConnect();
 
-        await WaitUntil(() => setup.PublishedMessages.Count == 1);
-        setup.PublishedMessages[0].Should().Be(message);
+        var publishedMessage = await setup.WaitForPublishedMessageAsync();
+        publishedMessage.Should().Be(message);
     }
 
     [Fact]
@@ -41,8 +41,8 @@ public class AssuredMqttConnectionTests
 
         setup.CompleteConnect();
 
-        await WaitUntil(() => setup.SubscribedTopics.Count == 1);
-        setup.SubscribedTopics[0].Should().Be("homeassistant/domain/sensor/set");
+        var subscribedTopic = await setup.WaitForSubscribedTopicAsync();
+        subscribedTopic.Should().Be("homeassistant/domain/sensor/set");
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class AssuredMqttConnectionTests
         var setup = new AssuredMqttConnectionSetup();
         using var conn = setup.CreateConnection();
         setup.CompleteConnect();
-        await WaitUntil(() => setup.IsConnected);
+        await setup.WaitForConnectedAsync();
 
         var message = new MqttApplicationMessageBuilder()
             .WithTopic("topic")
@@ -60,24 +60,16 @@ public class AssuredMqttConnectionTests
 
         await conn.PublishAsync(message);
 
-        await WaitUntil(() => setup.PublishedMessages.Count == 1);
-        setup.PublishedMessages[0].Should().Be(message);
-    }
-
-    private static async Task WaitUntil(Func<bool> condition)
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-
-        while (!condition())
-        {
-            cts.Token.ThrowIfCancellationRequested();
-            await Task.Delay(10, cts.Token);
-        }
+        var publishedMessage = await setup.WaitForPublishedMessageAsync();
+        publishedMessage.Should().Be(message);
     }
 
     private sealed class AssuredMqttConnectionSetup
     {
         private readonly TaskCompletionSource _connectCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _connected = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<MqttApplicationMessage> _publishedMessage = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<string> _subscribedTopic = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly Mock<IMqttClient> _mqttClient = new();
         private readonly Mock<IMqttFactory> _mqttFactory = new();
         private readonly Mock<IMqttClientOptionsFactory> _mqttClientOptionsFactory = new();
@@ -112,6 +104,7 @@ public class AssuredMqttConnectionTests
                 {
                     await _connectCompletion.Task;
                     IsConnected = true;
+                    _connected.TrySetResult();
                     return new MqttClientConnectResult
                     {
                         ResultCode = MqttClientConnectResultCode.Success
@@ -119,13 +112,21 @@ public class AssuredMqttConnectionTests
                 });
 
             _mqttClient.Setup(c => c.PublishAsync(It.IsAny<MqttApplicationMessage>(), It.IsAny<CancellationToken>()))
-                .Callback<MqttApplicationMessage, CancellationToken>((message, _) => PublishedMessages.Add(message))
+                .Callback<MqttApplicationMessage, CancellationToken>((message, _) =>
+                {
+                    PublishedMessages.Add(message);
+                    _publishedMessage.TrySetResult(message);
+                })
                 .ReturnsAsync(() => new MqttClientPublishResult(null, MqttClientPublishReasonCode.Success, string.Empty, []));
 
             _mqttClient.Setup(c => c.SubscribeAsync(It.IsAny<MqttClientSubscribeOptions>(), It.IsAny<CancellationToken>()))
                 .Callback<MqttClientSubscribeOptions, CancellationToken>((options, _) =>
                 {
-                    SubscribedTopics.AddRange(options.TopicFilters.Select(topicFilter => topicFilter.Topic));
+                    foreach (var topic in options.TopicFilters.Select(topicFilter => topicFilter.Topic))
+                    {
+                        SubscribedTopics.Add(topic);
+                        _subscribedTopic.TrySetResult(topic);
+                    }
                 })
                 .ReturnsAsync(() => new MqttClientSubscribeResult(1, [], string.Empty, []));
         }
@@ -148,6 +149,21 @@ public class AssuredMqttConnectionTests
         public void CompleteConnect()
         {
             _connectCompletion.TrySetResult();
+        }
+
+        public async Task WaitForConnectedAsync()
+        {
+            await _connected.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        public async Task<MqttApplicationMessage> WaitForPublishedMessageAsync()
+        {
+            return await _publishedMessage.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        public async Task<string> WaitForSubscribedTopicAsync()
+        {
+            return await _subscribedTopic.Task.WaitAsync(TimeSpan.FromSeconds(5));
         }
     }
 }

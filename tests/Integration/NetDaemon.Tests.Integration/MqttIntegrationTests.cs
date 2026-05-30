@@ -5,6 +5,8 @@ using NetDaemon.Extensions.MqttEntityManager;
 using NetDaemon.HassModel;
 using NetDaemon.HassModel.Entities;
 using NetDaemon.Tests.Integration.Helpers;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using Xunit;
 
 namespace NetDaemon.Tests.Integration;
@@ -89,35 +91,48 @@ public class MqttIntegrationTests : NetDaemonIntegrationBase
 
         await WaitForStateAsync(haContext, MqttIntegrationSwitchApp.EntityId, "off");
 
+        var waitForOn = WaitForStateAsync(haContext, MqttIntegrationSwitchApp.EntityId, "on");
         haContext.CallService(
             "switch",
             "turn_on",
             ServiceTarget.FromEntities(MqttIntegrationSwitchApp.EntityId));
 
-        await WaitForStateAsync(haContext, MqttIntegrationSwitchApp.EntityId, "on");
+        await waitForOn;
 
+        var waitForOff = WaitForStateAsync(haContext, MqttIntegrationSwitchApp.EntityId, "off");
         haContext.CallService(
             "switch",
             "turn_off",
             ServiceTarget.FromEntities(MqttIntegrationSwitchApp.EntityId));
 
-        await WaitForStateAsync(haContext, MqttIntegrationSwitchApp.EntityId, "off");
+        await waitForOff;
     }
 
     private static async Task WaitForStateAsync(IHaContext haContext, string entityId, string expectedState)
     {
-        var timeout = DateTimeOffset.UtcNow.AddSeconds(30);
-
-        while (DateTimeOffset.UtcNow < timeout)
+        if (haContext.GetState(entityId)?.State == expectedState)
         {
-            if (haContext.GetState(entityId)?.State == expectedState)
-            {
-                return;
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
+            return;
         }
 
-        haContext.GetState(entityId)?.State.Should().Be(expectedState);
+        var waitForState = haContext.StateChanges()
+            .Where(change => change.Entity.EntityId == entityId && change.New?.State == expectedState)
+            .FirstAsync()
+            .ToTask();
+
+        if (haContext.GetState(entityId)?.State == expectedState)
+        {
+            return;
+        }
+
+        try
+        {
+            await waitForState.WaitAsync(TimeSpan.FromSeconds(30));
+        }
+        catch (TimeoutException)
+        {
+            haContext.GetState(entityId)?.State.Should().Be(expectedState,
+                $"entity {entityId} should reach state {expectedState} within 30 seconds");
+        }
     }
 }
