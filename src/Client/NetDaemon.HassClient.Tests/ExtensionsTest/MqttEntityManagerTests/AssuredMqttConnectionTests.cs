@@ -1,48 +1,216 @@
-using MQTTnet.Extensions.ManagedClient;
+using MQTTnet;
+using MQTTnet.Packets;
 using NetDaemon.Extensions.MqttEntityManager;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
 
 public class AssuredMqttConnectionTests
 {
+    private static readonly TimeSpan DefaultWaitTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan RetryWaitTimeout = TimeSpan.FromSeconds(10);
+
     [Fact]
-    public async Task CanGetClient()
+    public async Task QueuesPublishUntilConnected()
     {
-        var logger = new Mock<ILogger<AssuredMqttConnection>>();
+        var setup = new AssuredMqttConnectionSetup();
+        using var conn = setup.CreateConnection();
 
-        var mqttClient = new Mock<IManagedMqttClient>();
-        var mqttFactory = new MqttFactoryWrapper(mqttClient.Object);
-        var mqttClientOptionsFactory = new Mock<IMqttClientOptionsFactory>();
-        var mqttConfigurationOptions = new Mock<IOptions<MqttConfiguration>>();
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic("topic")
+            .WithPayload("payload")
+            .Build();
 
-        ConfigureMockOptions(mqttConfigurationOptions);
+        await conn.PublishAsync(message);
+        setup.PublishedMessages.Should().BeEmpty();
 
-        mqttClientOptionsFactory.Setup(f => f.CreateClientOptions(It.Is<MqttConfiguration>(o => o.Host == "localhost" && o.UserName == "id")))
-            .Returns(new ManagedMqttClientOptions())
-            .Verifiable(Times.Once);
+        setup.CompleteConnect();
 
-        var conn = new AssuredMqttConnection(logger.Object, mqttClientOptionsFactory.Object, mqttFactory, mqttConfigurationOptions.Object);
-        var returnedClient = await conn.GetClientAsync();
-
-        returnedClient.Should().Be(mqttClient.Object);
-
-        mqttClientOptionsFactory.VerifyAll();
-        mqttConfigurationOptions.VerifyAll();
+        var publishedMessage = await setup.WaitForPublishedMessageAsync();
+        publishedMessage.Should().Be(message);
     }
 
-    private static void ConfigureMockOptions(Mock<IOptions<MqttConfiguration>> mockOptions, Action<MqttConfiguration>? configuration = null)
+    [Fact]
+    public async Task ReplaysSubscriptionsAfterConnect()
     {
-        var mqttConfiguration = new MqttConfiguration
+        var setup = new AssuredMqttConnectionSetup();
+        using var conn = setup.CreateConnection();
+
+        var topicFilter = new MqttTopicFilterBuilder()
+            .WithTopic("homeassistant/domain/sensor/set")
+            .Build();
+
+        await conn.SubscribeAsync(topicFilter);
+        setup.SubscribedTopics.Should().BeEmpty();
+
+        setup.CompleteConnect();
+
+        var subscribedTopic = await setup.WaitForSubscribedTopicAsync();
+        subscribedTopic.Should().Be("homeassistant/domain/sensor/set");
+    }
+
+    [Fact]
+    public async Task PublishesImmediatelyWhenAlreadyConnected()
+    {
+        var setup = new AssuredMqttConnectionSetup();
+        using var conn = setup.CreateConnection();
+        setup.CompleteConnect();
+        await setup.WaitForConnectedAsync();
+
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic("topic")
+            .WithPayload("payload")
+            .Build();
+
+        await conn.PublishAsync(message);
+
+        var publishedMessage = await setup.WaitForPublishedMessageAsync();
+        publishedMessage.Should().Be(message);
+    }
+
+    [Fact]
+    public async Task RetriesAfterTransientConnectionFailure()
+    {
+        var setup = new AssuredMqttConnectionSetup();
+        setup.FailConnectAttempts(1);
+        using var conn = setup.CreateConnection();
+
+        var topicFilter = new MqttTopicFilterBuilder()
+            .WithTopic("homeassistant/domain/switch/set")
+            .Build();
+
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic("homeassistant/domain/switch/state")
+            .WithPayload("ON")
+            .Build();
+
+        await conn.SubscribeAsync(topicFilter);
+        await conn.PublishAsync(message);
+        setup.CompleteConnect();
+
+        var subscribedTopic = await setup.WaitForSubscribedTopicAsync(RetryWaitTimeout);
+        var publishedMessage = await setup.WaitForPublishedMessageAsync(RetryWaitTimeout);
+
+        setup.ConnectAttempts.Should().BeGreaterThan(1);
+        subscribedTopic.Should().Be("homeassistant/domain/switch/set");
+        publishedMessage.Should().Be(message);
+    }
+
+    private sealed class AssuredMqttConnectionSetup
+    {
+        private readonly TaskCompletionSource _connectCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _connected = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<MqttApplicationMessage> _publishedMessage = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<string> _subscribedTopic = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly Mock<IMqttClient> _mqttClient = new();
+        private readonly Mock<IMqttFactory> _mqttFactory = new();
+        private readonly Mock<IMqttClientOptionsFactory> _mqttClientOptionsFactory = new();
+        private readonly Mock<IOptions<MqttConfiguration>> _mqttConfigurationOptions = new();
+        private int _connectAttempts;
+        private int _connectFailuresBeforeSuccess;
+
+        public AssuredMqttConnectionSetup()
         {
-            Host = "localhost",
-            UserName = "id"
-        };
+            var mqttConfiguration = new MqttConfiguration
+            {
+                Host = "localhost",
+                UserName = "id"
+            };
 
-        configuration?.Invoke(mqttConfiguration);
+            var clientOptions = new MqttClientOptionsBuilder()
+                .WithTcpServer(mqttConfiguration.Host, mqttConfiguration.Port)
+                .Build();
 
-        mockOptions.SetupGet(o => o.Value)
-            .Returns(() => mqttConfiguration)
-            .Verifiable(Times.Once);
+            _mqttConfigurationOptions.SetupGet(o => o.Value)
+                .Returns(mqttConfiguration);
+
+            _mqttClientOptionsFactory.Setup(f => f.CreateClientOptions(mqttConfiguration))
+                .Returns(clientOptions);
+
+            _mqttFactory.Setup(f => f.CreateMqttClient())
+                .Returns(_mqttClient.Object);
+
+            _mqttClient.SetupGet(c => c.IsConnected)
+                .Returns(() => IsConnected);
+
+            _mqttClient.Setup(c => c.ConnectAsync(clientOptions, It.IsAny<CancellationToken>()))
+                .Returns(async () =>
+                {
+                    Interlocked.Increment(ref _connectAttempts);
+                    if (Interlocked.CompareExchange(ref _connectFailuresBeforeSuccess, 0, 0) > 0)
+                    {
+                        Interlocked.Decrement(ref _connectFailuresBeforeSuccess);
+                        throw new InvalidOperationException("MQTT broker is not ready yet.");
+                    }
+
+                    await _connectCompletion.Task;
+                    IsConnected = true;
+                    _connected.TrySetResult();
+                    return new MqttClientConnectResult
+                    {
+                        ResultCode = MqttClientConnectResultCode.Success
+                    };
+                });
+
+            _mqttClient.Setup(c => c.PublishAsync(It.IsAny<MqttApplicationMessage>(), It.IsAny<CancellationToken>()))
+                .Callback<MqttApplicationMessage, CancellationToken>((message, _) =>
+                {
+                    PublishedMessages.Add(message);
+                    _publishedMessage.TrySetResult(message);
+                })
+                .ReturnsAsync(() => new MqttClientPublishResult(null, MqttClientPublishReasonCode.Success, string.Empty, []));
+
+            _mqttClient.Setup(c => c.SubscribeAsync(It.IsAny<MqttClientSubscribeOptions>(), It.IsAny<CancellationToken>()))
+                .Callback<MqttClientSubscribeOptions, CancellationToken>((options, _) =>
+                {
+                    foreach (var topic in options.TopicFilters.Select(topicFilter => topicFilter.Topic))
+                    {
+                        SubscribedTopics.Add(topic);
+                        _subscribedTopic.TrySetResult(topic);
+                    }
+                })
+                .ReturnsAsync(() => new MqttClientSubscribeResult(1, [], string.Empty, []));
+        }
+
+        public bool IsConnected { get; private set; }
+
+        public int ConnectAttempts => _connectAttempts;
+
+        public List<MqttApplicationMessage> PublishedMessages { get; } = [];
+
+        public List<string> SubscribedTopics { get; } = [];
+
+        public AssuredMqttConnection CreateConnection()
+        {
+            return new AssuredMqttConnection(
+                new Mock<ILogger<AssuredMqttConnection>>().Object,
+                _mqttClientOptionsFactory.Object,
+                _mqttFactory.Object,
+                _mqttConfigurationOptions.Object);
+        }
+
+        public void CompleteConnect()
+        {
+            _connectCompletion.TrySetResult();
+        }
+
+        public void FailConnectAttempts(int count)
+        {
+            _connectFailuresBeforeSuccess = count;
+        }
+
+        public async Task WaitForConnectedAsync(TimeSpan? timeout = null)
+        {
+            await _connected.Task.WaitAsync(timeout ?? DefaultWaitTimeout);
+        }
+
+        public async Task<MqttApplicationMessage> WaitForPublishedMessageAsync(TimeSpan? timeout = null)
+        {
+            return await _publishedMessage.Task.WaitAsync(timeout ?? DefaultWaitTimeout);
+        }
+
+        public async Task<string> WaitForSubscribedTopicAsync(TimeSpan? timeout = null)
+        {
+            return await _subscribedTopic.Task.WaitAsync(timeout ?? DefaultWaitTimeout);
+        }
     }
 }

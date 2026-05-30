@@ -6,22 +6,41 @@ using DotNet.Testcontainers.Containers;
 
 namespace NetDaemon.Tests.Integration.Helpers.HomeAssistantTestContainer;
 
+/// <summary>
+/// Testcontainers container wrapper for Home Assistant integration tests.
+/// </summary>
 public class HomeAssistantContainer : DockerContainer
 {
     private readonly HomeAssistantConfiguration _configuration;
+
+    /// <summary>
+    /// Gets the mapped Home Assistant HTTP port.
+    /// </summary>
     public ushort Port => GetMappedPublicPort(8123);
 
     private HttpClient? _client;
+
+    /// <summary>
+    /// Gets the HTTP client configured for the Home Assistant container.
+    /// </summary>
     public HttpClient Client => _client ??= new HttpClient
     {
         BaseAddress = new Uri($"http://localhost:{Port}")
     };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HomeAssistantContainer"/> class.
+    /// </summary>
+    /// <param name="configuration">The Home Assistant container configuration.</param>
     public HomeAssistantContainer(HomeAssistantConfiguration configuration) : base(configuration)
     {
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Completes Home Assistant onboarding for the test user.
+    /// </summary>
+    /// <returns>The Home Assistant authorization result.</returns>
     public async Task<HomeAssistantAuthorizeResult> DoOnboarding()
     {
         var onboardingResult = await Client.PostAsync("/api/onboarding/users", JsonContent.Create(new
@@ -37,10 +56,16 @@ public class HomeAssistantContainer : DockerContainer
 
         return (await onboardingResult.Content.ReadFromJsonAsync<HomeAssistantAuthorizeResult>())!;
     }
-    public async Task AddIntegrations(string token)
+    /// <summary>
+    /// Adds integrations required by the integration tests.
+    /// </summary>
+    /// <param name="token">The Home Assistant API access token.</param>
+    /// <param name="mqttBrokerSettings">The MQTT broker settings used by Home Assistant.</param>
+    public async Task AddIntegrations(string token, MqttBrokerSettings mqttBrokerSettings)
     {
         AddAuthorizationHeaders(token);
         await AddLocalCalendarIntegration();
+        await AddMqttIntegration(mqttBrokerSettings);
     }
 
     private void AddAuthorizationHeaders(string token)
@@ -69,6 +94,72 @@ public class HomeAssistantContainer : DockerContainer
         }
     }
 
+    private async Task AddMqttIntegration(MqttBrokerSettings mqttBrokerSettings)
+    {
+        var submitFlow = await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol: true);
+        var flowType = submitFlow.GetProperty("type").GetString();
+        if (flowType != "create_entry")
+        {
+            throw new InvalidOperationException($"Home Assistant MQTT integration setup failed: {submitFlow}");
+        }
+    }
+
+    private async Task<JsonElement> SubmitMqttIntegration(MqttBrokerSettings mqttBrokerSettings, bool includeProtocol)
+    {
+        var result = await Client.PostAsync("/api/config/config_entries/flow", JsonContent.Create(new
+        {
+            handler = "mqtt",
+            show_advanced_options = true
+        }));
+
+        await EnsureSuccessStatusCode(result, "starting MQTT config flow");
+        var startFlow = await result.Content.ReadFromJsonAsync<JsonElement>();
+        var flowId = startFlow.GetProperty("flow_id").GetString()
+                     ?? throw new InvalidOperationException("Home Assistant did not return an MQTT config flow id.");
+
+        var brokerSettings = new Dictionary<string, object>
+        {
+            ["broker"] = mqttBrokerSettings.Host,
+            ["port"] = mqttBrokerSettings.Port
+        };
+
+        if (includeProtocol)
+        {
+            brokerSettings["protocol"] = "3.1.1";
+        }
+
+        var submitResult = await Client.PostAsync($"/api/config/config_entries/flow/{flowId}", JsonContent.Create(brokerSettings));
+
+        if (submitResult.IsSuccessStatusCode)
+        {
+            return await submitResult.Content.ReadFromJsonAsync<JsonElement>();
+        }
+
+        var content = await submitResult.Content.ReadAsStringAsync();
+        if (includeProtocol && content.Contains("data['protocol']", StringComparison.Ordinal))
+        {
+            return await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol: false);
+        }
+
+        throw new HttpRequestException($"Home Assistant returned {(int)submitResult.StatusCode} ({submitResult.StatusCode}) while submitting MQTT config flow: {content}");
+    }
+
+    private static async Task EnsureSuccessStatusCode(HttpResponseMessage response, string operation)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+        throw new HttpRequestException($"Home Assistant returned {(int)response.StatusCode} ({response.StatusCode}) while {operation}: {content}");
+    }
+
+    /// <summary>
+    /// Generates a Home Assistant API token from an authorization code.
+    /// </summary>
+    /// <param name="authCode">The Home Assistant authorization code.</param>
+    /// <returns>The generated Home Assistant token result.</returns>
     public async Task<HomeAssistantTokenResult> GenerateApiToken(string authCode)
     {
         var tokenResponse = await Client.PostAsync("/auth/token", new FormUrlEncodedContent(
@@ -84,12 +175,31 @@ public class HomeAssistantContainer : DockerContainer
     }
 }
 
+/// <summary>
+/// Authorization result returned by Home Assistant onboarding.
+/// </summary>
+/// <param name="AuthCode">The authorization code.</param>
 public record HomeAssistantAuthorizeResult(
     [property:JsonPropertyName("auth_code")][property:JsonRequired]string AuthCode);
 
+/// <summary>
+/// Token result returned by the Home Assistant token endpoint.
+/// </summary>
+/// <param name="AccessToken">The API access token.</param>
+/// <param name="TokenType">The token type.</param>
+/// <param name="RefreshToken">The refresh token.</param>
+/// <param name="ExpiresIn">The token lifetime in seconds.</param>
+/// <param name="HaAuthProvider">The Home Assistant authentication provider.</param>
 public record HomeAssistantTokenResult(
     [property:JsonPropertyName("access_token")][property:JsonRequired]string AccessToken,
     [property:JsonPropertyName("token_type")][property:JsonRequired]string TokenType,
     [property:JsonPropertyName("refresh_token")][property:JsonRequired]string RefreshToken,
     [property:JsonPropertyName("expires_in")][property:JsonRequired]int ExpiresIn,
     [property:JsonPropertyName("ha_auth_provider")][property:JsonRequired]string HaAuthProvider);
+
+/// <summary>
+/// MQTT broker settings used to configure Home Assistant.
+/// </summary>
+/// <param name="Host">The broker host name visible from Home Assistant.</param>
+/// <param name="Port">The broker port visible from Home Assistant.</param>
+public record MqttBrokerSettings(string Host, int Port);

@@ -2,9 +2,9 @@
 
 using Microsoft.Extensions.Logging;
 using MQTTnet;
-using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Protocol;
 using NetDaemon.Extensions.MqttEntityManager.Exceptions;
+using System.Text;
 
 #endregion
 
@@ -21,33 +21,24 @@ internal class MessageSender : IMessageSender
     /// <summary>
     ///     Manage connections and message publishing to MQTT
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="assuredMqttConnection"></param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="assuredMqttConnection">The assured MQTT connection.</param>
     public MessageSender(ILogger<MessageSender> logger, IAssuredMqttConnection assuredMqttConnection)
     {
         _logger = logger;
         _assuredMqttConnection = assuredMqttConnection;
     }
 
-    /// <summary>
-    ///     Publish a message to the given topic
-    /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="payload">Json structure of payload</param>
-    /// <param name="retain"></param>
-    /// <param name="qos"></param>
+    /// <inheritdoc />
     public async Task SendMessageAsync(string topic, string payload, bool retain, MqttQualityOfServiceLevel qos)
     {
-        var mqttClient = await _assuredMqttConnection.GetClientAsync();
-
-        await PublishMessage(mqttClient, topic, payload, retain, qos);
+        await PublishMessage(topic, payload, retain, qos);
     }
 
-    private async Task PublishMessage(IManagedMqttClient mqttClient, string topic, string payload, bool retain,
-        MqttQualityOfServiceLevel qos)
+    private async Task PublishMessage(string topic, string payload, bool retain, MqttQualityOfServiceLevel qos)
     {
         var message = new MqttApplicationMessageBuilder().WithTopic(topic)
-            .WithPayload(payload)
+            .WithPayload(Encoding.UTF8.GetBytes(payload))
             .WithRetainFlag(retain)
             .WithQualityOfServiceLevel(qos)
             .Build();
@@ -56,7 +47,7 @@ internal class MessageSender : IMessageSender
 
         try
         {
-            await mqttClient.EnqueueAsync(message).ConfigureAwait(false);
+            await _assuredMqttConnection.PublishAsync(message).ConfigureAwait(false);
         }
         catch (Exception e)
         {
