@@ -88,6 +88,68 @@ Benchmark reports are written under the benchmark project's build output directo
 - `QueuedObservableBenchmarks`: fan-out cost across 1, 10, and 50 app-scoped queues.
 - `StateChangeJsonBenchmarks`: lazy state-change cache path versus forced `HassState` deserialization.
 
+## Implemented Hot-Path Improvements
+
+Baseline commit: `d1eb2dd4 Add high-event performance benchmark baseline`.
+
+Post-change benchmark command:
+
+```bash
+dotnet run -c Release --project benchmarks/NetDaemon.PerformanceBenchmarks -- --filter '*'
+```
+
+Benchmark reports:
+
+- `benchmarks/NetDaemon.PerformanceBenchmarks/bin/Release/net10.0/BenchmarkDotNet.Artifacts/results/NetDaemon.PerformanceBenchmarks.Benchmarks.ResultDispatchBenchmarks-report-github.md`
+- `benchmarks/NetDaemon.PerformanceBenchmarks/bin/Release/net10.0/BenchmarkDotNet.Artifacts/results/NetDaemon.PerformanceBenchmarks.Benchmarks.WebSocketPipelineBenchmarks-report-github.md`
+- `benchmarks/NetDaemon.PerformanceBenchmarks/bin/Release/net10.0/BenchmarkDotNet.Artifacts/results/NetDaemon.PerformanceBenchmarks.Benchmarks.StateChangeJsonBenchmarks-report-github.md`
+- `benchmarks/NetDaemon.PerformanceBenchmarks/bin/Release/net10.0/BenchmarkDotNet.Artifacts/results/NetDaemon.PerformanceBenchmarks.Benchmarks.QueuedObservableBenchmarks-report-github.md`
+
+### Result Dispatch
+
+`HomeAssistantConnection` now tracks pending result waiters in an ID-indexed `ConcurrentDictionary<int, TaskCompletionSource<HassMessage>>`. The receive loop completes matching `result` messages directly and still publishes every raw `HassMessage` to `OnHassMessage`.
+
+| Pending commands | Baseline Rx dispatch | Implemented dictionary path | Mean improvement | Allocation improvement |
+|-----------------:|---------------------:|----------------------------:|-----------------:|-----------------------:|
+| 1 | 215.94 ns, 880 B | 44.92 ns, 352 B | 79% faster | 60% lower |
+| 10 | 2,081.51 ns, 6,424 B | 326.47 ns, 1,360 B | 84% faster | 79% lower |
+| 100 | 29,398.81 ns, 133,144 B | 3,282.14 ns, 12,688 B | 89% faster | 90% lower |
+| 1000 | 1,767,235.91 ns, 8,528,344 B | 27,993.05 ns, 126,976 B | 98% faster | 99% lower |
+
+Behavior covered by tests:
+
+- concurrent commands complete from matching result IDs when results arrive out of order
+- raw `result` messages are still published to `IHomeAssistantHassMessages.OnHassMessage`
+- send failures remove pending result state and do not break later commands
+- disposing the connection cancels pending result waiters
+
+### Websocket Receive
+
+`WebSocketClientTransportPipeline` now reads a complete websocket message into a byte buffer, checks whether the payload is a JSON object or array, and deserializes directly to `T` or `T[]`. This removes the previous `JsonElement` intermediate followed by a second typed deserialization.
+
+| Scenario | Baseline | Post-change | Result |
+|---------|---------:|------------:|-------:|
+| Single event read | 6,638.9 ns, 7.2 KB | 2,054.0 ns, 5,600 B | 69% faster, lower allocation |
+| 64 coalesced events | 306,653.5 ns, 259.98 KB | 111,851.9 ns, 291,785 B | 64% faster, about 10% more allocation |
+| Send service command | 548.0 ns, 1.07 KB | 605.0 ns, 646 B | effectively unchanged for this receive-side change |
+
+The coalesced-event receive path is the meaningful win here because it is the high-event ingest case. The allocation increase should be watched if this path is tuned further; the latency reduction is large enough to keep this implementation.
+
+### State-Change Benchmark Harness
+
+The initial baseline run failed `StateChangeJsonBenchmarks.ExtractEntityIdAndLazyNewState` because the benchmark stored a `JsonElement` after its owning document had gone out of scope. The benchmark now keeps the owning `JsonDocument` alive for the benchmark lifetime.
+
+Post-fix measurements:
+
+| Scenario | Mean | Allocated |
+|---------|-----:|----------:|
+| Extract entity id and lazy `new_state` element | 31.28 ns | 48 B |
+| Force deserialize `new_state` | 505.98 ns | 952 B |
+
+The fixed benchmark confirms the current lazy state-change path avoids most of the deserialization cost until an observer asks for typed state.
+
+These measurements are local-machine comparisons on this workstation. Treat them as change-direction evidence for this codebase, not as cross-machine absolute performance truth.
+
 ## Acceptance Criteria For Future Fixes
 
 - Maintain public API compatibility unless a diagnostic-only option is explicitly accepted.

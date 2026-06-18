@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistantHassMessages
@@ -13,6 +15,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
+    private readonly ConcurrentDictionary<int, TaskCompletionSource<HassMessage>> _pendingResults = new();
     private readonly Task _handleNewMessagesTask;
 
     private const int WaitForResultTimeout = 20000;
@@ -148,6 +151,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
         if (!_internalCancelSource.IsCancellationRequested)
             await _internalCancelSource.CancelAsync();
+        CancelPendingResults();
 
         // Gracefully wait for task or timeout
         await Task.WhenAny(
@@ -189,17 +193,31 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             // increasing the messageId and Sending the message
             command.Id = ++_messageId;
 
-            // We make a task that subscribe for the return result message
-            // this task will be returned and handled by caller
-            var resultEvent = _hassMessageSubject
-                .Where(n => n.Type == "result" && n.Id == command.Id)
-                .FirstAsync().ToTask(CancellationToken.None);
-            // We dont want to pass the incoming CancellationToken here because it will throw a TaskCanceledException
-            // when calling services from an Apps Dispose(Async) and hide possible actual exceptions
+            // Complete result waiters directly from the receive loop instead of creating
+            // one filtered Rx subscription per command.
+            var resultEvent = new TaskCompletionSource<HassMessage>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            if (!_pendingResults.TryAdd(command.Id, resultEvent))
+                throw new InvalidOperationException($"A command with id {command.Id} is already pending");
 
-            await _transportPipeline.SendMessageAsync(command, cancelToken);
+            try
+            {
+                await _transportPipeline.SendMessageAsync(command, cancelToken);
+            }
+            catch (OperationCanceledException)
+            {
+                if (_pendingResults.TryRemove(command.Id, out var pendingResult))
+                    pendingResult.TrySetCanceled(cancelToken);
+                throw;
+            }
+            catch (Exception e)
+            {
+                if (_pendingResults.TryRemove(command.Id, out var pendingResult))
+                    pendingResult.TrySetException(e);
+                throw;
+            }
 
-            return resultEvent;
+            return resultEvent.Task;
         }
         finally
         {
@@ -219,7 +237,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                 {
                     foreach (var obj in msg)
                     {
-                        _hassMessageSubject.OnNext(obj);
+                        HandleIncomingMessage(obj);
                     }
                 }
                 catch (Exception e)
@@ -235,9 +253,27 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         finally
         {
             _logger.LogTrace("Stop processing new messages");
+            CancelPendingResults();
             // make sure we always cancel any blocking operations
             if (!_internalCancelSource.IsCancellationRequested)
                 await _internalCancelSource.CancelAsync();
+        }
+    }
+
+    private void HandleIncomingMessage(HassMessage message)
+    {
+        if (message.Type == "result" && _pendingResults.TryRemove(message.Id, out var completionSource))
+            completionSource.TrySetResult(message);
+
+        _hassMessageSubject.OnNext(message);
+    }
+
+    private void CancelPendingResults()
+    {
+        foreach (var pendingResult in _pendingResults)
+        {
+            if (_pendingResults.TryRemove(pendingResult.Key, out var completionSource))
+                completionSource.TrySetCanceled();
         }
     }
 

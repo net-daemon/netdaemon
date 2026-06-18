@@ -1,21 +1,20 @@
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using NetDaemon.Client.HomeAssistant.Model;
-using NetDaemon.Client.Internal.HomeAssistant.Commands;
 using NetDaemon.PerformanceBenchmarks.Support;
 
 namespace NetDaemon.PerformanceBenchmarks.Benchmarks;
 
 [MemoryDiagnoser]
-public class StateChangeJsonBenchmarks
+public class StateChangeJsonBenchmarks : IDisposable
 {
+    private readonly JsonDocument _document;
     private readonly JsonElement _eventData;
 
     public StateChangeJsonBenchmarks()
     {
-        var message = JsonSerializer.Deserialize<HassMessage>(HassPayloadFactory.StateChangedEvent(1))
-            ?? throw new InvalidOperationException("Failed to create benchmark event");
-        _eventData = message.Event!.DataElement!.Value;
+        _document = JsonDocument.Parse(HassPayloadFactory.StateChangedEvent(1));
+        _eventData = _document.RootElement.GetProperty("event").GetProperty("data");
     }
 
     [Benchmark(Baseline = true)]
@@ -30,5 +29,17 @@ public class StateChangeJsonBenchmarks
     public HassState? ForceDeserializeNewState()
     {
         return _eventData.GetProperty("new_state").Deserialize<HassState>();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+            _document.Dispose();
     }
 }
