@@ -129,6 +129,55 @@ public class HomeAssistantConnectionTests
     }
 
     [Fact]
+    public async Task ResultMessageWithoutPendingCommandShouldStillBePublishedToRawSubscribers()
+    {
+        var pipeline = new TransportPipelineMock();
+
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+        var rawMessages = (homeAssistantConnection as IHomeAssistantHassMessages)!;
+        var rawResultTask = rawMessages.OnHassMessage
+            .Where(message => message.Type == "result")
+            .FirstAsync()
+            .ToTask();
+
+        pipeline.AddResponse(new HassMessage { Type = "result", Id = 123, Success = true });
+
+        var rawResult = await rawResultTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        rawResult.Id.Should().Be(123);
+    }
+
+    [Fact]
+    public async Task NonResultMessageShouldBypassPendingResultCompletionAndStillBePublished()
+    {
+        var pipeline = new TransportPipelineMock();
+        pipeline
+            .Setup(n => n.SendMessageAsync(It.IsAny<FakeCommand>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+        var rawMessages = (homeAssistantConnection as IHomeAssistantHassMessages)!;
+        var rawEventTask = rawMessages.OnHassMessage
+            .Where(message => message.Type == "event")
+            .FirstAsync()
+            .ToTask();
+
+        var command = new FakeCommand();
+        var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(command, CancellationToken.None);
+
+        pipeline.AddResponse(new HassMessage { Type = "event", Id = command.Id });
+        var rawEvent = await rawEventTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        rawEvent.Id.Should().Be(command.Id);
+        resultTask.IsCompleted.Should().BeFalse();
+
+        pipeline.AddResponse(new HassMessage { Type = "result", Id = command.Id, Success = true });
+        var result = await resultTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        result!.Id.Should().Be(command.Id);
+    }
+
+    [Fact]
     public async Task SendFailureShouldFaultResultWaiterWithoutBreakingLaterCommands()
     {
         var pipeline = new TransportPipelineMock();
@@ -156,6 +205,62 @@ public class HomeAssistantConnectionTests
         var result = await resultTask.WaitAsync(TimeSpan.FromSeconds(5));
 
         result!.Id.Should().Be(command.Id);
+    }
+
+    [Fact]
+    public async Task SendCancellationShouldCancelResultWaiterWithoutBreakingLaterCommands()
+    {
+        var pipeline = new TransportPipelineMock();
+        var firstSend = true;
+        using var cancelSource = new CancellationTokenSource();
+        pipeline
+            .Setup(n => n.SendMessageAsync(It.IsAny<FakeCommand>(), It.IsAny<CancellationToken>()))
+            .Returns<FakeCommand, CancellationToken>(async (_, _) =>
+            {
+                if (!firstSend)
+                    return;
+
+                firstSend = false;
+                await cancelSource.CancelAsync();
+                await Task.FromCanceled(cancelSource.Token);
+            });
+
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+
+        await Assert.ThrowsAsync<TaskCanceledException>(
+            () => homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(new FakeCommand(), cancelSource.Token));
+
+        var command = new FakeCommand();
+        var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(command, CancellationToken.None);
+        pipeline.AddResponse(new HassMessage { Type = "result", Id = command.Id, Success = true });
+
+        var result = await resultTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        result!.Id.Should().Be(command.Id);
+    }
+
+    [Fact]
+    public async Task FailedResultMessageShouldCompletePendingResultThenThrow()
+    {
+        var pipeline = new TransportPipelineMock();
+        pipeline
+            .Setup(n => n.SendMessageAsync(It.IsAny<FakeCommand>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+        var command = new FakeCommand { Type = "test_command" };
+        var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(command, CancellationToken.None);
+
+        pipeline.AddResponse(new HassMessage
+        {
+            Type = "result",
+            Id = command.Id,
+            Success = false,
+            Error = new HassError { Code = 42, Message = "Unable to do what you asked" }
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => resultTask.WaitAsync(TimeSpan.FromSeconds(5)));
     }
 
     [Fact]
