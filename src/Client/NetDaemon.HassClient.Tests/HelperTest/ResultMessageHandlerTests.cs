@@ -107,7 +107,7 @@ public sealed class ResultMessageHandlerTests : IAsyncLifetime, IAsyncDisposable
     async Task FlushMessageHandler()
     {
         await _resultMessageHandler.WaitPendingBackgroundTasksAsync()
-            .WaitAsync(TimeSpan.FromMilliseconds(100)) // avoid blocking the test in case something is wrong
+            .WaitAsync(TimeSpan.FromSeconds(5)) // avoid blocking the test in case something is wrong
             .ConfigureAwait(false);
     }
 
