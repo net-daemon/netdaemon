@@ -84,7 +84,7 @@ Benchmark reports are written under the benchmark project's build output directo
 ## Benchmark Coverage Added
 
 - `WebSocketPipelineBenchmarks`: single event, coalesced events, and send serialization.
-- `ResultDispatchBenchmarks`: current per-command Rx filtered subscriptions versus ID-indexed dictionary dispatch.
+- `ResultDispatchBenchmarks`: current per-command Rx filtered subscriptions versus ID-indexed `ConcurrentDictionary` dispatch, with both paths awaiting all completions.
 - `QueuedObservableBenchmarks`: fan-out cost across 1, 10, and 50 app-scoped queues.
 - `StateChangeJsonBenchmarks`: lazy state-change cache path versus forced `HassState` deserialization.
 
@@ -109,18 +109,28 @@ Benchmark reports:
 
 `HomeAssistantConnection` now tracks pending result waiters in an ID-indexed `ConcurrentDictionary<int, TaskCompletionSource<HassMessage>>`. The receive loop completes matching `result` messages directly and still publishes every raw `HassMessage` to `OnHassMessage`.
 
-| Pending commands | Baseline Rx dispatch | Implemented dictionary path | Mean improvement | Allocation improvement |
-|-----------------:|---------------------:|----------------------------:|-----------------:|-----------------------:|
-| 1 | 215.94 ns, 880 B | 44.92 ns, 352 B | 79% faster | 60% lower |
-| 10 | 2,081.51 ns, 6,424 B | 326.47 ns, 1,360 B | 84% faster | 79% lower |
-| 100 | 29,398.81 ns, 133,144 B | 3,282.14 ns, 12,688 B | 89% faster | 90% lower |
-| 1000 | 1,767,235.91 ns, 8,528,344 B | 27,993.05 ns, 126,976 B | 98% faster | 99% lower |
+The initial post-change benchmark used a regular `Dictionary` and did not await the completion tasks on the implemented path, so its precise 1/10/100/1000 pending-command percentages should not be reused. After review, the benchmark was corrected to use `ConcurrentDictionary` and to await all completions on both paths.
+
+Corrected local result-dispatch run:
+
+```bash
+dotnet benchmarks/NetDaemon.PerformanceBenchmarks/bin/Release/net10.0/NetDaemon.PerformanceBenchmarks.dll -i -f '*ResultDispatchBenchmarks*'
+```
+
+| Pending commands | Baseline Rx dispatch | Implemented concurrent dictionary path | Result |
+|-----------------:|---------------------:|---------------------------------------:|-------:|
+| 1 | 250.2 ns, 880 B | 485.2 ns, 1,800 B | slower for a single waiter |
+| 10 | 2,175.3 ns, 6,424 B | 929.4 ns, 3,312 B | 57% faster, 48% lower allocation |
+| 100 | 30,939.1 ns, 133,144 B | 7,566.0 ns, 24,880 B | 76% faster, 81% lower allocation |
+| 1000 | 1,819.0 us, 8,528,351 B | 80.2 us, 262,848 B | 96% faster, 97% lower allocation |
+
+The tradeoff is intentional: the concurrent dictionary path carries fixed overhead for one pending command, but avoids the per-command Rx subscription scan that dominates as pending command count grows.
 
 Behavior covered by tests:
 
 - concurrent commands complete from matching result IDs when results arrive out of order
 - raw `result` messages are still published to `IHomeAssistantHassMessages.OnHassMessage`
-- send failures remove pending result state and do not break later commands
+- send failures, result wait timeouts, and caller cancellation remove pending result state and do not break later commands
 - disposing the connection cancels pending result waiters
 
 ### Websocket Receive

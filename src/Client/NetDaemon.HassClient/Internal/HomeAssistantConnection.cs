@@ -12,13 +12,15 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly IWebSocketClientTransportPipeline _transportPipeline;
     private readonly IHomeAssistantApiManager _apiManager;
     private readonly ResultMessageHandler _resultMessageHandler;
+    private readonly TimeProvider _timeProvider;
+    private readonly TimeSpan _waitForResultTimeout;
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
     private readonly ConcurrentDictionary<int, TaskCompletionSource<HassMessage>> _pendingResults = new();
     private readonly Task _handleNewMessagesTask;
 
-    private const int WaitForResultTimeout = 20000;
+    private static readonly TimeSpan DefaultWaitForResultTimeout = TimeSpan.FromSeconds(20);
 
     private readonly SemaphoreSlim _messageIdSemaphore = new(1, 1);
     private int _messageId = 1;
@@ -32,17 +34,23 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     /// <param name="logger">A logger instance</param>
     /// <param name="pipeline">The pipeline to use for websocket communication</param>
     /// <param name="apiManager">The api manager</param>
+    /// <param name="timeProvider">The time provider used when waiting for command results</param>
+    /// <param name="waitForResultTimeout">The maximum time to wait for a command result</param>
     public HomeAssistantConnection(
         ILogger<IHomeAssistantConnection> logger,
         IWebSocketClientTransportPipeline pipeline,
-        IHomeAssistantApiManager apiManager
+        IHomeAssistantApiManager apiManager,
+        TimeProvider? timeProvider = null,
+        TimeSpan? waitForResultTimeout = null
     )
     {
         _transportPipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
         _apiManager = apiManager;
         _logger = logger;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _waitForResultTimeout = waitForResultTimeout ?? DefaultWaitForResultTimeout;
 
-        _resultMessageHandler = new ResultMessageHandler(_logger, TimeProvider.System);
+        _resultMessageHandler = new ResultMessageHandler(_logger);
 
         // We lazily cache same observable for all events. There are no reason we should use multiple subscriptions
         // to all events. If people wants that they can provide a "*" type and get the same thing
@@ -99,7 +107,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task SendCommandAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
         var returnMessageTask = await SendCommandAsyncInternal(command, cancelToken);
-        _resultMessageHandler.HandleResult(returnMessageTask, command);
+        _resultMessageHandler.HandleResult(
+            WaitForPendingResultAsync(command, returnMessageTask, _internalCancelSource.Token),
+            command);
     }
 
     public async Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken)
@@ -125,7 +135,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         where T : CommandMessage
     {
         var resultMessageTask = await SendCommandAsyncInternal(command, cancelToken);
-        var result = await resultMessageTask.WaitAsync(TimeSpan.FromMilliseconds(WaitForResultTimeout), cancelToken);
+        var result = await WaitForPendingResultAsync(command, resultMessageTask, cancelToken).ConfigureAwait(false);
 
         if (result.Success ?? false)
             return result;
@@ -204,16 +214,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             {
                 await _transportPipeline.SendMessageAsync(command, cancelToken);
             }
-            catch (OperationCanceledException)
+            catch (Exception)
             {
-                if (_pendingResults.TryRemove(command.Id, out var pendingResult))
-                    pendingResult.TrySetCanceled(cancelToken);
-                throw;
-            }
-            catch (Exception e)
-            {
-                if (_pendingResults.TryRemove(command.Id, out var pendingResult))
-                    pendingResult.TrySetException(e);
+                _pendingResults.TryRemove(command.Id, out _);
                 throw;
             }
 
@@ -260,12 +263,44 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         }
     }
 
+    private async Task<HassMessage> WaitForPendingResultAsync(CommandMessage command,
+        Task<HassMessage> resultMessageTask,
+        CancellationToken cancelToken)
+    {
+        try
+        {
+            return await resultMessageTask.WaitAsync(_waitForResultTimeout, _timeProvider, cancelToken)
+                .ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            CancelPendingResult(command.Id, CancellationToken.None);
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            CancelPendingResult(command.Id, cancelToken);
+            throw;
+        }
+    }
+
     private void HandleIncomingMessage(HassMessage message)
     {
         if (message.Type == "result" && _pendingResults.TryRemove(message.Id, out var completionSource))
             completionSource.TrySetResult(message);
 
         _hassMessageSubject.OnNext(message);
+    }
+
+    private void CancelPendingResult(int messageId, CancellationToken cancelToken = default)
+    {
+        if (!_pendingResults.TryRemove(messageId, out var completionSource))
+            return;
+
+        if (cancelToken.CanBeCanceled)
+            completionSource.TrySetCanceled(cancelToken);
+        else
+            completionSource.TrySetCanceled(CancellationToken.None);
     }
 
     private void CancelPendingResults()

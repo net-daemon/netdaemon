@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
@@ -41,17 +42,23 @@ public class ResultDispatchBenchmarks
     }
 
     [Benchmark]
-    public void DictionaryResultDispatch()
+    public async Task ConcurrentDictionaryResultDispatch()
     {
-        var pending = Enumerable.Range(1, PendingCommands)
-            .ToDictionary(static id => id, static _ => new TaskCompletionSource<HassMessage>(TaskCreationOptions.RunContinuationsAsynchronously));
+        var pending = new ConcurrentDictionary<int, TaskCompletionSource<HassMessage>>(
+            Enumerable.Range(1, PendingCommands).Select(static id =>
+                new KeyValuePair<int, TaskCompletionSource<HassMessage>>(
+                    id,
+                    new TaskCompletionSource<HassMessage>(TaskCreationOptions.RunContinuationsAsynchronously))));
+        var tasks = pending.Values.Select(static completionSource => completionSource.Task).ToArray();
 
         foreach (var result in _results)
         {
-            if (pending.Remove(result.Id, out var completionSource))
+            if (pending.TryRemove(result.Id, out var completionSource))
             {
                 completionSource.SetResult(result);
             }
         }
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 }

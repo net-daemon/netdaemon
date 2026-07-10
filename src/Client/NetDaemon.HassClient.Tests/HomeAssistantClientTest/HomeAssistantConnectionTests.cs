@@ -1,3 +1,6 @@
+using System.Reflection;
+using Microsoft.Extensions.Time.Testing;
+
 namespace NetDaemon.HassClient.Tests.HomeAssistantClientTest;
 
 public record FakeCommand : CommandMessage {}
@@ -9,12 +12,24 @@ public class HomeAssistantConnectionTests
         return CreateHomeAssistantConnection(new TransportPipelineMock());
     }
 
-    private static HomeAssistantConnection CreateHomeAssistantConnection(TransportPipelineMock pipeline)
+    private static HomeAssistantConnection CreateHomeAssistantConnection(TransportPipelineMock pipeline,
+        TimeProvider? timeProvider = null,
+        TimeSpan? waitForResultTimeout = null)
     {
         pipeline.Setup(n => n.WebSocketState).Returns(WebSocketState.Open);
         var apiManagerMock = new Mock<IHomeAssistantApiManager>();
         var loggerMock = new Mock<ILogger<IHomeAssistantConnection>>();
-        return new HomeAssistantConnection(loggerMock.Object, pipeline.Object, apiManagerMock.Object);
+        return new HomeAssistantConnection(loggerMock.Object, pipeline.Object, apiManagerMock.Object,
+            timeProvider, waitForResultTimeout);
+    }
+
+    private static int GetPendingResultCount(HomeAssistantConnection connection)
+    {
+        var pendingResults = typeof(HomeAssistantConnection)
+            .GetField("_pendingResults", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(connection);
+
+        return ((System.Collections.ICollection)pendingResults!).Count;
     }
 
     [Fact]
@@ -178,7 +193,66 @@ public class HomeAssistantConnectionTests
     }
 
     [Fact]
-    public async Task SendFailureShouldFaultResultWaiterWithoutBreakingLaterCommands()
+    public async Task TimedOutResultWaitShouldRemovePendingResult()
+    {
+        var pipeline = new TransportPipelineMock();
+        var fakeTimeProvider = new FakeTimeProvider();
+        var sentCommandIds = Channel.CreateUnbounded<int>();
+        pipeline
+            .Setup(n => n.SendMessageAsync(It.IsAny<FakeCommand>(), It.IsAny<CancellationToken>()))
+            .Returns<FakeCommand, CancellationToken>((command, _) =>
+            {
+                sentCommandIds.Writer.TryWrite(command.Id);
+                return Task.CompletedTask;
+            });
+
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(
+            pipeline,
+            fakeTimeProvider,
+            TimeSpan.FromSeconds(20));
+        var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(
+            new FakeCommand(),
+            CancellationToken.None);
+
+        _ = await sentCommandIds.Reader.ReadAsync(CancellationToken.None);
+        GetPendingResultCount(homeAssistantConnection).Should().Be(1);
+
+        fakeTimeProvider.Advance(TimeSpan.FromSeconds(21));
+
+        await Assert.ThrowsAsync<TimeoutException>(async () => await resultTask);
+        GetPendingResultCount(homeAssistantConnection).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CancelledResultWaitShouldRemovePendingResult()
+    {
+        var pipeline = new TransportPipelineMock();
+        var sentCommandIds = Channel.CreateUnbounded<int>();
+        pipeline
+            .Setup(n => n.SendMessageAsync(It.IsAny<FakeCommand>(), It.IsAny<CancellationToken>()))
+            .Returns<FakeCommand, CancellationToken>((command, _) =>
+            {
+                sentCommandIds.Writer.TryWrite(command.Id);
+                return Task.CompletedTask;
+            });
+
+        using var cancelSource = new CancellationTokenSource();
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+        var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(
+            new FakeCommand(),
+            cancelSource.Token);
+
+        _ = await sentCommandIds.Reader.ReadAsync(CancellationToken.None);
+        GetPendingResultCount(homeAssistantConnection).Should().Be(1);
+
+        await cancelSource.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await resultTask);
+        GetPendingResultCount(homeAssistantConnection).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SendFailureShouldRemovePendingResultWithoutBreakingLaterCommands()
     {
         var pipeline = new TransportPipelineMock();
         var firstSend = true;
@@ -197,6 +271,7 @@ public class HomeAssistantConnectionTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(new FakeCommand(), CancellationToken.None));
+        GetPendingResultCount(homeAssistantConnection).Should().Be(0);
 
         var command = new FakeCommand();
         var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(command, CancellationToken.None);
@@ -229,6 +304,7 @@ public class HomeAssistantConnectionTests
 
         await Assert.ThrowsAsync<TaskCanceledException>(
             () => homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(new FakeCommand(), cancelSource.Token));
+        GetPendingResultCount(homeAssistantConnection).Should().Be(0);
 
         var command = new FakeCommand();
         var resultTask = homeAssistantConnection.SendCommandAndReturnHassMessageResponseAsync(command, CancellationToken.None);
