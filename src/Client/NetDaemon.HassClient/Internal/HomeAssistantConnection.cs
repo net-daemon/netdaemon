@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace NetDaemon.Client.Internal;
 
 internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistantHassMessages
@@ -10,12 +12,15 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     private readonly IWebSocketClientTransportPipeline _transportPipeline;
     private readonly IHomeAssistantApiManager _apiManager;
     private readonly ResultMessageHandler _resultMessageHandler;
+    private readonly TimeProvider _timeProvider;
+    private readonly TimeSpan _waitForResultTimeout;
     private readonly CancellationTokenSource _internalCancelSource = new();
 
     private readonly Subject<HassMessage> _hassMessageSubject = new();
+    private readonly ConcurrentDictionary<int, TaskCompletionSource<HassMessage>> _pendingResults = new();
     private readonly Task _handleNewMessagesTask;
 
-    private const int WaitForResultTimeout = 20000;
+    private static readonly TimeSpan DefaultWaitForResultTimeout = TimeSpan.FromSeconds(20);
 
     private readonly SemaphoreSlim _messageIdSemaphore = new(1, 1);
     private int _messageId = 1;
@@ -29,17 +34,23 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     /// <param name="logger">A logger instance</param>
     /// <param name="pipeline">The pipeline to use for websocket communication</param>
     /// <param name="apiManager">The api manager</param>
+    /// <param name="timeProvider">The time provider used when waiting for command results</param>
+    /// <param name="waitForResultTimeout">The maximum time to wait for a command result</param>
     public HomeAssistantConnection(
         ILogger<IHomeAssistantConnection> logger,
         IWebSocketClientTransportPipeline pipeline,
-        IHomeAssistantApiManager apiManager
+        IHomeAssistantApiManager apiManager,
+        TimeProvider? timeProvider = null,
+        TimeSpan? waitForResultTimeout = null
     )
     {
         _transportPipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
         _apiManager = apiManager;
         _logger = logger;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _waitForResultTimeout = waitForResultTimeout ?? DefaultWaitForResultTimeout;
 
-        _resultMessageHandler = new ResultMessageHandler(_logger, TimeProvider.System);
+        _resultMessageHandler = new ResultMessageHandler(_logger);
 
         // We lazily cache same observable for all events. There are no reason we should use multiple subscriptions
         // to all events. If people wants that they can provide a "*" type and get the same thing
@@ -96,7 +107,9 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
     public async Task SendCommandAsync<T>(T command, CancellationToken cancelToken) where T : CommandMessage
     {
         var returnMessageTask = await SendCommandAsyncInternal(command, cancelToken);
-        _resultMessageHandler.HandleResult(returnMessageTask, command);
+        _resultMessageHandler.HandleResult(
+            WaitForPendingResultAsync(command, returnMessageTask, _internalCancelSource.Token),
+            command);
     }
 
     public async Task<TResult?> SendCommandAndReturnResponseAsync<T, TResult>(T command, CancellationToken cancelToken)
@@ -122,7 +135,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         where T : CommandMessage
     {
         var resultMessageTask = await SendCommandAsyncInternal(command, cancelToken);
-        var result = await resultMessageTask.WaitAsync(TimeSpan.FromMilliseconds(WaitForResultTimeout), cancelToken);
+        var result = await WaitForPendingResultAsync(command, resultMessageTask, cancelToken).ConfigureAwait(false);
 
         if (result.Success ?? false)
             return result;
@@ -148,6 +161,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
 
         if (!_internalCancelSource.IsCancellationRequested)
             await _internalCancelSource.CancelAsync();
+        CancelPendingResults();
 
         // Gracefully wait for task or timeout
         await Task.WhenAny(
@@ -189,17 +203,22 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             // increasing the messageId and Sending the message
             command.Id = ++_messageId;
 
-            // We make a task that subscribe for the return result message
-            // this task will be returned and handled by caller
-            var resultEvent = _hassMessageSubject
-                .Where(n => n.Type == "result" && n.Id == command.Id)
-                .FirstAsync().ToTask(CancellationToken.None);
-            // We dont want to pass the incoming CancellationToken here because it will throw a TaskCanceledException
-            // when calling services from an Apps Dispose(Async) and hide possible actual exceptions
+            var resultEvent = new TaskCompletionSource<HassMessage>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            if (!_pendingResults.TryAdd(command.Id, resultEvent))
+                throw new InvalidOperationException($"A command with id {command.Id} is already pending");
 
-            await _transportPipeline.SendMessageAsync(command, cancelToken);
+            try
+            {
+                await _transportPipeline.SendMessageAsync(command, cancelToken);
+            }
+            catch (Exception)
+            {
+                _pendingResults.TryRemove(command.Id, out _);
+                throw;
+            }
 
-            return resultEvent;
+            return resultEvent.Task;
         }
         finally
         {
@@ -219,7 +238,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                 {
                     foreach (var obj in msg)
                     {
-                        _hassMessageSubject.OnNext(obj);
+                        HandleIncomingMessage(obj);
                     }
                 }
                 catch (Exception e)
@@ -235,9 +254,59 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         finally
         {
             _logger.LogTrace("Stop processing new messages");
+            CancelPendingResults();
             // make sure we always cancel any blocking operations
             if (!_internalCancelSource.IsCancellationRequested)
                 await _internalCancelSource.CancelAsync();
+        }
+    }
+
+    private async Task<HassMessage> WaitForPendingResultAsync(CommandMessage command,
+        Task<HassMessage> resultMessageTask,
+        CancellationToken cancelToken)
+    {
+        try
+        {
+            return await resultMessageTask.WaitAsync(_waitForResultTimeout, _timeProvider, cancelToken)
+                .ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            CancelPendingResult(command.Id, CancellationToken.None);
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            CancelPendingResult(command.Id, cancelToken);
+            throw;
+        }
+    }
+
+    private void HandleIncomingMessage(HassMessage message)
+    {
+        if (message.Type == "result" && _pendingResults.TryRemove(message.Id, out var completionSource))
+            completionSource.TrySetResult(message);
+
+        _hassMessageSubject.OnNext(message);
+    }
+
+    private void CancelPendingResult(int messageId, CancellationToken cancelToken = default)
+    {
+        if (!_pendingResults.TryRemove(messageId, out var completionSource))
+            return;
+
+        if (cancelToken.CanBeCanceled)
+            completionSource.TrySetCanceled(cancelToken);
+        else
+            completionSource.TrySetCanceled(CancellationToken.None);
+    }
+
+    private void CancelPendingResults()
+    {
+        foreach (var pendingResult in _pendingResults)
+        {
+            if (_pendingResults.TryRemove(pendingResult.Key, out var completionSource))
+                completionSource.TrySetCanceled();
         }
     }
 
