@@ -203,8 +203,6 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             // increasing the messageId and Sending the message
             command.Id = ++_messageId;
 
-            // Complete result waiters directly from the receive loop instead of creating
-            // one filtered Rx subscription per command.
             var resultEvent = new TaskCompletionSource<HassMessage>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
             if (!_pendingResults.TryAdd(command.Id, resultEvent))
