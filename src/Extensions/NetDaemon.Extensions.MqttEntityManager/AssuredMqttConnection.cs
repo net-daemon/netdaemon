@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Packets;
+using NetDaemon.Extensions.MqttEntityManager.Exceptions;
 
 namespace NetDaemon.Extensions.MqttEntityManager;
 
@@ -13,12 +14,15 @@ namespace NetDaemon.Extensions.MqttEntityManager;
 /// </summary>
 internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
 {
-    private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan ConnectedPollDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan DefaultReconnectDelay = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan DefaultConnectedPollDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan PublishRetryDelay = TimeSpan.FromSeconds(1);
+    private const int MaxConnectedPublishAttempts = 3;
 
     private readonly ILogger<AssuredMqttConnection> _logger;
     private readonly IMqttClient _mqttClient;
     private readonly MqttClientOptions _clientOptions;
+    private readonly TimeProvider _timeProvider;
     private readonly Channel<MqttApplicationMessage> _publishQueue = Channel.CreateUnbounded<MqttApplicationMessage>(
         new UnboundedChannelOptions
         {
@@ -26,10 +30,13 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             SingleWriter = false
         });
     private readonly ConcurrentDictionary<string, MqttTopicFilter> _subscriptions = new();
+    private readonly ConcurrentDictionary<string, MqttTopicFilter> _pendingSubscriptions = new();
     private readonly CancellationTokenSource _stopping = new();
-    private readonly SemaphoreSlim _connectionSignal = new(0, 1);
+    private readonly SemaphoreSlim _clientOperationGate = new(1, 1);
+    private readonly object _connectionStateLock = new();
     private readonly Task _connectionTask;
     private readonly Task _publishTask;
+    private TaskCompletionSource _connectedSignal = CreateConnectionSignal();
     private bool _disposed;
     private volatile bool _hasConnected;
 
@@ -40,13 +47,16 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     /// <param name="mqttClientOptionsFactory">The MQTT client options factory.</param>
     /// <param name="mqttFactory">The MQTT factory wrapper.</param>
     /// <param name="mqttConfig">The MQTT configuration.</param>
+    /// <param name="timeProvider">The clock used for connection retry delays.</param>
     public AssuredMqttConnection(
         ILogger<AssuredMqttConnection> logger,
         IMqttClientOptionsFactory mqttClientOptionsFactory,
         IMqttFactory mqttFactory,
-        IOptions<MqttConfiguration> mqttConfig)
+        IOptions<MqttConfiguration> mqttConfig,
+        TimeProvider? timeProvider = null)
     {
         _logger = logger;
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         _logger.LogTrace("MQTT initiating connection");
         _clientOptions = mqttClientOptionsFactory.CreateClientOptions(mqttConfig.Value);
@@ -81,10 +91,11 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         }
 
         _subscriptions[topicFilter.Topic] = topicFilter;
+        _pendingSubscriptions[topicFilter.Topic] = topicFilter;
 
         if (_mqttClient.IsConnected)
         {
-            await SubscribeOnClientAsync(topicFilter, _stopping.Token).ConfigureAwait(false);
+            await TrySubscribePendingAsync(topicFilter.Topic, topicFilter, _stopping.Token).ConfigureAwait(false);
         }
     }
 
@@ -96,27 +107,33 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             {
                 if (_mqttClient.IsConnected)
                 {
-                    await Task.Delay(ConnectedPollDelay, cancellationToken).ConfigureAwait(false);
+                    await SubscribePendingAsync(cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(DefaultConnectedPollDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
+
+                MarkConnectionLost();
 
                 _logger.LogTrace("Connecting to MQTT broker at {Host}:{Port}/{UserName}",
                     GetConfiguredHost(), GetConfiguredPort(), _clientOptions.Credentials?.GetUserName(_clientOptions));
 
-                var connectResult = await _mqttClient.ConnectAsync(_clientOptions, cancellationToken).ConfigureAwait(false);
+                var connectResult = await ExecuteClientOperationAsync(
+                    operationToken => _mqttClient.ConnectAsync(_clientOptions, operationToken),
+                    cancellationToken).ConfigureAwait(false);
 
                 if (connectResult.ResultCode != MqttClientConnectResultCode.Success)
                 {
                     _logger.LogTrace("MQTT connection rejected: {ResultCode} {ReasonString}",
                         connectResult.ResultCode, connectResult.ReasonString);
-                    await Task.Delay(ReconnectDelay, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(DefaultReconnectDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
                 _logger.LogTrace("MQTT client is ready");
                 _hasConnected = true;
-                SignalConnection();
-                await ResubscribeAsync(cancellationToken).ConfigureAwait(false);
+                MarkConnected();
+                MarkAllSubscriptionsPending();
+                await SubscribePendingAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -134,6 +151,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         await foreach (var message in _publishQueue.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
         {
+            var connectedFailureCount = 0;
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
@@ -144,7 +162,29 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
                         continue;
                     }
 
-                    await _mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+                    var published = await ExecuteClientOperationAsync(async operationToken =>
+                    {
+                        if (!_mqttClient.IsConnected)
+                        {
+                            return false;
+                        }
+
+                        var publishResult = await _mqttClient.PublishAsync(message, operationToken).ConfigureAwait(false);
+                        if (!publishResult.IsSuccess)
+                        {
+                            throw new MqttPublishException(
+                                $"MQTT broker rejected the message with {publishResult.ReasonCode}: {publishResult.ReasonString}");
+                        }
+
+                        return true;
+                    }, cancellationToken).ConfigureAwait(false);
+
+                    if (!published)
+                    {
+                        MarkConnectionLost();
+                        continue;
+                    }
+
                     break;
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -153,28 +193,127 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogDebug(ex, "Failed to publish MQTT message. The message will be retried after reconnect.");
-                    await WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
+                    if (!_mqttClient.IsConnected)
+                    {
+                        connectedFailureCount = 0;
+                        MarkConnectionLost();
+                        _logger.LogDebug(ex, "Failed to publish MQTT message. The message will be retried after reconnect.");
+                        await WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    connectedFailureCount++;
+                    if (connectedFailureCount >= MaxConnectedPublishAttempts)
+                    {
+                        _logger.LogError(ex,
+                            "Discarding MQTT message for topic {Topic} after {AttemptCount} failed publish attempts while connected.",
+                            message.Topic, connectedFailureCount);
+                        break;
+                    }
+
+                    _logger.LogDebug(ex,
+                        "Failed to publish MQTT message while connected. Retrying attempt {NextAttempt} of {MaxAttempts} after a delay.",
+                        connectedFailureCount + 1, MaxConnectedPublishAttempts);
+                    await Task.Delay(PublishRetryDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
     }
 
-    private async Task ResubscribeAsync(CancellationToken cancellationToken)
+    private async Task SubscribePendingAsync(CancellationToken cancellationToken)
     {
-        foreach (var topicFilter in _subscriptions.Values)
+        foreach (var (topic, topicFilter) in _pendingSubscriptions)
         {
-            await SubscribeOnClientAsync(topicFilter, cancellationToken).ConfigureAwait(false);
+            if (!_mqttClient.IsConnected)
+            {
+                return;
+            }
+
+            await TrySubscribePendingAsync(topic, topicFilter, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private async Task SubscribeOnClientAsync(MqttTopicFilter topicFilter, CancellationToken cancellationToken)
+    private async Task TrySubscribePendingAsync(
+        string topic,
+        MqttTopicFilter topicFilter,
+        CancellationToken cancellationToken)
     {
-        var subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-            .WithTopicFilter(topicFilter)
-            .Build();
+        try
+        {
+            var subscribed = await ExecuteClientOperationAsync(async operationToken =>
+            {
+                if (!_mqttClient.IsConnected ||
+                    !_pendingSubscriptions.TryGetValue(topic, out var currentTopicFilter) ||
+                    !ReferenceEquals(currentTopicFilter, topicFilter))
+                {
+                    return false;
+                }
 
-        await _mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
+                var subscribeOptions = new MqttClientSubscribeOptionsBuilder()
+                    .WithTopicFilter(topicFilter)
+                    .Build();
+
+                var subscribeResult = await _mqttClient.SubscribeAsync(subscribeOptions, operationToken).ConfigureAwait(false);
+                var accepted = subscribeResult.Items.Count > 0 && subscribeResult.Items.All(IsSuccessfulSubscribeResult);
+                if (!accepted)
+                {
+                    _logger.LogDebug(
+                        "MQTT broker rejected subscription to topic {Topic}: {ResultCodes} {ReasonString}",
+                        topic,
+                        string.Join(", ", subscribeResult.Items.Select(item => item.ResultCode)),
+                        subscribeResult.ReasonString);
+                }
+
+                return accepted && _mqttClient.IsConnected;
+            }, cancellationToken).ConfigureAwait(false);
+
+            if (subscribed &&
+                _pendingSubscriptions.TryGetValue(topic, out var currentTopicFilter) &&
+                ReferenceEquals(currentTopicFilter, topicFilter))
+            {
+                _pendingSubscriptions.TryRemove(topic, out _);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to subscribe to MQTT topic {Topic}. The subscription will be retried.", topic);
+        }
+    }
+
+    private async Task<T> ExecuteClientOperationAsync<T>(
+        Func<CancellationToken, Task<T>> operation,
+        CancellationToken cancellationToken)
+    {
+        await _clientOperationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            using var operationTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            operationTimeout.CancelAfter(_clientOptions.Timeout);
+            return await operation(operationTimeout.Token).ConfigureAwait(false);
+        }
+        finally
+        {
+            _clientOperationGate.Release();
+        }
+    }
+
+    private void MarkAllSubscriptionsPending()
+    {
+        foreach (var (topic, topicFilter) in _subscriptions)
+        {
+            _pendingSubscriptions[topic] = topicFilter;
+        }
+    }
+
+    private static bool IsSuccessfulSubscribeResult(MqttClientSubscribeResultItem item)
+    {
+        return item.ResultCode is MqttClientSubscribeResultCode.GrantedQoS0
+            or MqttClientSubscribeResultCode.GrantedQoS1
+            or MqttClientSubscribeResultCode.GrantedQoS2;
     }
 
     private Task MqttClientOnDisconnectedAsync(MqttClientDisconnectedEventArgs arg)
@@ -193,6 +332,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
             _logger.LogTrace("MQTT disconnected before the initial connection completed: {Reason}", BuildErrorResponse(arg));
         }
 
+        MarkConnectionLost();
         return Task.CompletedTask;
     }
 
@@ -200,7 +340,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
     {
         _hasConnected = true;
         _logger.LogDebug("MQTT connected: {ResultCode}", arg.ConnectResult.ResultCode);
-        SignalConnection();
+        MarkConnected();
         return Task.CompletedTask;
     }
 
@@ -233,29 +373,56 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         return sb.ToString();
     }
 
-    private void SignalConnection()
+    private static TaskCompletionSource CreateConnectionSignal()
     {
-        if (_connectionSignal.CurrentCount == 0)
+        return new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private void MarkConnected()
+    {
+        lock (_connectionStateLock)
         {
-            _connectionSignal.Release();
+            _connectedSignal.TrySetResult();
         }
+    }
+
+    private void MarkConnectionLost()
+    {
+        lock (_connectionStateLock)
+        {
+            if (_connectedSignal.Task.IsCompleted)
+            {
+                _connectedSignal = CreateConnectionSignal();
+            }
+        }
+
+        MarkAllSubscriptionsPending();
     }
 
     private async Task WaitForConnectionAsync(CancellationToken cancellationToken)
     {
-        if (_mqttClient.IsConnected)
+        while (!_mqttClient.IsConnected)
         {
-            return;
-        }
+            Task connectedTask;
+            lock (_connectionStateLock)
+            {
+                if (_mqttClient.IsConnected)
+                {
+                    return;
+                }
 
-        await _connectionSignal.WaitAsync(cancellationToken).ConfigureAwait(false);
+                connectedTask = _connectedSignal.Task;
+            }
+
+            await connectedTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
-    private static async Task DelayReconnectAsync(CancellationToken cancellationToken)
+    private async Task DelayReconnectAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await Task.Delay(ReconnectDelay, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(DefaultReconnectDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -304,7 +471,7 @@ internal class AssuredMqttConnection : IAssuredMqttConnection, IDisposable
         }
 
         _stopping.Dispose();
-        _connectionSignal.Dispose();
+        _clientOperationGate.Dispose();
 
         if (_mqttClient is IDisposable disposable)
         {
