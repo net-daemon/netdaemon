@@ -13,14 +13,7 @@ internal static class HassObjectMapper
                 AttributesJson = hassState.AttributesJson,
                 LastChanged = hassState.LastChanged,
                 LastUpdated = hassState.LastUpdated,
-                Context = hassState.Context == null
-                    ? null
-                    : new Context
-                    {
-                        Id = hassState.Context.Id,
-                        UserId = hassState.Context.UserId,
-                        ParentId = hassState.Context.UserId
-                    }
+                Context = hassState.Context?.Map()
             };
     }
 
@@ -45,8 +38,21 @@ internal static class HassObjectMapper
             Origin = hassEvent.Origin,
             EventType = hassEvent.EventType,
             TimeFired = hassEvent.TimeFired,
-            DataElement = hassEvent.DataElement
+            DataElement = hassEvent.DataElement,
+            Context = hassEvent.Context?.Map()
         };
+    }
+
+    public static Context? Map(this HassContext? hassContext)
+    {
+        return hassContext is null
+            ? null
+            : new Context
+            {
+                Id = hassContext.Id,
+                UserId = hassContext.UserId,
+                ParentId = hassContext.ParentId
+            };
     }
 
     public static Area Map(this HassArea hassArea, IHaRegistryNavigator registry)

@@ -28,6 +28,9 @@ public record Event
     /// </summary>
     [JsonPropertyName("time_fired")]
     public DateTime? TimeFired { get; init; }
+
+    /// <summary>Context</summary>
+    [JsonPropertyName("context")] public Context? Context { get; init; }
 }
 
 /// <summary>
