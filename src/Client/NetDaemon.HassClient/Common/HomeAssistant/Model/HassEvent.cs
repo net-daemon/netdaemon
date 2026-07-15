@@ -13,4 +13,6 @@ public record HassEvent
     [JsonPropertyName("origin")] public string Origin { get; init; } = string.Empty;
 
     [JsonPropertyName("time_fired")] public DateTime? TimeFired { get; init; }
+
+    [JsonPropertyName("context")] public HassContext? Context { get; init; }
 }
