@@ -1,27 +1,24 @@
 ---
 name: netdaemon-nuget-upgrade
-description: NetDaemon project workflow for consolidating Dependabot and NuGet dependency updates with dotnet-outdated while excluding MQTT packages. Use when working in net-daemon/netdaemon to upgrade NuGet packages, verify no MQTT package versions changed, run tests, and publish a dependency-update PR with gh-axi.
+description: NetDaemon project workflow for consolidating Dependabot and NuGet dependency updates with dotnet-outdated. Use when working in net-daemon/netdaemon to upgrade NuGet packages, run tests, and publish a dependency-update PR with gh-axi.
 ---
 
 # NetDaemon NuGet Upgrade
 
 ## Purpose
 
-Use this project-local workflow when upgrading NetDaemon NuGet packages, especially when replacing several Dependabot PRs with one dependency-update branch. Keep MQTT packages excluded unless the user explicitly changes that instruction.
+Use this project-local workflow when upgrading NetDaemon NuGet packages, especially when replacing several Dependabot PRs with one dependency-update branch.
 
 ## Ground Rules
 
 - Work from the NetDaemon repo root unless the user gives another checkout.
 - Follow `AGENTS.md`: use `gh-axi` for GitHub work and never add an agent co-author.
-- Treat package IDs containing `mqtt`, case-insensitive, as excluded.
-- Allow the `NetDaemon.Extensions.Mqtt` project heading to appear in `dotnet outdated` output if the package IDs under it are not MQTT packages.
-- Confirm MQTT package references by inspecting the diff; do not rely only on `dotnet outdated` output.
 - Use the existing repo label `pr: dependency-update` with the space after the colon. Do not create a duplicate no-space label.
 - If the task includes merging a PR, ask the user immediately before each merge.
 
 ## Workflow
 
-1. Start from current `main` and create a branch such as `codex/upgrade-nuget-packages-excluding-mqtt`. Use a date or short suffix if that branch already exists.
+1. Start from current `main` and create a branch such as `codex/upgrade-nuget-packages`. Use a date or short suffix if that branch already exists.
 2. Check the tool:
    ```bash
    dotnet outdated --version
@@ -29,21 +26,18 @@ Use this project-local workflow when upgrading NetDaemon NuGet packages, especia
    If `dotnet-outdated` is missing, install or restore it only after confirming the appropriate project-local/global approach.
 3. Run the dry-run exactly:
    ```bash
-   dotnet outdated --exclude mqtt
+   dotnet outdated
    ```
-   Review the proposed package IDs. Stop and ask if any MQTT package would be updated.
+   Review the proposed package IDs.
 4. Apply the update only after the dry-run is clean:
    ```bash
-   dotnet outdated --exclude mqtt -u
+   dotnet outdated -u
    ```
 5. Verify the package diff before testing:
    ```bash
    git diff --stat
-   git diff -U0 -- src/Extensions/NetDaemon.Extensions.MqttEntityManager/NetDaemon.Extensions.MqttEntityManager.csproj
-   rg -n "MQTTnet|Mqtt|mqtt" src/Extensions/NetDaemon.Extensions.MqttEntityManager/NetDaemon.Extensions.MqttEntityManager.csproj
    git diff --check
    ```
-   The known MQTT package references are `MQTTnet` and `MQTTnet.Extensions.ManagedClient`; their versions must remain unchanged.
 6. Run the full test command:
    ```bash
    dotnet test NetDaemon.sln --configuration Release --logger "trx;LogFileName=netdaemon-tests.trx" --verbosity quiet
@@ -61,12 +55,12 @@ Use this project-local workflow when upgrading NetDaemon NuGet packages, especia
 8. Stage only intended project-file changes and any user-requested skill/process files. Do not stage `TestResults` or other generated outputs.
 9. Commit with a plain message such as:
    ```bash
-   git commit -m "Upgrade non-MQTT NuGet packages"
+   git commit -m "Upgrade NuGet packages"
    ```
 10. Push the branch and create the PR with `gh-axi`:
-    ```bash
-    git push -u origin <branch>
-    gh-axi pr create --title "Upgrade non-MQTT NuGet packages" --body-file <body-file> --base main --head <branch> --label "pr: dependency-update"
+   ```bash
+   git push -u origin <branch>
+   gh-axi pr create --title "Upgrade NuGet packages" --body-file <body-file> --base main --head <branch> --label "pr: dependency-update"
     ```
     Make the PR ready for review unless the user asks for a draft or a non-Docker validation issue remains.
 11. Check initial CI:
@@ -78,8 +72,7 @@ Use this project-local workflow when upgrading NetDaemon NuGet packages, especia
 
 Include:
 
-- `dotnet outdated --exclude mqtt` dry-run succeeded without MQTT package upgrades.
-- `dotnet outdated --exclude mqtt -u` applied the upgrades.
-- MQTT package references stayed unchanged.
+- `dotnet outdated` dry-run completed successfully.
+- `dotnet outdated -u` applied the upgrades.
 - Test commands and outcomes.
 - A short note if local Docker prevented the integration project from running, while CI is expected to cover it.
