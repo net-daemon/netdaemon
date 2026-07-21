@@ -44,6 +44,7 @@ public class TestRuntime
         var host = hostBuilder.ConfigureServices((_, services) =>
             services
                 .AddSingleton(haRunner.Object)
+                .AddSingleton<IHomeAssistantConnectionProvider>(haRunner.Object)
                 .AddNetDaemonApp<LocalApp>()
                 .AddTransient<IObservable<HassEvent>>(_ => haRunner.ClientMock.ConnectionMock.HomeAssistantEventMock)
         ).Build();
