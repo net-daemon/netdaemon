@@ -35,7 +35,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
     <PackageReference Include="NuGet.Frameworks" Version="7.6.0" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="NuGet.Protocol" Version="7.6.0" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.16.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
