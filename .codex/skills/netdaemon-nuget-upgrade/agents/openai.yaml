@@ -1,4 +1,4 @@
 interface:
   display_name: "NetDaemon NuGet Upgrade"
-  short_description: "Upgrade non-MQTT NuGet packages"
-  default_prompt: "Use $netdaemon-nuget-upgrade to update NetDaemon NuGet packages while excluding MQTT packages."
+  short_description: "Upgrade and validate NetDaemon NuGet packages"
+  default_prompt: "Use $netdaemon-nuget-upgrade to upgrade all NetDaemon NuGet packages, run the full validation, and prepare a dependency-update PR."
