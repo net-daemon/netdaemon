@@ -96,7 +96,7 @@ public class HomeAssistantContainer : DockerContainer
 
     private async Task AddMqttIntegration(MqttBrokerSettings mqttBrokerSettings)
     {
-        var submitFlow = await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol: true);
+        var submitFlow = await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol: true, includeOtherSettings: true);
         var flowType = submitFlow.GetProperty("type").GetString();
         if (flowType != "create_entry")
         {
@@ -104,7 +104,10 @@ public class HomeAssistantContainer : DockerContainer
         }
     }
 
-    private async Task<JsonElement> SubmitMqttIntegration(MqttBrokerSettings mqttBrokerSettings, bool includeProtocol)
+    private async Task<JsonElement> SubmitMqttIntegration(
+        MqttBrokerSettings mqttBrokerSettings,
+        bool includeProtocol,
+        bool includeOtherSettings)
     {
         var result = await Client.PostAsync("/api/config/config_entries/flow", JsonContent.Create(new
         {
@@ -128,6 +131,16 @@ public class HomeAssistantContainer : DockerContainer
             brokerSettings["protocol"] = "3.1.1";
         }
 
+        if (includeOtherSettings)
+        {
+            brokerSettings["other_settings"] = new Dictionary<string, object>
+            {
+                ["set_client_cert"] = false,
+                ["set_ca_cert"] = "off",
+                ["transport"] = "tcp"
+            };
+        }
+
         var submitResult = await Client.PostAsync($"/api/config/config_entries/flow/{flowId}", JsonContent.Create(brokerSettings));
 
         if (submitResult.IsSuccessStatusCode)
@@ -136,9 +149,15 @@ public class HomeAssistantContainer : DockerContainer
         }
 
         var content = await submitResult.Content.ReadAsStringAsync();
+        if (includeOtherSettings
+            && content.Contains("extra keys not allowed @ data['other_settings']", StringComparison.Ordinal))
+        {
+            return await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol, includeOtherSettings: false);
+        }
+
         if (includeProtocol && content.Contains("data['protocol']", StringComparison.Ordinal))
         {
-            return await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol: false);
+            return await SubmitMqttIntegration(mqttBrokerSettings, includeProtocol: false, includeOtherSettings);
         }
 
         throw new HttpRequestException($"Home Assistant returned {(int)submitResult.StatusCode} ({submitResult.StatusCode}) while submitting MQTT config flow: {content}");
