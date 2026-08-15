@@ -46,8 +46,7 @@ public static class VersionValidator
         try
         {
             var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-            var packageSearchResource = await repo.GetResourceAsync<PackageMetadataResource>()
-                                        ?? throw new InvalidOperationException("NuGet package metadata resource is unavailable.");
+            var packageSearchResource = GetRequiredPackageMetadataResource(await repo.GetResourceAsync<PackageMetadataResource>());
             var metaData = await packageSearchResource.GetMetadataAsync(
                 packageId: "NetDaemon.HassModel.CodeGen",
                 includePrerelease: false,
@@ -92,6 +91,16 @@ public static class VersionValidator
         {
             Console.WriteLine($"Unable to verify if you have the latest version of nd-codegen. '{ex.Message}'");
         }
+    }
+
+    internal static PackageMetadataResource GetRequiredPackageMetadataResource(PackageMetadataResource? resource)
+    {
+        if (resource is null)
+        {
+            throw new InvalidOperationException("NuGet package metadata resource is unavailable.");
+        }
+
+        return resource;
     }
 
     public static IEnumerable<string> GetProjects() => Directory.GetFiles(".", "*.csproj", SearchOption.AllDirectories);
