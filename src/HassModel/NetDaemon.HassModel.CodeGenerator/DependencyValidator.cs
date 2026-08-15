@@ -46,7 +46,8 @@ public static class VersionValidator
         try
         {
             var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-            var packageSearchResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var packageSearchResource = await repo.GetResourceAsync<PackageMetadataResource>()
+                                        ?? throw new InvalidOperationException("NuGet package metadata resource is unavailable.");
             var metaData = await packageSearchResource.GetMetadataAsync(
                 packageId: "NetDaemon.HassModel.CodeGen",
                 includePrerelease: false,
