@@ -111,7 +111,8 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddScoped<ApplicationScope>()
-            .AddScoped(s => s.GetRequiredService<ApplicationScope>().ApplicationContext);
+            .AddScoped(s => s.GetRequiredService<ApplicationScope>().ApplicationContext)
+            .AddScoped<ICurrentApp>(s => s.GetRequiredService<ApplicationContext>());
         return services;
     }
 

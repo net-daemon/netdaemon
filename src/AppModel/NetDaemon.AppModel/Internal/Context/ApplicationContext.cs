@@ -2,7 +2,7 @@ using NetDaemon.AppModel.Internal.AppFactories;
 
 namespace NetDaemon.AppModel.Internal;
 
-internal sealed class ApplicationContext : IAsyncDisposable
+internal sealed class ApplicationContext : IAsyncDisposable, ICurrentApp
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
     private readonly IServiceScope? _serviceScope;
@@ -21,8 +21,12 @@ internal sealed class ApplicationContext : IAsyncDisposable
         if (appScope != null) appScope.ApplicationContext = this;
 
         // Now create the actual app from the new scope
+        Id = appFactory.Id;
         Instance = appFactory.Create(scopedProvider);
     }
+
+    /// <inheritdoc />
+    public string Id { get; }
 
     public object? Instance { get; private set; }
 
