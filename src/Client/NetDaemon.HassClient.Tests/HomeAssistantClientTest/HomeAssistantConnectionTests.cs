@@ -361,12 +361,14 @@ public class HomeAssistantConnectionTests
     public async Task DisposingConnectionShouldWaitForMessagePumpBeforeDisposingPipeline()
     {
         var pipeline = new TransportPipelineMock();
+        var receiveStarted = new TaskCompletionSource();
         var messagePumpStopped = false;
         var messagePumpStoppedWhenPipelineDisposed = false;
         pipeline
             .Setup(n => n.GetNextMessagesAsync<HassMessage>(It.IsAny<CancellationToken>()))
             .Returns<CancellationToken>(async cancelToken =>
             {
+                receiveStarted.TrySetResult();
                 var cancelled = new TaskCompletionSource();
                 await using var registration = cancelToken.Register(() => cancelled.TrySetResult());
                 await cancelled.Task.ConfigureAwait(false);
@@ -381,6 +383,8 @@ public class HomeAssistantConnectionTests
             .Returns(ValueTask.CompletedTask);
 
         var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+        // The pump starts on its own thread, so make sure it is inside the receive before shutting down
+        await receiveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         await homeAssistantConnection.DisposeAsync();
 
@@ -417,13 +421,16 @@ public class HomeAssistantConnectionTests
     {
         var pipeline = new TransportPipelineMock();
         var loggerMock = new Mock<ILogger<IHomeAssistantConnection>>();
+        var receiveStarted = new TaskCompletionSource();
         var socketClosed = new TaskCompletionSource();
+        var transportException = new ApplicationException("Cannot send data on a closed socket!");
         pipeline
             .Setup(n => n.GetNextMessagesAsync<HassMessage>(It.IsAny<CancellationToken>()))
             .Returns<CancellationToken>(async _ =>
             {
+                receiveStarted.TrySetResult();
                 await socketClosed.Task.ConfigureAwait(false);
-                throw new ApplicationException("Cannot send data on a closed socket!");
+                throw transportException;
             });
         pipeline
             .Setup(n => n.CloseAsync())
@@ -431,9 +438,19 @@ public class HomeAssistantConnectionTests
             .Returns(Task.CompletedTask);
 
         var homeAssistantConnection = CreateHomeAssistantConnection(pipeline, loggerMock: loggerMock);
+        // The pump starts on its own thread, so make sure it is inside the receive before shutting down
+        await receiveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         await homeAssistantConnection.DisposeAsync();
 
+        loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, _) => v.ToString() == "Message pump stopped while disposing the Home Assistant connection"),
+                transportException,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
         loggerMock.Verify(
             x => x.Log(
                 LogLevel.Error,
