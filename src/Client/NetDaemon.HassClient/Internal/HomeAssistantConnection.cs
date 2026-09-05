@@ -62,7 +62,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                 $"Expected WebSocket state 'Open' got '{_transportPipeline.WebSocketState}'");
 
         _handleNewMessagesTask = Task.Factory.StartNew(async () => await HandleNewMessages().ConfigureAwait(false),
-            TaskCreationOptions.LongRunning);
+            TaskCreationOptions.LongRunning).Unwrap();
     }
 
     public async Task<IObservable<HassEvent>> SubscribeToHomeAssistantEventsAsync(string? eventType,
@@ -250,6 +250,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         catch (OperationCanceledException)
         {
             // Normal case just exit
+        }
+        catch (Exception e)
+        {
+            // Disposing closes the socket before cancelling the pump, so a failing receive is expected then
+            if (_isDisposed)
+                _logger.LogDebug(e, "Message pump stopped while disposing the Home Assistant connection");
+            else
+                _logger.LogError(e, "Message pump stopped unexpectedly, closing the Home Assistant connection");
         }
         finally
         {

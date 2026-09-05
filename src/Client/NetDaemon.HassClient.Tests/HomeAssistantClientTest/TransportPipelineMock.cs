@@ -8,18 +8,16 @@ internal sealed class TransportPipelineMock : Mock<IWebSocketClientTransportPipe
     public TransportPipelineMock()
     {
         Setup(n => n.GetNextMessagesAsync<HassMessage>(It.IsAny<CancellationToken>())).Returns(
-            async (CancellationToken _) =>
+            async (CancellationToken cancelToken) =>
             {
-
-                var msg = await _responseMessageChannel.Reader.ReadAsync(CancellationToken.None).ConfigureAwait(false);
+                var msg = await _responseMessageChannel.Reader.ReadAsync(cancelToken).ConfigureAwait(false);
                 return [msg];
             });
 
         Setup(n => n.GetNextMessagesAsync<HassAuthResponse>(It.IsAny<CancellationToken>())).Returns(
-            async (CancellationToken _) =>
+            async (CancellationToken cancelToken) =>
             {
-
-                var msg = await _authResponseMessageChannel.Reader.ReadAsync(CancellationToken.None).ConfigureAwait(false);
+                var msg = await _authResponseMessageChannel.Reader.ReadAsync(cancelToken).ConfigureAwait(false);
                 return [msg];
             });
     }
