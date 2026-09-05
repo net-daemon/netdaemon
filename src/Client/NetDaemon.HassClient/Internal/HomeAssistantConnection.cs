@@ -251,6 +251,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         {
             // Normal case just exit
         }
+        catch (Exception e)
+        {
+            // Disposing closes the socket before cancelling the pump, so a failing receive is expected then
+            if (_isDisposed)
+                _logger.LogDebug(e, "Message pump stopped while disposing the Home Assistant connection");
+            else
+                _logger.LogError(e, "Message pump stopped unexpectedly, closing the Home Assistant connection");
+        }
         finally
         {
             _logger.LogTrace("Stop processing new messages");
