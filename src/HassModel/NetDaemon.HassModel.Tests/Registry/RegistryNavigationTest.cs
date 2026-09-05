@@ -186,6 +186,19 @@ public class RegistryNavigationTest
     }
 
     [Fact]
+    public async Task TestNullLabelIdReturnsNull()
+    {
+        // Setup:
+        InitializeDataModel();
+
+        // Act:
+        var registry = await InitializeCacheAndBuildRegistry();
+
+        // Assert:
+        registry.GetLabel(null).Should().BeNull();
+    }
+
+    [Fact]
     public async Task TestConversationOptions()
     {
         // Setup:
