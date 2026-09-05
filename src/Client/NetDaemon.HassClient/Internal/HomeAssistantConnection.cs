@@ -62,7 +62,7 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
                 $"Expected WebSocket state 'Open' got '{_transportPipeline.WebSocketState}'");
 
         _handleNewMessagesTask = Task.Factory.StartNew(async () => await HandleNewMessages().ConfigureAwait(false),
-            TaskCreationOptions.LongRunning);
+            TaskCreationOptions.LongRunning).Unwrap();
     }
 
     public async Task<IObservable<HassEvent>> SubscribeToHomeAssistantEventsAsync(string? eventType,

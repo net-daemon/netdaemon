@@ -355,4 +355,34 @@ public class HomeAssistantConnectionTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => resultTask.WaitAsync(TimeSpan.FromSeconds(5)));
     }
+
+    [Fact]
+    public async Task DisposingConnectionShouldWaitForMessagePumpBeforeDisposingPipeline()
+    {
+        var pipeline = new TransportPipelineMock();
+        var messagePumpStopped = false;
+        var messagePumpStoppedWhenPipelineDisposed = false;
+        pipeline
+            .Setup(n => n.GetNextMessagesAsync<HassMessage>(It.IsAny<CancellationToken>()))
+            .Returns<CancellationToken>(async cancelToken =>
+            {
+                var cancelled = new TaskCompletionSource();
+                await using var registration = cancelToken.Register(() => cancelled.TrySetResult());
+                await cancelled.Task.ConfigureAwait(false);
+                // Simulate the transport taking a moment to finish its receive after cancellation
+                await Task.Delay(200, CancellationToken.None).ConfigureAwait(false);
+                messagePumpStopped = true;
+                throw new OperationCanceledException(cancelToken);
+            });
+        pipeline
+            .Setup(n => n.DisposeAsync())
+            .Callback(() => messagePumpStoppedWhenPipelineDisposed = messagePumpStopped)
+            .Returns(ValueTask.CompletedTask);
+
+        var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+
+        await homeAssistantConnection.DisposeAsync();
+
+        messagePumpStoppedWhenPipelineDisposed.Should().BeTrue();
+    }
 }
