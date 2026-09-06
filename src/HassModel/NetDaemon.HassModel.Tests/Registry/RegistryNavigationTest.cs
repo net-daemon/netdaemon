@@ -152,6 +152,53 @@ public class RegistryNavigationTest
     }
 
     [Fact]
+    public async Task TestUnknownLabelIsIgnored()
+    {
+        // Setup: the label registry can lag behind the entity/area registries because each one is
+        // reloaded independently, so references to labels that are not (yet) known must not throw
+        SetupCommandResult("config/entity_registry/list",
+            [
+                new HassEntity { EntityId = "light.babyroom_nightlight", AreaId = "baby_room", Labels = ["stay_on", "unknown_label"] },
+            ]);
+        SetupCommandResult("config/device_registry/list", Array.Empty<HassDevice>());
+        SetupCommandResult("config/area_registry/list",
+            [
+                new HassArea { Name = "Baby room", Id = "baby_room", Labels = ["unknown_label"] },
+            ]);
+        SetupCommandResult("config/floor_registry/list", Array.Empty<HassFloor>());
+        SetupCommandResult("config/label_registry/list",
+            [
+                new HassLabel { Id = "stay_on", Name = "Stay On" },
+            ]);
+
+        // Act:
+        var registry = await InitializeCacheAndBuildRegistry();
+
+        // Assert:
+        registry.GetLabel("unknown_label").Should().BeNull();
+
+        registry.GetEntityRegistration("light.babyroom_nightlight")!.Labels.Should().BeEquivalentTo(
+        [
+            new { Name = "Stay On" },
+        ]);
+
+        registry.GetArea("baby_room")!.Labels.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task TestNullLabelIdReturnsNull()
+    {
+        // Setup:
+        InitializeDataModel();
+
+        // Act:
+        var registry = await InitializeCacheAndBuildRegistry();
+
+        // Assert:
+        registry.GetLabel(null).Should().BeNull();
+    }
+
+    [Fact]
     public async Task TestConversationOptions()
     {
         // Setup:
