@@ -27,9 +27,13 @@ internal class YamlConfigurationFileParser
         yaml.Load(new StreamReader(input, true));
 
         if (yaml.Documents.Count == 0) return _data;
-        var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
 
-        // The document node is a mapping node
+        // The configuration model is key/value pairs, so only a mapping root carries config data.
+        // Home Assistant !include targets such as automations.yaml have a sequence root ("[]") or
+        // may be empty (scalar/null). Those hold no key/value config, so treat them as no data
+        // rather than casting and throwing InvalidCastException at host-config time.
+        if (yaml.Documents[0].RootNode is not YamlMappingNode mapping) return _data;
+
         VisitYamlMappingNode(mapping);
 
         return _data;
