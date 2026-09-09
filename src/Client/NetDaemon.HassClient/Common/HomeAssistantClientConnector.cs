@@ -35,7 +35,6 @@ public static class HomeAssistantClientConnector
         var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
         var loggerConnect = loggerFactory.CreateLogger<IHomeAssistantConnection>();
         var loggerClient = loggerFactory.CreateLogger<IHomeAssistantClient>();
-        var loggerResultMessageHandler = loggerFactory.CreateLogger<ResultMessageHandler>();
         var settings = new HomeAssistantSettings
         {
             Host = host,
@@ -51,5 +50,21 @@ public static class HomeAssistantClientConnector
         var client = new HomeAssistantClient(loggerClient, websocketClientFactory, pipeLineFactory, connectionFactory);
 
         return await client.ConnectAsync(host, port, ssl, token, websocketPath, cancelToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    ///     Connect to Home Assistant
+    /// </summary>
+    public static async Task<IHomeAssistantConnection> ConnectClientAsync(string websocketUrl, string token, CancellationToken cancelToken)
+    {
+        return await ConnectClientAsync(new Uri(websocketUrl), token, cancelToken);
+    }
+
+    /// <summary>
+    ///     Connect to Home Assistant
+    /// </summary>
+    public static async Task<IHomeAssistantConnection> ConnectClientAsync(Uri websocketUrl, string token, CancellationToken cancelToken)
+    {
+        return await ConnectClientAsync(websocketUrl.Host, websocketUrl.Port, websocketUrl.Scheme is "https" or "wss", token, websocketUrl.PathAndQuery, cancelToken);
     }
 }

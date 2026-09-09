@@ -91,7 +91,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
     [Fact]
     public async Task TestOnConnectError()
     {
-        _cacheManagerMock.Setup(m => m.InitializeAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Something wrong while initializing"));
+        _cacheManagerMock.Setup(m => m.InitializeAsync(It.IsAny<IHomeAssistantConnection>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Something wrong while initializing"));
 
         await using var runtime = SetupNetDaemonRuntime();
 
@@ -117,7 +117,7 @@ public sealed class NetDaemonRuntimeTests : IDisposable
         _disconnectSubject.OnNext(DisconnectReason.Client);
 
         // now it should err on the second connection
-        _cacheManagerMock.Setup(m => m.InitializeAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Something wrong while initializing"));
+        _cacheManagerMock.Setup(m => m.InitializeAsync(It.IsAny<IHomeAssistantConnection>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Something wrong while initializing"));
         _connectSubject.OnNext(_homeAssistantConnectionMock.Object);
 
         _loggerMock.Verify(

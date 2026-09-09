@@ -9,28 +9,25 @@ using NetDaemon.HassModel.Internal;
 
 namespace NetDaemon.HassModel.Tests.Internal;
 
-public class EntityAreaCachTests
+public class EntityAreaCacheTests
 {
     [Fact]
     public async Task EntityIdWithArea_Returns_HassArea()
     {
         // Arrange
         using var testSubject = new Subject<HassEvent>();
-        var _hassConnectionMock = new Mock<IHomeAssistantConnection>();
-        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        var hassConnectionMock = new Mock<IHomeAssistantConnection>();
 
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
-
-        _hassConnectionMock.Setup(n =>
+        hassConnectionMock.Setup(n =>
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testSubject);
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
             )).ReturnsAsync(Array.Empty<HassDevice>());
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -40,7 +37,7 @@ public class EntityAreaCachTests
                 new() {Id = "AreaId", Name = "Area Name"}
             });
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -53,14 +50,14 @@ public class EntityAreaCachTests
         var serviceColletion = new ServiceCollection();
         _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
 
-        using var cache = new RegistryCache(haRunnerMock.Object, NullLogger<RegistryCache>.Instance);
+        using var cache = new RegistryCache(NullLogger<RegistryCache>.Instance);
 
         // Act
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync(hassConnectionMock.Object, CancellationToken.None);
         // Assert
         var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
-        Assert.Equal("Area Name", area!.Name);
+        Assert.Equal("Area Name", area.Name);
     }
 
     [Fact]
@@ -68,16 +65,13 @@ public class EntityAreaCachTests
     {
         // Arrange
         using var testSubject = new Subject<HassEvent>();
-        var _hassConnectionMock = new Mock<IHomeAssistantConnection>();
-        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        var hassConnectionMock = new Mock<IHomeAssistantConnection>();
 
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
-
-        _hassConnectionMock.Setup(n =>
+        hassConnectionMock.Setup(n =>
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testSubject);
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
             )).ReturnsAsync(
@@ -86,7 +80,7 @@ public class EntityAreaCachTests
                 new() {Id = "DeviceId", AreaId = "AreaId"}
             });
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -96,7 +90,7 @@ public class EntityAreaCachTests
                 new() {Id = "AreaId", Name = "Area Name"}
             });
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -109,15 +103,15 @@ public class EntityAreaCachTests
         var serviceColletion = new ServiceCollection();
         _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
 
-        using var cache = new RegistryCache(haRunnerMock.Object, Mock.Of<ILogger<RegistryCache>>());
+        using var cache = new RegistryCache(Mock.Of<ILogger<RegistryCache>>());
 
         // Act
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync(hassConnectionMock.Object, CancellationToken.None);
 
         // Assert
         var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
-        Assert.Equal("Area Name", area!.Name);
+        Assert.Equal("Area Name", area.Name);
     }
 
     [Fact]
@@ -125,16 +119,16 @@ public class EntityAreaCachTests
     {
         // Arrange
         using var testSubject = new Subject<HassEvent>();
-        var _hassConnectionMock = new Mock<IHomeAssistantConnection>();
+        var hassConnectionMock = new Mock<IHomeAssistantConnection>();
         var haRunnerMock = new Mock<IHomeAssistantRunner>();
 
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(hassConnectionMock.Object);
 
-        _hassConnectionMock.Setup(n =>
+        hassConnectionMock.Setup(n =>
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testSubject);
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
             )).ReturnsAsync(
@@ -143,7 +137,7 @@ public class EntityAreaCachTests
                 new() {Id = "DeviceId", AreaId = "AreaId"}
             });
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -154,7 +148,7 @@ public class EntityAreaCachTests
                 new() {Id = "AreaId2", Name = "Area2 Name"}
             });
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -166,15 +160,15 @@ public class EntityAreaCachTests
 
         var serviceColletion = new ServiceCollection();
         _ = serviceColletion.AddTransient(_ => new Mock<IObservable<HassEvent>>().Object);
-        using var cache = new RegistryCache(haRunnerMock.Object, Mock.Of<ILogger<RegistryCache>>());
+        using var cache = new RegistryCache(Mock.Of<ILogger<RegistryCache>>());
 
         // Act
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync(hassConnectionMock.Object, CancellationToken.None);
 
         // Assert
         var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
-        Assert.Equal("Area2 Name", area!.Name);
+        Assert.Equal("Area2 Name", area.Name);
     }
 
     [Fact]
@@ -182,21 +176,21 @@ public class EntityAreaCachTests
     {
         // Arrange
         using var testSubject = new Subject<HassEvent>();
-        var _hassConnectionMock = new Mock<IHomeAssistantConnection>();
+        var hassConnectionMock = new Mock<IHomeAssistantConnection>();
         var haRunnerMock = new Mock<IHomeAssistantRunner>();
 
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
+        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(hassConnectionMock.Object);
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
             m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassDevice>>(
                 It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
             )).ReturnsAsync(Array.Empty<HassDevice>());
 
-        _hassConnectionMock.Setup(n =>
+        hassConnectionMock.Setup(n =>
                 n.SubscribeToHomeAssistantEventsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testSubject);
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassArea>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -207,7 +201,7 @@ public class EntityAreaCachTests
                 new() {Id = "AreaId2", Name = "Area2 Name"}
             });
 
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -217,17 +211,13 @@ public class EntityAreaCachTests
                 new() {EntityId = "sensor.sensor1", AreaId = "AreaId"}
             });
 
-        var serviceColletion = new ServiceCollection();
-        _ = serviceColletion.AddTransient<IObservable<HassEvent>>(_ => testSubject);
-        var sp = serviceColletion.BuildServiceProvider();
-
-        using var cache = new RegistryCache(haRunnerMock.Object, Mock.Of<ILogger<RegistryCache>>());
+        using var cache = new RegistryCache(Mock.Of<ILogger<RegistryCache>>());
 
         // Act 1: Init
-        await cache.InitializeAsync(CancellationToken.None);
+        await cache.InitializeAsync(hassConnectionMock.Object, CancellationToken.None);
 
         // Act/Rearrage
-        _hassConnectionMock.Setup(
+        hassConnectionMock.Setup(
                 m => m.SendCommandAndReturnResponseAsync<SimpleCommand, IReadOnlyCollection<HassEntity>>
                 (
                     It.IsAny<SimpleCommand>(), It.IsAny<CancellationToken>()
@@ -243,6 +233,6 @@ public class EntityAreaCachTests
         // Assert
         var area = cache.GetAreaById(cache.GetHassEntityById("sensor.sensor1")!.AreaId);
         Assert.NotNull(area);
-        Assert.Equal("Area2 Name", area!.Name);
+        Assert.Equal("Area2 Name", area.Name);
     }
 }
