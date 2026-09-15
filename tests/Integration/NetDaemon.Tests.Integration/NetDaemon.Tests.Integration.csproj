@@ -7,7 +7,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageReference Include="NuGet.Frameworks" Version="7.9.0" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.12" />
     <PackageReference Include="Testcontainers" Version="4.15.0" />
