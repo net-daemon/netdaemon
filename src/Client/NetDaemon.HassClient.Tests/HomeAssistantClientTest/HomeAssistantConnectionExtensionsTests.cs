@@ -39,4 +39,27 @@ public class HomeAssistantConnectionExtensionsTests
             ReturnResponse = (bool?)true
         });
     }
+
+    [Fact]
+    public async Task CallServiceWithResponseWithoutCancellationTokenShouldUseCancellationTokenNone()
+    {
+        var connectionMock = new Mock<IHomeAssistantConnection>();
+        CallServiceCommand? sentCommand = null;
+        var expectedResult = new HassServiceResult();
+
+        connectionMock
+            .Setup(n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, HassServiceResult>(
+                It.IsAny<CallServiceCommand>(),
+                CancellationToken.None))
+            .Callback<CallServiceCommand, CancellationToken>((command, _) => sentCommand = command)
+            .ReturnsAsync(expectedResult);
+
+        var result = await connectionMock.Object.CallServiceWithResponseAsync(
+            "todo",
+            "get_items").ConfigureAwait(false);
+
+        result.Should().BeSameAs(expectedResult);
+        sentCommand.Should().NotBeNull();
+        sentCommand!.ReturnResponse.Should().BeTrue();
+    }
 }
