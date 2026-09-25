@@ -263,10 +263,22 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                             webSocket).ConfigureAwait(false);
                         break;
                     case "call_service":
-                        await ReplaceIdInResponseAndSendMsg(
-                            "result_msg.json",
-                            hassMessage.Id,
-                            webSocket).ConfigureAwait(false);
+                        if (JsonDocument.Parse(buffer.AsMemory(0, result.Count)).RootElement
+                                .TryGetProperty("return_response", out var returnResponse) &&
+                            returnResponse.GetBoolean())
+                        {
+                            await ReplaceIdInResponseAndSendMsg(
+                                "result_calendar_list_event.json",
+                                hassMessage.Id,
+                                webSocket).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await ReplaceIdInResponseAndSendMsg(
+                                "result_msg.json",
+                                hassMessage.Id,
+                                webSocket).ConfigureAwait(false);
+                        }
                         break;
                     case "execute_script":
                         await ReplaceIdInResponseAndSendMsg(
