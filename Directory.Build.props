@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>13.0</LangVersion>
+    <LangVersion>14.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -11,7 +11,7 @@
 
   <!--Some sensible defaults for all projects, can be overriden in the projects themselves-->
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

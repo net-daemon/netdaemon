@@ -10,8 +10,8 @@ internal static class ByteArrayHelper
      /// <summary>
      /// Convert a byte array to a string, or to an empty string if the array is not valid UTF8
      /// </summary>
-     /// <param name="array"></param>
-     /// <returns></returns>
+     /// <param name="array">The byte array to convert.</param>
+     /// <returns>The UTF-8 string, or an empty string when the array is null, empty, or invalid.</returns>
      public static string SafeToString(byte[]? array)
      {
           try

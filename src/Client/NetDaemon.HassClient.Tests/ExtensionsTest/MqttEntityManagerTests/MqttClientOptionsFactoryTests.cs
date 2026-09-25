@@ -1,4 +1,5 @@
-using MQTTnet.Client;
+using MQTTnet;
+using MQTTnet.Formatter;
 using NetDaemon.Extensions.MqttEntityManager;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
@@ -21,19 +22,20 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.Should().NotBeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().NotBeNull();
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
+        mqttClientOptions.ProtocolVersion.Should().Be(MqttProtocolVersion.V311);
+        mqttClientOptions.ChannelOptions.Should().NotBeNull();
+        mqttClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
-        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
+        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ChannelOptions;
 
         var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
         ipEndpoint.Host.Should().Be("broker");
         ipEndpoint.Port.Should().Be(1883);
 
-        mqttClientOptions.ClientOptions.Credentials.Should().BeNull();
+        mqttClientOptions.Credentials.Should().BeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeFalse();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
+        mqttClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeFalse();
+        mqttClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
     }
 
     [Fact]
@@ -49,21 +51,22 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.Should().NotBeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().NotBeNull();
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
+        mqttClientOptions.ProtocolVersion.Should().Be(MqttProtocolVersion.V311);
+        mqttClientOptions.ChannelOptions.Should().NotBeNull();
+        mqttClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
-        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
+        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ChannelOptions;
 
         var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
         ipEndpoint.Host.Should().Be("broker");
         ipEndpoint.Port.Should().Be(1883);
 
-        mqttClientOptions.ClientOptions.Credentials.Should().BeNull();
+        mqttClientOptions.Credentials.Should().BeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeTrue();
+        mqttClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeTrue();
 
         // This would only get set to true if it and UseTls are both true
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
+        mqttClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
     }
 
     [Fact]
@@ -80,21 +83,22 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.Should().NotBeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().NotBeNull();
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
+        mqttClientOptions.ProtocolVersion.Should().Be(MqttProtocolVersion.V311);
+        mqttClientOptions.ChannelOptions.Should().NotBeNull();
+        mqttClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
-        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
+        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ChannelOptions;
 
         var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
         ipEndpoint.Host.Should().Be("broker");
         ipEndpoint.Port.Should().Be(1883);
 
-        mqttClientOptions.ClientOptions.Credentials.Should().BeNull();
+        mqttClientOptions.Credentials.Should().BeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeFalse();
+        mqttClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeFalse();
 
         // This would only get set to true if it and UseTls are both true
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
+        mqttClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeFalse();
     }
 
     [Fact]
@@ -114,23 +118,43 @@ public class MqttClientOptionsFactoryTests
 
         mqttClientOptions.Should().NotBeNull();
 
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().NotBeNull();
-        mqttClientOptions.ClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
+        mqttClientOptions.ProtocolVersion.Should().Be(MqttProtocolVersion.V311);
+        mqttClientOptions.ChannelOptions.Should().NotBeNull();
+        mqttClientOptions.ChannelOptions.Should().BeOfType<MqttClientTcpOptions>();
 
-        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ClientOptions.ChannelOptions;
+        var mqttClientChannelOptions = (MqttClientTcpOptions)mqttClientOptions.ChannelOptions;
 
         var ipEndpoint = (System.Net.DnsEndPoint)mqttClientChannelOptions.RemoteEndpoint;
         ipEndpoint.Host.Should().Be("broker");
         ipEndpoint.Port.Should().Be(1234);
 
-        mqttClientOptions.ClientOptions.Credentials.Should().NotBeNull();
-        mqttClientOptions.ClientOptions.Credentials.Should().BeOfType<MqttClientCredentials>();
+        mqttClientOptions.Credentials.Should().NotBeNull();
+        mqttClientOptions.Credentials.Should().BeOfType<MqttClientCredentials>();
 
-        mqttClientOptions.ClientOptions.Credentials.GetUserName(mqttClientOptions.ClientOptions).Should().Be("testuser");
-        mqttClientOptions.ClientOptions.Credentials.GetPassword(mqttClientOptions.ClientOptions).Should().BeEquivalentTo(Encoding.UTF8.GetBytes("testpassword"));
+        mqttClientOptions.Credentials.GetUserName(mqttClientOptions).Should().Be("testuser");
+        mqttClientOptions.Credentials.GetPassword(mqttClientOptions).Should().BeEquivalentTo(Encoding.UTF8.GetBytes("testpassword"));
 
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeTrue();
-        mqttClientOptions.ClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeTrue();
+        mqttClientOptions.ChannelOptions.TlsOptions.UseTls.Should().BeTrue();
+        mqttClientOptions.ChannelOptions.TlsOptions.AllowUntrustedCertificates.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("testuser", null)]
+    [InlineData(null, "testpassword")]
+    [InlineData("", "testpassword")]
+    [InlineData("testuser", "")]
+    public void DoesNotSetCredentialsUnlessUserNameAndPasswordAreProvided(string? userName, string? password)
+    {
+        var mqttConfiguration = new MqttConfiguration
+        {
+            Host = "broker",
+            UserName = userName,
+            Password = password
+        };
+
+        var mqttClientOptions = MqttClientOptionsFactory.CreateClientOptions(mqttConfiguration);
+
+        mqttClientOptions.Credentials.Should().BeNull();
     }
 
     [Fact]

@@ -2,20 +2,34 @@
 
 public record HassEntity
 {
-    [JsonPropertyName("device_id")] public string? DeviceId { get; init; }
+    [JsonConverter(typeof(EnsureStringConverter))]
+    [JsonPropertyName("device_id")]
+    public string? DeviceId { get; init; }
 
-    [JsonPropertyName("entity_id")] public string? EntityId { get; init; }
+    [JsonConverter(typeof(EnsureStringConverter))]
+    [JsonPropertyName("entity_id")]
+    public string? EntityId { get; init; }
 
-    [JsonPropertyName("area_id")] public string? AreaId { get; init; }
+    [JsonConverter(typeof(EnsureStringConverter))]
+    [JsonPropertyName("area_id")]
+    public string? AreaId { get; init; }
 
-    [JsonPropertyName("name")] public string? Name { get; init; }
+    [JsonConverter(typeof(EnsureStringConverter))]
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
 
-    [JsonPropertyName("icon")] public string? Icon { get; init; }
+    [JsonConverter(typeof(EnsureStringConverter))]
+    [JsonPropertyName("icon")]
+    public string? Icon { get; init; }
 
-    [JsonPropertyName("platform")] public string? Platform { get; init; }
+    [JsonConverter(typeof(EnsureStringConverter))]
+    [JsonPropertyName("platform")]
+    public string? Platform { get; init; }
 
-    [JsonPropertyName("labels")] public IReadOnlyList<string> Labels { get; init; } = [];
-	        
-    [JsonPropertyName("options")]public HassEntityOptions? Options { get; init; }
+    [JsonConverter(typeof(EnsureArrayOfStringConverter))]
+    [JsonPropertyName("labels")]
+    public IReadOnlyList<string> Labels { get; init; } = [];
+
+    [JsonPropertyName("options")]
+    public HassEntityOptions? Options { get; init; }
 }
-

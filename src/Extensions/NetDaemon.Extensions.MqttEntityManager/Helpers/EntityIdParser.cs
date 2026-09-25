@@ -9,7 +9,7 @@ internal static class EntityIdParser
     /// Extract the domain and identifier from an entity ID string
     /// </summary>
     /// <param name="entityId">Entity ID in the format "domain.identifier"</param>
-    /// <returns></returns>
+    /// <returns>The parsed domain and identifier.</returns>
     /// <exception cref="ArgumentException">If entityId is not supplied or is an invalid
     /// format</exception>
     public static (string domain, string identifier) Extract(string entityId)

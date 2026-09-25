@@ -7,10 +7,8 @@ namespace NetDaemon.Client.Internal.Helpers;
 /// We mainly make sure that any Errors from HA or technical exceptions will get logged correctly
 /// We also track the tasks so we can await for all pending tasks to finish
 /// </summary>
-internal class ResultMessageHandler(ILogger logger, TimeProvider _timeProvider) : IAsyncDisposable
+internal class ResultMessageHandler(ILogger logger) : IAsyncDisposable
 {
-    private readonly TimeSpan WaitForResultTimeout = TimeSpan.FromSeconds(20);
-    private readonly CancellationTokenSource _tokenSource = new();
     private readonly ConcurrentDictionary<Task, object?> _backgroundTasks = new();
 
     public void HandleResult(Task<HassMessage> returnMessageTask, CommandMessage originalCommand)
@@ -27,24 +25,21 @@ internal class ResultMessageHandler(ILogger logger, TimeProvider _timeProvider) 
     {
         try
         {
-            try
-            {
-                await returnMessageTask.WaitAsync(WaitForResultTimeout, _timeProvider, _tokenSource.Token);
-            }
-            catch (TimeoutException)
-            {
-                logger.LogWarning("Command ({CommandType}) did not get response in timely fashion.  Sent command is {CommandMessage}",
-                    originalCommand.Type, originalCommand.GetJsonString());
-            }
-
-            // We wait for the task even if there was a timeout so if we eventually do get a result it will be logged
-            // we catch the original error
             var result = await returnMessageTask.ConfigureAwait(false);
             if (!result.Success ?? false)
             {
                 logger.LogError("Failed command ({CommandType}) error: {ErrorResult}.  Sent command is {CommandMessage}",
                     originalCommand.Type, result.Error, originalCommand.GetJsonString());
             }
+        }
+        catch (TimeoutException)
+        {
+            logger.LogWarning("Command ({CommandType}) did not get response in timely fashion.  Sent command is {CommandMessage}",
+                originalCommand.Type, originalCommand.GetJsonString());
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during connection shutdown or caller cancellation.
         }
         catch (Exception e)
         {
@@ -64,13 +59,11 @@ internal class ResultMessageHandler(ILogger logger, TimeProvider _timeProvider) 
     {
         try
         {
-            await WaitPendingBackgroundTasksAsync().WaitAsync(TimeSpan.FromSeconds(5), _timeProvider).ConfigureAwait(false);
+            await WaitPendingBackgroundTasksAsync().WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
         }
         catch (TimeoutException e)
         {
             logger.LogError(e, "One or requests are still pending while closing connection to Home Assistant");
         }
-
-        _tokenSource.Dispose();
     }
 }

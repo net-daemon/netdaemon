@@ -1,25 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.6.0" />
-    <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1">
+    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="GitHubActionsTestLogger" Version="3.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.9" />
-    <PackageReference Include="Testcontainers" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageReference Include="NuGet.Frameworks" Version="7.9.0" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.12" />
+    <PackageReference Include="Testcontainers" Version="4.15.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.msbuild" Version="6.0.4">
+    <PackageReference Include="coverlet.msbuild" Version="10.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -27,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\AppModel\NetDaemon.AppModel\NetDaemon.AppModel.csproj" />
+    <ProjectReference Include="..\..\..\src\Extensions\NetDaemon.Extensions.MqttEntityManager\NetDaemon.Extensions.MqttEntityManager.csproj" />
     <ProjectReference Include="..\..\..\src\HassModel\NetDaemon.HassModel.CodeGenerator\NetDaemon.HassModel.CodeGenerator.csproj" />
     <ProjectReference Include="..\..\..\src\Runtime\NetDaemon.Runtime\NetDaemon.Runtime.csproj" />
   </ItemGroup>

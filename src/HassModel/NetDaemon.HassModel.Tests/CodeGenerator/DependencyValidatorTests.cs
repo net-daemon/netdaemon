@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Locator;
 using NetDaemon.HassModel.CodeGenerator;
+using NuGet.Protocol.Core.Types;
 
 namespace NetDaemon.HassModel.Tests.CodeGenerator;
 
@@ -43,5 +44,22 @@ public class DependencyValidatorTests
                 ("NetDaemon.Extensions.Logging", "25.6.0"),
                 ("NetDaemon.Extensions.Tts", "25.6.0")
             ]);
+    }
+
+    [Fact]
+    public void GetRequiredPackageMetadataResourceShouldReturnAvailableResource()
+    {
+        var resource = new Mock<PackageMetadataResource>().Object;
+
+        VersionValidator.GetRequiredPackageMetadataResource(resource).Should().BeSameAs(resource);
+    }
+
+    [Fact]
+    public void GetRequiredPackageMetadataResourceShouldRejectMissingResource()
+    {
+        var act = () => VersionValidator.GetRequiredPackageMetadataResource(null);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("NuGet package metadata resource is unavailable.");
     }
 }

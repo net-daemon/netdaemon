@@ -61,6 +61,9 @@ dotnet_diagnostic.CA2008.severity = none
 #Use concrete types
 dotnet_diagnostic.CA1859.severity = none
 
+#Expensive if logging is disabled
+dotnet_diagnostic.CA1873.severity = none
+
 # After this line there are suppressions from .NET 9 upgraqdes, check these later
 
 #Use var keyword

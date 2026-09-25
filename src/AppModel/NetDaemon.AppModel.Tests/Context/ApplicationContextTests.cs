@@ -15,4 +15,16 @@ public class ApplicationContextTests
         await applicationContext.DisposeAsync();
         await applicationContext.DisposeAsync();
     }
+
+    [Fact]
+    public void TestApplicationContextExposesAppFactoryIdAsCurrentApp()
+    {
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var appFactory = new Mock<IAppFactory>();
+        appFactory.SetupGet(f => f.Id).Returns("MyApps.SomeApp");
+
+        ICurrentApp currentApp = new ApplicationContext(serviceProvider, appFactory.Object);
+
+        currentApp.Id.Should().Be("MyApps.SomeApp");
+    }
 }

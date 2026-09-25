@@ -30,15 +30,16 @@
   <Import Project="$(ProjectDir)../../Targets/Sourcelink.targets" />
 
   <ItemGroup>
-    <PackageReference Include="Cronos" Version="0.11.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.14.0">
+    <PackageReference Include="Cronos" Version="0.13.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Reactive" Version="6.0.2" />
+    <PackageReference Include="System.Reactive" Version="7.0.0" />
+    <PackageReference Include="SolarCalculator" Version="3.6.1" />
   </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\..\..\.linting\roslynator.ruleset</CodeAnalysisRuleSet>

@@ -127,7 +127,7 @@ internal class RegistryCache(ILogger<RegistryCache> logger) : IDisposable
     public HassDevice? GetDeviceById(string? deviceId) => deviceId is null ? null : _devicesById.GetValueOrDefault(deviceId);
     public HassArea? GetAreaById(string? areaId) => areaId is null ? null : _areasById.GetValueOrDefault(areaId);
     public HassFloor? GetFloorById(string? floorId) => floorId is null ? null : _floorsById.GetValueOrDefault(floorId);
-    public HassLabel? GetLabelById(string? labelId) => labelId is null ? null : _labelsById[labelId];
+    public HassLabel? GetLabelById(string? labelId) => labelId is null ? null : _labelsById.GetValueOrDefault(labelId);
 
 
     public IEnumerable<HassEntity> GetEntitiesForArea(string? areaId) => _entitiesByAreaId[areaId];

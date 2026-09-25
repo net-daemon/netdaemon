@@ -1,4 +1,5 @@
-﻿using MQTTnet.Protocol;
+﻿using MQTTnet;
+using MQTTnet.Protocol;
 using NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests.TestHelpers;
 
 namespace NetDaemon.HassClient.Tests.ExtensionsTest.MqttEntityManagerTests;
@@ -13,7 +14,7 @@ public class MessageSenderTests
         await mqttSetup.MessageSender.SendMessageAsync("topic", "payload", true, MqttQualityOfServiceLevel.AtMostOnce);
         var publishedMessage = mqttSetup.LastPublishedMessage;
 
-        var payloadAsText = System.Text.Encoding.Default.GetString(publishedMessage.PayloadSegment.Array ?? []);
+        var payloadAsText = publishedMessage.ConvertPayloadToString();
 
         publishedMessage.Topic.Should().Be("topic");
         payloadAsText.Should().Be("payload");

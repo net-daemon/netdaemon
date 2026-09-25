@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace NetDaemon.Client.Internal.Net;
 
 internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket) : IWebSocketClientTransportPipeline
@@ -12,7 +14,6 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
     };
 
     private readonly CancellationTokenSource _internalCancelSource = new();
-    private readonly Pipe _pipe = new();
     private readonly IWebSocketClient _ws = clientWebSocket ?? throw new ArgumentNullException(nameof(clientWebSocket));
 
     private static int DefaultTimeOut => 5000;
@@ -50,24 +51,13 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
             _internalCancelSource.Token,
             cancelToken
         );
-        try
-        {
-            // First we start the serialization task that will process
-            // the pipeline for new data written from websocket input
-            // We want the processing to start before we read data
-            // from the websocket so the pipeline is not getting full
-            var serializeTask = ReadMessagesFromPipelineAndSerializeAsync<T>(combinedTokenSource.Token);
-            await ReadMessageFromWebSocketAndWriteToPipelineAsync(combinedTokenSource.Token).ConfigureAwait(false);
-            var result = await serializeTask.ConfigureAwait(false);
-            // File.WriteAllText("./json_result.json", JsonSerializer.Serialize<T>(result, _defaultSerializerOptions));
-            // We need to make sure the serialize task is finished before we throw the exception
-            combinedTokenSource.Token.ThrowIfCancellationRequested();
-            return result;
-        }
-        finally
-        {
-            _pipe.Reset();
-        }
+        var messageBuffer = new ArrayBufferWriter<byte>();
+        await ReadMessageFromWebSocketAsync(messageBuffer, combinedTokenSource.Token).ConfigureAwait(false);
+        combinedTokenSource.Token.ThrowIfCancellationRequested();
+        var result = DeserializeMessages<T>(messageBuffer.WrittenSpan);
+        // File.WriteAllText("./json_result.json", JsonSerializer.Serialize<T>(result, _defaultSerializerOptions));
+        combinedTokenSource.Token.ThrowIfCancellationRequested();
+        return result;
     }
 
     public Task SendMessageAsync<T>(T message, CancellationToken cancelToken) where T : class
@@ -86,88 +76,67 @@ internal class WebSocketClientTransportPipeline(IWebSocketClient clientWebSocket
         return _ws.SendAsync(result, WebSocketMessageType.Text, true, combinedTokenSource.Token);
     }
 
-    /// <summary>
-    ///     Continuously reads the data from the pipe and serialize to object
-    ///     from the json that are read
-    /// </summary>
-    /// <param name="cancelToken">Cancellation token</param>
-    /// <typeparam name="T">The type to serialize to</typeparam>
-    private async Task<T[]> ReadMessagesFromPipelineAndSerializeAsync<T>(CancellationToken cancelToken)
+    private static T[] DeserializeMessages<T>(ReadOnlySpan<byte> payload)
+        where T : class
     {
-        try
+        if (payload.IsEmpty)
+            throw new ApplicationException("Deserialization of websocket returned empty result (null)");
+
+        if (IsJsonArray(payload))
+            return JsonSerializer.Deserialize<T[]>(payload) ?? throw new ApplicationException(
+                "Deserialization of websocket returned empty result (null)");
+
+        var obj = JsonSerializer.Deserialize<T>(payload) ?? throw new ApplicationException(
+            "Deserialization of websocket returned empty result (null)");
+        return [obj];
+    }
+
+    private static bool IsJsonArray(ReadOnlySpan<byte> payload)
+    {
+        foreach (var value in payload)
         {
-            var message = await JsonSerializer.DeserializeAsync<JsonElement?>(_pipe.Reader.AsStream(),
-                              cancellationToken: cancelToken).ConfigureAwait(false)
-                          ?? throw new ApplicationException(
-                              "Deserialization of websocket returned empty result (null)");
-            if (message.ValueKind == JsonValueKind.Array)
-            {
-                // This is a coalesced message containing multiple messages so we need to
-                // deserialize it as an array
-                return message.Deserialize<T[]>() ?? throw new ApplicationException(
-                    "Deserialization of websocket returned empty result (null)");
-            }
-            else
-            {
-                // This is normal message and we deserialize it as object
-                var obj = message.Deserialize<T>() ?? throw new ApplicationException(
-                    "Deserialization of websocket returned empty result (null)");
-                return [obj];
-            }
+            if (value is (byte)' ' or (byte)'\n' or (byte)'\r' or (byte)'\t')
+                continue;
+
+            return value == (byte)'[';
         }
-        finally
-        {
-            // Always complete the reader
-            await _pipe.Reader.CompleteAsync().ConfigureAwait(false);
-        }
+
+        throw new ApplicationException("Deserialization of websocket returned empty result (null)");
     }
 
     /// <summary>
     ///     Read one or more chunks of a message and writes the result
-    ///     to the pipeline
+    ///     to the buffer
     /// </summary>
     /// <remarks>
     ///     A websocket message can be 1 to several chunks of data.
-    ///     As data are read it is written on the pipeline for
-    ///     the json serializer in function ReadMessageFromPipelineAndSerializeAsync
-    ///     to continuously serialize. Using pipes is very efficient
-    ///     way to reuse memory and get speedy results
+    ///     As data are read it is written to a contiguous buffer so we can inspect
+    ///     the first token and deserialize directly to either a single message or
+    ///     a coalesced message array.
     /// </remarks>
-    private async Task ReadMessageFromWebSocketAndWriteToPipelineAsync(CancellationToken cancelToken)
+    private async Task ReadMessageFromWebSocketAsync(ArrayBufferWriter<byte> messageBuffer, CancellationToken cancelToken)
     {
-        try
+        while (!cancelToken.IsCancellationRequested && !_ws.CloseStatus.HasValue)
         {
-            while (!cancelToken.IsCancellationRequested && !_ws.CloseStatus.HasValue)
+            var memory = messageBuffer.GetMemory();
+            var result = await _ws.ReceiveAsync(memory, cancelToken).ConfigureAwait(false);
+            if (
+                _ws.State == WebSocketState.Open &&
+                result.MessageType != WebSocketMessageType.Close)
             {
-                var memory = _pipe.Writer.GetMemory();
-                var result = await _ws.ReceiveAsync(memory, cancelToken).ConfigureAwait(false);
-                if (
-                    _ws.State == WebSocketState.Open &&
-                    result.MessageType != WebSocketMessageType.Close)
-                {
-                    _pipe.Writer.Advance(result.Count);
+                messageBuffer.Advance(result.Count);
 
-                    await _pipe.Writer.FlushAsync(cancelToken).ConfigureAwait(false);
-
-                    if (result.EndOfMessage) break;
-                }
-                else if (_ws.State == WebSocketState.CloseReceived)
-                {
-                    // We got a close message from server or if it still open we got canceled
-                    // in both cases it is important to send back the close message
-                    await SendCorrectCloseFrameToRemoteWebSocket().ConfigureAwait(false);
-
-                    // Cancel so the write thread is canceled before pipe is complete
-                    await _internalCancelSource.CancelAsync();
-                }
+                if (result.EndOfMessage) break;
             }
-        }
-        finally
-        {
-            // We have successfully read the whole message,
-            // make available to reader
-            // even if failure or we cannot reset the pipe
-            await _pipe.Writer.CompleteAsync().ConfigureAwait(false);
+            else if (_ws.State == WebSocketState.CloseReceived)
+            {
+                // We got a close message from server or if it still open we got canceled
+                // in both cases it is important to send back the close message
+                await SendCorrectCloseFrameToRemoteWebSocket().ConfigureAwait(false);
+
+                // Cancel so the read operation is canceled before returning
+                await _internalCancelSource.CancelAsync();
+            }
         }
     }
 

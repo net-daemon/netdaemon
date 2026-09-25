@@ -69,7 +69,7 @@ internal class AppStateManager(IAppStateRepository appStateRepository,
             (state == ApplicationState.Disabled && isEnabled)
             )
         {
-            await appStateRepository.UpdateAsync(applicationId, isEnabled, _cancelTokenSource.Token)
+            await appStateRepository.UpdateAsync(applicationId, state == ApplicationState.Enabled, _cancelTokenSource.Token)
                 .ConfigureAwait(false);
         }
     }

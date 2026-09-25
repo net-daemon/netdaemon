@@ -82,10 +82,10 @@ public class AppStateManagerTests
         // ASSERT
         haConnectionMock.Verify(n =>
             n.GetApiCallAsync<HassState>("states/input_boolean.netdaemon_helloapp", It.IsAny<CancellationToken>()));
-        // It exists so it should turn it on
+        // It is on so it should turn it off
         haConnectionMock.Verify(n =>
-            n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
-                It.IsAny<CancellationToken>()));
+            n.SendCommandAsync(It.Is<CallServiceCommand>(c => c.Domain == "input_boolean" && c.Service == "turn_off"),
+                It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -156,10 +156,10 @@ public class AppStateManagerTests
         // ASSERT
         haConnectionMock.Verify(n =>
             n.GetApiCallAsync<HassState>("states/input_boolean.netdaemon_helloapp", It.IsAny<CancellationToken>()));
-        // It exists so it should turn it on
+        // It is off so it should turn it on
         haConnectionMock.Verify(n =>
-            n.SendCommandAsync(It.IsAny<CallServiceCommand>(),
-                It.IsAny<CancellationToken>()));
+            n.SendCommandAsync(It.Is<CallServiceCommand>(c => c.Domain == "input_boolean" && c.Service == "turn_on"),
+                It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

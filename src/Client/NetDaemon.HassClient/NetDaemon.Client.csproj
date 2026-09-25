@@ -38,14 +38,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="System.Reactive" Version="6.0.2" />
-    <PackageReference Include="System.IO.Pipelines" Version="9.0.9" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.14.0">
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>NetDaemon.PerformanceBenchmarks</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="all" />
+    <PackageReference Include="System.Reactive" Version="7.0.0" />
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

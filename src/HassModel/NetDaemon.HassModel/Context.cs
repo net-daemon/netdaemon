@@ -3,7 +3,7 @@
 /// <summary>
 ///     Context
 /// </summary>
-public class Context
+public record Context
 {
     /// <summary>
     ///     Id

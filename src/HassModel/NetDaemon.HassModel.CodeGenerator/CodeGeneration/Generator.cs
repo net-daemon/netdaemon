@@ -13,7 +13,9 @@ internal static class Generator
         IReadOnlyCollection<EntityDomainMetadata> entityDomains,
         IReadOnlyCollection<HassServiceDomain> services)
     {
-        var orderedServiceDomains = services.OrderBy(x => x.Domain).ToArray();
+        // Domains whose services all failed to parse have no services class, so they must not be
+        // referenced from IServices, Services or the DI registrations either
+        var orderedServiceDomains = services.Where(x => x.Services.Any()).OrderBy(x => x.Domain).ToArray();
 
         var helpers = HelpersGenerator.Generate(entityDomains, orderedServiceDomains);
         var entityFactory = EntityFactoryGenerator.Generate(entityDomains);

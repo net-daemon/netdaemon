@@ -1,14 +1,10 @@
 ﻿#region
 
 using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
-using MQTTnet.Client;
-using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
-using NetDaemon.Extensions.MqttEntityManager.Helpers;
 
 #endregion
 
@@ -30,31 +26,24 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <summary>
     ///     Managed subscriptions to topics within MQTT
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="assuredMqttConnection"></param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="assuredMqttConnection">The assured MQTT connection.</param>
     public MessageSubscriber(ILogger<MessageSubscriber> logger, IAssuredMqttConnection assuredMqttConnection)
     {
         _logger = logger;
         _assuredMqttConnection = assuredMqttConnection;
     }
 
-    /// <summary>
-    ///     Subscribe to the given topic
-    /// </summary>
-    /// <param name="topic"></param>
+    /// <inheritdoc />
     public async Task<IObservable<string>> SubscribeTopicAsync(string topic)
     {
         try
         {
-            var mqttClient = await _assuredMqttConnection.GetClientAsync();
-            await EnsureSubscriptionAsync(mqttClient);
+            await EnsureSubscriptionAsync();
 
-            var topicFilters = new Collection<MqttTopicFilter>
-            {
-                new MqttTopicFilterBuilder().WithTopic(topic).Build()
-            };
+            var topicFilter = new MqttTopicFilterBuilder().WithTopic(topic).Build();
 
-            await mqttClient.SubscribeAsync(topicFilters);
+            await _assuredMqttConnection.SubscribeAsync(topicFilter);
             return _subscribers.GetOrAdd(topic, new Lazy<Subject<string>>()).Value;
         }
         catch (Exception e)
@@ -67,8 +56,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <summary>
     /// If we are not already subscribed to receive messages, set up the handler
     /// </summary>
-    /// <param name="mqttClient"></param>
-    private async Task EnsureSubscriptionAsync(IManagedMqttClient mqttClient)
+    private async Task EnsureSubscriptionAsync()
     {
         await _subscriptionSetupLock.WaitAsync();
         try
@@ -76,7 +64,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
             if (!_subscriptionIsSetup)
             {
                 _logger.LogInformation("Configuring message subscription");
-                mqttClient.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
+                _assuredMqttConnection.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
                 _subscriptionIsSetup = true;
             }
         }
@@ -94,13 +82,13 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
     /// <summary>
     /// Message received from MQTT, so find the subscription (if any) and notify them
     /// </summary>
-    /// <param name="msg"></param>
-    /// <returns></returns>
+    /// <param name="msg">The received MQTT application message.</param>
+    /// <returns>A completed task.</returns>
     private Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs msg)
     {
         try
         {
-            var payload = ByteArrayHelper.SafeToString(msg.ApplicationMessage.PayloadSegment.Array ?? []);
+            var payload = msg.ApplicationMessage.ConvertPayloadToString();
             var topic = msg.ApplicationMessage.Topic;
             _logger.LogTrace("Subscription received {Payload} from {Topic}", payload, topic);
 
@@ -119,6 +107,7 @@ internal class MessageSubscriber : IMessageSubscriber, IDisposable
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (_isDisposed) return;

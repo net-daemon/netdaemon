@@ -536,6 +536,48 @@ public class ServicesGeneratorTest
         CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
     }
 
+    [Fact]
+    public void TestDomainWithoutAnyServices_ServicesTypeNotReferenced()
+    {
+        var readOnlyCollection = new HassState[] {
+            new() { EntityId = "light.light1" },
+        };
+
+        // A domain ends up without services when ServiceMetaDataParser drops all of its services
+        // because they failed to deserialize
+        var hassServiceDomains = new HassServiceDomain[] {
+            new() {
+                Domain = "broken_domain",
+                Services = [],
+            },
+            new() {
+                Domain = "light",
+                Services = [
+                    new() {
+                        Service = "turn_on",
+                        Target = new TargetSelector
+                        {
+                            Entity = [new EntitySelector { Domain = ["light"] }]
+                        }
+                    }
+                ]
+            }
+        };
+
+        // Act:
+        var code = CodeGenTestHelper.GenerateCompilationUnit(_settings, readOnlyCollection, hassServiceDomains);
+
+        code.ToString().Should().NotContain("BrokenDomainServices",
+            because: "a domain without services has no services class, so nothing may reference it");
+
+        var appCode = WrapMethodBody(
+            """
+                services.Light.TurnOn(new ServiceTarget());
+            """);
+
+        CodeGenTestHelper.AssertCodeCompiles(code.ToString(), appCode);
+    }
+
     private static string WrapMethodBody([StringSyntax("C#")]string methodBody)
     {
         var appCode = $$"""

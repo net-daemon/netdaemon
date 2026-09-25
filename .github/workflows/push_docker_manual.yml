@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
-        
+
       - name: 📆 Set version number
         run: |
           echo setting source version:    feature-${{ github.event.inputs.tag }}
@@ -24,23 +24,23 @@ jobs:
           sed -i '/    io.hass.version=/c\    io.hass.version="feature-${{ github.event.inputs.tag }}"' ${{github.workspace}}/Dockerfile.AddOn
 
       - name: 📎 Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: 🔧 Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: 🔓 Login to Docker hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: 🔓 Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -49,13 +49,13 @@ jobs:
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile . \
             --compress \
-            --tag "netdaemon/netdaemon4:feature-${{ github.event.inputs.tag }}" \
-            --tag "ghcr.io/net-daemon/netdaemon4:feature-${{ github.event.inputs.tag }}"
+            --tag "netdaemon/netdaemon6:feature-${{ github.event.inputs.tag }}" \
+            --tag "ghcr.io/net-daemon/netdaemon6:feature-${{ github.event.inputs.tag }}"
 
   deploy_docker_addon:
     name: 📦 Deploy to Docker add-on with tag
@@ -72,35 +72,35 @@ jobs:
           sed -i '/    io.hass.version=/c\    io.hass.version="feature-${{ github.event.inputs.tag }}"' ${{github.workspace}}/Dockerfile.AddOn
 
       - name: 📎 Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: 🔧 Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: 🧰 Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: 🔓 Login to Docker hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: 🔓 Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: 🛠️ Run Buildx
         run: |
           docker buildx build \
-            --platform linux/arm,linux/arm64,linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
             --output "type=image,push=true" \
             --no-cache \
             --file ./Dockerfile.AddOn . \
             --compress \
-            --tag "netdaemon/netdaemon_addon5:feature-${{ github.event.inputs.tag }}" \
-            --tag "ghcr.io/net-daemon/netdaemon_addon5:feature-${{ github.event.inputs.tag }}"
+            --tag "netdaemon/netdaemon_addon6:feature-${{ github.event.inputs.tag }}" \
+            --tag "ghcr.io/net-daemon/netdaemon_addon6:feature-${{ github.event.inputs.tag }}"

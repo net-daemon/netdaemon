@@ -13,7 +13,7 @@ internal static class ServicesGenerator
 
         yield return GenerateRootServicesType(domains);
 
-        foreach (var domainServicesGroup in serviceDomains.Where(sd => sd.Services.Any()).GroupBy(x => x.Domain, x => x.Services))
+        foreach (var domainServicesGroup in serviceDomains.GroupBy(x => x.Domain, x => x.Services))
         {
             var domain = domainServicesGroup.Key!;
             var domainServices = domainServicesGroup
