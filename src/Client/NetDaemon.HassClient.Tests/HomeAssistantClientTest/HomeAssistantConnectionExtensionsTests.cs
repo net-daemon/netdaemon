@@ -62,4 +62,30 @@ public class HomeAssistantConnectionExtensionsTests
         sentCommand.Should().NotBeNull();
         sentCommand!.ReturnResponse.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task CallServiceWithResponseWithoutOptionalArgumentsShouldPreserveDomainAndService()
+    {
+        var connectionMock = new Mock<IHomeAssistantConnection>();
+        CallServiceCommand? sentCommand = null;
+
+        connectionMock
+            .Setup(n => n.SendCommandAndReturnResponseAsync<CallServiceCommand, HassServiceResult>(
+                It.IsAny<CallServiceCommand>(),
+                CancellationToken.None))
+            .Callback<CallServiceCommand, CancellationToken>((command, _) => sentCommand = command)
+            .ReturnsAsync(new HassServiceResult());
+
+        await connectionMock.Object.CallServiceWithResponseAsync("todo", "get_items").ConfigureAwait(false);
+
+        sentCommand.Should().NotBeNull();
+        sentCommand.Should().BeEquivalentTo(new
+        {
+            Domain = "todo",
+            Service = "get_items",
+            ServiceData = (object?)null,
+            Target = (HassTarget?)null,
+            ReturnResponse = (bool?)true
+        });
+    }
 }
