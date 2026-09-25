@@ -76,6 +76,28 @@ public class HomeAssistantConnectionTests
     }
 
     [Fact]
+    public async Task SubscribeToSpecificEventShouldSendRequestedEventType()
+    {
+        var pipeline = new TransportPipelineMock();
+        SubscribeEventCommand? sentCommand = null;
+        pipeline
+            .Setup(n => n.SendMessageAsync(It.IsAny<SubscribeEventCommand>(), It.IsAny<CancellationToken>()))
+            .Returns<SubscribeEventCommand, CancellationToken>((command, _) =>
+            {
+                sentCommand = command;
+                pipeline.AddResponse(new HassMessage { Type = "result", Id = command.Id, Success = true });
+                return Task.CompletedTask;
+            });
+
+        await using var homeAssistantConnection = CreateHomeAssistantConnection(pipeline);
+
+        _ = await homeAssistantConnection.SubscribeToHomeAssistantEventsAsync("state_changed", CancellationToken.None);
+
+        sentCommand.Should().NotBeNull();
+        sentCommand!.EventType.Should().Be("state_changed");
+    }
+
+    [Fact]
     public async Task HomeAssistantConnectionDisposedMultipleTimesShouldNotThrow()
     {
         var homeAssistantConnection = GetDefaultHomeAssistantConnection();
