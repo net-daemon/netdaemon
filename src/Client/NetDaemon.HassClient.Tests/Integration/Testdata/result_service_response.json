@@ -9,7 +9,9 @@
       "user_id": "9587bf0916cf498fa289523c229ccdb4"
     },
     "response": {
-      "entity.test": {}
+      "calendar.cal": {
+        "events": []
+      }
     }
   }
 }
