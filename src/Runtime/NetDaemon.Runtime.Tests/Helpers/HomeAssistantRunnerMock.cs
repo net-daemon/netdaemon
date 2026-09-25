@@ -13,7 +13,8 @@ internal class HomeAssistantRunnerMock : Mock<IHomeAssistantRunner>
         ConnectMock = new();
         DisconnectMock = new();
         ClientMock = new();
-        SetupGet(n => n.CurrentConnection).Returns(ClientMock.ConnectionMock.Object);
+        SetupGet(n => n.CurrentConnection).Returns(() => ClientMock.ConnectionMock.Object);
+        As<IHomeAssistantConnectionProvider>().SetupGet(n => n.CurrentConnection).Returns(() => ClientMock.ConnectionMock.Object);
         SetupGet(n => n.OnConnect).Returns(ConnectMock);
         SetupGet(n => n.OnDisconnect).Returns(DisconnectMock);
 
