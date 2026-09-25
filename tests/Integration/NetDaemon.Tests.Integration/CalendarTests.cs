@@ -73,6 +73,9 @@ public record AddCalendarEventCommand : CommandMessage
 
 public class CalendarTests : NetDaemonIntegrationBase
 {
+    private const string QueryStartDateTime = "2023-07-26 00:00:00";
+    private const string QueryEndDateTime = "2023-07-28 00:00:00";
+
     public CalendarTests(HomeAssistantLifetime homeAssistantLifetime) : base(homeAssistantLifetime)
     {
     }
@@ -133,8 +136,8 @@ public class CalendarTests : NetDaemonIntegrationBase
             "get_events",
             new
             {
-                start_date_time = "2023-07-26 00:00:00",
-                end_date_time = "2023-07-28 00:00:00"
+                start_date_time = QueryStartDateTime,
+                end_date_time = QueryEndDateTime
             },
             new HassTarget { EntityIds = ["calendar.cal"] },
             CancellationToken.None).ConfigureAwait(false);
@@ -165,34 +168,31 @@ public class CalendarTests : NetDaemonIntegrationBase
 
     private static async Task WaitForCalendarEventAsync(IHomeAssistantConnection haConnection, string summary, string description)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        while (!timeout.IsCancellationRequested)
-        {
-            var result = await haConnection.CallServiceWithResponseAsync(
+        await WaitForConditionHelper.WaitUntilAsync(
+            async cancellationToken =>
+            {
+                var result = await haConnection.CallServiceWithResponseAsync(
                 "calendar",
                 "get_events",
                 new
                 {
-                    start_date_time = "2023-07-26 00:00:00",
-                    end_date_time = "2023-07-28 00:00:00"
+                    start_date_time = QueryStartDateTime,
+                    end_date_time = QueryEndDateTime
                 },
                 new HassTarget { EntityIds = ["calendar.cal"] },
-                timeout.Token).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
-            if (result?.Response is JsonElement response &&
-                response.TryGetProperty("calendar.cal", out var calendarElement))
-            {
-                var events = calendarElement.Deserialize<CalendarEvents>();
-                if (events?.Events.Any(e => e.Summary == summary && e.Description == description) == true)
+                if (result?.Response is JsonElement response &&
+                    response.TryGetProperty("calendar.cal", out var calendarElement))
                 {
-                    return;
+                    var events = calendarElement.Deserialize<CalendarEvents>();
+                    return events?.Events.Any(e => e.Summary == summary && e.Description == description) == true;
                 }
-            }
 
-            await Task.Delay(100, timeout.Token).ConfigureAwait(false);
-        }
-
-        throw new TimeoutException($"Calendar event '{summary}' was not observed in Home Assistant within the timeout.");
+                return false;
+            },
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromMilliseconds(100),
+            $"Calendar event '{summary}' was not observed in Home Assistant within the timeout.");
     }
 }
