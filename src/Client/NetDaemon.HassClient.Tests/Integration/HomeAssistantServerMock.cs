@@ -263,21 +263,31 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                             webSocket).ConfigureAwait(false);
                         break;
                     case "call_service":
-                        if (JsonDocument.Parse(buffer.AsMemory(0, result.Count)).RootElement
-                                .TryGetProperty("return_response", out var returnResponse) &&
-                            returnResponse.GetBoolean())
+                        using (var commandDocument = JsonDocument.Parse(buffer.AsMemory(0, result.Count)))
                         {
-                            await ReplaceIdInResponseAndSendMsg(
-                                "result_calendar_list_event.json",
-                                hassMessage.Id,
-                                webSocket).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await ReplaceIdInResponseAndSendMsg(
-                                "result_msg.json",
-                                hassMessage.Id,
-                                webSocket).ConfigureAwait(false);
+                            if (commandDocument.RootElement.TryGetProperty("return_response", out var returnResponse) &&
+                                returnResponse.GetBoolean())
+                            {
+                                var responseMessageFileName =
+                                    commandDocument.RootElement.TryGetProperty("domain", out var domain) &&
+                                    commandDocument.RootElement.TryGetProperty("service", out var service) &&
+                                    domain.GetString() == "calendar" &&
+                                    service.GetString() == "get_events"
+                                        ? "result_calendar_list_event.json"
+                                        : "result_service_response.json";
+
+                                await ReplaceIdInResponseAndSendMsg(
+                                    responseMessageFileName,
+                                    hassMessage.Id,
+                                    webSocket).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                await ReplaceIdInResponseAndSendMsg(
+                                    "result_msg.json",
+                                    hassMessage.Id,
+                                    webSocket).ConfigureAwait(false);
+                            }
                         }
                         break;
                     case "execute_script":
