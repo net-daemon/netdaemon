@@ -281,7 +281,7 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                                 else
                                 {
                                     await ReplaceIdInResponseAndSendMsg(
-                                        "result_msg.json",
+                                        "result_msg_error.json",
                                         hassMessage.Id,
                                         webSocket).ConfigureAwait(false);
                                 }
