@@ -76,6 +76,209 @@ public class ServiceMetaDataParserTest
     }
 
     [Fact]
+    public void TestServicesWithAdditionalFieldsCanBeParsed()
+    {
+        var sample = """
+            {
+              "light": {
+                "turn_on": {
+                  "fields": {
+                    "transition": {
+                      "selector": {
+                        "number": {
+                          "min": 0.0,
+                          "max": 300.0,
+                          "unit_of_measurement": "seconds",
+                          "step": 1.0,
+                          "mode": "slider"
+                        }
+                      }
+                    },
+                    "rgb_color": {
+                      "example": "[255, 100, 100]",
+                      "selector": {
+                        "color_rgb": {}
+                      }
+                    },
+                    "color_temp_kelvin": {
+                      "selector": {
+                        "color_temp": {
+                          "unit": "kelvin",
+                          "min": 2000,
+                          "max": 6500
+                        }
+                      }
+                    },
+                    "brightness_pct": {
+                      "selector": {
+                        "number": {
+                          "min": 0.0,
+                          "max": 100.0,
+                          "unit_of_measurement": "%",
+                          "step": 1.0,
+                          "mode": "slider"
+                        }
+                      }
+                    },
+                    "brightness_step_pct": {
+                      "selector": {
+                        "number": {
+                          "min": -100.0,
+                          "max": 100.0,
+                          "unit_of_measurement": "%",
+                          "step": 1.0,
+                          "mode": "slider"
+                        }
+                      }
+                    },
+                    "effect": {
+                      "selector": {
+                        "state": {
+                          "attribute": "effect",
+                          "multiple": false
+                        }
+                      }
+                    },
+                    "additional_fields": {
+                      "collapsed": true,
+                      "fields": {
+                        "rgbw_color": {
+                          "example": "[255, 100, 100, 50]",
+                          "selector": {
+                            "object": {
+                              "multiple": false
+                            }
+                          }
+                        },
+                        "rgbww_color": {
+                          "example": "[255, 100, 100, 50, 70]",
+                          "selector": {
+                            "object": {
+                              "multiple": false
+                            }
+                          }
+                        },
+                        "color_name": {
+                          "selector": {
+                            "select": {
+                              "translation_key": "color_name",
+                              "options": [
+                                "homeassistant",
+                                "aliceblue"
+                              ],
+                              "custom_value": false,
+                              "multiple": false,
+                              "sort": false
+                            }
+                          }
+                        },
+                        "hs_color": {
+                          "example": "[300, 70]",
+                          "selector": {
+                            "object": {
+                              "multiple": false
+                            }
+                          }
+                        },
+                        "xy_color": {
+                          "example": "[0.52, 0.43]",
+                          "selector": {
+                            "object": {
+                              "multiple": false
+                            }
+                          }
+                        },
+                        "brightness": {
+                          "selector": {
+                            "number": {
+                              "min": 0.0,
+                              "max": 255.0,
+                              "step": 1.0,
+                              "mode": "slider"
+                            }
+                          }
+                        },
+                        "brightness_step": {
+                          "selector": {
+                            "number": {
+                              "min": -225.0,
+                              "max": 255.0,
+                              "step": 1.0,
+                              "mode": "slider"
+                            }
+                          }
+                        },
+                        "white": {
+                          "selector": {
+                            "constant": {
+                              "value": true,
+                              "label": "Enabled"
+                            }
+                          }
+                        },
+                        "profile": {
+                          "example": "relax",
+                          "selector": {
+                            "text": {
+                              "multiple": false,
+                              "multiline": false
+                            }
+                          }
+                        },
+                        "flash": {
+                          "selector": {
+                            "select": {
+                              "translation_key": "flash",
+                              "options": [
+                                "long",
+                                "short"
+                              ],
+                              "custom_value": false,
+                              "multiple": false,
+                              "sort": false
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "target": {
+                    "entity": [
+                      {
+                        "domain": [
+                          "light"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+            """;
+
+        var res = Parse(sample);
+        var turnOnService = res.Single().Services.Single();
+
+        turnOnService.Fields!.Select(f => f.Field).Should().BeEquivalentTo(
+            "transition",
+            "rgb_color",
+            "color_temp_kelvin",
+            "brightness_pct",
+            "brightness_step_pct",
+            "effect",
+            "rgbw_color",
+            "rgbww_color",
+            "color_name",
+            "hs_color",
+            "xy_color",
+            "brightness",
+            "brightness_step",
+            "white",
+            "profile",
+            "flash");
+    }
+
+    [Fact]
     public void TestServicesWithReturnValueCanBeParsed()
     {
       var sample = """
