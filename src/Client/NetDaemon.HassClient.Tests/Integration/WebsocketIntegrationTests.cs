@@ -60,7 +60,8 @@ public class WebsocketIntegrationTests : IntegrationTestBase
             .ConfigureAwait(false);
         result.Should().NotBeNull();
         result!.Response.Should().NotBeNull();
-        result.Response!.Value.GetProperty("events")
+        result.Response!.Value.GetProperty("calendar.cal")
+            .GetProperty("events")
             .EnumerateArray()
             .First()
             .GetProperty("summary")
