@@ -100,7 +100,7 @@ public class CalendarTests : NetDaemonIntegrationBase
 
         // First create the calendar item that will be returned
         await AddTestCalendarItem(haConnection, summary, description);
-        await Task.Delay(500); // Wait for the event to be processed
+        await WaitForCalendarEventAsync(haConnection, summary, description);
 
         // Then we create a task that waits for the result using a custom event
         var waitTask = haContext.Events.Where(e => e.EventType == "custom_calendar_events").FirstAsync().ToTask();
@@ -126,7 +126,7 @@ public class CalendarTests : NetDaemonIntegrationBase
         const string description = "A test calendar event";
 
         await AddTestCalendarItem(haConnection, summary, description);
-        await Task.Delay(500);
+        await WaitForCalendarEventAsync(haConnection, summary, description);
 
         var result = await haConnection.CallServiceWithResponseAsync(
             "calendar",
@@ -161,5 +161,38 @@ public class CalendarTests : NetDaemonIntegrationBase
                 End = DateTime.Parse("2023-07-27T23:00:00", CultureInfo.InvariantCulture)
             }
         }, CancellationToken.None);
+    }
+
+    private static async Task WaitForCalendarEventAsync(IHomeAssistantConnection haConnection, string summary, string description)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        while (!timeout.IsCancellationRequested)
+        {
+            var result = await haConnection.CallServiceWithResponseAsync(
+                "calendar",
+                "get_events",
+                new
+                {
+                    start_date_time = "2023-07-26 00:00:00",
+                    end_date_time = "2023-07-28 00:00:00"
+                },
+                new HassTarget { EntityIds = ["calendar.cal"] },
+                timeout.Token).ConfigureAwait(false);
+
+            if (result?.Response is JsonElement response &&
+                response.TryGetProperty("calendar.cal", out var calendarElement))
+            {
+                var events = calendarElement.Deserialize<CalendarEvents>();
+                if (events?.Events.Any(e => e.Summary == summary && e.Description == description) == true)
+                {
+                    return;
+                }
+            }
+
+            await Task.Delay(100, timeout.Token).ConfigureAwait(false);
+        }
+
+        throw new TimeoutException($"Calendar event '{summary}' was not observed in Home Assistant within the timeout.");
     }
 }
