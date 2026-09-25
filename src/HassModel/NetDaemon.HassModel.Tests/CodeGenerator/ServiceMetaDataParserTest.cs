@@ -75,10 +75,12 @@ public class ServiceMetaDataParserTest
             "flash");
     }
 
-    [Fact]
-    public void TestServicesWithAdditionalFieldsCanBeParsed()
+    [Theory]
+    [InlineData("advanced_fields")]
+    [InlineData("additional_fields")]
+    public void TestServicesWithNestedFieldsCanBeParsed(string nestedFieldName)
     {
-        var sample = """
+        var sample = $$"""
             {
               "light": {
                 "turn_on": {
@@ -139,7 +141,7 @@ public class ServiceMetaDataParserTest
                         }
                       }
                     },
-                    "additional_fields": {
+                    "{{nestedFieldName}}": {
                       "collapsed": true,
                       "fields": {
                         "rgbw_color": {
