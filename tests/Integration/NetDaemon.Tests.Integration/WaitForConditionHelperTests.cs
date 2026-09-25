@@ -32,4 +32,21 @@ public class WaitForConditionHelperTests
         await act.Should().ThrowAsync<TimeoutException>()
             .WithMessage("Condition was not met");
     }
+
+    [Fact]
+    public async Task WaitUntilAsync_ShouldThrowTimeoutException_WhenConditionObservesCancellation()
+    {
+        var act = async () => await WaitForConditionHelper.WaitUntilAsync(
+            async cancellationToken =>
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return false;
+            },
+            TimeSpan.FromMilliseconds(50),
+            TimeSpan.FromMilliseconds(10),
+            "Condition was not met");
+
+        await act.Should().ThrowAsync<TimeoutException>()
+            .WithMessage("Condition was not met");
+    }
 }

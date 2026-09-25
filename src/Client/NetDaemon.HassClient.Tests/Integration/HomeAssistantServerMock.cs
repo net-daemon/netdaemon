@@ -268,18 +268,23 @@ public sealed class HassMockStartup : IHostedService, IDisposable
                             if (commandDocument.RootElement.TryGetProperty("return_response", out var returnResponse) &&
                                 returnResponse.GetBoolean())
                             {
-                                var responseMessageFileName =
-                                    commandDocument.RootElement.TryGetProperty("domain", out var domain) &&
+                                if (commandDocument.RootElement.TryGetProperty("domain", out var domain) &&
                                     commandDocument.RootElement.TryGetProperty("service", out var service) &&
                                     domain.GetString() == "calendar" &&
-                                    service.GetString() == "get_events"
-                                        ? "result_calendar_list_event.json"
-                                        : "result_service_response.json";
-
-                                await ReplaceIdInResponseAndSendMsg(
-                                    responseMessageFileName,
-                                    hassMessage.Id,
-                                    webSocket).ConfigureAwait(false);
+                                    service.GetString() == "get_events")
+                                {
+                                    await ReplaceIdInResponseAndSendMsg(
+                                        "result_calendar_list_event.json",
+                                        hassMessage.Id,
+                                        webSocket).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    await ReplaceIdInResponseAndSendMsg(
+                                        "result_msg.json",
+                                        hassMessage.Id,
+                                        webSocket).ConfigureAwait(false);
+                                }
                             }
                             else
                             {
