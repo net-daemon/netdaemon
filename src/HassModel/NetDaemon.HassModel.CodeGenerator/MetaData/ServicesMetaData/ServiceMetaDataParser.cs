@@ -75,9 +75,13 @@ internal static class ServiceMetaDataParser
     {
         if (!element.TryGetProperty("fields", out var fieldProperty)) return [];
 
-        // advanced_fields can have nested fields inside, we flatten them to a single list of fields
-        return fieldProperty.EnumerateObject().SelectMany(p => p.Name == "advanced_fields" ? GetFields(p.Value)  : [GetField(p.Name, p.Value)]).ToList();
+        // advanced_fields/additional_fields can have nested fields inside, we flatten them to a single list of fields
+        return fieldProperty.EnumerateObject()
+            .SelectMany(p => IsNestedFieldGroup(p.Name) ? GetFields(p.Value) : [GetField(p.Name, p.Value)])
+            .ToList();
     }
+
+    private static bool IsNestedFieldGroup(string fieldName) => fieldName is "advanced_fields" or "additional_fields";
 
     private static HassServiceField GetField(string fieldName, JsonElement element)
     {
