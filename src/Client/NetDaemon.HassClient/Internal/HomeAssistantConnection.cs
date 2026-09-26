@@ -83,7 +83,10 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
             _internalCancelSource.Token
         );
 
-        var result = await SendCommandAndReturnHassMessageResponseAsync(new SubscribeEventCommand(),
+        var result = await SendCommandAndReturnHassMessageResponseAsync(new SubscribeEventCommand
+            {
+                EventType = eventType
+            },
             combinedTokenSource.Token).ConfigureAwait(false);
 
         // The id if the message we used to subscribe should be used as the filter for the event messages
