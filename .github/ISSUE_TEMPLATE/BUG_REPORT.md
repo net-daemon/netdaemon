@@ -8,7 +8,6 @@ assignees: ''
 ---
 
 <!-- READ THIS FIRST:
-  - If you need additional help with this template, please refer to https://netdaemon.xtz/help/reporting_issues/
   - Make sure you are running the latest version of NetDaemon before reporting an issue: https://github.com/net-daemon/netdaemon/releases
   - Do not use issues for support, we have the discord server for that purpose. https://discord.gg/K3xwfcX
   - Provide as many details as possible. Paste logs, configuration samples and code into the backticks.
