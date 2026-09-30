@@ -53,6 +53,50 @@ public class ConfigTests
         Assert.Throws<InvalidDataException>(() => configurationBuilder.Build());
     }
 
+    // Regression: a YAML file whose ROOT is not a mapping must not crash config-build.
+    // Home Assistant !include targets such as automations.yaml hold a sequence root ("[]"),
+    // and a bare value is a scalar root. The parser previously cast the root unconditionally
+    // to YamlMappingNode and threw InvalidCastException at host-config time, before the host
+    // (and any logging) started. A non-mapping root carries no key/value config, so it must
+    // contribute no data instead.
+    [Theory]
+    [InlineData("[]")]                 // sequence root (the automations.yaml case)
+    [InlineData("- one\n- two")]       // sequence root with items
+    [InlineData("just-a-scalar")]      // scalar root
+    public void NonMappingRootedYaml_ContributesNoData_InsteadOfThrowing(string yamlContent)
+    {
+        BuildYamlFileAndAssertNoData(yamlContent);
+    }
+
+    // Regression: an empty YAML file (no documents) likewise contributes no data.
+    [Fact]
+    public void EmptyYaml_ContributesNoData_InsteadOfThrowing()
+    {
+        BuildYamlFileAndAssertNoData(string.Empty);
+    }
+
+    private static void BuildYamlFileAndAssertNoData(string yamlContent)
+    {
+        // ARRANGE
+        var yamlPath = Path.Combine(Path.GetTempPath(), $"nd-yaml-root-{Guid.NewGuid():N}.yaml");
+        File.WriteAllText(yamlPath, yamlContent);
+        try
+        {
+            var configurationBuilder = new ConfigurationBuilder() as IConfigurationBuilder;
+            configurationBuilder.AddYamlFile(yamlPath, false, false);
+
+            // ACT
+            var root = configurationBuilder.Build();
+
+            // CHECK
+            root.AsEnumerable().Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(yamlPath);
+        }
+    }
+
     [Fact]
     public void TestAppGetCorrectJsonConfigInjected()
     {
