@@ -245,7 +245,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
         // Assert
         typedEventObserverMock.Verify(e => e.OnNext(It.IsAny<Event<TestEventData>>()), Times.Once);
         typedEventObserverMock.Verify(e => e.OnCompleted(), Times.Once);
-        var @event = (Event<TestEventData>)typedEventObserverMock.Invocations[0].Arguments[0];
+        var @event = Assert.IsType<Event<TestEventData>>(typedEventObserverMock.Invocations[0].Arguments[0]);
 
         @event.Data!.command.Should().Be("flip");
         @event.Data!.endpoint_id.Should().Be(2);
