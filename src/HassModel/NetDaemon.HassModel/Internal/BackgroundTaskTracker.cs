@@ -4,14 +4,13 @@ namespace NetDaemon.HassModel.Internal;
 
 internal class BackgroundTaskTracker(ILogger<BackgroundTaskTracker> logger) : IBackgroundTaskTracker
 {
-    private readonly ILogger<BackgroundTaskTracker> _logger = logger;
     private volatile bool _isDisposed;
 
     internal readonly ConcurrentDictionary<Task, object?> BackgroundTasks = new();
 
     public void TrackBackgroundTask(Task? task, string? description = null)
     {
-        ArgumentNullException.ThrowIfNull(task, nameof(task));
+        if (task == null) return;
 
         BackgroundTasks.TryAdd(task, null);
 
@@ -24,11 +23,11 @@ internal class BackgroundTaskTracker(ILogger<BackgroundTaskTracker> logger) : IB
             }
             catch (OperationCanceledException)
             {
-                _logger.LogTrace("Task was canceled processing Home Assistant event: {Description}", description ?? "");
+                logger.LogTrace("Task was canceled processing Home Assistant event: {Description}", description ?? "");
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Exception processing Home Assistant event: {Description}", description ?? "");
+                logger.LogError(e, "Exception processing Home Assistant event: {Description}", description ?? "");
             }
             finally
             {

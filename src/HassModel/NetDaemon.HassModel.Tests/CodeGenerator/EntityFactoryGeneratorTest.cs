@@ -107,10 +107,10 @@ public sealed  class EntityFactoryGeneratorTest : IDisposable
 
         var hassConnectionMock = new Mock<IHomeAssistantConnection>();
         serviceCollection.AddSingleton(hassConnectionMock.Object);
-        var haRunnerMock = new Mock<IHomeAssistantRunner>();
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(hassConnectionMock.Object);
+        var connectionProviderMock = new Mock<IHomeAssistantConnectionProvider>();
+        connectionProviderMock.SetupGet(n => n.CurrentConnection).Returns(hassConnectionMock.Object);
 
-        serviceCollection.AddSingleton(_ => haRunnerMock.Object);
+        serviceCollection.AddSingleton(_ => connectionProviderMock.Object);
         var apiManagerMock = new Mock<IHomeAssistantApiManager>();
 
         serviceCollection.AddSingleton(_ => apiManagerMock.Object);
