@@ -432,7 +432,7 @@ public class HomeAssistantConnectionTests
             x => x.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) => v.ToString() == "Message pump stopped unexpectedly, closing the Home Assistant connection"),
+                It.Is<It.IsAnyType>((v, _) => v != null && v.ToString() == "Message pump stopped unexpectedly, closing the Home Assistant connection"),
                 transportException,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -469,7 +469,7 @@ public class HomeAssistantConnectionTests
             x => x.Log(
                 LogLevel.Debug,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) => v.ToString() == "Message pump stopped while disposing the Home Assistant connection"),
+                It.Is<It.IsAnyType>((v, _) => v != null && v.ToString() == "Message pump stopped while disposing the Home Assistant connection"),
                 transportException,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
