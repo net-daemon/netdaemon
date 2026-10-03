@@ -162,25 +162,15 @@ public static class HomeAssistantConnectionExtensions
     )
     {
         return await connection
-            .SendCommandAndReturnResponseAsync<CallExecuteScriptCommand, HassServiceResult>
+            .SendCommandAndReturnResponseAsync<CallServiceCommand, HassServiceResult>
             (
                 new()
                 {
-                   Sequence =
-                   [
-                       new
-                       {
-                           service = $"{domain}.{service}",
-                           data = serviceData,
-                           target = serviceTarget,
-                           response_variable = "service_result"
-                       },
-                       new
-                       {
-                           stop = "done",
-                           response_variable = "service_result"
-                       }
-                   ]
+                    Domain = domain,
+                    Service = service,
+                    ServiceData = serviceData,
+                    Target = serviceTarget,
+                    ReturnResponse = true
                 },
                 cancelToken ?? CancellationToken.None).ConfigureAwait(false);
     }

@@ -14,4 +14,7 @@ internal record CallServiceCommand : CommandMessage
     [JsonPropertyName("service_data")] public object? ServiceData { get; init; }
 
     [JsonPropertyName("target")] public HassTarget? Target { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("return_response")] public bool? ReturnResponse { get; init; }
 }
