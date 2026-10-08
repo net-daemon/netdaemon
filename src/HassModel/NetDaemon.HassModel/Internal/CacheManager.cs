@@ -3,9 +3,9 @@
 internal class CacheManager(EntityStateCache entityStateCache, RegistryCache registryCache)
     : ICacheManager
 {
-    public async Task InitializeAsync(CancellationToken cancellationToken)
+    public async Task InitializeAsync(IHomeAssistantConnection homeAssistantConnection, CancellationToken cancellationToken)
     {
-        await entityStateCache.InitializeAsync(cancellationToken).ConfigureAwait(false);
-        await registryCache.InitializeAsync(cancellationToken).ConfigureAwait(false);
+        await entityStateCache.InitializeAsync(homeAssistantConnection, cancellationToken).ConfigureAwait(false);
+        await registryCache.InitializeAsync(homeAssistantConnection, cancellationToken).ConfigureAwait(false);
     }
 }
