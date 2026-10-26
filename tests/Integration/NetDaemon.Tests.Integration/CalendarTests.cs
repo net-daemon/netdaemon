@@ -8,6 +8,7 @@ using FluentAssertions.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NetDaemon.AppModel;
 using NetDaemon.Client;
+using NetDaemon.Client.HomeAssistant.Extensions;
 using NetDaemon.Client.HomeAssistant.Model;
 using NetDaemon.HassModel;
 using NetDaemon.HassModel.Entities;
@@ -94,10 +95,12 @@ public class CalendarTests : NetDaemonIntegrationBase
     {
         var haContext = Services.GetRequiredService<IHaContext>();
         var haConnection = Services.GetRequiredService<IHomeAssistantConnection>();
+        var summary = $"Test-{Guid.NewGuid():N}";
+        const string description = "A test calendar event";
 
         // First create the calendar item that will be returned
-        await AddTestCalendarItem();
-        await Task.Delay(500); // Wait for the event to be processed
+        await AddTestCalendarItem(haConnection, summary, description);
+        await WaitForCalendarEventAsync(haConnection, summary, description);
 
         // Then we create a task that waits for the result using a custom event
         var waitTask = haContext.Events.Where(e => e.EventType == "custom_calendar_events").FirstAsync().ToTask();
@@ -111,23 +114,62 @@ public class CalendarTests : NetDaemonIntegrationBase
         result!.DataElement!.Should().NotBeNull();
         var events = result.DataElement!.Value.GetProperty("events").Deserialize<CalendarEvents>();
         events!.Events.Should().NotBeNull();
-        events!.Events.Count.Should().Be(1);
-        events!.Events[0].Summary.Should().Be("Test");
+        events.Events.Should().ContainSingle(e => e.Summary == summary && e.Description == description);
 
-        async Task AddTestCalendarItem()
-        {
-            await haConnection.SendCommandAndReturnResponseRawAsync(new AddCalendarEventCommand
+    }
+
+    [Fact]
+    public async Task HomeAssistantConnection_CallServiceWithResponseAsync_ShouldReturnEvents()
+    {
+        var haConnection = Services.GetRequiredService<IHomeAssistantConnection>();
+        var summary = $"Test-{Guid.NewGuid():N}";
+        const string description = "A test calendar event";
+
+        await AddTestCalendarItem(haConnection, summary, description);
+        await WaitForCalendarEventAsync(haConnection, summary, description);
+
+        var result = await haConnection.CallServiceWithResponseAsync(
+            "calendar",
+            "get_events",
+            new
             {
-                Type = "calendar/event/create",
-                EntityId = "calendar.cal",
-                Event = new AddCalendarEvent
-                {
-                    Summary = "Test",
-                    Description = "A test calendar event",
-                    Start = DateTime.Parse("2023-07-27T22:00:00", CultureInfo.InvariantCulture),
-                    End = DateTime.Parse("2023-07-27T23:00:00", CultureInfo.InvariantCulture)
-                }
-            }, CancellationToken.None);
-        }
+                start_date_time = CalendarEventWaiter.QueryStartDateTime,
+                end_date_time = CalendarEventWaiter.QueryEndDateTime
+            },
+            new HassTarget { EntityIds = ["calendar.cal"] },
+            CancellationToken.None).ConfigureAwait(false);
+
+        result.Should().NotBeNull();
+        result!.Response.Should().NotBeNull();
+
+        var events = result.Response!.Value.GetProperty("calendar.cal").Deserialize<CalendarEvents>();
+        events.Should().NotBeNull();
+        events!.Events.Should().ContainSingle(e => e.Summary == summary && e.Description == description);
+    }
+
+    private static async Task AddTestCalendarItem(IHomeAssistantConnection haConnection, string summary, string description)
+    {
+        await haConnection.SendCommandAndReturnResponseRawAsync(new AddCalendarEventCommand
+        {
+            Type = "calendar/event/create",
+            EntityId = "calendar.cal",
+            Event = new AddCalendarEvent
+            {
+                Summary = summary,
+                Description = description,
+                Start = DateTime.Parse("2023-07-27T22:00:00", CultureInfo.InvariantCulture),
+                End = DateTime.Parse("2023-07-27T23:00:00", CultureInfo.InvariantCulture)
+            }
+        }, CancellationToken.None);
+    }
+
+    private static async Task WaitForCalendarEventAsync(IHomeAssistantConnection haConnection, string summary, string description)
+    {
+        await CalendarEventWaiter.WaitForEventAsync(
+            haConnection,
+            summary,
+            description,
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromMilliseconds(100));
     }
 }

@@ -118,38 +118,21 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
 
         await haContext.CallServiceWithResponseAsync("domain", "service", serviceTarget, serviceData);
 
-        // The following expected structure to be called by the underlying connection
-
-        // {
-        //     Id = 0,
-        //     Type = "execute_script",
-        //     Sequence = new object[]
-        //     {
-        //         new
-        //         {
-        //             service = "domain.service",
-        //             data = serviceData,
-        //             target = serviceTarget,
-        //             response_variable = "service_result"
-        //         },
-        //         new
-        //         {
-        //             stop = "done",
-        //             response_variable = "service_result"
-        //         }
-        //     }
-        // }
-
-        // Hack since verify did not work on that complex object
         var result = _hassConnectionMock.Invocations.Single(e =>
             e.Method.Name == "SendCommandAndReturnResponseAsync" &&
-            e.Arguments[0] is CallExecuteScriptCommand);
+            e.Arguments[0] is CallServiceCommand);
 
-        var executeCommand = result.Arguments[0] as CallExecuteScriptCommand;
+        var callServiceCommand = result.Arguments[0] as CallServiceCommand;
 
-        executeCommand!.Sequence[0].GetType().GetProperty("service")!.GetValue(executeCommand.Sequence[0])!.Should().Be("domain.service");
-        executeCommand.Sequence[0].GetType().GetProperty("data")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceData);
-        executeCommand.Sequence[0].GetType().GetProperty("target")!.GetValue(executeCommand.Sequence[0])!.Should().BeEquivalentTo(serviceTarget);
+        callServiceCommand.Should().NotBeNull();
+        callServiceCommand!.Domain.Should().Be("domain");
+        callServiceCommand.Service.Should().Be("service");
+        callServiceCommand.ServiceData.Should().BeEquivalentTo(serviceData);
+        callServiceCommand.Target.Should().BeEquivalentTo(new HassTarget
+        {
+            EntityIds = serviceTarget.EntityIds
+        });
+        callServiceCommand.ReturnResponse.Should().BeTrue();
     }
 
     [Fact]
