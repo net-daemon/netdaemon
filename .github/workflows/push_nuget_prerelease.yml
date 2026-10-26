@@ -18,6 +18,9 @@ jobs:
     name: 📦 publish nuget pre-release packages manual version
     runs-on: ubuntu-latest
     environment: CI - release environment
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: 📤 Checkout the repository
         uses: actions/checkout@main
@@ -56,5 +59,11 @@ jobs:
       - name: 🎁 Pack
         run: dotnet pack NetDaemon.sln --configuration Release -p:PackageVersion=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }} -p:Version=${{ steps.version.outputs.version }}-${{ github.event.inputs.pre }}-${{ steps.version.outputs.build }}
         
+      - name: 🔓 Login to NuGet
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: 📨 Push to nuget
-        run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push **/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
