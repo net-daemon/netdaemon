@@ -15,6 +15,12 @@ internal class SyntaxTreeResolver(IOptions<AppConfigurationLocationSetting> sett
         logger.LogDebug("Loading applications from folder {Path}", _settings.ApplicationConfigurationFolder);
 
         var fullPath = Path.GetFullPath(_settings.ApplicationConfigurationFolder);
+        if (!Directory.Exists(fullPath))
+        {
+            logger.LogWarning("Application folder {Path} does not exist, no apps will be loaded", fullPath);
+            return [];
+        }
+
         // Get the paths for all .cs files recursively in app folder
         var csFiles = Directory.EnumerateFiles(
             fullPath,
