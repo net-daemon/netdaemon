@@ -49,8 +49,8 @@ public class WebsocketIntegrationTests : IntegrationTestBase
         await using var ctx = await GetConnectedClientContext().ConfigureAwait(false);
         var result = await ctx.HomeAssistantConnection
             .CallServiceWithResponseAsync(
-                "domain",
-                "service",
+                "calendar",
+                "get_events",
                 null,
                 new HassTarget
                 {
@@ -59,6 +59,15 @@ public class WebsocketIntegrationTests : IntegrationTestBase
                 TokenSource.Token)
             .ConfigureAwait(false);
         result.Should().NotBeNull();
+        result!.Response.Should().NotBeNull();
+        result.Response!.Value.GetProperty("calendar.cal")
+            .GetProperty("events")
+            .EnumerateArray()
+            .First()
+            .GetProperty("summary")
+            .GetString()
+            .Should()
+            .Be("Test");
     }
 
     [Fact]
