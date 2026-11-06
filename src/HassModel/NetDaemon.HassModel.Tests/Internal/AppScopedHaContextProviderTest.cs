@@ -363,10 +363,10 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
             );
         serviceCollection.AddSingleton<IObservable<HassEvent>>(_hassEventSubjectMock);
 
-        var haRunnerMock = new Mock<IHomeAssistantRunner>();
+        var connectionProviderMock = new Mock<IHomeAssistantConnectionProvider>();
 
-        haRunnerMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
-        serviceCollection.AddSingleton(_ => haRunnerMock.Object);
+        connectionProviderMock.SetupGet(n => n.CurrentConnection).Returns(_hassConnectionMock.Object);
+        serviceCollection.AddSingleton(_ => connectionProviderMock.Object);
 
         var apiManagerMock = new Mock<IHomeAssistantApiManager>();
 
@@ -379,7 +379,7 @@ public sealed class AppScopedHaContextProviderTest : IDisposable
 
         var provider = serviceCollection.BuildServiceProvider();
 
-        await provider.GetRequiredService<ICacheManager>().InitializeAsync(CancellationToken.None);
+        await provider.GetRequiredService<ICacheManager>().InitializeAsync(_hassConnectionMock.Object, CancellationToken.None);
 
         return provider;
     }
