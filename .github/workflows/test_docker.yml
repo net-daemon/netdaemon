@@ -37,4 +37,4 @@ jobs:
             --output "type=image,push=false" \
             --no-cache \
             --file ./${{ matrix.dockerfile }} . \
-            --tag netdaemon/netdaemon6:dev
+            --tag netdaemon/netdaemon7:dev

@@ -414,6 +414,36 @@ public class HomeAssistantConnectionTests
     }
 
     [Fact]
+    public async Task DisposingConnectionShouldDisposePipelineWhenMessagePumpCleanupThrows()
+    {
+        var pipeline = new TransportPipelineMock();
+        var loggerMock = new Mock<ILogger<IHomeAssistantConnection>>();
+        var loggingException = new InvalidOperationException("Logging provider failed during shutdown");
+        loggerMock
+            .Setup(x => x.Log(
+                LogLevel.Trace,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+            .Throws(loggingException);
+
+        var homeAssistantConnection = CreateHomeAssistantConnection(pipeline, loggerMock: loggerMock);
+
+        await homeAssistantConnection.DisposeAsync();
+
+        pipeline.Verify(x => x.DisposeAsync(), Times.Once);
+        loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, _) => v != null && v.ToString() == "Failed to wait for HomeAssistantConnection message processing to stop"),
+                loggingException,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task MessagePumpFailureShouldBeLoggedAsErrorAndCloseConnection()
     {
         var pipeline = new TransportPipelineMock();
