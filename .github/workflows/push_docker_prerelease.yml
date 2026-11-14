@@ -70,9 +70,9 @@ jobs:
         uses: actions/checkout@main
       - name: 📆 Set version number
         run: |
-          echo setting source version:    {{ github.event.inputs.pre }}
-          sed -i '/    private const string Version = /c\    private const string Version = "feature-${{ github.event.inputs.pre }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="feature-${{ github.event.inputs.pre }}"' ${{github.workspace}}/Dockerfile.AddOn
+          echo setting source version:    ${{ github.event.inputs.pre }}
+          sed -i '/    private const string Version = /c\    private const string Version = "${{ github.event.inputs.pre }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="${{ github.event.inputs.pre }}"' ${{github.workspace}}/Dockerfile.AddOn
 
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v4

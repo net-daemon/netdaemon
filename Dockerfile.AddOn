@@ -24,4 +24,4 @@ COPY --chmod=755 ./Docker/rootfs/etc/s6-overlay/s6-rc.d/usr/netdaemon_addon etc/
 COPY --from=netbuilder /daemon /daemon
 
 LABEL \
-  io.hass.version="VERSION"
+    io.hass.version="VERSION"

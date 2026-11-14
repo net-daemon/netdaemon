@@ -19,8 +19,8 @@ jobs:
 
       - name: 📆 Set version number
         run: |
-          sed -i '/        private const string Version = /c\        private const string Version =  "feature build";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
-          sed -i '/    io.hass.version=/c\    io.hass.version="feature" \\' ${{github.workspace}}/Dockerfile.AddOn
+          sed -i '/    private const string Version = /c\    private const string Version = "feature-${{ github.event.inputs.tag }}";' ${{github.workspace}}/src/Runtime/NetDaemon.Runtime/Internal/NetDaemonRuntime.cs
+          sed -i '/    io.hass.version=/c\    io.hass.version="feature-${{ github.event.inputs.tag }}"' ${{github.workspace}}/Dockerfile.AddOn
 
       - name: 📎 Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -54,4 +54,4 @@ jobs:
             --file ./Dockerfile.AddOn . \
             --compress \
             --tag "netdaemon/netdaemon_addon6:feature-${{ github.event.inputs.tag }}" \
-            --tag "ghcr.io/netdaemon_addon6:feature-${{ github.event.inputs.tag }}"
+            --tag "ghcr.io/net-daemon/netdaemon_addon6:feature-${{ github.event.inputs.tag }}"
