@@ -152,7 +152,7 @@ public sealed class EntityExtensionsWithCurrentConcreteEntityTest : IDisposable
         _subject.OnNext(new StateChange<TestEntity, EntityState<TestEntityAttributes>>(_testEntity, old, _testEntity.EntityState));
     }
 
-    private static JsonElement CreateNameElement(string value) => JsonDocument.Parse($"{{\"name\":\"{value}\"}}").RootElement;
+    private static JsonElement CreateNameElement(string value) => JsonElement.Parse($"{{\"name\":\"{value}\"}}");
 
     private static void AssertStates(
         string[] expectedStates,

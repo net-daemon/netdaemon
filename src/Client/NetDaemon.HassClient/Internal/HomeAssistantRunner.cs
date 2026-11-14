@@ -42,10 +42,7 @@ internal class HomeAssistantRunner(IHomeAssistantClient client,
         {
             try
             {
-                await Task.WhenAny(
-                    _runTask,
-                    Task.Delay(5000)
-                ).ConfigureAwait(false);
+                await _runTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
             }
             catch
             {

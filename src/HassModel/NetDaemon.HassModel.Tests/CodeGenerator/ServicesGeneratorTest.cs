@@ -601,7 +601,7 @@ public class ServicesGeneratorTest
 
     private static IReadOnlyCollection<HassServiceDomain> Parse([StringSyntax("json")] string sample)
     {
-        var element = JsonDocument.Parse(sample).RootElement;
+        var element = JsonElement.Parse(sample);
         var result = ServiceMetaDataParser.Parse(element, out var errors);
         errors.Should().BeEmpty();
         return result;

@@ -36,7 +36,7 @@ internal static class Extensions
     {
         var tcs = new TaskCompletionSource<bool>();
         mock.Setup(expression).Callback(() => tcs.SetResult(true));
-        await Task.WhenAny(tcs.Task, Task.Delay(5000));
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
         mock.Verify(expression);
     }
 
@@ -45,6 +45,6 @@ internal static class Extensions
     {
         var tcs = new TaskCompletionSource<bool>();
         mock.Setup(expression).Callback(() => tcs.SetResult(true));
-        await Task.WhenAny(tcs.Task, Task.Delay(5000));
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 }

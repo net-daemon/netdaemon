@@ -11,7 +11,7 @@ public class EntityExtensionsCallServiceWithResponseAsyncTest
         var haContextMock = new Mock<IHaContext>();
         var entity = new Entity(haContextMock.Object, "domain.test_entity");
 
-        var response = JsonDocument.Parse("{\"test\": \"test\"}").RootElement;
+        var response = JsonElement.Parse("{\"test\": \"test\"}");
 
         haContextMock.Setup(t => t.CallServiceWithResponseAsync("domain", "test_service", It.IsAny<ServiceTarget>(), It.IsAny<object?>()))
             .Returns(Task.FromResult((JsonElement?) response));

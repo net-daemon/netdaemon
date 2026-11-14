@@ -107,7 +107,7 @@ public class WebSocketTransportPipelineTests
         // ARRANGE
         var sb = new StringBuilder(8192);
         sb.Append(@"{ ""BigChunkedMessage"": """);
-        sb.Append(new string('A', 8180));
+        sb.Append('A', 8180);
         sb.Append(@"""}");
 
         WsMock.AddResponse(sb.ToString());
