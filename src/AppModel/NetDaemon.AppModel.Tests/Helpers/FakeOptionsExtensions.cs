@@ -9,7 +9,7 @@ internal static class FakeOptionsExtensions
 
     private static IOptions<AppConfigurationLocationSetting> CreateFakeOptions(string name)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, Path.Combine(AppContext.BaseDirectory, $"Fixtures/{name}"));
+        var path = Path.Combine(AppContext.BaseDirectory, $"Fixtures/{name}");
         return new FakeOptions(path);
     }
 }

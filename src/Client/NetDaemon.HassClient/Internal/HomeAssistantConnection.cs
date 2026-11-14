@@ -167,10 +167,14 @@ internal class HomeAssistantConnection : IHomeAssistantConnection, IHomeAssistan
         CancelPendingResults();
 
         // Gracefully wait for task or timeout
-        await Task.WhenAny(
-            _handleNewMessagesTask,
-            Task.Delay(5000)
-        ).ConfigureAwait(false);
+        try
+        {
+            await _handleNewMessagesTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            _logger.LogDebug(e, "Failed to wait for HomeAssistantConnection message processing to stop");
+        }
 
         await _transportPipeline.DisposeAsync().ConfigureAwait(false);
         _internalCancelSource.Dispose();

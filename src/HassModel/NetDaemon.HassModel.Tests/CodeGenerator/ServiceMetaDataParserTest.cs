@@ -555,7 +555,7 @@ public class ServiceMetaDataParserTest
                        }
                      }
                      """;
-        var element = JsonDocument.Parse(sample).RootElement;
+        var element = JsonElement.Parse(sample);
         var result = ServiceMetaDataParser.Parse(element, out var errors);
 
         errors.Should().HaveCount(1, because: "We should get an error for the failed service");
@@ -570,7 +570,7 @@ public class ServiceMetaDataParserTest
 
     private static IReadOnlyCollection<HassServiceDomain> Parse(string sample)
     {
-        var element = JsonDocument.Parse(sample).RootElement;
+        var element = JsonElement.Parse(sample);
         var result = ServiceMetaDataParser.Parse(element, out var errors);
         errors.Should().BeEmpty();
         return result;

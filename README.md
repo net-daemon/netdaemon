@@ -5,7 +5,7 @@
 
 Welcome to the NetDaemon project!
 
-NetDaemon is an application daemon that enables you to write powerful home automation scripts in C# for Home Assistant. This repository contains **NetDaemon V5**, the latest version of the framework.
+NetDaemon is an application daemon that enables you to write powerful home automation scripts in C# for Home Assistant. This repository contains **NetDaemon V7**, built on .NET 11.
 
 ## About NetDaemon
 
@@ -31,7 +31,7 @@ class MyApp
     {
         LightEntity hallwayLight = entities.Light.HallwayLight;
         BinarySensorEntity motionSensor = entities.BinarySensor.HallwayMotionSensor;
-        
+
         // Check state of entities directly
         if (motionSensor.IsOn() && hallwayLight.IsOff()){
             hallwayLight.TurnOn();

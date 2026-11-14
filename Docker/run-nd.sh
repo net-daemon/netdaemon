@@ -13,7 +13,7 @@ if [[ -z "${NetDaemon__ApplicationAssembly}" ]]; then
     exec dotnet NetDaemon.Host.Default.dll
 else
     if [[ "${NetDaemon__ApplicationAssembly}" == *".csproj" ]]; then
-        echo -e "\\033[31mcsproj deployments are not supported in v5, use compiled option instead!\\033[0m" >&2
+        echo -e "\\033[31mcsproj deployments are not supported in v7, use compiled option instead!\\033[0m" >&2
         exit 1
     fi
 
@@ -34,7 +34,7 @@ else
         exit 1
     fi
 
-    echo -e "\\033[32mStarting NetDaemon V6 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
+    echo -e "\\033[32mStarting NetDaemon V7 pre-built runtime using assembly ${NetDaemon__ApplicationAssembly}...\\033[0m" >&2
     cd "$(dirname "${NetDaemon__ApplicationAssembly}")" || echo -e "\\033[31mCould not change directory to run project\\033[0m" >&2
 
     if [[ "${PWD}" != "$(dirname "${NetDaemon__ApplicationAssembly}")" ]]; then
